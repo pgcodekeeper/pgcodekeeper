@@ -75,6 +75,7 @@ public class PgDiffDepciesTest {
                 {"trigger_before_insert", "trigger_before_insert_usr_all"},
                 // задача из редмайна по номеру, пользователь выбирает все объекты
                 {"err6049", "err6049"},
+                {"err7095", "err7095"},
                 // удаляется исходная таблица, пользователь выбрал на удаление t1
                 {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
                 // удаляется исходная таблица, пользователь выбрал t2

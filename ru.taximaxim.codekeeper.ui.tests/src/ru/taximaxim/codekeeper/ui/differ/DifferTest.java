@@ -197,7 +197,7 @@ class DifferData_2 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);
     }
     
     @Override
@@ -225,7 +225,7 @@ class DifferData_3 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);
     }
     
     @Override
@@ -252,7 +252,7 @@ class DifferData_4 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("audit");
-        schema.getChild("logged_actions").setSelected(true);;
+        schema.getChild("logged_actions").setSelected(true);
     }
 }
 
@@ -265,7 +265,7 @@ class DifferData_5 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("v_auto_mark_two").setSelected(true);;
+        schema.getChild("v_auto_mark_two").setSelected(true);
     }
     
     @Override
