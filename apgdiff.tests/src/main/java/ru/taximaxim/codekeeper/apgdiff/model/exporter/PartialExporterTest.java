@@ -22,7 +22,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -146,17 +145,15 @@ public class PartialExporterTest {
             
             // get new db with selected changes
             preset.setUserSelection();
-            DiffTreeApplier applier = new DiffTreeApplier(dbSource, dbTarget, diffTree);
-            PgDatabase dbNew = applier.apply();
             
             List<TreeElement> list = (List<TreeElement>) diffTree.flattenAlteredElements(
                     new ArrayList<TreeElement>(), dbSource, dbTarget, true, null);
             // full export of source to target directory
             new ModelExporter(exportDirPartial.toFile(), dbSource, encoding).exportFull();
             // full export of new to newFull directory
-            new ModelExporter(exportDirNewFull.toFile(), dbNew, encoding).exportFull();
+            new ModelExporter(exportDirNewFull.toFile(), dbTarget, encoding).exportFull();
             // накатываем на полную базу частичные изменения
-            new ModelExporter(exportDirPartial.toFile(), dbNew, dbSource,
+            new ModelExporter(exportDirPartial.toFile(), dbTarget, dbSource,
                     list, encoding).exportPartial();
             
             walkAndComare(exportDirFull, exportDirPartial, exportDirNewFull, preset);

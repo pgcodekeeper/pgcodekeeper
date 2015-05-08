@@ -46,7 +46,6 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -133,12 +132,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         treediffer.getDiffTree());
                 pagePartial.layout();
             } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
-                TreeElement filtered = pagePartial.getDiffTree().filterDiffTree();
-
-                DbSource fdbSource = DbSource.fromFilter(dbSource,
-                        filtered, DiffSide.LEFT);
-                DbSource fdbTarget = DbSource.fromFilter(dbTarget,
-                        filtered, DiffSide.RIGHT);
+                TreeElement filtered = pagePartial.getDiffTree().getTreeInput();
 
                 Differ differ = new Differ(filtered, true, 
                         proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
@@ -155,7 +149,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     return;
                 }
 
-                pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),
+                pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }

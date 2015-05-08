@@ -22,10 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -167,31 +164,12 @@ public class PgAntlrLoaderTest {
         // should result in a fully copied or empty (depending on filter side) DB object
         TreeElement dbTree = DiffTree.create(d, empty);
         dbTree.setAllchecked();
-        PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
-        Assert.assertEquals("PgDbFilter2: filter altered the result", d, dbFilteredFullTree);
         Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);
         
         // test deepCopy mechanism
         Assert.assertEquals("PgStatement deep copy altered", d, d.deepCopy());
         Assert.assertEquals("PgStatement deep copy altered original", dbPredefined, d);
-        
-        PgDatabase oneDiff = new PgDatabase();
-        oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
-        
-        // test applying one DB to another using DiffTree
-        TreeElement removeAll = dbTree;
-        TreeElement onlyNew = DiffTree.create(d, oneDiff);
-        onlyNew.setAllchecked();
-        TreeElement onlyOld = DiffTree.create(d, d);
-        onlyOld.setAllchecked();
-        
-        Assert.assertEquals("DiffTreeApplier: not empty", empty,
-                new DiffTreeApplier(d, oneDiff, removeAll).apply());
-        Assert.assertEquals("DiffTreeApplier: not new", oneDiff,
-                new DiffTreeApplier(d, oneDiff, onlyNew).apply());
-        Assert.assertEquals("DiffTreeApplier: not old", d,
-                new DiffTreeApplier(d, oneDiff, onlyOld).apply());
     }
 
     /**

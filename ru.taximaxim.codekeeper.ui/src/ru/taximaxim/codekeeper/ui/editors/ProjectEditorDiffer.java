@@ -54,7 +54,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -388,18 +387,15 @@ class CommitPage extends DiffPresentationPane {
 
             Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
             pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
-            DiffTreeApplier applier = new DiffTreeApplier(
-                    dbSource.getDbObject(), dbTarget.getDbObject(), tree);
-            PgDatabase dbNew = applier.apply();
-
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
+            
             try {
                 // TODO пробросить использование коллекций в updater и exporter
                 List<TreeElement> checked = (List<TreeElement>) tree.flattenAlteredElements(
                         new ArrayList<TreeElement>(),
                         dbSource.getDbObject(), dbTarget.getDbObject(),
                         true, null);
-                new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
+                new ProjectUpdater(dbTarget.getDbObject(), dbSource.getDbObject(), checked, proj)
                         .updatePartial();
                 pm.done();
             } catch (IOException | CoreException e) {
