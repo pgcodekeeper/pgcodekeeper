@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -146,7 +145,7 @@ public class PartialExporterTest {
             // get new db with selected changes
             preset.setUserSelection();
             
-            List<TreeElement> list = (List<TreeElement>) diffTree.flattenAlteredElements(
+            Collection<TreeElement> list = diffTree.flattenAlteredElements(
                     new ArrayList<TreeElement>(), dbSource, dbTarget, true, null);
             // full export of source to target directory
             new ModelExporter(exportDirPartial.toFile(), dbSource, encoding).exportFull();
