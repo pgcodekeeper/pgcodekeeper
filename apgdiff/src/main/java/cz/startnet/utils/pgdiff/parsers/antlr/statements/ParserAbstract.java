@@ -266,16 +266,10 @@ public abstract class ParserAbstract {
 
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
         List<PgConstraint> result = new ArrayList<>();
+        // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
         if (colCtx.tabl_constraint != null) {
             result.add(getTableConstraint(colCtx.tabl_constraint));
         }
-        // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
-        /*else {
-            for (Constraint_commonContext column_constraint : colCtx
-                    .table_column_definition().colmn_constraint) {
-                getColumnConstraint(column_constraint, result);
-            }
-        }*/
         return result;
     }
 
@@ -297,6 +291,10 @@ public abstract class ParserAbstract {
                 ((PgForeignKey)constr).addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));
             }
+        }
+        if (ctx.constr_body().table_unique_prkey() != null) {
+            constr.setUnique(ctx.constr_body().table_unique_prkey().UNIQUE() != null);
+            constr.setPrimaryKey(ctx.constr_body().table_unique_prkey().PRIMARY() != null);
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;

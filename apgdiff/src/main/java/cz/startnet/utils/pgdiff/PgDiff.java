@@ -158,7 +158,7 @@ public final class PgDiff {
         selected.addAll(addColumns(oldDbFull, newDbFull,
                 selected));
         // ---КОСТЫЛЬ-----------
-        Collections.sort(selected, new CompareTree(oldDbFull, newDbFull));
+        Collections.sort(selected, new CompareTree());
         
         if (arguments.getTimeZone() != null) {
             script.addStatement(MessageFormat.format(

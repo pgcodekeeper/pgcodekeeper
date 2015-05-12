@@ -16,9 +16,9 @@ COMMENT ON COLUMN test.text IS 'text column 2';
 
 COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function 2';
 
-COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key 2';
-
 COMMENT ON CONSTRAINT text_check ON test IS 'text check 2';
+
+COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key 2';
 
 COMMENT ON TRIGGER test_trigger ON test IS 'test trigger 2';
 

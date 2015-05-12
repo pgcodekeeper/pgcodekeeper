@@ -7,18 +7,12 @@ import static ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSid
 import java.util.Comparator;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CompareTree implements Comparator<TreeElement> {
     private static final int LESS = -1;
     private static final int BIGGER = 1;
-    private PgDatabase oldDB;
-    private PgDatabase newDB;
 
-    public CompareTree(PgDatabase oldDbFull, PgDatabase newDbFull) {
-        this.oldDB = oldDbFull;
-        this.newDB = newDbFull;
+    public CompareTree() {
     }
 
     @Override
@@ -61,34 +55,6 @@ public class CompareTree implements Comparator<TreeElement> {
      * @return
      */
     private int compareTypes(TreeElement o1, TreeElement o2) {
-        int res = o1.getType().ordinal() - o2.getType().ordinal();
-        // TODO КОСТЫЛЬ ДЛЯ PRIMARY KEYS
-        if (oldDB!= null
-                && newDB != null
-                && res == 0 
-                && o1.getType() == DbObjType.CONSTRAINT) {
-            PgConstraint const1 = getElement(o1);
-            PgConstraint const2 = getElement(o2);
-            if (const1.isPrimaryKeyConstraint() != const2.isPrimaryKeyConstraint()) {
-                if (const1.isPrimaryKeyConstraint()) {
-                    res = LESS;
-                } else {
-                    res = BIGGER;
-                }
-            }
-        }
-        //----------------КОСТЫЛЬ
-        return res;
-    }
-
-    private PgConstraint getElement(TreeElement o1) {
-        switch (o1.getSide()) {
-        case BOTH:
-        case LEFT:
-            return (PgConstraint)o1.getPgStatement(oldDB);
-        case RIGHT:
-            return (PgConstraint)o1.getPgStatement(newDB);
-        }
-        return null;
+        return o1.getType().ordinal() - o2.getType().ordinal();
     }
 }

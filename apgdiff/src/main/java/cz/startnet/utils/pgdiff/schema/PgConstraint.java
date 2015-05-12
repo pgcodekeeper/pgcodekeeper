@@ -32,11 +32,30 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     private String definition;
     private String tableName;
+    private boolean unique;
+    private boolean isPrimaryKey;
+
+    public boolean isPrimaryKey() {
+        return isPrimaryKey;
+    }
+
+    public void setPrimaryKey(boolean isPrimaryKey) {
+        this.isPrimaryKey = isPrimaryKey;
+    }
+
+    public boolean isUnique() {
+        return unique;
+    }
+
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
 
     @Override
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
     }
+    
     
     public PgConstraint(String name, String rawStatement) {
         super(name, rawStatement);
@@ -108,6 +127,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
+    /** оставлен для совместимости с парсером apgdiff
+     */
     public boolean isPrimaryKeyConstraint() {
         return PATTERN_PRIMARY_KEY.matcher(definition).matches();
     }
@@ -161,6 +182,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setDefinition(getDefinition());
         constraintDst.setTableName(getTableName());
         constraintDst.setComment(getComment());
+        constraintDst.setPrimaryKey(isPrimaryKey());
+        constraintDst.setUnique(isUnique());
         return constraintDst;
     }
     

@@ -388,6 +388,15 @@ public class DepcyGraph {
                             table.getName(), cons.getName(), ref.column, ref.schema, ref.table));
                     
                     graph.addEdge(cons, refColumn);
+                    
+                    for (PgConstraint refConstr : refTable.getConstraints()) {
+                        if (refConstr.isPrimaryKey() 
+                                || refConstr.isUnique()) {
+                            graph.addEdge(cons, refConstr);
+                            // только к одному ключу или уникальному констрейнту
+                            break;
+                        }
+                    }
                 }
             }
         }

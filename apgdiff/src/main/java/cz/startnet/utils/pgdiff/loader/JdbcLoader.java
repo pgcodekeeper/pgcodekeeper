@@ -761,6 +761,7 @@ public class JdbcLoader implements PgCatalogStrings {
             case "p":
                 definition.append("PRIMARY KEY (");
                 definition.append(getStringListAsString(columnNames, ", ")).append(")");
+                c.setPrimaryKey(true);
                 break;
             case "c":
                 definition.append("CHECK (" + res.getString("consrc_usable") + ")");
@@ -768,6 +769,7 @@ public class JdbcLoader implements PgCatalogStrings {
             case "u":
                 definition.append("UNIQUE (");
                 definition.append(getStringListAsString(columnNames, ", ")).append(")");
+                c.setUnique(true);
                 break;
         }
         
