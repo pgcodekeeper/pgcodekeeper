@@ -8,11 +8,14 @@ SELECT c.oid AS sequence_oid,
        p.cycle_option AS cycle_option,
        d.refobjsubid AS referenced_column,
        d.refobjid::regclass::text referenced_table_name,
+       descr.description AS comment,
        a.attname AS ref_col_name,
        c.relacl AS aclArray
 FROM pg_catalog.pg_class c
 LEFT JOIN pg_catalog.pg_depend d ON d.objid = c.oid
     AND d.refobjsubid != 0
+LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid
+    AND descr.objsubid = 0
 LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
     AND a.attnum = d.refobjsubid
     AND a.attisdropped IS FALSE,

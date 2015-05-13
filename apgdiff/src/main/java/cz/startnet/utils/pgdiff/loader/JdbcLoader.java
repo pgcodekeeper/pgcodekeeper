@@ -1318,7 +1318,11 @@ public class JdbcLoader implements PgCatalogStrings {
         
         // PRIVILEGES
         setPrivileges(s, sequenceName, res.getString("aclArray"), s.getOwner(), null);
-        
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()){
+            s.setComment(ParserUtils.quoteString(comment));
+        }
         return s;
     }
     
