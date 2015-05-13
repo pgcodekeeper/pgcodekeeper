@@ -12,11 +12,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 
 /**
  * Stores database information.
@@ -241,8 +242,21 @@ public class PgDatabase extends PgStatement {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        return false;
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        PgDatabase newDb;
+        if (newCondition instanceof PgDatabase) {
+            newDb = (PgDatabase) newCondition;
+        } else {
+            return false;
+        }
+        PgDatabase oldDb = this;
+
+        if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+            newDb.appendCommentSql(sb);
+        }
+        
+        return sb.length() > 0;
     }
     
     @Override

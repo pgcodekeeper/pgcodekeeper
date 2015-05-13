@@ -8,7 +8,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -27,8 +26,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -85,18 +82,6 @@ public class DbSourceTest {
             performTest(DbSource.fromDirTree(true,
                     exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
         }
-    }
-    
-    @Test
-    public void testFilter () throws InvocationTargetException, PgCodekeeperUIException, IOException, InterruptedException{
-        DbSource predefined = DbSource.fromDbObject(dbPredefined, "predefined");
-        final TreeDiffer differ = new TreeDiffer(predefined, 
-                DbSource.fromDbObject(new PgDatabase(), "empty"));
-        differ.run(null);
-        TreeElement diff = differ.getDiffTree();
-        ApgdiffTestUtils.setAllchecked(diff);
-        
-        performTest(DbSource.fromFilter(predefined, diff, DiffSide.LEFT));
     }
     
     @Test

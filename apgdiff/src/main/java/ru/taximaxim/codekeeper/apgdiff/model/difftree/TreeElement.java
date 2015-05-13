@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
@@ -170,6 +168,7 @@ public class TreeElement {
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         default:
             throw new IllegalStateException("Unknown element type: " + type);
         }
@@ -220,6 +219,38 @@ public class TreeElement {
         result.add(this);
         return result;
     }
+    /**
+     * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
+     * left -> right, right -> left, both->both
+     */
+    public TreeElement getRevertedCopy() {
+        TreeElement copy = getRevertedElement();
+        for (TreeElement child : getChildren()) {
+            copy.addChild(child.getRevertedCopy());
+        }
+        return copy;
+    }
+    
+    /**
+     * возвращает копию элемента с измененными сторонами
+     */
+    private TreeElement getRevertedElement() {
+        DiffSide newSide = null;
+        switch (side) {
+        case BOTH:
+            newSide = DiffSide.BOTH;
+            break;
+        case LEFT:
+            newSide = DiffSide.RIGHT;
+            break;
+        case RIGHT:
+            newSide = DiffSide.LEFT;
+            break;
+        }
+        TreeElement copy = new TreeElement(name, type, newSide);
+        copy.setSelected(selected);
+        return copy;
+    }
     
     /**
      * Принимает дерево и выбирает из него все выбранные элементы
@@ -232,6 +263,16 @@ public class TreeElement {
         }
         for (TreeElement child : root.getChildren()) {
             getSelected(child, result);
+        }
+    }
+    
+    /**
+     * начиная от текущего отмечает все элементы
+     */
+    public void setAllChecked() {
+        setSelected(true);
+        for (TreeElement child : getChildren()) {
+            child.setAllChecked();
         }
     }
     /**
@@ -297,6 +338,15 @@ public class TreeElement {
     
     @Override
     public String toString() {
-        return getName() == null ? "no name" : getName();
+        return getName() == null ? "no name" : getName() + " " + side + " " + type;
+    }
+    
+    /**
+     * устанавливает родителя, использовать только в случае с колонки, создается
+     * связь для получения объекта из базы в одну сторону
+     */
+    @Deprecated 
+    public void setParent(TreeElement el) {
+        this.parent = el;
     }
 }

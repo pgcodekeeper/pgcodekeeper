@@ -257,6 +257,8 @@ public class DepcyResolver {
             return db.getExtension(statement.getName());
         case SCHEMA:
             return db.getSchema(statement.getName());
+        case DATABASE:
+            return db;
         default:
             break;
         }
@@ -427,6 +429,7 @@ public class DepcyResolver {
                     }
                 }
             }
+            // FIXME заменить зависимостью от ключей друг к другу 
             // При дропе таблица тянет за собой внутренние зависимости
             // foreign keys дропаем как обычно, чтобы не было конфликтов с primary keys
             if (oldObj.getParent().getStatementType() == DbObjType.TABLE) {

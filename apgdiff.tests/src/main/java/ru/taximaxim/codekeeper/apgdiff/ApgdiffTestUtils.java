@@ -4,12 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 
 import org.junit.Assert;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
@@ -90,15 +88,4 @@ public class ApgdiffTestUtils {
     }
     
     private ApgdiffTestUtils() {}
-
-    /**
-     * Отмечает все элементы в предоставленном дереве начиная с текущего элемента
-     * @param dbTree
-     */
-    public static void setAllchecked(TreeElement dbTree) {
-        dbTree.setSelected(true);
-        for (TreeElement child : dbTree.getChildren()) {
-            setAllchecked(child);
-        }
-    }
 }

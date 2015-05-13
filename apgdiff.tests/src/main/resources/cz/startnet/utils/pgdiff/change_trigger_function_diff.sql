@@ -1,14 +1,14 @@
-CREATE SCHEMA another_triggers;
-
-ALTER SCHEMA another_triggers OWNER TO postgres;
+-- DEPCY: This TRIGGER depends on the FUNCTION: test_table_trigger()
 
 DROP TRIGGER test_table_trigger ON test_table;
 
 DROP FUNCTION test_table_trigger();
 
-SET search_path = another_triggers, pg_catalog;
+CREATE SCHEMA another_triggers;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: test_table_trigger
+ALTER SCHEMA another_triggers OWNER TO postgres;
+
+SET search_path = another_triggers, pg_catalog;
 
 CREATE OR REPLACE FUNCTION test_table_trigger_another() RETURNS trigger
     LANGUAGE plpgsql

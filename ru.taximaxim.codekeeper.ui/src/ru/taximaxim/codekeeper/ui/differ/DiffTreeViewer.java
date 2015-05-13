@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -251,38 +250,8 @@ public class DiffTreeViewer extends Composite {
         viewer.setInput(tree);
     }
     
-    /**
-     * Recursively copy only selected tree elements into a new tree
-     */
-    @Deprecated
-    public TreeElement filterDiffTree() {
-        if (tree == null) {
-            return null;
-        }
-        
-        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection"); //$NON-NLS-1$
-        
-        return filterDiffTree(tree);
-    }
-    
-    @Deprecated
-    private TreeElement filterDiffTree(TreeElement tree) {
-        if(!viewer.getChecked(tree)
-                && !viewer.getGrayed(tree)) {
-            // skip unselected non-root nodes and all their children
-            return null;
-        }
-        
-        TreeElement copy = new TreeElement(
-                tree.getName(), tree.getType(), tree.getSide());
-        
-        for(TreeElement sub : tree.getChildren()) {
-            TreeElement subCopy = filterDiffTree(sub);
-            if(subCopy != null) {
-                copy.addChild(subCopy);
-            }
-        }
-        return copy;
+    public TreeElement getTreeInput() {
+        return tree;
     }
 }
 

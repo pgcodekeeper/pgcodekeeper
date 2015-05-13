@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
@@ -14,9 +13,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -107,11 +103,6 @@ public abstract class DbSource {
                 host, port, user, pass, dbname, encoding, timezone);
     }
 
-    public static DbSource fromFilter(DbSource src, TreeElement filter,
-            DiffSide side) {
-        return new DbSourceFilter(src, filter, side);
-    }
-    
     public static DbSource fromJdbc(PgDbProject proj, String password,
             boolean useAntrlForViews) throws CoreException{
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
@@ -325,35 +316,6 @@ class DbSourceDb extends DbSource {
                     dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone),
                     useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
         }
-    }
-}
-
-class DbSourceFilter extends DbSource {
-
-    final DbSource src;
-
-    final TreeElement filter;
-
-    final DiffSide side;
-
-    DbSourceFilter(DbSource src, TreeElement filter, DiffSide side) {
-        super(MessageFormat.format(Messages.dbSource_filter_on, src.getOrigin()));
-        this.src = src;
-        this.filter = filter;
-        this.side = side;
-    }
-
-    @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
-        PgDatabase db;
-        try {
-            db = src.getDbObject();
-        } catch (Exception ex) {
-            db = src.get(monitor);
-        }
-
-        return new PgDbFilter2(db, filter, side).apply();
     }
 }
 

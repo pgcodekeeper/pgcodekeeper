@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -110,7 +111,8 @@ public class CommentOn extends ParserAbstract {
                 index.setComment(comment);
             }
             //schema
-        } else if (ctx.SCHEMA() != null) {
+        } else if (ctx.SCHEMA() != null
+                && !name.equals(ApgdiffConsts.PUBLIC)) {
             db.getSchema(name).setComment(comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {
