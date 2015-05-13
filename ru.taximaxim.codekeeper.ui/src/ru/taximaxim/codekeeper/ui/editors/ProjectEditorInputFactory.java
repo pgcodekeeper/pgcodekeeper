@@ -11,8 +11,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectEditorInputFactory implements IElementFactory {
     
-    private final static String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
-    private final static String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
+    private static final String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
+    private static final String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
     
     @Override
     public IAdaptable createElement(IMemento memento) {

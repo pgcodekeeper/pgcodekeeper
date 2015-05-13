@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  */
 public class TreeElement {
 
-    public static abstract class ListGeneratorPredicate {
+    public abstract static class ListGeneratorPredicate {
         
         public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
         

@@ -205,7 +205,7 @@ class DbSourceFile extends DbSource {
      * 
      * По подсчетам, это число в районе 6. Для верности берем 5.
      */
-    private final static int AVERAGE_STATEMENT_LENGTH = 5;
+    private static final int AVERAGE_STATEMENT_LENGTH = 5;
     
     private final boolean useAntlr;
     private final String filename;

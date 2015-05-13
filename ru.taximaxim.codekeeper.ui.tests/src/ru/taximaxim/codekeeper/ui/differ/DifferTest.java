@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
@@ -150,16 +149,16 @@ abstract class DifferData{
        this.caseNumber = caseNumber;
     }
 
-    final String getPredefinedDirectDiff() throws UnsupportedEncodingException, IOException{
+    final String getPredefinedDirectDiff() throws IOException{
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
     }
     
-    final String getPredefinedReverseDiff() throws UnsupportedEncodingException, IOException{
+    final String getPredefinedReverseDiff() throws IOException{
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
     }
     
     private final String readResourceToString(InputStream resourceStream) 
-            throws UnsupportedEncodingException, IOException{
+            throws IOException{
         StringBuilder script = new StringBuilder();
         try(InputStreamReader isr = new InputStreamReader(resourceStream, "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)) {
