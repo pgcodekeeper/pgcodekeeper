@@ -104,7 +104,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
         
         if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() && 
-                !((PgTable)newIndex.getParent()).isClustered()) { 
+                !((PgTable)newIndex.getParent()).isClustered()) {
              script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(oldIndex.getTableName())
                         + " SET WITHOUT CLUSTER;");

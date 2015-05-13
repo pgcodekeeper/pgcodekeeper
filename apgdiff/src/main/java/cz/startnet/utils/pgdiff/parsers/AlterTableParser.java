@@ -80,7 +80,6 @@ public final class AlterTableParser {
             if (parser.expectOptional("ALTER")) {
                 parseAlterColumn(parser, table);
             } else if (parser.expectOptional("CLUSTER", "ON")) {
-                table.setClustered(true);
                 table.getIndex(
                         ParserUtils.getObjectName(parser.parseIdentifier()))
                         .setClusterIndex(true);

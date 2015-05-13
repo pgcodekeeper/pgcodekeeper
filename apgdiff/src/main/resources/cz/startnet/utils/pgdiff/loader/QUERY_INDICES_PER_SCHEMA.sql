@@ -4,6 +4,7 @@ SELECT ccc.relname AS table_name,
     (SELECT n.nspname
      FROM pg_catalog.pg_namespace n
      WHERE c.relnamespace = n.oid) namespace,
+     i.indisclustered as isClustered,
     c.relowner,
     definition
 FROM pg_catalog.pg_class ccc

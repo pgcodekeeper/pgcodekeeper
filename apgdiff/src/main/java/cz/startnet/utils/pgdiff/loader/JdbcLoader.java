@@ -1111,6 +1111,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
         String definition = res.getString("definition"); 
         i.setDefinition(definition.substring(definition.indexOf("USING ")));
+        i.setClusterIndex(res.getBoolean("isClustered"));
         
         i.setUnique(res.getBoolean("indisunique"));
         //setOwner(i, res.getLong(CLASS_RELOWNER));

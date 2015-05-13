@@ -69,7 +69,6 @@ public class AlterTable extends ParserAbstract {
                     logError(indexName, schemaName);
                 } else {
                     index.setClusterIndex(true);
-                    tabl.setClustered(true);
                 }
             }
 

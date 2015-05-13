@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,7 +36,6 @@ public class PgTable extends PgStatementWithSearchPath {
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<String> sequences = new ArrayList<>();
 
-    private boolean isClustered;
     /**
      * WITH clause. If value is null then it is not set, otherwise can be set to
      * OIDS=true, OIDS=false, or storage parameters can be set.
@@ -54,12 +52,13 @@ public class PgTable extends PgStatementWithSearchPath {
         super(name, rawStatement);
     }
 
-    public void setClustered(boolean value) {
-        isClustered = value;
-    }
-
     public boolean isClustered() {
-        return isClustered;
+        for (PgIndex ind : indexes) {
+            if (ind.isClusterIndex()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -526,7 +525,6 @@ public class PgTable extends PgStatementWithSearchPath {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
-        tableDst.setClustered(isClustered());
         for(Inherits inh : inherits) {
             tableDst.addInherits(inh.getKey(), inh.getValue());
         }
