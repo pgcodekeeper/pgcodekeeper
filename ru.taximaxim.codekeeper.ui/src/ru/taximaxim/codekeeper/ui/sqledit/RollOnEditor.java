@@ -250,7 +250,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         parent.setLayout(lay);
         
         Composite buttons = new Composite(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);;
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         buttons.setLayoutData(gd);
         
         GridLayout gl = new GridLayout(2, false);

@@ -390,8 +390,7 @@ class CommitPage extends DiffPresentationPane {
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
             
             try {
-                // TODO пробросить использование коллекций в updater и exporter
-                List<TreeElement> checked = (List<TreeElement>) tree.flattenAlteredElements(
+                Collection<TreeElement> checked = tree.flattenAlteredElements(
                         new ArrayList<TreeElement>(),
                         dbSource.getDbObject(), dbTarget.getDbObject(),
                         true, null);

@@ -157,9 +157,13 @@ public class DepcyResolver {
                     // is checked in the depcy tracker in this case
                     addDropStatements(oldObj);
                 } else {
-                    addToListWithoutDepcies(
-                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
-                            oldObj, null);
+                    // объект будет пересоздан ниже в новом состоянии, поэтому
+                    // ничего делать не нужно
+                    if (!inDropsList(oldObj)) {
+                        addToListWithoutDepcies(
+                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
+                                oldObj, null);
+                    }
                 }
             }
         }

@@ -132,7 +132,7 @@ public final class DiffTree {
                 
                 for (CompareResult trg : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
-                };
+                }
                 
                 // constraints
                 if(tableLeft != null) {
