@@ -9,12 +9,15 @@ import java.util.Comparator;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CompareTree implements Comparator<TreeElement> {
+    
     private static final int LESS = -1;
-    private static final int BIGGER = 1;
-    private PgDatabase oldDB;
-    private PgDatabase newDB;
+    private static final int MORE = 1;
+    
+    private final PgDatabase oldDB;
+    private final PgDatabase newDB;
 
     public CompareTree(PgDatabase oldDbFull, PgDatabase newDbFull) {
         this.oldDB = oldDbFull;
@@ -37,14 +40,14 @@ public class CompareTree implements Comparator<TreeElement> {
                 return LESS;
             }
             if (s2 == LEFT && s1 != LEFT) {
-                return BIGGER;
+                return MORE;
             }
             if (res == 0) {
                 if (s1 == RIGHT) {
                     return LESS;
                 }
                 if (s1 == BOTH) {
-                    return BIGGER;
+                    return MORE;
                 }
             } else {
                 return res;
@@ -55,39 +58,31 @@ public class CompareTree implements Comparator<TreeElement> {
 
     /**
      * Сравнивает и возвращает порядок в списке типов объектов так как нужно
-     * 
-     * @param o1
-     * @param o2
-     * @return
      */
     private int compareTypes(TreeElement o1, TreeElement o2) {
         int res = o1.getType().ordinal() - o2.getType().ordinal();
+        
         // TODO КОСТЫЛЬ ДЛЯ PRIMARY KEYS
-        if (oldDB!= null
-                && newDB != null
+        if (oldDB!= null && newDB != null
                 && res == 0 
                 && o1.getType() == DbObjType.CONSTRAINT) {
-            PgConstraint const1 = getElement(o1);
-            PgConstraint const2 = getElement(o2);
-            if (const1.isPrimaryKeyConstraint() != const2.isPrimaryKeyConstraint()) {
-                if (const1.isPrimaryKeyConstraint()) {
-                    res = LESS;
-                } else {
-                    res = BIGGER;
-                }
+            boolean isPkey1 = ((PgConstraint) getStatement(o1)).isPrimaryKeyConstraint();
+            boolean isPkey2 = ((PgConstraint) getStatement(o2)).isPrimaryKeyConstraint();
+            if (isPkey1 != isPkey2) {
+                res = isPkey1 ? LESS : MORE;
             }
         }
         //----------------КОСТЫЛЬ
         return res;
     }
 
-    private PgConstraint getElement(TreeElement o1) {
+    private PgStatement getStatement(TreeElement o1) {
         switch (o1.getSide()) {
         case BOTH:
         case LEFT:
-            return (PgConstraint)o1.getPgStatement(oldDB);
+            return o1.getPgStatement(oldDB);
         case RIGHT:
-            return (PgConstraint)o1.getPgStatement(newDB);
+            return o1.getPgStatement(newDB);
         }
         return null;
     }

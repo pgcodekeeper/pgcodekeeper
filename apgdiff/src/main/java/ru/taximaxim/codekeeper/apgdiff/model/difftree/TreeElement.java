@@ -222,10 +222,9 @@ public class TreeElement {
     /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
      * left -> right, right -> left, both->both
-     * @return
      */
     public TreeElement getRevertedCopy() {
-        TreeElement copy = getRevertSideCopy();
+        TreeElement copy = getRevertedElement();
         for (TreeElement child : getChildren()) {
             copy.addChild(child.getRevertedCopy());
         }
@@ -234,9 +233,8 @@ public class TreeElement {
     
     /**
      * возвращает копию элемента с измененными сторонами
-     * @return
      */
-    private TreeElement getRevertSideCopy() {
+    private TreeElement getRevertedElement() {
         DiffSide newSide = null;
         switch (side) {
         case BOTH:
@@ -271,10 +269,10 @@ public class TreeElement {
     /**
      * начиная от текущего отмечает все элементы
      */
-    public void setAllchecked() {
+    public void setAllChecked() {
         setSelected(true);
         for (TreeElement child : getChildren()) {
-            child.setAllchecked();
+            child.setAllChecked();
         }
     }
     /**

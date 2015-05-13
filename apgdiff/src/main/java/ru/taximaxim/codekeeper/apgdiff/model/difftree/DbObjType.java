@@ -4,6 +4,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
  * Типы объектов в базе <br>
  * ! Внимание, порядок обозначенный здесь используется при построении списка
  * объектов для наката
+ * {@link CompareTree}
  */
 public enum DbObjType {
     DATABASE,

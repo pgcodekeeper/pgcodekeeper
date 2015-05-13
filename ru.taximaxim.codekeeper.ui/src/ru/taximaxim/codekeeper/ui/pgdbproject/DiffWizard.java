@@ -134,9 +134,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
                 TreeElement filtered = pagePartial.getDiffTree().getTreeInput();
 
-                Differ differ = new Differ(filtered, true, 
-                        proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-                differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
+                Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
+                        filtered, true,  proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
                 try {
                     getContainer().run(true, true, differ);
                 } catch (InvocationTargetException ex) {
