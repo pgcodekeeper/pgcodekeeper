@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -433,13 +432,8 @@ public class DepcyResolver {
                     }
                 }
             }
-            // FIXME заменить зависимостью от ключей друг к другу 
-            // При дропе таблица тянет за собой внутренние зависимости
-            // foreign keys дропаем как обычно, чтобы не было конфликтов с primary keys
-            if (oldObj.getParent().getStatementType() == DbObjType.TABLE) {
-                if (oldObj instanceof PgForeignKey) {
-                    return false;
-                }
+            // Колонки пропускаются при удалении таблицы
+            if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
                 if (newTable == null) {
