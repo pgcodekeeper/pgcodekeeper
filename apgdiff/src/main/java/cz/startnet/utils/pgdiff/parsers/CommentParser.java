@@ -124,23 +124,7 @@ public final class CommentParser {
             }
         }
 
-        // since PRIMARY KEY implicitly creates an index with same name
-        // search for those CONSTRAINTs if INDEX is not found 
-        if(index == null) {
-            PgConstraint pkey = null;
-            
-            for(PgTable table : schema.getTables()) {
-                PgConstraint constr = table.getConstraint(objectName);
-                
-                if(constr != null && constr.isPrimaryKeyConstraint()) {
-                    pkey = constr;
-                    break;
-                }
-            }
-            parser.expect("IS");
-            pkey.setComment(getComment(parser));
-            parser.expect(";");
-        } else {
+        if(index != null) {
             parser.expect("IS");
             index.setComment(getComment(parser));
             parser.expect(";");

@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -23,12 +22,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author fordfrog
  */
 public class PgConstraint extends PgStatementWithSearchPath {
-
-    /**
-     * Pattern for checking whether the constraint is PRIMARY KEY constraint.
-     */
-    private static final Pattern PATTERN_PRIMARY_KEY =
-            Pattern.compile(".*PRIMARY[\\s]+KEY.*", Pattern.CASE_INSENSITIVE);
 
     private String definition;
     private String tableName;
@@ -125,12 +118,6 @@ public class PgConstraint extends PgStatementWithSearchPath {
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
         return sb.length() > startLength;
-    }
-
-    /** оставлен для совместимости с парсером apgdiff
-     */
-    public boolean isPrimaryKeyConstraint() {
-        return PATTERN_PRIMARY_KEY.matcher(definition).matches();
     }
 
     public void setTableName(final String tableName) {

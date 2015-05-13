@@ -18,6 +18,8 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  */
 public final class JdbcQueries {
     
+    private final static String RES_ENCODING = ApgdiffConsts.UTF_8;
+    
 // SONAR-OFF
     public static String QUERY_TABLES_PER_SCHEMA;
     public static String QUERY_FUNCTIONS_PER_SCHEMA;
@@ -43,7 +45,7 @@ public final class JdbcQueries {
             try {
                 String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                                 JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                        Charset.forName(ApgdiffConsts.UTF_8));
+                        Charset.forName(RES_ENCODING));
                 f.set(null, query);
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,

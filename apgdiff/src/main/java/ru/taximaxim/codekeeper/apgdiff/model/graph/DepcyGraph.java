@@ -393,6 +393,7 @@ public class DepcyGraph {
                         if (refConstr.isPrimaryKey() 
                                 || refConstr.isUnique()) {
                             graph.addEdge(cons, refConstr);
+                            // TODO парсить колонки pkey/unique для проверки здесь  
                             // только к одному ключу или уникальному констрейнту
                             break;
                         }
