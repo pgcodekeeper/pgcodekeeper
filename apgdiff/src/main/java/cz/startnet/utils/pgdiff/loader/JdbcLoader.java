@@ -1114,6 +1114,11 @@ public class JdbcLoader implements PgCatalogStrings {
         i.setClusterIndex(res.getBoolean("isClustered"));
         
         i.setUnique(res.getBoolean("indisunique"));
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()){
+            i.setComment(ParserUtils.quoteString(comment));
+        }
         //setOwner(i, res.getLong(CLASS_RELOWNER));
         
         return i;
