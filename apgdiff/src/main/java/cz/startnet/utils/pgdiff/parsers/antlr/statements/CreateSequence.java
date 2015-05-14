@@ -23,18 +23,22 @@ public class CreateSequence extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()));
+        long inc = 0;
+        String maxValue = null;
+        String minValue = null;
         for (Sequence_bodyContext body : ctx.sequence_body()) {
             if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             }
             if (body.incr!=null) {
                 sequence.setIncrement(body.incr.getText());
+                inc = Long.parseLong(body.incr.getText());
             }
             if (body.maxval!=null) {
-                sequence.setMaxValue(body.maxval.getText());
+                maxValue = body.maxval.getText();
             }
             if (body.minval!=null) {
-                sequence.setMinValue(body.minval.getText());
+                minValue = body.minval.getText();
             }
             if (body.start_val!=null) {
                 sequence.setStartWith(body.start_val.getText());
@@ -46,6 +50,9 @@ public class CreateSequence extends ParserAbstract {
                 sequence.setOwnedBy(body.col_name.getText());
             }
         }
+        sequence.setMaxValue(getMaxValue(inc, maxValue));
+        sequence.setMinValue(getMinValue(inc, minValue));
+        
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "SEQUENCE", name);
             return null;

@@ -405,7 +405,6 @@ class PgDB3 extends PgDatabaseObjectCreator {
     seq.setStartWith("1");
     seq.setIncrement("1");
     seq.setMaxValue("1000000000");
-    seq.setMinValue("1");
     seq.setCache("1");
     schema.addSequence(seq);
     

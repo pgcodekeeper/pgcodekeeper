@@ -1297,16 +1297,15 @@ public class JdbcLoader implements PgCatalogStrings {
         String sequenceName = res.getString(CLASS_RELNAME);
         PgSequence s = new PgSequence(sequenceName, "");
         s.setCycle(res.getBoolean("cycle_option"));
-        s.setIncrement(res.getString("increment"));
+        String increment = res.getString("increment");
+        s.setIncrement(increment);
         
         // The data type of the sequence: In PostgreSQL, this is currently always bigint
-        String maxValue = res.getString("maximum_value");
-        s.setMaxValue(maxValue.equals(String.valueOf(Long.MAX_VALUE)) ? null : maxValue);
-        String minValue = res.getString("minimum_value"); 
-        s.setMinValue(minValue.equals("1") ? null : minValue);
+        long inc = Long.parseLong(increment);
         
+        s.setMaxValue(ParserAbstract.getMaxValue(inc, res.getString("maximum_value")));
+        s.setMinValue(ParserAbstract.getMinValue(inc, res.getString("minimum_value")));
         s.setStartWith(res.getString("start_value"));
-
         s.setCache(String.valueOf(1));
         
         Integer referencedColumn = res.getInt("referenced_column");
