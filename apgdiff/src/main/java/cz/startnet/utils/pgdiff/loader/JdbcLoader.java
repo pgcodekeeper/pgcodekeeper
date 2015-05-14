@@ -1101,6 +1101,11 @@ public class JdbcLoader implements PgCatalogStrings {
         functionName = functionName.concat(")");
         
         t.setFunction(functionName, funcName+ "()");
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()){
+            t.setComment(ParserUtils.quoteString(comment));
+        }
         return t;
     }
     

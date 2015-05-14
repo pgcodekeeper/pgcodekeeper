@@ -5,9 +5,12 @@ SELECT ccc.relname,
        tgfoid,
        tgtype,
        tgrelid::regclass::text,
-       tgargs
+       tgargs,
+       d.description as comment
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid
+LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid
+    AND d.objsubid = 0
 JOIN pg_catalog.pg_proc p ON p.oid = tgfoid
 JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid
 WHERE ccc.relkind = 'r'
