@@ -199,9 +199,9 @@ public class PgDumpLoaderTest {
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 
                     " is not equal to exported'n'loaded.", dbPredefined, dbAfterExport);
-            
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
+            
         }finally{
             if (exportDir != null){
                 deleteRecursive(exportDir.toFile());
@@ -885,7 +885,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
 
-    d.setComment("'comments database'");
+//    d.setComment("'comments database'");
     schema.setComment("'public schema'");
     
     PgFunction func = new PgFunction("test_fnc", "");
@@ -939,7 +939,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     constraint.setDefinition("PRIMARY KEY (id)");
     table.addConstraint(constraint);
     
-    constraint.setComment("'primary key'");
+//    constraint.setComment("'primary key'");
     
     table.setOwner("fordfrog");
     

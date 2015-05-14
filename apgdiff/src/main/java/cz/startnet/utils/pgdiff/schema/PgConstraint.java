@@ -7,7 +7,12 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -27,7 +32,28 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private String tableName;
     private boolean unique;
     private boolean isPrimaryKey;
+    private final List<GenericColumn> columns = new ArrayList<>();
 
+    /**
+     * Список колонок на которых установлен PrimaryKey или Unique
+     */
+    public List<GenericColumn> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
+    
+    /**
+     * Добавить колонку к списку колонок PrimaryKey или Unique 
+     */
+    public boolean addColumn(GenericColumn genericColumn) {
+        return columns.add(genericColumn);    
+    }
+    
+    public void addAllColumns(Collection<GenericColumn> cols) {
+        for (GenericColumn col : cols) {
+            columns.add(col);
+        }
+    }
+    
     public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
@@ -171,6 +197,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setComment(getComment());
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
+        constraintDst.addAllColumns(columns);
         return constraintDst;
     }
     

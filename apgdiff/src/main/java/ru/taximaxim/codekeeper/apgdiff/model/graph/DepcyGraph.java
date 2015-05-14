@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -365,7 +366,8 @@ public class DepcyGraph {
             graph.addEdge(cons, table);
             
             if (cons instanceof PgForeignKey){
-                for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
+                Collection<GenericColumn> refs = ((PgForeignKey) cons).getRefs();
+                for (GenericColumn ref : refs){
                     if (SYS_COLUMNS.contains(ref.column)){
                         continue;
                     }
@@ -392,8 +394,9 @@ public class DepcyGraph {
                     for (PgConstraint refConstr : refTable.getConstraints()) {
                         if (refConstr.isPrimaryKey() 
                                 || refConstr.isUnique()) {
-                            graph.addEdge(cons, refConstr);
-                            // TODO парсить колонки pkey/unique для проверки здесь  
+                            if (refConstr.getColumns().equals(refs)) {
+                                graph.addEdge(cons, refConstr);
+                            }
                             // только к одному ключу или уникальному констрейнту
                             break;
                         }
