@@ -140,16 +140,19 @@ public class CommitDialog extends TrayDialog {
     public DiffTableViewer getBottomTableViewer(){
         return dtvBottom;
     }
-
+    
     @Override
-    protected void cancelPressed() {
-        // Если пользователь нажал отмену - снять выделения с зависимых элементов
-        if (depcyElementsSet != null) {
-            for (TreeElement el : depcyElementsSet) {
-                el.setSelected(false);
+    public int open() {
+        int res = super.open();
+        if (res == CANCEL) {
+            // Если пользователь нажал отмену - снять выделения с зависимых элементов
+            if (depcyElementsSet != null) {
+                for (TreeElement el : depcyElementsSet) {
+                    el.setSelected(false);
+                }
             }
         }
-        super.cancelPressed();
+        return res;
     }
     
     /**

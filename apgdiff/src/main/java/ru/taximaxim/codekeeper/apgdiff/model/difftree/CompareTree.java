@@ -9,8 +9,9 @@ import java.util.Comparator;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public class CompareTree implements Comparator<TreeElement> {
+    
     private static final int LESS = -1;
-    private static final int BIGGER = 1;
+    private static final int MORE = 1;
 
     public CompareTree() {
     }
@@ -31,14 +32,14 @@ public class CompareTree implements Comparator<TreeElement> {
                 return LESS;
             }
             if (s2 == LEFT && s1 != LEFT) {
-                return BIGGER;
+                return MORE;
             }
             if (res == 0) {
                 if (s1 == RIGHT) {
                     return LESS;
                 }
                 if (s1 == BOTH) {
-                    return BIGGER;
+                    return MORE;
                 }
             } else {
                 return res;
@@ -49,10 +50,6 @@ public class CompareTree implements Comparator<TreeElement> {
 
     /**
      * Сравнивает и возвращает порядок в списке типов объектов так как нужно
-     * 
-     * @param o1
-     * @param o2
-     * @return
      */
     private int compareTypes(TreeElement o1, TreeElement o2) {
         return o1.getType().ordinal() - o2.getType().ordinal();

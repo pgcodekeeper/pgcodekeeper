@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,14 +12,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 
 /**
  * Stores database information.
@@ -248,19 +244,18 @@ public class PgDatabase extends PgStatement {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        PgDatabase newDB;
+        PgDatabase newDb;
         if (newCondition instanceof PgDatabase) {
-            newDB = (PgDatabase) newCondition;
+            newDb = (PgDatabase) newCondition;
         } else {
             return false;
         }
-        PgDatabase oldDB = this;
-        PgDiffScript script = new PgDiffScript();
-        PgDiff.diffComments(oldDB, newDB, script);
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        PgDatabase oldDb = this;
+
+        if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+            newDb.appendCommentSql(sb);
+        }
+        
         return sb.length() > 0;
     }
     

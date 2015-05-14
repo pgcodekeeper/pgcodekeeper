@@ -31,25 +31,19 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class Differ implements IRunnableWithProgress {
     
     private static final int INITIAL_BUFFER_CAPACITY = 1024;
-
-    private boolean finished;
+    
+    private final PgDatabase sourceDbFull;
+    private final PgDatabase targetDbFull;
+    private final TreeElement root;
     private final boolean needTwoWay;
+    private final String timezone;
+    
+    private boolean finished;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
-    private String timezone;
-    
-    private PgDatabase sourceDbFull;
-    private PgDatabase targetDbFull;
     
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
     private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
-
-    private TreeElement root;
-
-    public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
-       this.sourceDbFull = sourceDbFull;
-       this.targetDbFull = targetDbFull;
-    }
     
     public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
@@ -74,7 +68,10 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     } 
 
-    public Differ(TreeElement root, boolean needTwoWay, String timezone) {
+    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
+            TreeElement root, boolean needTwoWay, String timezone) {
+        this.sourceDbFull = sourceDbFull;
+        this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
@@ -139,8 +136,8 @@ public class Differ implements IRunnableWithProgress {
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), 
                     root,
-                    sourceDbFull, targetDbFull, additionalDepciesSource,
-                    additionalDepciesTarget);
+                    sourceDbFull, targetDbFull,
+                    additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
             diffDirect = diffOut.toString(ApgdiffConsts.UTF_8).trim();
 
@@ -153,8 +150,8 @@ public class Differ implements IRunnableWithProgress {
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
                         DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone),
                         root.getRevertedCopy(),
-                        targetDbFull, sourceDbFull, additionalDepciesTarget,
-                        additionalDepciesSource);
+                        targetDbFull, sourceDbFull,
+                        additionalDepciesTarget, additionalDepciesSource);
                 writer.flush();
                 diffReverse = diffOut.toString(ApgdiffConsts.UTF_8).trim();
             }

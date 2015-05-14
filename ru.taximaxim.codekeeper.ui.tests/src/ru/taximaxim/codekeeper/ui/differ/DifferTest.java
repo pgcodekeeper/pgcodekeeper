@@ -103,9 +103,8 @@ public class DifferTest {
         // filtered input
         differData.setUserSelection(root);
 
-        final Differ differ = new Differ(root, true, ApgdiffConsts.UTC);
-        differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
-        
+        Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
+                root, true, ApgdiffConsts.UTC);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
         

@@ -127,23 +127,14 @@ public final class PgDiff {
     public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
-        root.setAllchecked();
+        root.setAllChecked();
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 root, oldDbFull, newDbFull, null, null);
     }
     
     /**
-     * Делает то же что и метод выше, однако принимает TreeElement - как
+     * Делает то же, что и метод выше, однако принимает TreeElement - как
      * элементы нужные для наката
-     * 
-     * @param writer
-     * @param arguments
-     * @param selected
-     * @param oldDbFull
-     * @param newDbFull
-     * @param additionalDepciesSource
-     * @param additionalDepciesTarget
-     * @return
      */
     public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
             PgDiffArguments arguments, TreeElement root,
@@ -151,14 +142,6 @@ public final class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         PgDiffScript script = new PgDiffScript();
-        
-        List<TreeElement> selected = new ArrayList<TreeElement>();
-        TreeElement.getSelected(root, selected);
-        //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
-        selected.addAll(addColumns(oldDbFull, newDbFull,
-                selected));
-        // ---КОСТЫЛЬ-----------
-        Collections.sort(selected, new CompareTree());
         
         if (arguments.getTimeZone() != null) {
             script.addStatement(MessageFormat.format(
@@ -172,9 +155,8 @@ public final class PgDiff {
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
-        depRes = null;
         
-        // temp solution
+        depRes = null;
         if (oldDbFull != null && newDbFull != null) {
             try {
                 depRes = new DepcyResolver(oldDbFull, newDbFull);
@@ -192,6 +174,14 @@ public final class PgDiff {
             }
         }
 
+        List<TreeElement> selected = new ArrayList<>(2 * root.countDescendants());
+        TreeElement.getSelected(root, selected);
+        
+        //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
+        selected.addAll(addColumnsAsElements(oldDbFull, newDbFull, selected));
+        // ---КОСТЫЛЬ-----------
+        
+        Collections.sort(selected, new CompareTree());
         for (TreeElement st : selected) {
             switch (st.getSide()) {
             case LEFT:
@@ -222,13 +212,10 @@ public final class PgDiff {
     }
 
     /**
-     * После реализации колонко как подъелементов таблицы выпилить метод!
-     * @param oldDbFull
-     * @param newDbFull
-     * @param selected
-     * @return
+     * После реализации колонок как подэлементов таблицы выпилить метод!
      */
-    private static List<TreeElement> addColumns(PgDatabase oldDbFull,
+    @Deprecated
+    private static List<TreeElement> addColumnsAsElements(PgDatabase oldDbFull,
             PgDatabase newDbFull, List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
@@ -285,6 +272,7 @@ public final class PgDiff {
         }
     }
 
+    @Deprecated
     public static void diffComments(PgStatement oldStatement, PgStatement newStatement,
             PgDiffScript script) {
         String oldComment = oldStatement == null ? null : oldStatement.getComment();

@@ -183,7 +183,7 @@ public class PgDiffDepciesTest {
             newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
         }
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
-        tree.setAllchecked();
+        tree.setAllChecked();
         PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 tree, oldDbFull, newDbFull, null,
                 null);

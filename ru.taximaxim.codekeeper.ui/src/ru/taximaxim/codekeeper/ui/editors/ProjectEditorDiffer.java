@@ -486,9 +486,8 @@ class DiffPage extends DiffPresentationPane {
         }
         final TreeElement filtered = treeDiffer.getDiffTree();
 
-        final Differ differ = new Differ(filtered,
-                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-        differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
+        final Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
+                filtered, false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
         
