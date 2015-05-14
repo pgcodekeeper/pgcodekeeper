@@ -18,14 +18,8 @@ public class CreateExtension extends ParserAbstract {
     public PgStatement getObject() {
         PgExtension ext = new PgExtension(getName(ctx.name), 
                 getFullCtxText(ctx.getParent()));
-        if (ctx.old_version!= null) {
-            ext.setOldVersion(ctx.old_version.getText());
-        }
         if (ctx.schema_with_name() != null) {
             ext.setSchema(getName(ctx.schema_with_name().name));
-        }
-        if (ctx.version!= null) {
-            ext.setVersion(ctx.version.getText());
         }
         db.addExtension(ext);
         return ext;

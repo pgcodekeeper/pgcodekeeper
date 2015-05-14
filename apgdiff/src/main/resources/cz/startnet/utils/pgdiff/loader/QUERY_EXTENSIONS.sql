@@ -1,5 +1,4 @@
 SELECT e.extname,
-    e.extowner,
     (SELECT n.nspname
      FROM pg_catalog.pg_namespace n
      WHERE e.extnamespace = n.oid) namespace,

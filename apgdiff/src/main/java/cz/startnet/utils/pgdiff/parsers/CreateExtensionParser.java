@@ -32,14 +32,6 @@ public final class CreateExtensionParser {
         if(parser.expectOptional("SCHEMA")) {
             ext.setSchema(ParserUtils.getObjectName(parser.parseIdentifier()));
         }
-        
-        if(parser.expectOptional("VERSION")) {
-            ext.setVersion(parser.parseString());
-        }
-        
-        if(parser.expectOptional("FROM")) {
-            ext.setOldVersion(parser.parseString());
-        }
     }
     
     private CreateExtensionParser() {

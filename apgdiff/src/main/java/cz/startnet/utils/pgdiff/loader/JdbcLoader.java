@@ -680,8 +680,6 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
-//        e.setVersion(res.getString("extversion"));
-        setOwner(e, res.getLong("extowner"));
         e.setSchema(res.getString("namespace"));
         
         String comment = res.getString("description");

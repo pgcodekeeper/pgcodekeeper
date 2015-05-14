@@ -19,10 +19,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 public class PgExtension extends PgStatement {
 
     private String schema;
-    private String version;
-    @Deprecated
-    // TODO remove oldVersion, not create-able field, old field
-    private String oldVersion;
 
     @Override
     public DbObjType getStatementType() {
@@ -42,24 +38,6 @@ public class PgExtension extends PgStatement {
         resetHash();
     }
     
-    public String getVersion() {
-        return version;
-    }
-    
-    public void setVersion(final String version) {
-        this.version = version;
-        resetHash();
-    }
-    
-    public String getOldVersion() {
-        return oldVersion;
-    }
-    
-    public void setOldVersion(final String oldVersion) {
-        this.oldVersion = oldVersion;
-        resetHash();
-    }
-    
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
@@ -69,16 +47,6 @@ public class PgExtension extends PgStatement {
         if(getSchema() != null && !getSchema().isEmpty()) {
             sbSQL.append(" SCHEMA ");
             sbSQL.append(getSchema());
-        }
-        
-        if(getVersion() != null && !getVersion().isEmpty()) {
-            sbSQL.append(" VERSION ");
-            sbSQL.append(getVersion());
-        }
-        
-        if(getOldVersion() != null && !getOldVersion().isEmpty()) {
-            sbSQL.append(" FROM ");
-            sbSQL.append(getOldVersion());
         }
         
         sbSQL.append(';');
@@ -134,8 +102,6 @@ public class PgExtension extends PgStatement {
             PgExtension ext = (PgExtension) obj;
             eq = Objects.equals(name, ext.getName()) 
                     && Objects.equals(schema, ext.getSchema())
-                    && Objects.equals(version, ext.getVersion())
-                    && Objects.equals(oldVersion, ext.getOldVersion())
                     && Objects.equals(comment, ext.getComment());
         }
         
@@ -147,9 +113,7 @@ public class PgExtension extends PgStatement {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((oldVersion == null) ? 0 : oldVersion.hashCode());
         result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-        result = prime * result + ((version == null) ? 0 : version.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
@@ -158,8 +122,6 @@ public class PgExtension extends PgStatement {
     public PgExtension shallowCopy() {
         PgExtension extDst = new PgExtension(getName(), getRawStatement());
         extDst.setSchema(getSchema());
-        extDst.setVersion(getVersion());
-        extDst.setOldVersion(getOldVersion());
         extDst.setComment(getComment());
         return extDst;
     }
