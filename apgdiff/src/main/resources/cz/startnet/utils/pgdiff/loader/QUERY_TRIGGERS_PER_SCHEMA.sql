@@ -6,6 +6,7 @@ SELECT ccc.relname,
        tgtype,
        tgrelid::regclass::text,
        tgargs,
+       pg_get_triggerdef(t.oid,false) AS definition,
        d.description as comment
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid

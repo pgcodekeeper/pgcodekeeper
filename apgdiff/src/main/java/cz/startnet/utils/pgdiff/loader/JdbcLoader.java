@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -1099,6 +1101,8 @@ public class JdbcLoader implements PgCatalogStrings {
         functionName = functionName.concat(")");
         
         t.setFunction(functionName, funcName+ "()");
+        
+        t.setWhen(parseWhen(res.getString("definition")));
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()){
@@ -1107,6 +1111,23 @@ public class JdbcLoader implements PgCatalogStrings {
         return t;
     }
     
+    private String parseWhen(String string) {
+        CustomErrorListener errListener = new CustomErrorListener();
+        
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(string));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errListener);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errListener);
+        
+        WhenListener whenListener = new WhenListener();
+        ParseTreeWalker.DEFAULT.walk(whenListener, parser.create_trigger_statement());
+        return whenListener.getWhen();
+    }
+
     private PgIndex getIndex(ResultSet res, String tableName) throws SQLException {
         String indexName = res.getString(CLASS_RELNAME);
         PgIndex i = new PgIndex(indexName, "");

@@ -403,8 +403,12 @@ create_trigger_statement
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
-    (WHEN (when_expr=value_expression))?
+    when_trigger?
     EXECUTE PROCEDURE func_name=function_parameters
+    ;
+    
+when_trigger
+    :WHEN when_expr=value_expression
     ;
     
 rule_common
