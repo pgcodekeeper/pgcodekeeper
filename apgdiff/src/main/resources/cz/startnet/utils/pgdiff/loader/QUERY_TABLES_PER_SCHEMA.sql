@@ -28,6 +28,7 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_notnull,
        subselectColumns.col_collation,
        subselectColumns.col_statictics,
+       subselectColumns.col_local,
        subselectColumns.col_typcollation,
        subselectColumns.col_collationname,
        subselectColumns.col_collationnspname,
@@ -49,6 +50,7 @@ FROM
             array_agg(columnsData.atttypmod) AS col_typemod,
             array_agg(columnsData.attnotnull) AS col_notnull,
             array_agg(columnsData.attstattarget) AS col_statictics,
+            array_agg(columnsData.attislocal) AS col_local,
             array_agg(columnsData.col_seq) AS seqs,
             array_agg(columnsData.attacl) AS col_acl,
             columnsData.reloptions,
@@ -69,6 +71,7 @@ FROM
               attr.atttypmod,
               attr.attnotnull,
               attr.attstattarget,
+              attr.attislocal,
               (SELECT oid::regclass::text
                FROM pg_catalog.pg_class c2
                WHERE c2.oid = depseq.refobjid

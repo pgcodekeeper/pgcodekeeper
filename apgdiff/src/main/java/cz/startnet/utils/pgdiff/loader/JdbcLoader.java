@@ -886,7 +886,7 @@ public class JdbcLoader implements PgCatalogStrings {
         String tableName = res.getString(CLASS_RELNAME);
         String tableOwner = getRoleNameByOid(res.getLong(CLASS_RELOWNER));
         
-        List<PgColumn> columns = new ArrayList<>();
+        PgTable t = new PgTable(tableName, "");
         
         Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
         String[] colNames = (String[])res.getArray("col_names").getArray();
@@ -896,16 +896,21 @@ public class JdbcLoader implements PgCatalogStrings {
         Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
         Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
         Integer[] colStatictics = (Integer[])res.getArray("col_statictics").getArray();
+        Boolean[] colIsLocal = (Boolean[])res.getArray("col_local").getArray();
         Long[] colCollation = (Long[])res.getArray("col_collation").getArray();
         Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
+        String[] sequences = (String[])res.getArray("seqs").getArray();
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
                 // system columns
                 continue;
             }
-            
+            // пропускать не локальные колонки (Inherited)
+            if (!colIsLocal[i]) {
+                continue;
+            }
             String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
             
@@ -981,10 +986,12 @@ public class JdbcLoader implements PgCatalogStrings {
             if (comment != null && !comment.isEmpty()){
                 column.setComment(ParserUtils.quoteString(comment));                
             }
-            columns.add(column);
+            t.addColumn(column);
+            // SEQUENCES
+            t.addSequence(sequences[i]);
         }
         
-        PgTable t = new PgTable(tableName, "");
+        
         // INHERITS
         Array arrInherits = res.getArray("inherited");
         String [] inherits = null;
@@ -993,17 +1000,6 @@ public class JdbcLoader implements PgCatalogStrings {
             for (String inherited : inherits){
                 t.addInherits(
                         ParserUtils.getSecondObjectName(inherited), ParserUtils.getObjectName(inherited));
-            }
-        }else{
-            for(PgColumn column : columns){
-                t.addColumn(column);
-            }
-            
-            // SEQUENCES
-            for (String seqName : (String[])res.getArray("seqs").getArray()){
-                if (seqName != null && !seqName.isEmpty()){
-                    t.addSequence(seqName);
-                }
             }
         }
 
