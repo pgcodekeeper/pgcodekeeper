@@ -12,16 +12,19 @@ SELECT relname,
        d.description AS comment,
        subselect.column_names,
        subselect.column_comments,
-       subselect.column_defaults
+       subselect.column_defaults,
+       subselect.column_acl
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
             array_agg(columnsData.attname) AS column_names,
             array_agg(columnsData.description) AS column_comments,
-            array_agg(columnsData.adsrc) AS column_defaults
+            array_agg(columnsData.adsrc) AS column_defaults,
+            array_agg(columnsData.attacl) AS column_acl
      FROM
          (SELECT attrelid,
                  attr.attname,
+                 attr.attacl::text,
                  des.description,
                  def.adsrc
           FROM pg_catalog.pg_attribute attr

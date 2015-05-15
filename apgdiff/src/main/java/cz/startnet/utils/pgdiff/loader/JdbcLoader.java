@@ -823,12 +823,16 @@ public class JdbcLoader implements PgCatalogStrings {
             v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
         }
         
+        // OWNER
+        setOwner(v, res.getLong(CLASS_RELOWNER));
+        
         // Query columns default values and comments
         Array colNamesArr = res.getArray("column_names");
         if (colNamesArr != null){
             String[] colNames = (String[]) colNamesArr.getArray();
             String[] colComments = (String[]) res.getArray("column_comments").getArray();
             String[] colDefaults = (String[]) res.getArray("column_defaults").getArray();
+            String[] colACLs = (String[]) res.getArray("column_acl").getArray();
             
             for (int i = 0; i < colNames.length; i++){
                 String colName = colNames[i];
@@ -839,12 +843,14 @@ public class JdbcLoader implements PgCatalogStrings {
                 String colComment = colComments[i];
                 if (colComment != null){
                     v.addColumnComment(colName, ParserUtils.quoteString(colComment));
-                }    
+                }
+                String colAcl = colACLs[i];
+                // Привилегии на столбцы view записываются в саму view
+                if (colAcl != null) {
+                    setPrivileges(v, viewName, colAcl, v.getOwner(), colName);
+                }
             }
         }
-        
-        // OWNER
-        setOwner(v, res.getLong(CLASS_RELOWNER));
         
         // Query view privileges
         setPrivileges(v, viewName, res.getString("relacl"), v.getOwner(), null);
@@ -1385,7 +1391,7 @@ public class JdbcLoader implements PgCatalogStrings {
             order = "X";
         }else if (st instanceof PgTable || st instanceof PgView || st instanceof PgColumn){
             stType = "TABLE";
-            if (st instanceof PgColumn) {
+            if (columnName != null) {
                 order = "raxw";
             } else {
                 order = "raxdtDw";
