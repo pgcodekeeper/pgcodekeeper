@@ -313,7 +313,7 @@ public abstract class ParserAbstract {
         constr.setPrimaryKey(ctx.PRIMARY() != null);
         for (Schema_qualified_nameContext name : ctx.column_references()
                 .names_references().name) {
-            constr.addColumn(new GenericColumn(scmName, tblName, name.getText()));
+            constr.addColumn(new GenericColumn(scmName, tblName, getName(name)));
         }
     }
     
