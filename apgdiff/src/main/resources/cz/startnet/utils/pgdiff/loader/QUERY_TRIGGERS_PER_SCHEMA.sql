@@ -6,6 +6,8 @@ SELECT ccc.relname,
        tgtype,
        tgrelid::regclass::text,
        tgargs,
+       tgrelid as table_oid,
+       tgattr::int2[] as col_numbers,
        pg_get_triggerdef(t.oid,false) AS definition,
        d.description as comment
 FROM pg_catalog.pg_class ccc

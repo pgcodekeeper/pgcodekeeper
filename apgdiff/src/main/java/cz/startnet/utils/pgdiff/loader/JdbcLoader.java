@@ -1098,6 +1098,11 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             functionName = functionName.concat('\'' + sbArgs.toString() + '\'');
         }
+        for (String col_name : getColumnNames(
+                (Number[]) res.getArray("col_numbers").getArray(),
+                res.getLong("table_oid"))) {
+            t.addUpdateColumn(col_name);
+        }
         functionName = functionName.concat(")");
         
         t.setFunction(functionName, funcName+ "()");
@@ -1471,7 +1476,7 @@ public class JdbcLoader implements PgCatalogStrings {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private List<String> getColumnNames(Integer[] cols, Long tableOid) throws SQLException{
+    private List<String> getColumnNames(Number[] cols, Long tableOid) throws SQLException{
         Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
         // if requested table is in different schema
         if (tableColumns == null){
@@ -1487,7 +1492,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         List<String> result = new ArrayList<>();
-        for(Integer n : cols){
+        for(Number n : cols){
             result.add(tableColumns.get(n));
         }
         return result;

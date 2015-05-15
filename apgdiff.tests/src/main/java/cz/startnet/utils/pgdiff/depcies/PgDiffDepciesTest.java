@@ -71,6 +71,8 @@ public class PgDiffDepciesTest {
                 {"trigger_before_insert", "trigger_before_insert_usr_trig"},
                 // пользователь выбрал триггер и функцию
                 {"trigger_before_insert", "trigger_before_insert_usr_all"},
+                // изменяется тип колонки, пользователь выбирает таблицу
+                {"trig_upd_col","trig_upd_col__usr_tbl"},
                 // задача из редмайна по номеру, пользователь выбирает все объекты
                 {"err6049", "err6049"},
                 // удаляется исходная таблица, пользователь выбрал на удаление t1

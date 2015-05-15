@@ -155,7 +155,7 @@ public class DepcyGraph {
             for(PgTable table : schema.getTables()) {
                 createFkeyToReferenced(table);
                 createTableToSequences(table, schema);
-                createTriggersToFuncs(table, schema);
+                createTriggersToObjs(table, schema);
                 createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
                     createPgStatementToType(col.getType(), schema, col);
@@ -333,7 +333,12 @@ public class DepcyGraph {
         }
     }
 
-    private void createTriggersToFuncs(PgTable table, PgSchema schema) {
+    /**
+     * От триггера к функции, таблице, колонкам
+     * @param table
+     * @param schema
+     */
+    private void createTriggersToObjs(PgTable table, PgSchema schema) {
         for (PgTrigger trigger : table.getTriggers()) {
             graph.addVertex(trigger);
             graph.addEdge(trigger, table);
@@ -344,6 +349,12 @@ public class DepcyGraph {
             if (func != null) {
                 graph.addVertex(func);
                 graph.addEdge(trigger, func);
+            }
+            for (String col_name : trigger.getUpdateColumns()) {
+                PgColumn col = table.getColumn(col_name);
+                if (col != null) {
+                    graph.addEdge(trigger, col);
+                }
             }
         }
     }
