@@ -895,6 +895,7 @@ public class JdbcLoader implements PgCatalogStrings {
         String[] colComments = (String[])res.getArray("col_comments").getArray();
         Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
         Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
+        Integer[] colStatictics = (Integer[])res.getArray("col_statictics").getArray();
         Long[] colCollation = (Long[])res.getArray("col_collation").getArray();
         Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
@@ -967,6 +968,13 @@ public class JdbcLoader implements PgCatalogStrings {
             
             if (colNotNull[i]){
                 column.setNullValue(false);
+            }
+            
+            Integer statistics = colStatictics[i];
+            // if the attstattarget entry for this column is
+            // non-negative (i.e. it's not the default value)
+            if (statistics > -1){
+                column.setStatistics(statistics);
             }
             
             String comment = colComments[i];
