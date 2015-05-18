@@ -34,8 +34,8 @@ import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -89,13 +89,6 @@ public class JdbcLoader implements PgCatalogStrings {
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
     private Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
-    /*
-     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
-     * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
-     * and result of "SELECT typmodout(colTypeMod)" query.
-     * typmodout is type-defined function that converts (colTypeMod) into the value we need.
-     */
-    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<>();
     
     private Connection connection;
@@ -890,10 +883,9 @@ public class JdbcLoader implements PgCatalogStrings {
         
         Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
         String[] colNames = (String[])res.getArray("col_names").getArray();
-        Long[] colTypes = (Long[])res.getArray("col_types").getArray();
+        String[] colTypeName = (String[])res.getArray("col_type_name").getArray();
         String[] colDefaults = (String[])res.getArray("col_defaults").getArray();
         String[] colComments = (String[])res.getArray("col_comments").getArray();
-        Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
         Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
         Integer[] colStatictics = (Integer[])res.getArray("col_statictics").getArray();
         Boolean[] colIsLocal = (Boolean[])res.getArray("col_local").getArray();
@@ -913,50 +905,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
-            
-            JdbcType columnType = cachedTypeNamesByOid.get(colTypes[i]);
-             
-            // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
-            // at table creation time (for example, the maximum length of a varchar column). 
-            // It is passed to type-specific input functions and length coercion functions. 
-            // The value will generally be -1 for types that do not need atttypmod.
-            //
-            // if column type has it's "Type modifier output function" typmodout and
-            // column type has it's atttypmod set up (colTypeMod[i] != -1)
-            String typMod = "";
-            if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && 
-                    !columnType.getTypmodout().isEmpty()){
-                
-                // Map of those colTypeMod values that 've been already queried in
-                // form of "SELECT typmodout(colTypeMod)"
-                Map<Integer, String> typeAvailableModes = cachedTypesTypmodouts.get(colTypes[i]);
-                
-                // if it was queried already, just use cached value
-                if (typeAvailableModes != null && typeAvailableModes.containsKey(colTypeMod[i])){
-                    typMod = typeAvailableModes.get(colTypeMod[i]);
-                }
-                // else query "SELECT typmodout(colTypeMod)" and cache result for further use
-                else{
-                    StringBuilder query = new StringBuilder();
-                    query.append("SELECT ").append(columnType.getTypmodout());
-                    query.append("(").append(String.valueOf(colTypeMod[i])).append(")");
-                    try(Statement stmnt = connection.createStatement();
-                            ResultSet resTypMod = stmnt.executeQuery(query.toString())){
-                        if (resTypMod.next()){
-                            typMod = resTypMod.getString(1);
-                            // cache queried values 
-                            if (typeAvailableModes == null){
-                                typeAvailableModes = new HashMap<>();
-                                typeAvailableModes.put(colTypeMod[i], typMod);
-                                cachedTypesTypmodouts.put(colTypes[i], typeAvailableModes);
-                            }else{
-                                typeAvailableModes.put(colTypeMod[i], typMod);
-                            }
-                        }
-                    }
-                }
-            }
-            String columnTypeName = columnType.getFullName(schemaName, typMod);
+            String columnTypeName = colTypeName[i];
             
             // unbox
             long collation = colCollation[i];

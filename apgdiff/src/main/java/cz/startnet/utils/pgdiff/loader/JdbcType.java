@@ -89,15 +89,4 @@ public class JdbcType{
         String schemaQualName = getSchemaQualifiedName(targetSchemaName);
         return isArrayType ? schemaQualName + "[]" : schemaQualName;
     }
-    
-    /**
-     * Returns the name of this type. If the type's schema name 
-     * differs from targetSchemaName, the returned type name is schema-qualified.
-     * Appends typMod after the type name. If this type is of array type, 
-     * appends "[]" to the end.
-     */
-    public String getFullName(String targetSchemaName, String typMod) {
-        String schemaQualName = getSchemaQualifiedName(targetSchemaName);
-        return isArrayType ? schemaQualName + typMod + "[]" : schemaQualName + typMod;
-    }
 }
