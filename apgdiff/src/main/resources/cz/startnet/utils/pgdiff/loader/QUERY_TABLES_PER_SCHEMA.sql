@@ -35,6 +35,7 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname as table_space,
+       subselectColumns.relhasoids as has_oids,
        subselectInherits.inherited,
        subselectColumns.reloptions
 FROM
@@ -43,6 +44,7 @@ FROM
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
+            columnsData.relhasoids,
             array_agg(columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname) AS col_names,
             array_agg(columnsData.defaults) AS col_defaults,
@@ -65,6 +67,7 @@ FROM
               c.relacl AS aclArray,
               attr.attnum::integer,
               attr.attname,
+              c.relhasoids,
               pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
               comments.description,
               pg_catalog.format_type(attr.atttypid, attr.atttypmod) AS atttypname,
@@ -102,6 +105,7 @@ FROM
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,
+              columnsData.relhasoids,
               columnsData.spcname) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0

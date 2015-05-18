@@ -953,9 +953,9 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // STORAGE PARAMETERS
+        StringBuilder storageParameters = new StringBuilder();
         Array arr = res.getArray("reloptions");
         if (arr != null){
-            StringBuilder storageParameters = new StringBuilder();
             String[] options = (String[])arr.getArray();
             for(int i = 0; i < options.length; i++){
                 storageParameters.append(options[i]);
@@ -981,6 +981,13 @@ public class JdbcLoader implements PgCatalogStrings {
         if (tableSpace != null && !tableSpace.isEmpty()) {
             t.setTablespace(tableSpace);
         }
+        
+        if (res.getBoolean("has_oids")) {
+            t.setWith(storageParameters.length() > 0 ? (storageParameters
+                    .substring(0, storageParameters.length() - 1) + ", " + "OIDS=true)")
+                    : "OIDS=true");
+        }
+        
         
         // PRIVILEGES, OWNER
         setOwner(t, tableOwner);
