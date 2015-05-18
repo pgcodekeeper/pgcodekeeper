@@ -35,6 +35,7 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.seqs,
        subselectColumns.col_acl,
        comments.description AS table_comment,
+       subselectColumns.spcname as table_space,
        subselectInherits.inherited,
        subselectColumns.reloptions
 FROM
@@ -42,6 +43,7 @@ FROM
             columnsData.relname,
             columnsData.relowner,
             columnsData.aclArray,
+            columnsData.spcname,
             array_agg(columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname) AS col_names,
             array_agg(columnsData.atttypid) AS col_types,
@@ -80,6 +82,7 @@ FROM
               c.reloptions,
               attr.attcollation,
               t.typcollation,
+              tabsp.spcname,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
               (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
@@ -91,6 +94,7 @@ FROM
               AND comments.objsubid = attr.attnum
           LEFT JOIN pg_catalog.pg_depend depseq ON attrdef.oid = depseq.objid
               AND depseq.refobjid != c.oid
+          LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
           WHERE c.relnamespace = ?
               AND c.relkind = 'r'
@@ -100,7 +104,8 @@ FROM
               columnsData.relname,
               columnsData.relowner,
               columnsData.aclArray,
-              columnsData.reloptions) subselectColumns
+              columnsData.reloptions,
+              columnsData.spcname) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
 LEFT JOIN

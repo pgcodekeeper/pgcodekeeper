@@ -1027,6 +1027,12 @@ public class JdbcLoader implements PgCatalogStrings {
             t.setComment(ParserUtils.quoteString(comment));                
         }
         
+        // TableSpace
+        String tableSpace = res.getString("table_space");
+        if (tableSpace != null && !tableSpace.isEmpty()) {
+            t.setTablespace(tableSpace);
+        }
+        
         // PRIVILEGES, OWNER
         setOwner(t, tableOwner);
         setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner(), null);
