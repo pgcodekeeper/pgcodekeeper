@@ -1279,15 +1279,21 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         String definition = res.getString("prosrc").replace("\r", "");
-        String quote = getStringLiteralDollarQuote(definition);
-        body.append("\n    AS ").append(quote).append(definition).append(quote);
+        body.append("\n    AS ");
+        String probin = res.getString("probin");
+        if (probin != null && !probin.isEmpty()) {
+            body.append(ParserUtils.quoteString(probin)).append(", ")
+                    .append(ParserUtils.quoteString(definition));
+        } else {
+            String quote = getStringLiteralDollarQuote(definition);
+            body.append(quote).append(definition).append(quote);
+        }
         return body.toString();
     }
 
     /**
      * Function equivalent to appendStringLiteralDQ in dumputils.c
      * 
-     * TODO implement other quoting based on probin column data, as in pg_dump.c::dumpFunc
      * @param definition
      * @return
      */
