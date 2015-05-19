@@ -1239,9 +1239,6 @@ public class JdbcLoader implements PgCatalogStrings {
             case "s":   body.append(" STABLE");
                         break;
         }
-        if (res.getBoolean("proleakproof")){
-            body.append(" LEAKPROOF");
-        }
         
         // CALLED ON NULL INPUT is default
         if (res.getBoolean("proisstrict")){
@@ -1251,6 +1248,10 @@ public class JdbcLoader implements PgCatalogStrings {
         // SECURITY INVOKER is default
         if (res.getBoolean("prosecdef")){
             body.append(" SECURITY DEFINER");
+        }
+        
+        if (res.getBoolean("proleakproof")){
+            body.append(" LEAKPROOF");
         }
         
         float cost = res.getFloat("procost");
