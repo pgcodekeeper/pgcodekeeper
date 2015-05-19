@@ -22,7 +22,7 @@ public final class PgDiffUtils {
 
     /**
      * Array of reserved keywords. Non-reserved keywords are excluded. Source
-     * http://www.postgresql.org/docs/9.0/static/sql-keywords-appendix.html.
+     * http://www.postgresql.org/docs/9.0/static/sql-keywords-appendix.html
      */
     // TODO unreserved keywords need not to be quoted, see dumputils.c, fmtId(const char*)
     private static final String[] KEYWORDS = {
@@ -384,7 +384,7 @@ public final class PgDiffUtils {
         "SPACE",
         "SPECIFIC",
         "SPECIFICTYPE",
-        "SQL",
+//        "SQL",
         "SQLCODE",
         "SQLERROR",
         "SQLEXCEPTION",

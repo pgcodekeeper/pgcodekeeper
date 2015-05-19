@@ -1226,7 +1226,7 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder body = new StringBuilder();
         
         String lanName = res.getString("lang_name");
-        body.append("LANGUAGE ").append(lanName);
+        body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
         
         if (res.getBoolean("proiswindow")){
             body.append(" WINDOW");
