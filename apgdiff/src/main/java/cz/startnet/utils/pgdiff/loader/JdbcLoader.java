@@ -1275,7 +1275,15 @@ public class JdbcLoader implements PgCatalogStrings {
         Array configParams = res.getArray("proconfig");
         if (configParams != null){
             for(String param : (String[]) configParams.getArray()){
-                body.append("\n    SET ").append(param.replaceFirst("=", " TO "));
+                String[] params = param.split("=");
+                String par = params[0];
+                String val = params[1];
+                if (!par.equals("DateStyle") && !par.equals("search_path")) {
+                    par = PgDiffUtils.getQuotedName(par);
+                    val = ParserUtils.quoteString(val);
+                }
+                body.append("\n    SET ").append(par).append(" TO ")
+                        .append(val);
             }
         }
         
