@@ -1225,7 +1225,8 @@ public class JdbcLoader implements PgCatalogStrings {
     private String getFunctionBody(ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
         
-        body.append("LANGUAGE ").append(res.getString("lang_name"));
+        String lanName = res.getString("lang_name");
+        body.append("LANGUAGE ").append(lanName);
         
         if (res.getBoolean("proiswindow")){
             body.append(" WINDOW");
@@ -1253,8 +1254,16 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         float cost = res.getFloat("procost");
-        if (cost != DEFAULT_PROCOST){
-            body.append(" COST ").append((int)cost);
+        if (lanName.equals("internal") || lanName.equals("c")) {
+            /* default cost is 1 */
+            if (cost != 1) {
+                body.append(" COST ").append((int)cost);
+            }
+        } else {
+            /* default cost is 100 */
+            if (cost != DEFAULT_PROCOST){
+                body.append(" COST ").append((int)cost);
+            }
         }
         
         float rows = res.getFloat("prorows");
