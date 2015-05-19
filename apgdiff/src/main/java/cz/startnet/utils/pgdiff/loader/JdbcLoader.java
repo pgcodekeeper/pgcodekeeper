@@ -1279,14 +1279,23 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         String definition = res.getString("prosrc").replace("\r", "");
-        body.append("\n    AS ");
+        String quote = getStringLiteralDollarQuote(definition);
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
-            body.append(ParserUtils.quoteString(probin)).append(", ")
-                    .append(ParserUtils.quoteString(definition));
+            body.append("\n    AS ").append(ParserUtils.quoteString(probin));
+            if (!definition.equals("-")) {
+                body.append(", ");
+                if (!definition.contains("\'") && !definition.contains("\\")) {
+                    body.append(ParserUtils.quoteString(definition));
+                } else {
+                    body.append(quote).append(definition).append(quote);
+                }
+            }
         } else {
-            String quote = getStringLiteralDollarQuote(definition);
-            body.append(quote).append(definition).append(quote);
+            if (!definition.equals("-")) {
+                body.append("\n    AS ").append(quote).append(definition)
+                        .append(quote);
+            }
         }
         return body.toString();
     }
