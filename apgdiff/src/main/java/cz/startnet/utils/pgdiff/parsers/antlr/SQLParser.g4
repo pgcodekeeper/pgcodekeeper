@@ -220,7 +220,7 @@ function_actions_common
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
       | COST execution_cost=NUMBER
       | ROWS result_rows=NUMBER
-      | set_statement
+      | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
     ;
 
 alter_default_privileges
