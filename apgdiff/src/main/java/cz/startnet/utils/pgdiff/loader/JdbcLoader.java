@@ -956,18 +956,18 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder storageParameters = new StringBuilder();
         Array arr = res.getArray("reloptions");
         if (arr != null){
-            String[] options = (String[])arr.getArray();
-            for(int i = 0; i < options.length; i++){
-                storageParameters.append(options[i]);
-                
-                if (i < options.length - 1){
-                    storageParameters.append(", ");
-                }
-            }
-            if (storageParameters.length() > 0){
-                storageParameters.insert(0, "(").append(")");
-                t.setWith(storageParameters.toString());
-            }
+            fillStorageParams(storageParameters, arr);
+        }
+        
+        arr = res.getArray("toast_reloptions");
+        if (arr != null){
+            fillStorageParams(storageParameters, arr);
+        }
+        
+        if (storageParameters.length() > 0) {
+            storageParameters.setLength(storageParameters.length() - 2);
+            storageParameters.insert(0, "(").append(")");
+            t.setWith(storageParameters.toString());
         }
         
         // Table COMMENTS
@@ -1003,6 +1003,14 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         return t;
+    }
+
+    private void fillStorageParams(StringBuilder storageParameters,
+            Array arr) throws SQLException {
+        String[] options = (String[])arr.getArray();
+        for(int i = 0; i < options.length; i++){
+            storageParameters.append(options[i]).append(", ");
+        }
     }
 
     /**

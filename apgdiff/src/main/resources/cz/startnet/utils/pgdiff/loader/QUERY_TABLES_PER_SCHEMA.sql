@@ -37,7 +37,8 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.spcname as table_space,
        subselectColumns.relhasoids as has_oids,
        subselectInherits.inherited,
-       subselectColumns.reloptions
+       subselectColumns.reloptions,
+       subselectColumns.toast_reloptions
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
@@ -56,6 +57,7 @@ FROM
             array_agg(columnsData.col_seq) AS seqs,
             array_agg(columnsData.attacl) AS col_acl,
             columnsData.reloptions,
+            columnsData.toast_reloptions,
             array_agg(columnsData.attcollation) AS col_collation,
             array_agg(columnsData.typcollation) AS col_typcollation,
             array_agg(columnsData.attcollationname) AS col_collationname,
@@ -80,6 +82,7 @@ FROM
                    AND c2.relkind = 'S') col_seq,
               attr.attacl::text,
               c.reloptions,
+              array(SELECT 'toast.' || x FROM unnest(tc.reloptions) x) AS toast_reloptions,
               attr.attcollation,
               t.typcollation,
               tabsp.spcname,
@@ -95,6 +98,7 @@ FROM
           LEFT JOIN pg_catalog.pg_depend depseq ON attrdef.oid = depseq.objid
               AND depseq.refobjid != c.oid
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
+          LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
           WHERE c.relnamespace = ?
               AND c.relkind = 'r'
@@ -105,6 +109,7 @@ FROM
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,
+              columnsData.toast_reloptions,
               columnsData.relhasoids,
               columnsData.spcname) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
