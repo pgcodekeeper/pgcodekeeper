@@ -1319,7 +1319,7 @@ public class JdbcLoader implements PgCatalogStrings {
         final String suffixes = "_XXXXXXX";
         String quote = "$";
         int counter = 0;
-        while(definition.contains(quote) && counter < suffixes.length()){
+        while(definition.contains(quote)){
             quote = quote.concat(String.valueOf(suffixes.charAt(counter++)));
             counter %= suffixes.length();
         }
