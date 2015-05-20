@@ -1315,13 +1315,13 @@ public class JdbcLoader implements PgCatalogStrings {
      * @param definition
      * @return
      */
-    private String getStringLiteralDollarQuote(String definition) {
+    public static String getStringLiteralDollarQuote(String definition) {
         final String suffixes = "_XXXXXXX";
         String quote = "$";
         int counter = 0;
         while(definition.contains(quote) && counter < suffixes.length()){
-            quote = quote.concat(String.valueOf(suffixes.charAt(counter)));
-            counter++;
+            quote = quote.concat(String.valueOf(suffixes.charAt(counter++)));
+            counter %= suffixes.length();
         }
         
         return quote.concat("$");
