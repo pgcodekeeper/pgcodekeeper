@@ -19,7 +19,8 @@ SELECT ccc.relname,
     confupdtype,
     confdeltype,
     confmatchtype,
-    description
+    description,
+    pg_get_constraintdef(c.oid) as definition
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_constraint c ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid

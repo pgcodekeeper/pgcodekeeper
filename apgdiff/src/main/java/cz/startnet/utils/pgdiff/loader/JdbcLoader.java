@@ -686,21 +686,14 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName) 
             throws SQLException {
         String constraintName = res.getString("conname");
-        StringBuilder definition = new StringBuilder();
+        String definition = res.getString("definition");;
         PgConstraint c = new PgConstraint(constraintName, "");
-        
-        List<String> columnNames = res.getArray("conkey") == null ? new ArrayList<String>() : 
-                getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
         
         switch (res.getString("contype")){
             case "f":
                 c = new PgForeignKey(constraintName, "");
                 List<String> referencedColumnNames = getColumnNames(
                         (Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
-                
-                definition.append("FOREIGN KEY (").append(getStringListAsString(columnNames, ", "));
-                definition.append(") REFERENCES " + res.getString("confrelid_name") + "(");
-                definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
                 
                 for (String colName : referencedColumnNames){
                     if (colName != null){
@@ -712,59 +705,10 @@ public class JdbcLoader implements PgCatalogStrings {
                     }
                 }
                 
-                switch (res.getString("confmatchtype")){
-                    case "f":
-                        definition.append(" MATCH FULL");
-                        break;
-                    case "p":
-                        definition.append(" MATCH PARTIAL");
-                        break;
-                }
-                
-                switch(res.getString("confupdtype")){
-                    case "r":
-                        definition.append(" ON UPDATE RESTRICT");
-                        break;
-                    case "c":
-                        definition.append(" ON UPDATE CASCADE");
-                        break;
-                    case "n":
-                        definition.append(" ON UPDATE SET NULL");
-                        break;
-                    case "d":
-                        definition.append(" ON UPDATE SET DEFAULT");
-                        break;
-                }
-                
-                switch(res.getString("confdeltype")){
-                    case "r":
-                        definition.append(" ON DELETE RESTRICT");
-                        break;
-                    case "c":
-                        definition.append(" ON DELETE CASCADE");
-                        break;
-                    case "n":
-                        definition.append(" ON DELETE SET NULL");
-                        break;
-                    case "d":
-                        definition.append(" ON DELETE SET DEFAULT");
-                        break;
-                }
                 break; // end foreign key
-            case "p":
-                definition.append("PRIMARY KEY (");
-                definition.append(getStringListAsString(columnNames, ", ")).append(")");
-                break;
-            case "c":
-                definition.append("CHECK (" + res.getString("consrc_usable") + ")");
-                break;
-            case "u":
-                definition.append("UNIQUE (");
-                definition.append(getStringListAsString(columnNames, ", ")).append(")");
-                break;
         }
         
-        c.setDefinition(definition.toString());
+        c.setDefinition(definition);
         
         // set table name
         c.setTableName(tableName);
