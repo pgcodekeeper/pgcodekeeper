@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
