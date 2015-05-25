@@ -34,7 +34,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -56,7 +55,7 @@ public class DbSourceTest {
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
-                args, ParserClass.getAntlr(null, 1));
+                args, null, 1);
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -71,7 +70,7 @@ public class DbSourceTest {
                                             TEST.REMOTE_PASSWORD, 
                                             dbName, 
                                             ApgdiffConsts.UTF_8, 
-                                            ApgdiffConsts.UTC, true));
+                                            ApgdiffConsts.UTC));
     }
     
     @Test
@@ -79,8 +78,8 @@ public class DbSourceTest {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
-            performTest(DbSource.fromDirTree(true,
-                    exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
+            performTest(DbSource.fromDirTree(exportDir.get().getAbsolutePath(),
+                    ApgdiffConsts.UTF_8));
         }
     }
     
@@ -88,7 +87,7 @@ public class DbSourceTest {
     public void testFile() throws IOException, URISyntaxException, InterruptedException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
         
-        performTest(DbSource.fromFile(true, 
+        performTest(DbSource.fromFile(
                 ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
     }
     
@@ -107,7 +106,7 @@ public class DbSourceTest {
 
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
-            performTest(DbSource.fromProject(true, proj));
+            performTest(DbSource.fromProject(proj));
             
             proj.deleteFromWorkspace();
         }
@@ -134,7 +133,7 @@ public class DbSourceTest {
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
             // testing itself
-            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD, true));
+            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD));
             
             proj.deleteFromWorkspace();
         }

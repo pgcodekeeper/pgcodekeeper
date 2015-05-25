@@ -28,7 +28,6 @@ public interface UIConsts {
     }
     
     interface PREF {
-        String USE_ANTLR = "prefUseAntlr"; //$NON-NLS-1$
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$

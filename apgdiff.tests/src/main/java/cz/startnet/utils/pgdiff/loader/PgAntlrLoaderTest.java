@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -38,6 +39,8 @@ import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -60,7 +63,7 @@ abstract class PgDatabaseObjectCreator {
  * @author fordfrog
  */
 @RunWith(value = Parameterized.class)
-public class PgDumpLoaderTest {
+public class PgAntlrLoaderTest {
 
     private final String encoding = ApgdiffConsts.UTF_8;
     private final List<Integer> skipForExport = Arrays.asList(8);
@@ -128,7 +131,7 @@ public class PgDumpLoaderTest {
      *
      * @param fileIndex {@link #fileIndex}
      */
-    public PgDumpLoaderTest(final int fileIndex) {
+    public PgAntlrLoaderTest(final int fileIndex) {
         this.fileIndex = fileIndex;
     }
 
@@ -140,8 +143,8 @@ public class PgDumpLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(encoding);
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
-                ParserClass.getLegacy(null, 1));
+                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
+                null, 1);
         
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {        
@@ -181,20 +184,21 @@ public class PgDumpLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(encoding);
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
-                ParserClass.getLegacy(null, 1));
+                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
+                null, 1);
         
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
+            
             args = new PgDiffArguments();
             args.setInCharsetName(encoding);
             args.setIgnoreSlonyTriggers(true);
             args.setOutputIgnoredStatements(true);
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), args, ParserClass.getLegacy(null, 1));
+                    exportDir.toString(), args, null, 1, null);
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 
@@ -569,7 +573,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
-    schema.setComment("'Standard public schema'");
+//    schema.setComment("'Standard public schema'");
     
     schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC", ""));
     schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
@@ -652,7 +656,17 @@ class PgDB8 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
-    schema.setComment("'Standard public schema'");
+//    schema.setComment("'Standard public schema'");
+    
+    PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "");
+    PgColumn col = new PgColumn("a");
+    col.setType("integer");
+    type.addAttr(col);
+    col = new PgColumn("b");
+    col.setType("text");
+    type.addAttr(col);
+    type.setOwner("madej");
+    schema.addType(type);
     
     schema = new PgSchema("``54'253-=9!@#$%^&*()__<>?:\"{}[];',./", "");
     d.addSchema(schema);
@@ -886,7 +900,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
 
     d.setComment("'comments database'");
-    schema.setComment("'public schema'");
+//    schema.setComment("'public schema'");
     
     PgFunction func = new PgFunction("test_fnc", "");
     func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");
@@ -1037,8 +1051,8 @@ class PgDB16 extends PgDatabaseObjectCreator {
     schema.addView(view);
 
     PgSelect select = new PgSelect("");
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     
     view.setSelect(select);
     
@@ -1087,9 +1101,9 @@ class PgDB17 extends PgDatabaseObjectCreator {
     schema.addView(view);
 
     PgSelect select = new PgSelect("");
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     
     view.setSelect(select);
     

@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
-import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -99,12 +98,10 @@ public class JdbcLoader implements PgCatalogStrings {
     private Connection connection;
     private JdbcConnector connector;
     private IProgressMonitor monitor;
-    private final boolean useAntrlForViews;
     private PgDiffArguments args;
     
-    public JdbcLoader(JdbcConnector connector, boolean useAntrlForViews, PgDiffArguments pgDiffArguments){
+    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments){
         this.connector = connector;
-        this.useAntrlForViews = useAntrlForViews;
         this.args = pgDiffArguments;
     }
 
@@ -817,11 +814,7 @@ public class JdbcLoader implements PgCatalogStrings {
             fakeDb.addSchema(new PgSchema(schemaName, ""));
         }
         fakeDb.setDefaultSchema(schemaName);
-        if (useAntrlForViews) {
-            v.setSelect(parseAntLrSelect(fakeDb, viewDef));
-        } else {
-            v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
-        }
+        v.setSelect(parseAntLrSelect(fakeDb, viewDef));
         
         // Query columns default values and comments
         Array colNamesArr = res.getArray("column_names");
@@ -1399,11 +1392,6 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }
-    }
-    
-    @Deprecated
-    private String getSearchPath(String schema){
-        return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN, schema);
     }
 
     private void prepareDataForSchema(Long schemaOid) throws SQLException{

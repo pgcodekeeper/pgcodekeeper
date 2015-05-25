@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.Listener;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -118,7 +117,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(charset);
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath, args,
-                ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+                monitor, 1, funcBodies);
         for (Path key : db.getObjDefinitions().keySet()) {
             objDefinitions.put(key, db.getObjDefinitions().get(key));
         }
@@ -189,7 +188,7 @@ public class PgDbParser implements IResourceChangeListener {
         args.setInCharsetName(charset);
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
-                args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+                args, monitor, 1, funcBodies);
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
         fillFunctionBodies(objDefinitions, objReferences, funcBodies);
@@ -208,7 +207,7 @@ public class PgDbParser implements IResourceChangeListener {
         args.setInCharsetName(scriptFileEncoding);
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(
                 input, Paths.get(""), //$NON-NLS-1$
-                args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+                args, monitor, 1, funcBodies);
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
     }

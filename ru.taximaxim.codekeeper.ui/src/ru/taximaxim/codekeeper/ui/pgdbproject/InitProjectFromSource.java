@@ -25,14 +25,12 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     private final String pgdumpCustom;
     private final String password;
     
-    private final IPreferenceStore mainPrefs;
     private final PgDbProject props;
 
     private final String dumpPath;
 
     public InitProjectFromSource(final IPreferenceStore mainPrefs,
             final PgDbProject props, final String dumpPath, String password) {
-        this.mainPrefs = mainPrefs;
         this.exePgdump = mainPrefs.getString(PREF.PGDUMP_EXE_PATH);
         this.pgdumpCustom = mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS);
         this.props = props;
@@ -72,17 +70,16 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         PgDatabase db;
         switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
         case SOURCE_TYPE_DB:
-            db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    exePgdump, pgdumpCustom, props, password).get(taskpm);
+            db = DbSource.fromDb(exePgdump, pgdumpCustom, props, password).get(taskpm);
             break;
 
         case SOURCE_TYPE_DUMP:
-            db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR), dumpPath,
+            db = DbSource.fromFile(dumpPath,
                     props.getProjectCharset()).get(taskpm);
             break;
 
         case SOURCE_TYPE_JDBC:
-            db = DbSource.fromJdbc(props, password, mainPrefs.getBoolean(PREF.USE_ANTLR))
+            db = DbSource.fromJdbc(props, password)
                     .get(taskpm);
             break;
             

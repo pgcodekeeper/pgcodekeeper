@@ -547,7 +547,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
         
         DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj);
+        dbsProj = DbSource.fromProject(proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
@@ -556,15 +556,13 @@ public abstract class DiffPresentationPane extends Composite {
             if (dumpfile == null) {
                 return false;
             }
-            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    dumpfile, proj.getProjectCharset());
+            dbsRemote = DbSource.fromFile(dumpfile, proj.getProjectCharset());
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+            dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
@@ -579,8 +577,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
                     dbSrc.getTxtDbName().getText(), 
                     proj.getProjectCharset(), 
-                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR));
+                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);

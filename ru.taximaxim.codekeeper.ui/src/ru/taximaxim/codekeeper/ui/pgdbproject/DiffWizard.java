@@ -111,7 +111,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
-                        DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj),
+                        DbSource.fromProject(proj),
                         pageDiff.getTargetDbSource());
 
                 try {
@@ -249,8 +249,7 @@ class PageDiff extends WizardPage implements Listener {
 
         switch (getTargetType()) {
         case DB:
-            dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR), 
-                    mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+            dbs = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
                     getDbName(), getTargetEncoding(), getTargetTimezone());
@@ -258,18 +257,15 @@ class PageDiff extends WizardPage implements Listener {
 
         case JDBC:
             dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(), 
-                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone(),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR));
+                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone());
             break;
             
         case DUMP:
-            dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    getDumpPath(), getTargetEncoding());
+            dbs = DbSource.fromFile(getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
-            dbs = DbSource.fromDirTree(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    getProjPath(), getTargetEncoding());
+            dbs = DbSource.fromDirTree(getProjPath(), getTargetEncoding());
             break;
 
         default:

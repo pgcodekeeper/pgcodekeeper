@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -76,49 +75,44 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException;
 
-    public static DbSource fromDirTree(boolean useAntlr,
-            String dirTreePath, String encoding) {
-        return new DbSourceDirTree(useAntlr, dirTreePath, encoding);
+    public static DbSource fromDirTree(String dirTreePath, String encoding) {
+        return new DbSourceDirTree(dirTreePath, encoding);
     }
 
-    public static DbSource fromProject(boolean useAntlr, PgDbProject proj) {
-        return new DbSourceProject(useAntlr, proj);
+    public static DbSource fromProject(PgDbProject proj) {
+        return new DbSourceProject(proj);
     }
 
-    public static DbSource fromFile(boolean useAntlr,
-            String filename, String encoding) {
-        return new DbSourceFile(useAntlr, filename, encoding);
+    public static DbSource fromFile(String filename, String encoding) {
+        return new DbSourceFile(filename, encoding);
     }
 
-    public static DbSource fromDb(boolean useAntlr,
-            String exePgdump, String customParams,
+    public static DbSource fromDb(String exePgdump, String customParams,
             PgDbProject proj, String password) throws CoreException {
-        return new DbSourceDb(useAntlr, exePgdump, customParams, proj, password);
+        return new DbSourceDb(exePgdump, customParams, proj, password);
     }
 
-    public static DbSource fromDb(boolean useAntlr, String exePgdump, String customParams,
+    public static DbSource fromDb(String exePgdump, String customParams,
             String host, int port, String user, String pass, String dbname,
             String encoding, String timezone) {
-        return new DbSourceDb(useAntlr, exePgdump, customParams,
+        return new DbSourceDb(exePgdump, customParams,
                 host, port, user, pass, dbname, encoding, timezone);
     }
 
-    public static DbSource fromJdbc(PgDbProject proj, String password,
-            boolean useAntrlForViews) throws CoreException{
+    public static DbSource fromJdbc(PgDbProject proj, String password) throws CoreException{
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
                 proj.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
                 password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
                 proj.getProjectCharset(), 
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                useAntrlForViews);
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
     }
     
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            String encoding, String timezone, boolean useAntrlForViews) {
+            String encoding, String timezone) {
         return new DbSourceJdbc(host, port, user, pass, dbname,
-                encoding, timezone, useAntrlForViews);
+                encoding, timezone);
     }
     
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -128,14 +122,12 @@ public abstract class DbSource {
 
 class DbSourceDirTree extends DbSource {
 
-    private final boolean useAntlr;
     private final String dirTreePath;
     private final String encoding;
 
-    DbSourceDirTree(boolean useAntlr, String dirTreePath, String encoding) {
+    DbSourceDirTree(String dirTreePath, String encoding) {
         super(dirTreePath);
 
-        this.useAntlr = useAntlr;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
     }
@@ -146,19 +138,17 @@ class DbSourceDirTree extends DbSource {
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
                 getPgDiffArgs(encoding, ApgdiffConsts.UTC),
-                useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
+                monitor, 1, null);
     }
 }
 
 class DbSourceProject extends DbSource {
 
-    private final boolean useAntlr;
     private final PgDbProject proj;
 
-    DbSourceProject(boolean useAntlr, PgDbProject proj) {
+    DbSourceProject(PgDbProject proj) {
         super(proj.getPathToProject().toString());
 
-        this.useAntlr = useAntlr;
         this.proj = proj;
     }
 
@@ -178,7 +168,7 @@ class DbSourceProject extends DbSource {
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
                 getPgDiffArgs(charset, ApgdiffConsts.UTC),
-                useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
+                monitor, 1, null);
     }
     
     private int countFilesInDir(Path path) {
@@ -207,14 +197,12 @@ class DbSourceFile extends DbSource {
      */
     private final static int AVERAGE_STATEMENT_LENGTH = 5;
     
-    private final boolean useAntlr;
     private final String filename;
     private final String encoding;
 
-    DbSourceFile(boolean useAntlr, String filename, String encoding) {
+    DbSourceFile(String filename, String encoding) {
         super(filename);
 
-        this.useAntlr = useAntlr;
         this.filename = filename;
         this.encoding = encoding;
     }
@@ -234,7 +222,7 @@ class DbSourceFile extends DbSource {
         
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, 
                 getPgDiffArgs(encoding, ApgdiffConsts.UTC), 
-                useAntlr ? ParserClass.getAntlr(monitor, 2) : ParserClass.getLegacy(monitor, 2));
+                monitor, 2);
     }
     
     private int countLines(String filename) throws IOException {
@@ -259,16 +247,15 @@ class DbSourceFile extends DbSource {
 
 class DbSourceDb extends DbSource {
 
-    private final boolean useAntlr;
     private final String exePgdump;
     private final String customParams;
 
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
-    DbSourceDb(boolean useAntlr, String exePgdump, String customParams,
+    DbSourceDb(String exePgdump, String customParams,
             PgDbProject props, String password) throws CoreException {
-        this(useAntlr, exePgdump, customParams,
+        this(exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
@@ -278,13 +265,12 @@ class DbSourceDb extends DbSource {
                 props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
     }
 
-    DbSourceDb(boolean useAntlr, String exePgdump, String customParams,
+    DbSourceDb(String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding, String timezone) {
         super((dbname.isEmpty() ? Messages.unknown_db : dbname) + '@'
                 + (host.isEmpty() ? Messages.unknown_host : host));
 
-        this.useAntlr = useAntlr;
         this.exePgdump = exePgdump;
         this.customParams = customParams;
         this.host = host;
@@ -314,7 +300,7 @@ class DbSourceDb extends DbSource {
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
                     dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone),
-                    useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
+                    monitor, 1);
         }
     }
 }
@@ -324,11 +310,11 @@ class DbSourceJdbc extends DbSource {
     private JdbcLoader jdbcLoader;
     
     DbSourceJdbc(String host, int port, String user, String pass, String dbName, 
-            String encoding, String timezone, boolean useAntrlForViews) {
+            String encoding, String timezone) {
         super(dbName);
         jdbcLoader = new JdbcLoader(
                 new JdbcConnector(host, port, user, pass, dbName, encoding, timezone),
-                useAntrlForViews, getPgDiffArgs(encoding, timezone));
+                getPgDiffArgs(encoding, timezone));
     }
     
     @Override

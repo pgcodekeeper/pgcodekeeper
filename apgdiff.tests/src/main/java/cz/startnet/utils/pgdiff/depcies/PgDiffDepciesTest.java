@@ -22,7 +22,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -208,7 +207,7 @@ public class PgDiffDepciesTest {
     
     private PgDatabase getDB(InputStream is, PgDiffArguments args) throws InterruptedException {
         return PgDumpLoader.loadDatabaseSchemaFromDump(
-                is, args, ParserClass.getAntlr(null, 1));
+                is, args, null, 1);
     }
     
     private InputStream getUsrSelIS(FILES_POSTFIX postfix) {

@@ -36,9 +36,6 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
         addField(new StringFieldEditor(PREF.PGDUMP_CUSTOM_PARAMS,
                 Messages.generalPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
         
-        addField(new BooleanFieldEditor(PREF.USE_ANTLR, Messages.generalPrefPage_use_antrl,
-                getFieldEditorParent()));
-        
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
         
