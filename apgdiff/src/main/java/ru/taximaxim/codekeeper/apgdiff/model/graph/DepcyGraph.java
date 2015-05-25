@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -192,8 +192,8 @@ public class DepcyGraph {
         
         createPgStatementToType(
                 new GenericColumn(
-                        ParserUtils.getSecondObjectName(typeName),
-                        ParserUtils.getObjectName(typeName), null), 
+                        PgDiffUtils.getSecondObjectName(typeName),
+                        PgDiffUtils.getObjectName(typeName), null), 
                 schema, statement);
     }
     
@@ -340,7 +340,7 @@ public class DepcyGraph {
             
             String funcDef = trigger.getFunctionSignature();
             PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
-                    ParserUtils.getObjectName(funcDef));
+                    PgDiffUtils.getObjectName(funcDef));
             if (func != null) {
                 graph.addVertex(func);
                 graph.addEdge(trigger, func);
@@ -351,7 +351,7 @@ public class DepcyGraph {
     private void createTableToSequences(PgTable table, PgSchema schema) {
         for (String seqName : table.getSequences()) {
             PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
-                    ParserUtils.getObjectName(seqName));
+                    PgDiffUtils.getObjectName(seqName));
             if (seq != null) {
                 graph.addVertex(seq);
                 graph.addEdge(table, seq);
@@ -415,7 +415,7 @@ public class DepcyGraph {
      * @return схема, содержащая объект, либо текущая схема
      */
     private PgSchema getSchemaForObject(PgSchema currSchema, String objQualifiedName) {
-        String schemaName = ParserUtils.getSecondObjectName(objQualifiedName);
+        String schemaName = PgDiffUtils.getSecondObjectName(objQualifiedName);
         PgSchema schemaToSearch = null;
         if (schemaName != null) {
             schemaToSearch = db.getSchema(schemaName);

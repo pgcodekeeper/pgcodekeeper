@@ -9,8 +9,8 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.Parser;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
@@ -102,7 +102,7 @@ public abstract class ParserAbstract {
      */
     public static String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
-        String unquotedName = ParserUtils.splitNames(identifier)[0];
+        String unquotedName = PgDiffUtils.splitNames(identifier)[0];
         
         return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
     }

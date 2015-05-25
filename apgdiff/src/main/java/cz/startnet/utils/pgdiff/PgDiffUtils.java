@@ -9,8 +9,12 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
@@ -19,6 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  * @author fordfrog
  */
 public final class PgDiffUtils {
+    public static final int ERROR_SUBSTRING_LENGTH = 20;
 
     /**
      * Array of reserved keywords. Non-reserved keywords are excluded. Source
@@ -526,6 +531,10 @@ public final class PgDiffUtils {
         return '"' + name.replace("\"", "\"\"") + '"';
     }
 
+    public static String quoteString(String s) {
+        return "'" + s.replace("'", "''") + "'";
+    }
+
     /**
      * If name contains only lower case characters and digits and is not
      * keyword, it is returned not quoted, otherwise the string is returned
@@ -619,6 +628,120 @@ public final class PgDiffUtils {
                     "NoSuchAlgorithmException thrown while getting hash: {0}", 
                     e.getLocalizedMessage()),e);
         }
+    }
+
+
+    /**
+     * Splits qualified names by dots. If names are quoted then quotes are
+     * removed.
+     * <br><br>
+     * This method uses identifier parsing mechanism from
+     * {@link #Parser.parseIdentifierInternal()}
+     *
+     * @param string qualified name
+     *
+     * @return array of names
+     */
+    public static String[] splitNames(final String string) {
+        if (string.indexOf('"') == -1) {
+            return string.split(Pattern.quote("."));
+        } else {
+            final List<String> strings = new ArrayList<>(3);
+            int startPos = 0;
+    
+            while (true) {
+                if (string.charAt(startPos) == '"') {
+                    // see Parser.parseIdentifierInternal for explanation of this method
+                    int endPos = startPos - 1;
+                    do {
+                        endPos += 2;
+                        endPos = string.indexOf('"', endPos);
+                    } while(string.charAt(endPos) != '"'
+                            || (endPos + 1 < string.length()
+                                    && string.charAt(endPos + 1) == '"'));
+                    
+                    strings.add(string.substring(startPos + 1, endPos)
+                            .replace("\"\"", "\""));
+    
+                    if (endPos + 1 == string.length()) {
+                        break;
+                    } else if (string.charAt(endPos + 1) == '.') {
+                        startPos = endPos + 2;
+                    } else {
+                        startPos = endPos + 1;
+                    }
+                } else {
+                    final int endPos = string.indexOf('.', startPos);
+    
+                    if (endPos == -1) {
+                        strings.add(string.substring(startPos));
+                        break;
+                    } else {
+                        strings.add(string.substring(startPos, endPos));
+                        startPos = endPos + 1;
+                    }
+                }
+            }
+    
+            return strings.toArray(new String[strings.size()]);
+        }
+    }
+
+    /**
+     * Returns schema name from optionally schema qualified name.
+     *
+     * @param name     optionally schema qualified name
+     * @param database database
+     *
+     * @return name of the schema
+     */
+    public static String getSchemaName(final String name,
+            final PgDatabase database) {
+        final String[] names = splitNames(name);
+    
+        if (names.length < 2) {
+            return database.getDefaultSchema().getName();
+        } else {
+            return names[0];
+        }
+    }
+
+    /**
+     * Returns second (from right) object name from optionally schema qualified
+     * name.
+     *
+     * @param name optionally schema qualified name
+     *
+     * @return name of the object
+     */
+    public static String getSecondObjectName(final String name) {
+        final String[] names = splitNames(name);
+    
+        return names.length >= 2 ? names[names.length - 2] : null;
+    }
+
+    /**
+     * Returns object name from optionally schema qualified name.
+     *
+     * @param name optionally schema qualified name
+     *
+     * @return name of the object
+     */
+    public static String getObjectName(final String name) {
+        final String[] names = splitNames(name);
+    
+        return names[names.length - 1];
+    }
+
+    public static String getErrorSubstr(String s, int pos) {
+        return PgDiffUtils.getErrorSubstr(s, pos, ERROR_SUBSTRING_LENGTH);
+    }
+
+    public static String getErrorSubstr(String s, int pos, int len) {
+        if (pos >= s.length()) {
+            return "";
+        }
+        return pos + len < s.length() ? s.substring(pos, pos + len) : s.substring(pos);
     }
     
     private PgDiffUtils() {

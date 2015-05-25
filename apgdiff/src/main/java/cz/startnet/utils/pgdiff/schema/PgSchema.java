@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 
 /**
  * Stores schema information.
@@ -147,7 +146,7 @@ public class PgSchema extends PgStatement {
         Parser p = new Parser(signature);
         // TODO qualified names here?
         PgFunction tmp = new PgFunction(
-                ParserUtils.getObjectName(p.parseIdentifier()), null);
+                PgDiffUtils.getObjectName(p.parseIdentifier()), null);
         CreateFunctionParser.parseArguments(p, tmp);
         
         for (PgFunction function : functions) {

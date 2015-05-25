@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.nio.file.Path;
 
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
@@ -136,7 +136,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         String confParam = ctx.config_param.getText();
         if (confParam.equalsIgnoreCase("search_path")) {
             for (Set_statement_valueContext value :  ctx.config_param_val) {
-                db.setDefaultSchema(ParserUtils.getObjectName(value.getText()));
+                db.setDefaultSchema(PgDiffUtils.getObjectName(value.getText()));
                 break;
             }
         }

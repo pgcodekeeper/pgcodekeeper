@@ -28,7 +28,6 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -285,7 +284,7 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String comment = res.getString("comment");
         if (!schemaName.equals(ApgdiffConsts.PUBLIC) && comment != null && !comment.isEmpty()){
-            s.setComment(ParserUtils.quoteString(comment));
+            s.setComment(PgDiffUtils.quoteString(comment));
         }
         
         // setting current schema as default
@@ -427,7 +426,7 @@ public class JdbcLoader implements PgCatalogStrings {
             setPrivileges(st, st.getName(), res.getString("typacl"), st.getOwner(), null);
             String comment = res.getString("description");
             if (comment != null && !comment.isEmpty()) {
-                st.setComment(ParserUtils.quoteString(comment));
+                st.setComment(PgDiffUtils.quoteString(comment));
             }
         }
         return st;
@@ -447,7 +446,7 @@ public class JdbcLoader implements PgCatalogStrings {
         if (def == null) {
             def = res.getString("typdefault");
             if (def != null) {
-                def = ParserUtils.quoteString(def);
+                def = PgDiffUtils.quoteString(def);
             }
         }
         d.setDefaultValue(def);
@@ -470,7 +469,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     d.addConstrNotValid(c);
                 }
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
-                    c.setComment(ParserUtils.quoteString(concomments[i]));
+                    c.setComment(PgDiffUtils.quoteString(concomments[i]));
                 }
             }
         }
@@ -543,7 +542,7 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String cat = res.getString("typcategory");
             if (cat != null && !"U".equals(cat)) {
-                t.setCategory(ParserUtils.quoteString(cat));
+                t.setCategory(PgDiffUtils.quoteString(cat));
             }
             
             if (res.getBoolean("typispreferred")) {
@@ -554,7 +553,7 @@ public class JdbcLoader implements PgCatalogStrings {
             if (def == null) {
                 def = res.getString("typdefault");
                 if (def != null) {
-                    def = ParserUtils.quoteString(def);
+                    def = PgDiffUtils.quoteString(def);
                 }
             }
             t.setDefaultValue(def);
@@ -565,7 +564,7 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String delim = res.getString("typdelim");
             if (delim != null && !",".equals(delim)) {
-                t.setDelimiter(ParserUtils.quoteString(delim));
+                t.setDelimiter(PgDiffUtils.quoteString(delim));
             }
             
             if (res.getLong("typcollation") != 0) {
@@ -603,7 +602,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 a.setType(sbDef.toString());
                 t.addAttr(a);
                 if (attcomments[i] != null && !attcomments[i].isEmpty()) {
-                    a.setComment(ParserUtils.quoteString(attcomments[i]));
+                    a.setComment(PgDiffUtils.quoteString(attcomments[i]));
                 }
             }
             break;
@@ -617,7 +616,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             String[] enums = (String[]) arrEnums.getArray();
             for (String enum_ : enums) {
-                t.addEnum(ParserUtils.quoteString(enum_));
+                t.addEnum(PgDiffUtils.quoteString(enum_));
             }
             break;
             
@@ -683,7 +682,7 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String comment = res.getString("description");
         e.setComment(comment != null && !comment.isEmpty() ? 
-                ParserUtils.quoteString(comment) : null);
+                PgDiffUtils.quoteString(comment) : null);
         return e;
     }
 
@@ -775,7 +774,7 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()){
-            c.setComment(ParserUtils.quoteString(comment));
+            c.setComment(PgDiffUtils.quoteString(comment));
         }
         
         return c;
@@ -831,7 +830,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
                 String colComment = colComments[i];
                 if (colComment != null){
-                    v.addColumnComment(colName, ParserUtils.quoteString(colComment));
+                    v.addColumnComment(colName, PgDiffUtils.quoteString(colComment));
                 }    
             }
         }
@@ -845,7 +844,7 @@ public class JdbcLoader implements PgCatalogStrings {
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()){
-            v.setComment(ParserUtils.quoteString(comment));
+            v.setComment(PgDiffUtils.quoteString(comment));
         }
         
         return v;
@@ -958,7 +957,7 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()){
-                column.setComment(ParserUtils.quoteString(comment));                
+                column.setComment(PgDiffUtils.quoteString(comment));                
             }
             columns.add(column);
         }
@@ -971,7 +970,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 inherits.length > 0){
             for (String inherited : inherits){
                 t.addInherits(
-                        ParserUtils.getSecondObjectName(inherited), ParserUtils.getObjectName(inherited));
+                        PgDiffUtils.getSecondObjectName(inherited), PgDiffUtils.getObjectName(inherited));
             }
         }else{
             for(PgColumn column : columns){
@@ -1007,7 +1006,7 @@ public class JdbcLoader implements PgCatalogStrings {
         // Table COMMENTS
         String comment = res.getString("table_comment");
         if (comment != null && !comment.isEmpty()){
-            t.setComment(ParserUtils.quoteString(comment));                
+            t.setComment(PgDiffUtils.quoteString(comment));                
         }
         
         // PRIVILEGES, OWNER
@@ -1190,7 +1189,7 @@ public class JdbcLoader implements PgCatalogStrings {
         // COMMENT
         String comment = res.getString("comment");
         f.setComment(comment != null && !comment.isEmpty() ?
-                ParserUtils.quoteString(comment) : null);
+                PgDiffUtils.quoteString(comment) : null);
         return f;
     }
     

@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.parsers;
 import java.text.MessageFormat;
 
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -46,7 +47,7 @@ public final class CreateFunctionParser {
 
         final String functionName = parser.parseIdentifier();
         final String schemaName =
-                ParserUtils.getSchemaName(functionName, database);
+                PgDiffUtils.getSchemaName(functionName, database);
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
@@ -56,7 +57,7 @@ public final class CreateFunctionParser {
         }
 
         final PgFunction function = new PgFunction(
-                ParserUtils.getObjectName(functionName), statement);
+                PgDiffUtils.getObjectName(functionName), statement);
         schema.addFunction(function);
         
         parseArguments(parser, function);
@@ -110,7 +111,7 @@ public final class CreateFunctionParser {
                     && !parser.expectOptional("=")
                     && !parser.expectOptional("DEFAULT")) {
                 parser.setPosition(position);
-                argumentName = ParserUtils.getObjectName(parser.parseIdentifier());
+                argumentName = PgDiffUtils.getObjectName(parser.parseIdentifier());
                 dataType = parser.parseDataType();
             } else {
                 parser.setPosition(position2);

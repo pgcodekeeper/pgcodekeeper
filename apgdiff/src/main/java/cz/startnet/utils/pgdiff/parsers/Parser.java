@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.parsers;
 import java.text.MessageFormat;
 import java.util.Locale;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 /**
@@ -589,18 +590,7 @@ public final class Parser {
         return dataType;
     }
 
-    /**
-     * Checks whether the whole string has been consumed.
-     *
-     * @return true if there is nothing left to parse, otherwise false
-     */
-    public boolean isConsumed() {
-        return position == string.length()
-                || position + 1 == string.length()
-                && string.charAt(position) == ';';
-    }
-    
     private String getErrorSubstring() {
-        return ParserUtils.getErrorSubstr(string, position);
+        return PgDiffUtils.getErrorSubstr(string, position);
     }
 }
