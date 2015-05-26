@@ -689,7 +689,8 @@ public class JdbcLoader implements PgCatalogStrings {
         String definition = res.getString("definition");;
         PgConstraint c = new PgConstraint(constraintName, "");
         
-        switch (res.getString("contype")){
+        String contype = res.getString("contype");
+        switch (contype) {
             case "f":
                 c = new PgForeignKey(constraintName, "");
                 List<String> referencedColumnNames = getColumnNames(
@@ -708,7 +709,16 @@ public class JdbcLoader implements PgCatalogStrings {
                 break; // end foreign key
             case "p":
             case "u":
-                // TODO fix after merge with fkey_to_pkey
+                if ("p".equals(contype)) {
+                    c.setPrimaryKey(true);
+                } else {
+                    c.setUnique(true);
+                }
+                Integer[] concols = (Integer[])res.getArray("conkey").getArray();
+                for (String name : getColumnNames(concols, res.getLong("conrelid"))) {
+                    c.addColumn(new GenericColumn(schemaName, tableName, name));
+                }
+                break;
         }
         
         c.setDefinition(definition);
