@@ -146,7 +146,7 @@ public class PgSchema extends PgStatement {
         // TODO qualified names here?
         PgFunction tmp = new PgFunction(
                 PgDiffUtils.getObjectName(p.parseIdentifier()), null);
-        PgSchema.parseArguments(p, tmp);
+        PgDiffUtils.parseArguments(p, tmp);
         
         for (PgFunction function : functions) {
             if (function.getBareName().equals(tmp.getBareName()) && 
@@ -450,62 +450,5 @@ public class PgSchema extends PgStatement {
             copy.addType(type.deepCopy());
         }
         return copy;
-    }
-
-    private static void parseArguments(Parser parser, PgFunction function) {
-        parser.expect("(");
-    
-        while (!parser.expectOptional(")")) {
-            final String mode;
-    
-            if (parser.expectOptional("IN")) {
-                mode = "IN";
-            } else if (parser.expectOptional("OUT")) {
-                mode = "OUT";
-            } else if (parser.expectOptional("INOUT")) {
-                mode = "INOUT";
-            } else if (parser.expectOptional("VARIADIC")) {
-                mode = "VARIADIC";
-            } else {
-                mode = null;
-            }
-    
-            final int position = parser.getPosition();
-            String argumentName = null;
-            String dataType = parser.parseDataType();
-    
-            final int position2 = parser.getPosition();
-    
-            if (!parser.expectOptional(")") && !parser.expectOptional(",")
-                    && !parser.expectOptional("=")
-                    && !parser.expectOptional("DEFAULT")) {
-                parser.setPosition(position);
-                argumentName = PgDiffUtils.getObjectName(parser.parseIdentifier());
-                dataType = parser.parseDataType();
-            } else {
-                parser.setPosition(position2);
-            }
-    
-            final String defaultExpression;
-    
-            if (parser.expectOptional("=") || parser.expectOptional("DEFAULT")) {
-                defaultExpression = parser.getExpression();
-            } else {
-                defaultExpression = null;
-            }
-    
-            final PgFunction.Argument argument = new PgFunction.Argument();
-            argument.setDataType(dataType);
-            argument.setDefaultExpression(defaultExpression);
-            argument.setMode(mode);
-            argument.setName(argumentName);
-            function.addArgument(argument);
-    
-            if (parser.expectOptional(")")) {
-                break;
-            } else {
-                parser.expect(",");
-            }
-        }
     }
 }
