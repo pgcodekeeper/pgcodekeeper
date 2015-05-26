@@ -706,6 +706,9 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
                 
                 break; // end foreign key
+            case "p":
+            case "u":
+                // TODO fix after merge with fkey_to_pkey
         }
         
         c.setDefinition(definition);
@@ -900,18 +903,18 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder storageParameters = new StringBuilder();
         Array arr = res.getArray("reloptions");
         if (arr != null){
-            fillStorageParams(storageParameters, arr);
+            fillStorageParams(storageParameters, arr, false);
         }
         
         arr = res.getArray("toast_reloptions");
         if (arr != null){
-            fillStorageParams(storageParameters, arr);
+            fillStorageParams(storageParameters, arr, true);
         }
         
         if (storageParameters.length() > 0) {
+            // убираем лишние запятую-пробел
             storageParameters.setLength(storageParameters.length() - 2);
-            storageParameters.insert(0, "(").append(")");
-            t.setWith(storageParameters.toString());
+            t.setWith('(' + storageParameters.toString() + ')');
         }
         
         // Table COMMENTS
@@ -927,11 +930,9 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         if (res.getBoolean("has_oids")) {
-            t.setWith(storageParameters.length() > 0 ? (storageParameters
-                    .substring(0, storageParameters.length() - 1) + ", " + "OIDS=true)")
-                    : "OIDS=true");
+            t.setWith(storageParameters.length() > 0 ?
+                    ("(" + storageParameters + ", OIDS=true)") : "OIDS=true");
         }
-        
         
         // PRIVILEGES, OWNER
         setOwner(t, tableOwner);
@@ -950,9 +951,12 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void fillStorageParams(StringBuilder storageParameters,
-            Array arr) throws SQLException {
+            Array arr, boolean isToast) throws SQLException {
         String[] options = (String[])arr.getArray();
         for(int i = 0; i < options.length; i++){
+            if (isToast) {
+                storageParameters.append("toast.");
+            }
             storageParameters.append(options[i]).append(", ");
         }
     }
@@ -1053,7 +1057,7 @@ public class JdbcLoader implements PgCatalogStrings {
         parser.addErrorListener(errListener);
         
         WhenListener whenListener = new WhenListener();
-        ParseTreeWalker.DEFAULT.walk(whenListener, parser.create_trigger_statement());
+        ParseTreeWalker.DEFAULT.walk(whenListener, parser.schema_create());
         return whenListener.getWhen();
     }
 

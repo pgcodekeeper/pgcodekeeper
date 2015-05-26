@@ -890,6 +890,7 @@ nonreserved_keywords
   | NULLIF
   | NULLS
   | OBJECT
+  | OIDS
   | ON
   | ONLY
   | OPERATOR

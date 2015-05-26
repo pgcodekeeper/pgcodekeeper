@@ -82,7 +82,7 @@ FROM
                    AND c2.relkind = 'S') col_seq,
               attr.attacl::text,
               c.reloptions,
-              array(SELECT 'toast.' || x FROM unnest(tc.reloptions) x) AS toast_reloptions,
+              tc.reloptions AS toast_reloptions,
               attr.attcollation,
               t.typcollation,
               tabsp.spcname,
