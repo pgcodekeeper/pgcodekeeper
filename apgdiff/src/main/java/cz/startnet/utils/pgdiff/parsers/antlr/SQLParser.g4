@@ -618,9 +618,13 @@ table_column_def
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type? collate_identifier? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
+    : column_name=identifier datatype=data_type? collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
     ;
-  
+    
+with_options
+    : WITH OPTIONS
+    ;
+    
 like_option
     : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
     ;
