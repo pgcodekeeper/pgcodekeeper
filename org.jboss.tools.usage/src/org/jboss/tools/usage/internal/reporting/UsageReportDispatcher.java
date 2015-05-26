@@ -41,9 +41,9 @@ public class UsageReportDispatcher implements IStartup {
 				UsageReporter reporter = UsageReporter.getInstance();
 				JBossToolsUsageActivator plugin = JBossToolsUsageActivator.getDefault();
 				String version = getVersion();
-				
+				String platformVer = Platform.getBundle("org.eclipse.platform").getVersion().toString();
 				IJBossToolsEclipseEnvironment environment = plugin.getJBossToolsEclipseEnvironment();
-				UsageEventType type = new UsageEventType("Pg_codekeeper", version, "Eclipse", "4.4.0", "Eclipse");
+				UsageEventType type = new UsageEventType("Pg_codekeeper", version, "Eclipse", platformVer, "Eclipse");
 				String label = environment.getEvent().getValue();
 				reporter.registerEvent(type);
 				String title = getUsedJVM(environment);
