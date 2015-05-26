@@ -32,7 +32,7 @@ public class PreferencesMessages extends NLS {
 	public static String UsageReportPreferencePage_ScreenColors;
 	public static String UsageReportPreferencePage_ScreenResolution;
 	public static String UsageReportPreferencePage_Error_Saving;
-	public static String UsageReportPreferencePage_JBossCentralEnabled;
+//	public static String UsageReportPreferencePage_JBossCentralEnabled;
 
 	public static String UsageReportPreferencePage_JvmName;
 	public static String UsageReportPreferencePage_JvmVersion;

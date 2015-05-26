@@ -84,7 +84,7 @@ public class UsageRequest {
 		StringBuilder builder = new StringBuilder(TRACKING_URL).append(IGoogleAnalyticsParameters.URL_PARAM_DELIMITER);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_TRACKING_CODE_VERSION,	IGoogleAnalyticsParameters.VALUE_TRACKING_CODE_VERSION, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
-		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, environment.getHostname(), builder);
+//		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, environment.getHostname(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_LANGUAGE_ENCODING,	IGoogleAnalyticsParameters.VALUE_ENCODING_UTF8, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_RESOLUTION, environment.getScreenResolution(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_COLOR_DEPTH, environment.getScreenColorDepth(), builder);

@@ -37,19 +37,19 @@ public class JBossToolsUsageBranding implements IUsageBranding {
 		return JBossToolsUsageBrandingMessages.UsageReport_Checkbox_Text;
 	}
 	
-	public String getStartupAllowReportingDetailLink() {
-		return JBossToolsUsageBrandingMessages.UsageReport_ExplanationPage;
-	}
+//	public String getStartupAllowReportingDetailLink() {
+//		return JBossToolsUsageBrandingMessages.UsageReport_ExplanationPage;
+//	}
 	
-	public String getGlobalRemotePropertiesUrl() {
-		return JBossToolsUsageBrandingMessages.GlobalUsageSettings_RemoteProps_URL;
-	}
+//	public String getGlobalRemotePropertiesUrl() {
+//		return JBossToolsUsageBrandingMessages.GlobalUsageSettings_RemoteProps_URL;
+//	}
 
 	public String getGoogleAnalyticsAccount() {
 		return JBossToolsUsageBrandingMessages.UsageReport_GoogleAnalytics_Account;
 	}
 
-	public String getGoogleAnalyticsReportingHost() {
-		return JBossToolsUsageBrandingMessages.UsageReport_HostName;
-	}
+//	public String getGoogleAnalyticsReportingHost() {
+//		return JBossToolsUsageBrandingMessages.UsageReport_HostName;
+//	}
 }

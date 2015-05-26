@@ -11,11 +11,10 @@
 package org.jboss.tools.usage.internal.preferences;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.Plugin;
-import org.jboss.tools.usage.branding.IUsageBranding;
-import org.jboss.tools.usage.internal.JBossToolsUsageActivator;
 import org.jboss.tools.usage.internal.http.HttpRemotePropertiesProvider;
 import org.jboss.tools.usage.internal.http.IPropertiesProvider;
 import org.jboss.tools.usage.tracker.internal.UsagePluginLogger;
@@ -45,14 +44,14 @@ public class GlobalUsageSettings {
 	private static final boolean INSTANCE_USAGE_REPORTING_ENABLED_DEFAULT = true;
 
 	/** the enablement default for all instances */
-	private static final boolean ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT = false;
+//	private static final boolean ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT = false;
 
-	private IPropertiesProvider remoteMap;
+//	private IPropertiesProvider remoteMap;
 
 	public GlobalUsageSettings(Plugin plugin) {
-		IUsageBranding branding = JBossToolsUsageActivator.getDefault().getUsageBranding();
-		remoteMap = createRemoteMap(
-					branding.getGlobalRemotePropertiesUrl(), plugin);
+//		IUsageBranding branding = JBossToolsUsageActivator.getDefault().getUsageBranding();
+//		remoteMap = createRemoteMap(
+//					branding.getGlobalRemotePropertiesUrl(), plugin);
 	}
 
 	/**
@@ -76,22 +75,23 @@ public class GlobalUsageSettings {
 	 * @see #REMOTEPROPS_ALLINSTANCES_ENABLED_KEY
 	 */
 	protected boolean isAllInstancesReportingEnabled() {
-		try {
-			Map<Object, Object> valueMap = remoteMap.getMap();
-			Object isEnabled = valueMap.get(REMOTEPROPS_USAGE_REPORTING_ENABLED_KEY);
-			if (isEnabled == null) {
-				return ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT;
-			}
-
-			return Boolean.valueOf(isEnabled.toString());
-		} catch (Exception e) {
-			JBossToolsUsageActivator.getDefault().getLogger().error(e, false);
-			return ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT;
-		}
+//		try {
+//			Map<Object, Object> valueMap = remoteMap.getMap();
+//			Object isEnabled = valueMap.get(REMOTEPROPS_USAGE_REPORTING_ENABLED_KEY);
+//			if (isEnabled == null) {
+//				return ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT;
+//			}
+//
+//			return Boolean.valueOf(isEnabled.toString());
+//		} catch (Exception e) {
+//			JBossToolsUsageActivator.getDefault().getLogger().error(e, false);
+//			return ALLINSTANCES_USAGE_REPORTING_ENABLED_DEFAULT;
+//		}
+		return true;
 	}
 
 	public Map<Object, Object> getRemoteSettings() throws IOException {
-		return remoteMap.getMap();
+		return new HashMap<Object, Object>();
 	}
 
 	/**

@@ -125,9 +125,9 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 				eclipseEnvironment.getScreenResolution(), builder, styles);
 		builder.append(StringUtils.getLineSeparator());
 
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ProductOwner,
-				eclipseEnvironment.getHostname(), builder, styles);
-		builder.append(StringUtils.getLineSeparator());
+//		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ProductOwner,
+//				eclipseEnvironment.getHostname(), builder, styles);
+//		builder.append(StringUtils.getLineSeparator());
 
 		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_NumberOfUsageHits,
 				String.valueOf(eclipseEnvironment.getVisitCount()), builder,
@@ -139,9 +139,9 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_CurrentUsageHit,
 				getFormattedDate(eclipseEnvironment.getCurrentVisit()), builder,
 				styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JBossCentralEnabled,
-				eclipseEnvironment.getCentralEnabledValue(), builder,
-				styles);
+//		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JBossCentralEnabled,
+//				eclipseEnvironment.getCentralEnabledValue(), builder,
+//				styles);
 
 		builder.append(StringUtils.getLineSeparator());
 		appendEvents(builder, styles);

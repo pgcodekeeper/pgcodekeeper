@@ -77,7 +77,7 @@ public class JBossToolsUsageActivator extends Plugin {
 	protected IJBossToolsEclipseEnvironment createEclipseEnvironment(IUsageBranding branding) {
 		return new JBossToolsEclipseEnvironment(
 				branding.getGoogleAnalyticsAccount(), 
-				branding.getGoogleAnalyticsReportingHost(),
+				null,
 				UsageReportPreferencesUtils.getPreferences());
 	}
 

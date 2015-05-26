@@ -19,6 +19,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.jboss.tools.usage.branding.IUsageBranding;
@@ -92,19 +93,20 @@ public class UsageReportEnablementDialog extends Dialog {
 
 	private void createUsageReportingWidgets(Composite parent, Composite composite) {
 		// message
-		Link link = new Link(composite, SWT.WRAP);
+		Label link = new Label(composite, SWT.WRAP);
+//		Link link = new Link(composite, SWT.WRAP);
 		link.setFont(parent.getFont());
 
 		link.setText(branding.getStartupAllowReportingMessage());
-		link.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				BrowserUtil.checkedCreateExternalBrowser(
-							branding.getStartupAllowReportingDetailLink(),
-							JBossToolsUsageActivator.PLUGIN_ID,
-							JBossToolsUsageActivator.getDefault().getLog());
-			}
-		});
+//		link.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				BrowserUtil.checkedCreateExternalBrowser(
+//							branding.getStartupAllowReportingDetailLink(),
+//							JBossToolsUsageActivator.PLUGIN_ID,
+//							JBossToolsUsageActivator.getDefault().getLog());
+//			}
+//		});
 		GridDataFactory.fillDefaults()
 					.align(SWT.FILL, SWT.CENTER)
 					.grab(true, false)

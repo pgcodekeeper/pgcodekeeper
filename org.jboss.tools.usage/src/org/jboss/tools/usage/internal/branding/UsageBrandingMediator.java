@@ -74,24 +74,24 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
-	public String getStartupAllowReportingDetailLink() {
-		IUsageBranding service = (IUsageBranding) getService();
-		if (service != null) {
-			return service.getStartupAllowReportingDetailLink();
-		} else {
-			return defaultBranding.getStartupAllowReportingDetailLink();
-		}
+//	public String getStartupAllowReportingDetailLink() {
+//		IUsageBranding service = (IUsageBranding) getService();
+//		if (service != null) {
+//			return service.getStartupAllowReportingDetailLink();
+//		} else {
+//			return defaultBranding.getStartupAllowReportingDetailLink();
+//		}
 
-	}
+//	}
 
-	public String getGlobalRemotePropertiesUrl() {
-		IUsageBranding service = (IUsageBranding) getService();
-		if (service != null) {
-			return service.getGlobalRemotePropertiesUrl();
-		} else {
-			return defaultBranding.getGlobalRemotePropertiesUrl();
-		}
-	}
+//	public String getGlobalRemotePropertiesUrl() {
+//		IUsageBranding service = (IUsageBranding) getService();
+//		if (service != null) {
+//			return service.getGlobalRemotePropertiesUrl();
+//		} else {
+//			return defaultBranding.getGlobalRemotePropertiesUrl();
+//		}
+//	}
 
 	public String getGoogleAnalyticsAccount() {
 		IUsageBranding service = (IUsageBranding) getService();
@@ -102,12 +102,12 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
-	public String getGoogleAnalyticsReportingHost() {
-		IUsageBranding service = (IUsageBranding) getService();
-		if (service != null) {
-			return service.getGoogleAnalyticsReportingHost();
-		} else {
-			return defaultBranding.getGoogleAnalyticsReportingHost();
-		}
-	}
+//	public String getGoogleAnalyticsReportingHost() {
+//		IUsageBranding service = (IUsageBranding) getService();
+//		if (service != null) {
+//			return service.getGoogleAnalyticsReportingHost();
+//		} else {
+//			return defaultBranding.getGoogleAnalyticsReportingHost();
+//		}
+//	}
 }

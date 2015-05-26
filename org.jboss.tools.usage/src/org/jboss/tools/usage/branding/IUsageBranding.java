@@ -31,11 +31,11 @@ public interface IUsageBranding {
 
 	public String getStartupAllowReportingMessage();
 
-	public String getStartupAllowReportingDetailLink();
+//	public String getStartupAllowReportingDetailLink();
 
-	public String getGlobalRemotePropertiesUrl();
+//	public String getGlobalRemotePropertiesUrl();
 
 	public String getGoogleAnalyticsAccount();
 
-	public String getGoogleAnalyticsReportingHost();
+//	public String getGoogleAnalyticsReportingHost();
 }

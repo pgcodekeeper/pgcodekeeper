@@ -89,7 +89,7 @@ public class GoogleAnalyticsUrlStrategy implements IURLBuildingStrategy {
 		appendParameter(IGoogleAnalyticsParameters.PARAM_TRACKING_CODE_VERSION,
 				IGoogleAnalyticsParameters.VALUE_TRACKING_CODE_VERSION, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
-		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, googleParameters.getHostname(), builder);
+//		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, googleParameters.getHostname(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_LANGUAGE_ENCODING,
 				IGoogleAnalyticsParameters.VALUE_ENCODING_UTF8, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_RESOLUTION, googleParameters.getScreenResolution(),
