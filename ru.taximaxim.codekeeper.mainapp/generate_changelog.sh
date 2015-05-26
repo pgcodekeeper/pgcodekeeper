@@ -10,7 +10,7 @@
 #------------------------------------------------------------------------------------------
 
 # Repository may have .gitchangelog.rc file to customize it's commits to collect
-repositoryList=("ru.taximaxim.codekeeper.mainapp" "apgdiff" "ru.taximaxim.codekeeper.ui");
+repositoryList=("codekeeper");
 # folder for changelogs
 change_log_folder="/changelogs"
 # Get path to script
@@ -33,7 +33,7 @@ version=$(${TOOLS_GEN_CHANGE_LOG} | egrep -m 1 -i -o 'v.\..\..')
 echo $version" has been released." > ${ROOT_PATH}${change_log_folder}"/"${CHANGE_LOG_FILENAME}
 # Combine changes to separate files: reponame.txt
 for ((i=0;i<${#repositoryList[@]};i++));do 
-	PATH_TO_REPO=${ROOT_PATH}"/../"${repositoryList[$i]};
+	PATH_TO_REPO=${ROOT_PATH}"/../../"${repositoryList[$i]};
 	cd $PATH_TO_REPO;
 	# get revereted repolist git_tag_rev
 	declare -a git_tags
