@@ -48,10 +48,8 @@ public final class PgDumpLoader { // NOPMD
     /**
      * Loads database schema from dump file.
      *
-     * @param inputStream
-     *            input stream that should be read
-     * @param database
-     *            {@link PgDatabase} to load into
+     * @param inputStream input stream that should be read
+     * @param database {@link PgDatabase} to load into
      *
      * @return database schema from dump file
      */
@@ -76,14 +74,7 @@ public final class PgDumpLoader { // NOPMD
      * Loads database schema from a ModelExporter directory tree. The root
      * directory must contain a listing.lst file for ordered list of files.
      * 
-     * @param dirPath
-     *            path to the directory tree root
-     * @param charsetName
-     *            charset that should be used to read the file
-     * @param outputIgnoredStatements
-     *            whether ignored statements should be included in the output
-     * @param ignoreSlonyTriggers
-     *            whether Slony triggers should be ignored
+     * @param dirPath path to the directory tree root
      *
      * @return database schema
      * @throws InterruptedException
@@ -196,14 +187,7 @@ public final class PgDumpLoader { // NOPMD
     /**
      * Loads database schema from dump file.
      *
-     * @param file
-     *            name of file containing the dump
-     * @param charsetName
-     *            charset that should be used to read the file
-     * @param outputIgnoredStatements
-     *            whether ignored statements should be included in the output
-     * @param ignoreSlonyTriggers
-     *            whether Slony triggers should be ignored
+     * @param file name of file containing the dump
      *
      * @return database schema from dump file
      * @throws InterruptedException
@@ -227,14 +211,7 @@ public final class PgDumpLoader { // NOPMD
     /**
      * Loads database schema from dump file.
      *
-     * @param file
-     *            name of file containing the dump
-     * @param charsetName
-     *            charset that should be used to read the file
-     * @param outputIgnoredStatements
-     *            whether ignored statements should be included in the output
-     * @param ignoreSlonyTriggers
-     *            whether Slony triggers should be ignored
+     * @param file name of file containing the dump
      *
      * @return database schema from dump file
      * @throws InterruptedException
@@ -261,10 +238,8 @@ public final class PgDumpLoader { // NOPMD
     /**
      * Uses to parse only one file
      * 
-     * @param projPath
-     *            path to root folder of project
-     * @param filePath
-     *            path to file
+     * @param projPath path to root folder of project
+     * @param filePath path to file
      * @return database with schemas, extensions and parsed file contents
      */
     public static PgDatabase loadFromFile(String filePath,
