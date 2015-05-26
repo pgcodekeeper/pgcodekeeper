@@ -55,7 +55,7 @@ public final class PgDumpLoader { // NOPMD
      *
      * @return database schema from dump file
      */
-    private static PgDatabase loadDatabaseSchemaCoreAntLR(
+    private static PgDatabase loadDatabaseSchemaCore(
             InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path, IProgressMonitor monitor,
             int monitoringLevel) {
@@ -124,7 +124,7 @@ public final class PgDumpLoader { // NOPMD
         return db;
     }
 
-    static PgDatabase loadObjReferences(InputStream inputStream,
+    private static PgDatabase loadObjReferences(InputStream inputStream,
             PgDiffArguments arguments, PgDatabase database, Path path,
             IProgressMonitor monitor, int monitoringLevel,
             List<FunctionBodyContainer> funcBodies) {
@@ -161,6 +161,16 @@ public final class PgDumpLoader { // NOPMD
         }
     }
 
+    /**
+     * Разбирает файл и заполняет базу
+     * @param arguments
+     * @param db база для заполнения
+     * @param monitor
+     * @param monLvl
+     * @param funcBodies указывает на необходимость прочитать только ссылки
+     * @param f файл
+     * @throws InterruptedException
+     */
     private static void parseFile(PgDiffArguments arguments, PgDatabase db,
             IProgressMonitor monitor, int monLvl, List<FunctionBodyContainer> funcBodies, File f)
             throws InterruptedException {
@@ -209,8 +219,8 @@ public final class PgDumpLoader { // NOPMD
             PgDiffArguments arguments, PgDatabase database, Path path,
             IProgressMonitor monitor, int monitoringLevel)
             throws InterruptedException {
-        PgDumpLoader.checkCancelled(monitor);
-        return PgDumpLoader.loadDatabaseSchemaCoreAntLR(inputStream, arguments,
+        checkCancelled(monitor);
+        return loadDatabaseSchemaCore(inputStream, arguments,
                 database, path, monitor, monitoringLevel);
     }
 
@@ -257,7 +267,7 @@ public final class PgDumpLoader { // NOPMD
      *            path to file
      * @return database with schemas, extensions and parsed file contents
      */
-    public static PgDatabase loadSchemasAndFile(String filePath,
+    public static PgDatabase loadFromFile(String filePath,
             PgDiffArguments arguments, IProgressMonitor monitor,
             int monitoringLevel, List<FunctionBodyContainer> funcBodies)
             throws InterruptedException {
@@ -283,8 +293,8 @@ public final class PgDumpLoader { // NOPMD
             PgDiffArguments arguments, PgDatabase database, Path path,
             IProgressMonitor monitor, int monitoringLevel,
             List<FunctionBodyContainer> funcBodies) throws InterruptedException {
-        PgDumpLoader.checkCancelled(monitor);
-        return PgDumpLoader.loadObjReferences(inputStream, arguments, database,
+        checkCancelled(monitor);
+        return loadObjReferences(inputStream, arguments, database,
                 path, monitor, monitoringLevel, funcBodies);
     }
 
