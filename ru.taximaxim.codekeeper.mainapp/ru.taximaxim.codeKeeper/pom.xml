@@ -35,6 +35,7 @@
         <module>../feature</module>
         <module>../updatesite</module>
         <module>../../ru.taximaxim.codekeeper.ui.help</module>
+        <module>../../org.jboss.tools.usage</module>
     </modules>
 
     <properties>
