@@ -17,6 +17,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
@@ -75,6 +77,7 @@ public class PgDiffDepciesTest {
                 {"trig_upd_col","trig_upd_col__usr_tbl"},
                 // задача из редмайна по номеру, пользователь выбирает все объекты
                 {"err6049", "err6049"},
+                {"err7095", "err7095"},
                 // удаляется исходная таблица, пользователь выбрал на удаление t1
                 {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
                 // удаляется исходная таблица, пользователь выбрал t2
@@ -101,7 +104,10 @@ public class PgDiffDepciesTest {
                 // тип изменяется как альтер, пользователь выбрал его
                 {"alter_type", "alter_type_usr"},
                 // тип изменяется через drop create, пользователь выбирает его
-                {"drop_type", "drop_type_usr"}
+                {"drop_type", "drop_type_usr"},
+                // удаляется таблица с содержимым индексом и триггером,
+                // пользователь выбрал только таблицу
+                {"drop_tbl", "drop_tbl_usr_tbl"}
             });
     }
     
@@ -184,7 +190,11 @@ public class PgDiffDepciesTest {
             oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
             newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
         }
-        PgDiff.diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, oldDbFull, newDbFull);
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
+        tree.setAllChecked();
+        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+                tree, oldDbFull, newDbFull, null,
+                null);
         writer.flush();
 
         StringBuilder sbExpDiff;

@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -264,22 +265,18 @@ public abstract class ParserAbstract {
         return funcSignature;
     }
 
-    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
+    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx,
+            String scmName, String tblName) {
         List<PgConstraint> result = new ArrayList<>();
-        if (colCtx.tabl_constraint != null) {
-            result.add(getTableConstraint(colCtx.tabl_constraint));
-        }
         // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
-        /*else {
-            for (Constraint_commonContext column_constraint : colCtx
-                    .table_column_definition().colmn_constraint) {
-                getColumnConstraint(column_constraint, result);
-            }
-        }*/
+        if (colCtx.tabl_constraint != null) {
+            result.add(getTableConstraint(colCtx.tabl_constraint, scmName, tblName));
+        }
         return result;
     }
 
-    protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
+    protected PgConstraint getTableConstraint(Constraint_commonContext ctx,
+            String scmName, String tblName) {
         String constrName = ctx.constraint_name == null ? "" : removeQuotes(ctx.constraint_name);
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
         
@@ -298,8 +295,26 @@ public abstract class ParserAbstract {
                         new GenericColumn(schemaName, tableName, getName(name)));
             }
         }
+        if (ctx.constr_body().table_unique_prkey() != null) {
+            setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr, scmName, tblName);
+        }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
+    }
+    
+    /**
+     * Вычитать PrimaryKey или Unique со списком колонок
+     * @param tblName 
+     * @param scmName 
+     */
+    private void setPrimaryUniq(Table_unique_prkeyContext ctx,
+            PgConstraint constr, String scmName, String tblName) {
+        constr.setUnique(ctx.UNIQUE() != null);
+        constr.setPrimaryKey(ctx.PRIMARY() != null);
+        for (Schema_qualified_nameContext name : ctx.column_references()
+                .names_references().name) {
+            constr.addColumn(new GenericColumn(scmName, tblName, getName(name)));
+        }
     }
     
     protected void logError(String object, String name) {
@@ -316,20 +331,6 @@ public abstract class ParserAbstract {
                         .append(name).append("will be skipped").toString());
     }
 
-    private void getColumnConstraint(
-            Constraint_commonContext column_constraint,
-            List<PgConstraint> result) {
-        PgConstraint constr = null;
-        // skip null and def values, it parsed to column def
-        if (column_constraint.constr_body().common_constraint().null_value != null
-                || column_constraint.constr_body().default_expr != null
-                || column_constraint.constr_body().default_expr_data != null) {
-            return;
-        }
-        constr = getTableConstraint(column_constraint);
-        result.add(constr);
-    }
-    
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
         if (constr.common_constraint().check_boolean_expression() != null) {
             String constr_name = "";

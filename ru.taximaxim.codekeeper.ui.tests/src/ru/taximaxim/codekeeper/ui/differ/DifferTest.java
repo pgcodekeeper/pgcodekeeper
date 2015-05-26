@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
@@ -30,7 +29,6 @@ import org.junit.runners.Parameterized.Parameters;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -105,12 +103,8 @@ public class DifferTest {
         // filtered input
         differData.setUserSelection(root);
 
-        final Differ differ = new Differ(
-                DbSource.fromFilter(dbSource, root, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget, root, DiffSide.RIGHT),
-                true, ApgdiffConsts.UTC);
-        differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
-        
+        Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
+                root, true, ApgdiffConsts.UTC);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
         
@@ -154,16 +148,16 @@ abstract class DifferData{
        this.caseNumber = caseNumber;
     }
 
-    final String getPredefinedDirectDiff() throws UnsupportedEncodingException, IOException{
+    final String getPredefinedDirectDiff() throws IOException{
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
     }
     
-    final String getPredefinedReverseDiff() throws UnsupportedEncodingException, IOException{
+    final String getPredefinedReverseDiff() throws IOException{
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
     }
     
     private final String readResourceToString(InputStream resourceStream) 
-            throws UnsupportedEncodingException, IOException{
+            throws IOException{
         StringBuilder script = new StringBuilder();
         try(InputStreamReader isr = new InputStreamReader(resourceStream, "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)) {
@@ -201,7 +195,7 @@ class DifferData_2 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);
     }
     
     @Override
@@ -229,7 +223,7 @@ class DifferData_3 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);
     }
     
     @Override
@@ -256,7 +250,7 @@ class DifferData_4 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("audit");
-        schema.getChild("logged_actions").setSelected(true);;
+        schema.getChild("logged_actions").setSelected(true);
     }
 }
 
@@ -269,7 +263,7 @@ class DifferData_5 extends DifferData{
     @Override
     void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        schema.getChild("v_auto_mark_two").setSelected(true);;
+        schema.getChild("v_auto_mark_two").setSelected(true);
     }
     
     @Override

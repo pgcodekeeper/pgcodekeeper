@@ -19,7 +19,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.PgDiffViews;
 
 /**
  * Stores view information.
@@ -138,11 +137,11 @@ public class PgView extends PgStatementWithSearchPath {
         }
         PgView oldView = this;
         PgDiffScript script = new PgDiffScript();
-        if (PgDiffViews.isViewModified(oldView, newView)) {
+        if (PgView.isViewModified(oldView, newView)) {
             isNeedDepcies.set(true);
             return true;
         }
-        PgDiffViews.diffDefaultValues(script, oldView, newView);
+        PgView.diffDefaultValues(script, oldView, newView);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
             script.addStatement(newView.getOwnerSQL());
@@ -461,5 +460,99 @@ public class PgView extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
+    }
+
+    /**
+     * Returns true if either column names or query of the view has been
+     * modified.
+     *
+     * @param oldView old view
+     * @param newView new view
+     *
+     * @return true if view has been modified, otherwise false
+     */
+    public static boolean isViewModified(final PgView oldView,
+            final PgView newView) {
+        List<String> oldColumnNames = oldView.getColumnNames();
+        List<String> newColumnNames = newView.getColumnNames();
+    
+        if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
+            String nOldQuery = oldView.getNormalizedQuery();
+            String nNewQuery = newView.getNormalizedQuery();
+            return !nOldQuery.equals(nNewQuery);
+        } else {
+            return !oldColumnNames.equals(newColumnNames);
+        }
+    }
+
+    /**
+     * Diffs default values in views.
+     *
+     * @param writer           writer
+     * @param oldView          old view
+     * @param newView          new view
+     * @param searchPathHelper search path helper
+     */
+    public static void diffDefaultValues(final PgDiffScript script,
+            final PgView oldView, final PgView newView) {
+        final List<DefaultValue> oldValues =
+                oldView.getDefaultValues();
+        final List<DefaultValue> newValues =
+                newView.getDefaultValues();
+    
+        // modify defaults that are in old view
+        for (final DefaultValue oldValue : oldValues) {
+            boolean found = false;
+    
+            for (final DefaultValue newValue : newValues) {
+                if (oldValue.getColumnName().equals(newValue.getColumnName())) {
+                    found = true;
+    
+                    if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
+                        script.addStatement("ALTER TABLE "
+                                + PgDiffUtils.getQuotedName(newView.getName())
+                                + " ALTER COLUMN "
+                                + PgDiffUtils.getQuotedName(newValue.getColumnName())
+                                + " SET DEFAULT "
+                                + newValue.getDefaultValue()
+                                + ';');
+                    }
+    
+                    break;
+                }
+            }
+    
+            if (!found) {
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + " ALTER COLUMN "
+                        + PgDiffUtils.getQuotedName(oldValue.getColumnName())
+                        + " DROP DEFAULT;");
+            }
+        }
+    
+        // add new defaults
+        for (final DefaultValue newValue : newValues) {
+            boolean found = false;
+    
+            for (final DefaultValue oldValue : oldValues) {
+                if (newValue.getColumnName().equals(oldValue.getColumnName())) {
+                    found = true;
+                    break;
+                }
+            }
+    
+            if (found) {
+                continue;
+            }
+    
+            script.addStatement("ALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newView.getName())
+                    + " ALTER COLUMN "
+                    + PgDiffUtils.getQuotedName(newValue.getColumnName())
+                    + " SET DEFAULT "
+                    + newValue.getDefaultValue()
+                    + ';');
+        }
     }
 }

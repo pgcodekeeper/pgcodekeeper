@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -18,6 +17,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -31,25 +31,19 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class Differ implements IRunnableWithProgress {
     
     private static final int INITIAL_BUFFER_CAPACITY = 1024;
-
-    private final DbSource dbSource, dbTarget;
-
-    private boolean finished;
+    
+    private final PgDatabase sourceDbFull;
+    private final PgDatabase targetDbFull;
+    private final TreeElement root;
     private final boolean needTwoWay;
+    private final String timezone;
+    
+    private boolean finished;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
-    private String timezone;
-    
-    private PgDatabase sourceDbFull;
-    private PgDatabase targetDbFull;
     
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
     private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
-
-    public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
-       this.sourceDbFull = sourceDbFull;
-       this.targetDbFull = targetDbFull;
-    }
     
     public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
@@ -74,9 +68,11 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     } 
 
-    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay, String timezone) {
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
+    public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
+            TreeElement root, boolean needTwoWay, String timezone) {
+        this.sourceDbFull = sourceDbFull;
+        this.targetDbFull = targetDbFull;
+        this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
     }
@@ -129,40 +125,33 @@ public class Differ implements IRunnableWithProgress {
             InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
         
-        PgDatabase dbSrc, dbTgt;
-        dbSrc = dbTgt = null;
-        try {
-            dbSrc = this.dbSource.get(pm.newChild(25)); // 25
-            dbTgt = this.dbTarget.get(pm.newChild(25)); // 50
-        } catch(IOException ex) {
-            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
-        }
-        
-        Log.log(Log.LOG_INFO, "Diff from: " + this.dbSource.getOrigin() //$NON-NLS-1$
-                + " to: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Diff from: " + sourceDbFull.getName() //$NON-NLS-1$
+                + " to: " + targetDbFull.getName()); //$NON-NLS-1$
         
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, ApgdiffConsts.UTF_8), true);
-            
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), dbSrc, dbTgt,
-                    sourceDbFull, targetDbFull, additionalDepciesSource,
-                    additionalDepciesTarget);
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), 
+                    root,
+                    sourceDbFull, targetDbFull,
+                    additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
             diffDirect = diffOut.toString(ApgdiffConsts.UTF_8).trim();
 
             if (needTwoWay) {
-                Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
-                        + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
+                Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
+                        + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
                 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
-                PgDiff.diffDatabaseSchemas(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), dbTgt, dbSrc,
-                        targetDbFull, sourceDbFull);
+                PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone),
+                        root.getRevertedCopy(),
+                        targetDbFull, sourceDbFull,
+                        additionalDepciesTarget, additionalDepciesSource);
                 writer.flush();
                 diffReverse = diffOut.toString(ApgdiffConsts.UTF_8).trim();
             }

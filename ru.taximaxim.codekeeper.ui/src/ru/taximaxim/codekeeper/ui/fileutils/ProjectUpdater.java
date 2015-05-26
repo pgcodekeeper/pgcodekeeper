@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
-import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -26,7 +26,7 @@ public class ProjectUpdater {
     private final PgDatabase dbNew;
     private final PgDatabase dbOld;
     
-    private final List<TreeElement> changedObjects;
+    private final Collection<TreeElement> changedObjects;
     private final String encoding;
     private final File dirExport;
 
@@ -34,11 +34,11 @@ public class ProjectUpdater {
      * dbOld, changedObjects are necessary only for partial update
      * @throws CoreException 
      */
-    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, List<TreeElement> changedObjects, PgDbProject proj) throws CoreException {
+    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> checked, PgDbProject proj) throws CoreException {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
         
-        this.changedObjects = changedObjects;
+        this.changedObjects = checked;
         
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject().toFile();

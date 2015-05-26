@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiffDomains;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgDomain extends PgStatementWithSearchPath {
@@ -199,9 +198,9 @@ public class PgDomain extends PgStatementWithSearchPath {
             sb.append(';');
         }
         
-        PgDiffDomains.compareConstraints(newDomain.getName(), oldDomain.getConstraints(),
+        PgDomain.compareConstraints(newDomain.getName(), oldDomain.getConstraints(),
                 newDomain.getConstraints(), sb);
-        PgDiffDomains.compareConstraints(newDomain.getName(), oldDomain.getConstrsNotValid(),
+        PgDomain.compareConstraints(newDomain.getName(), oldDomain.getConstrsNotValid(),
                 newDomain.getConstrsNotValid(), sb);
         
         if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
@@ -292,5 +291,31 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema) this.getParent();
+    }
+
+    public static void compareConstraints(String domainName, List<PgConstraint> oldDomain,
+            List<PgConstraint> newDomain, StringBuilder sbSQL) {
+        for (PgConstraint oldConstr : oldDomain) {
+            if (!newDomain.contains(oldConstr)) {
+                if (sbSQL.length() != 0) {
+                    sbSQL.append("\n\n");
+                }
+                sbSQL.append("ALTER DOMAIN ").append(domainName)
+                        .append("\n\tDROP CONSTRAINT ")
+                        .append(oldConstr.getName()).append(";");
+            }
+        }
+        
+        for (PgConstraint newConstr : newDomain) {
+            if (!oldDomain.contains(newConstr)) {
+                if (sbSQL.length() != 0) {
+                    sbSQL.append("\n\n");
+                }
+                sbSQL.append("ALTER DOMAIN ").append(domainName)
+                        .append("\n\tADD CONSTRAINT ")
+                        .append(newConstr.getName()).append(" ")
+                        .append(newConstr.getDefinition()).append(";");
+            }
+        }
     }
 }

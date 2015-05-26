@@ -164,7 +164,6 @@ table_action
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
     | ADD tabl_constraint=constraint_common (NOT VALID)?
-    | ADD tabl_constraint_using_index=table_constraint_using_index
     | validate_constraint
     | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
@@ -194,12 +193,6 @@ drop_constraint
 
 attribute_option_value
     : attribute_option=table_attribute_option EQUAL value=signed_numerical_literal
-    ;
-
-table_constraint_using_index
-    : (CONSTRAINT constraint_name=schema_qualified_name)?
-     (UNIQUE | PRIMARY KEY) USING INDEX index_name=schema_qualified_name
-     table_deferrable? table_initialy_immed?
     ;
 
 table_attribute_option
@@ -647,14 +640,18 @@ constr_body
       )
       table_deferrable? table_initialy_immed?
     ;
+    
+table_unique_prkey
+    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
+    ;
+    
+index_parameters
+    : with_storage_parameter? (USING INDEX (table_space | schema_qualified_name))?
+    ;
 
 common_constraint
     :check_boolean_expression 
     | null_false=NOT? null_value=NULL
-    ;
-
-table_unique_prkey
-    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
     ;
 
 table_references
@@ -703,10 +700,6 @@ table_space
 action
     : cascade_restrict
       | SET (NULL | DEFAULT)
-    ;
-    
-index_parameters
-    : with_storage_parameter? (USING INDEX table_space)?
     ;
     
 table_elements

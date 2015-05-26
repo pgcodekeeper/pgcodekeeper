@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -157,9 +156,13 @@ public class DepcyResolver {
                     // is checked in the depcy tracker in this case
                     addDropStatements(oldObj);
                 } else {
-                    addToListWithoutDepcies(
-                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
-                            oldObj, null);
+                    // объект будет пересоздан ниже в новом состоянии, поэтому
+                    // ничего делать не нужно
+                    if (!inDropsList(oldObj)) {
+                        addToListWithoutDepcies(
+                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
+                                oldObj, null);
+                    }
                 }
             }
         }
@@ -257,6 +260,8 @@ public class DepcyResolver {
             return db.getExtension(statement.getName());
         case SCHEMA:
             return db.getSchema(statement.getName());
+        case DATABASE:
+            return db;
         default:
             break;
         }
@@ -427,12 +432,8 @@ public class DepcyResolver {
                     }
                 }
             }
-            // При дропе таблица тянет за собой внутренние зависимости
-            // foreign keys дропаем как обычно, чтобы не было конфликтов с primary keys
-            if (oldObj.getParent().getStatementType() == DbObjType.TABLE) {
-                if (oldObj instanceof PgForeignKey) {
-                    return false;
-                }
+            // Колонки пропускаются при удалении таблицы
+            if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
                 if (newTable == null) {

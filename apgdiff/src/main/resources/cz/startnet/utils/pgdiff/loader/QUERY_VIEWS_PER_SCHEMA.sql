@@ -17,12 +17,13 @@ SELECT relname,
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
-            array_agg(columnsData.attname) AS column_names,
-            array_agg(columnsData.description) AS column_comments,
-            array_agg(columnsData.adsrc) AS column_defaults,
-            array_agg(columnsData.attacl) AS column_acl
+            array_agg(columnsData.attname ORDER BY columnsData.attnum) AS column_names,
+            array_agg(columnsData.description ORDER BY columnsData.attnum) AS column_comments,
+            array_agg(columnsData.adsrc ORDER BY columnsData.attnum) AS column_defaults,
+            array_agg(columnsData.attacl ORDER BY columnsData.attnum) AS column_acl
      FROM
-         (SELECT attrelid,
+         (SELECT attnum,
+                 attrelid,
                  attr.attname,
                  attr.attacl::text,
                  des.description,

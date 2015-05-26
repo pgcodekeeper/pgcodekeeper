@@ -12,6 +12,7 @@ import java.nio.file.attribute.DosFileAttributeView;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class ModelExporter {
      */
     private final String sqlEncoding;
     
-    private List<TreeElement> changedObjects;
+    private Collection<TreeElement> changedObjects;
     
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
@@ -86,7 +87,7 @@ public class ModelExporter {
         this.oldDb = null;
     }
     
-    public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb, List<TreeElement> changedObjects, String sqlEncoding){
+    public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb, Collection<TreeElement> changedObjects, String sqlEncoding){
         this.outDir = outDir;
         this.newDb = newDb;
         this.oldDb = oldDb;

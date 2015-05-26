@@ -361,6 +361,7 @@ public class PgSchema extends PgStatement {
                     && Objects.equals(definition, schema.getDefinition())
                     && grants.equals(schema.grants)
                     && revokes.equals(schema.revokes)
+                    && Objects.equals(owner, schema.getOwner())
                     && Objects.equals(comment, schema.getComment());
         }
         
@@ -400,6 +401,7 @@ public class PgSchema extends PgStatement {
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + new HashSet<>(domains).hashCode();
         result = prime * result + new HashSet<>(functions).hashCode();

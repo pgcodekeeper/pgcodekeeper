@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  */
 public class TreeElement {
 
-    public static abstract class ListGeneratorPredicate {
+    public abstract static class ListGeneratorPredicate {
         
         public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
         
@@ -168,6 +168,7 @@ public class TreeElement {
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         default:
             throw new IllegalStateException("Unknown element type: " + type);
         }
@@ -218,6 +219,38 @@ public class TreeElement {
         result.add(this);
         return result;
     }
+    /**
+     * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
+     * left -> right, right -> left, both->both
+     */
+    public TreeElement getRevertedCopy() {
+        TreeElement copy = getRevertedElement();
+        for (TreeElement child : getChildren()) {
+            copy.addChild(child.getRevertedCopy());
+        }
+        return copy;
+    }
+    
+    /**
+     * возвращает копию элемента с измененными сторонами
+     */
+    private TreeElement getRevertedElement() {
+        DiffSide newSide = null;
+        switch (side) {
+        case BOTH:
+            newSide = DiffSide.BOTH;
+            break;
+        case LEFT:
+            newSide = DiffSide.RIGHT;
+            break;
+        case RIGHT:
+            newSide = DiffSide.LEFT;
+            break;
+        }
+        TreeElement copy = new TreeElement(name, type, newSide);
+        copy.setSelected(selected);
+        return copy;
+    }
     
     /**
      * Принимает дерево и выбирает из него все выбранные элементы
@@ -230,6 +263,16 @@ public class TreeElement {
         }
         for (TreeElement child : root.getChildren()) {
             getSelected(child, result);
+        }
+    }
+    
+    /**
+     * начиная от текущего отмечает все элементы
+     */
+    public void setAllChecked() {
+        setSelected(true);
+        for (TreeElement child : getChildren()) {
+            child.setAllChecked();
         }
     }
     /**
@@ -295,6 +338,15 @@ public class TreeElement {
     
     @Override
     public String toString() {
-        return getName() == null ? "no name" : getName();
+        return getName() == null ? "no name" : getName() + " " + side + " " + type;
+    }
+    
+    /**
+     * устанавливает родителя, использовать только в случае с колонки, создается
+     * связь для получения объекта из базы в одну сторону
+     */
+    @Deprecated 
+    public void setParent(TreeElement el) {
+        this.parent = el;
     }
 }

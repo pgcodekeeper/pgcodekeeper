@@ -21,12 +21,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -162,32 +158,13 @@ public class PgDumpLoaderTest {
         // applying full unchanged diff tree created against an empty DB
         // should result in a fully copied or empty (depending on filter side) DB object
         TreeElement dbTree = DiffTree.create(d, empty);
-        ApgdiffTestUtils.setAllchecked(dbTree);
-        PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
+        dbTree.setAllChecked();
         
-        Assert.assertEquals("PgDbFilter2: filter altered the result", d, dbFilteredFullTree);
         Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);
         
         // test deepCopy mechanism
         Assert.assertEquals("PgStatement deep copy altered", d, d.deepCopy());
         Assert.assertEquals("PgStatement deep copy altered original", dbPredefined, d);
-        
-        PgDatabase oneDiff = new PgDatabase();
-        oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
-        
-        // test applying one DB to another using DiffTree
-        TreeElement removeAll = dbTree;
-        TreeElement onlyNew = DiffTree.create(d, oneDiff);
-        ApgdiffTestUtils.setAllchecked(onlyNew);
-        TreeElement onlyOld = DiffTree.create(d, d);
-        ApgdiffTestUtils.setAllchecked(onlyOld);
-        
-        Assert.assertEquals("DiffTreeApplier: not empty", empty,
-                new DiffTreeApplier(d, oneDiff, removeAll).apply());
-        Assert.assertEquals("DiffTreeApplier: not new", oneDiff,
-                new DiffTreeApplier(d, oneDiff, onlyNew).apply());
-        Assert.assertEquals("DiffTreeApplier: not old", d,
-                new DiffTreeApplier(d, oneDiff, onlyOld).apply());
     }
 
     /**
@@ -222,9 +199,9 @@ public class PgDumpLoaderTest {
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 
                     " is not equal to exported'n'loaded.", dbPredefined, dbAfterExport);
-            
             Assert.assertEquals("ModelExporter: exported predefined object is not "
                     + "equal to file " + filename, dbAfterExport, dbFromFile);
+            
         }finally{
             if (exportDir != null){
                 deleteRecursive(exportDir.toFile());
@@ -908,7 +885,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
 
-    d.setComment("'comments database'");
+//    d.setComment("'comments database'");
     schema.setComment("'public schema'");
     
     PgFunction func = new PgFunction("test_fnc", "");
@@ -962,7 +939,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     constraint.setDefinition("PRIMARY KEY (id)");
     table.addConstraint(constraint);
     
-    constraint.setComment("'primary key'");
+//    constraint.setComment("'primary key'");
     
     table.setOwner("fordfrog");
     

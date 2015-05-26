@@ -1,7 +1,5 @@
 COMMENT ON DATABASE current_database() IS 'comments database';
 
-COMMENT ON SCHEMA public IS 'public schema';
-
 COMMENT ON COLUMN typ_composite."key" IS 'Type composite key comment';
 
 COMMENT ON COLUMN typ_composite.val IS 'Type composite val comment';
@@ -18,10 +16,6 @@ COMMENT ON COLUMN test.id IS 'id column';
 
 COMMENT ON COLUMN test.text IS 'text column';
 
-COMMENT ON VIEW test_view IS 'test view';
-
-COMMENT ON COLUMN test_view.id IS 'view id col';
-
 COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function';
 
 COMMENT ON CONSTRAINT text_check ON test IS 'text check';
@@ -29,3 +23,7 @@ COMMENT ON CONSTRAINT text_check ON test IS 'text check';
 COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key';
 
 COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
+
+COMMENT ON VIEW test_view IS 'test view';
+
+COMMENT ON COLUMN test_view.id IS 'view id col';
