@@ -16,8 +16,8 @@
   <packaging>eclipse-plugin</packaging>
       <properties>
     
-        <sonar.binaries>${project.basedir}/../apgdiff/target/classes</sonar.binaries>
-        <sonar.java.libraries>${project.basedir}/lib/*.jar</sonar.java.libraries>
+        <sonar.binaries>${project.basedir}/apgdiff/target/classes</sonar.binaries>
+        <!-- <sonar.java.libraries>${project.basedir}/lib/*.jar</sonar.java.libraries> -->
     </properties>
   
 </project>
