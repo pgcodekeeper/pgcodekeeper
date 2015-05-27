@@ -45,7 +45,7 @@ public class PgDiffDepciesTest {
                 { "empty", "empty_usr" },
                 // изменяется тип колонок у обоих таблиц, пользователь выбирает
                 // view v1
-                { "add_change_col_type", "add_change_col_type_usr_v1" },
+               /* { "add_change_col_type", "add_change_col_type_usr_v1" },
                 // --\\-- , пользователь выбирает t1.c1
                 { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
                 // --\\--, у вью меняется только комментарий
@@ -107,7 +107,7 @@ public class PgDiffDepciesTest {
                 {"drop_type", "drop_type_usr"},
                 // удаляется таблица с содержимым индексом и триггером,
                 // пользователь выбрал только таблицу
-                {"drop_tbl", "drop_tbl_usr_tbl"}
+                {"drop_tbl", "drop_tbl_usr_tbl"}*/
             });
     }
     
