@@ -27,4 +27,7 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <sonar.binaries>${project.basedir}/../apgdiff/target/classes</sonar.binaries>
+    </properties>
 </project>
