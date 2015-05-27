@@ -42,7 +42,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tycho.version>0.22.0</tycho.version>
-
+        
+        <sonar.host.url>jdbc:postgresql://localhost/sonar</sonar.host.url>
         <sonar.language>java</sonar.language>
         <sonar.java.source>1.7</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
@@ -91,6 +92,11 @@
             <artifactId>jgrapht-core</artifactId>
             <version>0.9.0</version>
         </dependency>
+        <!-- <dependency>
+		    <groupId>net.sf.proguard</groupId>
+		    <artifactId>proguard-base</artifactId>
+		    <version>5.2.1</version>
+		</dependency> -->
     </dependencies>
 
     <build>
