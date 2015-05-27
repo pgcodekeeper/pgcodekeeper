@@ -43,7 +43,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tycho.version>0.22.0</tycho.version>
         
-        <sonar.jdbc.url>jdbc:postgresql://localhost/sonar</sonar.jdbc.url>
         <sonar.binaries>${project.basedir}/target/classes</sonar.binaries>
         <sonar.language>java</sonar.language>
         <sonar.java.source>1.7</sonar.java.source>
