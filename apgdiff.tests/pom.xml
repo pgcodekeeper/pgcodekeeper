@@ -30,6 +30,6 @@
     <properties>
     
         <sonar.binaries>${project.basedir}/../apgdiff/target/classes</sonar.binaries>
-        <sonar.libraries>${project.basedir}/lib</sonar.libraries>
+        <sonar.libraries>${project.basedir}/lib/</sonar.libraries>
     </properties>
 </project>
