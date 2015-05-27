@@ -14,10 +14,4 @@
   <artifactId>ru.taximaxim.codekeeper.mainapp</artifactId>
   <version>3.2.1-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
-      <properties>
-    
-        <sonar.binaries>${project.basedir}/../apgdiff/target/classes</sonar.binaries>
-        <!-- <sonar.java.libraries>${project.basedir}/lib/*.jar</sonar.java.libraries> -->
-    </properties>
-  
 </project>
