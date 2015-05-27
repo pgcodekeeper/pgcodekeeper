@@ -44,7 +44,6 @@
         <tycho.version>0.22.0</tycho.version>
         
         <sonar.binaries>${project.basedir}/target/classes</sonar.binaries>
-        <sonar.libraries>${project.basedir}/lib</sonar.libraries>
         <sonar.language>java</sonar.language>
         <sonar.java.source>1.7</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
