@@ -41,7 +41,7 @@
            <version>2.0.10</version>
            <executions>
               <execution>
-                  <phase>package</phase>
+                  <phase>deploy</phase>
                   <goals><goal>proguard</goal></goals>
               </execution>
            </executions>
