@@ -902,6 +902,7 @@ nonreserved_keywords
   | QUARTER
   | RANGE
   | READ
+  | RECURSIVE
   | REGCONFIG
   | REGEXP
   | RENAME
@@ -1614,8 +1615,16 @@ non_join_query_primary
   ;
 
 simple_table
-  : query_specification
+  : with_recursive? query_specification
   | explicit_table
+  ;
+
+  with_recursive
+  : WITH RECURSIVE? with_query_name (COMMA with_query_name)*
+  ;
+
+  with_query_name
+  : query_alias=schema_qualified_name column_references? AS LEFT_PAREN query=query_specification RIGHT_PAREN
   ;
 
 explicit_table

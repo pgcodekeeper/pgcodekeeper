@@ -36,7 +36,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -817,7 +816,6 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgSelect parseAntLrSelect(PgDatabase db, String statement) {
         CustomErrorListener errListener = new CustomErrorListener();
         
-        PgSelect select = new PgSelect(statement);
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(statement));
         lexer.removeErrorListeners();
         lexer.addErrorListener(errListener);
@@ -827,9 +825,7 @@ public class JdbcLoader implements PgCatalogStrings {
         parser.removeErrorListeners();
         parser.addErrorListener(errListener);
         CreateView cv = new CreateView(null, db, Paths.get("/"));
-        SelectQueryVisitor visitor = cv.getVisitor(select);
-        visitor.visit(parser.query_expression());
-        return visitor.getSelect();
+        return cv.createSelect(parser.query_expression());
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{

@@ -107,7 +107,9 @@ public class PgDiffDepciesTest {
                 {"drop_type", "drop_type_usr"},
                 // удаляется таблица с содержимым индексом и триггером,
                 // пользователь выбрал только таблицу
-                {"drop_tbl", "drop_tbl_usr_tbl"}
+                {"drop_tbl", "drop_tbl_usr_tbl"},
+                // выбраны все объекты сложное вью with запросом, также с coalesce
+                {"compl_view", "compl_view"}
             });
     }
     

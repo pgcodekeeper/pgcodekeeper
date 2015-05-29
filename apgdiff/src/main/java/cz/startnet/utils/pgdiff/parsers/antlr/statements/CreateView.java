@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
@@ -14,6 +18,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Query_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_function_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Simple_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_query_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseVisitor;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
@@ -24,6 +30,10 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
     private Create_view_statementContext ctx;
+
+    boolean inWith = false;
+    // хранит подзапрос из блока with и его алиас.
+    private Map<String, PgSelect> queries = new HashMap<>();
 
     public CreateView(Create_view_statementContext ctx, PgDatabase db,
             Path filePath) {
@@ -41,7 +51,7 @@ public class CreateView extends ParserAbstract {
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            view.setSelect(parseSelect(ctx.v_query));
+            view.setSelect(createSelect(ctx.v_query));
         }
         if (ctx.column_name != null) {
             for (String column : getNames(ctx.column_name.names_references().name)) {
@@ -56,18 +66,59 @@ public class CreateView extends ParserAbstract {
         return view;
     }
     
-    public SelectQueryVisitor getVisitor(PgSelect select) {
-        return new SelectQueryVisitor(select);
+    /**
+     * Создает запрос из констекста <br>
+     * Идея - читать подзапросы отдельно друг от друга и в конце складывать
+     * результаты, вычитая имена подзапросов из общих имен
+     * 
+     * @param ctx
+     * @return
+     */
+    public PgSelect createSelect(ParserRuleContext ctx) {
+        // пробежаться по запросу вычитывая подзапросы с with
+        WithListener whith = new WithListener();
+        ParseTreeWalker.DEFAULT.walk(whith, ctx);
+        // алиасы подзапросов
+        Set<String> queryAliases = queries.keySet();
+        // получить основной запрос
+        PgSelect select = whith.getSelect();
+        ArrayList<GenericColumn> columns = new ArrayList<>();
+        // колонки с алиасом из подзапросов не добавлять
+        for (GenericColumn col : select.getColumns()) {
+            if (!queryAliases.contains(col.table)) {
+                columns.add(col);
+            }
+        }
+        for (String key : queries.keySet()) {
+            PgSelect query = queries.get(key);
+            for (GenericColumn col : query.getColumns()) {
+                if (!queryAliases.contains(col.table)) {
+                    columns.add(col);
+                }
+            }
+        }
+        select = new PgSelect(select.getRawStatement());
+        for (GenericColumn col : columns) {
+            select.addColumn(col);
+        }
+        return select;
     }
 
-    private PgSelect parseSelect(Query_expressionContext ctx) {
+    private PgSelect parseSelect(ParserRuleContext ctx, boolean resolveColumns) {
         PgSelect select = new PgSelect(getFullCtxText(ctx));
         SelectQueryVisitor visitor = new SelectQueryVisitor(select);
         visitor.visit(ctx);
-        return visitor.getSelect();
+        select = visitor.getSelect();
+        if (resolveColumns) {
+            select = new PgSelect(select.getRawStatement());
+            for (GenericColumn col : visitor.getColumns()) {
+                select.addColumn(col);
+            }
+        }
+        return select;
     }
 
-    public class SelectQueryVisitor extends
+    private class SelectQueryVisitor extends
             SQLParserBaseVisitor<Query_expressionContext> {
         // список алиасов запросов, игнорируются при заполнении колонок в селект
         private List<String> aliasNames = new ArrayList<>();
@@ -224,6 +275,34 @@ public class CreateView extends ParserAbstract {
                 select.addColumn(col);
             }
             return select;
+        }
+    }
+            
+    private class WithListener extends SQLParserBaseListener {
+        PgSelect sel = null;
+        @Override
+        public void enterWith_query_name(With_query_nameContext ctx) {
+            // не читать подзапросы если они находятся в блоке with
+            inWith = true;
+            String alias = getFullCtxText(ctx.query_alias);
+            PgSelect s = parseSelect(ctx.query, true);
+            queries.put(alias, s);
+        }
+        @Override
+        public void exitWith_query_name(With_query_nameContext ctx) {
+            inWith = false;
+        }
+        @Override
+        public void exitQuery_expression(Query_expressionContext ctx) {
+            // читать нужно на выходе, т.к. последний запрос будет являться
+            // основым запросом
+            if (inWith) {
+               return; 
+            }
+            sel = parseSelect(ctx, false);
+        }
+        public PgSelect getSelect() {
+            return sel;
         }
     }
 }
