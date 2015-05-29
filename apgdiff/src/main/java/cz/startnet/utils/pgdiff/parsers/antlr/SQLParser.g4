@@ -746,7 +746,7 @@ param
   ;
 
 partition_by_columns
-    : PARTITION BY names_references
+    : PARTITION BY numeric_primary (COMMA numeric_primary)*
     ;
 
 cascade_restrict
@@ -1177,7 +1177,7 @@ function_calls_paren
     ;
 
 function_calls_args
-    : argname=identifier? argtype_expres=value_expression_primary_cast
+    : argname=identifier? argtype_expres=numeric_primary
     ;
 /*
 ===============================================================================
@@ -1314,6 +1314,7 @@ factor
 numeric_primary
   : value_expression_primary_cast
   | numeric_value_function
+  | derived_column
   ;
 
 value_expression_primary_cast
