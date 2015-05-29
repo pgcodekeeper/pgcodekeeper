@@ -9,7 +9,7 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 import org.eclipse.zest.core.viewers.IFigureProvider;
 
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -35,13 +35,13 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     public String getText(Object element) {
         if (element instanceof PgStatement){
             PgStatement st = (PgStatement) element;
-            if (st instanceof PgForeignKey){
-                return "FK " + st.getBareName(); //$NON-NLS-1$
-            }
             switch (st.getStatementType()) {
             case COLUMN:
                 break;
             case CONSTRAINT:
+                if (!((PgConstraint)st).getRefs().isEmpty()) {
+                    return "FK " + st.getBareName(); //$NON-NLS-1$
+                }
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$
             case DATABASE:
                 return "DB"; //$NON-NLS-1$

@@ -44,7 +44,6 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -692,7 +691,6 @@ public class JdbcLoader implements PgCatalogStrings {
         String contype = res.getString("contype");
         switch (contype) {
             case "f":
-                c = new PgForeignKey(constraintName, "");
                 List<String> referencedColumnNames = getColumnNames(
                         (Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
                 
@@ -702,7 +700,7 @@ public class JdbcLoader implements PgCatalogStrings {
                                 res.getString("foreign_schema_name"), 
                                 res.getString("foreign_table_name"), 
                                 colName);
-                        ((PgForeignKey)c).addForeignColumn(referencedColumn);                        
+                        c.addForeignColumn(referencedColumn);                        
                     }
                 }
                 

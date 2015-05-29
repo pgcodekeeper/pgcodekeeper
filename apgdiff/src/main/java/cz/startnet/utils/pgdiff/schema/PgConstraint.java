@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -33,6 +32,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private boolean unique;
     private boolean isPrimaryKey;
     private final List<GenericColumn> columns = new ArrayList<>();
+    private final List<GenericColumn> refs = new ArrayList<>();
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
@@ -52,6 +52,14 @@ public class PgConstraint extends PgStatementWithSearchPath {
         for (GenericColumn col : cols) {
             columns.add(col);
         }
+    }
+    
+    public void addForeignColumn(GenericColumn referencedColumn) {
+        refs.add(referencedColumn);
+    }
+    
+    public List<GenericColumn> getRefs(){
+        return Collections.unmodifiableList(refs);
     }
     
     public boolean isPrimaryKey() {
@@ -198,6 +206,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
         constraintDst.addAllColumns(columns);
+        constraintDst.refs.addAll(refs);
         return constraintDst;
     }
     
