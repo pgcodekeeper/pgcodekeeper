@@ -2,11 +2,15 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -31,17 +35,24 @@ public class CreateTable extends ParserAbstract {
         
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
+        Map<String, GenericColumn> functions = new HashMap<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
                 constr.setTableName(name);
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
-                table.addColumn(getColumn(colCtx.table_column_definition(), sequences));
+                table.addColumn(getColumn(colCtx.table_column_definition(), sequences, functions));
             }
         }
         for (String seq : sequences) {
             table.addSequence(seq);
+        }
+        for (String key : functions.keySet()) {
+            PgColumn col = table.getColumn(key);
+            if (col != null) {
+                col.addFunction(functions.get(key));
+            }
         }
         if (ctx.paret_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.paret_table.names_references().name) {

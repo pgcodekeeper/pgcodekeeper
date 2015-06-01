@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map.Entry;
 
 import org.jgrapht.DirectedGraph;
@@ -160,6 +161,7 @@ public class DepcyGraph {
                 createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
                     createPgStatementToType(col.getType(), schema, col);
+                    columnToFunction(col, schema);
                 }
             }
             
@@ -181,6 +183,24 @@ public class DepcyGraph {
         }
     }
     
+    private void columnToFunction(PgColumn col, PgSchema schema) {
+        for (GenericColumn func : col.getFunction()) {
+            PgSchema funcSchema = schema;
+            if (func.schema !=null && !Objects.equals(schema.getName(),func.schema)) {
+                funcSchema = db.getSchema(func.schema);
+            }
+            if (funcSchema == null) {
+                continue;
+            }
+            
+            PgFunction function = resolveFunctionCall(funcSchema, func.table);
+            if (function != null) {
+                graph.addEdge(col, function);
+                graph.addEdge(col.getParent(), function);
+            }
+        }
+    }
+
     private void createPgStatementToType(String dataType, PgSchema schema,
             PgStatement statement) {
         String typeName = dataType;

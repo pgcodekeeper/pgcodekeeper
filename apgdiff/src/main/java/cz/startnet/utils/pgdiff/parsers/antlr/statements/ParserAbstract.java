@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
@@ -148,7 +149,7 @@ public abstract class ParserAbstract {
         return null;
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences) {
+    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences, Map<String, GenericColumn> fucntions) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(removeQuotes(colCtx.column_name));
@@ -158,6 +159,10 @@ public abstract class ParserAbstract {
                     String sequence = getSequence(column_constraint.constr_body().default_expr);
                     if (sequence != null) {
                         sequences.add(sequence);
+                    }
+                    GenericColumn func = getFunctionCall(column_constraint.constr_body().default_expr);
+                    if (func != null) {
+                        fucntions.put(colCtx.column_name.getText(), func);
                     }
                 } else if (column_constraint.constr_body().default_expr_data != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint
@@ -195,7 +200,7 @@ public abstract class ParserAbstract {
 
     protected String getSequence(Value_expressionContext default_expr) {
         SeqNameListener name = new SeqNameListener();
-        new ParseTreeWalker().walk(name, default_expr);
+        ParseTreeWalker.DEFAULT.walk(name, default_expr);
         return name.getSeqName();
     }
     
@@ -206,13 +211,39 @@ public abstract class ParserAbstract {
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
             GeneralLiteralSearch seq = new GeneralLiteralSearch();
-            new ParseTreeWalker().walk(seq, ctx);
+            ParseTreeWalker.DEFAULT.walk(seq, ctx);
             if (seq.isFound()) {
                 seqName = seq.getSeqName();
             }
         }
         public String getSeqName() {
             return seqName;
+        }
+    }
+    
+    protected GenericColumn getFunctionCall(Value_expressionContext ctx) {
+        FunctionSearcher fs = new FunctionSearcher();
+        ParseTreeWalker.DEFAULT.walk(fs, ctx);
+        if (fs.getValue() == null) {
+            return null;
+        }
+        return new GenericColumn(getSchemaName(fs.getValue()),
+                getName(fs.getValue()), null);
+    }
+    
+    private static class FunctionSearcher extends SQLParserBaseListener {
+        private Schema_qualified_nameContext value; 
+        @Override
+        public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
+            String name = getName(ctx.schema_qualified_name());
+            if (ctx.function_calls_paren() != null
+                    && !name.equals("nextval")
+                    && value == null) {
+                value = ctx.schema_qualified_name();
+            }
+        }
+        public Schema_qualified_nameContext getValue() {
+            return value;
         }
     }
     

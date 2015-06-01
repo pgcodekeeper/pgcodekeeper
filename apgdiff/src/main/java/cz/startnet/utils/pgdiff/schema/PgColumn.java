@@ -8,6 +8,8 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -45,6 +47,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String type;
     private boolean nullValue = true;
     private String storage;
+    private List<GenericColumn> functions = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -140,6 +143,14 @@ public class PgColumn extends PgStatementWithSearchPath {
 
     public String getType() {
         return type;
+    }
+
+    public void addFunction(GenericColumn func) {
+        this.functions.add(func);
+    }
+    
+    public List<GenericColumn> getFunction() {
+       return functions; 
     }
 
     public void parseDefinition(final String definition, StringBuilder seqName) {
@@ -293,6 +304,12 @@ public class PgColumn extends PgStatementWithSearchPath {
                 script.addStatement(getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " SET DEFAULT " + newDefault
                         + ';');
+                // Если колонка изменила, только если присутсвуют ссылки на
+                // функцию, иначе она не будет создаваться перед изменением
+                // колонки
+                if (!newColumn.functions.isEmpty()) {
+                    isNeedDepcies.set(true);
+                }
             }
         }
 
@@ -375,6 +392,9 @@ public class PgColumn extends PgStatementWithSearchPath {
         for (PgPrivilege priv : revokes) {
             colDst.addPrivilege(priv.shallowCopy());
         }
+        for (GenericColumn f : functions) {
+            colDst.addFunction(f);
+        }
         return colDst;
     }
     
@@ -387,4 +407,5 @@ public class PgColumn extends PgStatementWithSearchPath {
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();
     }
+
 }

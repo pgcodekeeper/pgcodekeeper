@@ -2,10 +2,13 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -33,6 +36,7 @@ public class AlterTable extends ParserAbstract {
         PgTable tabl = db.getSchema(schemaName).getTable(name);
         
         List<String> sequences = new ArrayList<>();
+        Map<String, GenericColumn> functions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             PgStatement st = null;
             if (tablAction.owner_to() != null) {
@@ -49,12 +53,17 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences));
+                        sequences, functions));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
                 if (sequence != null) {
                     sequences.add(sequence);
+                }
+                GenericColumn func = getFunctionCall(tablAction.set_def_column().expression);
+                PgColumn col = tabl.getColumn(getName(tablAction.column));
+                if (col != null && func != null) {
+                    col.addFunction(func);
                 }
             }
             if (tablAction.tabl_constraint != null) {
@@ -98,6 +107,12 @@ public class AlterTable extends ParserAbstract {
             // совместимость с текущей версией экспорта
             if (tabl.getInherits().isEmpty()) {
                 tabl.addSequence(seq);
+            }
+        }
+        for (String key : functions.keySet()) {
+            PgColumn col = tabl.getColumn(key);
+            if (col != null) {
+                col.addFunction(functions.get(key));
             }
         }
         return null;

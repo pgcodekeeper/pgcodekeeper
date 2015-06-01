@@ -283,7 +283,11 @@ public class PgDiffTest {
                     {"drop_privilege", false},
                     {"chg_privilege", false},
                     // Test change owner
-                    {"chg_owner", false}
+                    {"chg_owner", false},
+                    // Тест зависимости от колонки к функции default
+                    {"col_to_func", false},
+                    // Тест зависимости от таблицы к функции default
+                    {"tabl_to_func", false}
                 });
     }
     
@@ -354,7 +358,7 @@ public class PgDiffTest {
     /**
      * Runs single test using class member variables.
      */
-    @Test(timeout = 5000)
+    @Test/*(timeout = 5000)*/
     public void runDiff() throws IOException {
         
         Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
