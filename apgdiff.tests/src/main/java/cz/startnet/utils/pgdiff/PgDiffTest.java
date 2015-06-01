@@ -358,7 +358,7 @@ public class PgDiffTest {
     /**
      * Runs single test using class member variables.
      */
-    @Test/*(timeout = 5000)*/
+    @Test(timeout = 5000)
     public void runDiff() throws IOException {
         
         Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
