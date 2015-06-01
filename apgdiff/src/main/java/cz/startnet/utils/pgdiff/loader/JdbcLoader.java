@@ -34,9 +34,11 @@ import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract.FunctionSearcher;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -875,6 +877,10 @@ public class JdbcLoader implements PgCatalogStrings {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()){
                 column.setDefaultValue(columnDefault);
+                GenericColumn func = parseFunctionCall(columnDefault);
+                if (func != null) {
+                    column.addFunction(func);
+                }
             }
             
             if (colNotNull[i]){
@@ -958,6 +964,23 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         return t;
+    }
+
+    private GenericColumn parseFunctionCall(String string) {
+        CustomErrorListener errListener = new CustomErrorListener();
+        
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(string));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errListener);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errListener);
+        FunctionSearcher fs = new FunctionSearcher();
+        ParseTreeWalker.DEFAULT.walk(fs, parser.value_expression());
+        return new GenericColumn(ParserAbstract.getSchemaName(fs.getValue()),
+                ParserAbstract.getName(fs.getValue()), null);
     }
 
     private void fillStorageParams(StringBuilder storageParameters,

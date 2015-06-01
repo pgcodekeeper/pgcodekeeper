@@ -231,7 +231,7 @@ public abstract class ParserAbstract {
                 getName(fs.getValue()), null);
     }
     
-    private static class FunctionSearcher extends SQLParserBaseListener {
+    public static class FunctionSearcher extends SQLParserBaseListener {
         private Schema_qualified_nameContext value; 
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
