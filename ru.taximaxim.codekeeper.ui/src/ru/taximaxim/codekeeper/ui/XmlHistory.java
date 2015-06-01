@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -67,7 +66,8 @@ public final class XmlHistory {
 
     public Map<String, List<String>> getMapHistory() throws IOException {
         Map<String, List<String>> history;
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(
+                getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
@@ -81,7 +81,8 @@ public final class XmlHistory {
     
     public LinkedList<String> getHistory() throws IOException {
         LinkedList<String> history;
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(
+                getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {
@@ -94,12 +95,7 @@ public final class XmlHistory {
     }
 
     private File getHistoryXmlFile() throws IOException {
-        File fileHistory;
-        try {
-            fileHistory = new File(Platform.getInstanceLocation().getURL().toURI());
-        } catch(URISyntaxException ex) {
-            throw new IOException(ex);
-        }
+        File fileHistory = new File(Platform.getInstanceLocation().getURL().getPath());
         fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, PLUGIN_ID.THIS);
