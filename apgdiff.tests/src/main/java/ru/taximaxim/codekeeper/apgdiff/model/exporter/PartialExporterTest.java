@@ -22,6 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -127,7 +128,7 @@ public class PartialExporterTest {
         EXPORT_PRESETS[index-1].setDiffTree(DiffTree.create(dbSource, dbTarget));
     }
     @Test
-    public void testExportPartial () throws IOException{
+    public void testExportPartial () throws IOException, PgCodekeeperException{
         PartialExportInfo preset = EXPORT_PRESETS[index-1];
         TreeElement diffTree = preset.getDiffTree();
         
