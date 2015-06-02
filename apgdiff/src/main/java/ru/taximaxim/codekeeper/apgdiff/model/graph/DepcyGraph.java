@@ -185,7 +185,7 @@ public class DepcyGraph {
     private void columnToFunction(PgColumn col, PgSchema schema) {
         for (GenericColumn func : col.getDefaultFunctions()) {
             PgSchema funcSchema = schema;
-            if (!schema.getName().equals(func.schema)) {
+            if (func.schema != null && !schema.getName().equals(func.schema)) {
                 funcSchema = db.getSchema(func.schema);
             }
             if (funcSchema == null) {
