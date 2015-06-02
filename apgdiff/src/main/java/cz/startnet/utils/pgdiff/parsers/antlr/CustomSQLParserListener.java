@@ -52,6 +52,8 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private PgDatabase db;
     private Path filePath;
+    private String tablespace;
+    private String oids;
 
     public CustomSQLParserListener(PgDatabase database, Path filePath) {
         this.db = database;
@@ -64,7 +66,9 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        new CreateTable(ctx, db, filePath).getObject();
+        new CreateTable(ctx, db, filePath, tablespace, oids).getObject();
+        tablespace = null;
+        oids = null;
     }
 
     @Override
@@ -134,10 +138,25 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitSet_statement(Set_statementContext ctx) {
         String confParam = ctx.config_param.getText();
-        if (confParam.equalsIgnoreCase("search_path")) {
-            for (Set_statement_valueContext value :  ctx.config_param_val) {
+        end_for:
+        for (Set_statement_valueContext value : ctx.config_param_val) {
+            switch (confParam.toLowerCase()) {
+            case "search_path":
                 db.setDefaultSchema(ParserUtils.getObjectName(value.getText()));
-                break;
+                break end_for;
+            case "default_with_oids":
+                oids = value.getText();
+                if (oids.equals("false")) {
+                    oids = null;
+                }
+                break end_for;
+            case "default_tablespace":
+                tablespace = value.getText();
+                tablespace = tablespace.substring(1, tablespace.length() - 1);
+                if (tablespace.isEmpty()) {
+                    tablespace = null;
+                }
+                break end_for;
             }
         }
     }
