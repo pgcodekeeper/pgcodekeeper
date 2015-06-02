@@ -251,11 +251,10 @@ public class PgDatabase extends PgStatement {
             return false;
         }
         PgDatabase oldDb = this;
-
         if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+            sb.append("\n\n");
             newDb.appendCommentSql(sb);
         }
-        
         return sb.length() > 0;
     }
     

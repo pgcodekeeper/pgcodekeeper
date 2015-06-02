@@ -5,15 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -97,7 +92,6 @@ public class PgIndex extends PgStatementWithSearchPath {
             return false;
         }
         PgIndex oldIndex = this;
-        PgDiffScript script = new PgDiffScript();
         if (!oldIndex.compareWithoutComments(newIndex)) {
             isNeedDepcies.set(true);
             return true;
@@ -105,17 +99,15 @@ public class PgIndex extends PgStatementWithSearchPath {
         
         if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() && 
                 !((PgTable)newIndex.getParent()).isClustered()) {
-             script.addStatement("ALTER TABLE "
+             sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(oldIndex.getTableName())
                         + " SET WITHOUT CLUSTER;");
         }
         
-        PgDiff.diffComments(oldIndex, newIndex, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldIndex.getComment(), newIndex.getComment())) {
+            sb.append("\n\n");
+            newIndex.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
 

@@ -45,7 +45,7 @@ public class PgDiffScript {
     }
     
     public void addStatement(String statement) {
-        PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement);
+        PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
         PgDiffStatement last = statements.isEmpty() ? null : statements.get(statements.size() - 1);
         if (statements.isEmpty() || !st.equals(last)){
             statements.add(st);

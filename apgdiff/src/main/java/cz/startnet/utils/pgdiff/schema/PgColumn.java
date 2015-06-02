@@ -5,19 +5,14 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -226,7 +221,6 @@ public class PgColumn extends PgStatementWithSearchPath {
         } else {
             return false;
         }
-        PgDiffScript script = new PgDiffScript();
         PgColumn oldColumn = this;
         final Integer oldStat = oldColumn.getStatistics();
         final Integer newStat = newColumn.getStatistics();
@@ -239,7 +233,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         }
 
         if (newStatValue != null) {
-            script.addStatement(ALTER_TABLE + "ONLY "
+            sb.append("\n\n" + ALTER_TABLE + "ONLY "
                     + PgDiffUtils.getQuotedName(this.getParent().getName())
                     + ALTER_COLUMN + PgDiffUtils.getQuotedName(getName())
                     + " SET STATISTICS " + newStatValue + ';');
@@ -252,13 +246,13 @@ public class PgColumn extends PgStatementWithSearchPath {
                         null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
-            script.addStatement(MessageFormat.format(
+            sb.append("\n\n" + MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
                     newColumn.getParent().getName(), newColumn.getName()));
         }
 
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
-            script.addStatement(ALTER_TABLE
+            sb.append("\n\n" + ALTER_TABLE
                     + "ONLY "
                     + PgDiffUtils.getQuotedName(newColumn.getParent().getName())
                     + ALTER_COLUMN
@@ -269,7 +263,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         if (!oldColumn.getType().equals(newColumn.getType())) {
             isNeedDepcies.set(true);
 
-            script.addStatement(getAlterTable()
+            sb.append("\n\n" + getAlterTable()
                     + ALTER_COLUMN
                     + newColumn.getName()
                     + " TYPE "
@@ -287,10 +281,10 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         if (!oldDefault.equals(newDefault)) {
             if (newDefault.isEmpty()) {
-                script.addStatement(getAlterTable() + ALTER_COLUMN
+                sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " DROP DEFAULT;");
             } else {
-                script.addStatement(getAlterTable() + ALTER_COLUMN
+                sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " SET DEFAULT " + newDefault
                         + ';');
             }
@@ -298,24 +292,23 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         if (oldColumn.getNullValue() != newColumn.getNullValue()) {
             if (newColumn.getNullValue()) {
-                script.addStatement(getAlterTable() + ALTER_COLUMN
+                sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " DROP NOT NULL;");
             } else {
-                script.addStatement(getAlterTable() + ALTER_COLUMN
+                sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " SET NOT NULL;");
             }
         }
         
         if (!oldColumn.getGrants().equals(newColumn.getGrants())
                 || !oldColumn.getRevokes().equals(newColumn.getRevokes())) {
-            script.addStatement(newColumn.getPrivilegesSQL());
+            sb.append(newColumn.getPrivilegesSQL());
         }
         
-        PgDiff.diffComments(oldColumn, newColumn, script);
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
+            sb.append("\n\n");
+            newColumn.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
     

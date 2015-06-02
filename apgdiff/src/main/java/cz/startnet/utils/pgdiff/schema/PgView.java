@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,10 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -136,24 +131,25 @@ public class PgView extends PgStatementWithSearchPath {
             return false;
         }
         PgView oldView = this;
-        PgDiffScript script = new PgDiffScript();
         if (PgView.isViewModified(oldView, newView)) {
             isNeedDepcies.set(true);
             return true;
         }
-        PgView.diffDefaultValues(script, oldView, newView);
+        PgView.diffDefaultValues(sb, oldView, newView);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
-            script.addStatement(newView.getOwnerSQL());
+            sb.append(newView.getOwnerSQL());
         }
 
         if (!oldView.getGrants().equals(newView.getGrants())
                 || !oldView.getRevokes().equals(newView.getRevokes())) {
-            script.addStatement(newView.getPrivilegesSQL());
+            sb.append(newView.getPrivilegesSQL());
         }
 
-        PgDiff.diffComments(oldView, newView, script);
-
+        if (!Objects.equals(oldView.getComment(), newView.getComment())) {
+            sb.append("\n\n");
+            newView.appendCommentSql(sb);
+        }
         final List<String> columnNames = new ArrayList<>(newView
                 .getColumnComments().size());
 
@@ -196,7 +192,7 @@ public class PgView extends PgStatementWithSearchPath {
                     && !oldColumnComment.getComment().equals(
                             newColumnComment.getComment())) {
 
-                script.addStatement("COMMENT ON COLUMN "
+                sb.append("\n\nCOMMENT ON COLUMN "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(newColumnComment
@@ -204,17 +200,13 @@ public class PgView extends PgStatementWithSearchPath {
                         + newColumnComment.getComment() + ';');
             } else if (oldColumnComment != null && newColumnComment == null) {
 
-                script.addStatement("COMMENT ON COLUMN "
+                sb.append("\n\nCOMMENT ON COLUMN "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(oldColumnComment
                                 .getColumnName()) + " IS NULL;");
             }
         }
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
         return sb.length() > startLength;
     }
 
@@ -493,7 +485,7 @@ public class PgView extends PgStatementWithSearchPath {
      * @param newView          new view
      * @param searchPathHelper search path helper
      */
-    public static void diffDefaultValues(final PgDiffScript script,
+    public static void diffDefaultValues(final StringBuilder sb,
             final PgView oldView, final PgView newView) {
         final List<DefaultValue> oldValues =
                 oldView.getDefaultValues();
@@ -509,7 +501,7 @@ public class PgView extends PgStatementWithSearchPath {
                     found = true;
     
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
-                        script.addStatement("ALTER TABLE "
+                        sb.append("\n\nALTER TABLE "
                                 + PgDiffUtils.getQuotedName(newView.getName())
                                 + " ALTER COLUMN "
                                 + PgDiffUtils.getQuotedName(newValue.getColumnName())
@@ -523,7 +515,7 @@ public class PgView extends PgStatementWithSearchPath {
             }
     
             if (!found) {
-                script.addStatement("ALTER TABLE "
+                sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + " ALTER COLUMN "
                         + PgDiffUtils.getQuotedName(oldValue.getColumnName())
@@ -546,7 +538,7 @@ public class PgView extends PgStatementWithSearchPath {
                 continue;
             }
     
-            script.addStatement("ALTER TABLE "
+            sb.append("\n\nALTER TABLE "
                     + PgDiffUtils.getQuotedName(newView.getName())
                     + " ALTER COLUMN "
                     + PgDiffUtils.getQuotedName(newValue.getColumnName())
