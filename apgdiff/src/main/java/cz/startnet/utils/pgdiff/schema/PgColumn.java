@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,7 +48,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String type;
     private boolean nullValue = true;
     private String storage;
-    private List<GenericColumn> functions = new ArrayList<>();
+    private List<GenericColumn> defaultFunctions = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -145,12 +146,12 @@ public class PgColumn extends PgStatementWithSearchPath {
         return type;
     }
 
-    public void addFunction(GenericColumn func) {
-        this.functions.add(func);
+    public void addDefaultFunction(GenericColumn func) {
+        defaultFunctions.add(func);
     }
     
-    public List<GenericColumn> getFunction() {
-       return functions; 
+    public List<GenericColumn> getDefaultFunctions() {
+       return Collections.unmodifiableList(defaultFunctions); 
     }
 
     public void parseDefinition(final String definition, StringBuilder seqName) {
@@ -307,7 +308,7 @@ public class PgColumn extends PgStatementWithSearchPath {
                 // Если колонка изменила, только если присутсвуют ссылки на
                 // функцию, иначе она не будет создаваться перед изменением
                 // колонки
-                if (!newColumn.functions.isEmpty()) {
+                if (!newColumn.defaultFunctions.isEmpty()) {
                     isNeedDepcies.set(true);
                 }
             }
@@ -392,8 +393,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         for (PgPrivilege priv : revokes) {
             colDst.addPrivilege(priv.shallowCopy());
         }
-        for (GenericColumn f : functions) {
-            colDst.addFunction(f);
+        for (GenericColumn f : defaultFunctions) {
+            colDst.addDefaultFunction(f);
         }
         return colDst;
     }
@@ -407,5 +408,4 @@ public class PgColumn extends PgStatementWithSearchPath {
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();
     }
-
 }

@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map.Entry;
 
 import org.jgrapht.DirectedGraph;
@@ -184,9 +183,9 @@ public class DepcyGraph {
     }
     
     private void columnToFunction(PgColumn col, PgSchema schema) {
-        for (GenericColumn func : col.getFunction()) {
+        for (GenericColumn func : col.getDefaultFunctions()) {
             PgSchema funcSchema = schema;
-            if (func.schema !=null && !Objects.equals(schema.getName(),func.schema)) {
+            if (!schema.getName().equals(func.schema)) {
                 funcSchema = db.getSchema(func.schema);
             }
             if (funcSchema == null) {

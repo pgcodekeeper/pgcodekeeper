@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
@@ -36,7 +37,7 @@ public class AlterTable extends ParserAbstract {
         PgTable tabl = db.getSchema(schemaName).getTable(name);
         
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> functions = new HashMap<>();
+        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             PgStatement st = null;
             if (tablAction.owner_to() != null) {
@@ -53,7 +54,7 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, functions));
+                        sequences, defaultFunctions));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
@@ -63,7 +64,7 @@ public class AlterTable extends ParserAbstract {
                 GenericColumn func = getFunctionCall(tablAction.set_def_column().expression);
                 PgColumn col = tabl.getColumn(getName(tablAction.column));
                 if (col != null && func != null) {
-                    col.addFunction(func);
+                    col.addDefaultFunction(func);
                 }
             }
             if (tablAction.tabl_constraint != null) {
@@ -109,10 +110,10 @@ public class AlterTable extends ParserAbstract {
                 tabl.addSequence(seq);
             }
         }
-        for (String key : functions.keySet()) {
-            PgColumn col = tabl.getColumn(key);
+        for (Entry<String, GenericColumn> function: defaultFunctions.entrySet()) {
+            PgColumn col = tabl.getColumn(function.getKey());
             if (col != null) {
-                col.addFunction(functions.get(key));
+                col.addDefaultFunction(function.getValue());
             }
         }
         return null;

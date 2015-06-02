@@ -149,7 +149,8 @@ public abstract class ParserAbstract {
         return null;
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences, Map<String, GenericColumn> fucntions) {
+    protected PgColumn getColumn(Table_column_definitionContext colCtx,
+            List<String> sequences, Map<String, GenericColumn> defaultFucntions) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(removeQuotes(colCtx.column_name));
@@ -162,7 +163,7 @@ public abstract class ParserAbstract {
                     }
                     GenericColumn func = getFunctionCall(column_constraint.constr_body().default_expr);
                     if (func != null) {
-                        fucntions.put(colCtx.column_name.getText(), func);
+                        defaultFucntions.put(colCtx.column_name.getText(), func);
                     }
                 } else if (column_constraint.constr_body().default_expr_data != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint

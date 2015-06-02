@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -35,23 +36,23 @@ public class CreateTable extends ParserAbstract {
         
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> functions = new HashMap<>();
+        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
                 constr.setTableName(name);
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
-                table.addColumn(getColumn(colCtx.table_column_definition(), sequences, functions));
+                table.addColumn(getColumn(colCtx.table_column_definition(), sequences, defaultFunctions));
             }
         }
         for (String seq : sequences) {
             table.addSequence(seq);
         }
-        for (String key : functions.keySet()) {
-            PgColumn col = table.getColumn(key);
+        for (Entry<String, GenericColumn> function: defaultFunctions.entrySet()) {
+            PgColumn col = table.getColumn(function.getKey());
             if (col != null) {
-                col.addFunction(functions.get(key));
+                col.addDefaultFunction(function.getValue());
             }
         }
         if (ctx.paret_table != null) {

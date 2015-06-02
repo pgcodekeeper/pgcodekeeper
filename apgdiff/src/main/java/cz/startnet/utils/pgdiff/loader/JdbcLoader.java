@@ -879,7 +879,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 column.setDefaultValue(columnDefault);
                 GenericColumn func = parseFunctionCall(columnDefault);
                 if (func != null) {
-                    column.addFunction(func);
+                    column.addDefaultFunction(func);
                 }
             }
             
