@@ -27,6 +27,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -148,7 +150,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void doSave(IProgressMonitor monitor) {
     }
-
+    
     @Override
     public void doSaveAs() {
     }
@@ -246,7 +248,7 @@ class CommitPage extends DiffPresentationPane {
     protected void createUpperContainer(final Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
+        setTitleColor("blue");
         lrm = new LocalResourceManager(JFaceResources.getResources(), container);
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
@@ -430,7 +432,7 @@ class DiffPage extends DiffPresentationPane {
     protected void createUpperContainer(Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+        setTitleColor("red");
         lrm = new LocalResourceManager(JFaceResources.getResources(), container);
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()

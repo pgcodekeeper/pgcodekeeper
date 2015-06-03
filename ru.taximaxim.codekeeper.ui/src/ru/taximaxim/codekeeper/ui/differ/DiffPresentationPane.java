@@ -32,6 +32,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -84,6 +85,8 @@ public abstract class DiffPresentationPane extends Composite {
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
+
+    private Color color;
 
     protected DBSources selectedDBSource;
     protected DbSource dbSource;
@@ -211,6 +214,8 @@ public abstract class DiffPresentationPane extends Composite {
         gl.marginHeight = gl.marginWidth = 0;
         contUpperLeft.setLayout(gl);
         createUpperContainer(contUpperLeft, gl);
+        containerUpper.setBackground(color);
+        containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
         
         // upper middle part
         lblSourceInfo = new Label(containerUpper, SWT.NONE);
@@ -414,6 +419,14 @@ public abstract class DiffPresentationPane extends Composite {
                 openElementInEditor(el, proj);
             }
         });
+    }
+    
+    public void setTitleColor(String name){
+        if (name.equals("red")) {
+            this.color = new Color (this.getDisplay(), 250, 52, 52);
+        } else {
+            this.color = new Color (this.getDisplay(), 68, 128, 211);
+        }
     }
 
     private void openElementInEditor(TreeElement el, PgDbProject proj){
