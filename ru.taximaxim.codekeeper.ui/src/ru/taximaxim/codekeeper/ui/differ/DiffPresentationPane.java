@@ -216,6 +216,7 @@ public abstract class DiffPresentationPane extends Composite {
         createUpperContainer(contUpperLeft, gl);
         containerUpper.setBackground(color);
         containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
+        setTitleColor(null);
         
         // upper middle part
         lblSourceInfo = new Label(containerUpper, SWT.NONE);
@@ -421,12 +422,8 @@ public abstract class DiffPresentationPane extends Composite {
         });
     }
     
-    public void setTitleColor(String name){
-        if (name.equals("red")) {
-            this.color = new Color (this.getDisplay(), 250, 52, 52);
-        } else {
-            this.color = new Color (this.getDisplay(), 68, 128, 211);
-        }
+    public void setTitleColor(Color color){
+        this.color = color;
     }
 
     private void openElementInEditor(TreeElement el, PgDbProject proj){

@@ -27,8 +27,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IPageChangedListener;
-import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -38,6 +36,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -248,7 +247,7 @@ class CommitPage extends DiffPresentationPane {
     protected void createUpperContainer(final Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        setTitleColor("blue");
+        setTitleColor(new Color (this.getDisplay(), 158, 182, 211));
         lrm = new LocalResourceManager(JFaceResources.getResources(), container);
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
@@ -432,7 +431,7 @@ class DiffPage extends DiffPresentationPane {
     protected void createUpperContainer(Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        setTitleColor("red");
+        setTitleColor(new Color (this.getDisplay(), 255, 146, 129));
         lrm = new LocalResourceManager(JFaceResources.getResources(), container);
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
