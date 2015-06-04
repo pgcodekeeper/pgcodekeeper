@@ -676,8 +676,8 @@ check_boolean_expression
     
 storage_parameter
     : LEFT_PAREN
-        storage_param=identifier (EQUAL value=value_expression)? 
-        (COMMA storage_param=identifier (EQUAL value=value_expression)?)*
+        storage_param=schema_qualified_name (EQUAL value=value_expression)?
+        (COMMA storage_param=schema_qualified_name (EQUAL value=value_expression)?)*
       RIGHT_PAREN 
     ;
     
