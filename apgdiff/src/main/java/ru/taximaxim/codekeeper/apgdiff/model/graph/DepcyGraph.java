@@ -317,7 +317,13 @@ public class DepcyGraph {
                 if (SYS_COLUMNS.contains(clmnName)){
                     continue;
                 }
-                
+                // Если колонка называется * то это ссылки на все колонки из вью
+                if (clmnName.equals("*")) {
+                    for (PgColumn col1 : tbl.getColumns()) {
+                        graph.addEdge(view, col1);
+                    }
+                    continue;
+                }
                 PgColumn clmn = tbl.getColumn(clmnName);
                 // TODO реализовать нормально inherits сейчас колонка с inherits
                 // не содержить элементов

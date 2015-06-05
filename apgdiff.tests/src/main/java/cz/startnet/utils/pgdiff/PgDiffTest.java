@@ -287,7 +287,11 @@ public class PgDiffTest {
                     // Тест зависимости от колонки к функции default
                     {"col_to_func", false},
                     // Тест зависимости от таблицы к функции default
-                    {"tabl_to_func", false}
+                    {"tabl_to_func", false},
+                    // Вью со звездочкой
+                    {"multiply_view", false},
+                    {"multiply_view_1", false},
+                    {"multiply_view_dif_schema", false}
                 });
     }
     
