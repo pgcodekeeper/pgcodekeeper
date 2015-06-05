@@ -17,6 +17,7 @@
     <properties>
         <current_version_dir>p2/codekeeperplugins</current_version_dir>
         <old_version_dirs>p2/codekeeperplugins-old-versions/</old_version_dirs>
+        <nightly_version_dir>p2/codekeeper-nightly</nightly_version_dir>
     </properties>
     
     <build>
@@ -104,6 +105,51 @@
         <profile>
             <id>deploy-standalone</id>
             <!-- disable updatesite deployment when deploying standalone -->
+        </profile>
+        
+        <profile>
+            <id>nightly</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0-beta-5</version>
+                        <executions>
+                            <execution>
+                                <id>execute-test-commands</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>placeholder4</serverId>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                    <commands>
+                                        <command>rm -rf /home/codekeeper/webroot/${nightly_version_dir}/*</command>
+                                    </commands>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-p2-repo</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>placeholder5</serverId>
+                                    <fromDir>${project.build.directory}/repository</fromDir>
+                                    <includes>*/**</includes>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
