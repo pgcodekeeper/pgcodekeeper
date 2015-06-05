@@ -72,6 +72,7 @@ public class ModelExporter {
     private final String sqlEncoding;
     
     private Collection<TreeElement> changedObjects;
+    private List<TreeElement> changeList;
     
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
@@ -128,7 +129,10 @@ public class ModelExporter {
                     "Output directory does not exist: {0}",
                     outDir.getAbsolutePath()));
         }
-        for (TreeElement el : changedObjects){
+        changeList = new ArrayList<>();
+        changeList.addAll(changedObjects);
+        while (!changeList.isEmpty()){
+            TreeElement el = changeList.get(0);
             switch(el.getSide()){
                 case LEFT:
                     deleteObject(el);
@@ -140,6 +144,7 @@ public class ModelExporter {
                     createObject(el);
                     break;
             }
+            changeList.remove(el);
         }
         writeProjVersion(new File(outDir.getPath(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
@@ -160,50 +165,113 @@ public class ModelExporter {
         case SCHEMA:
             // delete schema sql file
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
-            
+
             // delete schema's folder content
-            File schemaFolder = new File(outDir, getRelativeFilePath(st, false).toString());
-            if (schemaFolder.exists()){
-                Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
-                deleteRecursive(schemaFolder);                
+            File schemaFolder = new File(outDir, getRelativeFilePath(st, false)
+                    .toString());
+            if (schemaFolder.exists()) {
+                Log.log(Log.LOG_INFO,
+                        "Deleting schema folder for schema " + el.getName());
+                deleteRecursive(schemaFolder);
             }
             break;
-        
+
         case FUNCTION:
-            if (!(elParent.getSide() == DiffSide.LEFT && changedObjects.contains(elParent))){
+            if (!(elParent.getSide() == DiffSide.LEFT && changedObjects
+                    .contains(elParent))) {
                 // delete function sql file
                 deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
-                
-                PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+
+                PgSchema newParentSchema = oldDb.getSchema(st.getParent()
+                        .getName());
                 List<PgFunction> funcsToExport = new ArrayList<>();
-                
+
                 String targetFuncFileName = getExportedFilename(st);
-                
-                for (PgFunction func : newParentSchema.getFunctions()){
-                    if (targetFuncFileName.equals(getExportedFilename(func))){
+                for (PgFunction func : newParentSchema.getFunctions()) {
+                    if (targetFuncFileName.equals(getExportedFilename(func))) {
                         funcsToExport.add(func);
                     }
                 }
-                
+                funcsToExport.remove(st);
+                if (changeList.size() > 1) {
+                    for (int i = 1; i < changeList.size(); i++) {
+                        TreeElement te = changeList.get(i);
+                        if (getExportedFilename(te.getPgStatement(oldDb))
+                                .equals(targetFuncFileName)) {
+                            funcsToExport.remove(te.getPgStatement(oldDb));
+                            changeList.remove(te);
+                            i--;
+                        }
+                    }
+                }
                 // dump rest of same-named functions back
-                dumpFunctions(funcsToExport, 
-                        new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
+                dumpFunctions(funcsToExport, new File(outDir,
+                        getRelativeFilePath(newParentSchema, false).toString()));
             }
             break;
-        
+
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (!changedObjects.contains(elParent)){
-                editObject(elParent);
+            if (!(elParent.getSide() == DiffSide.LEFT && changedObjects
+                    .contains(elParent))) {
+                // delete function sql file
+                st = elParent.getPgStatement(oldDb);
+                deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+        
+                PgSchema newParentSchema = oldDb.getSchema(st.getParent()
+                        .getName());
+                List<PgConstraint> constrToExport = new ArrayList<>();
+                List<PgIndex> idxToExport = new ArrayList<>();
+                List<PgTrigger> trigToExport = new ArrayList<>();
+        
+                for (PgConstraint constr: newParentSchema.getTable(st.getName()).getConstraints() ) 
+                {
+                    constrToExport.add(constr);
+                }
+                for (PgIndex ind: newParentSchema.getTable(st.getName()).getIndexes()) 
+                {
+                    idxToExport.add(ind);
+                }
+                for (PgTrigger trig: newParentSchema.getTable(st.getName()).getTriggers() ) 
+                {
+                    trigToExport.add(trig);
+                }
+                if (el.getType().equals(DbObjType.CONSTRAINT)){
+                    constrToExport.remove(el.getPgStatement(oldDb));
+                } else if (el.getType().equals(DbObjType.INDEX)){
+                    idxToExport.remove(el.getPgStatement(oldDb));
+                } else {
+                    trigToExport.remove(el.getPgStatement(oldDb));
+                }
+                if (changeList.size() > 1) {
+                    for (int i = 1; i < changeList.size(); i++) {
+                        TreeElement te = changeList.get(i);
+                        if (te.getParent() == elParent) {
+                            if (te.getType().equals(DbObjType.CONSTRAINT)){
+                                constrToExport.remove(te.getPgStatement(oldDb));
+                            } else if (te.getType().equals(DbObjType.INDEX)){
+                                idxToExport.remove(te.getPgStatement(oldDb));
+                            } else {
+                                trigToExport.remove(te.getPgStatement(oldDb));
+                            }
+                            changeList.remove(te);
+                            i--;
+                        }
+                    }
+                }
+                // dump rest of same-named table back
+                dumpTableElements(newParentSchema.getTable(st.getName()),constrToExport, idxToExport,
+                        trigToExport, new File(outDir, getRelativeFilePath(newParentSchema, false).toString()));
             }
             break;
-            
+
         default:
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
         }
     }
     
+
     /**
      * Updates the file corresponding to <code>el</code>.<br>
      * If <code>el</code> is of type Schema, only schema file is updated.<br>
@@ -457,6 +525,28 @@ public class ModelExporter {
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), new File(funcDir, dump.getKey()));
         }
+    }
+    
+    private void dumpTableElements(PgTable table, List<PgConstraint> constrs,
+            List<PgIndex> idxs, List<PgTrigger> trigs, File parentDir) throws IOException {
+        mkdirObjects(null, parentDir.toString());
+        File tablesDir = mkdirObjects(parentDir, "TABLE");
+        
+        StringBuilder groupSql = new StringBuilder(getDumpSql(table));
+
+        for (PgConstraint constr : constrs) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
+        }
+
+        for (PgIndex idx : idxs) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
+        }
+
+        for (PgTrigger trig : trigs) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
+        }
+
+        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
     }
     
     private void dumpTables(List<PgTable> tables, File parentDir) throws IOException {

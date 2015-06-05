@@ -40,6 +40,9 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  *      (TRIGGER)       public.tz_worker_group.trd_tz_worker_group (GROUP: table left)
  *      (FUNCTION)      public.autocategorydel(integer)
  *      (FUNCTION)      public.atsqueuedel(integer, integer, integer) (GROUP: 2 same named funcs left)
+ *      (FUNCTION)      public.test(integer)
+ *      (FUNCTION)      public.test()
+ *      (TABLE)         public.test_table
  *      (SCHEMA)        audit
  *      (TABLE)         audit.logged_actions
  *      (TABLE)         audit.tz_audit_201305
@@ -96,7 +99,7 @@ public class PartialExporterTest {
         new PartialExportInfoImpl_12(),
         new PartialExportInfoImpl_13(),
         new PartialExportInfoImpl_14(),
-        new PartialExportInfoImpl_15()
+        new PartialExportInfoImpl_15(),
     };
     
     public PartialExporterTest(int index) {
