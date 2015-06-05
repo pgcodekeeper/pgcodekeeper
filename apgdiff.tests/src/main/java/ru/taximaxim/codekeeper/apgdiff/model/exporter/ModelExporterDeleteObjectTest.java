@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -170,17 +171,22 @@ public class ModelExporterDeleteObjectTest {
         LinkedList<String> modifiedFiles = preset.modifiedFiles();
         LinkedList<String> deletedFiles = preset.deletedFiles();
         Path newFilePath = exportDirPartial, oldFilePath = exportDirNewFull;
-        if (modifiedFiles.size() > 0){
-            if (Files.readAllLines(Paths.get(newFilePath.toString() + "/", modifiedFiles.get(0)))
-                    .equals(Files.readAllLines(Paths.get(oldFilePath.toString() + "/", modifiedFiles.get(0))))){
-                Assert.fail(null);
-            }
-        }
+        Charset charset = Charset.forName("UTF-8");
         if (deletedFiles.size() > 0){
             if (!(!Files.isReadable(Paths.get(newFilePath.toString() + "/", deletedFiles.get(0)))
                     && Files.isReadable(Paths.get(oldFilePath.toString() + "/", deletedFiles.get(0))))){
                 Assert.fail(null);
             }
+        }
+        try{
+            if (modifiedFiles.size() > 0){
+                if (Files.readAllLines(Paths.get(newFilePath.toString() + "/", modifiedFiles.get(0)),charset)
+                        .equals(Files.readAllLines(Paths.get(oldFilePath.toString() + "/", modifiedFiles.get(0)),charset))){
+                    Assert.fail(null);
+                }
+            }
+        } catch (IOException e){
+            Assert.fail("Попытка считать данные из не существующего файла");
         }
     }
 
