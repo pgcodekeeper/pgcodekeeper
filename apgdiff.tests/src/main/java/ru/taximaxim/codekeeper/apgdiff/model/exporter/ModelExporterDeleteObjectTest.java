@@ -171,8 +171,8 @@ public class ModelExporterDeleteObjectTest {
         LinkedList<String> deletedFiles = preset.deletedFiles();
         Path newFilePath = exportDirPartial, oldFilePath = exportDirNewFull;
         if (modifiedFiles.size() > 0){
-            if (Files.lines(Paths.get(newFilePath.toString() + "/", modifiedFiles.get(0)))
-                    .equals(Files.lines(Paths.get(oldFilePath.toString() + "/", modifiedFiles.get(0))))){
+            if (Files.readAllLines(Paths.get(newFilePath.toString() + "/", modifiedFiles.get(0)))
+                    .equals(Files.readAllLines(Paths.get(oldFilePath.toString() + "/", modifiedFiles.get(0))))){
                 Assert.fail(null);
             }
         }
@@ -254,7 +254,7 @@ public class ModelExporterDeleteObjectTest {
 
         @Override
         public LinkedList<String> modifiedFiles() {
-            return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+            return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
         }
     }
 
@@ -268,7 +268,7 @@ public class ModelExporterDeleteObjectTest {
 
         @Override
         public LinkedList<String> modifiedFiles() {
-            return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+            return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
         }
     }
     
@@ -283,7 +283,7 @@ public class ModelExporterDeleteObjectTest {
 
         @Override
         public LinkedList<String> modifiedFiles() {
-            return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+            return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
         }
     }
     
@@ -299,7 +299,7 @@ public class ModelExporterDeleteObjectTest {
 
         @Override
         public LinkedList<String> modifiedFiles() {
-            return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+            return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
         }
     }
     
@@ -313,7 +313,7 @@ public class ModelExporterDeleteObjectTest {
 
         @Override
         public LinkedList<String> deletedFiles() {
-            return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+            return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
         }
     }
 }
