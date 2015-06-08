@@ -75,7 +75,7 @@ public abstract class DiffPresentationPane extends Composite {
     private final boolean isProjSrc;
 
     private final Composite contNotifications;
-    private final Button btnUpdateRefreshed;
+    private final Button btnDismissRefresh;
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
@@ -161,30 +161,8 @@ public abstract class DiffPresentationPane extends Composite {
         l.setText(Messages.DiffPresentationPane_project_modified);
         l.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         
-        btnUpdateRefreshed = new Button(contNotifications, SWT.PUSH);
-        btnUpdateRefreshed.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
-        btnUpdateRefreshed.setToolTipText(Messages.DiffPresentationPane_refresh_editor);
-        btnUpdateRefreshed.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, true));
         
-        btnUpdateRefreshed.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (isProjSrc && dbTarget.isLoaded()) {
-                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
-                            dbTarget.getOrigin()));
-                } else if (!isProjSrc && dbSource.isLoaded()){
-                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
-                            dbSource.getOrigin()));
-                }
-                loadChanges();
-                
-                showNotificationArea(false);
-            }
-        });
-        
-        Button btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
+        btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
         btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
         btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
@@ -677,7 +655,7 @@ public abstract class DiffPresentationPane extends Composite {
         contNotifications.setVisible(visible);
         this.layout();
         if (visible) {
-            btnUpdateRefreshed.setFocus();
+            btnDismissRefresh.setFocus();
         }
     }
 }
