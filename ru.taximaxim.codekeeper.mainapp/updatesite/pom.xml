@@ -121,7 +121,7 @@
                         <executions>
                             <execution>
                                 <id>execute-test-commands</id>
-                                <phase>package</phase>
+                                <phase>deploy</phase>
                                 <goals>
                                     <goal>sshexec</goal>
                                 </goals>
@@ -135,7 +135,7 @@
                             </execution>
                             <execution>
                                 <id>upload-p2-repo</id>
-                                <phase>package</phase>
+                                <phase>deploy</phase>
                                 <goals>
                                     <goal>upload</goal>
                                 </goals>
