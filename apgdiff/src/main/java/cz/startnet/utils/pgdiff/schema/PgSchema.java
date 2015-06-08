@@ -151,8 +151,7 @@ public class PgSchema extends PgStatement {
         CreateFunctionParser.parseArguments(p, tmp);
         
         for (PgFunction function : functions) {
-            if (function.getBareName().equals(tmp.getBareName()) && 
-                    function.compareSignature(tmp)) {
+            if (function.getSignature().equals(tmp.getSignature())) {
                 return function;
             }
         }

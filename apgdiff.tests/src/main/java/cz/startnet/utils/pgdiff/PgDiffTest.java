@@ -151,6 +151,12 @@ public class PgDiffTest {
                     {"drop_function_args", false},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args", false},
+                    // изменить тип out аргумента
+                    {"function_out_type_chg", false},
+                    // изменить out параметра
+                    {"function_out_name_chg", false},
+                    {"function_out_type_add", false},
+                    {"function_out_type_del", false},
                     // Tests scenario where FUNCTION with args delete default.
                     {"modify_function_delete_default", false},
                     // Tests scenario where FUNCTION with args add default.

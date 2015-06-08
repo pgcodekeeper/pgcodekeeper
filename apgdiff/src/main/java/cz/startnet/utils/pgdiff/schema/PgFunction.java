@@ -71,6 +71,11 @@ public class PgFunction extends PgStatementWithSearchPath {
         sb.append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
+            if (!includeArgNames) {
+                if (argument.getMode().equalsIgnoreCase("OUT")) {
+                    continue;
+                }
+            }
             if (addComma) {
                 sb.append(", ");
             }
@@ -203,42 +208,6 @@ public class PgFunction extends PgStatementWithSearchPath {
      */
     public String getSignature() {
         return appendFunctionSignature(new StringBuilder(), false, false).toString();
-    }
-    
-    public boolean compareSignature(PgFunction other) {
-        Iterator<Argument> it1 = this.arguments.iterator();
-        Iterator<Argument> it2 = other.arguments.iterator();
-        
-        do {
-            Argument arg1 = skipOutArgs(it1);
-            Argument arg2 = skipOutArgs(it2);
-            if (arg1 == null || arg2 == null) {
-                // if both are null then both params lists are exausted and are same
-                // else one param list is exausted and the other one is not lists are different
-                return arg1 == arg2;
-            }
-            if (!Objects.equals(arg1.getDataType(), arg2.getDataType())) {
-                return false;
-            }
-            // all other fields are irrelevant for the purpose if function signature ID
-        } while (it1.hasNext() && it2.hasNext());
-        
-        return !(it1.hasNext() || it2.hasNext());
-    }
-    
-    /**
-     * Increments iterator until a non-OUT argument is found.
-     * 
-     * @return the next non-OUT argument or null if none found.
-     */
-    private Argument skipOutArgs(Iterator<Argument> it) {
-        while (it.hasNext()) {
-            Argument a = it.next();
-            if (!"OUT".equals(a.getMode())) {
-                return a;
-            }
-        }
-        return null;
     }
 
     /**
@@ -467,8 +436,24 @@ public class PgFunction extends PgStatementWithSearchPath {
             // multiple [IN]OUT args present
             
             // actually any argument name change requires drop
-            if (/*argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&*/
-                    !Objects.equals(argOld.getName(), argNew.getName())) {
+            if (!Objects.equals(argOld.getName(), argNew.getName())) {
+                return true;
+            }
+            // нельзя менять тип out параметров
+            if (argOld.getMode() != null && argOld.getMode().equalsIgnoreCase("OUT") &&
+                    !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
+                return true;
+            }
+        }
+        // Если добавляется или удаляется out параметр нужно удалить функцию,
+        // т.к. меняется её возвращаемое значение
+        if (iOld.hasNext()) {
+            if (iOld.next().getMode().equalsIgnoreCase("OUT")) {
+                return true;
+            }
+        }
+        if (iNew.hasNext()) {
+            if (iNew.next().getMode().equalsIgnoreCase("OUT")) {
                 return true;
             }
         }
