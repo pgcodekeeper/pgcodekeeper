@@ -88,6 +88,8 @@ public class NewProjWizard extends Wizard
     @Override
     public void addPages() {
         pageRepo = new PageRepo(Messages.newProjWizard_repository_settings, selection);
+        pageRepo.setTitle(Messages.newProjWizard_new_pg_db_project);
+        pageRepo.setDescription(Messages.NewProjWizard_input_project_name);
         addPage(pageRepo);
         pageDb = new PageDb(Messages.newProjWizard_schema_source_settings, mainPrefStore);
         addPage(pageDb);
@@ -210,7 +212,7 @@ public class NewProjWizard extends Wizard
         mb.setMessage(Messages.missing_marker_file_in_working_directory
                 + UIConsts._NL
                 + pageRepo.getLocationURI()
-                + "/" + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
+                + "/" + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER //$NON-NLS-1$
                 + UIConsts._NL + UIConsts._NL
                 + Messages.NewProjWizard_demand_init_project);
         mb.setText(Messages.newProjWizard_missing_marker_file);
@@ -252,7 +254,7 @@ public class NewProjWizard extends Wizard
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-    }    
+    }
 }
 
 class PageRepo extends WizardNewProjectCreationPage implements Listener {
