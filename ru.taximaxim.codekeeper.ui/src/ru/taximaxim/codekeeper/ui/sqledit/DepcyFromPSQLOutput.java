@@ -41,7 +41,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); 
     
     private List<PgStatement> objList;
-    private List<Entry<String, String>> addDepcy;
+    private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private Differ differ;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
