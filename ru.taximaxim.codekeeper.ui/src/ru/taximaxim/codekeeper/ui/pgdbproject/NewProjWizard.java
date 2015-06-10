@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -105,10 +106,14 @@ public class NewProjWizard extends Wizard
      * @return существует ли маркер
      */
     private boolean checkMarkerExist() {
-            File sub = new File (pageRepo.getLocationURI()); 
-            if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+        URI loc = pageRepo.getLocationURI();
+        if (loc == null || (loc != null && !loc.isAbsolute())) {
             return false;
-            }
+        }
+        File sub = new File(loc);
+        if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()) {
+            return false;
+        }
         return true;
     }
 
@@ -216,7 +221,7 @@ public class NewProjWizard extends Wizard
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-    }    
+    }
 }
 
 class PageRepo extends WizardNewProjectCreationPage implements Listener {
