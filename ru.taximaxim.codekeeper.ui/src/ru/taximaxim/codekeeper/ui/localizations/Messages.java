@@ -222,18 +222,14 @@ public final class Messages extends NLS {
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
     public static String initProjectFromSource_ioexception_while_creating_project;
-    public static String newProjWizard_missing_marker_file;
     public static String newProjWizard_db_source_settings;
     public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_error_in_initializing_repo_from_source;
-    public static String newProjWizard_init_project_subdir_from_schema_source;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
-    public static String newProjWizard_project_encoding;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
-    public static String newProjWizard_this_will_delete_contents_and_recreate_them;
     
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
