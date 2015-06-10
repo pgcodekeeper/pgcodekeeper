@@ -89,7 +89,7 @@ public class NewProjWizard extends Wizard
     public void addPages() {
         pageRepo = new PageRepo(Messages.newProjWizard_repository_settings, selection);
         pageRepo.setTitle(Messages.newProjWizard_new_pg_db_project);
-        pageRepo.setDescription(Messages.NewProjWizard_input_project_name);
+        pageRepo.setDescription(Messages.NewProjWizard_create_project);
         addPage(pageRepo);
         pageDb = new PageDb(Messages.newProjWizard_schema_source_settings, mainPrefStore);
         addPage(pageDb);

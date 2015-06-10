@@ -291,7 +291,7 @@ public final class Messages extends NLS {
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_saving_projprefs;
 
-    public static String NewProjWizard_input_project_name;
+    public static String NewProjWizard_create_project;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
