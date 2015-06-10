@@ -655,10 +655,31 @@ public class DiffTableViewer extends Composite {
         if (comboText != null && !comboText.isEmpty()) {
             List<String> elementsToCheck = prevChecked.get(comboText);
             if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
+                List<String> elementsNames = new ArrayList<>();
+                List<String> elementsTypes = new ArrayList<>();
+                for (String elementString : elementsToCheck){
+                    String[] element = new String[2];
+                    element = elementString.split(",");
+                    elementsNames.add(element[0]);
+                    if (element.length != 1){
+                        elementsTypes.add(element[1]);
+                    }
+                }
                 List<TreeElement> prevCheckedList = new ArrayList<>();
                 for (TreeElement elementKey : elements) {
-                    if (elementsToCheck.contains((elementKey.getName()))) {
-                        prevCheckedList.add(elementKey);
+                    if (elementsTypes.size() == elementsNames.size()) {
+                        int i = 0;
+                        while (i<elementsNames.size()){
+                            if (elementsNames.get(i).equals(elementKey.getName()) 
+                                    && elementsTypes.get(i).equals(elementKey.getType().toString())) {
+                                prevCheckedList.add(elementKey);
+                            }
+                            i++;
+                        }
+                    } else {
+                        if (elementsNames.contains(elementKey.getName())){
+                            prevCheckedList.add(elementKey);
+                        }
                     }
                 }
                 checkListener.setElementsChecked(prevCheckedList, true);
@@ -673,7 +694,7 @@ public class DiffTableViewer extends Composite {
             List<String> checkedElements = new ArrayList<>();
             for (TreeElement element : elements) {
                 if (element.isSelected()) {
-                    checkedElements.add(element.getName());
+                    checkedElements.add(element.getName()+","+element.getType().toString());
                 }
             }
             try {
