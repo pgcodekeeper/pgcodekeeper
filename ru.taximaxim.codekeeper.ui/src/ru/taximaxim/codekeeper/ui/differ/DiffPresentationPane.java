@@ -410,7 +410,7 @@ public abstract class DiffPresentationPane extends Composite {
             File projectDir = proj.getPathToProject().toFile();
             File file = new File(projectDir, "SCHEMA"); //$NON-NLS-1$
             
-            TreeElement parentEl = el.getParent().getParent();
+            TreeElement parentEl = el.getParent();
             String parentExportedFileName = parentEl == null ? 
                     null : ModelExporter.getExportedFilename(parentEl.getPgStatement(projectDb));
                     
@@ -435,7 +435,7 @@ public abstract class DiffPresentationPane extends Composite {
                 case TRIGGER:
                     el = parentEl;
                     String schemaName = ModelExporter.getExportedFilename(
-                            parentEl.getParent().getParent().getPgStatement(projectDb));
+                            parentEl.getParent().getPgStatement(projectDb));
                     file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
                     break;
                 default:
