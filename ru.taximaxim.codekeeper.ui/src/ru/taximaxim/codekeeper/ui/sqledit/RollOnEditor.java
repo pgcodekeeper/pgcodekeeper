@@ -576,7 +576,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, ApgdiffConsts.UTF_8)) {
+                try (PrintWriter writer = new PrintWriter(script, scriptFileEncoding)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifier.notifyDefault(
