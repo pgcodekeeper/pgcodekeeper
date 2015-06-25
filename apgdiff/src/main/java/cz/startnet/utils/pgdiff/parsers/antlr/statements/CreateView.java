@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -29,11 +28,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
-    private Create_view_statementContext ctx;
 
-    boolean inWith = false;
-    // хранит подзапрос из блока with и его алиас.
-    private Map<String, PgSelect> queries = new HashMap<>();
+    private final Create_view_statementContext ctx;
 
     public CreateView(Create_view_statementContext ctx, PgDatabase db,
             Path filePath) {
@@ -65,43 +61,35 @@ public class CreateView extends ParserAbstract {
         db.getSchema(schemaName).addView(view);
         return view;
     }
-    
+
     /**
      * Создает запрос из констекста <br>
      * Идея - читать подзапросы отдельно друг от друга и в конце складывать
      * результаты, вычитая имена подзапросов из общих имен
-     * 
-     * @param ctx
-     * @return
      */
-    public PgSelect createSelect(ParserRuleContext ctx) {
+    public PgSelect createSelect(Query_expressionContext ctx) {
         // пробежаться по запросу вычитывая подзапросы с with
-        WithListener whith = new WithListener();
-        ParseTreeWalker.DEFAULT.walk(whith, ctx);
-        // алиасы подзапросов
-        Set<String> queryAliases = queries.keySet();
-        // получить основной запрос
-        PgSelect select = whith.getSelect();
-        ArrayList<GenericColumn> columns = new ArrayList<>();
+        WithListener with = new WithListener();
+        ParseTreeWalker.DEFAULT.walk(with, ctx);
+        Map<String, PgSelect> withQueries = with.getWithQueries();
+        // основной запрос
+        PgSelect select = with.getSelect();
+
+        PgSelect result = new PgSelect(getFullCtxText(ctx));
         // колонки с алиасом из подзапросов не добавлять
         for (GenericColumn col : select.getColumns()) {
-            if (!queryAliases.contains(col.table)) {
-                columns.add(col);
+            if (!withQueries.containsKey(col.table)) {
+                result.addColumn(col);
             }
         }
-        for (String key : queries.keySet()) {
-            PgSelect query = queries.get(key);
+        for (PgSelect query : withQueries.values()) {
             for (GenericColumn col : query.getColumns()) {
-                if (!queryAliases.contains(col.table)) {
-                    columns.add(col);
+                if (!withQueries.containsKey(col.table)) {
+                    result.addColumn(col);
                 }
             }
         }
-        select = new PgSelect(select.getRawStatement());
-        for (GenericColumn col : columns) {
-            select.addColumn(col);
-        }
-        return select;
+        return result;
     }
 
     private PgSelect parseSelect(ParserRuleContext ctx, boolean resolveColumns) {
@@ -119,16 +107,19 @@ public class CreateView extends ParserAbstract {
     }
 
     private class SelectQueryVisitor extends
-            SQLParserBaseVisitor<Query_expressionContext> {
+    SQLParserBaseVisitor<Query_expressionContext> {
+
+        private final PgSelect select;
+
         // список алиасов запросов, игнорируются при заполнении колонок в селект
-        private List<String> aliasNames = new ArrayList<>();
+        private final List<String> aliasNames = new ArrayList<>();
         //адреса объектов колонок, таблиц и функций
-        private List<GenericColumn> columns = new ArrayList<>();
+        private final List<GenericColumn> columns = new ArrayList<>();
         // карта алиасов колонок, таблиц и функций
-        private Map<String, GenericColumn> tableAliases = new HashMap<>();
-        boolean isQuery = false;
-        private PgSelect select;
-        private boolean isTableRef = false;
+        private final Map<String, GenericColumn> tableAliases = new HashMap<>();
+
+        private boolean isQuery;
+        private boolean isTableRef;
 
         public SelectQueryVisitor(PgSelect select) {
             this.select = select;
@@ -140,7 +131,7 @@ public class CreateView extends ParserAbstract {
             isTableRef = true;
             return visitChildren(ctx);
         }
-        
+
         @Override
         public Query_expressionContext visitSimple_table(Simple_tableContext ctx) {
             if (ctx.query_specification() != null) {
@@ -159,7 +150,7 @@ public class CreateView extends ParserAbstract {
         @Override
         public Query_expressionContext visitSet_function_specification(
                 Set_function_specificationContext ctx) {
-            GenericColumn col = new GenericColumn(null, ctx.COUNT() != null ? 
+            GenericColumn col = new GenericColumn(null, ctx.COUNT() != null ?
                     getFullCtxText(ctx) : getFullCtxText(ctx.general_set_function()),
                     null);
             col.setType(ViewReference.SYSTEM);
@@ -173,18 +164,18 @@ public class CreateView extends ParserAbstract {
             if (ctx.function_calls_paren() != null) {
                 addFunction(ctx);
                 return visitChildren(ctx);
-            } 
+            }
             if (isTableRef) {
                 isTableRef = false;
                 String schemaName = getSchemaName(ctx.schema_qualified_name());
                 GenericColumn col = new GenericColumn(
                         schemaName == null ? getDefSchemaName() : schemaName,
-                        getName(ctx.schema_qualified_name()), null);
+                                getName(ctx.schema_qualified_name()), null);
                 col.setType(ViewReference.TABLE);
                 columns.add(col);
                 return null;
             }
-            
+
             String colName = getName(ctx.schema_qualified_name());
             String colTable = getTableName(ctx.schema_qualified_name());
             String colSchema = getSchemaName(ctx.schema_qualified_name());
@@ -195,7 +186,7 @@ public class CreateView extends ParserAbstract {
             }
             return null;
         }
-        
+
         private void addFunction(Name_or_func_callsContext ctx) {
             GenericColumn functionCall = new GenericColumn(
                     getSchemaName(ctx.schema_qualified_name()),
@@ -203,7 +194,7 @@ public class CreateView extends ParserAbstract {
             functionCall.setType(ViewReference.FUNCTION);
             columns.add(functionCall);
         }
-        
+
         @Override
         public Query_expressionContext visitAs_clause(As_clauseContext ctx) {
             String aliasName = ctx.identifier().getText();
@@ -235,7 +226,7 @@ public class CreateView extends ParserAbstract {
                     tableIter.remove();
                 }
             }
-            
+
             Iterator<GenericColumn> iter = columns.iterator();
             List<GenericColumn> newColumns = new ArrayList<>();
             while (iter.hasNext()) {
@@ -269,7 +260,7 @@ public class CreateView extends ParserAbstract {
             columns.addAll(newColumns);
             return columns;
         }
-        
+
         public PgSelect getSelect() {
             for (GenericColumn col : columns) {
                 select.addColumn(col);
@@ -277,32 +268,55 @@ public class CreateView extends ParserAbstract {
             return select;
         }
     }
-            
+
+    // TODO how does this work with nested WITHs?
+    /* e.g.
+     * WITH _outer AS (
+     *      WITH _inner AS (
+     *          SELECT qwe FROM qwe
+     *      )
+     *      SELECT qwe FROM _inner
+     * )
+     * SELECT qwe FROM _outer;
+     */
     private class WithListener extends SQLParserBaseListener {
-        PgSelect sel = null;
+
+        private int withDepth;
+        // outermost query
+        private PgSelect sel;
+        // with queries
+        private final Map<String, PgSelect> withQueries = new HashMap<>();
+
         @Override
         public void enterWith_query_name(With_query_nameContext ctx) {
             // не читать подзапросы если они находятся в блоке with
-            inWith = true;
+            ++withDepth;
             String alias = getFullCtxText(ctx.query_alias);
             PgSelect s = parseSelect(ctx.query, true);
-            queries.put(alias, s);
+            withQueries.put(alias, s);
         }
+
         @Override
         public void exitWith_query_name(With_query_nameContext ctx) {
-            inWith = false;
+            --withDepth;
         }
+
         @Override
         public void exitQuery_expression(Query_expressionContext ctx) {
             // читать нужно на выходе, т.к. последний запрос будет являться
             // основым запросом
-            if (inWith) {
-               return; 
+            if (withDepth > 0) {
+                return;
             }
             sel = parseSelect(ctx, false);
         }
+
         public PgSelect getSelect() {
             return sel;
+        }
+
+        public Map<String, PgSelect> getWithQueries() {
+            return withQueries;
         }
     }
 }
