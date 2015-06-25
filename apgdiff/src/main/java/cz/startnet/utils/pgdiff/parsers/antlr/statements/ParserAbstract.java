@@ -58,8 +58,6 @@ public abstract class ParserAbstract {
         return db.getDefaultSchema().getName();
     }
 
-    
-
     /**
      * Extracts raw text from context
      * 
@@ -96,7 +94,7 @@ public abstract class ParserAbstract {
         }
         return removeQuotes(name.identifier(i));
     }
-    
+     
     /**
      * Remove quotes from identifier
      * @param name identifier context
@@ -104,6 +102,7 @@ public abstract class ParserAbstract {
      */
     public static String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
+        // FIXME single identifier doesn't require splitNames
         String unquotedName = ParserUtils.splitNames(identifier)[0];
         
         return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
@@ -140,6 +139,7 @@ public abstract class ParserAbstract {
         case 0:
             return null;
             // may be unqualified table or schema name
+            // TODO case for schema(0).table(1) ?
         case 1:
             return removeQuotes(name.identifier(0));
             // qualified table name on 1 position
