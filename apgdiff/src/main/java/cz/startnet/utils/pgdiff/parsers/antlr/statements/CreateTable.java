@@ -19,21 +19,21 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class CreateTable extends ParserAbstract {
     private final Create_table_statementContext ctx;
-    
+
     public CreateTable(Create_table_statementContext ctx, PgDatabase db, Path filePath) {
         super(db, filePath);
         this.ctx = ctx;
     }
-    
+
     @Override
     public PgStatement getObject() {
-        
+
         String name = getName(ctx.name);
         String schemaName =getSchemaName(ctx.name);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        
+
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
@@ -55,16 +55,16 @@ public class CreateTable extends ParserAbstract {
                 col.addDefaultFunction(function.getValue());
             }
         }
-        if (ctx.paret_table != null) {
-            for (Schema_qualified_nameContext nameInher : ctx.paret_table.names_references().name) {
+        if (ctx.parent_table != null) {
+            for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
                 table.addInherits(getSchemaName(nameInher), getName(nameInher));
             }
         }
-        
+
         if (ctx.table_space()!=null) {
             table.setTablespace(getName(ctx.table_space().name));
         }
-        
+
         if (ctx.storage_parameter_oid() != null) {
             if (ctx.storage_parameter_oid().with_storage_parameter() != null) {
                 table.setWith(getFullCtxText(ctx.storage_parameter_oid().with_storage_parameter().storage_parameter()));

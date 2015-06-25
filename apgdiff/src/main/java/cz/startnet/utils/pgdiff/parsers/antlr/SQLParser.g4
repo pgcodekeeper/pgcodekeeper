@@ -602,7 +602,7 @@ create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name 
         (OF type_name=identifier)? 
         LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
-        (INHERITS paret_table= column_references)?
+        (INHERITS parent_table= column_references)?
         storage_parameter_oid?
         on_commit?
         table_space?
