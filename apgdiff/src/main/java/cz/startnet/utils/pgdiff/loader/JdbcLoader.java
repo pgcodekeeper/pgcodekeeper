@@ -44,7 +44,6 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -62,7 +61,7 @@ public class JdbcLoader implements PgCatalogStrings {
     /*
      * Trigger firing conditions
      */
-    // SONAR-OFF
+// SONAR-OFF
     public static final int TRIGGER_TYPE_ROW = 1 << 0;
     public static final int TRIGGER_TYPE_BEFORE = 1 << 1;
     public static final int TRIGGER_TYPE_INSERT = 1 << 2;
@@ -70,7 +69,7 @@ public class JdbcLoader implements PgCatalogStrings {
     public static final int TRIGGER_TYPE_UPDATE = 1 << 4;
     public static final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     public static final int TRIGGER_TYPE_INSTEAD = 1 << 6;
-    // SONAR-ON
+// SONAR-ON
     private static final int DEFAULT_OBJECTS_COUNT = 100;
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
@@ -692,7 +691,6 @@ public class JdbcLoader implements PgCatalogStrings {
         String contype = res.getString("contype");
         switch (contype) {
         case "f":
-            c = new PgForeignKey(constraintName, "");
             List<String> referencedColumnNames = getColumnNames(
                     (Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
 
@@ -702,7 +700,7 @@ public class JdbcLoader implements PgCatalogStrings {
                             res.getString("foreign_schema_name"),
                             res.getString("foreign_table_name"),
                             colName);
-                    ((PgForeignKey)c).addForeignColumn(referencedColumn);
+                        c.addForeignColumn(referencedColumn);                        
                 }
             }
 

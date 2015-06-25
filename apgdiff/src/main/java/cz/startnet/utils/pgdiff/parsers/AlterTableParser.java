@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -207,13 +206,10 @@ public final class AlterTableParser {
             final PgTable table, final String searchPath) {
         final String constraintName =
                 ParserUtils.getObjectName(parser.parseIdentifier());
-        final PgConstraint constraint;
+        final PgConstraint constraint = new PgConstraint(constraintName, null);
         int posBefore = parser.getPosition();
         if (parser.expectOptional("FOREIGN", "KEY")){
-            constraint = new PgForeignKey(constraintName, null);
-            parseAddConstraintForeignKey(parser, table, (PgForeignKey)constraint);
-        }else{
-            constraint = new PgConstraint(constraintName, null);
+            parseAddConstraintForeignKey(parser, table, constraint);
         }
         parser.setPosition(posBefore);
         constraint.setDefinition(parser.getExpression());
@@ -290,7 +286,7 @@ public final class AlterTableParser {
      * @param constraint 
      */
     private static void parseAddConstraintForeignKey(final Parser parser,
-            final PgTable table, PgForeignKey constraint) {
+            final PgTable table, PgConstraint constraint) {
         parser.expect("(");
 
         // parse dependent column names
