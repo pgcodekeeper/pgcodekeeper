@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
@@ -13,10 +12,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_event_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -26,7 +23,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
@@ -50,8 +46,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
-    private PgDatabase db;
-    private Path filePath;
+    private final PgDatabase db;
+    private final Path filePath;
     private String tablespace;
     private String oids;
 
@@ -59,7 +55,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         this.db = database;
         this.filePath = filePath;
     }
-    
+
     Path getPath() {
         return filePath;
     }
@@ -67,140 +63,124 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
         new CreateTable(ctx, db, filePath, tablespace, oids).getObject();
-        tablespace = null;
-        oids = null;
     }
 
     @Override
     public void exitIndex_statement(Index_statementContext ctx) {
         new CreateIndex(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_extension_statement(
             Create_extension_statementContext ctx) {
         new CreateExtension(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
         new CreateTrigger(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_function_statement(
             Create_function_statementContext ctx) {
         new CreateFunction(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_sequence_statement(
             Create_sequence_statementContext ctx) {
         new CreateSequence(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
         new CreateSchema(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
         new CreateView(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_type_statement(Create_type_statementContext ctx) {
         new CreateType(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
         new CreateDomain(ctx, db, filePath).getObject();
     }
-    
-    @Override
-    public void exitCreate_language_statement(
-            Create_language_statementContext ctx) {
-//        objects.add(new CreateLanguage(ctx, db, filePath).setDefSchemaName(searchPath).getObject());
-    }
-    
-    @Override
-    public void exitCreate_event_trigger(Create_event_triggerContext ctx) {
-//        objects.add(new CreateEventTrigger(ctx, db, filePath).setDefSchemaName(searchPath).getObject());
-    }
-    
+
     @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
         new CommentOn(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitSet_statement(Set_statementContext ctx) {
+        if (ctx.config_param_val.isEmpty()) {
+            return;
+        }
         String confParam = ctx.config_param.getText();
-        end_for:
-        for (Set_statement_valueContext value : ctx.config_param_val) {
-            switch (confParam.toLowerCase()) {
-            case "search_path":
-                db.setDefaultSchema(ParserUtils.getObjectName(value.getText()));
-                break end_for;
-            case "default_with_oids":
-                oids = value.getText();
-                if (oids.equals("false")) {
-                    oids = null;
-                }
-                break end_for;
-            case "default_tablespace":
-                tablespace = value.getText();
-                tablespace = tablespace.substring(1, tablespace.length() - 1);
-                if (tablespace.isEmpty()) {
-                    tablespace = null;
-                }
-                break end_for;
+        // TODO set param values can be identifiers, quoted identifiers, string or other literals: improve handling
+        String confValue = ctx.config_param_val.get(0).getText();
+
+        switch (confParam.toLowerCase()) {
+        case "search_path":
+            db.setDefaultSchema(ParserUtils.getObjectName(confValue));
+            break;
+        case "default_with_oids":
+            oids = confValue;
+            if (oids.equals("false")) {
+                oids = null;
             }
+            break;
+        case "default_tablespace":
+            tablespace = confValue;
+            if (tablespace.isEmpty()) {
+                tablespace = null;
+            }
+            break;
         }
     }
-    
+
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
         new CreateRule(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
         new AlterFunction(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
         new AlterSchema(ctx, db, filePath).getObject();
     }
-    
-    @Override
-    public void exitAlter_language_statement(Alter_language_statementContext ctx) {
-//        alterObjects.add(new AlterLanguage(ctx, db, filePath).getObject());
-    }
-    
+
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
         new AlterTable(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
         new AlterSequence(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
         new AlterView(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
         new AlterType(ctx, db, filePath).getObject();
     }
-    
+
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
         new AlterDomain(ctx, db, filePath).getObject();
