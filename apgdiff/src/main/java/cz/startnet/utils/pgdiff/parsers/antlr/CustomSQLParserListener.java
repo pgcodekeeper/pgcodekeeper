@@ -139,7 +139,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             break;
         case "default_tablespace":
             tablespace = confValue;
-            if (tablespace.isEmpty()) {
+            if (tablespace.isEmpty()
+                    // special case for pg_dump's unset default_tablespace
+                    // remove after good unquoting mechanism would be introduced
+                    || tablespace.equals("''")) {
                 tablespace = null;
             }
             break;
