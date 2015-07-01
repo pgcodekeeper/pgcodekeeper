@@ -1269,7 +1269,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
 
-        String definition = res.getString("prosrc").replace("\r", "");
+        String definition = res.getString("prosrc");
         String quote = getStringLiteralDollarQuote(definition);
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
