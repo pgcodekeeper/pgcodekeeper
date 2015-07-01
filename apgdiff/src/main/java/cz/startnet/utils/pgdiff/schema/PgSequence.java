@@ -5,15 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -161,7 +156,6 @@ public class PgSequence extends PgStatementWithSearchPath {
         } else {
             return false;
         }
-        PgDiffScript script = new PgDiffScript();
         PgSequence oldSequence = this;
         StringBuilder sbSQL = new StringBuilder(); 
         sbSQL.setLength(0);
@@ -223,26 +217,24 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
 
         if (sbSQL.length() > 0) {
-            script.addStatement("ALTER SEQUENCE "
+            sb.append("\n\nALTER SEQUENCE "
                     + PgDiffUtils.getQuotedName(newSequence.getName())
-                    + sbSQL.toString() + ';');
+                    + sbSQL.toString() + ";");
         }
         
         if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
-            script.addStatement(newSequence.getOwnerSQL());
+            sb.append(newSequence.getOwnerSQL());
         }
         
         if (!oldSequence.getGrants().equals(newSequence.getGrants())
                 || !oldSequence.getRevokes().equals(newSequence.getRevokes())) {
-            script.addStatement(newSequence.getPrivilegesSQL());
+            sb.append(newSequence.getPrivilegesSQL());
         }
 
-        PgDiff.diffComments(oldSequence, newSequence, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
+            sb.append("\n\n");
+            newSequence.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
 

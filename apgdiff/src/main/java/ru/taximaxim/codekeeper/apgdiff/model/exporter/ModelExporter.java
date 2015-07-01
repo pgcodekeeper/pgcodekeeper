@@ -23,9 +23,11 @@ import java.util.regex.Pattern;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -101,8 +103,8 @@ public class ModelExporter {
     private void deleteFileIfExists(File parentDir, File relativeFile, TreeElement el) 
             throws IOException{
         Path toDelete = Paths.get(parentDir.getCanonicalPath(), relativeFile.toString());
-        Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + 
-                " for object " + el.getType() + " " + el.getName());
+        Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() +  //$NON-NLS-1$
+                " for object " + el.getType() + " " + el.getName()); //$NON-NLS-1$ //$NON-NLS-2$
         Files.deleteIfExists(toDelete);
     }
     
@@ -119,7 +121,7 @@ public class ModelExporter {
         Files.deleteIfExists(f.toPath());
     }
     
-    public void exportPartial() throws IOException {
+    public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null){
             throw new IOException("Old database should not be null for partial export.");
         }
@@ -151,8 +153,9 @@ public class ModelExporter {
      * If <code>el</code> is of type Function, dumps other same-named functions back.<br>
      * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
      * If <code>el</code> is of type Table, deletes its Triggers, Indexes, Constraints, too.
+     * @throws PgCodekeeperException 
      */
-    private void deleteObject(TreeElement el) throws IOException{
+    private void deleteObject(TreeElement el) throws IOException, PgCodekeeperException{
         PgStatement st = el.getPgStatement(oldDb);
 
         TreeElement elParent = el.getParent();
@@ -164,7 +167,7 @@ public class ModelExporter {
             // delete schema's folder content
             File schemaFolder = new File(outDir, getRelativeFilePath(st, false).toString());
             if (schemaFolder.exists()){
-                Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
+                Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName()); //$NON-NLS-1$
                 deleteRecursive(schemaFolder);                
             }
             break;
@@ -195,6 +198,12 @@ public class ModelExporter {
         case INDEX:
         case TRIGGER:
             if (!changedObjects.contains(elParent)){
+                if (elParent.getSide() == DiffSide.LEFT) {
+                    throw new PgCodekeeperException(
+                            MessageFormat
+                                    .format(Messages.modelExporter_limitations_trig_constr_ind,
+                                            el.getType(), el.getName(), elParent.getName()));
+                }
                 editObject(elParent);
             }
             break;
@@ -210,8 +219,9 @@ public class ModelExporter {
      * If <code>el</code> is of type Function, updates other same-named functions too.<br>
      * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
      * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
+     * @throws PgCodekeeperException 
      */
-    private void editObject(TreeElement el) throws IOException{
+    private void editObject(TreeElement el) throws IOException, PgCodekeeperException{
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
 
@@ -252,6 +262,11 @@ public class ModelExporter {
         case INDEX:
         case TRIGGER:
             if (!changedObjects.contains(elParent)){
+                if (elParent.getSide() == DiffSide.LEFT) {
+                            throw new PgCodekeeperException(
+                                    MessageFormat.format(Messages.modelExporter_limitations_trig_constr_ind,
+                                                    el.getType(), el.getName(), elParent.getName()));
+                }
                 editObject(elParent);
             }
             break;
@@ -285,8 +300,9 @@ public class ModelExporter {
      * If <code>el</code> is of type Function, creates/updates other same-named functions too.<br>
      * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
      * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
+     * @throws PgCodekeeperException 
      */
-    private void createObject(TreeElement el) throws IOException{
+    private void createObject(TreeElement el) throws IOException, PgCodekeeperException{
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
         
@@ -545,14 +561,14 @@ public class ModelExporter {
                             // 2^40 variants, should be enough for this purpose
                             .substring(0, HASH_LENGTH);
             
-            return m.replaceAll("") + '_' + hash;
+            return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
         } else {
             return name;
         }
     }
     
     private static String getExportedFilenameSql(PgStatement statement) {
-        return getExportedFilename(statement) + ".sql";
+        return getExportedFilename(statement) + ".sql"; //$NON-NLS-1$
     }
     
     private String getDumpSql(PgStatementWithSearchPath statement) {
@@ -560,13 +576,13 @@ public class ModelExporter {
     }
     
     private String getDumpSql(PgStatementWithSearchPath statement, boolean searchPath) {
-        return searchPath ? statement.getSearchPath() + "\n\n" + statement.getFullSQL() :
+        return searchPath ? statement.getSearchPath() + "\n\n" + statement.getFullSQL() : //$NON-NLS-1$
                     statement.getFullSQL();
     }
     
     private void writeProjVersion(File f) throws IOException {
         try (PrintWriter pw = new UnixPrintWriter(f, ApgdiffConsts.UTF_8)) {
-            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = "
+            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
         }
     }
@@ -604,6 +620,6 @@ public class ModelExporter {
         case DATABASE:
         }
         
-        return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : ""));
+        return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : "")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

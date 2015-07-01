@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,10 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -118,21 +113,18 @@ public class PgSchema extends PgStatement {
             return false;
         }
         PgSchema oldSchema = this;
-        PgDiffScript script = new PgDiffScript();
         if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
-            script.addStatement(newSchema.getOwnerSQL());
+            sb.append(newSchema.getOwnerSQL());
         }
         
         if (!oldSchema.getGrants().equals(newSchema.getGrants())
                 || !oldSchema.getRevokes().equals(newSchema.getRevokes())) {
-            script.addStatement(newSchema.getPrivilegesSQL());
+            sb.append(newSchema.getPrivilegesSQL());
         }
-        
-        PgDiff.diffComments(oldSchema, newSchema, script);
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldSchema.getComment(), newSchema.getComment())) {
+            sb.append("\n\n");
+            newSchema.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
     

@@ -602,7 +602,7 @@ create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name 
         (OF type_name=identifier)? 
         LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
-        (INHERITS paret_table= column_references)?
+        (INHERITS parent_table= column_references)?
         storage_parameter_oid?
         on_commit?
         table_space?
@@ -746,7 +746,7 @@ param
   ;
 
 partition_by_columns
-    : PARTITION BY names_references
+    : PARTITION BY numeric_primary (COMMA numeric_primary)*
     ;
 
 cascade_restrict
@@ -902,6 +902,7 @@ nonreserved_keywords
   | QUARTER
   | RANGE
   | READ
+  | RECURSIVE
   | REGCONFIG
   | REGEXP
   | RENAME
@@ -1177,7 +1178,7 @@ function_calls_paren
     ;
 
 function_calls_args
-    : argname=identifier? argtype_expres=value_expression_primary_cast
+    : argname=identifier? argtype_expres=numeric_primary
     ;
 /*
 ===============================================================================
@@ -1314,6 +1315,7 @@ factor
 numeric_primary
   : value_expression_primary_cast
   | numeric_value_function
+  | derived_column
   ;
 
 value_expression_primary_cast
@@ -1613,8 +1615,16 @@ non_join_query_primary
   ;
 
 simple_table
-  : query_specification
+  : with_recursive? query_specification
   | explicit_table
+  ;
+
+  with_recursive
+  : WITH RECURSIVE? with_query_name (COMMA with_query_name)*
+  ;
+
+  with_query_name
+  : query_alias=identifier column_references? AS LEFT_PAREN query=query_specification RIGHT_PAREN
   ;
 
 explicit_table

@@ -37,7 +37,8 @@ public final class Messages extends NLS {
     public static String Loader_CannotReadFile;
     public static String Loader_EndOfStatementNotFound;
     public static String Loader_FileNotFound;
-    public static String Loader_UnsupportedEncoding;  
+    public static String Loader_UnsupportedEncoding;
+    public static String modelExporter_limitations_trig_constr_ind;
     
     // pgdiff/parsers
     public static String Parser_CannotFindColumnInTable;

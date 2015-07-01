@@ -210,6 +210,7 @@ public class NewProjWizard extends Wizard
         mb.setMessage(Messages.missing_marker_file_in_working_directory
                 + UIConsts._NL
                 + pageRepo.getLocationURI()
+                + "/" + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
                 + UIConsts._NL + UIConsts._NL
                 + Messages.NewProjWizard_demand_init_project);
         mb.setText(Messages.newProjWizard_missing_marker_file);
