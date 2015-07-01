@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores table information.
@@ -42,7 +42,7 @@ public class PgTable extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.TABLE;
     }
-    
+
     public PgTable(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -146,7 +146,7 @@ public class PgTable extends PgStatementWithSearchPath {
                     sbSQL.append(", ");
                 }
 
-                sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) + 
+                sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
                         tableName.getValue());
             }
 
@@ -179,7 +179,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
-        
+
         for (PgColumn col : columns) {
             col.appendPrivileges(sbSQL);
         }
@@ -209,19 +209,19 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-    
+
     @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgTable newTable;
         if (newCondition instanceof PgTable) {
-            newTable = (PgTable)newCondition; 
+            newTable = (PgTable)newCondition;
         } else {
             return false;
         }
@@ -234,7 +234,7 @@ public class PgTable extends PgStatementWithSearchPath {
                 sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tNO INHERIT "
-                        + (tableName.getKey() == null ? 
+                        + (tableName.getKey() == null ?
                                 "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
                         + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
@@ -244,12 +244,12 @@ public class PgTable extends PgStatementWithSearchPath {
                 sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
-                        + (tableName.getKey() == null ? 
+                        + (tableName.getKey() == null ?
                                 "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
                         + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
-        
+
         if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
             StringBuilder sbWith = new StringBuilder();
             sbWith.append("\n\nALTER TABLE ");
@@ -264,17 +264,17 @@ public class PgTable extends PgStatementWithSearchPath {
             } else {
                 sbWith.append("\n\tSET ");
                 sbWith.append(newTable.getWith());
-                sbWith.append(";");
+                sbWith.append(';');
             }
             sb.append(sbWith);
         }
-        
+
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
             sb.append("\n\nALTER TABLE "
                     + PgDiffUtils.getQuotedName(newTable.getName())
                     + "\n\tSET TABLESPACE " + newTable.getTablespace() + ';');
         }
-        
+
         if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
             sb.append(newTable.getOwnerSQL());
         }
@@ -282,7 +282,7 @@ public class PgTable extends PgStatementWithSearchPath {
                 || !oldTable.getRevokes().equals(newTable.getRevokes())) {
             sb.append(newTable.getPrivilegesSQL());
         }
-        
+
         if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
             sb.append("\n\n");
             newTable.appendCommentSql(sb);
@@ -366,7 +366,7 @@ public class PgTable extends PgStatementWithSearchPath {
             resetHash();
         }
     }
-    
+
     public void setWith(final String with) {
         this.with = with;
         resetHash();
@@ -423,7 +423,7 @@ public class PgTable extends PgStatementWithSearchPath {
     public boolean containsIndex(final String name) {
         return getIndex(name) != null;
     }
-    
+
     public boolean containsTrigger(String name) {
         return getTrigger(name) != null;
     }
@@ -442,20 +442,20 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return list;
     }
-    
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
-            
+
             eq = Objects.equals(name, table.getName())
                     && Objects.equals(tablespace, table.getTablespace())
                     && Objects.equals(with, table.getWith())
-                    
+
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
@@ -464,26 +464,26 @@ public class PgTable extends PgStatementWithSearchPath {
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment());
         }
-        
+
         return eq;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
-            
+
             eq = super.equals(obj)
-                    
+
                     && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
                     && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
                     && new HashSet<>(triggers).equals(new HashSet<>(table.triggers));
         }
-        
+
         return eq;
     }
 
@@ -491,13 +491,13 @@ public class PgTable extends PgStatementWithSearchPath {
     public int hashCode() {
         return super.hashCode();
     }
-    
+
     @Override
     public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());        
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + new HashSet<>(constraints).hashCode();
         result = prime * result + new HashSet<>(indexes).hashCode();
@@ -536,11 +536,11 @@ public class PgTable extends PgStatementWithSearchPath {
         tableDst.setOwner(getOwner());
         return tableDst;
     }
-    
+
     @Override
     public PgTable deepCopy() {
         PgTable copy = shallowCopy();
-        
+
         for(PgConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());
         }
@@ -550,19 +550,19 @@ public class PgTable extends PgStatementWithSearchPath {
         for(PgTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
         }
-        
+
         return copy;
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
     }
-    
+
     public static class Inherits {
         private final String key;
         private final String value;
-        
+
         public String getKey() {
             return key;
         }
@@ -591,5 +591,5 @@ public class PgTable extends PgStatementWithSearchPath {
             }
             return false;
         }
-    } 
+    }
 }
