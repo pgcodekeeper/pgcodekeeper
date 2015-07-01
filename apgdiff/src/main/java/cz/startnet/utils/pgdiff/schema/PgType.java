@@ -496,13 +496,10 @@ public class PgType extends PgStatementWithSearchPath {
         
         if (attrSb.length() > 0) {
             // remove last comma
-            attrSb.setLength(attrSb.length() - ", ".length());
-            if (sb.length() != 0) {
-                sb.append("\n\n");
-            }
-            sb.append("ALTER TYPE ")
+            attrSb.setLength(attrSb.length() - 2);
+            sb.append("\n\nALTER TYPE ")
                     .append(PgDiffUtils.getQuotedName(newType.getName()))
-                    .append(attrSb).append(';');
+                    .append(attrSb).append(";");
         }
         columnsComments(newType, oldType, sb);
         
@@ -511,10 +508,7 @@ public class PgType extends PgStatementWithSearchPath {
         for (int i = 0; i < enums.size(); ++i) {
             String enum_ = enums.get(i);
             if (!oldEnums.contains(enum_)) {
-                if (sb.length() != 0) {
-                    sb.append("\n\n");
-                }
-                sb.append("ALTER TYPE ")
+                sb.append("\n\nALTER TYPE ")
                         .append(PgDiffUtils.getQuotedName(newType.getName()))
                         .append("\n\tADD VALUE ").append(enum_);
                 if (i == 0) {
@@ -534,6 +528,7 @@ public class PgType extends PgStatementWithSearchPath {
             newType.appendPrivileges(sb);
         }
         if (!Objects.equals(oldType.getComment(), newType.getComment())) {
+            sb.append("\n\n");
             newType.appendCommentSql(sb);
         }
         return sb.length() > startLength;
@@ -544,14 +539,14 @@ public class PgType extends PgStatementWithSearchPath {
             PgColumn oldAttr = oldType.getAttr(newAttr.getName());
             if (oldAttr != null) {
                 if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
-                    newAttr.appendCommentSql(sb);
                     sb.append("\n\n");
+                    newAttr.appendCommentSql(sb);
                 }
             } else {
                 if (newAttr.getComment() != null 
                         && !newAttr.getComment().isEmpty()) {
-                    newAttr.appendCommentSql(sb);
                     sb.append("\n\n");
+                    newAttr.appendCommentSql(sb);
                 }
             }
         }

@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,10 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -230,14 +225,13 @@ public class PgTable extends PgStatementWithSearchPath {
         } else {
             return false;
         }
-        PgDiffScript script = new PgDiffScript();
         PgTable oldTable = this;
 
         List<Inherits> oldInherits = oldTable.getInherits();
         List<Inherits> newInherits = newTable.getInherits();
         for (final Inherits tableName : oldInherits) {
             if (!newInherits.contains(tableName)) {
-                script.addStatement("ALTER TABLE "
+                sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tNO INHERIT "
                         + (tableName.getKey() == null ? 
@@ -247,7 +241,7 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         for (final Inherits tableName : newInherits) {
             if (!oldInherits.contains(tableName)) {
-                script.addStatement("ALTER TABLE "
+                sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
                         + (tableName.getKey() == null ? 
@@ -258,7 +252,7 @@ public class PgTable extends PgStatementWithSearchPath {
         
         if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
             StringBuilder sbWith = new StringBuilder();
-            sbWith.append("ALTER TABLE ");
+            sbWith.append("\n\nALTER TABLE ");
             sbWith.append(PgDiffUtils.getQuotedName(newTable.getName()));
 
             if (newTable.getWith() == null
@@ -270,31 +264,29 @@ public class PgTable extends PgStatementWithSearchPath {
             } else {
                 sbWith.append("\n\tSET ");
                 sbWith.append(newTable.getWith());
-                sbWith.append(';');
+                sbWith.append(";");
             }
-            script.addStatement(sbWith.toString());
+            sb.append(sbWith);
         }
         
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-            script.addStatement("ALTER TABLE "
+            sb.append("\n\nALTER TABLE "
                     + PgDiffUtils.getQuotedName(newTable.getName())
                     + "\n\tSET TABLESPACE " + newTable.getTablespace() + ';');
         }
         
         if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-            script.addStatement(newTable.getOwnerSQL());
+            sb.append(newTable.getOwnerSQL());
         }
         if (!oldTable.getGrants().equals(newTable.getGrants())
                 || !oldTable.getRevokes().equals(newTable.getRevokes())) {
-            script.addStatement(newTable.getPrivilegesSQL());
+            sb.append(newTable.getPrivilegesSQL());
         }
         
-        PgDiff.diffComments(oldTable, newTable, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+            sb.append("\n\n");
+            newTable.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
 

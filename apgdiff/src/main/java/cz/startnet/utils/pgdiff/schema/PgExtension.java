@@ -1,14 +1,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -75,20 +70,17 @@ public class PgExtension extends PgStatement {
             return false;    
         }
         PgExtension oldExt = this;
-        PgDiffScript script = new PgDiffScript();
         
         if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
-            script.addStatement("ALTER EXTENSION "
+            sb.append("ALTER EXTENSION "
                     + PgDiffUtils.getQuotedName(oldExt.getName())
-                    + " SET SCHEMA " + newExt.getSchema() + ";");
+                    + " SET SCHEMA " + newExt.getSchema() + ";\n\n");
         }
         // TODO ALTER EXTENSION UPDATE TO ?
-        PgDiff.diffComments(oldExt, newExt, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldExt.getComment(), newExt.getComment())) {
+            sb.append("\n\n");
+            newExt.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
     
