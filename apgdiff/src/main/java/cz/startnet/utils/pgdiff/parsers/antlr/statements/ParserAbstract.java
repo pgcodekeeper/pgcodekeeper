@@ -31,7 +31,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -57,8 +56,6 @@ public abstract class ParserAbstract {
     protected String getDefSchemaName() {
         return db.getDefaultSchema().getName();
     }
-
-    
 
     /**
      * Extracts raw text from context
@@ -96,7 +93,7 @@ public abstract class ParserAbstract {
         }
         return removeQuotes(name.identifier(i));
     }
-    
+     
     /**
      * Remove quotes from identifier
      * @param name identifier context
@@ -104,6 +101,7 @@ public abstract class ParserAbstract {
      */
     public static String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
+        // FIXME single identifier doesn't require splitNames
         String unquotedName = ParserUtils.splitNames(identifier)[0];
         
         return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
@@ -140,6 +138,7 @@ public abstract class ParserAbstract {
         case 0:
             return null;
             // may be unqualified table or schema name
+            // TODO case for schema(0).table(1) ?
         case 1:
             return removeQuotes(name.identifier(0));
             // qualified table name on 1 position
@@ -313,8 +312,6 @@ public abstract class ParserAbstract {
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
         
         if (ctx.constr_body().FOREIGN() != null) {
-            constr = new PgForeignKey(constrName, "");
-
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
             String tableName = getName(tblRef.reftable);
@@ -323,7 +320,7 @@ public abstract class ParserAbstract {
                 schemaName = db.getDefaultSchema().getName();
             } 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
-                ((PgForeignKey)constr).addForeignColumn(
+                constr.addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));
             }
         }

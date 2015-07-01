@@ -173,10 +173,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
         
         if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {
-            if (sb.length() != 0) {
-                sb.append("\n\n");
-            }
-            sb.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
             if (newDomain.getDefaultValue() == null) {
                 sb.append("\n\tDROP DEFAULT");
             } else {
@@ -186,10 +183,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
         
         if (newDomain.isNotNull() != oldDomain.isNotNull()) {
-            if (sb.length() != 0) {
-                sb.append("\n\n");
-            }
-            sb.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
             if (newDomain.isNotNull()) {
                 sb.append("\n\tSET NOT NULL");
             } else {
@@ -211,7 +205,7 @@ public class PgDomain extends PgStatementWithSearchPath {
             newDomain.appendPrivileges(sb);
         }
         if (!Objects.equals(oldDomain.getComment(), newDomain.getComment())) {
-            //sb.append("\n\n");
+            sb.append("\n\n");
             newDomain.appendCommentSql(sb);
         }
         return sb.length() > startLength;
@@ -294,27 +288,21 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     public static void compareConstraints(String domainName, List<PgConstraint> oldDomain,
-            List<PgConstraint> newDomain, StringBuilder sbSQL) {
+            List<PgConstraint> newDomain, StringBuilder sb) {
         for (PgConstraint oldConstr : oldDomain) {
             if (!newDomain.contains(oldConstr)) {
-                if (sbSQL.length() != 0) {
-                    sbSQL.append("\n\n");
-                }
-                sbSQL.append("ALTER DOMAIN ").append(domainName)
+                sb.append("\n\nALTER DOMAIN ").append(domainName)
                         .append("\n\tDROP CONSTRAINT ")
-                        .append(oldConstr.getName()).append(";");
+                        .append(oldConstr.getName()).append(';');
             }
         }
         
         for (PgConstraint newConstr : newDomain) {
             if (!oldDomain.contains(newConstr)) {
-                if (sbSQL.length() != 0) {
-                    sbSQL.append("\n\n");
-                }
-                sbSQL.append("ALTER DOMAIN ").append(domainName)
+                sb.append("\n\nALTER DOMAIN ").append(domainName)
                         .append("\n\tADD CONSTRAINT ")
                         .append(newConstr.getName()).append(" ")
-                        .append(newConstr.getDefinition()).append(";");
+                        .append(newConstr.getDefinition()).append(';');
             }
         }
     }

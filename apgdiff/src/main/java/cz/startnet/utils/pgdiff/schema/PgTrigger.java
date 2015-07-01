@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,10 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -170,13 +165,10 @@ public class PgTrigger extends PgStatementWithSearchPath {
             isNeedDepcies.set(true);
             return true;
         }
-        PgDiffScript script = new PgDiffScript();
-        PgDiff.diffComments(oldTrg, newTrg, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldTrg.getComment(), newTrg.getComment())) {
+            sb.append("\n\n");
+            newTrg.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
 

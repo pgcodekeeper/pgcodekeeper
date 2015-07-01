@@ -490,7 +490,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
     }
 }
 
-class PgDB5 extends     PgDatabaseObjectCreator {
+class PgDB5 extends PgDatabaseObjectCreator {
     @Override
     public PgDatabase getDatabase() {
     PgDatabase d = new PgDatabase();
@@ -506,7 +506,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     func.addArgument(arg);
     
     func = new PgFunction("multiply_numbers", "");
-    func.setBody("AS $$\nbegin\n\treturn number1 * number2;\nend;\n$$\n    LANGUAGE plpgsql STRICT");
+    func.setBody("AS $$\r\nbegin\r\n\treturn number1 * number2;\r\nend;\r\n$$\r\n    LANGUAGE plpgsql STRICT");
     func.setReturns("integer");
     schema.addFunction(func);
     
