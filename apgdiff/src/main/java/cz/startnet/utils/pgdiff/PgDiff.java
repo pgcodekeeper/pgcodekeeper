@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -272,18 +271,6 @@ public final class PgDiff {
         }
     }
 
-    @Deprecated
-    public static void diffComments(PgStatement oldStatement, PgStatement newStatement,
-            PgDiffScript script) {
-        String oldComment = oldStatement == null ? null : oldStatement.getComment();
-        // new statements are null checked before these calls
-        // but we may add a check here later if needed
-        
-        if (!Objects.equals(oldComment, newStatement.getComment())) {
-            script.addStatement(newStatement.getCommentSql());
-        }
-    }
-    
     private PgDiff() {
     }
 }

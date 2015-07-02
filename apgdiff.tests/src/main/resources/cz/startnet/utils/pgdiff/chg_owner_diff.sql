@@ -1,10 +1,6 @@
 ALTER SCHEMA test_schema OWNER TO fordfrog;
 
-
-
 ALTER TYPE typ_composite OWNER TO fordfrog;
-
-
 
 ALTER DOMAIN dom OWNER TO fordfrog;
 

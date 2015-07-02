@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Query_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_function_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Simple_tableContext;
@@ -157,6 +158,19 @@ public class CreateView extends ParserAbstract {
             columns.add(col);
             return null;
         }
+        
+        @Override
+        public Query_expressionContext visitQualified_asterisk(
+                Qualified_asteriskContext ctx) {
+            String tblName = null;
+            String schmName = null;
+            if (ctx.tb_name != null) {
+                tblName = getName(ctx.tb_name);
+                schmName = getTableName(ctx.tb_name);
+            }
+            columns.add(new GenericColumn(schmName, tblName, "*"));
+            return null;
+        }
 
         @Override
         public Query_expressionContext visitName_or_func_calls(
@@ -239,6 +253,23 @@ public class CreateView extends ParserAbstract {
                 switch (col.getType()) {
                 case FUNCTION:
                 case COLUMN:
+                    if (col.column!= null && col.column.equals("*")) {
+                        GenericColumn unaliased = tableAliases.get(col.table);
+                        if (unaliased != null) {
+                            newColumns.add(new GenericColumn(unaliased.schema,
+                                    unaliased.table, col.column));
+                        } else {
+                            // Если не удалось получить алиас, например написано
+                            // просто *, то берем все таблицы из запроса и
+                            // добавляем ссылки на них
+                            for (GenericColumn tblAlias : tableAliases.values()) {
+                                newColumns.add(new GenericColumn(
+                                        getDefSchemaName(), tblAlias.table,
+                                        col.column));
+                            }
+                        }
+                        continue;
+                    }
                     GenericColumn unaliased = tableAliases.get(col.table);
                     if (unaliased != null) {
                         GenericColumn column = new GenericColumn(unaliased.schema,

@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,14 +12,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
-import cz.startnet.utils.pgdiff.parsers.Parser;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores schema information.
@@ -43,7 +35,7 @@ public class PgSchema extends PgStatement {
     public DbObjType getStatementType() {
         return DbObjType.SCHEMA;
     }
-    
+
     public PgSchema(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -75,7 +67,7 @@ public class PgSchema extends PgStatement {
 
         return sbSQL.toString();
     }
-    
+
     @Override
     public String getDropSQL() {
         return "DROP SCHEMA "
@@ -97,7 +89,7 @@ public class PgSchema extends PgStatement {
         }
         return null;
     }
-    
+
     /**
      * Getter for {@link #domains}. The list cannot be modified.
      *
@@ -106,7 +98,7 @@ public class PgSchema extends PgStatement {
     public List<PgDomain> getDomains() {
         return Collections.unmodifiableList(domains);
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
@@ -118,24 +110,21 @@ public class PgSchema extends PgStatement {
             return false;
         }
         PgSchema oldSchema = this;
-        PgDiffScript script = new PgDiffScript();
         if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
-            script.addStatement(newSchema.getOwnerSQL());
+            sb.append(newSchema.getOwnerSQL());
         }
-        
+
         if (!oldSchema.getGrants().equals(newSchema.getGrants())
                 || !oldSchema.getRevokes().equals(newSchema.getRevokes())) {
-            script.addStatement(newSchema.getPrivilegesSQL());
+            sb.append(newSchema.getPrivilegesSQL());
         }
-        
-        PgDiff.diffComments(oldSchema, newSchema, script);
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
+        if (!Objects.equals(oldSchema.getComment(), newSchema.getComment())) {
+            sb.append("\n\n");
+            newSchema.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
-    
+
     /**
      * Finds function according to specified function {@code signature}.
      *
@@ -144,15 +133,8 @@ public class PgSchema extends PgStatement {
      * @return found function or null if no such function has been found
      */
     public PgFunction getFunction(final String signature) {
-        Parser p = new Parser(signature);
-        // TODO qualified names here?
-        PgFunction tmp = new PgFunction(
-                ParserUtils.getObjectName(p.parseIdentifier()), null);
-        CreateFunctionParser.parseArguments(p, tmp);
-        
         for (PgFunction function : functions) {
-            if (function.getBareName().equals(tmp.getBareName()) && 
-                    function.compareSignature(tmp)) {
+            if (function.getSignature().equals(signature)) {
                 return function;
             }
         }
@@ -270,7 +252,7 @@ public class PgSchema extends PgStatement {
     public List<PgType> getTypes() {
         return Collections.unmodifiableList(types);
     }
-    
+
     public void addDomain(PgDomain dom) {
         domains.add(dom);
         dom.setParent(this);
@@ -322,15 +304,15 @@ public class PgSchema extends PgStatement {
     public boolean containsView(final String name) {
         return getView(name) != null;
     }
-    
+
     public boolean containsType(final String name) {
         return getType(name) != null;
     }
-    
+
     public boolean containsDomain(final String name) {
         return getDomain(name) != null;
     }
-    
+
     void replaceDef(PgSchema newSchema) {
         if (!getName().equals(newSchema.getName())) {
             throw new IllegalStateException("Replacing schema must have the same name");
@@ -343,20 +325,20 @@ public class PgSchema extends PgStatement {
         for (PgPrivilege priv : newSchema.grants) {
             addPrivilege(priv.shallowCopy());
         }
-        
+
         setDefinition(newSchema.getDefinition());
         setComment(newSchema.getComment());
     }
-    
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgSchema) {
             PgSchema schema = (PgSchema) obj;
-            
+
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(definition, schema.getDefinition())
                     && grants.equals(schema.grants)
@@ -364,21 +346,21 @@ public class PgSchema extends PgStatement {
                     && Objects.equals(owner, schema.getOwner())
                     && Objects.equals(comment, schema.getComment());
         }
-        
+
         return eq;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgSchema) {
             PgSchema schema = (PgSchema) obj;
-            
+
             eq = super.equals(obj)
-                    
+
                     && new HashSet<>(domains).equals(new HashSet<>(schema.domains))
                     && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
                     && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
@@ -386,7 +368,7 @@ public class PgSchema extends PgStatement {
                     && new HashSet<>(tables).equals(new HashSet<>(schema.tables))
                     && new HashSet<>(types).equals(new HashSet<>(schema.types));
         }
-        
+
         return eq;
     }
 
@@ -394,7 +376,7 @@ public class PgSchema extends PgStatement {
     public int hashCode() {
         return super.hashCode();
     }
-    
+
     @Override
     public int computeHash() {
         final int prime = 31;
@@ -428,11 +410,11 @@ public class PgSchema extends PgStatement {
         schemaDst.setOwner(getOwner());
         return schemaDst;
     }
-    
+
     @Override
     public PgSchema deepCopy() {
         PgSchema copy = shallowCopy();
-        
+
         for (PgDomain dom : domains) {
             copy.addDomain(dom.deepCopy());
         }

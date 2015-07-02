@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -14,11 +12,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores function information.
@@ -36,7 +31,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.FUNCTION;
     }
-    
+
     public PgFunction(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -52,7 +47,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbSQL.append("\n    ");
         sbSQL.append(body);
         sbSQL.append(';');
-        
+
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
@@ -63,14 +58,17 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-    
+
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name));
-        
+
         sb.append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
+            if (!includeArgNames && argument.getMode().equalsIgnoreCase("OUT")) {
+                continue;
+            }
             if (addComma) {
                 sb.append(", ");
             }
@@ -78,7 +76,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             addComma = true;
         }
         sb.append(')');
-        
+
         return sb;
     }
 
@@ -107,13 +105,13 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
 
     /**
-     * @return имя типа объекта на который указывает функция 
+     * @return имя типа объекта на который указывает функция
      */
     public GenericColumn getReturnsName() {
         return returnsName;
     }
 
-    
+
     /**
      * @param returnsName имя типа объекта на которое указывает функция
      */
@@ -130,20 +128,19 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         return sbString.toString();
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgFunction newFunction;
         if (newCondition instanceof PgFunction) {
-            newFunction = (PgFunction)newCondition; 
+            newFunction = (PgFunction)newCondition;
         } else {
             return false;
         }
         PgFunction oldFunction = this;
-        PgDiffScript script = new PgDiffScript();
-        
+
         if (!oldFunction.checkForChanges(newFunction)) {
             if (PgFunction.needDrop(oldFunction, newFunction)) {
                 isNeedDepcies.set(true);
@@ -154,33 +151,30 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
 
         if (!Objects.equals(oldFunction.getOwner(), newFunction.getOwner())) {
-            script.addStatement(newFunction.getOwnerSQL());
+            sb.append(newFunction.getOwnerSQL());
         }
         if (!oldFunction.getGrants().equals(newFunction.getGrants())
                 || !oldFunction.getRevokes().equals(newFunction.getRevokes())) {
-            script.addStatement(newFunction.getPrivilegesSQL());
+            sb.append(newFunction.getPrivilegesSQL());
         }
-        
-        PgDiff.diffComments(oldFunction, newFunction, script);
-        
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        script.printStatements(writer);
-        sb.append(diffInput.toString().trim());
-        
+
+        if (!Objects.equals(oldFunction.getComment(), newFunction.getComment())) {
+            sb.append("\n\n");
+            newFunction.appendCommentSql(sb);
+        }
         return sb.length() > startLength;
     }
 
     /**
      * Alias for {@link #getSignature()} which provides a unique function ID.
-     * 
+     *
      * Use {@link #getBareName()} to get just the function name.
      */
     @Override
     public String getName() {
         return getSignature();
     }
-    
+
     /**
      * Getter for {@link #arguments}. List cannot be modified.
      *
@@ -203,42 +197,6 @@ public class PgFunction extends PgStatementWithSearchPath {
      */
     public String getSignature() {
         return appendFunctionSignature(new StringBuilder(), false, false).toString();
-    }
-    
-    public boolean compareSignature(PgFunction other) {
-        Iterator<Argument> it1 = this.arguments.iterator();
-        Iterator<Argument> it2 = other.arguments.iterator();
-        
-        do {
-            Argument arg1 = skipOutArgs(it1);
-            Argument arg2 = skipOutArgs(it2);
-            if (arg1 == null || arg2 == null) {
-                // if both are null then both params lists are exausted and are same
-                // else one param list is exausted and the other one is not lists are different
-                return arg1 == arg2;
-            }
-            if (!Objects.equals(arg1.getDataType(), arg2.getDataType())) {
-                return false;
-            }
-            // all other fields are irrelevant for the purpose if function signature ID
-        } while (it1.hasNext() && it2.hasNext());
-        
-        return !(it1.hasNext() || it2.hasNext());
-    }
-    
-    /**
-     * Increments iterator until a non-OUT argument is found.
-     * 
-     * @return the next non-OUT argument or null if none found.
-     */
-    private Argument skipOutArgs(Iterator<Argument> it) {
-        while (it.hasNext()) {
-            Argument a = it.next();
-            if (!"OUT".equals(a.getMode())) {
-                return a;
-            }
-        }
-        return null;
     }
 
     /**
@@ -264,13 +222,13 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         return equals;
     }
-    
+
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
         }
-        
+
         if (obj instanceof PgFunction) {
             PgFunction func  = (PgFunction) obj;
             return checkForChanges(func)
@@ -338,7 +296,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
 
         /**
-         * @return список сигнатур функций использованных в выражении по умолчанию 
+         * @return список сигнатур функций использованных в выражении по умолчанию
          */
         public List<GenericColumn> getDefaultObjects() {
             return Collections.unmodifiableList(defaultObjects);
@@ -378,7 +336,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         @Override
         public boolean equals(Object obj) {
             boolean eq = false;
-            
+
             if(this == obj) {
                 eq = true;
             } else if(obj instanceof Argument) {
@@ -388,7 +346,7 @@ public class PgFunction extends PgStatementWithSearchPath {
                         && Objects.equals(mode, arg.getMode())
                         && Objects.equals(name, arg.getName());
             }
-            
+
             return eq;
         }
 
@@ -404,7 +362,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             return result;
         }
     }
-    
+
     @Override
     public PgFunction shallowCopy() {
         PgFunction functionDst =
@@ -431,12 +389,12 @@ public class PgFunction extends PgStatementWithSearchPath {
         functionDst.setOwner(getOwner());
         return functionDst;
     }
-    
+
     @Override
     public PgFunction deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
@@ -444,35 +402,51 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     private static boolean needDrop(PgFunction oldFunction,
             PgFunction newFunction) {
-        if (newFunction == null || 
+        if (newFunction == null ||
                 !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
             return true;
         }
-        
+
         Iterator<Argument> iOld = oldFunction.getArguments().iterator();
         Iterator<Argument> iNew = newFunction.getArguments().iterator();
         while (iOld.hasNext() && iNew.hasNext()) {
             Argument argOld = iOld.next();
             Argument argNew = iNew.next();
-            
+
             String oldDef = argOld.getDefaultExpression();
             String newDef = argNew.getDefaultExpression();
             // allow creation of defaults (old==null && new!=null)
             if (oldDef != null && !oldDef.equals(newDef)) {
                 return true;
             }
-            
+
             // [IN]OUT args that change their names implicitly change the function's
             // return type due to it being "SETOF record" in case of
             // multiple [IN]OUT args present
-            
+
             // actually any argument name change requires drop
-            if (/*argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&*/
-                    !Objects.equals(argOld.getName(), argNew.getName())) {
+            if (!Objects.equals(argOld.getName(), argNew.getName())) {
+                return true;
+            }
+            // нельзя менять тип out параметров
+            if ("OUT".equalsIgnoreCase(argOld.getMode()) &&
+                    !Objects.equals(argOld.getDataType(), argNew.getDataType())) {
                 return true;
             }
         }
-        
+        // Если добавляется или удаляется out параметр нужно удалить функцию,
+        // т.к. меняется её возвращаемое значение
+        while (iOld.hasNext()) {
+            if (iOld.next().getMode().equalsIgnoreCase("OUT")) {
+                return true;
+            }
+        }
+        while (iNew.hasNext()) {
+            if (iNew.next().getMode().equalsIgnoreCase("OUT")) {
+                return true;
+            }
+        }
+
         return false;
     }
 }

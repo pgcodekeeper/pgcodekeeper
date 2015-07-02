@@ -245,18 +245,18 @@ public class PgDatabase extends PgStatement {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         PgDatabase newDb;
+        final int startLength = sb.length();
         if (newCondition instanceof PgDatabase) {
             newDb = (PgDatabase) newCondition;
         } else {
             return false;
         }
         PgDatabase oldDb = this;
-
         if (!Objects.equals(oldDb.getComment(), newDb.getComment())) {
+            sb.append("\n\n");
             newDb.appendCommentSql(sb);
         }
-        
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
     
     @Override
