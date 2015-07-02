@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -316,7 +317,7 @@ public class CreateView extends ParserAbstract {
         // outermost query
         private PgSelect sel;
         // with queries
-        private final Map<String, PgSelect> withQueries = new HashMap<>();
+        private final Map<String, PgSelect> withQueries = new LinkedHashMap<>();
 
         @Override
         public void enterWith_query_name(With_query_nameContext ctx) {
