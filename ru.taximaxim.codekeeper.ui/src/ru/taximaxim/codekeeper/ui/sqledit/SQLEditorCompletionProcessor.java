@@ -44,6 +44,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             int length = 1;
             text = document.get(offset - length, length);
             if (text.getBytes()[0] != '\n') {
+                // TODO refactor, out of bounds at the beginning 
                 while (Character.isJavaIdentifierPart(document.get(offset - length, length)
                         .getBytes()[0])) {
                     text = document.get(offset - length, length);
@@ -81,6 +82,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                                 .getProject()).getAllObjDefinitions());    
             }
         }
+        // TODO move into actual editor, singletonize images
         LocalResourceManager lrm = new LocalResourceManager(
                 JFaceResources.getResources(), viewer.getTextWidget());
         for (PgObjLocation obj : loc) {
