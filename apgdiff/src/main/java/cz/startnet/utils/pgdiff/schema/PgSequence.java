@@ -104,17 +104,13 @@ public class PgSequence extends PgStatementWithSearchPath {
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
     public String getOwnedBySQL() {
+        if (ownedBy == null || ownedBy.isEmpty()) {
+            return "";
+        }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("ALTER SEQUENCE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
-
-        if (ownedBy != null && !ownedBy.isEmpty()) {
-            sbSQL.append("\n\tOWNED BY ");
-            sbSQL.append(ownedBy);
-        }
-
-        sbSQL.append(';');
+        sbSQL.append("ALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\tOWNED BY ").append(ownedBy).append(';');
 
         return sbSQL.toString();
     }
