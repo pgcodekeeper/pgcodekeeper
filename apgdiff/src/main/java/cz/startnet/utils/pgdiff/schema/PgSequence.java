@@ -109,7 +109,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("ALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\nALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
         sbSQL.append("\n\tOWNED BY ").append(ownedBy).append(';');
 
         return sbSQL.toString();
@@ -117,15 +117,9 @@ public class PgSequence extends PgStatementWithSearchPath {
     
     @Override
     public String getFullSQL() {
-        String superFull = super.getFullSQL();
-        
-        if (ownedBy != null && !ownedBy.isEmpty()) {
-            StringBuilder sb = new StringBuilder(superFull);
-            sb.append("\n\n").append(getOwnedBySQL());
-            return sb.toString();
-        } else {
-            return superFull;
-        }
+        StringBuilder sb = new StringBuilder(super.getFullSQL());
+        sb.append(getOwnedBySQL());
+        return sb.toString();
     }
 
     public void setCycle(final boolean cycle) {
