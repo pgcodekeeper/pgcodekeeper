@@ -1624,7 +1624,7 @@ simple_table
   ;
 
   with_query_name
-  : query_alias=identifier column_references? AS LEFT_PAREN query=query_specification RIGHT_PAREN
+  : query_alias=identifier column_references? AS LEFT_PAREN query=query_expression RIGHT_PAREN
   ;
 
 explicit_table
