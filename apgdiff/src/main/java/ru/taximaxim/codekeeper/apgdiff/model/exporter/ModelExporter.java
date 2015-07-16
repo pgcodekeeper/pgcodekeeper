@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,7 +42,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 /**
  * Exports PgDatabase model as a directory tree with
- * sql files with objects' code as leaves.
+ * sql files with objects' code as leaves.<br><br>
+ *
+ * For historical reasons we expect a filtered user-selection-only list in {@link #exportPartial()}
+ * but we use the new API {@link TreeElement#isSelected()} for selection checks
+ * instead of calling {@link Collection#contains(Object)} for performance reasons.
  *
  * @author Alexander Levsha
  */
@@ -71,8 +77,11 @@ public class ModelExporter {
      */
     private final String sqlEncoding;
 
-    private Collection<TreeElement> changedObjects;
-    private List<TreeElement> changeList;
+    /**
+     * Objects that we need to operate on.<br>
+     * Remove the entry from this list after it has been processed.
+     */
+    private final LinkedList<TreeElement> changeList;
 
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb}
@@ -84,8 +93,9 @@ public class ModelExporter {
     public ModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         this.outDir = outDir;
         this.newDb = db;
-        this.sqlEncoding = sqlEncoding;
         this.oldDb = null;
+        this.sqlEncoding = sqlEncoding;
+        this.changeList = null;
     }
 
     public ModelExporter(File outDir, PgDatabase newDb, PgDatabase oldDb, Collection<TreeElement> changedObjects, String sqlEncoding){
@@ -93,7 +103,7 @@ public class ModelExporter {
         this.newDb = newDb;
         this.oldDb = oldDb;
         this.sqlEncoding = sqlEncoding;
-        this.changedObjects = changedObjects;
+        this.changeList = new LinkedList<>(changedObjects);
     }
 
     /**
@@ -129,10 +139,9 @@ public class ModelExporter {
                     "Output directory does not exist: {0}",
                     outDir.getAbsolutePath()));
         }
-        changeList = new ArrayList<>();
-        changeList.addAll(changedObjects);
+
         while (!changeList.isEmpty()){
-            TreeElement el = changeList.get(0);
+            TreeElement el = changeList.pop();
             switch(el.getSide()){
             case LEFT:
                 deleteObject(el);
@@ -144,7 +153,6 @@ public class ModelExporter {
                 createObject(el);
                 break;
             }
-            changeList.remove(el);
         }
         writeProjVersion(new File(outDir.getPath(),
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
@@ -167,8 +175,7 @@ public class ModelExporter {
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
 
             // delete schema's folder content
-            File schemaFolder = new File(outDir, getRelativeFilePath(st, false)
-                    .toString());
+            File schemaFolder = new File(outDir, getRelativeFilePath(st, false).toString());
             if (schemaFolder.exists()) {
                 Log.log(Log.LOG_INFO,
                         "Deleting schema folder for schema " + el.getName());
@@ -177,44 +184,13 @@ public class ModelExporter {
             break;
 
         case FUNCTION:
-            if (!(elParent.getSide() == DiffSide.LEFT && changedObjects
-            .contains(elParent))) {
-                // delete function sql file
-                deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
-
-                PgSchema newParentSchema = oldDb.getSchema(st.getParent()
-                        .getName());
-                List<PgFunction> funcsToExport = new ArrayList<>();
-
-                String targetFuncFileName = getExportedFilename(st);
-                for (PgFunction func : newParentSchema.getFunctions()) {
-                    if (targetFuncFileName.equals(getExportedFilename(func))) {
-                        funcsToExport.add(func);
-                    }
-                }
-                funcsToExport.remove(st);
-                if (changeList.size() > 1) {
-                    for (int i = 1; i < changeList.size(); i++) {
-                        TreeElement te = changeList.get(i);
-                        if (getExportedFilename(te.getPgStatement(oldDb))
-                                .equals(targetFuncFileName)) {
-                            funcsToExport.remove(te.getPgStatement(oldDb));
-                            changeList.remove(te);
-                            i--;
-                        }
-                    }
-                }
-                // dump rest of same-named functions back
-                dumpFunctions(funcsToExport, new File(outDir,
-                        getRelativeFilePath(newParentSchema, false).toString()));
-            }
+            processFunction(el, st);
             break;
 
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (!(elParent.getSide() == DiffSide.LEFT && changedObjects
-            .contains(elParent))) {
+            if (elParent.getSide() != DiffSide.LEFT || !elParent.isSelected()) {
                 // delete function sql file
                 st = elParent.getPgStatement(oldDb);
                 deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
@@ -271,7 +247,6 @@ public class ModelExporter {
         }
     }
 
-
     /**
      * Updates the file corresponding to <code>el</code>.<br>
      * If <code>el</code> is of type Schema, only schema file is updated.<br>
@@ -295,31 +270,13 @@ public class ModelExporter {
             break;
 
         case FUNCTION:
-            if ((elParent.getSide() != DiffSide.LEFT) || !changedObjects.contains(elParent)){
-                // delete function sql file
-                deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
-
-                PgSchema newParentSchema = newDb.getSchema(stInNew.getParent().getName());
-                List<PgFunction> funcsToExport = new ArrayList<>();
-
-                String targetFuncFileName = getExportedFilename(stInNew);
-
-                for (PgFunction func : newParentSchema.getFunctions()){
-                    if (targetFuncFileName.equals(getExportedFilename(func))){
-                        funcsToExport.add(func);
-                    }
-                }
-
-                // dump rest of same-named functions back
-                dumpFunctions(funcsToExport,
-                        new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
-            }
+            processFunction(el, stInNew);
             break;
 
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (!changedObjects.contains(elParent)){
+            if (!elParent.isSelected()){
                 editObject(elParent);
             }
             break;
@@ -368,13 +325,13 @@ public class ModelExporter {
 
         case FUNCTION:
             testParentSchema(elParent);
-            editObject(el);
+            processFunction(el, stInNew);
             break;
 
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if(!changedObjects.contains(elParent)){
+            if(!elParent.isSelected()){
                 editObject(elParent);
             }
             break;
@@ -424,11 +381,71 @@ public class ModelExporter {
      * @throws IOException  if this object is not to be created or is to be deleted
      */
     private void testParentSchema(TreeElement el) throws IOException{
-        if (el.getSide() == DiffSide.RIGHT && !changedObjects.contains(el)
-                || el.getSide() == DiffSide.LEFT && changedObjects.contains(el)){
+        if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
+                || el.getSide() == DiffSide.LEFT && el.isSelected()){
             throw new IOException(
                     "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
         }
+    }
+
+    private void processFunction(TreeElement el, PgStatement st) throws IOException {
+        TreeElement elParent = el.getParent();
+        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
+            // if the whole parent schema is to be deleted
+            return;
+        }
+        // delete function sql file
+        deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+
+        List<PgFunction> funcsToDump = new LinkedList<>();
+        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+
+        // prepare the overloaded function list as if there are no changes
+        for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
+            if (oldFunc.getBareName().equals(st.getBareName())) {
+                funcsToDump.add(oldFunc);
+            }
+        }
+
+        // apply changes based on the tree selection: remove LEFTs, replace BOTHs, add RIGHTs
+        Iterator<TreeElement> it = changeList.iterator();
+        while (it.hasNext()) {
+            TreeElement elFunc = it.next();
+            if (elFunc.getType() != DbObjType.FUNCTION) {
+                continue;
+            }
+            // final required function state
+            PgFunction funcPrimary;
+            if (elFunc.getSide() == DiffSide.LEFT) {
+                funcPrimary = oldParentSchema.getFunction(elFunc.getName());
+            } else {
+                funcPrimary = newParentSchema.getFunction(elFunc.getName());
+            }
+            if (!st.getBareName().equals(funcPrimary.getBareName())) {
+                continue;
+            }
+
+            switch (elFunc.getSide()) {
+            case LEFT:
+                funcsToDump.remove(funcPrimary);
+                break;
+            case RIGHT:
+                funcsToDump.add(funcPrimary);
+                break;
+            case BOTH:
+                funcsToDump.remove(oldParentSchema.getFunction(elFunc.getName()));
+                funcsToDump.add(funcPrimary);
+                break;
+            }
+
+            // no further actions required after this
+            // we process all overloads in bulk and drop them from the changes list
+            it.remove();
+        }
+
+        dumpFunctions(funcsToDump, new File(outDir,
+                getRelativeFilePath(newParentSchema, false).toString()));
     }
 
     /**
