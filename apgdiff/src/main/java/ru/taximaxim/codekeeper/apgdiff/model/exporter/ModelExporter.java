@@ -408,6 +408,11 @@ public class ModelExporter {
             }
         }
 
+        // current element is pop()'d from the changeList before processing
+        // this is a somewhat ugly workaround
+        // this element will be removed in the iterator loop
+        changeList.push(el);
+
         // apply changes based on the tree selection: remove LEFTs, replace BOTHs, add RIGHTs
         Iterator<TreeElement> it = changeList.iterator();
         while (it.hasNext()) {
