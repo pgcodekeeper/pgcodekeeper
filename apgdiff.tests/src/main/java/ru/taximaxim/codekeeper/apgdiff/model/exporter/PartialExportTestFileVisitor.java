@@ -80,10 +80,12 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
                 fail(isInSource() + "Source and target files differ, but same file in newFull "
                         + "does not exist or a directory: " + relativeFilePath);
             }
-            if(!Arrays.equals(computeChecksum(file.toPath()), computeChecksum(fileNewFull.toPath()))){
+            // FIXME edited and new files do not have to be equal
+            // just remove this or... ?
+            /*if(!Arrays.equals(computeChecksum(file.toPath()), computeChecksum(fileNewFull.toPath()))){
                 fail(isInSource() + "Files differ, and partial file differ with newFull: " +
                         relativeFilePath);
-            }
+            }*/
         }
         return FileVisitResult.CONTINUE;
     }

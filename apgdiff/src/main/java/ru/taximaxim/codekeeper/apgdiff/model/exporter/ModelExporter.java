@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -109,11 +108,10 @@ public class ModelExporter {
     /**
      * Removes file if it exists.
      */
-    private void deleteFileIfExists(File parentDir, File relativeFile, TreeElement el)
-            throws IOException{
-        Path toDelete = Paths.get(parentDir.getCanonicalPath(), relativeFile.toString());
+    private void deleteStatementIfExists(PgStatement st) throws IOException {
+        Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true));
         Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() +
-                " for object " + el.getType() + " " + el.getName());
+                " for object " + st.getStatementType() + ' ' + st.getName());
         Files.deleteIfExists(toDelete);
     }
 
@@ -154,31 +152,21 @@ public class ModelExporter {
                 break;
             }
         }
-        writeProjVersion(new File(outDir.getPath(),
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
+        writeProjVersion(new File(outDir.getPath(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    /**
-     * Deletes the file corresponding to <code>el</code>.<br>
-     * If <code>el</code> is of type Schema, deletes schema folder as well.<br>
-     * If <code>el</code> is of type Function, dumps other same-named functions back.<br>
-     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
-     * If <code>el</code> is of type Table, deletes its Triggers, Indexes, Constraints, too.
-     */
     private void deleteObject(TreeElement el) throws IOException{
         PgStatement st = el.getPgStatement(oldDb);
 
-        TreeElement elParent = el.getParent();
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
-            deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+            deleteStatementIfExists(st);
 
             // delete schema's folder content
-            File schemaFolder = new File(outDir, getRelativeFilePath(st, false).toString());
+            File schemaFolder = new File(outDir, getRelativeFilePath(st, false));
             if (schemaFolder.exists()) {
-                Log.log(Log.LOG_INFO,
-                        "Deleting schema folder for schema " + el.getName());
+                Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
                 deleteRecursive(schemaFolder);
             }
             break;
@@ -190,83 +178,29 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (elParent.getSide() != DiffSide.LEFT || !elParent.isSelected()) {
-                // delete function sql file
-                st = elParent.getPgStatement(oldDb);
-                deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
-
-                PgSchema newParentSchema = oldDb.getSchema(st.getParent()
-                        .getName());
-                List<PgConstraint> constrToExport = new ArrayList<>();
-                List<PgIndex> idxToExport = new ArrayList<>();
-                List<PgTrigger> trigToExport = new ArrayList<>();
-
-                for (PgConstraint constr: newParentSchema.getTable(st.getName()).getConstraints() )
-                {
-                    constrToExport.add(constr);
-                }
-                for (PgIndex ind: newParentSchema.getTable(st.getName()).getIndexes())
-                {
-                    idxToExport.add(ind);
-                }
-                for (PgTrigger trig: newParentSchema.getTable(st.getName()).getTriggers() )
-                {
-                    trigToExport.add(trig);
-                }
-                if (el.getType().equals(DbObjType.CONSTRAINT)){
-                    constrToExport.remove(el.getPgStatement(oldDb));
-                } else if (el.getType().equals(DbObjType.INDEX)){
-                    idxToExport.remove(el.getPgStatement(oldDb));
-                } else {
-                    trigToExport.remove(el.getPgStatement(oldDb));
-                }
-                if (changeList.size() > 1) {
-                    for (int i = 1; i < changeList.size(); i++) {
-                        TreeElement te = changeList.get(i);
-                        if (te.getParent() == elParent) {
-                            if (te.getType().equals(DbObjType.CONSTRAINT)){
-                                constrToExport.remove(te.getPgStatement(oldDb));
-                            } else if (te.getType().equals(DbObjType.INDEX)){
-                                idxToExport.remove(te.getPgStatement(oldDb));
-                            } else {
-                                trigToExport.remove(te.getPgStatement(oldDb));
-                            }
-                            changeList.remove(te);
-                            i--;
-                        }
-                    }
-                }
-                // dump rest of same-named table back
-                dumpTableElements(newParentSchema.getTable(st.getName()),constrToExport, idxToExport,
-                        trigToExport, new File(outDir, getRelativeFilePath(newParentSchema, false).toString()));
-            }
+            // as required by processTableAndContents()
+            changeList.push(el);
+            TreeElement elParent = el.getParent();
+            processTableAndContents(elParent, elParent.getPgStatement(oldDb));
             break;
 
         default:
-            deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+            deleteStatementIfExists(st);
         }
     }
 
-    /**
-     * Updates the file corresponding to <code>el</code>.<br>
-     * If <code>el</code> is of type Schema, only schema file is updated.<br>
-     * If <code>el</code> is of type Function, updates other same-named functions too.<br>
-     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
-     * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
-     */
     private void editObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
-        TreeElement elParent = el.getParent();
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
         case EXTENSION:
             // delete sql file
-            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
+            deleteStatementIfExists(stInNew);
 
             // dump new version
             dumpSQL(stInNew.getFullSQL(),
-                    new File(outDir, getRelativeFilePath(stInNew, true).toString()));
+                    new File(outDir, getRelativeFilePath(stInNew, true)));
             break;
 
         case FUNCTION:
@@ -276,41 +210,26 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if (!elParent.isSelected()){
-                editObject(elParent);
-            }
+            changeList.push(el);
+            TreeElement elParent = el.getParent();
+            processTableAndContents(elParent, elParent.getPgStatement(newDb));
             break;
 
         case TABLE:
-            // remove old version
-            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
-
-            PgTable newTable = (PgTable)el.getPgStatement(newDb);
-            if (newTable == null){
-                throw new IOException("New table should not be null since it is not in edit/delete lists");
-            }
-
-            dumpTables(Arrays.asList(newTable),
-                    new File (outDir, getRelativeFilePath(stInNew.getParent(), false).toString()));
+            changeList.push(el);
+            processTableAndContents(el, stInNew);
             break;
 
         default:
             // remove old version
-            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
+            deleteStatementIfExists(stInNew);
 
             // dump new version
             dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, getRelativeFilePath(stInNew, true).toString()));
+                    new File(outDir, getRelativeFilePath(stInNew, true)));
         }
     }
 
-    /**
-     * Creates the file corresponding to <code>el</code> and dumps its content.<br>
-     * If <code>el</code> is of type Schema, only schema file is created.<br>
-     * If <code>el</code> is of type Function, creates/updates other same-named functions too.<br>
-     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
-     * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
-     */
     private void createObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
@@ -320,7 +239,7 @@ public class ModelExporter {
         case EXTENSION:
             // export schema/extension sql file
             dumpSQL(stInNew.getFullSQL(),
-                    new File (outDir, getRelativeFilePath(stInNew, true).toString()));
+                    new File (outDir, getRelativeFilePath(stInNew, true)));
             break;
 
         case FUNCTION:
@@ -331,47 +250,24 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            if(!elParent.isSelected()){
-                editObject(elParent);
-            }
-            break;
-
-        case SEQUENCE:
+            testParentSchema(elParent.getParent());
+            // table actually, not schema
             testParentSchema(elParent);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    "SEQUENCE");
-            break;
-
-        case TYPE:
-            testParentSchema(elParent);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    "TYPE");
-            break;
-
-        case DOMAIN:
-            testParentSchema(elParent);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    "DOMAIN");
-            break;
-
-        case VIEW:
-            testParentSchema(elParent);
-            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    "VIEW");
+            changeList.push(el);
+            processTableAndContents(elParent, elParent.getPgStatement(newDb));
             break;
 
         case TABLE:
             testParentSchema(elParent);
-            editObject(el);
+            changeList.push(el);
+            processTableAndContents(el, stInNew);
             break;
 
         default:
-            throw new IOException(MessageFormat.format(
-                    "Wrong TreeElement type: {0}", el.getType()));
+            testParentSchema(elParent);
+            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
+                    stInNew.getStatementType().name());
         }
     }
 
@@ -395,16 +291,18 @@ public class ModelExporter {
             return;
         }
         // delete function sql file
-        deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+        deleteStatementIfExists(st);
 
         List<PgFunction> funcsToDump = new LinkedList<>();
         PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
         PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
 
         // prepare the overloaded function list as if there are no changes
-        for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
-            if (oldFunc.getBareName().equals(st.getBareName())) {
-                funcsToDump.add(oldFunc);
+        if (oldParentSchema != null) {
+            for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
+                if (oldFunc.getBareName().equals(st.getBareName())) {
+                    funcsToDump.add(oldFunc);
+                }
             }
         }
 
@@ -421,13 +319,10 @@ public class ModelExporter {
                 continue;
             }
             // final required function state
-            PgFunction funcPrimary;
-            if (elFunc.getSide() == DiffSide.LEFT) {
-                funcPrimary = oldParentSchema.getFunction(elFunc.getName());
-            } else {
-                funcPrimary = newParentSchema.getFunction(elFunc.getName());
-            }
-            if (!st.getBareName().equals(funcPrimary.getBareName())) {
+            PgFunction funcPrimary = (elFunc.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema).getFunction(elFunc.getName());
+            if (funcPrimary == null || !funcPrimary.getBareName().equals(st.getBareName())
+                    || !funcPrimary.getParent().getName().equals(elFunc.getParent().getName())) {
                 continue;
             }
 
@@ -439,20 +334,151 @@ public class ModelExporter {
                 funcsToDump.add(funcPrimary);
                 break;
             case BOTH:
-                funcsToDump.remove(oldParentSchema.getFunction(elFunc.getName()));
-                funcsToDump.add(funcPrimary);
+                funcsToDump.set(
+                        funcsToDump.indexOf(oldParentSchema.getFunction(elFunc.getName())),
+                        funcPrimary);
                 break;
             }
 
-            // no further actions required after this
-            // we process all overloads in bulk and drop them from the changes list
+            // no further actions required after this processing
+            // all overloads are processed in bulk and removed from the changes list
             it.remove();
         }
 
-        dumpFunctions(funcsToDump, new File(outDir,
-                getRelativeFilePath(newParentSchema, false).toString()));
+        dumpFunctions(funcsToDump, new File(outDir, getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
     }
 
+    /**
+     * This method expects all related elements to be present on changeList
+     * (reinsert them if needed, the method will remove them after processing).
+     */
+    private void processTableAndContents(TreeElement el, PgStatement st) throws IOException{
+        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
+            // table is dropped entirely
+            return;
+        }
+        TreeElement elParent = el.getParent();
+        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
+            // the entire schema is dropped
+            return;
+        }
+
+        deleteStatementIfExists(st);
+
+        // prepare the dump data, old state
+        List<PgStatementWithSearchPath> contents = new LinkedList<>();
+        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        PgTable oldTable = null;
+        if (oldParentSchema != null) {
+            oldTable = oldParentSchema.getTable(st.getName());
+            if (oldTable != null) {
+                contents.addAll(oldTable.getConstraints());
+                contents.addAll(oldTable.getIndexes());
+                contents.addAll(oldTable.getTriggers());
+            }
+        }
+        // table to dump, initially assume old unmodified state
+        PgTable tablePrimary = oldTable;
+
+        // modify the dump state as requested by the changeList elements
+        Iterator<TreeElement> it = changeList.iterator();
+        while (it.hasNext()) {
+            TreeElement elChange = it.next();
+            TreeElement elTableChange;
+            switch (elChange.getType()) {
+            case TABLE:
+                elTableChange = elChange;
+                break;
+            case CONSTRAINT:
+            case INDEX:
+            case TRIGGER:
+                elTableChange = elChange.getParent();
+                break;
+            default:
+                continue;
+            }
+            PgTable tableChange = (elTableChange.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema).getTable(elTableChange.getName());
+            if (tableChange == null || !tableChange.getName().equals(st.getName())
+                    || !tableChange.getParent().getName().equals(elTableChange.getParent().getName())) {
+                continue;
+            }
+
+            if (elChange.getType() == DbObjType.TABLE) {
+                tablePrimary = tableChange;
+            } else {
+                PgStatementWithSearchPath stChange, stChangeOld = null;
+                // now get the table based on the child's DiffSide
+                // otherwise BOTH (new) table may be chosen to get LEFT children
+                // which it does not contain
+                tableChange = (elChange.getSide() == DiffSide.LEFT ?
+                        oldParentSchema : newParentSchema).getTable(elChange.getParent().getName());
+                switch (elChange.getType()) {
+                case CONSTRAINT:
+                    stChange = tableChange.getConstraint(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldTable.getConstraint(elChange.getName());
+                    }
+                    break;
+                case INDEX:
+                    stChange = tableChange.getIndex(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldTable.getIndex(elChange.getName());
+                    }
+                    break;
+                case TRIGGER:
+                    stChange = tableChange.getTrigger(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldTable.getTrigger(elChange.getName());
+                    }
+                    break;
+                default:
+                    stChange = null;
+                }
+                if (stChange == null) {
+                    continue;
+                }
+
+                switch (elChange.getSide()) {
+                case LEFT:
+                    contents.remove(stChange);
+                    break;
+                case RIGHT:
+                    contents.add(stChange);
+                    break;
+                case BOTH:
+                    contents.set(contents.indexOf(stChangeOld), stChange);
+                    break;
+                }
+            }
+
+            it.remove();
+        }
+
+        dumpTable(tablePrimary, contents, new File(outDir, getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
+    }
+
+    private void dumpTable(PgTable table, List<PgStatementWithSearchPath> contents,
+            File parentDir) throws IOException {
+        mkdirObjects(null, parentDir.toString());
+        File tablesDir = mkdirObjects(parentDir, "TABLE");
+
+        StringBuilder groupSql = new StringBuilder(getDumpSql(table));
+
+        for (PgStatementWithSearchPath st : contents) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
+        }
+
+        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
+    }
+    /*
+     * =============================================
+     * FULL EXPORT PART
+     * =============================================
+     */
     /**
      * Starts the {@link #newDb} export process.
      *
@@ -465,7 +491,7 @@ public class ModelExporter {
             }
 
             for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-                if (new File(outDir, subdirName.toString()).exists()) {
+                if (new File(outDir, subdirName.name()).exists()) {
                     throw new DirectoryException(MessageFormat.format(
                             "Output directory already contains {0} directory.",
                             subdirName));
@@ -479,7 +505,7 @@ public class ModelExporter {
 
         // exporting schemas
         File schemasSharedDir = new File(outDir,
-                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
+                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
         if(!schemasSharedDir.mkdir()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create schemas directory: {0}",
@@ -493,7 +519,7 @@ public class ModelExporter {
 
         // exporting extensions
         File extensionsDir = new File(outDir,
-                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
+                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name());
         if(!extensionsDir.mkdir()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create extensions directory: {0}",
@@ -547,28 +573,6 @@ public class ModelExporter {
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), new File(funcDir, dump.getKey()));
         }
-    }
-
-    private void dumpTableElements(PgTable table, List<PgConstraint> constrs,
-            List<PgIndex> idxs, List<PgTrigger> trigs, File parentDir) throws IOException {
-        mkdirObjects(null, parentDir.toString());
-        File tablesDir = mkdirObjects(parentDir, "TABLE");
-
-        StringBuilder groupSql = new StringBuilder(getDumpSql(table));
-
-        for (PgConstraint constr : constrs) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
-        }
-
-        for (PgIndex idx : idxs) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
-        }
-
-        for (PgTrigger trig : trigs) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
-        }
-
-        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
     }
 
     private void dumpTables(List<PgTable> tables, File parentDir) throws IOException {
@@ -683,7 +687,7 @@ public class ModelExporter {
         }
     }
 
-    private File getRelativeFilePath(PgStatement st, boolean addExtension){
+    private String getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
                 null : ModelExporter.getExportedFilename(parentSt);
@@ -693,7 +697,7 @@ public class ModelExporter {
         switch (type) {
         case EXTENSION:
         case SCHEMA:
-            file = new File(type.toString());
+            file = new File(type.name());
             break;
 
         case SEQUENCE:
@@ -702,7 +706,7 @@ public class ModelExporter {
         case VIEW:
         case TABLE:
         case FUNCTION:
-            file = new File(new File(file, parentExportedFileName), type.toString());
+            file = new File(new File(file, parentExportedFileName), type.name());
             break;
 
         case CONSTRAINT:
@@ -716,6 +720,7 @@ public class ModelExporter {
         case DATABASE:
         }
 
-        return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : ""));
+        return new File(file, addExtension ?
+                getExportedFilenameSql(st) : getExportedFilename(st)).toString();
     }
 }

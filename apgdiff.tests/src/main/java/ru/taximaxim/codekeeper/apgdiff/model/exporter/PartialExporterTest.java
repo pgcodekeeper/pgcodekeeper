@@ -275,8 +275,7 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
     @Override
     public void setUserSelection() {
         TreeElement schema = diffTree.getChild("public");
-        schema.getChild("tz_worker_group").getChild("trd_tz_worker_group")
-        .setSelected(true);
+        schema.getChild("tz_worker_group").getChild("trd_tz_worker_group").setSelected(true);
     }
 
     @Override
