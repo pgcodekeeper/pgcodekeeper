@@ -12,36 +12,36 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GeneralPrefPage extends FieldEditorPreferencePage
-        implements IWorkbenchPreferencePage  {
+implements IWorkbenchPreferencePage  {
 
     public GeneralPrefPage() {
         super(GRID);
     }
-    
+
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(Activator.getDefault().getPreferenceStore());   
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
-    
+
     @Override
     protected void createFieldEditors() {
         addField(new FileFieldEditor(PREF.PGDUMP_EXE_PATH,
                 Messages.generalPrefPage_pg_dump_executable, getFieldEditorParent()){
-                    @Override
-                    protected boolean checkState() {
-                        return true;
-                    }
-                });
-        
+            @Override
+            protected boolean checkState() {
+                return true;
+            }
+        });
+
         addField(new StringFieldEditor(PREF.PGDUMP_CUSTOM_PARAMS,
                 Messages.generalPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
-        
+
         addField(new BooleanFieldEditor(PREF.USE_ANTLR, Messages.generalPrefPage_use_antrl,
                 getFieldEditorParent()));
-        
+
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
-        
+
         addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));

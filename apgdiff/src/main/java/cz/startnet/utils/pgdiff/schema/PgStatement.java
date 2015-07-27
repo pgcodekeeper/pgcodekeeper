@@ -6,14 +6,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * The superclass for general pgsql statement.
  * All changes to hashed fields of extending classes must be
- * followed by a {@link #resetHash()} call. 
- * 
+ * followed by a {@link #resetHash()} call.
+ *
  * @author Alexander Levsha
  */
 public abstract class PgStatement {
@@ -25,10 +26,10 @@ public abstract class PgStatement {
     protected String owner;
     protected String comment;
     protected final Set<PgPrivilege> grants = new LinkedHashSet<>();
-    protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();  
-    
+    protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
+
     private PgStatement parent;
-    
+
     private volatile int hash;
     private volatile boolean hashComputed;
 
@@ -36,48 +37,56 @@ public abstract class PgStatement {
         this.name = name;
         this.rawStatement = rawStatement;
     }
-    
+
     public String getRawStatement() {
         return rawStatement;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     /**
      * @return Always returns just the object's name.
      */
     public final String getBareName() {
         return name;
     }
-    
+
     public abstract DbObjType getStatementType();
-    
+
     public PgStatement getParent() {
         return parent;
     }
-    
+
     public void dropParent() {
         parent = null;
     }
-    
+
     public void setParent(PgStatement parent) {
         if(this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
                     + this.getClass() + " Name: " + this.getName());
         }
-        
+
         this.parent = parent;
     }
-    
+
     public String getComment() {
         return comment;
     }
-    
+
     public void setComment(String comment) {
         this.comment = comment;
         resetHash();
+    }
+
+    /**
+     * Sets {@link #comment} with newlines as requested in arguments.
+     */
+    public void setComment(PgDiffArguments args, String comment) {
+        setComment(args.isForceUnixNewlines() ?
+                comment.replace("\r", "") : comment);
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {
@@ -90,8 +99,8 @@ public abstract class PgStatement {
             switch (type) {
             case COLUMN:
                 sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-                        .append('.')
-                        .append(PgDiffUtils.getQuotedName(getName()));
+                .append('.')
+                .append(PgDiffUtils.getQuotedName(getName()));
                 break;
             case FUNCTION:
                 ((PgFunction) this).appendFunctionSignature(sb, false, true);
@@ -100,8 +109,8 @@ public abstract class PgStatement {
             case CONSTRAINT:
             case TRIGGER:
                 sb.append(PgDiffUtils.getQuotedName(getName()))
-                    .append(" ON ")
-                    .append(PgDiffUtils.getQuotedName(getParent().getName()));
+                .append(" ON ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()));
                 break;
 
             case DATABASE:
@@ -117,19 +126,19 @@ public abstract class PgStatement {
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
     }
-    
+
     public String getCommentSql() {
         return appendCommentSql(new StringBuilder()).toString();
     }
-    
+
     public Set<PgPrivilege> getGrants() {
         return Collections.unmodifiableSet(grants);
     }
-    
+
     public Set<PgPrivilege> getRevokes() {
-        return Collections.unmodifiableSet(revokes); 
+        return Collections.unmodifiableSet(revokes);
     }
-    
+
     public void addPrivilege(PgPrivilege privilege) {
         if (privilege.isRevoke()) {
             revokes.add(privilege);
@@ -139,13 +148,13 @@ public abstract class PgStatement {
         privilege.setParent(this);
         resetHash();
     }
-    
+
     protected StringBuilder appendPrivileges(StringBuilder sb) {
         if (grants.isEmpty() &&
                 revokes.isEmpty()) {
             return sb;
         }
-        
+
         // TODO is this check needed at all? we already have isEmpty() above
         DbObjType type = getStatementType();
         switch (type) {
@@ -163,22 +172,22 @@ public abstract class PgStatement {
                     + "SEQUENCE, TABLE, COLUMN, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\n-- ")
-            .append(type)
-            .append(' ')
-            .append(getName())
-            .append(' ')
-            .append("GRANT\n");
-        
+        .append(type)
+        .append(' ')
+        .append(getName())
+        .append(' ')
+        .append("GRANT\n");
+
         for (PgPrivilege priv : revokes) {
             sb.append('\n').append(priv.getCreationSQL());
         }
         for (PgPrivilege priv : grants) {
             sb.append('\n').append(priv.getCreationSQL());
         }
-        
+
         return sb;
     }
-    
+
     public String getPrivilegesSQL() {
         return appendPrivileges(new StringBuilder()).toString();
     }
@@ -186,17 +195,17 @@ public abstract class PgStatement {
     public String getOwner() {
         return owner;
     }
-    
+
     public void setOwner(String owner) {
         this.owner = owner;
         resetHash();
     }
-    
+
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         if (owner == null) {
             return sb;
         }
-        
+
         DbObjType type = getStatementType();
         switch (type) {
         case SCHEMA:
@@ -212,47 +221,47 @@ public abstract class PgStatement {
                     + "SEQUENCE, TABLE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\nALTER ")
-            .append(type)
-            .append(' ');
+        .append(type)
+        .append(' ');
         if (this instanceof PgFunction) {
             ((PgFunction) this).appendFunctionSignature(sb, false, true);
         } else {
             sb.append(PgDiffUtils.getQuotedName(getName()));
         }
         sb.append(" OWNER TO ")
-            .append(owner)
-            .append(';');
-        
+        .append(owner)
+        .append(';');
+
         return sb;
     }
-    
+
     public String getOwnerSQL() {
         return appendOwnerSQL(new StringBuilder()).toString();
     }
-    
+
     public abstract String getCreationSQL();
-    
+
     public String getFullSQL() {
         return getCreationSQL();
     }
-    
+
     public abstract String getDropSQL();
-    
+
     /**
      * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
      * ALTER.<br><br>
-     * 
+     *
      * Результат работы метода определяется по паре значений:
      * возвращаемое значение и длина sb.length().<br>
      * Возвращаемое значение говорит о статусе объекта: изменился или нет.<br>
      * sb.length() говорит о возможностиизменить состояние объекта ALTERом
      * (если объект вообще изменился).<br><br>
-     * 
+     *
      * <code>sb == 0 && rv == false</code> - не требуется действий<br>
      * <code>sb >  0 && rv == false</code> - illegal state, неизмененный объект с ALTER<br>
      * <code>sb == 0 && rv == true</code>  - ALTER невозможен, делаем DROP/CREATE<br>
      * <code>sb >  0 && rv == true</code>  - делаем ALTER
-     * 
+     *
      * @param newCondition новое состоятние объекта
      * @param sb скрипт изменения
      * @param isNeedDepcies out параметр: нужно ли использовать зависимости объекта
@@ -261,27 +270,27 @@ public abstract class PgStatement {
      */
     public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies);
-    
+
     /**
      * Copies all object properties into a new object and leaves all its children empty.
-     * 
+     *
      * @return shallow copy of a DB object.
      */
     public abstract PgStatement shallowCopy();
-    
+
     /**
      * Performs {@link #shallowCopy()} on this object and all its children.
-     * 
+     *
      * @return a fully recursive copy of this statement.
      */
     public abstract PgStatement deepCopy();
-    
+
     /**
      * This method does not account for nested child PgStatements.
      * Shallow version of {@link #equals(Object)}
      */
     public abstract boolean compare(PgStatement obj);
-    
+
     /**
      * Compares this object and all its children with another statement.<br>
      * This default version falls back to {@link #compare(PgStatement)}.
@@ -297,10 +306,10 @@ public abstract class PgStatement {
             return this.compare((PgStatement) obj)
                     && this.parentNamesEquals((PgStatement) obj);
         }
-        
+
         return false;
     }
-    
+
     /**
      * Recursively compares objects' parents
      * to ensure their equal position in their object trees.
@@ -320,7 +329,7 @@ public abstract class PgStatement {
         }
         return false;
     }
-    
+
     /**
      * Calls {@link #computeHash()}. Modifies that value with combined hashcode
      * of all parents of this object in the tree to complement
@@ -328,7 +337,7 @@ public abstract class PgStatement {
      * Caches the hashcode value until recalculation is requested via {@link #resetHash()}.
      * Always request recalculation when you change the hashed fields.<br>
      * Override only with bare <code>super</code> call.
-     * Do actual hashing in {@link #computeHash()}. 
+     * Do actual hashing in {@link #computeHash()}.
      * <hr><br>
      * {@inheritDoc}
      */
@@ -336,7 +345,7 @@ public abstract class PgStatement {
     public int hashCode() {
         if (!hashComputed){
             hash = computeHash();
-            
+
             final int prime = 31;
             PgStatement p = parent;
             while (p != null) {
@@ -348,7 +357,7 @@ public abstract class PgStatement {
         }
         return hash;
     }
-    
+
     protected void resetHash(){
         PgStatement st = this;
         while (st != null){
@@ -356,19 +365,19 @@ public abstract class PgStatement {
             st = st.getParent();
         }
     }
-    
+
     /**
      * @see #hashCode()
      */
     protected abstract int computeHash();
-    
+
     /**
      * @return fully qualified (up to schema) dot-delimited object name.
      *          Identifiers are quoted.
      */
     public String getQualifiedName() {
         String qname = PgDiffUtils.getQuotedName(getName());
-        
+
         PgStatement par = this.parent;
         while (par != null) {
             if (par instanceof PgDatabase) {
@@ -378,10 +387,10 @@ public abstract class PgStatement {
                     + '.' + qname;
             par = par.getParent();
         }
-        
+
         return qname;
     }
-    
+
     @Override
     public String toString() {
         return name == null ? "Unnamed object" : name;

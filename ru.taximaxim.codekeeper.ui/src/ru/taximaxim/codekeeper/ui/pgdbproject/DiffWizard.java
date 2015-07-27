@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -93,11 +94,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         super.createPageControls(pageContainer);
 
         getShell().addShellListener(new ShellAdapter() {
-            
+
             @Override
             public void shellActivated(ShellEvent e) {
                 getShell().removeShellListener(this);
-                
+
                 getShell().pack();
             }
         });
@@ -112,7 +113,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
                         DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj),
-                        pageDiff.getTargetDbSource());
+                        pageDiff.getTargetDbSource(proj));
 
                 try {
                     getContainer().run(true, true, treediffer);
@@ -134,8 +135,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
                 TreeElement filtered = pagePartial.getDiffTree().getTreeInput();
 
+                IEclipsePreferences pref = proj.getPrefs();
                 Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                        filtered, true,  proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                        filtered, true,
+                        pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                        pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
                 try {
                     getContainer().run(true, true, differ);
                 } catch (InvocationTargetException ex) {
@@ -239,17 +243,19 @@ class PageDiff extends WizardPage implements Listener {
     public String getTargetEncoding() {
         return cmbEncoding.getText();
     }
-    
+
     public String getTargetTimezone() {
         return cmbTimezone.getText();
     }
 
-    public DbSource getTargetDbSource() throws PgCodekeeperUIException {
+    public DbSource getTargetDbSource(PgDbProject proj) throws PgCodekeeperUIException {
+        IEclipsePreferences pref = proj.getPrefs();
         DbSource dbs;
 
         switch (getTargetType()) {
         case DB:
-            dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR), 
+            dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
@@ -257,18 +263,21 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case JDBC:
-            dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(), 
+            dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(),
                     getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone(),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR));
+                    mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
             break;
-            
+
         case DUMP:
             dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
             dbs = DbSource.fromDirTree(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     getProjPath(), getTargetEncoding());
             break;
 
@@ -331,7 +340,7 @@ class PageDiff extends WizardPage implements Listener {
         grpDb.setLayoutData(gd);
 
         currentTargetGrp = grpDb;
-        
+
         grpDump = new Group(container, SWT.NONE);
         grpDump.setText(Messages.diffWizard_dump_taget);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -391,7 +400,7 @@ class PageDiff extends WizardPage implements Listener {
         Button btnBrowseProj = new Button(tmpCont, SWT.PUSH);
         btnBrowseProj.setText(Messages.browse);
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(container.getShell());
@@ -433,7 +442,7 @@ class PageDiff extends WizardPage implements Listener {
         }
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
-        
+
         String[] availableTimezones = TimeZone.getAvailableIDs();
         Arrays.sort(availableTimezones);
         cmbTimezone = new Combo(grpEncoding, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
@@ -441,7 +450,7 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setItems(availableTimezones);
         cmbTimezone.select(cmbTimezone.indexOf(
                 proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC)));
-        
+
         setControl(container);
     }
 
@@ -653,7 +662,7 @@ class PageResult extends WizardPage {
         gd.verticalIndent = 12;
         btnSave.setLayoutData(gd);
         btnSave.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
@@ -683,7 +692,7 @@ class PageResult extends WizardPage {
             Log.log(Log.LOG_ERROR, "Cannot get project charset", e); //$NON-NLS-1$
         }
         try (PrintWriter encodedWriter = new UnixPrintWriter(
-                // TODO save to proj encoding can be incorrect. 
+                // TODO save to proj encoding can be incorrect.
                 // Consider saving to unicode if proj and PageDiff encodings differ
                 new OutputStreamWriter(new FileOutputStream(saveTo),
                         charset))) {
@@ -694,7 +703,7 @@ class PageResult extends WizardPage {
                     Messages.diffWizard_unexpected_error_while_saving_diff, ex);
         }
     }
-    
+
     @Override
     public IWizardPage getPreviousPage() {
         return null;

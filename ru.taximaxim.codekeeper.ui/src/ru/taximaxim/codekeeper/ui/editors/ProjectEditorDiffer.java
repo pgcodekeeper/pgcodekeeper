@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -52,6 +53,9 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
@@ -77,9 +81,6 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -480,8 +481,11 @@ class DiffPage extends DiffPresentationPane {
         }
         final TreeElement filtered = treeDiffer.getDiffTree();
 
+        IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                filtered, false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                filtered, false,
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
+                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

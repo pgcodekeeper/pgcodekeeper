@@ -77,7 +77,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorP
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
@@ -764,7 +763,7 @@ public class DiffTableViewer extends Composite {
         final List<IgnoredObject> ignores = new ArrayList<>(ignoredElements);
         if (proj != null) {
             StringEditor se = new StringEditor(Paths.get(proj.getProject()
-                    .getLocation().toOSString(), UIConsts.IGNORED_OBJECTS));
+                    .getLocation().toOSString(), FILE.IGNORED_OBJECTS));
             try {
                 ignores.addAll(se.loadSettings());
             } catch (IOException e1) {

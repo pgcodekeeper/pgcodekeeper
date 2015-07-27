@@ -49,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -67,7 +68,6 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DiffPresentationPane extends Composite {
 
@@ -564,6 +564,7 @@ public abstract class DiffPresentationPane extends Composite {
                 return false;
             }
             dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     dumpfile, proj.getProjectCharset());
             break;
         case SOURCE_TYPE_DB:
@@ -571,6 +572,7 @@ public abstract class DiffPresentationPane extends Composite {
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
@@ -587,7 +589,8 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbName().getText(),
                     proj.getProjectCharset(),
                     projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR));
+                    mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
