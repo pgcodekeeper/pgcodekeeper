@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -128,9 +129,9 @@ public class ModelExporter {
         Files.deleteIfExists(f.toPath());
     }
 
-    public void exportPartial() throws IOException {
+    public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null){
-            throw new IOException("Old database should not be null for partial export.");
+            throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
         if(!outDir.exists() || !outDir.isDirectory()) {
             throw new DirectoryException(MessageFormat.format(
@@ -230,7 +231,7 @@ public class ModelExporter {
         }
     }
 
-    private void createObject(TreeElement el) throws IOException{
+    private void createObject(TreeElement el) throws IOException, PgCodekeeperException {
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent();
 
@@ -276,10 +277,10 @@ public class ModelExporter {
      *
      * @throws IOException  if this object is not to be created or is to be deleted
      */
-    private void testParentSchema(TreeElement el) throws IOException{
+    private void testParentSchema(TreeElement el) throws PgCodekeeperException {
         if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
                 || el.getSide() == DiffSide.LEFT && el.isSelected()){
-            throw new IOException(
+            throw new PgCodekeeperException(
                     "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
         }
     }
@@ -481,8 +482,6 @@ public class ModelExporter {
      */
     /**
      * Starts the {@link #newDb} export process.
-     *
-     * @throws IOException
      */
     public void exportFull() throws IOException {
         if(outDir.exists()) {

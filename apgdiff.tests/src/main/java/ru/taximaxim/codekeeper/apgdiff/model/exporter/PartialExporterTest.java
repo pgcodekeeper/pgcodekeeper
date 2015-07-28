@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -97,7 +98,7 @@ public class PartialExporterTest {
             new PartialExportInfoImpl_12(),
             new PartialExportInfoImpl_13(),
             new PartialExportInfoImpl_14(),
-        new PartialExportInfoImpl_15()
+            new PartialExportInfoImpl_15()
     };
 
     public PartialExporterTest(int index) {
@@ -129,7 +130,7 @@ public class PartialExporterTest {
     }
 
     @Test
-    public void testExportPartial() throws IOException {
+    public void testExportPartial() throws IOException, PgCodekeeperException {
         PartialExportInfo preset = EXPORT_PRESETS[index-1];
 
         Path exportDirFull = null;
