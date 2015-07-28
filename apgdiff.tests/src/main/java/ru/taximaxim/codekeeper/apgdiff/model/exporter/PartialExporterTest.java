@@ -452,3 +452,106 @@ class PartialExportInfoImpl_15 extends PartialExportInfo{
         return new LinkedList<>(Arrays.asList("SCHEMA/audit/TABLE/logged_actions.sql", "SCHEMA/audit/TABLE/tz_audit_201305.sql", "SCHEMA/audit.sql"));
     }
 }
+
+
+class PartialExportInfoImpl_16 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test()").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    }
+}
+
+class PartialExportInfoImpl_17 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test()").setSelected(true);
+        schema.getChild("test(integer)").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> deletedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    }
+}
+
+class PartialExportInfoImpl_18 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_19 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_20 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_21 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_22 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> deletedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
