@@ -14,7 +14,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-
+//TODO использовать extension интерфейсы
 final class SQLEditorTextHover implements ITextHover {
 
     @Override

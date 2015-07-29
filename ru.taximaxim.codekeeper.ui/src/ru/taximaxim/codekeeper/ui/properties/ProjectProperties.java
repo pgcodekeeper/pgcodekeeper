@@ -18,6 +18,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -34,13 +35,14 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectProperties extends PropertyPage implements
-        IWorkbenchPropertyPage {
+IWorkbenchPropertyPage {
 
     private static String[] availableTimezones;
-    
+
+    private Button btnForceUnixNewlines;
     private Combo cmbTimezone;
     private CLabel lblWarn;
-    
+
     private LocalResourceManager lrm;
     private IEclipsePreferences prefs;
 
@@ -50,7 +52,7 @@ public class ProjectProperties extends PropertyPage implements
         prefs = new ProjectScope((IProject) element.getAdapter(IProject.class))
                 .getNode(UIConsts.PLUGIN_ID.THIS);
     }
-    
+
     @Override
     protected Control createContents(Composite parent) {
         Composite panel = new Composite(parent, SWT.NONE);
@@ -58,26 +60,29 @@ public class ProjectProperties extends PropertyPage implements
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         panel.setLayout(layout);
-        
+
         lrm = new LocalResourceManager(JFaceResources.getResources(), panel);
-        
+
+        btnForceUnixNewlines = new Button(panel, SWT.CHECK);
+        btnForceUnixNewlines.setText(Messages.ProjectProperties_force_unix_newlines);
+        btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
+        btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+
         Label label = new Label(panel, SWT.NONE);
         label.setText(Messages.projectProperties_timezone_for_all_db_connections);
-        
+
         cmbTimezone = new Combo(panel, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(getSortedTimezones());
         cmbTimezone.select(cmbTimezone.indexOf(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC)));
-        
-        ModifyListener ml = new ModifyListener() {
-            
+        cmbTimezone.addModifyListener(new ModifyListener() {
+
             @Override
             public void modifyText(ModifyEvent e) {
                 checkSwitchWarnLbl();
             }
-        };
-        cmbTimezone.addModifyListener(ml);
-        
+        });
+
         lblWarn = new CLabel(panel, SWT.NONE);
         lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
@@ -86,20 +91,21 @@ public class ProjectProperties extends PropertyPage implements
         gd.exclude = true;
         lblWarn.setLayoutData(gd);
         lblWarn.setVisible(false);
-        
+
         return panel;
     }
-    
+
     private void checkSwitchWarnLbl() {
-        boolean show = 
+        boolean show =
                 !cmbTimezone.getText().equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         ((GridData) lblWarn.getLayoutData()).exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
     }
-    
+
     @Override
     protected void performDefaults() {
+        btnForceUnixNewlines.setSelection(true);
         cmbTimezone.select(cmbTimezone.indexOf(ApgdiffConsts.UTC));
         try {
             fillPrefs();
@@ -110,7 +116,7 @@ public class ProjectProperties extends PropertyPage implements
             setValid(false);
         }
     }
-    
+
     @Override
     public boolean performOk() {
         try {
@@ -124,15 +130,16 @@ public class ProjectProperties extends PropertyPage implements
         }
         return true;
     }
-    
+
     private void fillPrefs() throws BackingStoreException {
+        prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
     }
-    
-    private String[] getSortedTimezones(){
+
+    private static String[] getSortedTimezones(){
         if (availableTimezones == null){
             availableTimezones = TimeZone.getAvailableIDs();
             Arrays.sort(availableTimezones);

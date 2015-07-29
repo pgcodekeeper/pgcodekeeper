@@ -38,7 +38,7 @@ public class SQLEditorTemplateManager {
             try {
                 fStore.load();
             } catch (IOException e) {
-                Log.log(Log.LOG_ERROR, "Cannot load templates", e);
+                Log.log(Log.LOG_ERROR, "Cannot load templates", e); //$NON-NLS-1$
             }
         }
         return fStore;

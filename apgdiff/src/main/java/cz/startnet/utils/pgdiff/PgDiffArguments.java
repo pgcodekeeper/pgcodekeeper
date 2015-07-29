@@ -13,10 +13,10 @@ import java.util.regex.Pattern;
 
 import org.osgi.framework.BundleContext;
 
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
-import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
 /**
  * Contains parsed command line arguments.
@@ -24,10 +24,10 @@ import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
  * @author fordfrog
  */
 public class PgDiffArguments {
-// SONAR-OFF
+    // SONAR-OFF
     private static final String DEFAULT_FORMAT = "dump";
-// SONAR-ON
-    
+    // SONAR-ON
+
     /**
      * Is program in diff mode.
      */
@@ -119,7 +119,7 @@ public class PgDiffArguments {
     private boolean ignoreSlonyTriggers;
     /**
      * Whether ignore function bodies.
-     * TODO придумать проверить из командной строки параметр 
+     * TODO придумать проверить из командной строки параметр
      */
     private boolean checkFunctionBodies = true;
     /**
@@ -130,181 +130,185 @@ public class PgDiffArguments {
      *  Whether ignore privilleges.
      */
     private boolean ignorePrivileges;
+    /**
+     * Whether to force \n (Unix) newlines in user-data.
+     */
+    private boolean forceUnixNewlines = true;
 
     /**
      * Setter for {@link #modeDiff}
-     * 
+     *
      * @param modeDiff {@link #modeDiff}
      */
     public void setModeDiff(final boolean modeDiff) {
         this.modeDiff = modeDiff;
     }
-    
+
     /**
      * Getter for {@link #modeDiff}
-     * 
+     *
      * @return {@link #modeDiff}
      */
     public boolean isModeDiff() {
         return modeDiff;
     }
-    
+
     /**
      * Setter for {@link #modeParse}
-     * 
+     *
      * @param modeParse {@link #modeParse}
      */
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
     }
-    
+
     /**
      * Getter for {@link #modeParse}
-     * 
+     *
      * @return {@link #modeParse}
      */
     public boolean isModeParse() {
         return modeParse;
     }
-    
+
     /**
      * Setter for {@link #newSrc}
-     * 
+     *
      * @param newSrc {@link #newSrc}
      */
     public void setNewSrc(final String newSrc) {
         this.newSrc = newSrc;
     }
-    
+
     /**
      * Getter for {@link #newSrc}
-     * 
+     *
      * @return {@link #newSrc}
      */
     public String getNewSrc() {
         return newSrc;
     }
-    
+
     /**
      * Setter for {@link #oldSrc}
-     * 
+     *
      * @param oldSrc {@link #oldSrc}
      */
     public void setOldSrc(final String oldSrc) {
         this.oldSrc = oldSrc;
     }
-    
+
     /**
      * Getter for {@link #oldSrc}
-     * 
+     *
      * @return {@link #oldSrc}
      */
     public String getOldSrc() {
         return this.oldSrc;
     }
-    
+
     /**
      * Setter for {@link #newSrcFormat}
-     * 
+     *
      * @param newSrcFormat {@link #newSrcFormat}
      */
     public void setNewSrcFormat(final String newSrcFormat) {
         this.newSrcFormat = newSrcFormat;
     }
-    
+
     /**
      * Getter for {@link #oldSrc}
-     * 
+     *
      * @return {@link #oldSrc}
      */
     public String getNewSrcFormat() {
         return this.newSrcFormat;
     }
-    
+
     /**
      * Setter for {@link #oldSrcFormat}
-     * 
+     *
      * @param oldSrcFormat {@link #oldSrcFormat}
      */
     public void setOldSrcFormat(final String oldSrcFormat) {
         this.oldSrcFormat = oldSrcFormat;
     }
-    
+
     /**
      * Getter for {@link #oldSrcFormat}
-     * 
+     *
      * @return {@link #oldSrcFormat}
      */
     public String getOldSrcFormat() {
         return this.oldSrcFormat;
     }
-    
+
     /**
      * Setter for {@link #diffOutfile}
-     * 
+     *
      * @param diffOutfile {@link #diffOutfile}
      */
     public void setDiffOutfile(final String diffOutfile) {
         this.diffOutfile = diffOutfile;
     }
-    
+
     /**
      * Getter for {@link #diffOutfile}
-     * 
+     *
      * @return {@link #diffOutfile}
      */
     public String getDiffOutfile() {
         return this.diffOutfile;
     }
-    
+
     /**
      * Setter for {@link #parseSrc}
-     * 
+     *
      * @param parseSrc {@link #parseSrc}
      */
     public void setParseSrc(final String parseSrc) {
         this.parseSrc = parseSrc;
     }
-    
+
     /**
      * Getter for {@link #parseSrc}
-     * 
+     *
      * @return {@link #parseSrc}
      */
     public String getParseSrc() {
         return this.parseSrc;
     }
-    
+
     /**
      * Setter for {@link #parseSrcFormat}
-     * 
+     *
      * @param parseSrcFormat {@link #parseSrcFormat}
      */
     public void setParseSrcFormat(final String parseSrcFormat) {
         this.parseSrcFormat = parseSrcFormat;
     }
-    
+
     /**
      * Getter for {@link #parseSrcFormat}
-     * 
+     *
      * @return {@link #parseSrcFormat}
      */
     public String getParseSrcFormat() {
         return this.parseSrcFormat;
     }
-    
+
     /**
      * Setter for {@link #parserOutdir}
-     * 
+     *
      * @param parserOutdir {@link #parserOutdir}
      */
     public void setParserOutdir(final String parserOutdir) {
         this.parserOutdir = parserOutdir;
     }
-    
+
     /**
      * Getter for {@link #parserOutdir}
-     * 
+     *
      * @return {@link #parserOutdir}
      */
     public String getParserOutdir() {
@@ -367,7 +371,7 @@ public class PgDiffArguments {
         this.ignoreAlterColumn = ignoreAlterColumn;
     }
     /**
-      * Getter for {@link #ignoreAlterColumn}.
+     * Getter for {@link #ignoreAlterColumn}.
      * @return {@link #ignoreAlterColumn}.
      */
     public boolean isIgnoreAlterColumn() {
@@ -383,13 +387,13 @@ public class PgDiffArguments {
         this.ignoreRestartWith = ignoreRestartWith;
     }
     /**
-      * Getter for {@link #ignoreRestartWith}.
+     * Getter for {@link #ignoreRestartWith}.
      * @return {@link #ignoreRestartWith}.
      */
     public boolean isIgnoreRestartWith() {
         return ignoreRestartWith;
     }
-    
+
     /**
      * Getter for {@link #outputIgnoredStatements}.
      *
@@ -442,7 +446,7 @@ public class PgDiffArguments {
     public void setHelp(boolean help) {
         this.help = help;
     }
-    
+
     /**
      * Parses command line arguments or outputs instructions.
      *
@@ -465,7 +469,7 @@ public class PgDiffArguments {
                 argsLength -= 2; // same for last two params in this mode
             } else if("--dbOld-format".equals(args[i])) {
                 String format = args[++i];
-                
+
                 if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
                     setOldSrcFormat(format);
                 } else {
@@ -474,7 +478,7 @@ public class PgDiffArguments {
                 }
             } else if("--dbNew-format".equals(args[i])) {
                 String format = args[++i];
-                
+
                 if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
                     setNewSrcFormat(format);
                 } else {
@@ -510,7 +514,7 @@ public class PgDiffArguments {
                 }
             } else if("--db-format".equals(args[i])) {
                 String format = args[++i];
-                
+
                 if("dump".equals(format) || "db".equals(format)) {
                     setParseSrcFormat(format);
                 } else {
@@ -536,6 +540,8 @@ public class PgDiffArguments {
             } else if ("--time-zone".equals(args[i])) {
                 setTimeZone(args[i + 1]);
                 i++;
+            } else if ("--keep-newlines".equals(args[i])) {
+                setForceUnixNewlines(false);
             } else if ("--output-ignored-statements".equals(args[i])) {
                 setOutputIgnoredStatements(true);
             } else if ("--version".equals(args[i])) {
@@ -549,7 +555,7 @@ public class PgDiffArguments {
                 break;
             }
         }
-        
+
         if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat())
                 || "db".equals(getParseSrcFormat())) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
@@ -572,12 +578,12 @@ public class PgDiffArguments {
         } else if (args.length < 3) {
             success = false;
         }
-        
+
         if (!success) {
             printUsage(writer);
             return false;
         }
-        
+
         try {
             if(isModeDiff()) {
                 setOldSrc(args[args.length - 3]);
@@ -591,7 +597,7 @@ public class PgDiffArguments {
             printUsage(writer);
             return false;
         }
-        
+
         return true;
     }
 
@@ -748,5 +754,13 @@ public class PgDiffArguments {
      */
     public boolean isIgnorePrivileges() {
         return ignorePrivileges;
+    }
+
+    public void setForceUnixNewlines(boolean forceUnixNewlines) {
+        this.forceUnixNewlines = forceUnixNewlines;
+    }
+
+    public boolean isForceUnixNewlines() {
+        return forceUnixNewlines;
     }
 }

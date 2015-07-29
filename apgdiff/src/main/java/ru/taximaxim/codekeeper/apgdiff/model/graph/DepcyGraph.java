@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -317,7 +316,13 @@ public class DepcyGraph {
                 if (SYS_COLUMNS.contains(clmnName)){
                     continue;
                 }
-                
+                // Если колонка называется * то это ссылки на все колонки из вью
+                if (clmnName.equals("*")) {
+                    for (PgColumn col1 : tbl.getColumns()) {
+                        graph.addEdge(view, col1);
+                    }
+                    continue;
+                }
                 PgColumn clmn = tbl.getColumn(clmnName);
                 // TODO реализовать нормально inherits сейчас колонка с inherits
                 // не содержить элементов
@@ -390,46 +395,44 @@ public class DepcyGraph {
         }
     }
 
-    private void createFkeyToReferenced(PgTable table) throws PgCodekeeperException {
-        for(PgConstraint cons : table.getConstraints()) {
+    private void createFkeyToReferenced(PgTable table)
+            throws PgCodekeeperException {
+        for (PgConstraint cons : table.getConstraints()) {
             graph.addVertex(cons);
             graph.addEdge(cons, table);
-            
-            if (cons instanceof PgForeignKey){
-                Collection<GenericColumn> refs = ((PgForeignKey) cons).getRefs();
-                for (GenericColumn ref : refs){
-                    if (SYS_COLUMNS.contains(ref.column)){
-                        continue;
-                    }
-                    
-                    PgSchema refSchema = db.getSchema(ref.schema);
-                    testNotNull(refSchema, MessageFormat.format(
-                            Messages.RefColumn_CannotFindSchema,
-                            table.getName(), cons.getName(), ref.schema));
-                    
-                    PgTable refTable = refSchema.getTable(ref.table);
-                    testNotNull(refTable, MessageFormat.format(
-                            Messages.RefColumn_CannotFindTable,
-                            table.getName(), cons.getName(), ref.schema, ref.table));
-                    
-                    graph.addEdge(cons, refTable);
-                    
-                    PgColumn refColumn = refTable.getColumn(ref.column);
-                    testNotNull(refColumn, MessageFormat.format(
-                            Messages.RefColumn_CannotFindColumn,
-                            table.getName(), cons.getName(), ref.column, ref.schema, ref.table));
-                    
-                    graph.addEdge(cons, refColumn);
-                    
-                    for (PgConstraint refConstr : refTable.getConstraints()) {
-                        if (refConstr.isPrimaryKey() 
-                                || refConstr.isUnique()) {
-                            if (refConstr.getColumns().equals(refs)) {
-                                graph.addEdge(cons, refConstr);
-                            }
-                            // только к одному ключу или уникальному констрейнту
-                            break;
+
+            Collection<GenericColumn> refs = cons.getRefs();
+            for (GenericColumn ref : refs) {
+                if (SYS_COLUMNS.contains(ref.column)) {
+                    continue;
+                }
+
+                PgSchema refSchema = db.getSchema(ref.schema);
+                testNotNull(refSchema, MessageFormat.format(
+                        Messages.RefColumn_CannotFindSchema, table.getName(),
+                        cons.getName(), ref.schema));
+
+                PgTable refTable = refSchema.getTable(ref.table);
+                testNotNull(refTable, MessageFormat.format(
+                        Messages.RefColumn_CannotFindTable, table.getName(),
+                        cons.getName(), ref.schema, ref.table));
+
+                graph.addEdge(cons, refTable);
+
+                PgColumn refColumn = refTable.getColumn(ref.column);
+                testNotNull(refColumn, MessageFormat.format(
+                        Messages.RefColumn_CannotFindColumn, table.getName(),
+                        cons.getName(), ref.column, ref.schema, ref.table));
+
+                graph.addEdge(cons, refColumn);
+
+                for (PgConstraint refConstr : refTable.getConstraints()) {
+                    if (refConstr.isPrimaryKey() || refConstr.isUnique()) {
+                        if (refConstr.getColumns().equals(refs)) {
+                            graph.addEdge(cons, refConstr);
                         }
+                        // только к одному ключу или уникальному констрейнту
+                        break;
                     }
                 }
             }

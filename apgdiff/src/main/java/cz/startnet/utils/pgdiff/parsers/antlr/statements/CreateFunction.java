@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
@@ -13,9 +12,10 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateFunction extends ParserAbstract {
-    private Create_function_statementContext ctx;
+    private final Create_function_statementContext ctx;
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db, Path filePath) {
         super(db, filePath);
         this.ctx = ctx;
@@ -30,8 +30,8 @@ public class CreateFunction extends ParserAbstract {
         }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
-        function.setBody(getFullCtxText(ctx.funct_body).replace("\r", ""));
-        
+        function.setBody(db.getArguments() ,getFullCtxText(ctx.funct_body));
+
         if (ctx.function_ret_table()!= null) {
             function.setReturns(getFullCtxText(ctx.function_ret_table()));
         } else if(ctx.rettype != null) {
@@ -48,11 +48,11 @@ public class CreateFunction extends ParserAbstract {
         db.getSchema(schemaName).addFunction(function);
         return function;
     }
-    
+
     private GenericColumn parseReturns(ParserRuleContext ctx) {
         SchemaNameListener snl = new SchemaNameListener();
         new ParseTreeWalker().walk(snl, ctx);
-        Schema_qualified_nameContext name = snl.getName(); 
+        Schema_qualified_nameContext name = snl.getName();
         if (name != null) {
             String typeName = getName(name);
             if (ApgdiffConsts.SYS_TYPES.contains(typeName)) {

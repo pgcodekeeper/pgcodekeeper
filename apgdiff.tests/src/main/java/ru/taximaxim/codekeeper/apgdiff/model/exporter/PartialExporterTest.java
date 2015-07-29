@@ -19,36 +19,40 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 /**
  * Test for partial export
- * 
- * <!-- 
- * Below is the list of differences between DBs in TestPartialExportSource.sql 
+ *
+ * <!--
+ * Below is the list of differences between DBs in TestPartialExportSource.sql
  * and TestPartialExportTarget.sql:
- * 
+ *
  * DELETED (exist in Source only):
  *      (TABLE)         public.rep2_statistics
  *      (CONSTRAINT)    public.rep2_workpool_data.pk_rep2_workpool_data
  *      (TRIGGER)       public.tz_worker_group.trd_tz_worker_group (GROUP: table left)
  *      (FUNCTION)      public.autocategorydel(integer)
  *      (FUNCTION)      public.atsqueuedel(integer, integer, integer) (GROUP: 2 same named funcs left)
+ *      (FUNCTION)      public.test(integer)
+ *      (FUNCTION)      public.test()
+ *      (TABLE)         public.test_table
  *      (SCHEMA)        audit
  *      (TABLE)         audit.logged_actions
  *      (TABLE)         audit.tz_audit_201305
- * 
+ *
  * MODIFIED:
  *      (TABLE)         public.rep2_workpool_data
  *      (TABLE)         public.table1
  *      (CONSTRAINT)    public.table1.chk_table1 (GROUP: table1 changed as well)
- * 
+ *
  * NEW (exist in Target only):
  *      (FUNCTION)      public.automarkdel_new(integer)
  *      (FUNCTION)      public.automarkdel_new_new(integer) (GROUP: 2 new funcs)
@@ -57,80 +61,78 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  *      (VIEW)          public.v_auto_mark_two
  *      (FUNCTION)      public.automarkdel_new_new(integer) (GROUP: 2 new funcs)
  *  -->
- * 
+ *
  * @author ryabinin_av
  */
 
 @RunWith(value = Parameterized.class)
 public class PartialExporterTest {
-    private static final String encoding = ApgdiffConsts.UTF_8;
+
+    private static final String UTF_8 = ApgdiffConsts.UTF_8;
     private final int index;
-    
+
     private static PgDatabase dbSource;
     private static PgDatabase dbTarget;
-    
+
     @Parameters
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][]{
-// SONAR-OFF
-                    {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}
-// SONAR-ON
-                });
+            // SONAR-OFF
+            {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}
+            // SONAR-ON
+        });
     }
-    
-    /**
-     * Array of implementations of {@link PartialExportInfo}
-     */
-    private PartialExportInfo[] EXPORT_PRESETS = {
-        new PartialExportInfoImpl_1(),
-        new PartialExportInfoImpl_2(),
-        new PartialExportInfoImpl_3(),
-        new PartialExportInfoImpl_4(),
-        new PartialExportInfoImpl_5(),
-        new PartialExportInfoImpl_6(),
-        new PartialExportInfoImpl_7(),
-        new PartialExportInfoImpl_8(),
-        new PartialExportInfoImpl_9(),
-        new PartialExportInfoImpl_10(),
-        new PartialExportInfoImpl_11(),
-        new PartialExportInfoImpl_12(),
-        new PartialExportInfoImpl_13(),
-        new PartialExportInfoImpl_14(),
-        new PartialExportInfoImpl_15()
+
+    private static final PartialExportInfo[] EXPORT_PRESETS = {
+            new PartialExportInfoImpl_1(),
+            new PartialExportInfoImpl_2(),
+            new PartialExportInfoImpl_3(),
+            new PartialExportInfoImpl_4(),
+            new PartialExportInfoImpl_5(),
+            new PartialExportInfoImpl_6(),
+            new PartialExportInfoImpl_7(),
+            new PartialExportInfoImpl_8(),
+            new PartialExportInfoImpl_9(),
+            new PartialExportInfoImpl_10(),
+            new PartialExportInfoImpl_11(),
+            new PartialExportInfoImpl_12(),
+            new PartialExportInfoImpl_13(),
+            new PartialExportInfoImpl_14(),
+            new PartialExportInfoImpl_15()
     };
-    
+
     public PartialExporterTest(int index) {
         this.index = index;
     }
-    
+
     @BeforeClass
     public static void initDiffTree() throws InterruptedException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(UTF_8);
         dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(sourceFilename),
                 args, ParserClass.getLegacy(null, 1));
         args = new PgDiffArguments();
-        args.setInCharsetName(encoding);
+        args.setInCharsetName(UTF_8);
         dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(targetFilename),
                 args, ParserClass.getLegacy(null, 1));
-        
+
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);
     }
-    
+
     @Before
     public void beforeTest() {
         EXPORT_PRESETS[index-1].setDiffTree(DiffTree.create(dbSource, dbTarget));
     }
+
     @Test
-    public void testExportPartial () throws IOException{
+    public void testExportPartial() throws IOException, PgCodekeeperException {
         PartialExportInfo preset = EXPORT_PRESETS[index-1];
-        TreeElement diffTree = preset.getDiffTree();
-        
+
         Path exportDirFull = null;
         Path exportDirPartial = null;
         Path exportDirNewFull = null;
@@ -138,23 +140,22 @@ public class PartialExporterTest {
             exportDirFull = Files.createTempDirectory("pgCodekeeper-test-export-full");
             exportDirPartial = Files.createTempDirectory("pgCodekeeper-test-export-partial");
             exportDirNewFull = Files.createTempDirectory("pgCodekeeper-test-export-new-full");
-            
+
             // full export of source
-            new ModelExporter(exportDirFull.toFile(), dbSource, encoding).exportFull();
-            
+            new ModelExporter(exportDirFull.toFile(), dbSource, UTF_8).exportFull();
+            // full export of new to newFull directory
+            new ModelExporter(exportDirNewFull.toFile(), dbTarget, UTF_8).exportFull();
+            // full export of source to target directory
+            new ModelExporter(exportDirPartial.toFile(), dbSource, UTF_8).exportFull();
+
             // get new db with selected changes
             preset.setUserSelection();
-            
-            Collection<TreeElement> list = diffTree.flattenAlteredElements(
+            Collection<TreeElement> list = preset.getDiffTree().flattenAlteredElements(
                     new ArrayList<TreeElement>(), dbSource, dbTarget, true, null);
-            // full export of source to target directory
-            new ModelExporter(exportDirPartial.toFile(), dbSource, encoding).exportFull();
-            // full export of new to newFull directory
-            new ModelExporter(exportDirNewFull.toFile(), dbTarget, encoding).exportFull();
             // накатываем на полную базу частичные изменения
             new ModelExporter(exportDirPartial.toFile(), dbTarget, dbSource,
-                    list, encoding).exportPartial();
-            
+                    list, UTF_8).exportPartial();
+
             walkAndComare(exportDirFull, exportDirPartial, exportDirNewFull, preset);
         }finally{
             if (exportDirFull != null){
@@ -168,34 +169,36 @@ public class PartialExporterTest {
             }
         }
     }
-    
+
     private void walkAndComare(Path exportDirFull, Path exportDirPartial, Path exportDirNewFull,
             PartialExportInfo preset) throws IOException {
         // first compare full export to partial
         LinkedList<String> modifiedFiles = preset.modifiedFiles();
         LinkedList<String> newFiles = preset.newFiles();
         LinkedList<String> deletedFiles = preset.deletedFiles();
-        
-        Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                new PartialExportTestFileVisitor(exportDirFull, exportDirPartial, 
-                        exportDirNewFull, modifiedFiles, newFiles, deletedFiles, true));
 
-        if (modifiedFiles.size() != 0 || deletedFiles.size() != 0){
-            Assert.assertTrue("Not all objects in modified/deleted lists have been walked", false);
-        }
+        Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+                new PartialExportTestFileVisitor(
+                        exportDirFull, exportDirPartial, exportDirNewFull,
+                        modifiedFiles, newFiles, deletedFiles, true));
+
+        Assert.assertTrue("Not all objects in modified/deleted lists have been walked:\n"
+                + modifiedFiles + '\n' + deletedFiles,
+                modifiedFiles.isEmpty() && deletedFiles.isEmpty());
 
         // then compare partial export to full
         modifiedFiles = preset.modifiedFiles();
         newFiles = preset.newFiles();
         deletedFiles = preset.deletedFiles();
-        
+
         Files.walkFileTree(exportDirPartial, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                new PartialExportTestFileVisitor(exportDirPartial, exportDirFull, 
-                        exportDirNewFull, modifiedFiles, newFiles, deletedFiles, false));
-        
-        if (modifiedFiles.size() != 0 || newFiles.size() != 0){
-            Assert.assertTrue("Not all objects in modified/new lists have been walked", false);
-        }
+                new PartialExportTestFileVisitor(
+                        exportDirPartial, exportDirFull, exportDirNewFull,
+                        modifiedFiles, newFiles, deletedFiles, false));
+
+        Assert.assertTrue("Not all objects in modified/new lists have been walked:\n"
+                + modifiedFiles + '\n' + newFiles,
+                modifiedFiles.isEmpty() && newFiles.isEmpty());
     }
 
     /**
@@ -216,9 +219,9 @@ public class PartialExporterTest {
  * relative filenames of objects that should have been affected by partial export
  */
 abstract class PartialExportInfo {
-    
+
     TreeElement diffTree;
-    
+
     public TreeElement getDiffTree() {
         return diffTree;
     }
@@ -228,7 +231,7 @@ abstract class PartialExportInfo {
     }
 
     public abstract void setUserSelection();
-    
+
     public LinkedList<String> modifiedFiles(){
         return new LinkedList<>();
     };
@@ -273,8 +276,7 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
     @Override
     public void setUserSelection() {
         TreeElement schema = diffTree.getChild("public");
-        schema.getChild("tz_worker_group").getChild("trd_tz_worker_group")
-                .setSelected(true);
+        schema.getChild("tz_worker_group").getChild("trd_tz_worker_group").setSelected(true);
     }
 
     @Override
@@ -359,7 +361,7 @@ class PartialExportInfoImpl_9 extends PartialExportInfo{
     public void setUserSelection() {
         TreeElement schema = diffTree.getChild("public");
         schema.getChild("automarkdel_new_new(integer)").setSelected(true);
-        schema.getChild("automarkdel_new_new(integer, integer)").setSelected(true); 
+        schema.getChild("automarkdel_new_new(integer, integer)").setSelected(true);
     }
 
     @Override
@@ -448,5 +450,108 @@ class PartialExportInfoImpl_15 extends PartialExportInfo{
     @Override
     public LinkedList<String> deletedFiles() {
         return new LinkedList<>(Arrays.asList("SCHEMA/audit/TABLE/logged_actions.sql", "SCHEMA/audit/TABLE/tz_audit_201305.sql", "SCHEMA/audit.sql"));
+    }
+}
+
+
+class PartialExportInfoImpl_16 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test()").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    }
+}
+
+class PartialExportInfoImpl_17 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test()").setSelected(true);
+        schema.getChild("test(integer)").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> deletedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    }
+}
+
+class PartialExportInfoImpl_18 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_19 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_20 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_21 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
+        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> modifiedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    }
+}
+
+class PartialExportInfoImpl_22 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> deletedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
     }
 }

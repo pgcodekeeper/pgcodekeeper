@@ -41,8 +41,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <tycho.version>0.22.0</tycho.version>
+        <tycho.version>0.23.0</tycho.version>
 
+        <sonar.binaries>${project.basedir}/target/classes</sonar.binaries>
         <sonar.language>java</sonar.language>
         <sonar.java.source>1.7</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
@@ -84,14 +85,6 @@
             </build>
         </profile>
     </profiles>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jgrapht</groupId>
-            <artifactId>jgrapht-core</artifactId>
-            <version>0.9.0</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -147,11 +140,6 @@
                             <os>win32</os>
                             <ws>win32</ws>
                             <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86</arch>
                         </environment>
                         <environment>
                             <os>macosx</os>

@@ -6,30 +6,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffTypes;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgType extends PgStatementWithSearchPath {
 
     public enum PgTypeForm {
         COMPOSITE, ENUM, RANGE, BASE, SHELL
     }
-    
+
     private final PgTypeForm form;
-    
+
     // attributes (fields) for composite type
     private final List<PgColumn> attrs = new ArrayList<>();
     // enum labels for enum type
     private final List<String> enums = new ArrayList<>();
-    
+
     // range type fields
     private String subtype;
     private String subtypeOpClass;
     private String collation;
     private String canonical;
     private String subtypeDiff;
-    
+
     // base type fields
     private String inputFunction;
     private String outputFunction;
@@ -57,7 +57,7 @@ public class PgType extends PgStatementWithSearchPath {
     public List<PgColumn> getAttrs() {
         return Collections.unmodifiableList(attrs);
     }
-    
+
     public PgColumn getAttr(String name) {
         for (PgColumn att : attrs) {
             if (att.getName().equals(name)) {
@@ -76,12 +76,12 @@ public class PgType extends PgStatementWithSearchPath {
     public List<String> getEnums() {
         return Collections.unmodifiableList(enums);
     }
-    
+
     public void addEnum(String enum_) {
         enums.add(enum_);
         resetHash();
     }
-    
+
     public String getSubtype() {
         return subtype;
     }
@@ -117,7 +117,7 @@ public class PgType extends PgStatementWithSearchPath {
         this.canonical = canonical;
         resetHash();
     }
-    
+
     public String getSubtypeDiff() {
         return subtypeDiff;
     }
@@ -303,28 +303,28 @@ public class PgType extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder("CREATE TYPE ")
                 .append(PgDiffUtils.getQuotedName(getName()));
-        
+
         switch(form) {
         case COMPOSITE:
             sb.append(" AS (");
             appendCompositeDef(sb);
             break;
-            
+
         case ENUM:
             sb.append(" AS ENUM (");
             appendEnumDef(sb);
             break;
-            
+
         case RANGE:
             sb.append(" AS RANGE (");
             appendRangeDef(sb);
             break;
-            
+
         case BASE:
             sb.append(" (");
             appendBaseDef(sb);
             break;
-            
+
         case SHELL:
             break;
         }
@@ -332,15 +332,15 @@ public class PgType extends PgStatementWithSearchPath {
             sb.append("\n)");
         }
         sb.append(';');
-        
+
         appendOwnerSQL(sb);
         appendPrivileges(sb);
-        
+
         if (comment != null && !comment.isEmpty()) {
             sb.append("\n\n");
             appendCommentSql(sb);
         }
-        
+
         if (form == PgTypeForm.COMPOSITE) {
             for (PgColumn c : attrs) {
                 if (c.getComment() != null && !c.getComment().isEmpty()) {
@@ -462,12 +462,12 @@ public class PgType extends PgStatementWithSearchPath {
         } else {
             return false;
         }
-        
+
         if (!oldType.equals(newType) && !PgDiffTypes.canAlter(oldType, newType)) {
             isNeedDepcies.set(true);
             return true;
         }
-        
+
         StringBuilder attrSb = new StringBuilder();
         for (PgColumn attr : newType.getAttrs()) {
             PgColumn oldAttr = oldType.getAttr(attr.getName());
@@ -475,48 +475,42 @@ public class PgType extends PgStatementWithSearchPath {
                 if (!oldAttr.getType().equals(attr.getType())) {
                     isNeedDepcies.set(true);
                     attrSb.append("\n\tALTER ATTRIBUTE ")
-                            .append(PgDiffUtils.getQuotedName(attr.getName()))
-                            .append(" TYPE ")
-                            .append(attr.getType())
-                            .append(", ");
+                    .append(PgDiffUtils.getQuotedName(attr.getName()))
+                    .append(" TYPE ")
+                    .append(attr.getType())
+                    .append(", ");
                 }
             } else {
                 attrSb.append("\n\tADD ATTRIBUTE ")
-                        .append(attr.getFullDefinition(false, null))
-                        .append(", ");
-            }            
+                .append(attr.getFullDefinition(false, null))
+                .append(", ");
+            }
         }
         for (PgColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
                 attrSb.append("\n\tDROP ATTRIBUTE ")
-                        .append(PgDiffUtils.getQuotedName(attr.getName()))
-                        .append(", ");
+                .append(PgDiffUtils.getQuotedName(attr.getName()))
+                .append(", ");
             }
         }
-        
+
         if (attrSb.length() > 0) {
             // remove last comma
-            attrSb.setLength(attrSb.length() - ", ".length());
-            if (sb.length() != 0) {
-                sb.append("\n\n");
-            }
-            sb.append("ALTER TYPE ")
-                    .append(PgDiffUtils.getQuotedName(newType.getName()))
-                    .append(attrSb).append(';');
+            attrSb.setLength(attrSb.length() - 2);
+            sb.append("\n\nALTER TYPE ")
+            .append(PgDiffUtils.getQuotedName(newType.getName()))
+            .append(attrSb).append(';');
         }
         columnsComments(newType, oldType, sb);
-        
+
         List<String> enums = newType.getEnums();
         List<String> oldEnums = oldType.getEnums();
         for (int i = 0; i < enums.size(); ++i) {
             String enum_ = enums.get(i);
             if (!oldEnums.contains(enum_)) {
-                if (sb.length() != 0) {
-                    sb.append("\n\n");
-                }
-                sb.append("ALTER TYPE ")
-                        .append(PgDiffUtils.getQuotedName(newType.getName()))
-                        .append("\n\tADD VALUE ").append(enum_);
+                sb.append("\n\nALTER TYPE ")
+                .append(PgDiffUtils.getQuotedName(newType.getName()))
+                .append("\n\tADD VALUE ").append(enum_);
                 if (i == 0) {
                     sb.append(" BEFORE ").append(oldEnums.get(0));
                 } else {
@@ -525,7 +519,7 @@ public class PgType extends PgStatementWithSearchPath {
                 sb.append(';');
             }
         }
-        
+
         if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
             newType.appendOwnerSQL(sb);
         }
@@ -534,6 +528,7 @@ public class PgType extends PgStatementWithSearchPath {
             newType.appendPrivileges(sb);
         }
         if (!Objects.equals(oldType.getComment(), newType.getComment())) {
+            sb.append("\n\n");
             newType.appendCommentSql(sb);
         }
         return sb.length() > startLength;
@@ -544,14 +539,14 @@ public class PgType extends PgStatementWithSearchPath {
             PgColumn oldAttr = oldType.getAttr(newAttr.getName());
             if (oldAttr != null) {
                 if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
-                    newAttr.appendCommentSql(sb);
                     sb.append("\n\n");
+                    newAttr.appendCommentSql(sb);
                 }
             } else {
-                if (newAttr.getComment() != null 
+                if (newAttr.getComment() != null
                         && !newAttr.getComment().isEmpty()) {
-                    newAttr.appendCommentSql(sb);
                     sb.append("\n\n");
+                    newAttr.appendCommentSql(sb);
                 }
             }
         }

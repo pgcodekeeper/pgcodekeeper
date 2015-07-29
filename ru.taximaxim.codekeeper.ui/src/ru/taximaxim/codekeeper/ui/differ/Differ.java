@@ -15,6 +15,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -22,39 +27,35 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffScript;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
-    
+
     private static final int INITIAL_BUFFER_CAPACITY = 1024;
-    
+
     private final PgDatabase sourceDbFull;
     private final PgDatabase targetDbFull;
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
-    
+    private final boolean forceUnixNewlines;
+
     private boolean finished;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
-    
+
     private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
     private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
-    
+
     public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         this.additionalDepciesSource = additionalDepcies;
     }
-    
+
     public void setAdditionalDepciesTarget(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         this.additionalDepciesTarget = additionalDepcies;
     }
-    
+
     public void addAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         if (this.additionalDepciesSource == null) {
@@ -63,20 +64,21 @@ public class Differ implements IRunnableWithProgress {
             this.additionalDepciesSource.addAll(additionalDepcies);
         }
     }
-    
+
     public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource() {
         return additionalDepciesSource;
-    } 
+    }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
-            TreeElement root, boolean needTwoWay, String timezone) {
+            TreeElement root, boolean needTwoWay, String timezone, boolean forceUnixNewlines) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
+        this.forceUnixNewlines = forceUnixNewlines;
     }
-    
+
     public Job getDifferJob() {
         return new Job(Messages.differ_get_differ) {
 
@@ -85,7 +87,7 @@ public class Differ implements IRunnableWithProgress {
                 try {
                     Differ.this.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_the_project_modifier_thread, e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
@@ -94,12 +96,12 @@ public class Differ implements IRunnableWithProgress {
             }
         };
     }
-    
+
     public String getDiffDirect() throws PgCodekeeperUIException {
         checkFinished();
         return diffDirect;
     }
-    
+
     public String getDiffReverse() throws PgCodekeeperUIException {
         checkFinished();
         return diffReverse;
@@ -107,34 +109,34 @@ public class Differ implements IRunnableWithProgress {
 
     /**
      * @return the script
-     * @throws PgCodekeeperUIException 
+     * @throws PgCodekeeperUIException
      */
     public PgDiffScript getScript() throws PgCodekeeperUIException {
         checkFinished();
         return script;
     }
-    
+
     private void checkFinished() throws PgCodekeeperUIException {
         if(!finished) {
             throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
         }
     }
-    
+
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException,
-            InterruptedException {
+    InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
-        
+
         Log.log(Log.LOG_INFO, "Diff from: " + sourceDbFull.getName() //$NON-NLS-1$
-                + " to: " + targetDbFull.getName()); //$NON-NLS-1$
-        
+        + " to: " + targetDbFull.getName()); //$NON-NLS-1$
+
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, ApgdiffConsts.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), 
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -143,12 +145,12 @@ public class Differ implements IRunnableWithProgress {
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
-                        + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
-                
+                + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
+
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
@@ -158,7 +160,7 @@ public class Differ implements IRunnableWithProgress {
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
-        
+
         PgDumpLoader.checkCancelled(pm);
         pm.done();
         finished = true;

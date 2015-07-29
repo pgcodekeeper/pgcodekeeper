@@ -92,7 +92,10 @@ public class ActionsToScriptConverter {
         for (PgSequence sequence : sequencesOwnedBy) {
             currentSearchPath = setSearchPath(currentSearchPath, sequence,
                     script);
-            script.addStatement(sequence.getOwnedBySQL());
+            String ownedBy = sequence.getOwnedBySQL();
+            if (!ownedBy.isEmpty()) {
+                script.addStatement(ownedBy);
+            }
         }
     }
 

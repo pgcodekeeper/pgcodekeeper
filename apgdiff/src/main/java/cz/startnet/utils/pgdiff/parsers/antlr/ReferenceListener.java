@@ -224,7 +224,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         String name = ParserAbstract.getName(ctx.name);
         String comment = "";
         if (ctx.comment_text != null) {
-            comment = ctx.comment_text.getText().replace("\r", "");
+            comment = ctx.comment_text.getText();
         }
         String schemaName = ParserAbstract.getSchemaName(ctx.name);
         if (schemaName == null) {
