@@ -25,4 +25,8 @@
 которые будут учитываться при проведении операций над объектами.</description>
        <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей"/>
     </context>
+    <context id="update_project_dialog">
+       <description>Диалог предназначен для управлением наката изменений на проект.</description>
+       <topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта"/>
+    </context>
 </contexts>
