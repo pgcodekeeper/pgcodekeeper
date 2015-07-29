@@ -16,103 +16,97 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
  * @author botov_av
- *
  */
 @RunWith(value = Parameterized.class)
 public class PgDiffDepciesTest {
 
-    /**
-     * Provides parameters for running the tests.
-     *
-     * @return parameters for the tests
-     */
     @Parameters
     public static Collection<?> parameters() {
-        return Arrays.asList(new Object[][] { 
-                { "empty", "empty_usr" },
-                // изменяется тип колонок у обоих таблиц, пользователь выбирает
-                // view v1
-                { "add_change_col_type", "add_change_col_type_usr_v1" },
-                // --\\-- , пользователь выбирает t1.c1
-                { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
-                // --\\--, у вью меняется только комментарий
-                { "add_change_only_col_type", "add_change_only_col_type_usr_t1_c1" },
-                // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
-                // view v2
-                {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
-                // долгий тест накатывает перемещение объектов из одной
-                // схемы в другую, пользователь выбирает все измененные
-                // объекты для наката
-                {"move_object_between_schemas", "move_object_between_schemas"},
-                // тестирует накат только измененных колонок, пользователь выбирает таблицу
-                {"multi_alter_table", "multi_alter_table_usr_t_house"},
-                // пользователь выбирает только v_house
-                {"multi_alter_table", "multi_alter_table_usr_v_house"},
-                // пользователь выбирает только v_house_w
-                {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
-                // пользователь выбирает только функцию update_house_reached
-                {"multi_alter_table", "multi_alter_table_usr_func"},
-                // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
-                {"multi_alter_table", "multi_alter_table_usr_all"},
-                // накат триггера и функции из разных схем, пользователь выбрал только функцию 
-                {"trigger_before_insert", "trigger_before_insert_usr_funct"},
-                // пользователь выбрал только триггер
-                {"trigger_before_insert", "trigger_before_insert_usr_trig"},
-                // пользователь выбрал триггер и функцию
-                {"trigger_before_insert", "trigger_before_insert_usr_all"},
-                // изменяется тип колонки, пользователь выбирает таблицу
-                {"trig_upd_col","trig_upd_col__usr_tbl"},
-                // задача из редмайна по номеру, пользователь выбирает все объекты
-                {"err6049", "err6049"},
-                {"err7095", "err7095"},
-                // удаляется исходная таблица, пользователь выбрал на удаление t1
-                {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
-                // удаляется исходная таблица, пользователь выбрал t2
-                // TODO здесь не нужно создавать колонку, она путем удаления
-                // наследования создастся
-                {"table_inherits_del_t1", "table_inherits_del_t1_usr_t2"},
-                // Таблица перестает наследовать, 
-                // TODO здесь ошибка не должно
-                // быть добавления колонки исправится правильной реализацией
-                // inherits
-                {"table_inherits", "table_inherits_usr_t2"},
-                // меняеются колонки в наследующей таблице и добавляется
-                // сиквенс, пользователь выбра таблицу
-                // TODO если в этом тесте удалить из исходной базы seq1,
-                // то он не появится в скрипте, потому, что нет свзяи от
-                // сиквенса к таблице по кр мере со стороны парсера
-                {"inherit_table", "inherit_table_usr"},
-                // колонка меняет тип на новый, пользователь выбрал только тип
-                {"chg_col_type", "chg_col_type_usr_dom2"},
-                // колонка меняет тип на новый, пользователь выбрал только таблицу
-                {"chg_col_type", "chg_col_type_usr_t1"},
-                // колонка меняет тип на новый, пользователь выбрал таблицу и тип
-                {"chg_col_type", "chg_col_type_usr_all"},
-                // тип изменяется как альтер, пользователь выбрал его
-                {"alter_type", "alter_type_usr"},
-                // тип изменяется через drop create, пользователь выбирает его
-                {"drop_type", "drop_type_usr"},
-                // удаляется таблица с содержимым индексом и триггером,
-                // пользователь выбрал только таблицу
-                {"drop_tbl", "drop_tbl_usr_tbl"},
-                // выбраны все объекты сложное вью with запросом, также с coalesce
-                {"compl_view", "compl_view"}
-            });
+        return Arrays.asList(new Object[][] {
+            { "empty", "empty_usr" },
+            // изменяется тип колонок у обоих таблиц, пользователь выбирает
+            // view v1
+            { "add_change_col_type", "add_change_col_type_usr_v1" },
+            // --\\-- , пользователь выбирает t1.c1
+            { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
+            // --\\--, у вью меняется только комментарий
+            { "add_change_only_col_type", "add_change_only_col_type_usr_t1_c1" },
+            // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
+            // view v2
+            {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
+            // долгий тест накатывает перемещение объектов из одной
+            // схемы в другую, пользователь выбирает все измененные
+            // объекты для наката
+            {"move_object_between_schemas", "move_object_between_schemas"},
+            // тестирует накат только измененных колонок, пользователь выбирает таблицу
+            {"multi_alter_table", "multi_alter_table_usr_t_house"},
+            // пользователь выбирает только v_house
+            {"multi_alter_table", "multi_alter_table_usr_v_house"},
+            // пользователь выбирает только v_house_w
+            {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
+            // пользователь выбирает только функцию update_house_reached
+            {"multi_alter_table", "multi_alter_table_usr_func"},
+            // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
+            {"multi_alter_table", "multi_alter_table_usr_all"},
+            // накат триггера и функции из разных схем, пользователь выбрал только функцию
+            {"trigger_before_insert", "trigger_before_insert_usr_funct"},
+            // пользователь выбрал только триггер
+            {"trigger_before_insert", "trigger_before_insert_usr_trig"},
+            // пользователь выбрал триггер и функцию
+            {"trigger_before_insert", "trigger_before_insert_usr_all"},
+            // изменяется тип колонки, пользователь выбирает таблицу
+            {"trig_upd_col","trig_upd_col__usr_tbl"},
+            // задача из редмайна по номеру, пользователь выбирает все объекты
+            {"err6049", "err6049"},
+            {"err7095", "err7095"},
+            // удаляется исходная таблица, пользователь выбрал на удаление t1
+            {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
+            // удаляется исходная таблица, пользователь выбрал t2
+            // TODO здесь не нужно создавать колонку, она путем удаления
+            // наследования создастся
+            {"table_inherits_del_t1", "table_inherits_del_t1_usr_t2"},
+            // Таблица перестает наследовать,
+            // TODO здесь ошибка не должно
+            // быть добавления колонки исправится правильной реализацией
+            // inherits
+            {"table_inherits", "table_inherits_usr_t2"},
+            // меняеются колонки в наследующей таблице и добавляется
+            // сиквенс, пользователь выбра таблицу
+            // TODO если в этом тесте удалить из исходной базы seq1,
+            // то он не появится в скрипте, потому, что нет свзяи от
+            // сиквенса к таблице по кр мере со стороны парсера
+            {"inherit_table", "inherit_table_usr"},
+            // колонка меняет тип на новый, пользователь выбрал только тип
+            {"chg_col_type", "chg_col_type_usr_dom2"},
+            // колонка меняет тип на новый, пользователь выбрал только таблицу
+            {"chg_col_type", "chg_col_type_usr_t1"},
+            // колонка меняет тип на новый, пользователь выбрал таблицу и тип
+            {"chg_col_type", "chg_col_type_usr_all"},
+            // тип изменяется как альтер, пользователь выбрал его
+            {"alter_type", "alter_type_usr"},
+            // тип изменяется через drop create, пользователь выбирает его
+            {"drop_type", "drop_type_usr"},
+            // удаляется таблица с содержимым индексом и триггером,
+            // пользователь выбрал только таблицу
+            {"drop_tbl", "drop_tbl_usr_tbl"},
+            // выбраны все объекты сложное вью with запросом, также с coalesce
+            {"compl_view", "compl_view"}
+        });
     }
-    
+
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql and _new.sql to the file name
@@ -125,60 +119,27 @@ public class PgDiffDepciesTest {
      */
     private final String userSelTemplate;
 
-    /**
-     *  Creates a new PgDiffTestDepcies object.
-     * @param fileNameTemplate {@link #dbTemplate}
-     * @param userSelTemplate {@link #userSelTemplate}
-     */
     public PgDiffDepciesTest(final String fileNameTemplate,
             final String userSelTemplate) {
-        super();
         this.dbTemplate = fileNameTemplate;
         this.userSelTemplate = userSelTemplate;
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    /**
-     * Runs single test on original schema.
-     */
-    @Test(timeout = 40000)
-    public void runDiffSameOriginal() throws IOException {
+    public void runDiffSame(PgDatabase db) throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.createDiff(writer, arguments,
-                getDBIS(FILES_POSTFIX.ORIGINAL_SQL),
-                getDBIS(FILES_POSTFIX.ORIGINAL_SQL));
+        PgDiff.diffDatabaseSchemas(writer, arguments, db, db);
         writer.flush();
 
         Assert.assertEquals("File name template: " + dbTemplate,
                 "", diffInput.toString().trim());
     }
 
-    /**
-     * Runs single test on new schema.
-     */
-    @Test(timeout = 40000)
-    public void runDiffSameNew() throws IOException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.createDiff(writer, arguments,
-                getDBIS(FILES_POSTFIX.NEW_SQL),
-                getDBIS(FILES_POSTFIX.NEW_SQL));
-        writer.flush();
-
-        Assert.assertEquals("File name template: " + dbTemplate,
-                "", diffInput.toString().trim());
-    }
-
-    /**
-     * Runs single test using class member variables.
-     * @throws InterruptedException 
-     */
-    @Test(timeout = 80000)
+    @Test(timeout = 120000)
     public void runDiff() throws IOException, InterruptedException {
-        
+
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -192,11 +153,14 @@ public class PgDiffDepciesTest {
             oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
             newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
         }
+
+        runDiffSame(oldDbFull);
+        runDiffSame(newDbFull);
+
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
         tree.setAllChecked();
         PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, arguments,
-                tree, oldDbFull, newDbFull, null,
-                null);
+                tree, oldDbFull, newDbFull, null, null);
         writer.flush();
 
         StringBuilder sbExpDiff;
@@ -215,20 +179,20 @@ public class PgDiffDepciesTest {
                 sbExpDiff.toString().trim(),
                 diffInput.toString().trim());
     }
-    
+
     private PgDatabase getDB(InputStream is, PgDiffArguments args) throws InterruptedException {
         return PgDumpLoader.loadDatabaseSchemaFromDump(
                 is, args, ParserClass.getAntlr(null, 1));
     }
-    
+
     private InputStream getUsrSelIS(FILES_POSTFIX postfix) {
         return getIS(userSelTemplate + postfix);
     }
-    
+
     private InputStream getDBIS(FILES_POSTFIX postfix) {
         return getIS(dbTemplate + postfix);
     }
-    
+
     private InputStream getIS(String name) {
         return PgDiffDepciesTest.class.getResourceAsStream(name);
     }
