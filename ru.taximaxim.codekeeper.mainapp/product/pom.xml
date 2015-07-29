@@ -2,17 +2,17 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.taximaxim.codeKeeper</groupId>
-    <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>3.2.5-SNAPSHOT</version>
-    <packaging>eclipse-repository</packaging>
-
     <parent>
         <artifactId>ru.taximaxim.codeKeeper</artifactId>
         <groupId>ru.taximaxim.codeKeeper</groupId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
     </parent>
+
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
+    <version>3.2.6-SNAPSHOT</version>
+    <packaging>eclipse-repository</packaging>
 
     <build>
         <extensions>

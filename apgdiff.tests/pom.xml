@@ -9,10 +9,10 @@
         <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
     </parent>
 
+    <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff.tests</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
-    <name>apgdiff.tests</name>
 
     <build>
         <plugins>
