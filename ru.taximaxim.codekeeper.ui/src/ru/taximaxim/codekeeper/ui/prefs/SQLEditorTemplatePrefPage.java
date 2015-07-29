@@ -3,8 +3,8 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 
 public class SQLEditorTemplatePrefPage extends TemplatePreferencePage implements
