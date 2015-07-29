@@ -16,10 +16,6 @@
        <description>Установки источника схемы БД</description>
        <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы БД"/>
     </context>
-    <context id="miscellaneous">
-       <description>Общее</description>
-       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Общее"/>
-    </context>
     <context id="roll_on_script">
        <description>Окно редакторования и выполения скрипта наката изменений</description>
        <topic href="html/gettingstarted/roll_on_script.html" label="Скрипт наката изменений"/>

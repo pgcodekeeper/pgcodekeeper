@@ -104,7 +104,6 @@ public interface UIConsts {
         String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
         String NEW_WIZARD = PLUGIN_ID.HELP + ".project_initializer"; //$NON-NLS-1$
         String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
-        String NEW_WIZARD_MISC = PLUGIN_ID.HELP + ".miscellaneous"; //$NON-NLS-1$
         String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
     }
 

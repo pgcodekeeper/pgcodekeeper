@@ -48,8 +48,8 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class NewProjWizard extends Wizard 
-        implements IExecutableExtension, INewWizard {
+public class NewProjWizard extends Wizard
+implements IExecutableExtension, INewWizard {
 
     private PageRepo pageRepo;
     private PageDb pageDb;
@@ -60,24 +60,23 @@ public class NewProjWizard extends Wizard
     private IConfigurationElement config;
     private IWorkbench workbench;
     private IStructuredSelection selection;
-    
+
     public NewProjWizard() {
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
         setNeedsProgressMonitor(true);
         this.mainPrefStore = Activator.getDefault().getPreferenceStore();
     }
-    
+
     public PgDbProject getProject() {
         return props;
     }
 
     @Override
     public void addPages() {
-        pageRepo = new PageRepo(Messages.newProjWizard_repository_settings, selection);
-        pageRepo.setTitle(Messages.newProjWizard_new_pg_db_project);
-        pageRepo.setDescription(Messages.NewProjWizard_create_project);
+        // page names shouldn't be localized, use page titles instead
+        pageRepo = new PageRepo("main", selection); //$NON-NLS-1$
         addPage(pageRepo);
-        pageDb = new PageDb(Messages.newProjWizard_schema_source_settings, mainPrefStore);
+        pageDb = new PageDb("schema", mainPrefStore); //$NON-NLS-1$
         addPage(pageDb);
     }
 
@@ -92,7 +91,7 @@ public class NewProjWizard extends Wizard
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
-        if(page.equals(pageRepo)) {
+        if(page == pageRepo) {
             if (!checkMarkerExist()) {
                 return pageDb;
             } else {
@@ -129,13 +128,13 @@ public class NewProjWizard extends Wizard
     public boolean performFinish() {
         try {
             props = PgDbProject.getProjectFromIProjectHandle(
-                    pageRepo.getProjectHandle(), 
+                    pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
 
             Log.log(Log.LOG_INFO, "Creating new project properties"); //$NON-NLS-1$
 
             fillProjProps();
-            
+
             if (!checkMarkerExist()) {
                 try {
                     getContainer().run(true, true,
@@ -145,7 +144,7 @@ public class NewProjWizard extends Wizard
                     props.deleteFromWorkspace();
                     ExceptionNotifier.notifyDefault(
                             Messages.newProjWizard_error_in_initializing_repo_from_source,
-                                    ex);
+                            ex);
                     return false;
                 } catch (InterruptedException ex) {
                     // cancelled
@@ -153,9 +152,9 @@ public class NewProjWizard extends Wizard
                     return false;
                 }
             }
-            
+
             BasicNewProjectResourceWizard.updatePerspective(config);
-            BasicNewResourceWizard.selectAndReveal(props.getProject(), 
+            BasicNewResourceWizard.selectAndReveal(props.getProject(),
                     workbench.getActiveWorkbenchWindow());
 
             props.openProject();
@@ -171,11 +170,11 @@ public class NewProjWizard extends Wizard
                         Messages.NewProjWizard_error_adding_nature, e);
                 return false;
             }
-            
+
             IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
             workbench.getWorkingSetManager().addToWorkingSets(props.getProject(),
                     workingSets);
-            
+
             OpenEditor.openEditor(PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
@@ -185,7 +184,7 @@ public class NewProjWizard extends Wizard
         }
         return true;
     }
-    
+
     private void fillProjProps() {
         IEclipsePreferences newPrefs = props.getPrefs();
         setDbSource(newPrefs);
@@ -214,7 +213,7 @@ public class NewProjWizard extends Wizard
     @Override
     public void setInitializationData(IConfigurationElement config,
             String propertyName, Object data) throws CoreException {
-        this.config = config;        
+        this.config = config;
     }
 
     @Override
@@ -224,28 +223,25 @@ public class NewProjWizard extends Wizard
     }
 }
 
-class PageRepo extends WizardNewProjectCreationPage implements Listener {
-    
+class PageRepo extends WizardNewProjectCreationPage {
+
     private static final String WORKING_SET_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
-    
-    private IStructuredSelection selection;
+
+    private final IStructuredSelection selection;
 
     PageRepo(String pageName, IStructuredSelection selection) {
         super(pageName);
         this.selection = selection;
+
+        setTitle(Messages.newProjWizard_new_pg_db_project);
+        setDescription(Messages.NewProjWizard_create_project);
     }
-    
+
     @Override
     public void createControl(final Composite parent) {
         super.createControl(parent);
         createWorkingSetGroup((Composite) getControl(), selection,
                 new String[] { WORKING_SET_ID });
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        getWizard().getContainer().updateButtons();
-        getWizard().getContainer().updateMessage();
     }
 }
 
@@ -278,15 +274,15 @@ class PageDb extends WizardPage implements Listener {
     public String getDbUser() {
         return grpDb.getTxtDbUser().getText();
     }
-    
+
     public String getDbPass() {
         return grpDb.getTxtDbPass().getText();
     }
-    
+
     public String getDbHost() {
         return grpDb.getTxtDbHost().getText();
     }
-    
+
     public int getDbPort() {
         try {
             return Integer.parseInt(grpDb.getTxtDbPort().getText());
@@ -294,15 +290,17 @@ class PageDb extends WizardPage implements Listener {
             return 0;
         }
     }
-    
+
     public String getDumpPath() {
         return txtDumpPath.getText();
     }
 
     PageDb(String pageName, IPreferenceStore mainPrefs) {
         super(pageName, pageName, null);
-
         this.mainPrefs = mainPrefs;
+
+        setTitle(Messages.NewProjWizard_proj_init);
+        setDescription(Messages.NewProjWizard_proj_init_src);
     }
 
     @Override

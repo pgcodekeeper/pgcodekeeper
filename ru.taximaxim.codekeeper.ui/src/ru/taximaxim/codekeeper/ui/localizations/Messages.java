@@ -6,7 +6,7 @@ import org.eclipse.osgi.util.NLS;
 public final class Messages extends NLS {
     public static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
 
-// SONAR-OFF
+    // SONAR-OFF
 
     // common phrases
     public static String unexpected_error_while_saving_preferences;
@@ -20,7 +20,6 @@ public final class Messages extends NLS {
     public static String runnable_has_not_finished;
     public static String select_all;
     public static String select_none;
-    public static String missing_marker_file_in_working_directory;
     public static String choose_dump_file_with_changes;
     public static String db;
     public static String db_source;
@@ -41,14 +40,13 @@ public final class Messages extends NLS {
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
     public static String dump_file;
-    public static String miscellaneous;
     public static String unknown_db;
     public static String unknown_host;
     public static String connection_details;
     public static String add;
     public static String delete;
     public static String error_creating_dependency_graph;
-    
+
     // ui
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
@@ -106,7 +104,7 @@ public final class Messages extends NLS {
     public static String manualDepciesDialog_remove;
     public static String commitDialog_user_selected_elements;
     public static String commitDialog_depcy_elements;
-    
+
     // ui.dbstore
     public static String dbInfo_bad_dbinfo_string;
     public static String dbInfo_too_many_parts_in_dbinfo_string;
@@ -118,11 +116,10 @@ public final class Messages extends NLS {
     public static String dbStoreEditorDialog_entry_with_this_name_already_exists;
     public static String dbStoreEditorDialog_name_cannot_be_empty_or_whitespace;
     public static String dbStoreEditorDialog_not_valid_port_number;
-    
+
     // ui.differ
     public static String dbSource_db_is_not_loaded_yet_object_is_null;
     public static String dbSource_executing_pg_dump;
-    public static String dbSource_filter_on;
     public static String dbSource_loading_dump;
     public static String dbSource_loading_tree;
     public static String differ_direct_diff;
@@ -159,7 +156,7 @@ public final class Messages extends NLS {
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
-    
+
     // ui.handlers
     public static String database;
 
@@ -187,7 +184,7 @@ public final class Messages extends NLS {
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
-    
+
     // ui.pgdbproject
     public static String diffWizard_db_taget;
     public static String diffWizard_Diff;
@@ -227,10 +224,8 @@ public final class Messages extends NLS {
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
-    public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
-    public static String newProjWizard_schema_source_settings;
-    
+
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
@@ -284,12 +279,15 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String ManualDepciesDialog_set_add_depcies;
-    public static String NewProjWizard_demand_init_project;
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_saving_projprefs;
 
     public static String NewProjWizard_create_project;
+
+    public static String NewProjWizard_proj_init;
+
+    public static String NewProjWizard_proj_init_src;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
@@ -368,7 +366,7 @@ public final class Messages extends NLS {
 
     public static String yesNoEditingSupport_yes;
 
-// SONAR-ON
+    // SONAR-ON
 
     static {
         // initialize resource bundle
