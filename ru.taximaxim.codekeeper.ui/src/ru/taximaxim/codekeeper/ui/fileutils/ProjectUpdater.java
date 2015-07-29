@@ -13,33 +13,33 @@ import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectUpdater {
 
     private final PgDatabase dbNew;
     private final PgDatabase dbOld;
-    
+
     private final Collection<TreeElement> changedObjects;
     private final String encoding;
     private final File dirExport;
 
     /**
      * dbOld, changedObjects are necessary only for partial update
-     * @throws CoreException 
+     * @throws CoreException
      */
     public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> checked, PgDbProject proj) throws CoreException {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
-        
+
         this.changedObjects = checked;
-        
+
         this.encoding = proj.getProjectCharset();
         this.dirExport = proj.getPathToProject().toFile();
     }
@@ -49,18 +49,21 @@ public class ProjectUpdater {
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
-        
+
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
-            
+
             try {
                 for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                    final Path sourcePath = Paths.get(dirExport.getCanonicalPath(), 
+                    final Path sourcePath = Paths.get(dirExport.getCanonicalPath(),
                             subdirName.toString());
-                    final Path targetPath = Paths.get(dirTmp.getCanonicalPath(), 
+                    if (Files.exists(sourcePath)) {
+                        continue;
+                    }
+                    final Path targetPath = Paths.get(dirTmp.getCanonicalPath(),
                             subdirName.toString());
-                    
+
                     Files.walkFileTree(sourcePath,new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(final Path dir,
@@ -79,13 +82,13 @@ public class ProjectUpdater {
                         }
                     });
                 }
-                
+
                 new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding).exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
-                
+
                 Log.log(Log.LOG_ERROR, "Error while updating project!" , ex); //$NON-NLS-1$
-            
+
                 try {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
@@ -111,22 +114,22 @@ public class ProjectUpdater {
                     ex.getLocalizedMessage()), ex);
         }
     }
-    
+
     public void updateFull() throws IOException {
         Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
-            
+
             try {
                 safeCleanProjectDir(dirTmp);
                 new ModelExporter(dirExport, dbNew, encoding).exportFull();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
-                
-                Log.log(Log.LOG_ERROR, 
+
+                Log.log(Log.LOG_ERROR,
                         "Error while updating project! Trying to restore data from backup", ex); //$NON-NLS-1$
-            
+
                 try {
                     restoreProjectDir(dirTmp);
                 } catch (Exception exRestore) {
@@ -162,7 +165,7 @@ public class ProjectUpdater {
             }
         }
     }
-    
+
     private void restoreProjectDir(File dirTmp) throws IOException {
         for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
             String sSubdirName = subdirName.toString();
