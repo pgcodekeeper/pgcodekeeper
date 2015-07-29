@@ -104,32 +104,22 @@ public class PgSequence extends PgStatementWithSearchPath {
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
     public String getOwnedBySQL() {
+        if (ownedBy == null || ownedBy.isEmpty()) {
+            return "";
+        }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("ALTER SEQUENCE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
-
-        if (ownedBy != null && !ownedBy.isEmpty()) {
-            sbSQL.append("\n\tOWNED BY ");
-            sbSQL.append(ownedBy);
-        }
-
-        sbSQL.append(';');
+        sbSQL.append("\n\nALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\tOWNED BY ").append(ownedBy).append(';');
 
         return sbSQL.toString();
     }
     
     @Override
     public String getFullSQL() {
-        String superFull = super.getFullSQL();
-        
-        if (ownedBy != null && !ownedBy.isEmpty()) {
-            StringBuilder sb = new StringBuilder(superFull);
-            sb.append("\n\n").append(getOwnedBySQL());
-            return sb.toString();
-        } else {
-            return superFull;
-        }
+        StringBuilder sb = new StringBuilder(super.getFullSQL());
+        sb.append(getOwnedBySQL());
+        return sb.toString();
     }
 
     public void setCycle(final boolean cycle) {
