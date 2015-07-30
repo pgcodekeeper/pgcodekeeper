@@ -51,7 +51,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0-beta-5</version>
+                        <version>1.0</version>
                         <executions>
                             <execution>
                                 <id>execute-test-commands</id>
@@ -109,15 +109,12 @@
         
         <profile>
             <id>nightly</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0-beta-5</version>
+                        <version>1.0</version>
                         <executions>
                             <execution>
                                 <id>execute-test-commands</id>
