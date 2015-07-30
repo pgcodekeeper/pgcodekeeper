@@ -255,7 +255,6 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_project_modified;
 
-    public static String DiffPresentationPane_refresh_editor;
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;
     public static String DiffTableViewer_error_save_checked_set;
