@@ -792,18 +792,38 @@ identifier
   | DOUBLE_QUOTE? nonreserved_keywords DOUBLE_QUOTE? 
   ;
 
+/*
+ * Contains non-reserved keywords (http://www.postgresql.org/docs/9.3/static/sql-keywords-appendix.html)
+ * and arbitrary tokenized words that are also valid identifiers.
+ * 
+ * TODO Commented lines are for compatibility with older version (basically just-in-case)
+ * TODO 3 instances of "reserved (can be function or type)" words
+ */
 nonreserved_keywords
   : ADD
   | ADMIN
+  | AFTER
+  | AGGREGATE
+  | ALSO
+  | ALTER
   | ALWAYS
   | ARRAY
   | ATTRIBUTE
   | AVG
+  | BEFORE
   | BETWEEN
+  | BIGINT
+  | BIT
+  | BLOB
+  | BOOL
+  | BOOLEAN
   | BY
+  | BYTEA
   | CACHE
   | CALLED
+  | CASCADE
   | CENTURY
+  | CHAR
   | CHARACTER
   | CHECK
   | CLASS
@@ -815,44 +835,93 @@ nonreserved_keywords
   | COMMENTS
   | COMMIT
   | COMMITTED
-  | CONCURRENTLY
+  | CONCURRENTLY // reserved (can be function or type)
   | CONFIGURATION
+  | CONNECT
+  | CONSTRAINTS
+  | CONVERSION
+  | COPY
   | COST
   | COUNT
   | CUBE
   | CURRENT
   | CYCLE
   | DATA
+  | DATABASE
+  | DATE
   | DAY
   | DEC
   | DECADE
+  | DECIMAL
+  | DEFAULTS
+  | DEFERRED
   | DEFINER
+  | DELETE
+  | DELIMITER
   | DICTIONARY
   | DISABLE
+  | DOMAIN
+  | DOUBLE
   | DOW
   | DOY
   | DROP
+  | EACH
+  | ELEMENT
   | ENABLE
+  | ENCODING
+  | ENUM
   | EPOCH
+  | ESCAPE
   | EVENT
   | EVERY
+  | EXCLUDE
+  | EXCLUDING
+  | EXECUTE
   | EXISTS
   | EXTENDED
+  | EXTENSION
   | EXTERNAL
   | EXTRACT
   | FAMILY
   | FILTER
   | FIRST
+  | FLOAT
+  | FLOAT4
+  | FLOAT8
   | FORMAT
+  | FUNCTION
   | FUSION
+  | GLOBAL
   | GROUPING
+  | HANDLER
   | HASH
-  | INHERIT
-  | INDEX
+  | HEADER
+  | HOUR
+  | IF
+  | IMMEDIATE
+  | IMMUTABLE
+  | INCLUDING
   | INCREMENT
+  | INDEX
+  | INDEXES
+  | INET
+  | INET4
+  | INHERIT
+  | INHERITS
+  | INLINE
+//  | INOUT
   | INPUT
   | INSERT
+  | INSTEAD
+  | INT
+  | INT1
+  | INT2
+  | INT4
+  | INT8
+  | INTEGER
   | INTERSECTION
+  | INTERVAL
+  | INVOKER
   | ISCACHABLE
   | ISODOW
   | ISOLATION
@@ -865,6 +934,7 @@ nonreserved_keywords
   | LESS
   | LEVEL
   | LIST
+  | LOCAL
   | LOCATION
   | MAIN
   | MATCH
@@ -874,34 +944,49 @@ nonreserved_keywords
   | MILLENNIUM
   | MILLISECONDS
   | MIN
-  | MINVALUE
   | MINUTE
+  | MINVALUE
   | MONTH
   | NATIONAL
+  | NCHAR
   | NO
   | NONE
+  | NOTHING
   | NULLIF
   | NULLS
+  | NUMBER
+  | NUMERIC
   | OBJECT
+  | OF
   | OIDS
   | ON
   | ONLY
   | OPERATOR
   | OPTION
   | OPTIONS
-  | OVER
+//  | OUT
+  | OUTPUT
+  | OVER // reserved (can be function or type)
   | OVERWRITE
+  | OWNED
+  | OWNER
   | PARSER
   | PARTIAL
   | PARTITION
   | PARTITIONS
   | PLAIN
   | PRECISION
+  | PRESERVE
+  | PRIVILEGES
+  | PROCEDURAL
+  | PROCEDURE
   | PUBLIC
   | PURGE
   | QUARTER
+  | QUOTE
   | RANGE
   | READ
+  | REAL
   | RECURSIVE
   | REGCONFIG
   | REGEXP
@@ -911,97 +996,93 @@ nonreserved_keywords
   | REPLICA
   | RESET
   | RESTART
+  | RESTRICT
+  | RETURNS
+  | REVOKE
   | RLIKE
+  | ROLE
   | ROLLUP
+//  | ROW
+  | ROWS
+  | RULE
   | SCHEMA
   | SEARCH
   | SECOND
   | SECURITY
+  | SEQUENCE
+  | SEQUENCES
   | SERIALIZABLE
   | SERVER
+  | SESSION
   | SET
-  | SIMILAR
+//  | SETOF
+  | SIMILAR // reserved (can be function or type)
   | SIMPLE
+  | SMALLINT
   | STABLE
   | START
+  | STATEMENT
   | STATISTICS
-  | STDIN
-  | STORAGE
   | STDDEV_POP
   | STDDEV_SAMP
+  | STDIN
+  | STORAGE
+  | STRICT
   | SUBPARTITION
   | SUM
+  | TABLES
   | TABLESPACE
+  | TEMP
   | TEMPLATE
+  | TEMPORARY
+  | TEXT
   | THAN
+  | TIME
+  | TIMESTAMP
+  | TIMESTAMPTZ
+  | TIMETZ
   | TIMEZONE
   | TIMEZONE_HOUR
   | TIMEZONE_MINUTE
-  | TRANSACTION
-  | TRIM
+  | TINYINT
   | TO
+  | TRANSACTION
+  | TRIGGER
+  | TRIM
+  | TRUNCATE
+  | TRUSTED
   | TYPE
   | TYPES
   | UNCOMMITTED
   | UNKNOWN
   | UNLOGGED
+  | UPDATE
+  | USAGE
   | USER
+  | UUID
   | VALID
   | VALIDATE
+  | VALIDATOR
   | VALUE
   | VALUES
+  | VARBINARY
+  | VARBIT
+  | VARCHAR
+  | VARIABLE
   | VAR_POP
   | VAR_SAMP
-  | VARYING
   | VERSION
+  | VIEW
+  | VOID
   | VOLATILE
   | WEEK
   | WINDOW
+  | WITHOUT
   | WORK
   | WRAPPER
   | WRITE
   | YEAR
   | ZONE
-
-  | BIGINT
-  | BIT
-  | BLOB
-  | BOOL
-  | BOOLEAN
-  | BYTEA
-  | CHAR
-  | DATE
-  | DECIMAL
-  | DOUBLE
-  | FLOAT
-  | FLOAT4
-  | FLOAT8
-  | INET4
-  | INET
-  | INT
-  | INT1
-  | INT2
-  | INT4
-  | INT8
-  | INTEGER
-  | INTERVAL
-  | NCHAR
-  | NUMERIC
-  | REAL
-  | SMALLINT
-  | TEXT
-  | TIME
-  | TIMESTAMP
-  | TIMESTAMPTZ
-  | TIMETZ
-  | TINYINT
-  | VARBINARY
-  | VARBIT
-  | VARCHAR
-  | UUID
-  | VOID
-  
-  | SCHEMA
   ;
 
 /*
