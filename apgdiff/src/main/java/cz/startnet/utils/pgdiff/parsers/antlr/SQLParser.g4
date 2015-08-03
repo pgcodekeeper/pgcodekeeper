@@ -803,6 +803,7 @@ nonreserved_keywords
   | BY
   | CACHE
   | CALLED
+  | CATEGORY
   | CENTURY
   | CHARACTER
   | CHECK
