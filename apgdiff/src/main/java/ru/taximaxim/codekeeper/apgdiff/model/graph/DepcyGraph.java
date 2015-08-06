@@ -314,7 +314,8 @@ public class DepcyGraph {
                 graph.addEdge(view, tbl);
                 
                 if (clmnName == null) {
-                    Log.log(Log.LOG_WARNING, "View has null reference to column: " + col);
+                    Log.log(Log.LOG_WARNING, "View " + view.getQualifiedName() + 
+                            " has null reference to column: " + col);
                     continue;
                 }
                 if (SYS_COLUMNS.contains(clmnName)){
