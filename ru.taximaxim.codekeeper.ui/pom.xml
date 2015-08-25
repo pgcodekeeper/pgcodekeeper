@@ -22,7 +22,7 @@
                 <version>2.0.10</version>
                 <executions>
                     <execution>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>proguard</goal>
                         </goals>
