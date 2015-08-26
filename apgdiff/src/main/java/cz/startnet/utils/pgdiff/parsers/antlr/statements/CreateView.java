@@ -159,7 +159,7 @@ public class CreateView extends ParserAbstract {
             columns.add(col);
             return null;
         }
-        
+
         @Override
         public Query_expressionContext visitQualified_asterisk(
                 Qualified_asteriskContext ctx) {
@@ -271,16 +271,19 @@ public class CreateView extends ParserAbstract {
                         }
                         continue;
                     }
-                    GenericColumn unaliased = tableAliases.get(col.table);
-                    if (unaliased != null) {
-                        GenericColumn column = new GenericColumn(unaliased.schema,
-                                unaliased.table, col.column);
-                        if (unaliased.getType() == ViewReference.FUNCTION) {
-                            column.setType(ViewReference.FUNCTION);
+                    // не пытаемся резолвить вызовы функций
+                    if (col.getType() != ViewReference.FUNCTION) {
+                        GenericColumn unaliased = tableAliases.get(col.table);
+                        if (unaliased != null) {
+                            GenericColumn column = new GenericColumn(unaliased.schema,
+                                    unaliased.table, col.column);
+                            if (unaliased.getType() == ViewReference.FUNCTION) {
+                                column.setType(ViewReference.FUNCTION);
+                            }
+                            newColumns.add(column);
+                        } else {
+                            newColumns.add(col);
                         }
-                        newColumns.add(column);
-                    } else {
-                        newColumns.add(col);
                     }
                     break;
                 case TABLE:
