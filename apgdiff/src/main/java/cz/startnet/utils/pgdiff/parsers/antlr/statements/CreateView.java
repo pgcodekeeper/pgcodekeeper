@@ -157,7 +157,7 @@ public class CreateView extends ParserAbstract {
                     null);
             col.setType(ViewReference.SYSTEM);
             columns.add(col);
-            return null;
+            return visitChildren(ctx);
         }
 
         @Override
