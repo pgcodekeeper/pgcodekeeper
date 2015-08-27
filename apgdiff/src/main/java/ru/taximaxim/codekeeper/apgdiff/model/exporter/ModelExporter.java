@@ -141,6 +141,7 @@ public class ModelExporter {
 
         while (!changeList.isEmpty()){
             TreeElement el = changeList.pop();
+            Log.log(Log.LOG_DEBUG, "Exporting object: " + el);
             switch(el.getSide()){
             case LEFT:
                 deleteObject(el);
@@ -179,10 +180,8 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            // as required by processTableAndContents()
-            changeList.push(el);
             TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(oldDb));
+            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             break;
 
         default:
@@ -211,14 +210,12 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            changeList.push(el);
             TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(newDb));
+            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
         case TABLE:
-            changeList.push(el);
-            processTableAndContents(el, stInNew);
+            processTableAndContents(el, stInNew, el);
             break;
 
         default:
@@ -254,14 +251,12 @@ public class ModelExporter {
             testParentSchema(elParent.getParent());
             // table actually, not schema
             testParentSchema(elParent);
-            changeList.push(el);
-            processTableAndContents(elParent, elParent.getPgStatement(newDb));
+            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
         case TABLE:
             testParentSchema(elParent);
-            changeList.push(el);
-            processTableAndContents(el, stInNew);
+            processTableAndContents(el, stInNew, el);
             break;
 
         default:
@@ -351,10 +346,11 @@ public class ModelExporter {
     }
 
     /**
-     * This method expects all related elements to be present on changeList
-     * (reinsert them if needed, the method will remove them after processing).
+     * @param elCause The element that caused the table processing.
+     * It is expected to be popped from the {@link #changeList}.
      */
-    private void processTableAndContents(TreeElement el, PgStatement st) throws IOException{
+    private void processTableAndContents(TreeElement el, PgStatement st,
+            TreeElement elCause) throws IOException{
         if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
             // table is dropped entirely
             return;
@@ -364,6 +360,10 @@ public class ModelExporter {
             // the entire schema is dropped
             return;
         }
+
+        // same as in processFunction
+        // we need to have every related element on the list
+        changeList.push(elCause);
 
         deleteStatementIfExists(st);
 

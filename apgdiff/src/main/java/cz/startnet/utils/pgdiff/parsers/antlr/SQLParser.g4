@@ -818,6 +818,7 @@ nonreserved_keywords
   | COMMITTED
   | CONCURRENTLY
   | CONFIGURATION
+  | CONNECT
   | COST
   | COUNT
   | CUBE

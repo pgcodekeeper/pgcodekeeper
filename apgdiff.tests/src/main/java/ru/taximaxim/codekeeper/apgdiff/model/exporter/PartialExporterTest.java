@@ -261,8 +261,10 @@ class PartialExportInfoImpl_2 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("rep2_statistics").setSelected(true);
+        TreeElement table = diffTree.getChild("public").getChild("rep2_statistics");
+        table.setSelected(true);
+        table.getChild("rep2_statistics_pkey").setSelected(true);
+
     }
 
     @Override
