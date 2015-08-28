@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff</artifactId>
-    <version>2.2.6-SNAPSHOT</version>
+    <version>2.2.8-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <build>
@@ -40,7 +40,7 @@
                 <version>2.0.10</version>
                 <executions>
                     <execution>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>proguard</goal>
                         </goals>
@@ -81,7 +81,7 @@
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts$WORK_DIR_NAMES { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate$ADD_STATUS { *; }</option>
-
+                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
                     </options>
                     <libs>
                         <lib>${java.home}/lib/rt.jar</lib>

@@ -1,3 +1,5 @@
+-- extension owned constraints are skipped by table != null check in java code
+
 SELECT ccc.relname,
     conname,
     contype,

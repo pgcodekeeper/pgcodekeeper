@@ -43,8 +43,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <tycho.version>0.23.1</tycho.version>
 
-        <sonar.binaries>${project.basedir}/target/classes</sonar.binaries>
         <sonar.language>java</sonar.language>
+        <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
         <sonar.java.source>1.7</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
@@ -59,7 +59,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.7.4.201502262128</version>
+                        <version>0.7.5.201505241946</version>
                         <configuration>
                             <destFile>${project.basedir}/../target/jacoco.exec</destFile>
                             <append>true</append>

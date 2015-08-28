@@ -822,6 +822,7 @@ nonreserved_keywords
   | CACHE
   | CALLED
   | CASCADE
+  | CATEGORY
   | CENTURY
   | CHAR
   | CHARACTER
@@ -1069,6 +1070,7 @@ nonreserved_keywords
   | VARBIT
   | VARCHAR
   | VARIABLE
+  | VARYING
   | VAR_POP
   | VAR_SAMP
   | VERSION

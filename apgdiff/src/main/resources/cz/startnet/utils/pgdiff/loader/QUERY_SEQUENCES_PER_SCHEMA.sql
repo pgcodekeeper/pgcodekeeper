@@ -1,3 +1,10 @@
+WITH extension_deps AS (
+    SELECT dep.objid 
+    FROM pg_catalog.pg_depend dep 
+    WHERE refclassid = 'pg_extension'::regclass 
+        AND dep.deptype = 'e'
+)
+
 SELECT c.oid AS sequence_oid,
        c.relowner,
        c.relname,
@@ -22,3 +29,4 @@ LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
 pg_sequence_parameters(c.oid) p(start_value, minimum_value, maximum_value, increment, cycle_option)
 WHERE c.relnamespace = ?
     AND c.relkind = 'S'
+    AND c.oid NOT IN (SELECT objid FROM extension_deps)

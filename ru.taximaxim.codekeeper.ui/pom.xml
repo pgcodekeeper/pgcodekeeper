@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.3.4-SNAPSHOT</version>
+    <version>1.3.5-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <build>
@@ -22,7 +22,7 @@
                 <version>2.0.10</version>
                 <executions>
                     <execution>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>proguard</goal>
                         </goals>
@@ -42,9 +42,9 @@
                         <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
+                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage { *; }</option>
@@ -67,6 +67,7 @@
                         <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant { *; }</option>
+                        <option>-keep class ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
                     </options>
                     <libs>
