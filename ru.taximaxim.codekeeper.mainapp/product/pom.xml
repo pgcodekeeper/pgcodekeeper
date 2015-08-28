@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>3.2.7-SNAPSHOT</version>
+    <version>3.2.8-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <build>
