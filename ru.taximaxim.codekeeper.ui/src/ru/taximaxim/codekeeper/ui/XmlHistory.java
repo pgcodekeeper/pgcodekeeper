@@ -163,7 +163,8 @@ public final class XmlHistory {
      */
     public void updateCheckedSetHistoryEntries(String checkSetName,
             List<String> values, boolean addEntry) throws IOException {
-        if (values.isEmpty()) {
+        if (values.isEmpty() && addEntry) {
+            // do not add entries with no elements
             return;
         }
         Map<String, List<String>> checkedSets = new LinkedHashMap<>();

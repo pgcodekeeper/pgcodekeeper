@@ -91,8 +91,8 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.StringEditor;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 /*
- * Call CheckStateListener.updateCountLabels() when programmatically changing 
- * elements' checkedSet state. 
+ * Call CheckStateListener.updateCountLabels() when programmatically changing
+ * elements' checkedSet state.
  */
 public class DiffTableViewer extends Composite {
 
@@ -101,47 +101,47 @@ public class DiffTableViewer extends Composite {
     private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
     private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
-    
+
     private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
             DbObjType.values().length);
     private final Image iSideBoth;
     private final Image iSideLeft;
     private final Image iSideRight;
-    
+
     private final boolean viewOnly;
     private boolean reverseDiffSide;
-    
+
     private TreeElement treeRoot;
     private final PgDbProject proj;
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
     private List<IgnoredObject> ignoredElements;
-    
+
     // values are checkedSet states of the elements
     private Set<TreeElement> elements = new HashSet<>();
     private final CheckStateListener checkListener = new CheckStateListener();
     private final TableViewerComparator comparator = new TableViewerComparator();
-    
+
     private final LocalResourceManager lrm;
     private Text txtFilterName;
     private Button useRegEx;
     private final CheckboxTableViewer viewer;
-    private TableViewerFilter viewerFilter = new TableViewerFilter();
+    private final TableViewerFilter viewerFilter = new TableViewerFilter();
     private TableViewerColumn columnType, columnChange, columnName, columnLocation;
     private Label lblObjectCount;
     private Label lblCheckedCount;
     private ComboViewer cmbPrevChecked;
-    
+
     private DbSource dbSource;
     private DbSource dbTarget;
-    
-    private Map<String, List<String>> prevChecked; 
+
+    private Map<String, List<String>> prevChecked;
     private XmlHistory prevCheckedHistory;
-    private List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
-    
+    private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
+
     private enum Columns {
         CHECK,
         NAME,
-        TYPE, 
+        TYPE,
         CHANGE,
         LOCATION
     }
@@ -149,13 +149,13 @@ public class DiffTableViewer extends Composite {
     public CheckboxTableViewer getViewer() {
         return viewer;
     }
-    
-    public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs, 
+
+    public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs,
             PgDbProject proj, boolean viewOnly) {
         super(parent, style);
         this.viewOnly = viewOnly;
         this.proj = proj;
-        
+
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         for (DbObjType objType : DbObjType.values()) {
             ImageDescriptor iObj = ImageDescriptor.createFromURL(Activator.getContext()
@@ -169,7 +169,7 @@ public class DiffTableViewer extends Composite {
                 .getBundle().getResource(FILE.ICONDEL)));
         iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONADD)));
-        
+
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
@@ -179,33 +179,33 @@ public class DiffTableViewer extends Composite {
         GridLayout filterLayout = new GridLayout(2, false);
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         filterComp.setLayout(filterLayout);
-        
-        txtFilterName = new Text(filterComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH 
+
+        txtFilterName = new Text(filterComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH
                 | SWT.ICON_CANCEL);
         txtFilterName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtFilterName.setMessage(Messages.diffTableViewer_object_name);
         txtFilterName.addModifyListener(new ModifyListener() {
-            
+
             @Override
             public void modifyText(ModifyEvent e) {
                 viewerFilter.setFilter(txtFilterName.getText());
                 viewerRefresh();
             }
         });
-        
+
         useRegEx = new Button(filterComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
         useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
         useRegEx.addSelectionListener(new SelectionAdapter() {
-           @Override
+            @Override
             public void widgetSelected(SelectionEvent e) {
-               viewerFilter.setUseRegEx(useRegEx.getSelection());
-               viewerRefresh();
-            } 
+                viewerFilter.setUseRegEx(useRegEx.getSelection());
+                viewerRefresh();
+            }
         });
-        
+
         prevCheckedHistory = new XmlHistory.Builder(PREVCHECKED_HIST_MAX_STORED,
-                PREVCHECKED_HIST_FILENAME, 
+                PREVCHECKED_HIST_FILENAME,
                 PREVCHECKED_HIST_ROOT,
                 PREVCHECKED_HIST_EL).elementSetTag(PREVCHECKED_HIST_SET).build();
         try {
@@ -214,30 +214,30 @@ public class DiffTableViewer extends Composite {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_load_checked_set, e1);
             prevChecked = new HashMap<>();
         }
-        
+
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
             // TODO always needs SWT.CHECK?
             // Creates a table viewer on the given table control.
-            // The SWT.CHECK style bit must be set on the given table control. 
+            // The SWT.CHECK style bit must be set on the given table control.
             viewerStyle |= SWT.CHECK;
         }
         viewer = new CheckboxTableViewer(new Table(this, viewerStyle)){
-            
+
             @Override
             public ISelection getSelection() {
                 return new DepcyStructuredSelection(dbSource, dbTarget,
                         (IStructuredSelection) super.getSelection());
             }
         };
-        
+
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        viewer.getTable().setLinesVisible(true);  
+        viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);
-        
+
         viewer.getControl().setMenu(
                 getViewerMenu().createContextMenu(viewer.getControl()));
-        
+
         if (!viewOnly) {
             viewer.addCheckStateListener(checkListener);
 
@@ -259,15 +259,15 @@ public class DiffTableViewer extends Composite {
         viewer.setFilters(new ViewerFilter[] { viewerFilter });
         viewer.getTable().pack();
         initColumns();
-        
+
         viewer.setContentProvider(new ArrayContentProvider());
-        
+
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 10, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
-        
+
         Button btnClearSort = new Button(contButtons, SWT.PUSH);
         if (viewOnly) {
             btnClearSort.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, true, false));
@@ -277,7 +277,7 @@ public class DiffTableViewer extends Composite {
                 Activator.getContext().getBundle().getResource(
                         FILE.ICONDEFAULTSORT))));
         btnClearSort.addSelectionListener(new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 comparator.clearSortList();
@@ -285,7 +285,7 @@ public class DiffTableViewer extends Composite {
                 viewer.refresh();
             }
         });
-        
+
         if (!viewOnly) {
             Button btnSelectAll = new Button(contButtons, SWT.PUSH);
             btnSelectAll.setToolTipText(Messages.select_all);
@@ -293,7 +293,7 @@ public class DiffTableViewer extends Composite {
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONSELECTALL))));
             btnSelectAll.addSelectionListener(new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     viewer.setAllChecked(true);
@@ -302,14 +302,14 @@ public class DiffTableViewer extends Composite {
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
-            
+
             Button btnSelectNone = new Button(contButtons, SWT.PUSH);
             btnSelectNone.setToolTipText(Messages.select_none);
             btnSelectNone.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONSELECTNONE))));
             btnSelectNone.addSelectionListener(new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), false);
@@ -317,29 +317,29 @@ public class DiffTableViewer extends Composite {
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
-            
+
             Button btnInvertSelection = new Button(contButtons, SWT.PUSH);
             btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
             btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONINVERTSELECTION))));
             btnInvertSelection.addSelectionListener(new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     Object[] initial = viewer.getCheckedElements();
-                    
+
                     viewer.setAllChecked(true);
                     checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), true);
                     checkListener.setElementsChecked(Arrays.asList(initial), false);
-                    
+
                     viewerRefresh();
                 }
             });
-            
+
             new Label(contButtons, SWT.NONE).setText(
                     Messages.diffTableViewer_stored_selections);
-            
+
             cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();
             gd.widthHint = 200;
@@ -350,57 +350,57 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             cmbPrevChecked.setInput(prevChecked.keySet());
             cmbPrevChecked.addSelectionChangedListener(new ISelectionChangedListener() {
-                
+
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
                     setCheckedFromPrevCheckedCombo();
                 }
             });
-            
+
             Button saveChecked = new Button(contButtons, SWT.PUSH);
             saveChecked.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONSAVE))));
             saveChecked.setToolTipText(Messages.diffTableViewer_save_checked);
-            
+
             saveChecked.addSelectionListener(new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     updateCheckedSet(true);
                 }
             });
-            
+
             Button deleteCheckSet = new Button(contButtons, SWT.PUSH);
             deleteCheckSet.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONDEL))));
             deleteCheckSet.setToolTipText(Messages.diffTableViewer_delete_checked_set);
-            
+
             deleteCheckSet.addSelectionListener(new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     updateCheckedSet(false);
                 }
             });
-        
+
             lblCheckedCount = new Label(contButtons, SWT.RIGHT);
             lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
         }
-        
+
         lblObjectCount = new Label(contButtons, SWT.RIGHT);
         lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 
         mainPrefs.addPropertyChangeListener(ignoresListener);
         viewer.getTable().addDisposeListener(new DisposeListener() {
-            
+
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 mainPrefs.removePropertyChangeListener(ignoresListener);
             }
         });
-        
+
         String ignoredObjectsPref = mainPrefs.getString(PREF.IGNORE_OBJECTS);
         if (!ignoredObjectsPref.isEmpty()) {
             ignoresListener.propertyChange(new PropertyChangeEvent(
@@ -418,7 +418,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void run() {
-                    TreeElement el = (TreeElement) 
+                    TreeElement el = (TreeElement)
                             ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                     if (el != null) {
                         setSubTreeChecked(el, true);
@@ -433,7 +433,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void run() {
-                    TreeElement el = (TreeElement) 
+                    TreeElement el = (TreeElement)
                             ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                     if (el != null) {
                         setSubTreeChecked(el, false);
@@ -468,7 +468,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public void run() {
-                TreeElement el = (TreeElement) 
+                TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                 DiffPaneDialog dpd = new DiffPaneDialog(
                         DiffTableViewer.this.getShell(), dbSource, dbTarget, reverseDiffSide);
@@ -476,9 +476,9 @@ public class DiffTableViewer extends Composite {
                 dpd.open();
             }
         });
-        
+
         menuMgr.addMenuListener(new IMenuListener() {
-            
+
             @Override
             public void menuAboutToShow(IMenuManager manager) {
                 boolean enable = !viewer.getSelection().isEmpty();
@@ -491,7 +491,7 @@ public class DiffTableViewer extends Composite {
         });
         return menuMgr;
     }
-    
+
     private void initColumns() {
         TableViewerColumn columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
 
@@ -515,15 +515,15 @@ public class DiffTableViewer extends Composite {
         columnChange = new TableViewerColumn(viewer, SWT.LEFT);
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TableViewerColumn(viewer, SWT.LEFT);
-        
+
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
-        
+
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnType.getColumn().setResizable(true);
         columnType.getColumn().setMoveable(true);
-        
+
         columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnChange.getColumn().setResizable(true);
         columnChange.getColumn().setMoveable(true);
@@ -540,21 +540,21 @@ public class DiffTableViewer extends Composite {
                 getHeaderSelectionAdapter(columnChange.getColumn(), Columns.CHANGE));
         columnLocation.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
-        
+
         updateColumnsWidth();
-        
+
         columnName.setLabelProvider(new StyledCellLabelProvider(){
-            
+
             @Override
             public void update(ViewerCell cell) {
                 String name = ((TreeElement)cell.getElement()).getName();
                 cell.setText(name);
-                
+
                 Region loc = viewerFilter.getMatchingLocation(name, viewerFilter.filterName,
                         (viewerFilter.useRegEx) ? viewerFilter.regExPattern : null);
                 if (loc != null) {
                     StyleRange highlightMatch = new StyleRange(loc.getOffset(),
-                            loc.getLength(), null, 
+                            loc.getLength(), null,
                             getDisplay().getSystemColor(SWT.COLOR_YELLOW));
                     cell.setStyleRanges(new StyleRange[] { highlightMatch });
                 } else {
@@ -570,7 +570,7 @@ public class DiffTableViewer extends Composite {
             public String getText(Object element) {
                 return ((TreeElement) element).getType().toString();
             }
-            
+
             @Override
             public Image getImage(Object element) {
                 return mapObjIcons.get(((TreeElement) element).getType());
@@ -578,12 +578,12 @@ public class DiffTableViewer extends Composite {
         });
 
         columnChange.setLabelProvider(new ColumnLabelProvider() {
-            
+
             @Override
             public String getText(Object element) {
                 return ((TreeElement) element).getSide().toString();
             }
-            
+
             @Override
             public Image getImage(Object element) {
                 switch (((TreeElement) element).getSide()) {
@@ -594,16 +594,16 @@ public class DiffTableViewer extends Composite {
                 return null;
             }
         });
-        
+
         columnLocation.setLabelProvider(new ColumnLabelProvider() {
-            
+
             @Override
             public String getText(Object element) {
                 return ((TreeElement) element).getContainerQName();
             }
         });
     }
-    
+
     private void updateColumnsWidth(){
         PixelConverter pc = new PixelConverter(viewer.getControl());
         // set check column size to 4 chars
@@ -622,7 +622,7 @@ public class DiffTableViewer extends Composite {
     private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,
             final Columns index) {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sortViewer(column, index);
@@ -631,14 +631,14 @@ public class DiffTableViewer extends Composite {
         };
         return selectionAdapter;
     }
-    
+
     private void sortViewer(final TableColumn column, final Columns index) {
         comparator.addSort(index);
-        
+
         viewer.getTable().setSortDirection(comparator.getSwtDirection());
         viewer.getTable().setSortColumn(column);
     }
-    
+
     /**
      * Метод используется для добавления слушателя внешнего который реагирует
      * только на нижнюю часть таблицыв коммита
@@ -654,30 +654,29 @@ public class DiffTableViewer extends Composite {
         if (comboText != null && !comboText.isEmpty()) {
             List<String> elementsToCheck = prevChecked.get(comboText);
             if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
-                List<String> elementsNames = new ArrayList<>();
-                List<String> elementsTypes = new ArrayList<>();
+                List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
                 for (String elementString : elementsToCheck){
-                    String[] element = new String[2];
-                    element = elementString.split(",");
-                    elementsNames.add(element[0]);
-                    if (element.length != 1){
-                        elementsTypes.add(element[1]);
-                    }
-                }
-                List<TreeElement> prevCheckedList = new ArrayList<>();
-                for (TreeElement elementKey : elements) {
-                    if (elementsTypes.size() == elementsNames.size()) {
-                        int i = 0;
-                        while (i<elementsNames.size()){
-                            if (elementsNames.get(i).equals(elementKey.getName()) 
-                                    && elementsTypes.get(i).equals(elementKey.getType().toString())) {
-                                prevCheckedList.add(elementKey);
-                            }
-                            i++;
+                    int comma = elementString.lastIndexOf(',');
+                    String elName;
+                    DbObjType elType;
+                    if (comma != -1) {
+                        elName = elementString.substring(0, comma);
+                        try {
+                            elType = DbObjType.valueOf(elementString.substring(comma + 1));
+                        } catch (IllegalArgumentException ex) {
+                            // invalid type string
+                            // log and try old (no type) algorithm
+                            Log.log(Log.LOG_WARNING, "Bad object type in selected set", ex);
+                            elName = elementString;
+                            elType = null;
                         }
                     } else {
-                        if (elementsNames.contains(elementKey.getName())){
-                            prevCheckedList.add(elementKey);
+                        elName = elementString;
+                        elType = null;
+                    }
+                    for (TreeElement el : elements) {
+                        if ((elType == null || el.getType() == elType) && el.getName().equals(elName)) {
+                            prevCheckedList.add(el);
                         }
                     }
                 }
@@ -686,19 +685,19 @@ public class DiffTableViewer extends Composite {
             }
         }
     }
-    
+
     private void updateCheckedSet(boolean addEntry) {
         String setName = cmbPrevChecked.getCombo().getText();
         if (!setName.isEmpty()) {
             List<String> checkedElements = new ArrayList<>();
             for (TreeElement element : elements) {
                 if (element.isSelected()) {
-                    checkedElements.add(element.getName()+","+element.getType().toString());
+                    checkedElements.add(element.getName() + ',' + element.getType().name());
                 }
             }
             try {
-                prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
-                            checkedElements, addEntry);
+                prevCheckedHistory.updateCheckedSetHistoryEntries(setName,
+                        checkedElements, addEntry);
                 prevChecked = prevCheckedHistory.getMapHistory();
             } catch (IOException e) {
                 ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_save_checked_set, e);
@@ -707,7 +706,7 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.setInput(prevChecked.keySet());
         }
     }
-    
+
     /**
      * Устанавливает входные данные для таблицы
      * @param treediffer содержит дерево + базы
@@ -715,12 +714,12 @@ public class DiffTableViewer extends Composite {
      */
     public void setInput(TreeDiffer treediffer, boolean reverseSide) {
         setDiffer(treediffer, reverseSide);
-        
+
         elements = new HashSet<>();
         if (treeRoot != null) {
             generateElementsList(treeRoot);
         }
-        
+
         initializeViewer();
     }
     /**
@@ -729,24 +728,24 @@ public class DiffTableViewer extends Composite {
      * @param rootDiffer дерево + базы
      * @param reverseDiffSide сторона
      */
-    public void setInputCollection(Collection<TreeElement> showOnlyElements, 
+    public void setInputCollection(Collection<TreeElement> showOnlyElements,
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        
+
         elements = new HashSet<>();
         elements.addAll(showOnlyElements);
-        
+
         initializeViewer();
     }
-    
+
     private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
         this.reverseDiffSide = reverseDiffSide;
         try {
             this.treeRoot = (differ == null) ? null : differ.getDiffTree();
-            this.dbSource = (differ == null) ? null : 
+            this.dbSource = (differ == null) ? null :
                 reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-            this.dbTarget = (differ == null) ? null : 
-                reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+                this.dbTarget = (differ == null) ? null :
+                    reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;
@@ -757,19 +756,19 @@ public class DiffTableViewer extends Composite {
 
     private void initializeViewer() {
         viewer.setInput(elements);
-        
+
         updateColumnsWidth();
-        
+
         updateObjectsLabel();
-        
+
         if (!viewOnly) {
             updateCheckedLabel();
             setCheckedFromPrevCheckedCombo();
         }
-        
+
         initialSorting();
     }
-    
+
     private void initialSorting() {
         comparator.clearSortList();
         sortViewer(columnName.getColumn(), Columns.NAME);
@@ -778,7 +777,7 @@ public class DiffTableViewer extends Composite {
         sortViewer(columnLocation.getColumn(), Columns.LOCATION);
         viewer.refresh();
     }
-    
+
     private void generateElementsList(TreeElement tree) {
         // догружаем игноры из файла в проекте
         final List<IgnoredObject> ignores = new ArrayList<>(ignoredElements);
@@ -792,10 +791,10 @@ public class DiffTableViewer extends Composite {
                         "Some problems occured while reading ignore settings from file", e1); //$NON-NLS-1$
             }
         }
-        
+
         // коллбэк указывающий на необходимость игнора элемента(ов)
         ListGeneratorPredicate predicate = new ListGeneratorPredicate() {
-            
+
             @Override
             public ADD_STATUS shouldAddToList(TreeElement el) {
                 for (IgnoredObject ign : ignores) {
@@ -810,7 +809,7 @@ public class DiffTableViewer extends Composite {
                 return ADD_STATUS.ADD;
             }
         };
-        
+
         // заполняем сет элементов
         tree.flattenAlteredElements(elements, dbSource.getDbObject(), dbTarget.getDbObject(), false, predicate);
     }
@@ -822,20 +821,20 @@ public class DiffTableViewer extends Composite {
             updateCheckedLabel();
         }
     }
-    
+
     private void updateObjectsLabel() {
         lblObjectCount.setText(MessageFormat.format(
                 Messages.diffTableViewer_objects, elements.size()));
         lblObjectCount.getParent().layout();
     }
-    
+
     private void updateCheckedLabel() {
         lblCheckedCount.setText(MessageFormat.format(
                 Messages.DiffTableViewer_selected,
                 getCheckedElementsCount()));
         lblCheckedCount.getParent().layout();
     }
-    
+
     public int getCheckedElementsCount() {
         int count = 0;
         for (TreeElement el : elements) {
@@ -845,7 +844,7 @@ public class DiffTableViewer extends Composite {
         }
         return count;
     }
-    
+
     private void setSubTreeChecked(TreeElement element, boolean selected) {
         // Если элемент был проигнорирован, он будет в дереве, но его не будет в
         // таблице и выбор или снятие галочки не должно затрагивать статус
@@ -853,12 +852,12 @@ public class DiffTableViewer extends Composite {
         if (elements.contains(element)) {
             element.setSelected(selected);
         }
-        
+
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
         }
     }
-    
+
     private class IgnoresChangeListener implements IPropertyChangeListener {
 
         @Override
@@ -879,15 +878,15 @@ public class DiffTableViewer extends Composite {
             }
         }
     }
-    
+
     private class CheckStateListener implements ICheckStateListener {
-        
+
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             ((TreeElement)event.getElement()).setSelected(event.getChecked());
             updateCheckedLabel();
         }
-        
+
         public void setElementsChecked(List<?> elements, boolean state) {
             for (Object element : elements) {
                 ((TreeElement)element).setSelected(state);
@@ -896,25 +895,25 @@ public class DiffTableViewer extends Composite {
             updateCheckedLabel();
         }
     }
-    
+
     public void notifyExternalCheckListener() {
         for (ICheckStateListener list : programmaticCheckListeners) {
             list.checkStateChanged(null);
         }
     }
-    
+
     private static class TableViewerComparator extends ViewerComparator {
-        
+
         private static class SortingColumn {
-            
+
             private final Columns col;
             private final boolean desc;
-            
+
             public SortingColumn(Columns col, boolean desc) {
                 this.col = col;
                 this.desc = desc;
             }
-            
+
             @Override
             public boolean equals(Object obj) {
                 if (obj instanceof SortingColumn) {
@@ -923,19 +922,19 @@ public class DiffTableViewer extends Composite {
                     return false;
                 }
             }
-            
+
             @Override
             public int hashCode() {
                 return col.hashCode();
             }
         }
-        
-        private LinkedList<SortingColumn> sortOrder = new LinkedList<>();
+
+        private final LinkedList<SortingColumn> sortOrder = new LinkedList<>();
 
         public void clearSortList() {
             sortOrder.clear();
         }
-        
+
         public int getSwtDirection() {
             if (sortOrder.isEmpty() || !sortOrder.getLast().desc) {
                 return SWT.UP;
@@ -954,12 +953,12 @@ public class DiffTableViewer extends Composite {
                 sortOrder.addLast(c);
             }
         }
-        
+
         @Override
         public int compare(Viewer v, Object e1, Object e2) {
             TreeElement el1 = (TreeElement) e1;
             TreeElement el2 = (TreeElement) e2;
-            
+
             Iterator<SortingColumn> it = sortOrder.descendingIterator();
             while (it.hasNext()) {
                 SortingColumn c = it.next();
@@ -988,17 +987,17 @@ public class DiffTableViewer extends Composite {
                     return res;
                 }
             }
-            
+
             return 0;
         }
     }
-    
+
     private static class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
         private boolean useRegEx;
-        private Pattern regExPattern; 
-        
+        private Pattern regExPattern;
+
         public void setFilter(String value) {
             if (value == null || value.isEmpty()) {
                 filterName = null;
@@ -1012,11 +1011,11 @@ public class DiffTableViewer extends Composite {
                 }
             }
         }
-        
+
         public void setUseRegEx(Boolean useRegEx) {
             this.useRegEx = useRegEx;
         }
-        
+
         @Override
         public boolean select(Viewer viewer, Object parentElement,
                 Object element) {
@@ -1037,7 +1036,7 @@ public class DiffTableViewer extends Composite {
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
-            if (filter != null 
+            if (filter != null
                     && !filter.isEmpty()
                     && text != null) {
                 text = text.toLowerCase();
