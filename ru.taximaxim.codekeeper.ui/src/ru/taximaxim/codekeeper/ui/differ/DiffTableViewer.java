@@ -659,23 +659,16 @@ public class DiffTableViewer extends Composite {
                     int comma = elementString.lastIndexOf(',');
                     String elName;
                     DbObjType elType;
-                    if (comma != -1) {
+                    try {
                         elName = elementString.substring(0, comma);
-                        try {
-                            elType = DbObjType.valueOf(elementString.substring(comma + 1));
-                        } catch (IllegalArgumentException ex) {
-                            // invalid type string
-                            // log and try old (no type) algorithm
-                            Log.log(Log.LOG_WARNING, "Bad object type in selected set", ex);
-                            elName = elementString;
-                            elType = null;
-                        }
-                    } else {
-                        elName = elementString;
-                        elType = null;
+                        elType = DbObjType.valueOf(elementString.substring(comma + 1));
+                    } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
+                        Log.log(Log.LOG_WARNING,
+                                "Bad checked set entry: " + elementString, ex);
+                        continue;
                     }
                     for (TreeElement el : elements) {
-                        if ((elType == null || el.getType() == elType) && el.getName().equals(elName)) {
+                        if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
                             prevCheckedList.add(el);
                         }
                     }
@@ -692,7 +685,7 @@ public class DiffTableViewer extends Composite {
             List<String> checkedElements = new ArrayList<>();
             for (TreeElement element : elements) {
                 if (element.isSelected()) {
-                    checkedElements.add(element.getName() + ',' + element.getType().name());
+                    checkedElements.add(element.getQualifiedName() + ',' + element.getType().name());
                 }
             }
             try {

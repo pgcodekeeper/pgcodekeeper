@@ -6,12 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
@@ -20,12 +20,12 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 public class TreeElement {
 
     public abstract static class ListGeneratorPredicate {
-        
+
         public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
-        
+
         public abstract ADD_STATUS shouldAddToList(TreeElement el);
     }
-    
+
     public enum DiffSide {
         LEFT("delete"), RIGHT("new"), BOTH("edit");
         private String changeType;
@@ -33,47 +33,47 @@ public class TreeElement {
         private DiffSide(String changeType) {
             this.changeType = changeType;
         }
-        
+
         @Override
         public String toString() {
             return changeType;
         }
     }
-    
+
     private volatile int hashcode;
-    
+
     private final String name;
-    
+
     private final DbObjType type;
-    
+
     private final DiffSide side;
-    
+
     private boolean selected;
-    
+
     private TreeElement parent;
-    
-    private List<TreeElement> children = new ArrayList<>();
-    
+
+    private final List<TreeElement> children = new ArrayList<>();
+
     public String getName() {
         return name;
     }
-    
+
     public DbObjType getType() {
         return type;
     }
-    
+
     public DiffSide getSide() {
         return side;
     }
-    
+
     public List<TreeElement> getChildren() {
         return Collections.unmodifiableList(children);
     }
-    
+
     public TreeElement getParent() {
         return parent;
     }
-    
+
     public boolean isSelected() {
         return selected;
     }
@@ -87,64 +87,64 @@ public class TreeElement {
         this.type = type;
         this.side = side;
     }
-    
+
     public TreeElement(PgStatement statement, DiffSide side) {
         this.name = statement.getName();
         this.side = side;
         this.type = statement.getStatementType();
     }
-    
-    
+
+
     public boolean hasChildren() {
         return !children.isEmpty();
     }
-    
+
     public void addChild(TreeElement child) {
         if(child.parent != null) {
             throw new IllegalStateException(
                     "Cannot add a child that already has a parent!");
         }
-        
+
         child.parent = this;
         child.hashcode = 0;
         children.add(child);
     }
-    
+
     public TreeElement getChild(String name, DbObjType type) {
         for(TreeElement el : children) {
             if((type == null || el.type == type) && el.name.equals(name)) {
                 return el;
             }
         }
-        
+
         return null;
     }
-    
+
     public TreeElement getChild(String name) {
         return getChild(name, null);
     }
-    
+
     public TreeElement getChild(int index) {
         return children.get(index);
     }
-    
+
     public int countDescendants() {
         int descendants = 0;
         for(TreeElement sub : children) {
             descendants++;
             descendants += sub.countDescendants();
         }
-        
+
         return descendants;
     }
-    
+
     public int countChildren() {
         return children.size();
     }
-    
+
     /**
      * Gets corresponding {@link PgStatement} from Database model.
-     * 
+     *
      * @param db
      * @return
      */
@@ -153,18 +153,18 @@ public class TreeElement {
         // container (if root) and database end recursion
         // if container is not root - just pass through it
         case DATABASE:   return db;
-        
+
         // other elements just get from their parent, and their parent from a parent above them etc
         case EXTENSION:  return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
         case SCHEMA:     return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
-        
+
         case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
         case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
         case TYPE:          return ((PgSchema) parent.getPgStatement(db)).getType(name);
         case DOMAIN:      return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
-        
+
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
@@ -173,7 +173,7 @@ public class TreeElement {
             throw new IllegalStateException("Unknown element type: " + type);
         }
     }
-    
+
     /**
      * Ищет элемент в дереве
      * @param st
@@ -193,7 +193,7 @@ public class TreeElement {
     /**
      * создает коллекцию с измененными элементами
      */
-    public Collection<TreeElement> flattenAlteredElements(Collection<TreeElement> result, 
+    public Collection<TreeElement> flattenAlteredElements(Collection<TreeElement> result,
             PgDatabase dbSource, PgDatabase dbTarget, boolean onlySelected,
             ListGeneratorPredicate predicate) {
         ADD_STATUS addStatus = ADD_STATUS.ADD;
@@ -203,19 +203,19 @@ public class TreeElement {
         if (addStatus == ADD_STATUS.SKIP_SUBTREE) {
             return result;
         }
-        
+
         for (TreeElement child : getChildren()) {
             child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
         }
-        
+
         boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
         if ((onlySelected && !selected)
-                || type == DbObjType.DATABASE 
+                || type == DbObjType.DATABASE
                 || addStatus == ADD_STATUS.SKIP_THIS
                 || canCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
             return result;
         }
-        
+
         result.add(this);
         return result;
     }
@@ -230,7 +230,7 @@ public class TreeElement {
         }
         return copy;
     }
-    
+
     /**
      * возвращает копию элемента с измененными сторонами
      */
@@ -251,7 +251,7 @@ public class TreeElement {
         copy.setSelected(selected);
         return copy;
     }
-    
+
     /**
      * Принимает дерево и выбирает из него все выбранные элементы
      * @param root дерево
@@ -265,7 +265,7 @@ public class TreeElement {
             getSelected(child, result);
         }
     }
-    
+
     /**
      * начиная от текущего отмечает все элементы
      */
@@ -286,7 +286,7 @@ public class TreeElement {
         }
         return isSelected();
     }
-    
+
     @Override
     public int hashCode() {
         if (hashcode == 0) {
@@ -296,13 +296,13 @@ public class TreeElement {
             result = prime * result + ((side == null) ? 0 : side.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
             result = prime * result + getContainerQName().hashCode();
-            
+
             if (result == 0) {
                 ++result;
             }
             hashcode = result;
         }
-        
+
         return hashcode;
     }
 
@@ -319,10 +319,10 @@ public class TreeElement {
         }
         return false;
     }
-    
+
     public String getContainerQName() {
         String qname = "";
-        
+
         TreeElement par = this.parent;
         while (par != null) {
             if (par.getType() == DbObjType.DATABASE) {
@@ -332,20 +332,29 @@ public class TreeElement {
                     + (qname.isEmpty() ? qname : '.' + qname);
             par = par.getParent();
         }
-        
+
         return qname;
     }
-    
+
+    /**
+     * Note: the name of the object itself is not quoted due to it including function parameters.
+     * @return this element's qualified name
+     */
+    public String getQualifiedName() {
+        String qname = getContainerQName();
+        return qname.isEmpty() ? getName() : qname + '.' + getName();
+    }
+
     @Override
     public String toString() {
         return getName() == null ? "no name" : getName() + " " + side + " " + type;
     }
-    
+
     /**
      * устанавливает родителя, использовать только в случае с колонки, создается
      * связь для получения объекта из базы в одну сторону
      */
-    @Deprecated 
+    @Deprecated
     public void setParent(TreeElement el) {
         this.parent = el;
     }
