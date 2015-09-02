@@ -74,7 +74,7 @@ copy_option:
     | DELIMITER delimiter_character=identifier
     | NULL null_string=identifier
     | HEADER (boolean_val=truth_value)?
-    | QUOTE quote_character=identifier
+    | QUOTE_CHAR quote_character=identifier
     | ESCAPE escape_character=identifier
     | FORCE_QUOTE (column_references | MULTIPLY)
     | FORCE_NOT_NULL column_references
@@ -159,7 +159,7 @@ table_action
       | (set_def_column
         | drop_def
         | ((SET | DROP) NOT NULL) 
-        | SET STATISTICS integer=NUMBER
+        | SET STATISTICS integer=NUMBER_LITERAL
         | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
@@ -196,7 +196,7 @@ attribute_option_value
     ;
 
 table_attribute_option
-    :N_DISTINCT | N_DISTINCT_INHERITED
+    : N_DISTINCT | N_DISTINCT_INHERITED
     ;
 
 table_deferrable
@@ -211,8 +211,8 @@ function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
-      | COST execution_cost=NUMBER
-      | ROWS result_rows=NUMBER
+      | COST execution_cost=NUMBER_LITERAL
+      | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
     ;
 
@@ -789,30 +789,38 @@ if_exist_names_restrict_cascade
 identifier
   : (Identifier
   | QuotedIdentifier)
-  | DOUBLE_QUOTE? nonreserved_keywords DOUBLE_QUOTE? 
+  | DOUBLE_QUOTE? valid_identifier_tokens DOUBLE_QUOTE? 
   ;
 
 /*
- * Contains non-reserved keywords (http://www.postgresql.org/docs/9.3/static/sql-keywords-appendix.html)
- * and arbitrary tokenized words that are also valid identifiers.
- * 
- * TODO Commented lines are for compatibility with older version (basically just-in-case)
- * TODO 3 instances of "reserved (can be function or type)" words
- */
-nonreserved_keywords
-  : ADD
+  Tokens that can be used as identifiers.
+  Keywords of type "reserved (can be function of type)" are considered invalid identifiers (for now at least).
+*/
+valid_identifier_tokens
+  : ABORT
+  | ABSOLUTE
+  | ACCESS
+  | ACTION
+  | ADD
   | ADMIN
   | AFTER
   | AGGREGATE
+  | ALIGNMENT
   | ALSO
   | ALTER
   | ALWAYS
-  | ARRAY
+  | ASSERTION
+  | ASSIGNMENT
+  | AT
   | ATTRIBUTE
+//  | AUTHORIZATION
   | AVG
+  | BACKWARD
   | BEFORE
+  | BEGIN
   | BETWEEN
   | BIGINT
+//  | BINARY
   | BIT
   | BLOB
   | BOOL
@@ -821,46 +829,65 @@ nonreserved_keywords
   | BYTEA
   | CACHE
   | CALLED
+  | CANONICAL
   | CASCADE
+  | CASCADED
+  | CATALOG
   | CATEGORY
   | CENTURY
+  | CHAIN
   | CHAR
   | CHARACTER
-  | CHECK
+  | CHARACTERISTICS
+  | CHECKPOINT
   | CLASS
+  | CLOSE
   | CLUSTER
   | COALESCE
+  | COLLATABLE
+//  | COLLATION
   | COLLECT
-  | COLUMN
   | COMMENT
   | COMMENTS
   | COMMIT
   | COMMITTED
-  | CONCURRENTLY // reserved (can be function or type)
+//  | CONCURRENTLY
   | CONFIGURATION
   | CONNECT
+  | CONNECTION
   | CONSTRAINTS
+  | CONTENT
+  | CONTINUE
   | CONVERSION
   | COPY
   | COST
   | COUNT
+//  | CROSS
+  | CSV
   | CUBE
   | CURRENT
+//  | CURRENT_SCHEMA
+  | CURSOR
   | CYCLE
   | DATA
   | DATABASE
   | DATE
   | DAY
+  | DEALLOCATE
   | DEC
   | DECADE
   | DECIMAL
+  | DECLARE
   | DEFAULTS
   | DEFERRED
   | DEFINER
   | DELETE
   | DELIMITER
+  | DELIMITERS
   | DICTIONARY
   | DISABLE
+  | DISCARD
+  | DOCUMENT
   | DOMAIN
   | DOUBLE
   | DOW
@@ -870,6 +897,8 @@ nonreserved_keywords
   | ELEMENT
   | ENABLE
   | ENCODING
+  | ENCRYPTED
+  | END_EXEC
   | ENUM
   | EPOCH
   | ESCAPE
@@ -877,8 +906,10 @@ nonreserved_keywords
   | EVERY
   | EXCLUDE
   | EXCLUDING
+  | EXCLUSIVE
   | EXECUTE
   | EXISTS
+  | EXPLAIN
   | EXTENDED
   | EXTENSION
   | EXTERNAL
@@ -889,18 +920,30 @@ nonreserved_keywords
   | FLOAT
   | FLOAT4
   | FLOAT8
+  | FOLLOWING
+  | FORCE
+  | FORCE_NOT_NULL
+  | FORCE_QUOTE
   | FORMAT
+  | FORWARD
+//  | FREEZE
+//  | FULL
   | FUNCTION
+  | FUNCTIONS
   | FUSION
   | GLOBAL
-  | GROUPING
+  | GRANTED
+  | GREATEST
   | HANDLER
-  | HASH
   | HEADER
+  | HOLD
   | HOUR
+  | IDENTITY
   | IF
+//  | ILIKE
   | IMMEDIATE
   | IMMUTABLE
+  | IMPLICIT
   | INCLUDING
   | INCREMENT
   | INDEX
@@ -910,8 +953,10 @@ nonreserved_keywords
   | INHERIT
   | INHERITS
   | INLINE
-//  | INOUT
+//  | INNER
+  | INOUT
   | INPUT
+  | INSENSITIVE
   | INSERT
   | INSTEAD
   | INT
@@ -920,25 +965,39 @@ nonreserved_keywords
   | INT4
   | INT8
   | INTEGER
+  | INTERNALLENGTH
   | INTERSECTION
   | INTERVAL
   | INVOKER
+//  | IS
   | ISCACHABLE
+//  | ISNULL
   | ISODOW
   | ISOLATION
   | ISOYEAR
   | ISSTRICT
+//  | JOIN
   | KEY
+  | LABEL
   | LANGUAGE
   | LARGE
   | LAST
-  | LESS
+  | LC_COLLATE
+  | LC_CTYPE
+  | LEAKPROOF
+  | LEAST
+//  | LEFT
   | LEVEL
-  | LIST
+//  | LIKE
+  | LISTEN
+  | LOAD
   | LOCAL
   | LOCATION
+  | LOCK
   | MAIN
+  | MAPPING
   | MATCH
+  | MATERIALIZED
   | MAX
   | MAXVALUE
   | MICROSECONDS
@@ -947,50 +1006,79 @@ nonreserved_keywords
   | MIN
   | MINUTE
   | MINVALUE
+  | MODE
   | MONTH
+  | MOVE
+  | NAME
+  | NAMES
   | NATIONAL
+//  | NATURAL
   | NCHAR
+  | NEXT
   | NO
   | NONE
   | NOTHING
+  | NOTIFY
+//  | NOTNULL
+  | NOWAIT
   | NULLIF
   | NULLS
-  | NUMBER
   | NUMERIC
+  | N_DISTINCT
+  | N_DISTINCT_INHERITED
   | OBJECT
   | OF
+  | OFF
   | OIDS
-  | ON
-  | ONLY
   | OPERATOR
   | OPTION
   | OPTIONS
-//  | OUT
+  | OUT
+//  | OUTER
   | OUTPUT
-  | OVER // reserved (can be function or type)
-  | OVERWRITE
+//  | OVER
+//  | OVERLAPS
+  | OVERLAY
   | OWNED
   | OWNER
   | PARSER
   | PARTIAL
   | PARTITION
-  | PARTITIONS
+  | PASSEDBYVALUE
+  | PASSING
+  | PASSWORD
   | PLAIN
+  | PLANS
+  | POSITION
+  | PRECEDING
   | PRECISION
+  | PREFERRED
+  | PREPARE
+  | PREPARED
   | PRESERVE
+  | PRIOR
   | PRIVILEGES
   | PROCEDURAL
   | PROCEDURE
+  | PROGRAM
   | PUBLIC
-  | PURGE
   | QUARTER
   | QUOTE
   | RANGE
   | READ
   | REAL
+  | REASSIGN
+  | RECEIVE
+  | RECHECK
   | RECURSIVE
+  | REF
+  | REFRESH
+  | REGCLASS
   | REGCONFIG
   | REGEXP
+  | REINDEX
+  | RELATIVE
+  | RELEASE
   | RENAME
   | REPEATABLE
   | REPLACE
@@ -1000,44 +1088,59 @@ nonreserved_keywords
   | RESTRICT
   | RETURNS
   | REVOKE
+//  | RIGHT
   | RLIKE
   | ROLE
+  | ROLLBACK
   | ROLLUP
-//  | ROW
+  | ROW
   | ROWS
   | RULE
+  | SAVEPOINT
   | SCHEMA
+  | SCROLL
   | SEARCH
   | SECOND
   | SECURITY
+  | SEND
   | SEQUENCE
   | SEQUENCES
   | SERIALIZABLE
   | SERVER
   | SESSION
   | SET
-//  | SETOF
-  | SIMILAR // reserved (can be function or type)
+  | SETOF
+  | SHARE
+  | SHOW
+//  | SIMILAR
   | SIMPLE
   | SMALLINT
+  | SNAPSHOT
   | STABLE
+  | STANDALONE
   | START
   | STATEMENT
   | STATISTICS
   | STDDEV_POP
   | STDDEV_SAMP
   | STDIN
+  | STDOUT
   | STORAGE
   | STRICT
-  | SUBPARTITION
+  | STRIP
+  | SUBSTRING
+  | SUBTYPE
+  | SUBTYPE_DIFF
+  | SUBTYPE_OPCLASS
   | SUM
+  | SYSID
+  | SYSTEM
   | TABLES
   | TABLESPACE
   | TEMP
   | TEMPLATE
   | TEMPORARY
   | TEXT
-  | THAN
   | TIME
   | TIMESTAMP
   | TIMESTAMPTZ
@@ -1046,21 +1149,27 @@ nonreserved_keywords
   | TIMEZONE_HOUR
   | TIMEZONE_MINUTE
   | TINYINT
-  | TO
   | TRANSACTION
+  | TREAT
   | TRIGGER
   | TRIM
   | TRUNCATE
   | TRUSTED
   | TYPE
   | TYPES
+  | TYPMOD_IN
+  | TYPMOD_OUT
+  | UNBOUNDED
   | UNCOMMITTED
+  | UNENCRYPTED
   | UNKNOWN
+  | UNLISTEN
   | UNLOGGED
+  | UNTIL
   | UPDATE
   | USAGE
-  | USER
   | UUID
+  | VACUUM
   | VALID
   | VALIDATE
   | VALIDATOR
@@ -1073,17 +1182,29 @@ nonreserved_keywords
   | VARYING
   | VAR_POP
   | VAR_SAMP
+//  | VERBOSE
   | VERSION
   | VIEW
   | VOID
   | VOLATILE
   | WEEK
-  | WINDOW
+  | WHITESPACE
   | WITHOUT
   | WORK
   | WRAPPER
   | WRITE
+  | XML
+  | XMLATTRIBUTES
+  | XMLCONCAT
+  | XMLELEMENT
+  | XMLEXISTS
+  | XMLFOREST
+  | XMLPARSE
+  | XMLPI
+  | XMLROOT
+  | XMLSERIALIZE
   | YEAR
+  | YES
   | ZONE
   ;
 
@@ -1163,7 +1284,7 @@ character_string_type
   ;
 
 type_length
-  : LEFT_PAREN NUMBER RIGHT_PAREN
+  : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
   ;
 
 binary_large_object_string_type
@@ -1199,7 +1320,7 @@ approximate_numeric_type
   ;
 
 precision_param
-  : LEFT_PAREN precision=NUMBER (COMMA scale=NUMBER)? RIGHT_PAREN
+  : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
   ;
 
 boolean_type
@@ -1270,7 +1391,7 @@ function_calls_args
 */
 
 unsigned_numeric_literal
-  : NUMBER
+  : NUMBER_LITERAL
   | REAL_NUMBER
   ;
 
@@ -1359,8 +1480,17 @@ value_expression
   ;
 
 array_expression
+    : array_brackets
+    | array_parens
+    ;
+
+array_brackets
     : ARRAY LEFT_BRACKET value_expression_primary_cast (COMMA value_expression_primary_cast)* RIGHT_BRACKET
     ;
+
+array_parens
+    : ARRAY LEFT_PAREN query_expression RIGHT_PAREN
+    ; 
 
 all_array
     : ALL LEFT_PAREN array_expression RIGHT_PAREN
@@ -1498,7 +1628,7 @@ is_clause
   ;
 
 truth_value
-  : TRUE | FALSE | UNKNOWN
+  : TRUE | FALSE | UNKNOWN | ON | OFF
   ;
 
 boolean_primary
@@ -1702,11 +1832,11 @@ simple_table
   | explicit_table
   ;
 
-  with_recursive
+with_recursive
   : WITH RECURSIVE? with_query_name (COMMA with_query_name)*
   ;
 
-  with_query_name
+with_query_name
   : query_alias=identifier column_references? AS LEFT_PAREN query=query_expression RIGHT_PAREN
   ;
 
