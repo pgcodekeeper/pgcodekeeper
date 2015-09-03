@@ -246,7 +246,13 @@ public final class Messages extends NLS {
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
     public static String DiffPaneViewer_project;
+    public static String DiffPresentationPane_any_file_filter;
+
     public static String DiffPresentationPane_attention;
+
+    public static String DiffPresentationPane_bad_dump_file;
+
+    public static String DiffPresentationPane_cannot_get_changes;
 
     public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
 
@@ -254,6 +260,8 @@ public final class Messages extends NLS {
     public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;
+
+    public static String DiffPresentationPane_sql_file_filter;
 
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;

@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -85,7 +86,7 @@ public abstract class DiffPresentationPane extends Composite {
     private final Button btnGetChanges;
     private final Button btnFlipDbPicker;
     protected final DbPicker dbSrc;
-    private Text dumpDir;
+    private final Text dumpDir;
     private final Group grpDump;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
@@ -345,37 +346,40 @@ public abstract class DiffPresentationPane extends Composite {
                 containerUpper.layout();
             }
         });
+
         grpDump = new Group(containerSrc, SWT.NONE);
         grpDump.setText(Messages.newProjWizard_dump_file_source_settings);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd.exclude = true;
-        grpDump.setLayoutData(gd);
         grpDump.setLayout(new GridLayout(2, false));
-        grpDump.setVisible(false);
+        grpDump.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
-        Label l1 = new Label(grpDump, SWT.NONE);
-        l1.setText(Messages.path_to_db_schema_dump);
+        l = new Label(grpDump, SWT.NONE);
+        l.setText(Messages.path_to_db_schema_dump);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        l1.setLayoutData(gd);
+        l.setLayoutData(gd);
 
         dumpDir = new Text(grpDump, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        dumpDir.setLayoutData(gd);
+        dumpDir.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Button dumpDirBtn = new Button(grpDump, SWT.PUSH);
         dumpDirBtn.setText(Messages.browse);
         dumpDirBtn.addSelectionListener(new SelectionAdapter() {
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(containerSrc.getShell());
+                FileDialog dialog = new FileDialog(getShell());
+                dialog.setText(Messages.choose_dump_file_with_changes);
+                dialog.setFilterExtensions(new String[]{"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(new String[]{
+                        Messages.DiffPresentationPane_sql_file_filter,
+                        Messages.DiffPresentationPane_any_file_filter});
                 String filename = dialog.open();
                 if (filename != null) {
                     dumpDir.setText(filename);
                 }
             }
         });
+
         dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs, false);
         dbSrc.setText(Messages.db_source);
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
@@ -465,7 +469,7 @@ public abstract class DiffPresentationPane extends Composite {
             case TRIGGER:
                 el = parentEl;
                 String schemaName = ModelExporter.getExportedFilename(
-                            parentEl.getParent().getPgStatement(projectDb));
+                        parentEl.getParent().getPgStatement(projectDb));
                 file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
                 break;
             default:
@@ -559,10 +563,6 @@ public abstract class DiffPresentationPane extends Composite {
         ((GridData) grpDump.getLayoutData()).exclude = show;
 
         containerSrc.layout(false);
-//        ((GridData) dbSrc.getLayoutData()).exclude = !show;
-//        dbSrc.setVisible(show);
-//
-//        dbSrc.getParent().layout();
     }
 
     private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
@@ -576,7 +576,13 @@ public abstract class DiffPresentationPane extends Composite {
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             String dumpfile = dumpDir.getText();
-            if (dumpfile == null) {
+            File dump = new File(dumpfile);
+            if (!dump.isFile()) {
+                MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+                mb.setText(Messages.DiffPresentationPane_cannot_get_changes);
+                mb.setMessage(MessageFormat.format(
+                        Messages.DiffPresentationPane_bad_dump_file, dumpfile));
+                mb.open();
                 return false;
             }
             dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),

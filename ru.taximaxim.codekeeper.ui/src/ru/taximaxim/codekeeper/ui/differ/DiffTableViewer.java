@@ -664,7 +664,7 @@ public class DiffTableViewer extends Composite {
                         elType = DbObjType.valueOf(elementString.substring(comma + 1));
                     } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
                         Log.log(Log.LOG_WARNING,
-                                "Bad checked set entry: " + elementString, ex);
+                                "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
                         continue;
                     }
                     for (TreeElement el : elements) {
