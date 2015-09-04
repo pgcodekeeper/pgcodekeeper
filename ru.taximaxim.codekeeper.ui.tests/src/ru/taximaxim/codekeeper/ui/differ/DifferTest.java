@@ -90,9 +90,9 @@ public class DifferTest {
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource =
-                DbSource.fromFile(true, true, sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
+                DbSource.fromFile(true, sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         DbSource dbTarget =
-                DbSource.fromFile(true, true, targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
+                DbSource.fromFile(true, targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
 
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
@@ -148,16 +148,16 @@ abstract class DifferData{
         this.caseNumber = caseNumber;
     }
 
-    final String getPredefinedDirectDiff() throws IOException{
+    final String getPredefinedDirectDiff() throws IOException {
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_direct_diff.sql"));
     }
 
-    final String getPredefinedReverseDiff() throws IOException{
+    final String getPredefinedReverseDiff() throws IOException {
         return readResourceToString(DifferTest.class.getResourceAsStream(caseNumber + "_reverse_diff.sql"));
     }
 
     private final String readResourceToString(InputStream resourceStream)
-            throws IOException{
+            throws IOException {
         StringBuilder script = new StringBuilder();
         try(InputStreamReader isr = new InputStreamReader(resourceStream, "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)) {

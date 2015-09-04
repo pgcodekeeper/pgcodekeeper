@@ -10,9 +10,9 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import cz.startnet.utils.pgdiff.parsers.Parser;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -93,7 +94,7 @@ public abstract class ParserAbstract {
         }
         return removeQuotes(name.identifier(i));
     }
-     
+    
     /**
      * Remove quotes from identifier
      * @param name identifier context
@@ -102,7 +103,7 @@ public abstract class ParserAbstract {
     public static String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
         // FIXME single identifier doesn't require splitNames
-        String unquotedName = ParserUtils.splitNames(identifier)[0];
+        String unquotedName = PgDiffUtils.splitNames(identifier)[0];
         
         return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
     }
@@ -177,8 +178,7 @@ public abstract class ParserAbstract {
                 }
             }
             if (colCtx.datatype != null) {
-//                col.setType(getFullCtxText(colCtx.datatype));
-                col.setType(getWrongColumn(getFullCtxText(colCtx)));
+                col.setType(getWrongColumn(colCtx));
             }
         }
 
@@ -190,12 +190,37 @@ public abstract class ParserAbstract {
      * @param fullCtxText
      * @return type of column
      */
-    private String getWrongColumn(String fullCtxText) {
-        Parser par = new Parser(fullCtxText);
-        par.parseIdentifier();
+    private String getWrongColumn(Table_column_definitionContext colCtx) {
+        ColumnDefinition cd = new ColumnDefinition();
+        ParseTreeWalker.DEFAULT.walk(cd, colCtx);
+        
         PgColumn col = new PgColumn("");
-        col.parseDefinition(par.getRest(), new StringBuilder(1));
+        col.parseDefinition(getFullCtxText(colCtx.datatype) + " " + cd.getDefinition(), new StringBuilder(1));
         return col.getType();
+    }
+
+    private static class ColumnDefinition extends SQLParserBaseListener {
+        StringBuilder sb = new StringBuilder();
+        @Override
+        public void exitCollate_identifier(Collate_identifierContext ctx) {
+            sb.append(getFullCtxText(ctx)).append(" ");
+        }
+        @Override
+        public void exitWith_options(With_optionsContext ctx) {
+            sb.append(getFullCtxText(ctx)).append(" ");
+        }
+        @Override
+        public void exitConstraint_common(Constraint_commonContext ctx) {
+            sb.append(getFullCtxText(ctx)).append(" ");
+        }
+        public String getDefinition() {
+            if (sb.length() > 0) {
+                // удалить последний пробел
+                sb.setLength(sb.length() - 1);
+                return sb.toString();
+            }
+            return null;
+        }
     }
 
     protected String getSequence(Value_expressionContext default_expr) {
@@ -333,8 +358,6 @@ public abstract class ParserAbstract {
     
     /**
      * Вычитать PrimaryKey или Unique со списком колонок
-     * @param tblName 
-     * @param scmName 
      */
     private void setPrimaryUniq(Table_unique_prkeyContext ctx,
             PgConstraint constr, String scmName, String tblName) {
@@ -375,12 +398,9 @@ public abstract class ParserAbstract {
     }
     /**
      * Извлекает правильное значение для максимального значения сиквенса
-     * @param inc
-     * @param maxValue
-     * @return
      */
     public static String getMaxValue(long inc, String maxValue) {
-        if (maxValue ==null) {
+        if (maxValue == null) {
             return null;
         }
         long max = Long.parseLong(maxValue);
@@ -393,12 +413,9 @@ public abstract class ParserAbstract {
     
     /**
      * Извлекает правильное значение для минимального значения сиквенса
-     * @param inc
-     * @param minValue
-     * @return
      */
     public static String getMinValue(long inc, String minValue) {
-        if (minValue ==null) {
+        if (minValue == null) {
             return null;
         }
         long min = Long.parseLong(minValue);

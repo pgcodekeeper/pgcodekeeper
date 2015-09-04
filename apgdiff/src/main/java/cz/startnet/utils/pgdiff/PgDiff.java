@@ -24,7 +24,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -70,9 +69,9 @@ public final class PgDiff {
             final InputStream newInputStream) {
         try {
             PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                    oldInputStream, arguments, ParserClass.getAntlr(null, 1));
+                    oldInputStream, arguments, null, 1);
             PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                    newInputStream, arguments, ParserClass.getAntlr(null, 1));
+                    newInputStream, arguments, null, 1);
             diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
         } catch (InterruptedException ex) {
             Log.log(Log.LOG_ERROR, "Parser cancelled unexpectedly!", ex);
@@ -94,10 +93,10 @@ public final class PgDiff {
         try {
             if(format.equals("dump")) {
                 return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-                        arguments, ParserClass.getAntlr(null, 1));
+                        arguments, null, 1);
             } else if(format.equals("parsed")) {
                 return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                        arguments, ParserClass.getAntlr(null, 1));
+                        arguments, null, 1, null);
             } else if(format.equals("db")) {
                 throw new UnsupportedOperationException("DB connection is not yet implemented!");
             }

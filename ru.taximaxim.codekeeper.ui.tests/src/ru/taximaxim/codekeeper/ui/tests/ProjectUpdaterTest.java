@@ -32,7 +32,6 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -52,12 +51,12 @@ public class ProjectUpdaterTest {
             PgDiffArguments args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, args,
-                    ParserClass.getAntlr(null, 1));
+                    null, 1);
             
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, args,
-                    ParserClass.getAntlr(null, 1));
+                    null, 1);
         }
         
         workingDir = new TempDir("test_new"); //$NON-NLS-1$

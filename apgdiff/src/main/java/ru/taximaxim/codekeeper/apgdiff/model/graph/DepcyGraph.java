@@ -12,7 +12,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -211,8 +211,8 @@ public class DepcyGraph {
 
         createPgStatementToType(
                 new GenericColumn(
-                        ParserUtils.getSecondObjectName(typeName),
-                        ParserUtils.getObjectName(typeName), null),
+                        PgDiffUtils.getSecondObjectName(typeName),
+                        PgDiffUtils.getObjectName(typeName), null), 
                 schema, statement);
     }
 
@@ -360,8 +360,6 @@ public class DepcyGraph {
 
     /**
      * От триггера к функции, таблице, колонкам
-     * @param table
-     * @param schema
      */
     private void createTriggersToObjs(PgTable table, PgSchema schema) {
         for (PgTrigger trigger : table.getTriggers()) {
@@ -370,7 +368,7 @@ public class DepcyGraph {
 
             String funcDef = trigger.getFunctionSignature();
             PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
-                    ParserUtils.getObjectName(funcDef));
+                    PgDiffUtils.getObjectName(funcDef));
             if (func != null) {
                 graph.addVertex(func);
                 graph.addEdge(trigger, func);
@@ -387,7 +385,7 @@ public class DepcyGraph {
     private void createTableToSequences(PgTable table, PgSchema schema) {
         for (String seqName : table.getSequences()) {
             PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
-                    ParserUtils.getObjectName(seqName));
+                    PgDiffUtils.getObjectName(seqName));
             if (seq != null) {
                 graph.addVertex(seq);
                 graph.addEdge(table, seq);
@@ -395,8 +393,7 @@ public class DepcyGraph {
         }
     }
 
-    private void createFkeyToReferenced(PgTable table)
-            throws PgCodekeeperException {
+    private void createFkeyToReferenced(PgTable table) throws PgCodekeeperException {
         for (PgConstraint cons : table.getConstraints()) {
             graph.addVertex(cons);
             graph.addEdge(cons, table);
@@ -461,7 +458,7 @@ public class DepcyGraph {
      * @return схема, содержащая объект, либо текущая схема
      */
     private PgSchema getSchemaForObject(PgSchema currSchema, String objQualifiedName) {
-        String schemaName = ParserUtils.getSecondObjectName(objQualifiedName);
+        String schemaName = PgDiffUtils.getSecondObjectName(objQualifiedName);
         PgSchema schemaToSearch = null;
         if (schemaName != null) {
             schemaToSearch = db.getSchema(schemaName);

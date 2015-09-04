@@ -112,8 +112,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
-                        DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj),
-                        pageDiff.getTargetDbSource(proj));
+                        DbSource.fromProject(proj), pageDiff.getTargetDbSource(proj));
 
                 try {
                     getContainer().run(true, true, treediffer);
@@ -254,8 +253,7 @@ class PageDiff extends WizardPage implements Listener {
 
         switch (getTargetType()) {
         case DB:
-            dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+            dbs = DbSource.fromDb(pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
@@ -264,20 +262,17 @@ class PageDiff extends WizardPage implements Listener {
 
         case JDBC:
             dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(),
-                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone(),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    getDbPass(), getDbName(), getTargetEncoding(), getTargetTimezone(),
                     pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
             break;
 
         case DUMP:
-            dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+            dbs = DbSource.fromFile(pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
-            dbs = DbSource.fromDirTree(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+            dbs = DbSource.fromDirTree(pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     getProjPath(), getTargetEncoding());
             break;
 

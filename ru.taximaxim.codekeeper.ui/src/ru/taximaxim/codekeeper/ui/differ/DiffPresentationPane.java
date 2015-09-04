@@ -572,7 +572,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
 
         DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj);
+        dbsProj = DbSource.fromProject(proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             String dumpfile = dumpDir.getText();
@@ -585,16 +585,14 @@ public abstract class DiffPresentationPane extends Composite {
                 mb.open();
                 return false;
             }
-            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+            dbsRemote = DbSource.fromFile(projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     dumpfile, proj.getProjectCharset());
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
-                    projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+            dbsRemote = DbSource.fromDb(projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
@@ -611,7 +609,6 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbName().getText(),
                     proj.getProjectCharset(),
                     projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                    mainPrefs.getBoolean(PREF.USE_ANTLR),
                     projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
             break;
         default:

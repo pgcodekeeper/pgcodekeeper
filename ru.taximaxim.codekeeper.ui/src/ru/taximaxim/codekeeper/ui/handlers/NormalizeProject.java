@@ -20,10 +20,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
@@ -57,8 +55,7 @@ public class NormalizeProject extends AbstractHandler {
                 SubMonitor mon = SubMonitor.convert(monitor, 
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
-                    PgDatabase db = DbSource.fromProject(Activator.getDefault()
-                            .getPreferenceStore().getBoolean(PREF.USE_ANTLR), proj)
+                    PgDatabase db = DbSource.fromProject(proj)
                                     .get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();

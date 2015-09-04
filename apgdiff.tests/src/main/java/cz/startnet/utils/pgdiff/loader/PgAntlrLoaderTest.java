@@ -3,7 +3,7 @@
  *
  * Distributed under MIT license
  */
-package cz.startnet.utils.pgdiff.parsers.antlr;
+package cz.startnet.utils.pgdiff.loader;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,9 +21,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoaderTest;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -146,8 +143,8 @@ public class PgAntlrLoaderTest {
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
-                ParserClass.getAntlr(null, 1));
+                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
+                null, 1);
 
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {
@@ -188,8 +185,8 @@ public class PgAntlrLoaderTest {
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
-                ParserClass.getAntlr(null, 1));
+                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
+                null, 1);
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
@@ -203,7 +200,7 @@ public class PgAntlrLoaderTest {
             args.setIgnoreSlonyTriggers(true);
             args.setOutputIgnoredStatements(true);
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), args, ParserClass.getAntlr(null, 1));
+                    exportDir.toString(), args, null, 1, null);
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex +

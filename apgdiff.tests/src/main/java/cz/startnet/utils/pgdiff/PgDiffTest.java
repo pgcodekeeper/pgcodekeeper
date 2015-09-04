@@ -22,7 +22,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -326,11 +325,11 @@ public class PgDiffTest {
         PgDatabase dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PgDiffTest.class.getResourceAsStream(
                         fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL),
-                arguments, ParserClass.getAntlr(null, 0));
+                arguments, null, 0);
         PgDatabase dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PgDiffTest.class.getResourceAsStream(
                         fileNameTemplate + FILES_POSTFIX.NEW_SQL),
-                arguments, ParserClass.getAntlr(null, 0));
+                arguments, null, 0);
 
         runDiffSame(dbOld);
         runDiffSame(dbNew);

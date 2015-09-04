@@ -18,7 +18,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -60,7 +59,6 @@ abstract class TreeElementCreator {
 public class DepcyTreeExtenderTest {
     
     private final TreeElementCreator predefined;
-    private final ParserClass parserType = ParserClass.getAntlr(null, 1);
     
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
@@ -71,10 +69,10 @@ public class DepcyTreeExtenderTest {
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         this.dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(predefined.getFilename()),
-                args, parserType);
+                args, null, 1);
         this.dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(predefined.getTargetFileName()),
-                args, parserType);
+                args, null, 1);
     }
 
     /**

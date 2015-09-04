@@ -21,7 +21,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -113,12 +112,12 @@ public class PartialExporterTest {
         args.setInCharsetName(UTF_8);
         dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(sourceFilename),
-                args, ParserClass.getLegacy(null, 1));
+                args, null, 1);
         args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(targetFilename),
-                args, ParserClass.getLegacy(null, 1));
+                args, null, 1);
 
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);
