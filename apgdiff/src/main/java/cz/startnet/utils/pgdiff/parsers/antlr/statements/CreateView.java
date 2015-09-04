@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Nonparenthesized_value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Query_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_function_specificationContext;
@@ -174,6 +175,16 @@ public class CreateView extends ParserAbstract {
         }
 
         @Override
+        public Query_expressionContext visitNonparenthesized_value_expression_primary(
+                Nonparenthesized_value_expression_primaryContext ctx) {
+            if (ctx.unsigned_value_specification() != null) {
+                // mark processing of a literal with an empty column
+                columns.add(new GenericColumn(null));
+            }
+            return visitChildren(ctx);
+        }
+
+        @Override
         public Query_expressionContext visitName_or_func_calls(
                 Name_or_func_callsContext ctx) {
             if (ctx.function_calls_paren() != null) {
@@ -223,7 +234,11 @@ public class CreateView extends ParserAbstract {
                     }
                 }
             } else {
-                tableAliases.put(aliasName, columns.get(columns.size() - 1));
+                GenericColumn lastCol = columns.get(columns.size() - 1);
+                if (lastCol.schema != null || lastCol.table != null || lastCol.column != null) {
+                    // empty column means this alias is for a literal column
+                    tableAliases.put(aliasName, lastCol);
+                }
             }
             return visitChildren(ctx);
         }
@@ -242,13 +257,14 @@ public class CreateView extends ParserAbstract {
                 }
             }
 
-            Iterator<GenericColumn> iter = columns.iterator();
             List<GenericColumn> newColumns = new ArrayList<>();
-            while (iter.hasNext()) {
-                GenericColumn col = iter.next();
-                // удаляем алиасы из подзапросов
+            for (GenericColumn col : columns) {
+                // не добавляем маркер колонки-литерала
+                if (col.schema == null && col.table == null && col.column == null) {
+                    continue;
+                }
+                // не добавляем алиасы из подзапросов
                 if (aliasNames.contains(col.table)) {
-                    iter.remove();
                     continue;
                 }
                 switch (col.getType()) {
