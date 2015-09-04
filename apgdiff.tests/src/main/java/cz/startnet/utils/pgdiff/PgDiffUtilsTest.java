@@ -1,7 +1,7 @@
 /**
  * Copyright 2010 StartNet s.r.o.
  */
-package cz.startnet.utils.pgdiff.parsers;
+package cz.startnet.utils.pgdiff;
 
 import org.hamcrest.core.IsEqual;
 import org.junit.Assert;
@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  *
  * @author fordfrog
  */
-public class ParserUtilsTest {
+public class PgDiffUtilsTest {
 // SONAR-OFF
     @Test(timeout = 1000)
     public void testParseSchemaBothQuoted() {
