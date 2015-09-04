@@ -143,8 +143,7 @@ implements IExecutableExtension, INewWizard {
                 } catch (InvocationTargetException ex) {
                     props.deleteFromWorkspace();
                     ExceptionNotifier.notifyDefault(
-                            Messages.newProjWizard_error_in_initializing_repo_from_source,
-                            ex);
+                            Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
                     return false;
                 } catch (InterruptedException ex) {
                     // cancelled
