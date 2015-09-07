@@ -38,21 +38,45 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
  *
  * DELETED (exist in Source only):
  *      (TABLE)         public.rep2_statistics
+ *      (CONSTRAINT)    public.rep2_statistics.rep2_statistics_pkey
+ *      (SEQUENCE)      public.rep2_statistics_id_statistics_seq
+ *
  *      (CONSTRAINT)    public.rep2_workpool_data.pk_rep2_workpool_data
- *      (TRIGGER)       public.tz_worker_group.trd_tz_worker_group (GROUP: table left)
+ *
+ *      (TRIGGER)       public.tz_worker_group.trd_tz_worker_group (GROUP: table stays)
+ *
  *      (FUNCTION)      public.autocategorydel(integer)
  *      (FUNCTION)      public.atsqueuedel(integer, integer, integer) (GROUP: 2 same named funcs left)
+ *
  *      (FUNCTION)      public.test(integer)
  *      (FUNCTION)      public.test()
+ *
  *      (TABLE)         public.test_table
+ *      (INDEX)         public.test_table.idx_test_table_id
+ *      (TRIGGER)       public.test_table.tri_test_table
+ *      (CONSTRAINT)    public.test_table.constr_test
+ *
  *      (SCHEMA)        audit
  *      (TABLE)         audit.logged_actions
+ *      (INDEX)         audit.logged_actions.logged_actions_action_idx
+ *      (INDEX)         audit.logged_actions.logged_actions_action_tstamp_idx
+ *      (INDEX)         audit.logged_actions.logged_actions_schema_table_idx
+ *      (CONSTRAINT)    audit.logged_actions.logged_actions_action_check
  *      (TABLE)         audit.tz_audit_201305
+ *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_c_date
+ *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_id
+ *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_id_obj
+ *      (CONSTRAINT)    audit.tz_audit_201305.chk_jdbc_noset
+ *      (CONSTRAINT)    audit.tz_audit_201305.chk_tz_audit_201305
+ *      (CONSTRAINT)    audit.tz_audit_201305.tz_audit_201305_pkey
  *
  * MODIFIED:
  *      (TABLE)         public.rep2_workpool_data
  *      (TABLE)         public.table1
+ *      (INDEX)         public.table1.idx_table1
  *      (CONSTRAINT)    public.table1.chk_table1 (GROUP: table1 changed as well)
+ *      (TABLE)         public.t_auto_mark
+ *      (TABLE)         public.tz_worker_group
  *
  * NEW (exist in Target only):
  *      (FUNCTION)      public.automarkdel_new(integer)
@@ -60,7 +84,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
  *      (SCHEMA)        newschema
  *      (CONSTRAINT)    public.t_auto_mark.chk_t_auto_mark (GROUP: table exists)
  *      (VIEW)          public.v_auto_mark_two
- *      (FUNCTION)      public.automarkdel_new_new(integer) (GROUP: 2 new funcs)
+ *      (FUNCTION)      public.automarkdel_new_new(integer, integer) (GROUP: 2 new funcs)
  *  -->
  *
  * @author ryabinin_av
@@ -80,7 +104,7 @@ public class PartialExporterTest {
         return Arrays.asList(new Object[][]{
             // SONAR-OFF
             {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},
-            //            {16},{17},{18},{19},{20},{21},{22}
+            {16},{17},{18},{19},{20},{21},{22}
             // SONAR-ON
         });
     }
@@ -100,7 +124,14 @@ public class PartialExporterTest {
             new PartialExportInfoImpl_12(),
             new PartialExportInfoImpl_13(),
             new PartialExportInfoImpl_14(),
-            new PartialExportInfoImpl_15()
+            new PartialExportInfoImpl_15(),
+            new PartialExportInfoImpl_16(),
+            new PartialExportInfoImpl_17(),
+            new PartialExportInfoImpl_18(),
+            new PartialExportInfoImpl_19(),
+            new PartialExportInfoImpl_20(),
+            new PartialExportInfoImpl_21(),
+            new PartialExportInfoImpl_22()
     };
 
     public PartialExporterTest(int index) {
@@ -137,16 +168,12 @@ public class PartialExporterTest {
 
         Path exportDirFull = null;
         Path exportDirPartial = null;
-        Path exportDirNewFull = null;
         try{
             exportDirFull = Files.createTempDirectory("pgCodekeeper-test-export-full");
             exportDirPartial = Files.createTempDirectory("pgCodekeeper-test-export-partial");
-            exportDirNewFull = Files.createTempDirectory("pgCodekeeper-test-export-new-full");
 
             // full export of source
             new ModelExporter(exportDirFull.toFile(), dbSource, UTF_8).exportFull();
-            // full export of new to newFull directory
-            new ModelExporter(exportDirNewFull.toFile(), dbTarget, UTF_8).exportFull();
             // full export of source to target directory
             new ModelExporter(exportDirPartial.toFile(), dbSource, UTF_8).exportFull();
 
@@ -158,7 +185,7 @@ public class PartialExporterTest {
             new ModelExporter(exportDirPartial.toFile(), dbTarget, dbSource,
                     list, UTF_8).exportPartial();
 
-            walkAndComare(exportDirFull, exportDirPartial, exportDirNewFull, preset);
+            walkAndComare(exportDirFull, exportDirPartial, preset);
         }finally{
             if (exportDirFull != null){
                 deleteRecursive(exportDirFull.toFile());
@@ -166,14 +193,10 @@ public class PartialExporterTest {
             if (exportDirPartial != null){
                 deleteRecursive(exportDirPartial.toFile());
             }
-            if (exportDirNewFull != null){
-                deleteRecursive(exportDirNewFull.toFile());
-            }
         }
     }
 
-    private void walkAndComare(Path exportDirFull, Path exportDirPartial, Path exportDirNewFull,
-            PartialExportInfo preset) throws IOException {
+    private void walkAndComare(Path exportDirFull, Path exportDirPartial, PartialExportInfo preset) throws IOException {
         // first compare full export to partial
         Map<String, String> modifiedFiles = preset.modifiedFiles();
         LinkedList<String> newFiles = preset.newFiles();
@@ -181,7 +204,7 @@ public class PartialExporterTest {
 
         Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
-                        exportDirFull, exportDirPartial, exportDirNewFull,
+                        exportDirFull, exportDirPartial,
                         modifiedFiles, newFiles, deletedFiles, true));
 
         Assert.assertTrue("Not all objects in modified/deleted lists have been walked:\n"
@@ -195,7 +218,7 @@ public class PartialExporterTest {
 
         Files.walkFileTree(exportDirPartial, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
-                        exportDirPartial, exportDirFull, exportDirNewFull,
+                        exportDirPartial, exportDirFull,
                         modifiedFiles, newFiles, deletedFiles, false));
 
         Assert.assertTrue("Not all objects in modified/new lists have been walked:\n"
@@ -479,7 +502,7 @@ class PartialExportInfoImpl_16 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/FUNCTION/test.sql", "");
+        m.put("SCHEMA/public/FUNCTION/test.sql", "8d11dce1fb9c245f283e5b58eaa4e1a6");
         return m;
     }
 }
@@ -510,7 +533,7 @@ class PartialExportInfoImpl_18 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        m.put("SCHEMA/public/TABLE/test_table.sql", "61a6f6f9372e49abddd95ae033ce3134");
         return m;
     }
 }
@@ -526,7 +549,7 @@ class PartialExportInfoImpl_19 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        m.put("SCHEMA/public/TABLE/test_table.sql", "092c7e4c1c711c261ec0ffde587a7f1e");
         return m;
     }
 }
@@ -543,7 +566,7 @@ class PartialExportInfoImpl_20 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        m.put("SCHEMA/public/TABLE/test_table.sql", "ba30379ce57af95cb8757e8b13e9339b");
         return m;
     }
 }
@@ -561,7 +584,7 @@ class PartialExportInfoImpl_21 extends PartialExportInfo{
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        m.put("SCHEMA/public/TABLE/test_table.sql", "6337578a5426a0e53aeda8fc84ac18c2");
         return m;
     }
 }

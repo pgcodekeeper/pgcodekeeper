@@ -21,20 +21,18 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private final Path pathToBeCompared;
     private final Path pathToCompareTo;
-    private final Path pathFullExported;
 
     private final Map<String, String> modifiedFiles;
     private final List<String> newFiles;
     private final List<String> deletedFiles;
     private final boolean isInSource;
 
-    public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo, Path pathFullExported,
+    public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo,
             Map<String, String> modifiedFiles, LinkedList<String> newFiles, LinkedList<String> deletedFiles,
             boolean isInSource) {
         super();
         this.pathToBeCompared = pathToBeCompared;
         this.pathToCompareTo = pathToCompareTo;
-        this.pathFullExported = pathFullExported;
 
         this.modifiedFiles = modifiedFiles;
         this.newFiles = newFiles;
@@ -74,18 +72,13 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
                         + "not in list of modified objects: " + relativeFilePath);
             }
             String hash = modifiedFiles.remove(relativeFilePath);
-
             File file = isInSource ? file2 : file1.toFile();
-            File fileNewFull = new File(pathFullExported.toFile(), relativeFilePath);
+            String partialFile = new String(Files.readAllBytes(file.toPath()), PartialExporterTest.UTF_8);
 
-            if (!fileNewFull.isFile()){
-                fail(isInSource() + "Source and target files differ, but same file in newFull "
-                        + "does not exist or a directory: " + relativeFilePath);
-            }
-
-            Assert.assertEquals("Files differ, and partial file has unexpected hash",
+            Assert.assertEquals("Files differ, and partial file has unexpected hash"
+                    + "\nPartial file:\n" + partialFile,
                     hash,
-                    PgDiffUtils.md5(new String(Files.readAllBytes(file.toPath()), PartialExporterTest.UTF_8)));
+                    PgDiffUtils.md5(partialFile));
         }
         return FileVisitResult.CONTINUE;
     }
