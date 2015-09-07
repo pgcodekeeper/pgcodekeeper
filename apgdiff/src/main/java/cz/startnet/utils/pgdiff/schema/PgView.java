@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores view information.
@@ -33,7 +34,7 @@ public class PgView extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.VIEW;
     }
-    
+
     public PgView(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -42,7 +43,7 @@ public class PgView extends PgStatementWithSearchPath {
         columnNames.add(colName);
         resetHash();
     }
-    
+
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
         resetHash();
@@ -114,12 +115,12 @@ public class PgView extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-    
+
     @Override
     public String getDropSQL() {
         return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
@@ -197,7 +198,7 @@ public class PgView extends PgStatementWithSearchPath {
                         + '.'
                         + PgDiffUtils.getQuotedName(newColumnComment
                                 .getColumnName()) + " IS "
-                        + newColumnComment.getComment() + ';');
+                                + newColumnComment.getComment() + ';');
             } else if (oldColumnComment != null && newColumnComment == null) {
 
                 sb.append("\n\nCOMMENT ON COLUMN "
@@ -227,13 +228,13 @@ public class PgView extends PgStatementWithSearchPath {
     public String getNormalizedQuery(){
         return normalizedQuery;
     }
-    
+
     public void setSelect(PgSelect select) {
         this.select = select;
         select.setParent(this);
         resetHash();
     }
-    
+
     public PgSelect getSelect() {
         return select;
     }
@@ -270,10 +271,15 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * Adds/replaces column comment.
      */
-    public void addColumnComment(final String columnName,
-            final String comment) {
-        removeColumnDefaultValue(columnName);
+    public void addColumnComment(String columnName, String comment) {
+        removeColumnComment(columnName);
         columnComments.add(new ColumnComment(columnName, comment));
+    }
+
+    public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
+        removeColumnComment(columnName);
+        columnComments.add(new ColumnComment(columnName,
+                args.isForceUnixNewlines() ? comment.replace("\r", "") : comment));
     }
 
     public void removeColumnComment(final String columnName) {
@@ -292,7 +298,7 @@ public class PgView extends PgStatementWithSearchPath {
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgView) {
@@ -308,7 +314,7 @@ public class PgView extends PgStatementWithSearchPath {
                     && Objects.equals(comment, view.getComment())
                     && Objects.equals(columnComments, view.getColumnComments());
         }
-        
+
         return eq;
     }
 
@@ -328,7 +334,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         return result;
     }
-    
+
     @Override
     public PgView shallowCopy() {
         PgView viewDst = new PgView(getName(), getRawStatement());
@@ -351,7 +357,7 @@ public class PgView extends PgStatementWithSearchPath {
         viewDst.setOwner(getOwner());
         return viewDst;
     }
-    
+
     @Override
     public PgView deepCopy() {
         return shallowCopy();
@@ -381,7 +387,7 @@ public class PgView extends PgStatementWithSearchPath {
         @Override
         public boolean equals(Object obj) {
             boolean eq = false;
-            
+
             if(this == obj) {
                 eq = true;
             } else if(obj instanceof DefaultValue) {
@@ -389,10 +395,10 @@ public class PgView extends PgStatementWithSearchPath {
                 eq = Objects.equals(columnName, val.getColumnName())
                         && Objects.equals(defaultValue, val.getDefaultValue());
             }
-            
+
             return eq;
         }
-        
+
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -423,11 +429,11 @@ public class PgView extends PgStatementWithSearchPath {
         public String getComment() {
             return comment;
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             boolean eq = false;
-            
+
             if (this == obj) {
                 eq = true;
             } else if(obj instanceof ColumnComment) {
@@ -435,7 +441,7 @@ public class PgView extends PgStatementWithSearchPath {
                 eq = Objects.equals(columnName, val.getColumnName())
                         && Objects.equals(comment, val.getComment());
             }
-            
+
             return eq;
         }
 
@@ -448,7 +454,7 @@ public class PgView extends PgStatementWithSearchPath {
             return result;
         }
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
@@ -467,7 +473,7 @@ public class PgView extends PgStatementWithSearchPath {
             final PgView newView) {
         List<String> oldColumnNames = oldView.getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
-    
+
         if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
             String nOldQuery = oldView.getNormalizedQuery();
             String nNewQuery = newView.getNormalizedQuery();
@@ -491,15 +497,15 @@ public class PgView extends PgStatementWithSearchPath {
                 oldView.getDefaultValues();
         final List<DefaultValue> newValues =
                 newView.getDefaultValues();
-    
+
         // modify defaults that are in old view
         for (final DefaultValue oldValue : oldValues) {
             boolean found = false;
-    
+
             for (final DefaultValue newValue : newValues) {
                 if (oldValue.getColumnName().equals(newValue.getColumnName())) {
                     found = true;
-    
+
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
                         sb.append("\n\nALTER TABLE "
                                 + PgDiffUtils.getQuotedName(newView.getName())
@@ -509,11 +515,11 @@ public class PgView extends PgStatementWithSearchPath {
                                 + newValue.getDefaultValue()
                                 + ';');
                     }
-    
+
                     break;
                 }
             }
-    
+
             if (!found) {
                 sb.append("\n\nALTER TABLE "
                         + PgDiffUtils.getQuotedName(newView.getName())
@@ -522,22 +528,22 @@ public class PgView extends PgStatementWithSearchPath {
                         + " DROP DEFAULT;");
             }
         }
-    
+
         // add new defaults
         for (final DefaultValue newValue : newValues) {
             boolean found = false;
-    
+
             for (final DefaultValue oldValue : oldValues) {
                 if (newValue.getColumnName().equals(oldValue.getColumnName())) {
                     found = true;
                     break;
                 }
             }
-    
+
             if (found) {
                 continue;
             }
-    
+
             sb.append("\n\nALTER TABLE "
                     + PgDiffUtils.getQuotedName(newView.getName())
                     + " ALTER COLUMN "

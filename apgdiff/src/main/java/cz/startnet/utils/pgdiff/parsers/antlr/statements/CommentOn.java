@@ -53,7 +53,7 @@ public class CommentOn extends ParserAbstract {
                 if (view == null) {
                     schema.getType(tableName).getAttr(name).setComment(db.getArguments(), comment);
                 } else {
-                    view.addColumnComment(name, comment);
+                    view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
                 table.getColumn(name).setComment(db.getArguments(), comment);

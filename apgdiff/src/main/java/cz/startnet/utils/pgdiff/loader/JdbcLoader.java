@@ -783,7 +783,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
                 String colComment = colComments[i];
                 if (colComment != null){
-                    v.addColumnComment(colName, PgDiffUtils.quoteString(colComment));
+                    v.addColumnComment(args, colName, PgDiffUtils.quoteString(colComment));
                 }
                 String colAcl = colACLs[i];
                 // Привилегии на столбцы view записываются в саму view
