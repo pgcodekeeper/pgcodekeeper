@@ -3,31 +3,33 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import org.junit.Assert;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private final Path pathToBeCompared;
     private final Path pathToCompareTo;
     private final Path pathFullExported;
 
-    private final List<String> modifiedFiles;
+    private final Map<String, String> modifiedFiles;
     private final List<String> newFiles;
     private final List<String> deletedFiles;
     private final boolean isInSource;
 
     public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo, Path pathFullExported,
-            LinkedList<String> modifiedFiles, LinkedList<String> newFiles, LinkedList<String> deletedFiles,
+            Map<String, String> modifiedFiles, LinkedList<String> newFiles, LinkedList<String> deletedFiles,
             boolean isInSource) {
         super();
         this.pathToBeCompared = pathToBeCompared;
@@ -66,12 +68,12 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
             fail(isInSource() + "file is a directory: " + relativeFilePath);
         }
 
-        if (file2.exists() && !Arrays.equals(computeChecksum(file1), computeChecksum(file2.toPath()))){
-            if (!modifiedFiles.contains(relativeFilePath)){
+        if (file2.exists() && !Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2.toPath()))){
+            if (!modifiedFiles.containsKey(relativeFilePath)){
                 fail(isInSource() + "Source and target files differ, but this file is "
                         + "not in list of modified objects: " + relativeFilePath);
             }
-            modifiedFiles.remove(relativeFilePath);
+            String hash = modifiedFiles.remove(relativeFilePath);
 
             File file = isInSource ? file2 : file1.toFile();
             File fileNewFull = new File(pathFullExported.toFile(), relativeFilePath);
@@ -80,40 +82,15 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
                 fail(isInSource() + "Source and target files differ, but same file in newFull "
                         + "does not exist or a directory: " + relativeFilePath);
             }
-            // FIXME edited and new files do not have to be equal
-            // just remove this or... ?
-            /*if(!Arrays.equals(computeChecksum(file.toPath()), computeChecksum(fileNewFull.toPath()))){
-                fail(isInSource() + "Files differ, and partial file differ with newFull: " +
-                        relativeFilePath);
-            }*/
+
+            Assert.assertEquals("Files differ, and partial file has unexpected hash",
+                    hash,
+                    PgDiffUtils.md5(new String(Files.readAllBytes(file.toPath()), PartialExporterTest.UTF_8)));
         }
         return FileVisitResult.CONTINUE;
     }
 
     private String isInSource(){
         return "Walking " + (isInSource ? "full export" : "partial export") + " directory: ";
-    }
-
-    private byte[] computeChecksum(Path filename) throws IOException {
-        try(InputStream fis = new FileInputStream(filename.toFile())){
-
-            byte[] buffer = new byte[1024];
-            MessageDigest complete = null;
-            try {
-                complete = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                fail("No MD5 checksum method available");
-            }
-            int numRead;
-
-            do {
-                numRead = fis.read(buffer);
-                if (numRead > 0) {
-                    complete.update(buffer, 0, numRead);
-                }
-            } while (numRead != -1);
-
-            return complete.digest();
-        }
     }
 }

@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,7 +69,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 @RunWith(value = Parameterized.class)
 public class PartialExporterTest {
 
-    private static final String UTF_8 = ApgdiffConsts.UTF_8;
+    static final String UTF_8 = ApgdiffConsts.UTF_8;
     private final int index;
 
     private static PgDatabase dbSource;
@@ -77,7 +79,8 @@ public class PartialExporterTest {
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][]{
             // SONAR-OFF
-            {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}
+            {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},
+            //            {16},{17},{18},{19},{20},{21},{22}
             // SONAR-ON
         });
     }
@@ -172,7 +175,7 @@ public class PartialExporterTest {
     private void walkAndComare(Path exportDirFull, Path exportDirPartial, Path exportDirNewFull,
             PartialExportInfo preset) throws IOException {
         // first compare full export to partial
-        LinkedList<String> modifiedFiles = preset.modifiedFiles();
+        Map<String, String> modifiedFiles = preset.modifiedFiles();
         LinkedList<String> newFiles = preset.newFiles();
         LinkedList<String> deletedFiles = preset.deletedFiles();
 
@@ -231,8 +234,8 @@ abstract class PartialExportInfo {
 
     public abstract void setUserSelection();
 
-    public LinkedList<String> modifiedFiles(){
-        return new LinkedList<>();
+    public Map<String, String> modifiedFiles(){
+        return new HashMap<>();
     };
     public LinkedList<String> newFiles(){
         return new LinkedList<>();
@@ -251,8 +254,10 @@ class PartialExportInfoImpl_1 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/table1.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/table1.sql", "48c9e72c3232a045e4e318c0f8758c2e");
+        return m;
     }
 }
 
@@ -281,8 +286,10 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/tz_worker_group.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/tz_worker_group.sql", "c771b2398f8dd96aafacbda3f2440dcb");
+        return m;
     }
 }
 
@@ -309,8 +316,10 @@ class PartialExportInfoImpl_5 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/atsqueuedel.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/FUNCTION/atsqueuedel.sql", "e7997c7da7a4ca598dbbc7c819577918");
+        return m;
     }
 }
 
@@ -323,8 +332,10 @@ class PartialExportInfoImpl_6 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/rep2_workpool_data.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/rep2_workpool_data.sql", "26b549a466c739138d7a9b5c707017eb");
+        return m;
     }
 }
 
@@ -394,8 +405,10 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t_auto_mark.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/t_auto_mark.sql", "057e390cbc38830bc600ecf16b12e3d9");
+        return m;
     }
 }
 
@@ -464,8 +477,10 @@ class PartialExportInfoImpl_16 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/FUNCTION/test.sql", "");
+        return m;
     }
 }
 
@@ -493,8 +508,10 @@ class PartialExportInfoImpl_18 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        return m;
     }
 }
 
@@ -507,8 +524,10 @@ class PartialExportInfoImpl_19 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        return m;
     }
 }
 
@@ -522,8 +541,10 @@ class PartialExportInfoImpl_20 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        return m;
     }
 }
 
@@ -538,8 +559,10 @@ class PartialExportInfoImpl_21 extends PartialExportInfo{
     }
 
     @Override
-    public LinkedList<String> modifiedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/test_table.sql", "");
+        return m;
     }
 }
 
