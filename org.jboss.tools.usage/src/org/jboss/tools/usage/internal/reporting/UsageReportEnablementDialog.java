@@ -15,16 +15,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.jboss.tools.usage.branding.IUsageBranding;
-import org.jboss.tools.usage.internal.JBossToolsUsageActivator;
-import org.jboss.tools.usage.util.BrowserUtil;
 
 /**
  * @author Andre Dietisheim
@@ -32,19 +27,19 @@ import org.jboss.tools.usage.util.BrowserUtil;
 public class UsageReportEnablementDialog extends Dialog {
 
 	private boolean reportEnabled;
-	private IUsageBranding branding;
-	//private ForceActiveShellAdapter forceActiveShellAdapter = new ForceActiveShellAdapter();
-	
+	private final IUsageBranding branding;
+
 	public UsageReportEnablementDialog(IShellProvider parentShell, IUsageBranding branding) {
 		super(parentShell);
 		this.branding = branding;
 	}
-	
+
 	public UsageReportEnablementDialog(Shell parentShell, IUsageBranding branding) {
 		super(parentShell);
 		this.branding = branding;
 	}
 
+	@Override
 	protected void buttonPressed(int buttonId) {
 		this.reportEnabled = (buttonId == IDialogConstants.OK_ID);
 		if (IDialogConstants.NO_ID == buttonId) {
@@ -65,24 +60,19 @@ public class UsageReportEnablementDialog extends Dialog {
 		close();
 	}
 
+	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		shell.setText(branding.getStartupAllowReportingTitle());
-		//forceActiveShellAdapter.attachTo(shell);
 	}
 
 	@Override
-	public boolean close() {
-		//forceActiveShellAdapter.removeFrom(getShell());
-		return super.close();
-		
-	}
-
 	protected void createButtonsForButtonBar(Composite parent) {
 		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, false);
 		createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, false);
 	}
 
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite) super.createDialogArea(parent);
 		createUsageReportingWidgets(parent, composite);
@@ -94,51 +84,16 @@ public class UsageReportEnablementDialog extends Dialog {
 	private void createUsageReportingWidgets(Composite parent, Composite composite) {
 		// message
 		Label link = new Label(composite, SWT.WRAP);
-//		Link link = new Link(composite, SWT.WRAP);
-		link.setFont(parent.getFont());
-
 		link.setText(branding.getStartupAllowReportingMessage());
-//		link.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				BrowserUtil.checkedCreateExternalBrowser(
-//							branding.getStartupAllowReportingDetailLink(),
-//							JBossToolsUsageActivator.PLUGIN_ID,
-//							JBossToolsUsageActivator.getDefault().getLog());
-//			}
-//		});
+
 		GridDataFactory.fillDefaults()
-					.align(SWT.FILL, SWT.CENTER)
-					.grab(true, false)
-					.hint(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH, SWT.DEFAULT)
-					.applyTo(link);
+		.align(SWT.FILL, SWT.CENTER)
+		.grab(true, false)
+		.hint(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH, SWT.DEFAULT)
+		.applyTo(link);
 	}
 
 	public boolean isReportEnabled() {
 		return reportEnabled;
 	}
-
-//	private class ForceActiveShellAdapter extends ShellAdapter {
-//
-//		public void shellDeactivated(ShellEvent e) {
-//			Shell shell = getShell();
-//			if (shell != null
-//					&& !shell.isDisposed())
-//			shell.forceActive();
-//		}
-//		
-//		private void attachTo(Shell shell) {
-//			if (shell != null
-//					&& !shell.isDisposed()) {
-//				shell.addShellListener(this);
-//			}
-//		}
-//
-//		private void removeFrom(Shell shell) {
-//			if (shell != null
-//					&& !shell.isDisposed()) {
-//				shell.removeShellListener(this);
-//			}
-//		}
-//	}
 }

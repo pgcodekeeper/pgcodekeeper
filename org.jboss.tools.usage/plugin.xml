@@ -13,7 +13,7 @@
             class="org.jboss.tools.usage.internal.preferences.UsageReportPreferencePage"
             id="org.jboss.tools.usage.analytics.preferences.UsageAnalyticsPreferencePage"
             name="%page.name"
-            category="org.jboss.tools.common.model.ui.MainPreferencePage">
+            category="ru.taximaxim.codekeeper.ui.general">
       </page>
    </extension>
    <extension
