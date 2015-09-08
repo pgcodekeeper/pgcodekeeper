@@ -10,7 +10,7 @@
 	    <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
 	</parent>
 	
-	<artifactId>org.jboss.tools.usage</artifactId>
+	<artifactId>org.jboss.tools.usage.codekeeper</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 </project>

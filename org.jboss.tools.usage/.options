@@ -1,4 +1,0 @@
-# This file enables runtime tracing
-org.jboss.tools.usage/info=true
-org.jboss.tools.usage/debug=true
-org.jboss.tools.usage/trace=false
