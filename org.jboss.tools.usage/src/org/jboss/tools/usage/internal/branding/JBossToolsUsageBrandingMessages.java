@@ -18,14 +18,8 @@ public class JBossToolsUsageBrandingMessages extends NLS {
 	public static String UsageReportPreferencePage_Description;
 	public static String UsageReportPreferencePage_AllowReporting;
 
-//	public static String GlobalUsageSettings_RemoteProps_URL;
-
 	public static String UsageReport_DialogTitle;
 	public static String UsageReport_DialogMessage;
-	public static String UsageReport_GoogleAnalytics_Account;
-	public static String UsageReport_Checkbox_Text;
-//	public static String UsageReport_HostName;
-//	public static String UsageReport_ExplanationPage;
 
 	static {
 		// initialize resource bundle

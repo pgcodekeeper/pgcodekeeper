@@ -17,18 +17,19 @@ import org.osgi.util.tracker.ServiceTracker;
 /**
  * A mediator that gets branding from the branding service - if available - or
  * the local (default) one if no service was registered.
- * 
+ *
  *  @author Andre Dietisheim
  */
 public class UsageBrandingMediator extends ServiceTracker implements IUsageBranding {
 
-	private IUsageBranding defaultBranding;
+	private final IUsageBranding defaultBranding;
 
 	public UsageBrandingMediator(IUsageBranding defaultBranding, BundleContext context) {
 		super(context, IUsageBranding.class.getName(), null);
 		this.defaultBranding = defaultBranding;
 	}
 
+	@Override
 	public String getPreferencesDescription() {
 		IUsageBranding service = (IUsageBranding) getService();
 		if (service != null) {
@@ -38,6 +39,7 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
+	@Override
 	public String getPreferencesAllowReportingCheckboxLabel() {
 		IUsageBranding service = (IUsageBranding) getService();
 		if (service != null) {
@@ -47,6 +49,7 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
+	@Override
 	public String getStartupAllowReportingTitle() {
 		IUsageBranding service = (IUsageBranding) getService();
 		if (service != null) {
@@ -56,15 +59,7 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
-	public String getStartupAllowReportingCheckboxLabel() {
-		IUsageBranding service = (IUsageBranding) getService();
-		if (service != null) {
-			return service.getStartupAllowReportingCheckboxLabel();
-		} else {
-			return defaultBranding.getStartupAllowReportingCheckboxLabel();
-		}
-	}
-
+	@Override
 	public String getStartupAllowReportingMessage() {
 		IUsageBranding service = (IUsageBranding) getService();
 		if (service != null) {
@@ -74,25 +69,7 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 		}
 	}
 
-//	public String getStartupAllowReportingDetailLink() {
-//		IUsageBranding service = (IUsageBranding) getService();
-//		if (service != null) {
-//			return service.getStartupAllowReportingDetailLink();
-//		} else {
-//			return defaultBranding.getStartupAllowReportingDetailLink();
-//		}
-
-//	}
-
-//	public String getGlobalRemotePropertiesUrl() {
-//		IUsageBranding service = (IUsageBranding) getService();
-//		if (service != null) {
-//			return service.getGlobalRemotePropertiesUrl();
-//		} else {
-//			return defaultBranding.getGlobalRemotePropertiesUrl();
-//		}
-//	}
-
+	@Override
 	public String getGoogleAnalyticsAccount() {
 		IUsageBranding service = (IUsageBranding) getService();
 		if (service != null) {
@@ -101,13 +78,4 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 			return defaultBranding.getGoogleAnalyticsAccount();
 		}
 	}
-
-//	public String getGoogleAnalyticsReportingHost() {
-//		IUsageBranding service = (IUsageBranding) getService();
-//		if (service != null) {
-//			return service.getGoogleAnalyticsReportingHost();
-//		} else {
-//			return defaultBranding.getGoogleAnalyticsReportingHost();
-//		}
-//	}
 }

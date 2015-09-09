@@ -16,22 +16,17 @@ import org.osgi.framework.Version;
 
 /**
  * Represents an event type
- * 
+ *
  * @author Alexey Kazakov
  */
 public class UsageEventType {
 
-	public static final String NEW_ACTION = "new";
-	public static final String OPEN_ACTION = "open";
-	public static final String SUCCESFULL_FAILED_VALUE_DESCRIPTION = UsageEventMessages.UsageEvent_SuccesfullValueDescription;
-	public static final String HOW_MANY_TIMES_VALUE_DESCRIPTION = UsageEventMessages.UsageEvent_HowManyTimesValueDescription;
-
-	private String componentName;
-	private String componentVersion;
+	private final String componentName;
+	private final String componentVersion;
 	private String categoryName;
-	private String actionName;
-	private String labelDescription;
-	private String valueDescription;
+	private final String actionName;
+	private final String labelDescription;
+	private final String valueDescription;
 
 	public UsageEventType(Plugin plugin,
 			String actionName) {
@@ -53,8 +48,8 @@ public class UsageEventType {
 
 	/**
 	 * @param plugin The fourth segment of the plugin's id is used as the component name. The major, minor and micro versions are used as the component version.
-	 *               For example plugin "jboss.tools.jst.kb.ui" version 3.5.2.20140228 will result componentName="jst", componentVersion="3.5.2" 
-	 * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-". 
+	 *               For example plugin "jboss.tools.jst.kb.ui" version 3.5.2.20140228 will result componentName="jst", componentVersion="3.5.2"
+	 * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-".
 	 * @param actionName Action name. All whitespaces will be replaced by "-".
 	 * @param labelDescription
 	 * @param valueDescription
@@ -69,7 +64,7 @@ public class UsageEventType {
 
 	/**
 	 * @param componentName May not be null. All whitespaces will be replaced by "-".
-	 * @param componentVersion May not be null 
+	 * @param componentVersion May not be null
 	 * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-".
 	 * @param actionName May not be null. All whitespaces will be replaced by "-".
 	 */
@@ -82,7 +77,7 @@ public class UsageEventType {
 
 	/**
 	 * @param componentName May not be null. All whitespaces will be replaced by "-".
-	 * @param componentVersion May not be null 
+	 * @param componentVersion May not be null
 	 * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-".
 	 * @param actionName May not be null. All whitespaces will be replaced by "-".
 	 * @param labelDescription Optinal. May be null.
@@ -97,7 +92,7 @@ public class UsageEventType {
 
 	/**
 	 * @param componentName May not be null. All whitespaces will be replaced by "-".
-	 * @param componentVersion May not be null 
+	 * @param componentVersion May not be null
 	 * @param categoryName If null, the component name is used as category name. All whitespaces will be replaced by "-".
 	 * @param actionName May not be null. All whitespaces will be replaced by "-".
 	 * @param labelDescription Optinal. May be null.

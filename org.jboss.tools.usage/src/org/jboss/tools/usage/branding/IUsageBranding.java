@@ -15,11 +15,13 @@ package org.jboss.tools.usage.branding;
  * service that provides a service that implements this interface. If there are
  * several providers registered, the usage reporting picks the one with the
  * highest <code>service.ranking<code> property.
- * 
+ *
  * @author Andre Dietisheim
- * 
+ *
  */
 public interface IUsageBranding {
+
+	String GA_ACCOUNT = "UA-63353874-1";
 
 	public String getPreferencesDescription();
 
@@ -27,15 +29,7 @@ public interface IUsageBranding {
 
 	public String getStartupAllowReportingTitle();
 
-	public String getStartupAllowReportingCheckboxLabel();
-
 	public String getStartupAllowReportingMessage();
 
-//	public String getStartupAllowReportingDetailLink();
-
-//	public String getGlobalRemotePropertiesUrl();
-
 	public String getGoogleAnalyticsAccount();
-
-//	public String getGoogleAnalyticsReportingHost();
 }
