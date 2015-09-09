@@ -31,14 +31,14 @@ import org.jboss.tools.usage.util.HttpEncodingUtils;
 /**
  * @author Andre Dietisheim
  * @author Siddique Hameed
- * @author Alexey Kazakov 
- * 
+ * @author Alexey Kazakov
+ *
  * @see based on <a href="http://jgoogleAnalytics.googlecode.com">http://jgoogleAnalytics.googlecode.com</a>
  */
 public class UsageRequest {
 
 	private static final String TRACKING_URL = "http://www.google-analytics.com/__utm.gif";
-	private UsagePluginLogger logger = new UsagePluginLogger(JBossToolsUsageActivator.getDefault());
+	private final UsagePluginLogger logger = new UsagePluginLogger(JBossToolsUsageActivator.getDefault());
 	protected IJBossToolsEclipseEnvironment environment;
 
 	public UsageRequest(IJBossToolsEclipseEnvironment environment) {
@@ -63,7 +63,7 @@ public class UsageRequest {
 		String url = createUrl(environment, pagePath, title, event, type, startNewVisitSession);
 		return sendRequest(environment, url);
 	}
-			
+
 	/**
 	 * @return the environment
 	 */
@@ -84,7 +84,7 @@ public class UsageRequest {
 		StringBuilder builder = new StringBuilder(TRACKING_URL).append(IGoogleAnalyticsParameters.URL_PARAM_DELIMITER);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_TRACKING_CODE_VERSION,	IGoogleAnalyticsParameters.VALUE_TRACKING_CODE_VERSION, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_UNIQUE_TRACKING_NUMBER, getRandomNumber(), builder);
-//		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, environment.getHostname(), builder);
+		appendParameter(IGoogleAnalyticsParameters.PARAM_HOST_NAME, environment.getHostname(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_LANGUAGE_ENCODING,	IGoogleAnalyticsParameters.VALUE_ENCODING_UTF8, builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_RESOLUTION, environment.getScreenResolution(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_COLOR_DEPTH, environment.getScreenColorDepth(), builder);
@@ -119,9 +119,9 @@ public class UsageRequest {
 	/**
 	 * Returns the google analytics cookies. These cookies determines user
 	 * identity, session identity etc.
-	 * 
+	 *
 	 * @return the cookies
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.analyticsexperts.com/google-analytics/information-about-the-utmlinker-and-the-__utma-__utmb-and-__utmc-cookies/">Information
 	 *      about the utmLinker and the __utma, __utmb and __utmc cookies</a>
@@ -137,58 +137,58 @@ public class UsageRequest {
 		 */
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UNIQUE_VISITOR_ID,
 				new StringBuilder().append("999.")
-						.append(environment.getUserId()).append(IGoogleAnalyticsParameters.DOT)
-						.append(environment.getFirstVisit()).append(IGoogleAnalyticsParameters.DOT)
-						.append(environment.getLastVisit()).append(IGoogleAnalyticsParameters.DOT)
-						.append(environment.getCurrentVisit()).append(IGoogleAnalyticsParameters.DOT)
-						.append(environment.getVisitCount()))
-				.appendTo(builder);
+				.append(environment.getUserId()).append(IGoogleAnalyticsParameters.DOT)
+				.append(environment.getFirstVisit()).append(IGoogleAnalyticsParameters.DOT)
+				.append(environment.getLastVisit()).append(IGoogleAnalyticsParameters.DOT)
+				.append(environment.getCurrentVisit()).append(IGoogleAnalyticsParameters.DOT)
+				.append(environment.getVisitCount()))
+		.appendTo(builder);
 
 		builder.append(IGoogleAnalyticsParameters.SEMICOLON)
-				.append(IGoogleAnalyticsParameters.PLUS_SIGN);
+		.append(IGoogleAnalyticsParameters.PLUS_SIGN);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_REFERRAL_TYPE,
-						new StringBuilder()
-								.append("999.")
-								.append(environment.getFirstVisit())
-								.append(IGoogleAnalyticsParameters.DOT)
-								.append("1.1."))
-				.appendTo(builder);
+				new StringBuilder()
+				.append("999.")
+				.append(environment.getFirstVisit())
+				.append(IGoogleAnalyticsParameters.DOT)
+				.append("1.1."))
+		.appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCSR,
-						"(direct)",
-						IGoogleAnalyticsParameters.PIPE)
-				.appendTo(builder);
+				"(direct)",
+				IGoogleAnalyticsParameters.PIPE)
+		.appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCCN,
-						"(direct)",
-						IGoogleAnalyticsParameters.PIPE)
-				.appendTo(builder);
+				"(direct)",
+				IGoogleAnalyticsParameters.PIPE)
+		.appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCMD,
-						"(none)",
-						IGoogleAnalyticsParameters.PIPE)
-				.appendTo(builder);
+				"(none)",
+				IGoogleAnalyticsParameters.PIPE)
+		.appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_KEYWORD,
 				environment.getKeyword())
-				.appendTo(builder);
+		.appendTo(builder);
 
 		builder.append(IGoogleAnalyticsParameters.SEMICOLON)
-				.append(IGoogleAnalyticsParameters.PLUS_SIGN);
+		.append(IGoogleAnalyticsParameters.PLUS_SIGN);
 
 		if(environment.isLinuxDistro()) {
 			/**
 			 * <tt>User defined Value<tt> cookie format: (domain hash).(setvar value)
-			 * 
+			 *
 			 * @see <a href="http://www.martynj.com/google-analytics-cookies-tracking-multiple-domains-filters">__utmv, __utmb, __utmc cookies formats and more</a>
 			 */
 			new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_USERDEFINED,
 					getRandomNumber()
-							+ IGoogleAnalyticsParameters.DOT
-							+ environment.getUserDefined(),
+					+ IGoogleAnalyticsParameters.DOT
+					+ environment.getUserDefined(),
 					IGoogleAnalyticsParameters.SEMICOLON)
-					.appendTo(builder);
+			.appendTo(builder);
 		}
 
 		return HttpEncodingUtils.checkedEncodeUtf8(builder.toString());

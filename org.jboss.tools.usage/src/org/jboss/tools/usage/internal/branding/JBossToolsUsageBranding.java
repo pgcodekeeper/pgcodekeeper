@@ -41,4 +41,9 @@ public class JBossToolsUsageBranding implements IUsageBranding {
 	public String getGoogleAnalyticsAccount() {
 		return GA_ACCOUNT;
 	}
+
+	@Override
+	public String getGoogleAnalyticsReportingHost() {
+		return GA_HOSTNAME;
+	}
 }

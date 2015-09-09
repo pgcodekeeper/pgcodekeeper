@@ -22,6 +22,7 @@ package org.jboss.tools.usage.branding;
 public interface IUsageBranding {
 
 	String GA_ACCOUNT = "UA-63353874-1";
+	String GA_HOSTNAME = "technology45.ru";
 
 	public String getPreferencesDescription();
 
@@ -32,4 +33,6 @@ public interface IUsageBranding {
 	public String getStartupAllowReportingMessage();
 
 	public String getGoogleAnalyticsAccount();
+
+	public String getGoogleAnalyticsReportingHost();
 }

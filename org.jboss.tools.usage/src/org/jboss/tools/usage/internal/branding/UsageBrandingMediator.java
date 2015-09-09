@@ -78,4 +78,14 @@ public class UsageBrandingMediator extends ServiceTracker implements IUsageBrand
 			return defaultBranding.getGoogleAnalyticsAccount();
 		}
 	}
+
+	@Override
+	public String getGoogleAnalyticsReportingHost() {
+		IUsageBranding service = (IUsageBranding) getService();
+		if (service != null) {
+			return service.getGoogleAnalyticsReportingHost();
+		} else {
+			return defaultBranding.getGoogleAnalyticsReportingHost();
+		}
+	}
 }

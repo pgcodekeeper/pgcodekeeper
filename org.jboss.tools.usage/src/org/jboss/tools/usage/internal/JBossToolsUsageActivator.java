@@ -32,7 +32,7 @@ public class JBossToolsUsageActivator extends Plugin {
 	private IJBossToolsEclipseEnvironment eclipseEnvironment;
 
 	private UsageBrandingMediator branding;
-	
+
 	UsagePluginLogger logger;
 
 	public JBossToolsUsageActivator() {
@@ -76,8 +76,8 @@ public class JBossToolsUsageActivator extends Plugin {
 
 	protected IJBossToolsEclipseEnvironment createEclipseEnvironment(IUsageBranding branding) {
 		return new JBossToolsEclipseEnvironment(
-				branding.getGoogleAnalyticsAccount(), 
-				null,
+				branding.getGoogleAnalyticsAccount(),
+				branding.getGoogleAnalyticsReportingHost(),
 				UsageReportPreferencesUtils.getPreferences());
 	}
 
