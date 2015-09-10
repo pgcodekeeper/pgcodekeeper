@@ -22,8 +22,8 @@
                 <version>4.5</version>
                 <configuration>
                     <visitor>true</visitor>
-                    <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
-                    <outputDirectory>${project.build.outputDirectory}/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
+                    <sourceDirectory>${project.basedir}/antlr-src</sourceDirectory>
+                    <outputDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
