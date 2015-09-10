@@ -8,8 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: cz.startnet.utils.pgdiff.loader,
  ru.taximaxim.codekeeper.apgdiff,
  ru.taximaxim.codekeeper.apgdiff.model.exporter
-Require-Bundle: org.junit;bundle-version="4.11.0",
- org.slf4j.api;bundle-version="1.7.2"
+Require-Bundle: org.junit;bundle-version="4.11.0"
 Bundle-ClassPath: .,
  lib/javers-core-1.1.1.jar,
  lib/picocontainer-2.14.jar,
