@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.depcies;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -19,8 +18,8 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -141,16 +140,20 @@ public class PgDiffDepciesTest {
 
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDatabase oldDatabase = getDB(getUsrSelIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
-        PgDatabase newDatabase = getDB(getUsrSelIS(FILES_POSTFIX.NEW_SQL), arguments);
+        final PgDiffArguments args = new PgDiffArguments();
+        PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
+                getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
+        PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(
+                getUsrSelName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
         PgDatabase oldDbFull, newDbFull;
         if (userSelTemplate.equals(dbTemplate)) {
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
         } else {
-            oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
-            newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
+            oldDbFull = ApgdiffTestUtils.loadTestDump(
+                    getDbName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
+            newDbFull = ApgdiffTestUtils.loadTestDump(
+                    getDbName(FILES_POSTFIX.NEW_SQL), PgDiffDepciesTest.class, args);
         }
 
         runDiffSame(oldDbFull);
@@ -158,13 +161,13 @@ public class PgDiffDepciesTest {
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
         tree.setAllChecked();
-        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                 tree, oldDbFull, newDbFull, null, null);
         writer.flush();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                getUsrSelIS(FILES_POSTFIX.DIFF_SQL)))) {
+                PgDiffDepciesTest.class.getResourceAsStream(getUsrSelName(FILES_POSTFIX.DIFF_SQL))))) {
             sbExpDiff = new StringBuilder(1024);
 
             String line;
@@ -179,20 +182,11 @@ public class PgDiffDepciesTest {
                 diffInput.toString().trim());
     }
 
-    private PgDatabase getDB(InputStream is, PgDiffArguments args) throws InterruptedException {
-        return PgDumpLoader.loadDatabaseSchemaFromDump(
-                is, args, null, 1);
+    private String getUsrSelName(FILES_POSTFIX postfix) {
+        return userSelTemplate + postfix;
     }
 
-    private InputStream getUsrSelIS(FILES_POSTFIX postfix) {
-        return getIS(userSelTemplate + postfix);
-    }
-
-    private InputStream getDBIS(FILES_POSTFIX postfix) {
-        return getIS(dbTemplate + postfix);
-    }
-
-    private InputStream getIS(String name) {
-        return PgDiffDepciesTest.class.getResourceAsStream(name);
+    private String getDbName(FILES_POSTFIX postfix) {
+        return dbTemplate + postfix;
     }
 }

@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
@@ -17,24 +17,24 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorHyperLink implements IHyperlink {
 
-    private Path location;
-    private IRegion region;
-    private String label;
-    private IRegion regionHightLight;
-    private IEditorInput input;
-    private int lineNumber;
+    private final String location;
+    private final IRegion region;
+    private final String label;
+    private final IRegion regionHightLight;
+    private final IEditorInput input;
+    private final int lineNumber;
 
-    public SQLEditorHyperLink(IRegion region, IRegion regionHightLight,
-            String label, Path path, IEditorInput input, int lineNumber) {
+    public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label,
+            String path, IEditorInput input, int lineNumber) {
 
-        this.region= region;
+        this.region = region;
         this.regionHightLight = regionHightLight;
         this.location = path;
         this.label = label;
         this.input = input;
         this.lineNumber = lineNumber;
     }
-    
+
     @Override
     public IRegion getHyperlinkRegion() {
         return regionHightLight;
@@ -52,29 +52,21 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public void open() {
-        IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
-        
-        if (!location.startsWith("")) { //$NON-NLS-1$
-            try {
-                ITextEditor editor = (ITextEditor) IDE.openEditor(page,
-                        location.toUri(), SQLEditor.ID, true);
-                editor.selectAndReveal(region.getOffset(), region.getLength());
-            } catch (PartInitException ex) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
-            }
-        } else {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getActivePage();
+
+        try {
             ITextEditor editor;
-            try {
-                editor = (ITextEditor) IDE.openEditor(page,
-                        input, EDITOR.ROLLON, true);
-                editor.selectAndReveal(region.getOffset(), region.getLength());
-            } catch (PartInitException ex) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
+            if (input instanceof DepcyFromPSQLOutput) {
+                editor = (ITextEditor) IDE.openEditor(page, input, EDITOR.ROLLON, true);
+            } else {
+                editor = (ITextEditor) IDE.openEditor(
+                        page, Paths.get(location).toUri(), SQLEditor.ID, true);
             }
+            editor.selectAndReveal(region.getOffset(), region.getLength());
+        } catch (PartInitException ex) {
+            ExceptionNotifier.notifyDefault(
+                    Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
         }
     }
-
 }

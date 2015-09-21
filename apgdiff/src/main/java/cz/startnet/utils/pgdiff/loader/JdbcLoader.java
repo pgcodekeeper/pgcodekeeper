@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,8 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -25,8 +22,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
@@ -90,16 +86,21 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private Connection connection;
     private final JdbcConnector connector;
-    private IProgressMonitor monitor;
+    private final IProgressMonitor monitor;
     private final PgDiffArguments args;
 
-    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments){
-        this.connector = connector;
-        this.args = pgDiffArguments;
+    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
+        this(connector, pgDiffArguments, new NullProgressMonitor());
     }
 
-    public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException, InterruptedException{
-        monitor = mon == null ? new NullProgressMonitor() : SubMonitor.convert(mon, 1);
+    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
+            IProgressMonitor monitor) {
+        this.connector = connector;
+        this.args = pgDiffArguments;
+        this.monitor = monitor;
+    }
+
+    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         try {
@@ -806,17 +807,8 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private PgSelect parseAntLrSelect(PgDatabase db, String statement) {
-        CustomErrorListener errListener = new CustomErrorListener();
-
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(statement));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errListener);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        SQLParser parser = new SQLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errListener);
-        CreateView cv = new CreateView(null, db, Paths.get("/"));
+        SQLParser parser = AntlrParser.makeBasicParser(statement, getCurrentLocation());
+        CreateView cv = new CreateView(null, db);
         return cv.createSelect(parser.query_expression());
     }
 
@@ -953,16 +945,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private GenericColumn parseFunctionCall(String string) {
-        CustomErrorListener errListener = new CustomErrorListener();
-
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(string));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errListener);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        SQLParser parser = new SQLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errListener);
+        SQLParser parser = AntlrParser.makeBasicParser(string, getCurrentLocation());
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, parser.value_expression());
         return new GenericColumn(ParserAbstract.getSchemaName(fs.getValue()),
@@ -1064,17 +1047,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private String parseWhen(String string) {
-        CustomErrorListener errListener = new CustomErrorListener();
-
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(string));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errListener);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        SQLParser parser = new SQLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errListener);
-
+        SQLParser parser = AntlrParser.makeBasicParser(string, getCurrentLocation());
         WhenListener whenListener = new WhenListener();
         ParseTreeWalker.DEFAULT.walk(whenListener, parser.schema_create());
         return whenListener.getWhen();
@@ -1184,16 +1157,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void parseArguments(String args, PgFunction f, String schemaName) {
-        CustomErrorListener errListener = new CustomErrorListener();
-
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(args));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errListener);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        SQLParser parser = new SQLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errListener);
+        SQLParser parser = AntlrParser.makeBasicParser(args, getCurrentLocation());
         ParserAbstract.fillArguments(parser.function_args(), f, schemaName);
     }
 
@@ -1480,5 +1444,10 @@ public class JdbcLoader implements PgCatalogStrings {
      */
     private String getRoleNameByOid(Long roleOid){
         return roleOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(roleOid);
+    }
+
+    private String getCurrentLocation() {
+        // TODO jdbc current processing location
+        return "STUB~~jdbc:/schema/object?/subobj?";
     }
 }

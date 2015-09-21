@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -10,10 +8,10 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterDomain extends ParserAbstract {
 
-    private Alter_domain_statementContext ctx;
+    private final Alter_domain_statementContext ctx;
 
-    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

@@ -1,13 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -20,12 +18,13 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateRule extends ParserAbstract {
-    private Rule_commonContext ctx;
+    private final Rule_commonContext ctx;
 
-    public CreateRule(Rule_commonContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    public CreateRule(Rule_commonContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -56,11 +55,11 @@ public class CreateRule extends ParserAbstract {
                 PgFunction func = new PgFunction(getName(functparam.name), null);
                 fillArguments(functparam.function_args(), func, getDefSchemaName());
                 db.getSchema(getDefSchemaName())
-                        .getFunction(func.getSignature())
-                        .addPrivilege(
-                                new PgPrivilege(ctx.REVOKE() != null,
-                                        getFullCtxText(ctx.body_rule),
-                                        getFullCtxText(ctx)));
+                .getFunction(func.getSignature())
+                .addPrivilege(
+                        new PgPrivilege(ctx.REVOKE() != null,
+                        getFullCtxText(ctx.body_rule),
+                        getFullCtxText(ctx)));
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -77,7 +76,7 @@ public class CreateRule extends ParserAbstract {
             obj_name = ctx.body_rule.on_domain().obj_name.name;
         }
 
-        
+
         for (Schema_qualified_nameContext name : obj_name) {
             addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
                     col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)),
@@ -146,12 +145,12 @@ public class CreateRule extends ParserAbstract {
             // добавляется тут ко всему объекту
             if (tblPrivilege.length() > 0) {
                 addToDB(tbl, DbObjType.TABLE,
-                        new PgPrivilege(ctx.REVOKE() != null, 
-                            MessageFormat.format(tblPrivilege.toString(), firstPart), 
-                            getFullCtxText(ctx)),
-                            null);
+                        new PgPrivilege(ctx.REVOKE() != null,
+                        MessageFormat.format(tblPrivilege.toString(), firstPart),
+                        getFullCtxText(ctx)),
+                        null);
             }
-            
+
             // Если таблица, то поискать в ней колонки и добавить в каждую свою привилегию
             if (tblSt != null) {
                 for (String colName : colPriv.keySet()) {
@@ -166,7 +165,7 @@ public class CreateRule extends ParserAbstract {
                         privilege.setLength(privilege.length() - 2);
                         privilege.append(" ON TABLE ").append(firstPart).append(" ");
                         privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
-                        
+
                         col.addPrivilege(new PgPrivilege(ctx.REVOKE() != null,
                                 privilege.toString(), getFullCtxText(ctx)));
                     }
@@ -183,7 +182,7 @@ public class CreateRule extends ParserAbstract {
         String firstPart = getName(name);
         String secondPart = getTableName(name);
         String thirdPart = getSchemaName(name);
-        String schemaName = secondPart == null ? getDefSchemaName() : secondPart; 
+        String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
         PgStatement statement = null;
         switch (type) {
         case TABLE:

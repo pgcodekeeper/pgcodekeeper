@@ -22,8 +22,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
@@ -321,22 +321,18 @@ public class PgDiffTest {
 
     @Test
     public void runDiff() throws IOException, InterruptedException {
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDatabase dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDiffTest.class.getResourceAsStream(
-                        fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL),
-                arguments, null, 0);
-        PgDatabase dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDiffTest.class.getResourceAsStream(
-                        fileNameTemplate + FILES_POSTFIX.NEW_SQL),
-                arguments, null, 0);
+        PgDiffArguments args = new PgDiffArguments();
+        PgDatabase dbOld = ApgdiffTestUtils.loadTestDump(
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
+        PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL, PgDiffTest.class, args);
 
         runDiffSame(dbOld);
         runDiffSame(dbNew);
 
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, arguments, dbOld, dbNew);
+        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew);
         writer.flush();
 
         StringBuilder sbExpDiff;

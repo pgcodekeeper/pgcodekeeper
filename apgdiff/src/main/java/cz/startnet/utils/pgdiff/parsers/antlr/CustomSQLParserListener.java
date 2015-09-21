@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
@@ -42,80 +40,86 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private final PgDatabase db;
-    private final Path filePath;
+    private final String parsedObjectName;
     private String tablespace;
     private String oids;
 
-    public CustomSQLParserListener(PgDatabase database, Path filePath) {
+    public CustomSQLParserListener(PgDatabase database, String parsedObjectName) {
         this.db = database;
-        this.filePath = filePath;
+        this.parsedObjectName = parsedObjectName;
     }
 
-    Path getPath() {
-        return filePath;
+    private PgStatement safeParseStatement(ParserAbstract p) {
+        try {
+            return p.getObject();
+        } catch (Exception ex) {
+            Log.log(Log.LOG_WARNING, "Exception while analyzing parser tree for: "
+                    + parsedObjectName, ex);
+            return null;
+        }
     }
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        new CreateTable(ctx, db, filePath, tablespace, oids).getObject();
+        safeParseStatement(new CreateTable(ctx, db, tablespace, oids));
     }
 
     @Override
     public void exitIndex_statement(Index_statementContext ctx) {
-        new CreateIndex(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateIndex(ctx, db));
     }
 
     @Override
-    public void exitCreate_extension_statement(
-            Create_extension_statementContext ctx) {
-        new CreateExtension(ctx, db, filePath).getObject();
+    public void exitCreate_extension_statement(Create_extension_statementContext ctx) {
+        safeParseStatement(new CreateExtension(ctx, db));
     }
 
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        new CreateTrigger(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateTrigger(ctx, db));
     }
 
     @Override
-    public void exitCreate_function_statement(
-            Create_function_statementContext ctx) {
-        new CreateFunction(ctx, db, filePath).getObject();
+    public void exitCreate_function_statement(Create_function_statementContext ctx) {
+        safeParseStatement(new CreateFunction(ctx, db));
     }
 
     @Override
-    public void exitCreate_sequence_statement(
-            Create_sequence_statementContext ctx) {
-        new CreateSequence(ctx, db, filePath).getObject();
+    public void exitCreate_sequence_statement(Create_sequence_statementContext ctx) {
+        safeParseStatement(new CreateSequence(ctx, db));
     }
 
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
-        new CreateSchema(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateSchema(ctx, db));
     }
 
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
-        new CreateView(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateView(ctx, db));
     }
 
     @Override
     public void exitCreate_type_statement(Create_type_statementContext ctx) {
-        new CreateType(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateType(ctx, db));
     }
 
     @Override
     public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
-        new CreateDomain(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateDomain(ctx, db));
     }
 
     @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
-        new CommentOn(ctx, db, filePath).getObject();
+        safeParseStatement(new CommentOn(ctx, db));
     }
 
     @Override
@@ -151,41 +155,41 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
-        new CreateRule(ctx, db, filePath).getObject();
+        safeParseStatement(new CreateRule(ctx, db));
     }
 
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        new AlterFunction(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterFunction(ctx, db));
     }
 
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        new AlterSchema(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterSchema(ctx, db));
     }
 
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        new AlterTable(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterTable(ctx, db));
     }
 
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
-        new AlterSequence(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterSequence(ctx, db));
     }
 
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
-        new AlterView(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterView(ctx, db));
     }
 
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
-        new AlterType(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterType(ctx, db));
     }
 
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
-        new AlterDomain(ctx, db, filePath).getObject();
+        safeParseStatement(new AlterDomain(ctx, db));
     }
 }

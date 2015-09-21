@@ -5,7 +5,8 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -14,8 +15,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -24,11 +29,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Creates diff of two database schemas.
@@ -44,70 +44,47 @@ public final class PgDiff {
      *
      * @param writer    writer the output should be written to
      * @param arguments object containing arguments settings
+     * @throws IOException
+     * @throws InterruptedException
      */
-    public static PgDiffScript createDiff(final PrintWriter writer,
-            final PgDiffArguments arguments) {
+    public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
+            throws InterruptedException, IOException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase newDatabase = loadDatabaseSchema(
-                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
+                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
         return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
     }
 
     /**
-     * Creates diff on the two database schemas.
-     *
-     * @param writer         writer the output should be written to
-     * @param arguments      object containing arguments settings
-     * @param oldInputStream input stream of file containing dump of the
-     *                       original schema
-     * @param newInputStream input stream of file containing dump of the new
-     *                       schema
-     */
-    public static void createDiff(final PrintWriter writer,
-            final PgDiffArguments arguments, final InputStream oldInputStream,
-            final InputStream newInputStream) {
-        try {
-            PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                    oldInputStream, arguments, null, 1);
-            PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                    newInputStream, arguments, null, 1);
-            diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
-        } catch (InterruptedException ex) {
-            Log.log(Log.LOG_ERROR, "Parser cancelled unexpectedly!", ex);
-        }
-    }
-    
-    /**
      * Loads database schema choosing the provided method.
-     * 
+     *
      * @param format        format of the database source, must be "dump", "parsed" or "db"
      *                         otherwise exception is thrown
      * @param srcPath        path to the database source to load
      * @param arguments        object containing arguments settings
-     * 
+     *
      * @return the loaded database
+     * @throws IOException
+     * @throws InterruptedException
      */
-    static PgDatabase loadDatabaseSchema(final String format, final String srcPath,
-                final PgDiffArguments arguments) {
-        try {
-            if(format.equals("dump")) {
-                return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-                        arguments, null, 1);
-            } else if(format.equals("parsed")) {
-                return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                        arguments, null, 1, null);
-            } else if(format.equals("db")) {
-                throw new UnsupportedOperationException("DB connection is not yet implemented!");
+    static PgDatabase loadDatabaseSchema(String format, String srcPath,
+            PgDiffArguments arguments) throws InterruptedException, IOException {
+        if(format.equals("dump")) {
+            try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
+                return loader.load();
             }
-        } catch (InterruptedException ex) {
-            Log.log(Log.LOG_ERROR, "Parser cancelled unexpectedly!", ex);
+        } else if(format.equals("parsed")) {
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
+                    arguments, null, 1, null);
+        } else if(format.equals("db")) {
+            throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
-        
+
         throw new UnsupportedOperationException(
                 MessageFormat.format(Messages.UnknownDBFormat, format));
     }
-    
+
     /**
      * Creates diff from comparison of two database schemas.<br><br>
      * Following PgDiffArguments methods are called from this method:<br>
@@ -129,7 +106,7 @@ public final class PgDiff {
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 root, oldDbFull, newDbFull, null, null);
     }
-    
+
     /**
      * Делает то же, что и метод выше, однако принимает TreeElement - как
      * элементы нужные для наката
@@ -140,20 +117,20 @@ public final class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         PgDiffScript script = new PgDiffScript();
-        
+
         if (arguments.getTimeZone() != null) {
             script.addStatement(MessageFormat.format(
                     ApgdiffConsts.SET_TIMEZONE, arguments.getTimeZone()));
         }
-        
+
         if (!arguments.isCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false;");
         }
-        
+
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
-        
+
         depRes = null;
         if (oldDbFull != null && newDbFull != null) {
             try {
@@ -174,11 +151,11 @@ public final class PgDiff {
 
         List<TreeElement> selected = new ArrayList<>(2 * root.countDescendants());
         TreeElement.getSelected(root, selected);
-        
+
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         selected.addAll(addColumnsAsElements(oldDbFull, newDbFull, selected));
         // ---КОСТЫЛЬ-----------
-        
+
         Collections.sort(selected, new CompareTree());
         for (TreeElement st : selected) {
             switch (st.getSide()) {
@@ -195,7 +172,7 @@ public final class PgDiff {
             }
         }
         depRes.recreateDrops();
-        
+
         new ActionsToScriptConverter(depRes.getActions()).fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");
@@ -222,7 +199,7 @@ public final class PgDiff {
                 PgTable oldTbl =(PgTable) el.getPgStatement(oldDbFull);
                 PgTable newTbl =(PgTable) el.getPgStatement(newDbFull);
                 for (PgColumn oldCol : oldTbl.getColumns()) {
-                    PgColumn newCol = newTbl.getColumn(oldCol.getName()); 
+                    PgColumn newCol = newTbl.getColumn(oldCol.getName());
                     if (newCol == null) {
                         TreeElement col = new TreeElement(oldCol.getName(), DbObjType.COLUMN, DiffSide.LEFT);
                         col.setParent(el);

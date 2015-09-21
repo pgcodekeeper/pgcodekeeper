@@ -1,19 +1,16 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class AlterSchema extends ParserAbstract {
-    private Alter_schema_statementContext ctx;
+    private final Alter_schema_statementContext ctx;
 
-    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db,
-            Path filePath) {
-        super(db, filePath);
+    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

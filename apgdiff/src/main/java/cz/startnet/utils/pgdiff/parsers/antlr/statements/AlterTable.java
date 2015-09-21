@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,11 +18,10 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class AlterTable extends ParserAbstract {
 
-    private Alter_table_statementContext ctx;
+    private final Alter_table_statementContext ctx;
 
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db,
-            Path filePath) {
-        super(db, filePath);
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -35,7 +33,7 @@ public class AlterTable extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgTable tabl = db.getSchema(schemaName).getTable(name);
-        
+
         List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
@@ -134,7 +132,7 @@ public class AlterTable extends ParserAbstract {
         if (table.getColumn(getName(tablAction.column)) == null) {
             PgColumn col = new PgColumn(getName(tablAction.column));
             String number = tablAction.integer.getText();
-            
+
             col.setStatistics(Integer.valueOf(number));
             table.addColumn(col);
         } else {

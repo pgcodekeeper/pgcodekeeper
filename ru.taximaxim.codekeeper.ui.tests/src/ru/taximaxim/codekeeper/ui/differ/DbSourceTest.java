@@ -26,7 +26,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
@@ -53,9 +52,8 @@ public class DbSourceTest {
 
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
-                JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
-                args, null, 1);
+        dbPredefined = ApgdiffTestUtils.loadTestDump(
+                TEST.RESOURCE_DUMP, JdbcLoaderTest.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();

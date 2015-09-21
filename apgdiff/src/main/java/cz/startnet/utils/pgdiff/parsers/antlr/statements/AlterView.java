@@ -1,18 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class AlterView extends ParserAbstract {
-    private Alter_view_statementContext ctx;
+    private final Alter_view_statementContext ctx;
 
-    public AlterView(Alter_view_statementContext ctx, PgDatabase db,
-            Path filePath) {
-        super(db, filePath);
+    public AlterView(Alter_view_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

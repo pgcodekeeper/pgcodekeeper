@@ -38,6 +38,7 @@ import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -135,16 +136,15 @@ public class PgAntlrLoaderTest {
     }
 
     @Test
-    public void loadSchema() throws InterruptedException {
+    public void loadSchema() throws InterruptedException, IOException {
 
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
-        PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
-                null, 1);
+        PgDatabase d = ApgdiffTestUtils.loadTestDump(
+                filename, PgAntlrLoaderTest.class, args);
 
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {
@@ -184,9 +184,8 @@ public class PgAntlrLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
-        PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgAntlrLoaderTest.class.getResourceAsStream(filename), args,
-                null, 1);
+        PgDatabase dbFromFile = ApgdiffTestUtils.loadTestDump(
+                filename, PgAntlrLoaderTest.class, args);
 
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
@@ -214,6 +213,8 @@ public class PgAntlrLoaderTest {
             }
         }
     }
+
+
 
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!

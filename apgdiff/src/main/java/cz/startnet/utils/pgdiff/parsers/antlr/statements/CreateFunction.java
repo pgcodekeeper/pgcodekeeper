@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -16,8 +14,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
-    public CreateFunction(Create_function_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

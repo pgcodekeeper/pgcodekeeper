@@ -1,25 +1,24 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
-import java.nio.file.Path;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation implements Serializable {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -7110926210150404390L;
     private final GenericColumn objName;
     private final int offset;
-    private final Path filePath;
+    private final String filePath;
     private final int lineNumber;
-    
+
     private DbObjType type;
     private String comment = "";
     private int objLength;
     private StatementActions action;
-    
+
     public StatementActions getAction() {
         return action;
     }
@@ -32,11 +31,11 @@ public class PgObjLocation implements Serializable {
     public GenericColumn getObject() {
         return objName;
     }
-    
+
     public String getObjName() {
         return objName.table != null ? objName.table : "";
     }
-    
+
     public int getOffset() {
         return offset;
     }
@@ -47,46 +46,46 @@ public class PgObjLocation implements Serializable {
         if (type == DbObjType.FUNCTION) {
             return objLength;
         }
-//        if (objName.schema != null) {
-//            length += objName.schema.length(); 
-//        }
+        //        if (objName.schema != null) {
+        //            length += objName.schema.length();
+        //        }
         if (objName.table != null) {
-            length += objName.table.length(); 
+            length += objName.table.length();
         }
-//        if (objName.column != null) {
-//            length += objName.table.length(); 
-//        }
+        //        if (objName.column != null) {
+        //            length += objName.table.length();
+        //        }
         return length;
     }
-    
+
     public int getLineNumber() {
         return lineNumber;
     }
 
-    public Path getFilePath() {
+    public String getFilePath() {
         return filePath;
     }
-    
+
     public DbObjType getObjType() {
         return type;
     }
-    
+
     public void setObjType(DbObjType type) {
         this.type = type;
     }
-    
+
     public void setObjNameLength(int length) {
         this.objLength = length;
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
-            Path filePath, int lineNumber) {
+            String filePath, int lineNumber) {
         this.objName = new GenericColumn(schema, name, column);
         this.offset = offset;
         this.filePath = filePath;
         this.lineNumber = lineNumber;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -101,7 +100,7 @@ public class PgObjLocation implements Serializable {
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -112,7 +111,7 @@ public class PgObjLocation implements Serializable {
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
-    
+
     @Override
     public String toString() {
         return getObjName() + " " + filePath + " " + offset + " " + getObjLength() + " " + type;

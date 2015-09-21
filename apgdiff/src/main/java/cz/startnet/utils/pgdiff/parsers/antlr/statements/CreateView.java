@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,9 +33,8 @@ public class CreateView extends ParserAbstract {
 
     private final Create_view_statementContext ctx;
 
-    public CreateView(Create_view_statementContext ctx, PgDatabase db,
-            Path filePath) {
-        super(db, filePath);
+    public CreateView(Create_view_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -71,6 +69,9 @@ public class CreateView extends ParserAbstract {
      * результаты, вычитая имена подзапросов из общих имен
      */
     public PgSelect createSelect(Query_expressionContext ctx) {
+        if(true) {
+            throw new RuntimeException("AAAAAAAA");
+        }
         // пробежаться по запросу вычитывая подзапросы с with
         WithListener with = new WithListener();
         ParseTreeWalker.DEFAULT.walk(with, ctx);

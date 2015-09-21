@@ -8,16 +8,29 @@ import java.text.MessageFormat;
 
 import org.junit.Assert;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-public class ApgdiffTestUtils {
-    
+public final class ApgdiffTestUtils {
+
     private static final String REMOTE_DROPDB_SQL = "remote/dropdb.sql";
     private static final String REMOTE_CREATEDB_SQL = "remote/createdb.sql";
-    
+
+    public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
+            throws IOException, InterruptedException {
+        try (PgDumpLoader loader = new PgDumpLoader(
+                c.getResourceAsStream(resource),
+                "test:/" + c.getName() + '/' + resource,
+                args)) {
+            return loader.load();
+        }
+    }
+
     public static void createDB(String dbName) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, TEST.REMOTE_DB,
@@ -38,16 +51,16 @@ public class ApgdiffTestUtils {
                     + res, "success", res);
         }
     }
-    
+
     public static void fillDB(String dbName) throws IOException {
         fillDB(dbName, JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP));
     }
-    
+
     public static void fillDB(String dbName, InputStream in) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName,
                 ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
-     // dump schemas back
+        // dump schemas back
         try (InputStreamReader isr = new InputStreamReader(
                 in,
                 "UTF-8");
@@ -65,7 +78,7 @@ public class ApgdiffTestUtils {
                     + res, "success", res);
         }
     }
-    
+
     public static void dropDB(String dbName) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, TEST.REMOTE_DB,
@@ -86,6 +99,7 @@ public class ApgdiffTestUtils {
                     "success", res);
         }
     }
-    
-    private ApgdiffTestUtils() {}
+
+    private ApgdiffTestUtils() {
+    }
 }

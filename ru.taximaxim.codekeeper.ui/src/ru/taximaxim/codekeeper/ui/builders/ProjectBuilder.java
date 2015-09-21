@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.builders;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,7 +14,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -31,37 +31,36 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             parser = PgDbParser.getParserForBuilder(proj, monitor);
         } catch (InterruptedException ex) {
             // cancelled
-        } finally {
-            // parser loaded from scratch or cancelled in the process
-            // no futher changes to load
-            if (parser == null) {
-                return new IProject[] { proj };
-            }
+        } catch (IOException ex) {
+            throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
         }
-        
+
+        // parser loaded from scratch or cancelled in the process
+        // no futher changes to load
+        if (parser == null) {
+            return new IProject[] { proj };
+        }
+
         switch (kind) {
         case IncrementalProjectBuilder.AUTO_BUILD:
         case IncrementalProjectBuilder.INCREMENTAL_BUILD:
             IResourceDelta delta = getDelta(getProject());
-            try {
-                buildIncrement(delta, parser, monitor);
-            } catch (CoreException ex) {
-                Log.log(Log.LOG_ERROR, "Error processing build delta", ex); //$NON-NLS-1$
-            }
+            buildIncrement(delta, parser, monitor);
             break;
-            
+
         case IncrementalProjectBuilder.FULL_BUILD:
             try {
                 parser.getObjFromProject(monitor);
             } catch (InterruptedException ex) {
                 // cancelled
-                break;
+            } catch (IOException ex) {
+                throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
             }
             break;
         }
         return new IProject[] { proj };
     }
-    
+
     private void buildIncrement(IResourceDelta delta, final PgDbParser parser,
             IProgressMonitor monitor) throws CoreException {
         final AtomicInteger count = new AtomicInteger();
@@ -76,11 +75,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             }
         });
         final SubMonitor sub = SubMonitor.convert(monitor, count.get());
-        
+
         delta.accept(new IResourceDeltaVisitor() {
-            
+
             @Override
-            public boolean visit(IResourceDelta delta) {
+            public boolean visit(IResourceDelta delta) throws CoreException {
                 if (sub.isCanceled()) {
                     return false;
                 }
@@ -88,21 +87,23 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     return true;
                 }
                 sub.worked(1);
-                
+
                 switch (delta.getKind()) {
                 case IResourceDelta.REMOVED:
                 case IResourceDelta.REMOVED_PHANTOM:
                 case IResourceDelta.REPLACED:
                     parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
                     break;
-                    
+
                 default:
                     try {
-                        parser.getObjFromProjFile(delta.getResource().getLocationURI(),
-                                sub);
+                        parser.getObjFromProjFile(
+                                delta.getResource().getLocationURI(), sub);
                     } catch (InterruptedException e) {
                         // cancelled
                         return false;
+                    } catch (IOException ex) {
+                        throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
                     }
                     break;
                 }

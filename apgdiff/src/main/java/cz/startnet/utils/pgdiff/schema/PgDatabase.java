@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,9 +36,9 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredDataStatements = new ArrayList<>();
 
     // Contains object definitions
-    private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
-    private final Map<Path, List<PgObjLocation>> objReferences = new HashMap<>();
+    private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
 
     private PgDiffArguments arguments;
 
@@ -91,11 +90,11 @@ public class PgDatabase extends PgStatement {
         return arguments;
     }
 
-    public Map<Path, List<PgObjLocation>> getObjDefinitions() {
+    public Map<String, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    public Map<Path, List<PgObjLocation>> getObjReferences() {
+    public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
     /*

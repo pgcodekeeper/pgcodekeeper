@@ -38,36 +38,36 @@ public class MainTest {
     @Parameters
     public static Collection<?> parameters() {
         return Arrays.asList(new ArgumentsProvider[][]{
-                                {new ArgumentsProvider_usage()},
-                                {new ArgumentsProvider_2()},
-                                {new ArgumentsProvider_3()},
-                                {new ArgumentsProvider_4()},
-                                {new ArgumentsProvider_5()},
-                                {new ArgumentsProvider_6()},
-                                {new ArgumentsProvider_7()},
-                                {new ArgumentsProvider_unsupportedDbFormat()},
-                                {new ArgumentsProvider_9()},
-                                {new ArgumentsProvider_DangerTbl()},
-                                {new ArgumentsProvider_DangerTblOk()},
-                                {new ArgumentsProvider_DangerDropCol()},
-                                {new ArgumentsProvider_DangerDropColOk()},
-                                {new ArgumentsProvider_DangerAlterCol()},
-                                {new ArgumentsProvider_DangerAlterColOk()},
-                                {new ArgumentsProvider_DangerSequenceRestartWith()},
-                                {new ArgumentsProvider_DangerSequenceRestartWithok()},
-                                {new ArgumentsProvider_16()},
-                                {new ArgumentsProvider_17()},
-                            });
+            {new ArgumentsProvider_usage()},
+            {new ArgumentsProvider_2()},
+            {new ArgumentsProvider_3()},
+            {new ArgumentsProvider_4()},
+            {new ArgumentsProvider_5()},
+            {new ArgumentsProvider_6()},
+            {new ArgumentsProvider_7()},
+            {new ArgumentsProvider_unsupportedDbFormat()},
+            {new ArgumentsProvider_9()},
+            {new ArgumentsProvider_DangerTbl()},
+            {new ArgumentsProvider_DangerTblOk()},
+            {new ArgumentsProvider_DangerDropCol()},
+            {new ArgumentsProvider_DangerDropColOk()},
+            {new ArgumentsProvider_DangerAlterCol()},
+            {new ArgumentsProvider_DangerAlterColOk()},
+            {new ArgumentsProvider_DangerSequenceRestartWith()},
+            {new ArgumentsProvider_DangerSequenceRestartWithok()},
+            {new ArgumentsProvider_16()},
+            {new ArgumentsProvider_17()},
+        });
     }
 
     private final ArgumentsProvider args;
-    
+
     public MainTest(ArgumentsProvider args) {
         this.args = args;
     }
-    
+
     @Test
-    public void mainTest() throws IOException, URISyntaxException{
+    public void mainTest() throws IOException, URISyntaxException, InterruptedException{
         switch (args.testType) {
         case TEST_DIFF:
             Main.main(args.arguments());
@@ -75,7 +75,7 @@ public class MainTest {
             File predefined = args.getPredefinedResultFile();
             assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
             assertTrue("Resulting file does not exist: " + resFile.getAbsolutePath(), resFile.exists());
-            
+
             assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
             assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
@@ -85,59 +85,59 @@ public class MainTest {
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
-            try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+            try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PrintStream ps = new PrintStream(baos)){
                 System.setOut(ps);
-                
+
                 Main.main(args.arguments());
-                
+
                 System.out.flush();
                 assertEquals("Output is not as expected", args.output(), baos.toString());
             }finally{
-                System.setOut(old);                
+                System.setOut(old);
             }
             break;
         }
     }
-    
+
     @After
     public void closeResources(){
         args.close();
     }
-    
+
     private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException{
         try (InputStreamReader isr1 = new InputStreamReader(new FileInputStream(f1), "UTF-8");
                 BufferedReader reader1 = new BufferedReader(isr1);
                 InputStreamReader isr2 = new InputStreamReader(new FileInputStream(f2), "UTF-8");
                 BufferedReader reader2 = new BufferedReader(isr2);) {
-    
+
             String line1, line2;
             while((line1 = getNextLine(reader1)) != null & (line2 = getNextLine(reader2)) != null ) {
                 if(!line1.equals(line2)){
                     return false;
                 }
             }
-            
+
             if (line1 == line2){
                 return true;
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Iterates through <code>reader</code> line by line until reaches not empty line or EOF
-     * 
+     *
      * @return  next not empty line or null if EOF is reached
      */
     private String getNextLine(BufferedReader reader) throws IOException{
         String nextLine;
-        
+
         while((nextLine = reader.readLine()) != null && nextLine.equals("")){
             // skip to next line
         }
-        
+
         return nextLine;
     }
 }
@@ -145,18 +145,18 @@ public class MainTest {
 abstract class ArgumentsProvider implements Closeable{
 
     enum TestType {TEST_OUTPUT, TEST_DIFF, TEST_PARSE}
-    
+
     public TestType testType = TestType.TEST_OUTPUT;
     public String resName = null;
     public File resFile = null;
     public File resDir = null;
-    
+
     public abstract String[] arguments() throws URISyntaxException, IOException;
-    
+
     public String output(){
         return "";
     }
-    
+
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
         return ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.DIFF_SQL));
     }
@@ -164,11 +164,11 @@ abstract class ArgumentsProvider implements Closeable{
     public File getDiffResultFile() throws IOException {
         return null;
     }
-    
+
     public File getParseResultDir() throws IOException {
         return null;
     }
-    
+
     @Override
     public void close() {
         try{
@@ -178,7 +178,7 @@ abstract class ArgumentsProvider implements Closeable{
         }catch(Exception e){
             // do nothing
         }
-        
+
         try{
             if (resDir != null && resDir.isDirectory()){
                 deleteRecursive(resDir);
@@ -187,7 +187,7 @@ abstract class ArgumentsProvider implements Closeable{
             // do nothing
         }
     }
-    
+
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
      */
@@ -230,7 +230,7 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
     @Override
     public String output() {
         BundleContext ctx = Activator.getContext();
-        return MessageFormat.format(Messages.Version, 
+        return MessageFormat.format(Messages.Version,
                 ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion()) + '\n';
     }
 }
@@ -293,27 +293,27 @@ class ArgumentsProvider_5 extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing diff
  */
 class ArgumentsProvider_6 extends ArgumentsProvider{
-    
+
     {
         super.resName = "add_cluster";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+
+        return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE",
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -322,51 +322,51 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing diff
  */
 class ArgumentsProvider_7 extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_function_args2";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE",
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing wrong source db format 
+ * {@link ArgumentsProvider} implementation testing wrong source db format
  */
 class ArgumentsProvider_unsupportedDbFormat extends ArgumentsProvider{
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", 
+        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE",
                 getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @SuppressWarnings("resource")
     @Override
     public String output() {
@@ -375,25 +375,25 @@ class ArgumentsProvider_unsupportedDbFormat extends ArgumentsProvider{
 }
 
 /**
- * {@link ArgumentsProvider} implementation testing wrong source db format 
+ * {@link ArgumentsProvider} implementation testing wrong source db format
  */
 class ArgumentsProvider_9 extends ArgumentsProvider{
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", 
+        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE",
                 getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @SuppressWarnings("resource")
     @Override
     public String output() {
@@ -405,29 +405,29 @@ class ArgumentsProvider_9 extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
  */
 class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
-    
+
     {
         super.resName = "drop_table";
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @Override
     public String output() {
         return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
@@ -438,27 +438,27 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing successful dangerous statements
  */
 class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
-    
+
     {
         super.resName = "drop_table";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE",
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -467,29 +467,29 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
  */
 class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
-    
+
     {
         super.resName = "drop_column";
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @Override
     public String output() {
         return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
@@ -500,28 +500,28 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing successful dangerous statements
  */
 class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
-    
+
     {
         super.resName = "drop_column";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
-                "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl",
+                "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
                 getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -530,17 +530,17 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
  */
 class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_column_type";
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
 
@@ -549,10 +549,10 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @Override
     public String output() {
         return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
@@ -563,28 +563,28 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing successful dangerous statements
  */
 class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
-                "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl",
+                "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
                 getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -594,29 +594,29 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
  * dangerous statements
  */
 class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_sequence_start_ignore_off";
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
-    
+
     @Override
     public String output() {
         return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
@@ -628,27 +628,27 @@ class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
  * dangerous statements
  */
 class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_sequence_start_ignore_off";
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
-                "RESTART_WITH", fOriginal.getAbsolutePath(), 
+
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl",
+                "RESTART_WITH", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -657,36 +657,36 @@ class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing all other flags
  */
 class ArgumentsProvider_16 extends ArgumentsProvider{
-    
+
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
-        
-        return new String[]{"--diff", "--output-ignored-statements", 
-                "--ignore-slony-triggers", "--add-transaction", 
+
+        return new String[]{"--diff", "--output-ignored-statements",
+                "--ignore-slony-triggers", "--add-transaction",
                 "--no-check-function-bodies", "--time-zone", "UTC",
-                "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
+                "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(),
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
-    
+
     @Override
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
         URL resourceUrl = MainTest.class.getResource("MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
         return ApgdiffUtils.getFileFromOsgiRes(resourceUrl);
     }
-    
+
     @Override
     public File getDiffResultFile() throws IOException {
         if (resFile == null){
             resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
         }
-        
+
         return resFile;
     }
 }
@@ -695,25 +695,25 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
  * {@link ArgumentsProvider} implementation testing parsing option
  */
 class ArgumentsProvider_17 extends ArgumentsProvider{
-    
+
     {
         super.resName = "loader/remote/testing_dump.sql";
         super.testType = TestType.TEST_PARSE;
     }
-    
+
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
         File db = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName));
-        
+
         return new String[]{"--parse", db.getAbsolutePath(), getParseResultDir().getAbsolutePath()};
     }
-    
+
     @Override
     public File getParseResultDir() throws IOException {
         if (resDir == null){
             resDir = Files.createTempDirectory("pgcodekeeper_standalone_").toFile();
         }
-        
+
         return resDir;
     }
 }

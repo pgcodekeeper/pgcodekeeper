@@ -4,7 +4,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -17,14 +16,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.CoreException;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -40,21 +38,15 @@ public class ProjectUpdaterTest {
 
     @Before
     public void before() throws IOException, InterruptedException{
-        try(InputStream isOld = ProjectUpdaterTest.class.getResourceAsStream("old.sql"); //$NON-NLS-1$
-                InputStream isNew = ProjectUpdaterTest.class.getResourceAsStream("new.sql");){ //$NON-NLS-1$
-            Assert.assertNotNull("Could not load resource", isOld); //$NON-NLS-1$
-            Assert.assertNotNull("Could not load resource", isNew); //$NON-NLS-1$
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ENCODING);
+        dbOld = ApgdiffTestUtils.loadTestDump(
+                "old.sql", ProjectUpdaterTest.class, args);
 
-            PgDiffArguments args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, args,
-                    null, 1);
-
-            args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, args,
-                    null, 1);
-        }
+        args = new PgDiffArguments();
+        args.setInCharsetName(ENCODING);
+        dbNew = ApgdiffTestUtils.loadTestDump(
+                "new.sql", ProjectUpdaterTest.class, args);
 
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
         referenceDir = new TempDir("test_old"); //$NON-NLS-1$

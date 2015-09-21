@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +21,8 @@ public class CreateTable extends ParserAbstract {
     private final String tablespace;
     private final String oids;
 
-    public CreateTable(Create_table_statementContext ctx, PgDatabase db, Path filePath, String tablespace, String oids) {
-        super(db, filePath);
+    public CreateTable(Create_table_statementContext ctx, PgDatabase db, String tablespace, String oids) {
+        super(db);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.oids = oids;

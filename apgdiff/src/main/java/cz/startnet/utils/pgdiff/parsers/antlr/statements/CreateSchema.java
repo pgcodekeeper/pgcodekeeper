@@ -1,18 +1,16 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateSchema extends ParserAbstract {
-    private Create_schema_statementContext ctx;
-    public CreateSchema(Create_schema_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    private final Create_schema_statementContext ctx;
+    public CreateSchema(Create_schema_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -36,9 +34,9 @@ public class CreateSchema extends ParserAbstract {
         }
         PgSchema exists = db.getSchema(schema.getName());
         if (exists == null) {
-            db.addSchema((PgSchema) schema);
+            db.addSchema(schema);
         } else {
-            db.tryReplacePublicDef((PgSchema) schema);
+            db.tryReplacePublicDef(schema);
         }
         return schema;
     }

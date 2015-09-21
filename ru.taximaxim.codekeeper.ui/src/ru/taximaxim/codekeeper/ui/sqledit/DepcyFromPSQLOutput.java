@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
@@ -21,6 +22,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -29,37 +32,35 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
-    
+
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
             "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$",  //$NON-NLS-1$
-            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); 
-    
-    private List<PgStatement> objList;
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+    private final List<PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
-    private Differ differ;
+    private final Differ differ;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
-    private IProject proj;
+    private final IProject proj;
     private PgDbParser parser;
-    private List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+    private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     public List<FunctionBodyContainer> getFuncBodies() {
         return funcBodies;
     }
 
     private String script;
-    
+
     String dbHost;
     String dbPort;
     String dbName;
     String dbUser;
     String dbPass;
     private String scriptFileEncoding = ApgdiffConsts.UTF_8;
-    
+
     public String getScriptFileEncoding() {
         return scriptFileEncoding;
     }
@@ -74,14 +75,14 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             // Use UTF-8
         }
     }
-    
+
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {
         List<Entry<PgStatement, PgStatement>> saveToRestore = new ArrayList<>(
                 differ.getAdditionalDepciesSource());
         differ.addAdditionalDepciesSource(depcyToAdd);
         return saveToRestore;
     }
-    
+
     public String getRepeatedDepcy() {
         List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepciesSource();
         StringBuilder sb = new StringBuilder();
@@ -89,14 +90,14 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
                 sb.append(entry.getKey().getName())
-                    .append(" -> ") //$NON-NLS-1$
-                    .append(entry.getValue().getName())
-                    .append(UIConsts._NL);
+                .append(" -> ") //$NON-NLS-1$
+                .append(entry.getValue().getName())
+                .append(UIConsts._NL);
             }
         }
         return sb.toString();
     }
-    
+
     private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames() {
         List<Entry<PgStatement, PgStatement>> result = new ArrayList<>();
         for (Entry<String, String> entry : addDepcy) {
@@ -104,28 +105,28 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             PgStatement depcy2 = getPgObjByName(entry.getValue());
             if (depcy1 != null && depcy2 != null) {
                 result.add(new AbstractMap.SimpleEntry<>(
-                    depcy1, depcy2));
+                        depcy1, depcy2));
             }
         }
-        return result; 
+        return result;
     }
 
     public PgStatement getPgObjByName(String objName) {
         for (PgStatement obj : objList) {
             if (obj.getName().equals(objName)) {
-                return obj; 
+                return obj;
             }
         }
         return null;
     }
-    
+
     public boolean isAddDepcyEmpty() {
         return addDepcy.isEmpty();
     }
-    
-    // currently cannot be cancelled because of antlr 
+
+    // currently cannot be cancelled because of antlr
     public void updateParser(IProgressMonitor monitor)
-            throws CoreException, InterruptedException {
+            throws CoreException, InterruptedException, IOException {
         List<Listener> listener = new ArrayList<>();
         if (parser != null) {
             listener.addAll(parser.getListeners());
@@ -138,25 +139,25 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         listener.clear();
         parser.notifyListeners();
     }
-    
+
     public PgDbParser getParser() {
         return parser;
     }
     //------------------------------------------
     // From this only parsing from output begins
     //------------------------------------------
-    
+
     public void getDependenciesFromOutput(String output) {
         addDepcy = new ArrayList<>();
         if (output == null || output.isEmpty()) {
             return;
         }
-        
+
         int begin, end;
         begin = end = -1;
-        
-        // replacing all multiple spaces by single one, replacing CRLF by LF, 
-        // replacing all leading spaces for every line in the string 
+
+        // replacing all multiple spaces by single one, replacing CRLF by LF,
+        // replacing all leading spaces for every line in the string
         String replaced = output.replaceAll("[ ]{2,}", " ") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("\r\n", "\n") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("(\n[ ]+)", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -165,13 +166,13 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             String line = lines[i];
             if (PATTERN_ERROR.matcher(line).matches()) {
                 begin = i;
-            } 
+            }
             if (PATTERN_DROP_CASCADE.matcher(line).matches()) {
                 end = i;
                 break;
             }
         }
-        
+
         if (begin != -1 && end != -1 && (end - begin) >= 2) {
             String words[] = lines[begin + 1].split(Pattern.quote(" ")); //$NON-NLS-1$
             // parse first case separately, as it starts from extra word "details"
@@ -185,33 +186,33 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     private void parseDependencies(String[] lines, int begin, int end) {
         String space = Pattern.quote(" "); //$NON-NLS-1$
         for (int i = begin; i < end; i++) {
-            String words[] = lines[i].split(space); 
+            String words[] = lines[i].split(space);
             addDepcy.add(new AbstractMap.SimpleEntry<>(
                     words[1], words[words.length - 1]));
         }
     }
-    
+
     public String depcyToString() {
         StringBuilder sb = new StringBuilder();
         for (Entry<String, String> entry : addDepcy) {
-            sb.append(' '); 
+            sb.append(' ');
             sb.append(entry.getKey());
             sb.append(" -> "); //$NON-NLS-1$
             sb.append(entry.getValue());
-            sb.append(UIConsts._NL); 
+            sb.append(UIConsts._NL);
         }
         return sb.toString();
     }
-    
+
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
         this.dbHost = dbHost;
-        this.dbName = dbName; 
+        this.dbName = dbName;
         this.dbUser = dbUser;
         this.dbPass = dbPass;
         this.dbPort = dbPort;
     }
-    
+
     @Override
     public Object getAdapter(Class adapter) {
         // TODO Auto-generated method stub
@@ -250,7 +251,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     public void updateScript(String newScript) {
         script = newScript;
     }
-    
+
     @Override
     public IStorage getStorage() {
         try {
@@ -264,9 +265,9 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
 
     private class StringStorage implements IEncodedStorage {
-        
-        private String str;
-        
+
+        private final String str;
+
         public StringStorage(String str) {
             this.str = str;
         }

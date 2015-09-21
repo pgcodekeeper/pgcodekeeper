@@ -23,9 +23,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -139,19 +139,17 @@ public class PartialExporterTest {
     }
 
     @BeforeClass
-    public static void initDiffTree() throws InterruptedException {
+    public static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
-        dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PartialExporterTest.class.getResourceAsStream(sourceFilename),
-                args, null, 1);
+        dbSource = ApgdiffTestUtils.loadTestDump(
+                sourceFilename, PartialExporterTest.class, args);
         args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
-        dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PartialExporterTest.class.getResourceAsStream(targetFilename),
-                args, null, 1);
+        dbTarget = ApgdiffTestUtils.loadTestDump(
+                targetFilename, PartialExporterTest.class, args);
 
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);

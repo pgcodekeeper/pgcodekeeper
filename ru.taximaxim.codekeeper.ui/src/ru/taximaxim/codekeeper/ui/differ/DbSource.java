@@ -141,7 +141,7 @@ class DbSourceDirTree extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
@@ -219,7 +219,7 @@ class DbSourceFile extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_dump);
 
         try {
@@ -231,9 +231,11 @@ class DbSourceFile extends DbSource {
             monitor.setWorkRemaining(1000);
         }
 
-        return PgDumpLoader.loadDatabaseSchemaFromDump(filename,
+        try (PgDumpLoader loader = new PgDumpLoader(new File(filename),
                 getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
-                monitor, 2);
+                monitor, 2)) {
+            return loader.load();
+        }
     }
 
     private int countLines(String filename) throws IOException {
@@ -313,30 +315,32 @@ class DbSourceDb extends DbSource {
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-            return PgDumpLoader.loadDatabaseSchemaFromDump(
-                    dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone, forceUnixNewlines),
-                    monitor, 1);
+            try (PgDumpLoader loader = new PgDumpLoader(dump,
+                    getPgDiffArgs(encoding, timezone, forceUnixNewlines),
+                    monitor)) {
+                return loader.load();
+            }
         }
     }
 }
 
 class DbSourceJdbc extends DbSource {
 
-    private final JdbcLoader jdbcLoader;
+    private final JdbcConnector jdbcConnector;
+    private final PgDiffArguments args;
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             String encoding, String timezone, boolean forceUnixNewlines) {
         super(dbName);
-        jdbcLoader = new JdbcLoader(
-                new JdbcConnector(host, port, user, pass, dbName, encoding, timezone),
-                getPgDiffArgs(encoding, timezone, forceUnixNewlines));
+        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, encoding, timezone);
+        args = getPgDiffArgs(encoding, timezone, forceUnixNewlines);
     }
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        return jdbcLoader.getDbFromJdbc(monitor);
+        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
     }
 }
 

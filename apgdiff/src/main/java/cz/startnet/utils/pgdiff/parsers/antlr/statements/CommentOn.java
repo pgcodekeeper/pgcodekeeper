@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -16,8 +14,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
     private final Comment_on_statementContext ctx;
-    public CommentOn(Comment_on_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    public CommentOn(Comment_on_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

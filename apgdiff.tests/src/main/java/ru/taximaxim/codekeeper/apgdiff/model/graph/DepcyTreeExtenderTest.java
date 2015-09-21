@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,19 +13,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 /**
- * An abstract 'factory' that creates 'artificial' predefined objects 
+ * An abstract 'factory' that creates 'artificial' predefined objects
  * for specific test-cases
-*/
+ */
 abstract class TreeElementCreator {
 
     /**
@@ -38,13 +39,13 @@ abstract class TreeElementCreator {
      * @param db
      */
     public abstract Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree);
-    
+
     public abstract int getFileIndex();
-    
+
     public String getFilename(){
         return "depcy_schema_" + getFileIndex() + ".sql";
     }
-    
+
     public String getTargetFileName() {
         return "depcy_schema_new_"+getFileIndex() + ".sql";
     }
@@ -52,27 +53,25 @@ abstract class TreeElementCreator {
 
 /**
  * Tests for DepcyTreeExtender2 class
- * 
+ *
  * @author ryabinin_av
  */
 @RunWith(value = Parameterized.class)
 public class DepcyTreeExtenderTest {
-    
-    private final TreeElementCreator predefined;
-    
-    private PgDatabase dbSource;
-    private PgDatabase dbTarget;
 
-    public DepcyTreeExtenderTest(TreeElementCreator predefined) throws InterruptedException {
+    private final TreeElementCreator predefined;
+
+    private final PgDatabase dbSource;
+    private final PgDatabase dbTarget;
+
+    public DepcyTreeExtenderTest(TreeElementCreator predefined) throws InterruptedException, IOException {
         this.predefined = predefined;
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
-        this.dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(predefined.getFilename()),
-                args, null, 1);
-        this.dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(predefined.getTargetFileName()),
-                args, null, 1);
+        this.dbSource = ApgdiffTestUtils.loadTestDump(
+                predefined.getFilename(), DepcyTreeExtenderTest.class, args);
+        this.dbTarget = ApgdiffTestUtils.loadTestDump(
+                predefined.getTargetFileName(), DepcyTreeExtenderTest.class, args);
     }
 
     /**
@@ -82,19 +81,19 @@ public class DepcyTreeExtenderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
-// SONAR-OFF
+                    // SONAR-OFF
                     {new Predefined1()},
                     {new Predefined2()},
                     {new Predefined3()},
                     {new Predefined4()},
                     {new Predefined5()}
-// SONAR-ON
+                    // SONAR-ON
                 });
     }
-    
+
     /**
      * Тестирует зависимости от новых(и возможных edit) объектов, полученные из dte
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     @Test
     public void testGetDependencies() throws PgCodekeeperException, InterruptedException {
@@ -111,7 +110,7 @@ public class DepcyTreeExtenderTest {
  * Различаются объекты: добавились view v1, v2, у таблицы изменилась колонка с1,
  * пользователь выбрал v1, по зависимости подтянулась v2, и таблица t1 (т.к.
  * колонок нет в дереве)
- * 
+ *
  * @author botov_av
  *
  */
@@ -120,20 +119,20 @@ class Predefined1 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredTree() {
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-        
+
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
-        
+
         TreeElement table = new TreeElement("t1", DbObjType.TABLE, DiffSide.BOTH);
         publicSchema.addChild(table);
-        
+
         TreeElement view = new TreeElement("v2", DbObjType.VIEW, DiffSide.RIGHT);
         publicSchema.addChild(view);
-        
+
         view = new TreeElement("v1", DbObjType.VIEW, DiffSide.RIGHT);
         view.setSelected(true);
         publicSchema.addChild(view);
-        
+
         return database;
     }
 
@@ -160,14 +159,14 @@ class Predefined2 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredTree() {
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-        
+
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
-        
+
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.BOTH);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-        
+
         return database;
     }
 
@@ -185,7 +184,7 @@ class Predefined2 extends TreeElementCreator{
 /**
  * Тест устарел по причине разрыва цикла зависимостей между таблицей и сиквенсом.
  * Код закомментирован по этой причине.
- * 
+ *
  * Различаются объекты: новый сиквенс, пользователь выбрал его.
  */
 class Predefined3 extends TreeElementCreator{
@@ -193,22 +192,22 @@ class Predefined3 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredTree() {
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-        
+
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
-        
+
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-        
+
         return database;
     }
 
     @Override
     public Set<TreeElement> getDepcySet(PgDatabase source, PgDatabase target, TreeElement tree) {
-//        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-//        PgTable table = schema.getTable("t1");
-//        PgSequence seq = schema.getSequence("s1");
+        //        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+        //        PgTable table = schema.getTable("t1");
+        //        PgSequence seq = schema.getSequence("s1");
         return new HashSet<>(/*Arrays.asList(schema, table, seq)*/);
     }
 
@@ -221,7 +220,7 @@ class Predefined3 extends TreeElementCreator{
 /**
  * Различаются объекты: новый сиквенс и привилегия на схему public, пользователь
  * выбрал сиквенс, по зависимости подтянулась схема
- * 
+ *
  * @author botov_av
  *
  */
@@ -230,14 +229,14 @@ class Predefined4 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredTree() {
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-        
+
         TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(publicSchema);
-        
+
         TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
         seq.setSelected(true);
         publicSchema.addChild(seq);
-        
+
         return database;
     }
 
@@ -255,7 +254,7 @@ class Predefined4 extends TreeElementCreator{
 /**
  * Различаются объекты: новая таблица с новым внешним ключом, пользователь
  * выбрал внешний ключ, по зависимости тянется новая таблица
- * 
+ *
  * @author botov_av
  *
  */
@@ -264,17 +263,17 @@ class Predefined5 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredTree() {
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-        
+
         TreeElement republicSchema = new TreeElement("republic", DbObjType.SCHEMA, DiffSide.BOTH);
         database.addChild(republicSchema);
-        
+
         TreeElement table = new TreeElement("t_test2foreign", DbObjType.TABLE, DiffSide.RIGHT);
         republicSchema.addChild(table);
-        
+
         TreeElement cons = new TreeElement("fk_t_test2foreign", DbObjType.CONSTRAINT, DiffSide.RIGHT);
         cons.setSelected(true);
         table.addChild(cons);
-        
+
         return database;
     }
 

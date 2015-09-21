@@ -1,18 +1,16 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateIndex extends ParserAbstract {
     private final Index_statementContext ctx;
-    
-    public CreateIndex(Index_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+
+    public CreateIndex(Index_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -34,10 +32,10 @@ public class CreateIndex extends ParserAbstract {
             } else if(db.getSchema(schemaName).getTable(ind.getTableName()) == null) {
                 Log.log(Log.LOG_ERROR,
                         new StringBuilder().append("TABLE ")
-                                .append(ind.getTableName())
-                                .append(" not found on schema ").append(schemaName)
-                                .append(" That's why index ").append(name)
-                                .append("will be skipped").toString());
+                        .append(ind.getTableName())
+                        .append(" not found on schema ").append(schemaName)
+                        .append(" That's why index ").append(name)
+                        .append("will be skipped").toString());
                 return null;
             }
             db.getSchema(schemaName).getTable(ind.getTableName()).addIndex(ind);

@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,9 +17,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
@@ -58,13 +57,13 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         if (parser == null) {
             return null;
         }
-        
+
         List<IHyperlink> hyperlinks = new ArrayList<>();
         List<PgObjLocation> refs = new ArrayList<>();
         if (file != null) {
             refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
         } else {
-            Map<Path, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
+            Map<String, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
             PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);
             refs = PgDbParser.getAll(reference);
         }
@@ -98,7 +97,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             int lineNumber) {
         hyperlinks.add(new SQLEditorHyperLink(new Region(objDefinition
                 .getOffset(), objDefinition.getObjLength()), new Region(obj
-                .getOffset(), obj.getObjLength()), text, objDefinition
+                        .getOffset(), obj.getObjLength()), text, objDefinition
                 .getFilePath(), input, lineNumber));
     }
 }

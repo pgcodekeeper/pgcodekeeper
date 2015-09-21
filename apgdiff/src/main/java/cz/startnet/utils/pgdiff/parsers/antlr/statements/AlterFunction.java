@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -9,9 +7,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterFunction extends ParserAbstract {
 
-    private Alter_function_statementContext ctx;
-    public AlterFunction(Alter_function_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    private final Alter_function_statementContext ctx;
+    public AlterFunction(Alter_function_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

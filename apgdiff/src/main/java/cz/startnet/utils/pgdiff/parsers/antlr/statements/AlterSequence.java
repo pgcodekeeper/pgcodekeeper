@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -9,9 +7,9 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterSequence extends ParserAbstract {
-private Alter_sequence_statementContext ctx;
-    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    private final Alter_sequence_statementContext ctx;
+    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

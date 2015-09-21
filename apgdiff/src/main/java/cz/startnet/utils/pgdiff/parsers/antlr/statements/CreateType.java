@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,10 +15,10 @@ import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 
 public class CreateType extends ParserAbstract {
 
-    private Create_type_statementContext ctx;
+    private final Create_type_statementContext ctx;
 
-    public CreateType(Create_type_statementContext ctx, PgDatabase db, Path filePath) {
-        super(db, filePath);
+    public CreateType(Create_type_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 

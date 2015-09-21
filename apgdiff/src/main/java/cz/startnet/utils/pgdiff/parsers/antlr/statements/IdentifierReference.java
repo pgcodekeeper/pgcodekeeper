@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
@@ -10,11 +8,11 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class IdentifierReference extends ParserAbstract {
 
-    private Schema_qualified_nameContext ctx;
+    private final Schema_qualified_nameContext ctx;
 
-    public IdentifierReference(PgDatabase db, Path filePath,
+    public IdentifierReference(PgDatabase db,
             Schema_qualified_nameContext ctx) {
-        super(db, filePath);
+        super(db);
         this.ctx = ctx;
     }
 

@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +8,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
@@ -34,22 +32,21 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * Abstract Class contents common operations for parsing
  */
 public abstract class ParserAbstract {
     protected final PgDatabase db;
-    protected final Path filePath;
 
-    public ParserAbstract(PgDatabase db, Path filePath) {
+    public ParserAbstract(PgDatabase db) {
         this.db = db;
-        this.filePath = filePath;
     }
 
     /**
      * Parse object from context and return it
-     * 
+     *
      * @return parsed object
      */
     public abstract PgStatement getObject();
@@ -60,7 +57,7 @@ public abstract class ParserAbstract {
 
     /**
      * Extracts raw text from context
-     * 
+     *
      * @param ctx
      *            context
      * @return raw string
@@ -94,7 +91,7 @@ public abstract class ParserAbstract {
         }
         return removeQuotes(name.identifier(i));
     }
-    
+
     /**
      * Remove quotes from identifier
      * @param name identifier context
@@ -104,7 +101,7 @@ public abstract class ParserAbstract {
         String identifier = name.getText();
         // FIXME single identifier doesn't require splitNames
         String unquotedName = PgDiffUtils.splitNames(identifier)[0];
-        
+
         return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
     }
 
@@ -135,7 +132,7 @@ public abstract class ParserAbstract {
         }
         // i points on name
         switch (i) {
-            // its only name
+        // its only name
         case 0:
             return null;
             // may be unqualified table or schema name
@@ -185,7 +182,7 @@ public abstract class ParserAbstract {
         return col;
     }
     /**
-     * Made only for compatibility with apgdiff 
+     * Made only for compatibility with apgdiff
      * Should be removed after refactor!
      * @param fullCtxText
      * @return type of column
@@ -193,7 +190,7 @@ public abstract class ParserAbstract {
     private String getWrongColumn(Table_column_definitionContext colCtx) {
         ColumnDefinition cd = new ColumnDefinition();
         ParseTreeWalker.DEFAULT.walk(cd, colCtx);
-        
+
         PgColumn col = new PgColumn("");
         col.parseDefinition(getFullCtxText(colCtx.datatype) + " " + cd.getDefinition(), new StringBuilder(1));
         return col.getType();
@@ -228,11 +225,11 @@ public abstract class ParserAbstract {
         ParseTreeWalker.DEFAULT.walk(name, default_expr);
         return name.getSeqName();
     }
-    
+
     private static class SeqNameListener extends SQLParserBaseListener {
-        
+
         private String seqName;
-        
+
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
             GeneralLiteralSearch seq = new GeneralLiteralSearch();
@@ -245,7 +242,7 @@ public abstract class ParserAbstract {
             return seqName;
         }
     }
-    
+
     protected GenericColumn getFunctionCall(Value_expressionContext ctx) {
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, ctx);
@@ -255,9 +252,9 @@ public abstract class ParserAbstract {
         return new GenericColumn(getSchemaName(fs.getValue()),
                 getName(fs.getValue()), null);
     }
-    
+
     public static class FunctionSearcher extends SQLParserBaseListener {
-        private Schema_qualified_nameContext value; 
+        private Schema_qualified_nameContext value;
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
             String name = getName(ctx.schema_qualified_name());
@@ -271,7 +268,7 @@ public abstract class ParserAbstract {
             return value;
         }
     }
-    
+
     public static void fillArguments(Function_argsContext function_argsContext,
             PgFunction function, String defSchemaName) {
         for (Function_argumentsContext argument : function_argsContext
@@ -299,7 +296,7 @@ public abstract class ParserAbstract {
             function.addArgument(arg);
         }
     }
-    
+
     private static List<GenericColumn> parseDefValues(ParserRuleContext defExpression,
             final String defSchemaName) {
         final List<GenericColumn> funcSignature = new ArrayList<>();
@@ -335,7 +332,7 @@ public abstract class ParserAbstract {
             String scmName, String tblName) {
         String constrName = ctx.constraint_name == null ? "" : removeQuotes(ctx.constraint_name);
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
-        
+
         if (ctx.constr_body().FOREIGN() != null) {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
@@ -343,7 +340,7 @@ public abstract class ParserAbstract {
             String schemaName = getSchemaName(tblRef.reftable);
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
-            } 
+            }
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 constr.addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));
@@ -355,7 +352,7 @@ public abstract class ParserAbstract {
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
     }
-    
+
     /**
      * Вычитать PrimaryKey или Unique со списком колонок
      */
@@ -368,19 +365,19 @@ public abstract class ParserAbstract {
             constr.addColumn(new GenericColumn(scmName, tblName, getName(name)));
         }
     }
-    
+
     protected void logError(String object, String name) {
         Log.log(Log.LOG_ERROR, new StringBuilder(0).append("Cannot find ")
                 .append(object).append(" in database: ").append(name)
                 .toString());
     }
-    
+
     protected void logSkipedObject(String schema, String object, String name) {
         Log.log(Log.LOG_ERROR,
                 new StringBuilder(0).append("Cannot find schema ")
-                        .append(schema).append(" in database. ")
-                        .append("Thats why ").append(object).append(" ")
-                        .append(name).append("will be skipped").toString());
+                .append(schema).append(" in database. ")
+                .append("Thats why ").append(object).append(" ")
+                .append(name).append("will be skipped").toString());
     }
 
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
@@ -390,7 +387,7 @@ public abstract class ParserAbstract {
                 constr_name = getName(constr.name);
             }
             PgConstraint constraint = new PgConstraint(constr_name,
-                    getFullCtxText(constr));            
+                    getFullCtxText(constr));
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
             return constraint;
         }
@@ -410,7 +407,7 @@ public abstract class ParserAbstract {
         }
         return maxValue;
     }
-    
+
     /**
      * Извлекает правильное значение для минимального значения сиквенса
      */
@@ -425,7 +422,7 @@ public abstract class ParserAbstract {
         }
         return minValue;
     }
-    
+
     /**
      * Заполняет владельца
      * @param ctx контекст парсера с владельцем
