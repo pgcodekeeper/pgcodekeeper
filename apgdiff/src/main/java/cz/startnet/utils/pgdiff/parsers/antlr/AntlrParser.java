@@ -55,13 +55,7 @@ public class AntlrParser {
 
         return parser;
     }
-    /*
-    public static void parseInputStream(InputStream inputStream, String charsetName,
-            SQLParserBaseListener listener, String parsedObjectName) throws IOException {
-        parseInputStream(inputStream, charsetName, listener, parsedObjectName,
-                null, 0);
-    }
-     */
+
     public static void parseInputStream(InputStream inputStream, String charsetName,
             String parsedObjectName, SQLParserBaseListener listener,
             IProgressMonitor mon, final int monitoringLevel) throws IOException {

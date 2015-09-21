@@ -88,6 +88,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private final JdbcConnector connector;
     private final IProgressMonitor monitor;
     private final PgDiffArguments args;
+    private GenericColumn currentObject;
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, new NullProgressMonitor());
@@ -135,7 +136,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     prepareDataForSchema(res.getLong(OID));
                     PgDumpLoader.checkCancelled(monitor);
                     PgSchema schema = getSchema(res);
-                    if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
+                    if (ApgdiffConsts.PUBLIC.equals(schema.getName())) {
                         d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);
                     }else{
                         d.addSchema(schema);
@@ -158,7 +159,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             try {
                 connection.rollback();
             } catch (SQLException ex) {
@@ -166,10 +167,12 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             throw new IOException(MessageFormat.format(
                     Messages.Connection_DatabaseJdbcAccessError,
-                    e.getLocalizedMessage()), e);
+                    e.getLocalizedMessage(), getCurrentLocation()), e);
         } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
-            closeResources();
+            closeResources(connection, prepStatTables, prepStatViews, prepStatTriggers,
+                    prepStatFunctions, prepStatSequences, prepStatConstraints,
+                    prepStatIndices, prepStatColumnsOfSchema, prepStatTypes);
         }
         return d;
     }
@@ -214,61 +217,20 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatTypes = connection.prepareStatement(JdbcQueries.QUERY_TYPES_PER_SCHEMA);
     }
 
-    private void closeResources() {
-        try {
-            connection.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close JDBC connection", e);
-        }
-        try {
-            prepStatTables.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for tables", e);
-        }
-        try {
-            prepStatViews.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for views", e);
-        }
-        try {
-            prepStatTriggers.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for triggers", e);
-        }
-        try {
-            prepStatFunctions.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for functions", e);
-        }
-        try {
-            prepStatSequences.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for sequences", e);
-        }
-        try {
-            prepStatConstraints.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for constraints", e);
-        }
-        try {
-            prepStatIndices.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for indecies", e);
-        }
-        try {
-            prepStatColumnsOfSchema.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for schema columns", e);
-        }
-        try {
-            prepStatTypes.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_WARNING, "Could not close prepared statement for schema types", e);
+    private void closeResources(AutoCloseable... resources) {
+        for (int i = 0; i < resources.length; ++i) {
+            try {
+                resources[i].close();
+            } catch (Exception ex) {
+                Log.log(Log.LOG_WARNING, "Could not close JDBC resource: "
+                        + resources[i] + ", array index: " + i, ex);
+            }
         }
     }
 
     private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException, InterruptedException{
         String schemaName = res.getString(NAMESPACE_NSPNAME);
+        currentObject = new GenericColumn(schemaName, null, null);
         Long schemaOid = res.getLong(OID);
         PgSchema s = new PgSchema(schemaName, "");
 
@@ -341,7 +303,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resIndecies.getString("table_name"));
                 if (table != null){
-                    PgIndex index = getIndex(resIndecies, table.getName());
+                    PgIndex index = getIndex(resIndecies, schemaName, table.getName());
                     monitor.worked(1);
                     if (index != null){
                         table.addIndex(index);
@@ -351,7 +313,6 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // TRIGGERS
-
         prepStatTriggers.setLong(1, schemaOid);
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
@@ -409,7 +370,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private PgStatement getTypeDomain(ResultSet res, String schemaName) throws SQLException {
-        PgStatement st = null;
+        PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
             st = getDomain(res, schemaName);
@@ -429,6 +390,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgDomain getDomain(ResultSet res, String schemaName) throws SQLException {
         PgDomain d = new PgDomain(res.getString("typname"), "");
+        currentObject = new GenericColumn(schemaName, d.getName(), null);
 
         d.setDataType(res.getString("dom_basetype"));
         long collation = res.getLong("typcollation");
@@ -474,7 +436,8 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
         String name = res.getString("typname");
-        PgType t = null;
+        currentObject = new GenericColumn(schemaName, name, null);
+        PgType t;
         switch (typtype) {
         case "b":
             t = new PgType(name, PgTypeForm.BASE, "");
@@ -637,6 +600,8 @@ public class JdbcLoader implements PgCatalogStrings {
                 t.setCanonical(res.getString("rngsubdiff"));
             }
             break;
+        default:
+            t = null;
         }
         return t;
     }
@@ -660,17 +625,18 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
 
-        try(Statement stmnt = connection.createStatement()){
-            try(ResultSet res = stmnt.executeQuery(unionSeqCache.toString())){
-                while (res.next()){
-                    s.getSequence(res.getString("sequence_name")).setCache(res.getString("cache_value"));
-                }
+        try(Statement stmnt = connection.createStatement();
+                ResultSet res = stmnt.executeQuery(unionSeqCache.toString())){
+            while (res.next()){
+                s.getSequence(res.getString("sequence_name")).setCache(res.getString("cache_value"));
             }
         }
     }
 
     private PgExtension getExtension(ResultSet res) throws SQLException {
-        PgExtension e = new PgExtension(res.getString("extname"), "");
+        String extName = res.getString("extname");
+        currentObject = new GenericColumn(extName, null, null);
+        PgExtension e = new PgExtension(extName, "");
         e.setSchema(res.getString("namespace"));
 
         String comment = res.getString("description");
@@ -683,6 +649,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName)
             throws SQLException {
         String constraintName = res.getString("conname");
+        currentObject = new GenericColumn(schemaName, tableName, constraintName);
         String definition = res.getString("definition");
         PgConstraint c = new PgConstraint(constraintName, "");
 
@@ -744,6 +711,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgView getView(ResultSet res, String schemaName) throws SQLException {
         String viewName = res.getString(CLASS_RELNAME);
+        currentObject = new GenericColumn(schemaName, viewName, null);
 
         String viewDef = res.getString("definition").trim();
         if (viewDef.charAt(viewDef.length() - 1) == ';'){
@@ -814,6 +782,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
         String tableName = res.getString(CLASS_RELNAME);
+        currentObject = new GenericColumn(schemaName, tableName, null);
         String tableOwner = getRoleNameByOid(res.getLong(CLASS_RELOWNER));
 
         PgTable t = new PgTable(tableName, "");
@@ -979,6 +948,8 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgTrigger getTrigger(ResultSet res, String schemaName)
             throws SQLException, UnsupportedEncodingException {
         String triggerName = res.getString("tgname");
+        String tableName = res.getString("tgrelid");
+        currentObject = new GenericColumn(schemaName, tableName, triggerName);
         PgTrigger t = new PgTrigger(triggerName, "");
 
         int firingConditions = res.getInt("tgtype");
@@ -1003,7 +974,6 @@ public class JdbcLoader implements PgCatalogStrings {
             t.setBefore(false);
         }
 
-        String tableName = res.getString("tgrelid");
         t.setTableName(tableName);
 
         String funcName = res.getString("proname");
@@ -1053,8 +1023,9 @@ public class JdbcLoader implements PgCatalogStrings {
         return whenListener.getWhen();
     }
 
-    private PgIndex getIndex(ResultSet res, String tableName) throws SQLException {
+    private PgIndex getIndex(ResultSet res, String schemaName, String tableName) throws SQLException {
         String indexName = res.getString(CLASS_RELNAME);
+        currentObject = new GenericColumn(schemaName, tableName, indexName);
         PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
 
@@ -1095,6 +1066,7 @@ public class JdbcLoader implements PgCatalogStrings {
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
         String functionName = res.getString("proname");
+        currentObject = new GenericColumn(schemaName, functionName, null);
         PgFunction f = new PgFunction(functionName, "");
 
         f.setBody(args, getFunctionBody(res));
@@ -1264,6 +1236,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
         String sequenceName = res.getString(CLASS_RELNAME);
+        currentObject = new GenericColumn(schemaName, sequenceName, null);
         PgSequence s = new PgSequence(sequenceName, "");
         s.setCycle(res.getBoolean("cycle_option"));
         String increment = res.getString("increment");
@@ -1447,7 +1420,19 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private String getCurrentLocation() {
-        // TODO jdbc current processing location
-        return "STUB~~jdbc:/schema/object?/subobj?";
+        StringBuilder sb = new StringBuilder("jdbc:");
+        if (currentObject == null) {
+            return sb.append(currentObject).toString();
+        }
+        if (currentObject.schema != null) {
+            sb.append('/').append(currentObject.schema);
+        }
+        if (currentObject.table != null) {
+            sb.append('/').append(currentObject.table);
+        }
+        if (currentObject.column != null) {
+            sb.append('/').append(currentObject.column);
+        }
+        return sb.toString();
     }
 }
