@@ -214,8 +214,6 @@ public class PgAntlrLoaderTest {
         }
     }
 
-
-
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
      */

@@ -161,7 +161,8 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, int monLvl,
             List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException {
-        final PgDatabase db = new PgDatabase();
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
         File dir = new File(dirPath);
 
         // step 1

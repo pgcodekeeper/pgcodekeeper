@@ -69,9 +69,6 @@ public class CreateView extends ParserAbstract {
      * результаты, вычитая имена подзапросов из общих имен
      */
     public PgSelect createSelect(Query_expressionContext ctx) {
-        if(true) {
-            throw new RuntimeException("AAAAAAAA");
-        }
         // пробежаться по запросу вычитывая подзапросы с with
         WithListener with = new WithListener();
         ParseTreeWalker.DEFAULT.walk(with, ctx);
