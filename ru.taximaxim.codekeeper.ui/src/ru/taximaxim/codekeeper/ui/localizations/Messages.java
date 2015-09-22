@@ -278,7 +278,6 @@ public final class Messages extends NLS {
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_show_console_when_program_write_to_console;
-    public static String generalPrefPage_use_antrl;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
@@ -326,6 +325,8 @@ public final class Messages extends NLS {
     public static String OpenProjectUtils_unknown_proj_version;
 
     public static String OpenProjectUtils_version_error;
+
+    public static String PgDbParser_error_loading_db;
 
     public static String PgDbProject_error_creating_project;
     public static String PgDbProject_error_deleting_project;

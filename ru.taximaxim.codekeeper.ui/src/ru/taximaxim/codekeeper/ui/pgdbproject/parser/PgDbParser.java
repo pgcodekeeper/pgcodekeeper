@@ -35,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbParser implements IResourceChangeListener {
 
@@ -210,7 +211,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(scriptFileEncoding);
         @SuppressWarnings("resource")
-        PgDatabase db = new PgDumpLoader(input, "bytestream:/", args, monitor).load(true);
+        PgDatabase db = new PgDumpLoader(input, "bytestream:/", args, monitor).load(true); //$NON-NLS-1$
         objDefinitions = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjReferences());
     }
@@ -312,6 +313,6 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public static IStatus getLoadingErroStatus(IOException ex) {
-        return new Status(IStatus.ERROR, PLUGIN_ID.THIS, "Error loading database", ex);
+        return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.PgDbParser_error_loading_db, ex);
     }
 }
