@@ -1423,15 +1423,16 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder sb = new StringBuilder("jdbc:");
         if (currentObject == null) {
             return sb.append(currentObject).toString();
-        }
-        if (currentObject.schema != null) {
-            sb.append('/').append(currentObject.schema);
-        }
-        if (currentObject.table != null) {
-            sb.append('/').append(currentObject.table);
-        }
-        if (currentObject.column != null) {
-            sb.append('/').append(currentObject.column);
+        } else {
+            if (currentObject.schema != null) {
+                sb.append('/').append(currentObject.schema);
+            }
+            if (currentObject.table != null) {
+                sb.append('/').append(currentObject.table);
+            }
+            if (currentObject.column != null) {
+                sb.append('/').append(currentObject.column);
+            }
         }
         return sb.toString();
     }
