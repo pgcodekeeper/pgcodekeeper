@@ -267,8 +267,11 @@ public class CreateView extends ParserAbstract {
                 }
                 switch (col.getType()) {
                 case FUNCTION:
+                    // copy functions as is
+                    newColumns.add(col);
+                    break;
                 case COLUMN:
-                    if (col.column!= null && col.column.equals("*")) {
+                    if (col.column != null && col.column.equals("*")) {
                         GenericColumn unaliased = tableAliases.get(col.table);
                         if (unaliased != null) {
                             newColumns.add(new GenericColumn(unaliased.schema,
@@ -285,19 +288,16 @@ public class CreateView extends ParserAbstract {
                         }
                         continue;
                     }
-                    // не пытаемся резолвить вызовы функций
-                    if (col.getType() != ViewReference.FUNCTION) {
-                        GenericColumn unaliased = tableAliases.get(col.table);
-                        if (unaliased != null) {
-                            GenericColumn column = new GenericColumn(unaliased.schema,
-                                    unaliased.table, col.column);
-                            if (unaliased.getType() == ViewReference.FUNCTION) {
-                                column.setType(ViewReference.FUNCTION);
-                            }
-                            newColumns.add(column);
-                        } else {
-                            newColumns.add(col);
+                    GenericColumn unaliased = tableAliases.get(col.table);
+                    if (unaliased != null) {
+                        GenericColumn column = new GenericColumn(unaliased.schema,
+                                unaliased.table, col.column);
+                        if (unaliased.getType() == ViewReference.FUNCTION) {
+                            column.setType(ViewReference.FUNCTION);
                         }
+                        newColumns.add(column);
+                    } else {
+                        newColumns.add(col);
                     }
                     break;
                 case TABLE:
