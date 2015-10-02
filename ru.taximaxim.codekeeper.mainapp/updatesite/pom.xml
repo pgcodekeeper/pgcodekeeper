@@ -150,8 +150,8 @@
                                     <serverId>public-link-current-updatesite</serverId>
                                     <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/</url>
                                     <commands>
-                                        <command>unlink ${public.current_version_dir}</command>
-                                        <command>ln -s /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier} ${public.current_version_dir}</command>
+                                        <command>unlink /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
+                                        <command>ln -s /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
                                     </commands>
                                 </configuration>
                             </execution>
