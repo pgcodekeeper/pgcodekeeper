@@ -2,7 +2,7 @@
 <feature
       id="ru.taximaxim.codekeeper.feature"
       label="%feature.label"
-      version="3.3.1.qualifier"
+      version="3.3.2.qualifier"
       provider-name="%feature.provider-name"
       plugin="ru.taximaxim.codekeeper.mainapp">
 
