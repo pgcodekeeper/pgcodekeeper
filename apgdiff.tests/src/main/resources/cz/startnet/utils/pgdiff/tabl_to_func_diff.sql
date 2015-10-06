@@ -1,5 +1,3 @@
--- DEPCY: This FUNCTION is a dependency of TABLE: t1
-
 CREATE OR REPLACE FUNCTION testf() RETURNS integer
     LANGUAGE plpgsql
     AS $$begin return 0; end;$$;

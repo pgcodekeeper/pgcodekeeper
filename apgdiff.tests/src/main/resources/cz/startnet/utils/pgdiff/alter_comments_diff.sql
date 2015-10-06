@@ -8,13 +8,13 @@ COMMENT ON DOMAIN dom IS 'Domain comment 2';
 
 COMMENT ON SEQUENCE test_id_seq IS 'test table sequence 2';
 
+COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function 2';
+
 COMMENT ON TABLE test IS 'test table 2';
 
 COMMENT ON COLUMN test.id IS 'id column 2';
 
 COMMENT ON COLUMN test.text IS 'text column 2';
-
-COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function 2';
 
 COMMENT ON CONSTRAINT text_check ON test IS 'text check 2';
 

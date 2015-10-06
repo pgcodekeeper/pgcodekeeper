@@ -8,13 +8,13 @@ COMMENT ON DOMAIN dom IS NULL;
 
 COMMENT ON SEQUENCE test_id_seq IS NULL;
 
+COMMENT ON FUNCTION test_fnc(arg character varying) IS NULL;
+
 COMMENT ON TABLE test IS NULL;
 
 COMMENT ON COLUMN test.id IS NULL;
 
 COMMENT ON COLUMN test.text IS NULL;
-
-COMMENT ON FUNCTION test_fnc(arg character varying) IS NULL;
 
 COMMENT ON CONSTRAINT text_check ON test IS NULL;
 

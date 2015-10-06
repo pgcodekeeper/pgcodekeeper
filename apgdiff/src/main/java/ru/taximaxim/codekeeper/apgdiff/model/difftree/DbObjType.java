@@ -13,10 +13,12 @@ public enum DbObjType {
     TYPE,
     DOMAIN,
     SEQUENCE,
+    // TODO workaround for function call dependencies from COLUMN DEFAULT
+    // maybe move back after COLUMN, when proper function call dependencies are implemented
+    FUNCTION,
     TABLE,
     COLUMN,
-    FUNCTION,
-    CONSTRAINT,  
+    CONSTRAINT,
     INDEX,
     TRIGGER,
     VIEW
