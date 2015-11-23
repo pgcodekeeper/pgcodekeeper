@@ -159,9 +159,12 @@ public class JdbcLoader implements PgCatalogStrings {
 
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
+        } catch (SQLException sqlException){
+
         } catch (Exception e) {
             try {
-                connection.rollback();
+                if (connection != null)
+                    connection.rollback();
             } catch (SQLException ex) {
                 Log.log(Log.LOG_ERROR, "Cannot rollBack changes", ex);
             }
@@ -220,7 +223,8 @@ public class JdbcLoader implements PgCatalogStrings {
     private void closeResources(AutoCloseable... resources) {
         for (int i = 0; i < resources.length; ++i) {
             try {
-                resources[i].close();
+                if (resources[i] != null)
+                    resources[i].close();
             } catch (Exception ex) {
                 Log.log(Log.LOG_WARNING, "Could not close JDBC resource: "
                         + resources[i] + ", array index: " + i, ex);
@@ -1352,6 +1356,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
     }
 
+    @SuppressWarnings("unused")
     @Deprecated
     private String getSearchPath(String schema){
         return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN, schema);
