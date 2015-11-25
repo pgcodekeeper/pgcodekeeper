@@ -105,7 +105,7 @@ public interface UIConsts {
         String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
         String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
         String DIALOG_UPDATE_PROJECT = PLUGIN_ID.HELP + ".update_project_dialog"; //$NON-NLS-1$
-        
+
     }
 
     interface FILE {
@@ -129,6 +129,7 @@ public interface UIConsts {
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.gif"; //$NON-NLS-1$
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String ICONSAVECLIPBOARD = "/icons/save_clipboard.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

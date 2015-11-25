@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Paths;
@@ -385,6 +387,17 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
+            Button saveCheck2Clipboard = new Button(contButtons, SWT.PUSH);
+            saveCheck2Clipboard.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONSAVECLIPBOARD))));
+            saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    saveCheckedElements2ClipboardAsExpession();
+                }
+            });
+
             lblCheckedCount = new Label(contButtons, SWT.RIGHT);
             lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
         }
@@ -677,6 +690,20 @@ public class DiffTableViewer extends Composite {
                 viewerRefresh();
             }
         }
+    }
+    //TODO
+    private void saveCheckedElements2ClipboardAsExpession(){
+        Object[] checkedElements = viewer.getCheckedElements();
+        if (checkedElements == null || checkedElements.length == 0){
+            return;
+        }
+        StringBuffer sb = new StringBuffer(((TreeElement)checkedElements[0]).getName());
+        for (int i = 1; i < checkedElements.length; i++){
+            TreeElement te = (TreeElement) checkedElements[i];
+            sb.append("|").append(te.getName());
+        }
+        StringSelection ss = new StringSelection(sb.toString());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
     }
 
     private void updateCheckedSet(boolean addEntry) {
@@ -997,6 +1024,8 @@ public class DiffTableViewer extends Composite {
                 regExPattern = null;
             } else {
                 filterName = value.toLowerCase();
+                value = value.replaceAll("\\(", "\\\\(");
+                value = value.replaceAll("\\)", "\\\\)");
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
@@ -1042,8 +1071,14 @@ public class DiffTableViewer extends Composite {
                         length = matcher.end() - offset;
                     }
                 } else {
-                    offset = text.indexOf(filter);
-                    length = filter.length();
+                    String[] filters = filter.split("\\|");
+                    for (String simpleFilter : filters){
+                        if (text.equals(simpleFilter)){
+                            offset = 0;
+                            length = 0;
+                            break;
+                        }
+                    }
                 }
                 if (offset >= 0) {
                     return new Region(offset, length);

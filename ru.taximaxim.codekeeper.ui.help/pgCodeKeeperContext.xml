@@ -29,4 +29,8 @@
        <description>Диалог предназначен для управлением наката изменений на проект.</description>
        <topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта"/>
     </context>
+    <context id="update_project_dialog">
+       <description>Поле предназначено для поиска объектов в списке изменений БД.</description>
+       <topic href="html/gettingstarted/field_search_object.html" label="Поле поиска объекта"/>
+    </context>
 </contexts>
