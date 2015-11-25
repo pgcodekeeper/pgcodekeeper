@@ -691,16 +691,21 @@ public class DiffTableViewer extends Composite {
             }
         }
     }
-    //TODO
+
     private void saveCheckedElements2ClipboardAsExpession(){
         Object[] checkedElements = viewer.getCheckedElements();
         if (checkedElements == null || checkedElements.length == 0){
             return;
         }
-        StringBuffer sb = new StringBuffer(((TreeElement)checkedElements[0]).getName());
+        StringBuffer sb = new StringBuffer("^");
+        String str = ((TreeElement)checkedElements[0]).getName().replaceAll("\\(", "\\\\(");
+        str = str.replaceAll("\\)", "\\\\)");
+        sb.append(str).append("$");
         for (int i = 1; i < checkedElements.length; i++){
             TreeElement te = (TreeElement) checkedElements[i];
-            sb.append("|").append(te.getName());
+            str = te.getName().replaceAll("\\(", "\\\\(");
+            str = str.replaceAll("\\)", "\\\\)");
+            sb.append("|").append("^").append(str).append("$");
         }
         StringSelection ss = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
@@ -1024,8 +1029,6 @@ public class DiffTableViewer extends Composite {
                 regExPattern = null;
             } else {
                 filterName = value.toLowerCase();
-                value = value.replaceAll("\\(", "\\\\(");
-                value = value.replaceAll("\\)", "\\\\)");
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
@@ -1071,14 +1074,8 @@ public class DiffTableViewer extends Composite {
                         length = matcher.end() - offset;
                     }
                 } else {
-                    String[] filters = filter.split("\\|");
-                    for (String simpleFilter : filters){
-                        if (text.equals(simpleFilter)){
-                            offset = 0;
-                            length = 0;
-                            break;
-                        }
-                    }
+                    offset = text.indexOf(filter);
+                    length = filter.length();
                 }
                 if (offset >= 0) {
                     return new Region(offset, length);
