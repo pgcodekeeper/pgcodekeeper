@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
@@ -50,13 +49,6 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
     protected Control createContents(Composite parent) {
         // TODO Auto-generated method stub
         return super.createContents(parent);
-    }
-
-    @Override
-    protected void performDefaults() {
-        super.performDefaults();
-        prjUpdateBackLightColor.getColorSelector().setColorValue(new RGB(0xFF, 0x92, 0x81));
-        prjDbBackLightColor.getColorSelector().setColorValue(new RGB(0x9E, 0xB6, 0xD3));
     }
 
     @Override

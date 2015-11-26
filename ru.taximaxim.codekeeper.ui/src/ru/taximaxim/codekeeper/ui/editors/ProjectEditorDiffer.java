@@ -254,7 +254,7 @@ class CommitPage extends DiffPresentationPane {
                     Integer.parseInt(colors[1]),
                     Integer.parseInt(colors[2])));
         } else {
-            setTitleColor(getParent().getBackground().getRGB());
+            setTitleColor(null);
         };
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
@@ -445,7 +445,7 @@ class DiffPage extends DiffPresentationPane {
                     Integer.parseInt(colors[1]),
                     Integer.parseInt(colors[2])));
         } else {
-            setTitleColor(getParent().getBackground().getRGB());
+            setTitleColor(null);
         }
 
         new Label(container, SWT.NONE).setImage(lrm.createImage(

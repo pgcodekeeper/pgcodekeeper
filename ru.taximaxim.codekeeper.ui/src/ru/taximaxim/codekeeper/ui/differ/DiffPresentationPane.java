@@ -436,9 +436,10 @@ public abstract class DiffPresentationPane extends Composite {
     public void setTitleColor(RGB color){
         if (color == null){
             containerUpper.setBackground(null);
+        } else {
+            containerUpper.setBackground(lrm.createColor(color));
+            containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
         }
-        containerUpper.setBackground(lrm.createColor(color));
-        containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
     }
 
     private void openElementInEditor(TreeElement el, PgDbProject proj){

@@ -38,6 +38,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT, true);
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);
+        store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT, "0,0,255");
+        store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "255,0,0");
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
         setSQLSyntaxColorDefaults(store);
