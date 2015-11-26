@@ -281,6 +281,10 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
+
+    public static String pgProjectEditor_is_prj_update_backlight;
+    public static String pgProjectEditor_is_db_update_backlight;
+
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;

@@ -10,6 +10,7 @@ import org.eclipse.swt.graphics.RGB;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -34,6 +35,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
+
+        store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT, true);
+        store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
         setSQLSyntaxColorDefaults(store);

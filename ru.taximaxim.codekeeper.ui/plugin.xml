@@ -273,6 +273,12 @@
             id="ru.taximaxim.codekeeper.ui.sqleditortemplates"
             name="%page.name.sqlEditorTemplates">
       </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.ProjectEditorPrefPage"
+            id="ru.taximaxim.codekeeper.ui.pgProjectEditor"
+            name="%page.name.pgProjectEditor">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">

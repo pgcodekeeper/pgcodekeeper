@@ -55,6 +55,13 @@ public interface UIConsts {
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
     }
 
+    interface PG_EDIT_PREF {
+        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
+        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
+        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
+        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
+    }
+
     public enum DBSources {
         SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
         SOURCE_TYPE_DB("db"), //$NON-NLS-1$

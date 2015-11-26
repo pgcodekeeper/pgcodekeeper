@@ -67,6 +67,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -245,7 +246,16 @@ class CommitPage extends DiffPresentationPane {
     protected void createUpperContainer(final Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        setTitleColor(new RGB(0x9E, 0xB6, 0xD3));
+        if (mainPrefs.getBoolean(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT)){
+            String rgb = mainPrefs.getString(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT);
+            String[] colors = rgb.split(",");
+            setTitleColor(new RGB(
+                    Integer.parseInt(colors[0]),
+                    Integer.parseInt(colors[1]),
+                    Integer.parseInt(colors[2])));
+        } else {
+            setTitleColor(getParent().getBackground().getRGB());
+        };
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
                         .getResource(FILE.ICONBALLBLUE))));
@@ -266,7 +276,7 @@ class CommitPage extends DiffPresentationPane {
         });
 
         ICommandService commandService =
-                (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+                PlatformUI.getWorkbench().getService(ICommandService.class);
         @SuppressWarnings("unchecked")
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
@@ -350,7 +360,7 @@ class CommitPage extends DiffPresentationPane {
         try {
             // in case user switched to a different window while update was working
             editor.getSite().getPage().activate(editor);
-            ((IHandlerService) editor.getSite().getService(IHandlerService.class))
+            editor.getSite().getService(IHandlerService.class)
             .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException
                 | NotHandledException e) {
@@ -426,7 +436,18 @@ class DiffPage extends DiffPresentationPane {
     protected void createUpperContainer(Composite container, GridLayout gl) {
         gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        setTitleColor(new RGB(0xFF, 0x92, 0x81));
+
+        if (mainPrefs.getBoolean(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT)){
+            String rgb = mainPrefs.getString(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT);
+            String[] colors = rgb.split(",");
+            setTitleColor(new RGB(
+                    Integer.parseInt(colors[0]),
+                    Integer.parseInt(colors[1]),
+                    Integer.parseInt(colors[2])));
+        } else {
+            setTitleColor(getParent().getBackground().getRGB());
+        }
+
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
                         .getResource(FILE.ICONBALLRED))));

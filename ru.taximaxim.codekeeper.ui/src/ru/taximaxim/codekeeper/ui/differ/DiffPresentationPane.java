@@ -434,6 +434,9 @@ public abstract class DiffPresentationPane extends Composite {
     }
 
     public void setTitleColor(RGB color){
+        if (color == null){
+            containerUpper.setBackground(null);
+        }
         containerUpper.setBackground(lrm.createColor(color));
         containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
     }
