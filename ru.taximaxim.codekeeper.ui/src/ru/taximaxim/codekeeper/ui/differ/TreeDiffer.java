@@ -67,8 +67,8 @@ public class TreeDiffer implements IRunnableWithProgress {
         dbTargetJob.schedule();
         dbSourceJob.join();
         dbTargetJob.join();
-        if (dbSourceJob.getResult().equals(Status.CANCEL_STATUS)
-                || dbTargetJob.getResult().equals(Status.CANCEL_STATUS))
+        if (!dbSourceJob.getResult().equals(Status.OK_STATUS)
+                || !dbTargetJob.getResult().equals(Status.OK_STATUS))
         {
             finished = true;
             return;

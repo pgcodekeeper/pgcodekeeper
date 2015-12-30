@@ -28,11 +28,13 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -184,6 +186,15 @@ public class ModelExporter {
             processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             break;
 
+        case RULE:
+            TreeElement elParent4Rule = el.getParent();
+            if (elParent4Rule.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent4Rule, elParent4Rule.getPgStatement(oldDb), el);
+            } else {
+                processViewAndContents(elParent4Rule, elParent4Rule.getPgStatement(oldDb), el);
+            }
+            break;
+
         default:
             deleteStatementIfExists(st);
         }
@@ -214,6 +225,15 @@ public class ModelExporter {
             processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
+        case RULE:
+            TreeElement elParent4Rule = el.getParent();
+            if (elParent4Rule.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent4Rule, elParent4Rule.getPgStatement(newDb), el);
+            } else {
+                processViewAndContents(elParent4Rule, elParent4Rule.getPgStatement(newDb), el);
+            }
+            break;
+
         case TABLE:
             processTableAndContents(el, stInNew, el);
             break;
@@ -225,6 +245,19 @@ public class ModelExporter {
             // dump new version
             dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
                     new File(outDir, getRelativeFilePath(stInNew, true)));
+        }
+    }
+
+    /**
+     * Tests whether this object is either selected for creation or not selected for deletion.
+     *
+     * @throws IOException  if this object is not to be created or is to be deleted
+     */
+    private void testParentSchema(TreeElement el) throws PgCodekeeperException {
+        if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
+                || el.getSide() == DiffSide.LEFT && el.isSelected()){
+            throw new PgCodekeeperException(
+                    "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
         }
     }
 
@@ -247,6 +280,16 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
+        case RULE:
+            testParentSchema(elParent.getParent());
+            // table actually, not schema
+            testParentSchema(elParent);
+            if (elParent.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            } else {
+                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
+            }
+            break;
         case TRIGGER:
             testParentSchema(elParent.getParent());
             // table actually, not schema
@@ -259,24 +302,16 @@ public class ModelExporter {
             processTableAndContents(el, stInNew, el);
             break;
 
+        case VIEW:
+            testParentSchema(elParent);
+            processViewAndContents(el, stInNew, el);
+            break;
+
         default:
             testParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
                     stInNew.getStatementType().name());
-        }
-    }
-
-    /**
-     * Tests whether this object is either selected for creation or not selected for deletion.
-     *
-     * @throws IOException  if this object is not to be created or is to be deleted
-     */
-    private void testParentSchema(TreeElement el) throws PgCodekeeperException {
-        if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
-                || el.getSide() == DiffSide.LEFT && el.isSelected()){
-            throw new PgCodekeeperException(
-                    "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
         }
     }
 
@@ -378,6 +413,7 @@ public class ModelExporter {
                 contents.addAll(oldTable.getConstraints());
                 contents.addAll(oldTable.getIndexes());
                 contents.addAll(oldTable.getTriggers());
+                contents.addAll(oldTable.getRules());
             }
         }
         // table to dump, initially assume old unmodified state
@@ -395,6 +431,9 @@ public class ModelExporter {
             case CONSTRAINT:
             case INDEX:
             case TRIGGER:
+                elTableChange = elChange.getParent();
+                break;
+            case RULE:
                 elTableChange = elChange.getParent();
                 break;
             default:
@@ -435,6 +474,12 @@ public class ModelExporter {
                         stChangeOld = oldTable.getTrigger(elChange.getName());
                     }
                     break;
+                case RULE:
+                    stChange = tableChange.getRule(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldTable.getRule(elChange.getName());
+                    }
+                    break;
                 default:
                     stChange = null;
                 }
@@ -462,6 +507,118 @@ public class ModelExporter {
                 newParentSchema == null ? oldParentSchema : newParentSchema, false)));
     }
 
+    /**
+     * @param elCause The element that caused the table processing.
+     * It is expected to be popped from the {@link #changeList}.
+     */
+    // TODO всемто этого добавить ветку в processTableAndContents
+    private void processViewAndContents(TreeElement el, PgStatement st,
+            TreeElement elCause) throws IOException{
+        if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
+            // table is dropped entirely
+            return;
+        }
+        TreeElement elParent = el.getParent();
+        if (elParent.getSide() == DiffSide.LEFT && elParent.isSelected()) {
+            // the entire schema is dropped
+            return;
+        }
+
+        // same as in processFunction
+        // we need to have every related element on the list
+        changeList.push(elCause);
+
+        deleteStatementIfExists(st);
+
+        // prepare the dump data, old state
+        List<PgStatementWithSearchPath> contents = new LinkedList<>();
+        PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
+        PgSchema oldParentSchema = oldDb.getSchema(st.getParent().getName());
+        PgView oldView = null;
+        if (oldParentSchema != null) {
+            oldView = oldParentSchema.getView(st.getName());
+            if (oldView != null) {
+                contents.addAll(oldView.getRules());
+            }
+        }
+        // view to dump, initially assume old unmodified state
+        PgView viewPrimary = oldView;
+
+        // modify the dump state as requested by the changeList elements
+        Iterator<TreeElement> it = changeList.iterator();
+        while (it.hasNext()) {
+            TreeElement elChange = it.next();
+            TreeElement elViewChange;
+            switch (elChange.getType()) {
+            case TABLE:
+                elViewChange = elChange;
+                break;
+            case VIEW:
+                elViewChange = elChange;
+                break;
+            case CONSTRAINT:
+            case INDEX:
+            case TRIGGER:
+                elViewChange = elChange.getParent();
+                break;
+            case RULE:
+                elViewChange = elChange.getParent();
+                break;
+            default:
+                continue;
+            }
+            PgView viewChange = (elViewChange.getSide() == DiffSide.LEFT ?
+                    oldParentSchema : newParentSchema).getView(elViewChange.getName());
+            if (viewChange == null || !viewChange.getName().equals(st.getName())
+                    || !viewChange.getParent().getName().equals(elViewChange.getParent().getName())) {
+                continue;
+            }
+
+            if (elChange.getType() == DbObjType.VIEW) {
+                viewPrimary = viewChange;
+            } else {
+                PgStatementWithSearchPath stChange, stChangeOld = null;
+                //TODO Переписать комментарий
+                // now get the table based on the child's DiffSide
+                // otherwise BOTH (new) table may be chosen to get LEFT children
+                // which it does not contain
+                viewChange = (elChange.getSide() == DiffSide.LEFT ?
+                        oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
+                switch (elChange.getType()) {
+                case RULE:
+                    stChange = viewChange.getRule(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldView.getRule(elChange.getName());
+                    }
+                    break;
+                default:
+                    stChange = null;
+                }
+                if (stChange == null) {
+                    continue;
+                }
+
+                switch (elChange.getSide()) {
+                case LEFT:
+                    contents.remove(stChange);
+                    break;
+                case RIGHT:
+                    contents.add(stChange);
+                    break;
+                case BOTH:
+                    contents.set(contents.indexOf(stChangeOld), stChange);
+                    break;
+                }
+            }
+
+            it.remove();
+        }
+
+        dumpView(viewPrimary, contents, new File(outDir, getRelativeFilePath(
+                newParentSchema == null ? oldParentSchema : newParentSchema, false)));
+    }
+
+
     private void dumpTable(PgTable table, List<PgStatementWithSearchPath> contents,
             File parentDir) throws IOException {
         mkdirObjects(null, parentDir.toString());
@@ -474,6 +631,20 @@ public class ModelExporter {
         }
 
         dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
+    }
+
+    private void dumpView(PgView view, List<PgStatementWithSearchPath> contents,
+            File parentDir) throws IOException {
+        mkdirObjects(null, parentDir.toString());
+        File viewsDir = mkdirObjects(parentDir, "VIEW");
+
+        StringBuilder groupSql = new StringBuilder(getDumpSql(view));
+
+        for (PgStatementWithSearchPath st : contents) {
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
+        }
+
+        dumpSQL(groupSql, new File(viewsDir, getExportedFilenameSql(view)));
     }
     /*
      * =============================================
@@ -543,9 +714,9 @@ public class ModelExporter {
             dumpObjects(schema.getTypes(), schemaDir, "TYPE");
             dumpObjects(schema.getDomains(), schemaDir, "DOMAIN");
             dumpTables(schema.getTables(), schemaDir);
-            dumpObjects(schema.getViews(), schemaDir, "VIEW");
+            dumpViews(schema.getViews(), schemaDir);
 
-            // indexes, triggers, constraints are dumped when tables are processed
+            // indexes, triggers, rules, constraints are dumped when tables are processed
         }
         writeProjVersion(new File(outDir.getPath(),
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
@@ -596,7 +767,29 @@ public class ModelExporter {
                 groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
             }
 
+            for (PgRule rule : table.getRules()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
+            }
+
             dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
+        }
+    }
+
+    private void dumpViews(List<PgView> views, File parentDir) throws IOException {
+        if (views.isEmpty()) {
+            return;
+        }
+        mkdirObjects(null, parentDir.toString());
+        File tablesDir = mkdirObjects(parentDir, "VIEW");
+
+        for (PgView view : views) {
+            StringBuilder groupSql = new StringBuilder(getDumpSql(view));
+
+            for (PgRule rule : view.getRules()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
+            }
+
+            dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(view)));
         }
     }
 
@@ -686,6 +879,7 @@ public class ModelExporter {
         }
     }
 
+    @SuppressWarnings("incomplete-switch")
     private String getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
@@ -693,6 +887,7 @@ public class ModelExporter {
 
         File file = new File("SCHEMA");
         DbObjType type = st.getStatementType();
+        String schemaName;
         switch (type) {
         case EXTENSION:
         case SCHEMA:
@@ -712,8 +907,23 @@ public class ModelExporter {
         case INDEX:
         case TRIGGER:
             st = parentSt;
-            String schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
+            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
             file = new File(new File(file, schemaName), "TABLE");
+            break;
+
+        case RULE:
+            //st = parentSt;
+            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
+            if (parentSt.getStatementType() == DbObjType.TABLE){
+                file = new File(new File(file, schemaName), "TABLE");
+            } else {
+                if (parentSt.getStatementType() == DbObjType.VIEW){
+                    file = new File(new File(file, schemaName), "VIEW");
+                } else {
+                    Log.log(Log.LOG_ERROR, ModelExporter.class + ": " + st.getName() + "rule out of table or view");
+                }
+            }
+            st = parentSt;
             break;
 
         case DATABASE:

@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores column information.

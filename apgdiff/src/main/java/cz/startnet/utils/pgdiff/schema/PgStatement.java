@@ -113,6 +113,12 @@ public abstract class PgStatement {
                 .append(PgDiffUtils.getQuotedName(getParent().getName()));
                 break;
 
+            case RULE:
+                sb.append(PgDiffUtils.getQuotedName(getName()))
+                .append(" ON ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()));
+                break;
+
             case DATABASE:
                 sb.append("current_database()");
                 break;

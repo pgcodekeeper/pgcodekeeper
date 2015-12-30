@@ -13,14 +13,14 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  * the static initializer tries to find a file named
  * %FIELD_NAME%.sql in this package and assign its contents to the field.<br>
  * Similar to {@link org.eclipse.osgi.util.NLS}, OSGi localization classes.
- * 
+ *
  * @author levsha_aa
  */
 public final class JdbcQueries {
-    
+
     private final static String RES_ENCODING = ApgdiffConsts.UTF_8;
-    
-// SONAR-OFF
+
+    // SONAR-OFF
     public static String QUERY_TABLES_PER_SCHEMA;
     public static String QUERY_FUNCTIONS_PER_SCHEMA;
     public static String QUERY_SEQUENCES_PER_SCHEMA;
@@ -34,17 +34,18 @@ public final class JdbcQueries {
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_TYPES_PER_SCHEMA;
-// SONAR-ON
-    
+    public static String QUERY_RULES_PER_SCHEMA;
+    // SONAR-ON
+
     static {
         for (Field f : JdbcQueries.class.getFields()) {
             if (!f.getName().startsWith("QUERY_")) {
                 continue;
             }
-            
+
             try {
                 String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                                JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
+                        JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
                         Charset.forName(RES_ENCODING));
                 f.set(null, query);
             } catch (Exception ex) {
@@ -53,7 +54,7 @@ public final class JdbcQueries {
             }
         }
     }
-    
+
     private JdbcQueries() {
     }
 }

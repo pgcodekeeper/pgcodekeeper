@@ -53,6 +53,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -475,6 +476,20 @@ public abstract class DiffPresentationPane extends Composite {
                 String schemaName = ModelExporter.getExportedFilename(
                         parentEl.getParent().getPgStatement(projectDb));
                 file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
+                break;
+            case RULE:
+                String schemaName4Rule = ModelExporter.getExportedFilename(
+                        parentEl.getParent().getPgStatement(projectDb));
+                if (parentEl.getType() == DbObjType.TABLE){
+                    file = new File(new File(file, schemaName4Rule), "TABLE");//$NON-NLS-1$
+                } else {
+                    if (parentEl.getType() == DbObjType.VIEW){
+                        file = new File(new File(file, schemaName4Rule), "VIEW");//$NON-NLS-1$
+                    } else {
+                        Log.log(Log.LOG_ERROR, DiffPresentationPane.class + ": " + el.getName() + "rule out of table or view");
+                    }
+                }
+                el = parentEl;
                 break;
             default:
                 break;

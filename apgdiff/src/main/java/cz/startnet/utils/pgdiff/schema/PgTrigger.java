@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Stores trigger information.

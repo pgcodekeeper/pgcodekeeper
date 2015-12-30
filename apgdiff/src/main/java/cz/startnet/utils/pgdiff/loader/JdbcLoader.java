@@ -37,6 +37,7 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -79,6 +80,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PreparedStatement prepStatIndices;
     private PreparedStatement prepStatColumnsOfSchema;
     private PreparedStatement prepStatTypes;
+    private PreparedStatement prepStatRules;
 
     private final Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
     private final Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
@@ -218,6 +220,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatIndices = connection.prepareStatement(JdbcQueries.QUERY_INDICES_PER_SCHEMA);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
         prepStatTypes = connection.prepareStatement(JdbcQueries.QUERY_TYPES_PER_SCHEMA);
+        prepStatRules = connection.prepareStatement(JdbcQueries.QUERY_RULES_PER_SCHEMA);
     }
 
     private void closeResources(AutoCloseable... resources) {
@@ -286,6 +289,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
         // CONSTRAINTS
         PgTable table = null;
+        PgView view = null;
         prepStatConstraints.setLong(1, schemaOid);
         try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
             while (resConstraints.next()){
@@ -336,7 +340,7 @@ public class JdbcLoader implements PgCatalogStrings {
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
                 PgDumpLoader.checkCancelled(monitor);
-                PgView view = getView(resViews, schemaName);
+                view = getView(resViews, schemaName);
                 monitor.worked(1);
                 if (view != null){
                     s.addView(view);
@@ -365,6 +369,29 @@ public class JdbcLoader implements PgCatalogStrings {
                 monitor.worked(1);
                 if (sequence != null){
                     s.addSequence(sequence);
+                }
+            }
+        }
+
+        // RULES
+        //TODO Add exception
+        prepStatRules.setLong(1, schemaOid);
+        try(ResultSet resRule = prepStatRules.executeQuery()){
+            while(resRule.next()){
+                PgDumpLoader.checkCancelled(monitor);
+                table = s.getTable(resRule.getString(CLASS_RELNAME));
+                view = s.getView(resRule.getString(CLASS_RELNAME));
+                if (table != null){
+                    PgRule rule = getRule(resRule, schemaName);
+                    if (rule != null){
+                        table.addRule(rule);
+                    }
+                }
+                if (view != null){
+                    PgRule rule = getRule(resRule, schemaName);
+                    if (rule != null){
+                        view.addRule(rule);
+                    }
                 }
             }
         }
@@ -1018,6 +1045,71 @@ public class JdbcLoader implements PgCatalogStrings {
             t.setComment(this.args, PgDiffUtils.quoteString(comment));
         }
         return t;
+    }
+
+    /**
+     * Returns rewrite (rule) object.
+     * <br>
+     * Available trigger firing conditions:
+     *      boolean onDelete;
+     *      boolean onInsert;
+     *      boolean onUpdate;
+     *      boolean onTruncate;
+     *
+     *      boolean forEachRow;
+     *      boolean before;
+     * @param schemaName
+     */
+    //TODO Доделать
+    private PgRule getRule(ResultSet res, String schemaName)
+            throws SQLException, UnsupportedEncodingException {
+        String ruleName = res.getString("rulename");
+        String tableName = res.getString("relname");
+        String command = res.getString("rule_string");
+        currentObject = new GenericColumn(schemaName, tableName, ruleName);
+        PgRule r = new PgRule(ruleName, command);
+        switch (res.getString("ev_type")) {
+        case "1":
+            r.setRuleEvent(PgRule.PgRuleEventType.SELECT);
+            break;
+        case "2":
+            r.setRuleEvent(PgRule.PgRuleEventType.UPDATE);
+            break;
+        case "3":
+            r.setRuleEvent(PgRule.PgRuleEventType.INSERT);
+            break;
+        case "4":
+            r.setRuleEvent(PgRule.PgRuleEventType.DELETE);
+            break;
+        default:
+            throw new SQLException("Error during get rules from "+ tableName + " table of " + schemaName + " schema.");
+        }
+
+        if (res.getBoolean("is_instead")){
+            r.setInstead(true);
+        } else {
+            r.setAlso(true);
+        }
+        r.setRuleTargetName(tableName);
+
+
+        StringBuffer sb = new StringBuffer("DO ");
+        if (r.isInstead()){
+            sb.append("INSTEAD  ");
+        } else {
+            sb.append("ALSO  ");
+        }
+
+
+        int index = command.indexOf(sb.toString()) + sb.length();
+        String total = command.substring(index, command.length()-1);
+
+        r.setRuleCommand(total.trim());
+        command = command.replace(total, "");
+        if (command.contains("WHERE")){
+            r.setRuleCondition(command.substring(command.indexOf("WHERE"), command.indexOf(sb.toString().trim())).trim());
+        }
+        return r;
     }
 
     private String parseWhen(String string) {

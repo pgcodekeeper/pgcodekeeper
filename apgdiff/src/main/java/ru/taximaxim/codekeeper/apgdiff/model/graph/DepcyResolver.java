@@ -16,19 +16,21 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Служит для отслеживания зависимостей, при этом старое состояние хранится в
@@ -50,7 +52,7 @@ public class DepcyResolver {
     public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
         return oldDepcyGraph.getGraph();
     }
-    
+
     public DirectedGraph<PgStatement, DefaultEdge> getNewGraph() {
         return newDepcyGraph.getGraph();
     }
@@ -72,11 +74,11 @@ public class DepcyResolver {
             List<Entry<PgStatement, PgStatement>> depcies) {
         newDepcyGraph.addCustomDepcies(depcies);
     }
-    
+
     public Set<ActionContainer> getActions() {
         return Collections.unmodifiableSet(actions);
     }
-    
+
     /**
      * Очищает списки объектов
      */
@@ -91,14 +93,14 @@ public class DepcyResolver {
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);
         this.newDepcyGraph = new DepcyGraph(newDatabase);
     }
-    
+
     /**
      * При удалении объекта из старой базы добавляет для удаления все объекты из
      * старой базы. <br>
      * Объекта не существует в новой базе, но существует в старой, мы его
      * удаляем, и удаляем из старой базы все объекты, которым этот объект
      * требуется, т.к. они будут ошибочны, при отсутсвии этого объекта.
-     * 
+     *
      * @param toDrop
      *            объект для удаления из старой базы
      */
@@ -107,21 +109,21 @@ public class DepcyResolver {
         if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
             if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(toDrop, StatementActions.DROP))) {
                 sKippedObjects.add(new AbstractMap.SimpleEntry<>(toDrop, StatementActions.DROP));
-                
+
                 DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                         oldDepcyGraph.getReversedGraph(), toDrop);
                 customIteration(dfi, new DropTraversalAdapter(toDrop, StatementActions.DROP));
             }
         }
     }
-    
+
     /**
      * При создании объекта в новой базе добавляет для создания все объекты из
      * новой базы. <br>
      * Объект существует в новой базе, но не существует в старой, мы его
      * создаем, а также добавляем для создания все объекты, которые трубуются
      * для правильной работы создаваемого объекта.
-     * 
+     *
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
@@ -129,7 +131,7 @@ public class DepcyResolver {
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
             if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(toCreate, StatementActions.CREATE))) {
                 sKippedObjects.add(new AbstractMap.SimpleEntry<>(toCreate, StatementActions.CREATE));
-                
+
                 DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                         newDepcyGraph.getGraph(), toCreate);
                 customIteration(dfi, new CreateTraversalAdapter(toCreate, StatementActions.CREATE));
@@ -149,10 +151,10 @@ public class DepcyResolver {
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
             boolean isChanged = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);
-            
+
             if (isChanged) {
                 if (isNeedDepcies.get()) {
-                    // is state alterable (sb.length() > 0) 
+                    // is state alterable (sb.length() > 0)
                     // is checked in the depcy tracker in this case
                     addDropStatements(oldObj);
                 } else {
@@ -160,8 +162,8 @@ public class DepcyResolver {
                     // ничего делать не нужно
                     if (!inDropsList(oldObj)) {
                         addToListWithoutDepcies(
-                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
-                                oldObj, null);
+                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                                        oldObj, null);
                     }
                 }
             }
@@ -187,10 +189,10 @@ public class DepcyResolver {
             }
         }
     }
-    
+
     /**
      * Проходит по итератору и заполняет список объектами из итератора
-     * 
+     *
      * @param dfi
      *            итератор для прохода
      * @param action
@@ -227,7 +229,7 @@ public class DepcyResolver {
 
     /**
      * Добавляет в список выражений для скрипта Выражение без зависимостей
-     * 
+     *
      * @param action Какое действие нужно вызвать {@link StatementActions}
      * @param oldObj Объект из старого состояния
      * @param starter объект который вызвал действие
@@ -249,7 +251,7 @@ public class DepcyResolver {
     }
 
     /**
-     * Ищет в переданной базе объетк по имени 
+     * Ищет в переданной базе объетк по имени
      * @param statement объект для поиска
      * @param db база для поиска
      * @return
@@ -283,6 +285,25 @@ public class DepcyResolver {
             PgTable table = oldSchema.getTable(trig.getTableName());
             if (table != null) {
                 return table.getTrigger(trig.getName());
+            }
+            break;
+        case RULE:
+            PgRule rule = (PgRule) statement;
+            switch (rule.getParent().getStatementType()) {
+            case TABLE:
+                PgTable ruleTable = oldSchema.getTable(rule.getRuleTargetName());
+                if (ruleTable != null) {
+                    return ruleTable.getRule(rule.getName());
+                }
+                break;
+            case VIEW:
+                PgView ruleView = oldSchema.getView(rule.getRuleTargetName());
+                if (ruleView != null) {
+                    return ruleView.getRule(rule.getName());
+                }
+                break;
+            default:
+                break;
             }
             break;
         case INDEX:
@@ -320,7 +341,7 @@ public class DepcyResolver {
         }
         return null;
     }
-    
+
     /**
      * TODO Временно (?) заменен методами простой итерации по графу (getDropDepcies)
      * Возвращает упорядоченный набор объектов для наката с указанием действия
@@ -346,14 +367,14 @@ public class DepcyResolver {
         toCreate = getObjectFromDB(toCreate, newDb);
         Set<PgStatement> depcies = new HashSet<>();
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
-            
+
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), toCreate);
             customIteration(dfi, new DepcyIterator(depcies));
         }
         return depcies;
     }
-    
+
     /**
      * TODO костыльный метод убрать при переделке дерева TreeElement
      * @param toDrop
@@ -369,14 +390,14 @@ public class DepcyResolver {
         }
         return depcies;
     }
-    
+
     private class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
         Set<PgStatement> depcies = new HashSet<>();
-        
+
         public DepcyIterator(Set<PgStatement> depcies) {
             this.depcies = depcies;
         }
-        
+
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
             PgStatement statement = e.getVertex();
@@ -385,7 +406,7 @@ public class DepcyResolver {
             }
         }
     }
-    
+
     /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (ALTER, DROP)
@@ -395,20 +416,20 @@ public class DepcyResolver {
         DropTraversalAdapter(PgStatement starter, StatementActions action) {
             super(starter, action);
         }
-        
+
         @Override
         protected boolean notAllowedToAdd(PgStatement oldObj) {
             if (super.notAllowedToAdd(oldObj)) {
                 return true;
             }
-            // Изначально будем удалять объект 
+            // Изначально будем удалять объект
             action = StatementActions.DROP;
-            
+
             PgStatement newObj;
             if ((newObj = getObjectFromDB(oldObj, newDb)) != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 action = askAlter(oldObj, newObj, isNeedDepcies);
-                
+
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
                 IsDropped iter = new IsDropped();
@@ -417,7 +438,7 @@ public class DepcyResolver {
                 if (iter.getDropped() != null && iter.getDropped() != oldObj) {
                     action = StatementActions.DROP;
                 }
-                
+
                 if (action == StatementActions.NONE) {
                     return true;
                 }
@@ -452,7 +473,7 @@ public class DepcyResolver {
             return false;
         }
     }
-    
+
     /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (CREATE)
@@ -462,7 +483,7 @@ public class DepcyResolver {
         CreateTraversalAdapter(PgStatement starter, StatementActions action) {
             super(starter, action);
         }
-        
+
         @Override
         protected boolean notAllowedToAdd(PgStatement newObj) {
             if (super.notAllowedToAdd(newObj)) {
@@ -474,7 +495,7 @@ public class DepcyResolver {
                 // always create if droppped before
                 return false;
             }
-            
+
             PgStatement oldObj;
             if ((oldObj = getObjectFromDB(newObj, oldDb)) != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
@@ -507,8 +528,8 @@ public class DepcyResolver {
      * Используется для прохода по графу зависимостей, содержит общие методы
      */
     private abstract class CustomTraversalListenerAdapter extends
-            TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        
+    TraversalListenerAdapter<PgStatement, DefaultEdge> {
+
         protected PgStatement starter;
         /**
          * меняется в {@link #notAllowedToAdd(PgStatement)} для вызова
@@ -543,7 +564,7 @@ public class DepcyResolver {
         protected void addToList(PgStatement statement) {
             addToListWithoutDepcies(action, statement, starter);
         }
-        
+
         protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt,
                 AtomicBoolean isNeedDepcies) {
             StringBuilder sb = new StringBuilder();
@@ -559,10 +580,10 @@ public class DepcyResolver {
             return alterAction;
         }
     }
-    
+
     private class IsDropped extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
         private PgStatement needDrop;
-        
+
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
             if (needDrop != null) {
@@ -573,7 +594,7 @@ public class DepcyResolver {
             if (newSt == null) {
                 return;
             }
-            AtomicBoolean isNeedDepcy = new AtomicBoolean(); 
+            AtomicBoolean isNeedDepcy = new AtomicBoolean();
             if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy)) {
                 if (isNeedDepcy.get()) {
                     needDrop = st;

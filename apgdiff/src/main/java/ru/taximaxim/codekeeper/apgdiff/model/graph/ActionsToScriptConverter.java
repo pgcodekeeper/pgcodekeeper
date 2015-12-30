@@ -6,14 +6,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ActionsToScriptConverter {
 
