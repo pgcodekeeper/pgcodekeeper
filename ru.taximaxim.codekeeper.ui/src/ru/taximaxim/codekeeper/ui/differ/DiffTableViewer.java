@@ -560,7 +560,7 @@ public class DiffTableViewer extends Composite {
                 } else {
                     cell.setStyleRanges(null);
                 }
-                super.update(cell);
+                //super.update(cell);
             }
         });
 
