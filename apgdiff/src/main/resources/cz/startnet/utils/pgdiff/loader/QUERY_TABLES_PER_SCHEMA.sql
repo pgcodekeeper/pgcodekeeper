@@ -76,10 +76,11 @@ FROM
               attr.attnotnull,
               attr.attstattarget,
               attr.attislocal,
-              (SELECT oid::regclass::text
-               FROM pg_catalog.pg_class c2
-               WHERE c2.oid = depseq.refobjid
-                   AND c2.relkind = 'S') col_seq,
+              (SELECT cseq.oid::regclass::text
+               FROM pg_catalog.pg_class cseq
+               JOIN pg_catalog.pg_depend depseq ON cseq.oid = depseq.refobjid
+               WHERE cseq.relkind = 'S' 
+                   AND depseq.objid = attrdef.oid) col_seq,
               attr.attacl::text,
               c.reloptions,
               tc.reloptions AS toast_reloptions,
@@ -95,8 +96,6 @@ FROM
               AND attr.attrelid = attrdef.adrelid
           LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = attr.attrelid
               AND comments.objsubid = attr.attnum
-          LEFT JOIN pg_catalog.pg_depend depseq ON attrdef.oid = depseq.objid
-              AND depseq.refobjid != c.oid
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
