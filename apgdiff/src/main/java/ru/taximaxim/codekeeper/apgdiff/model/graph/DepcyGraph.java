@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
 
@@ -130,16 +132,28 @@ public class DepcyGraph {
                     graph.addVertex(trg);
                     graph.addEdge(trg, table);
                 }
+
+                for (PgRule rule : table.getRules()) {
+
+                    graph.addVertex(rule);
+                    graph.addEdge(rule, table);
+                }
             }
 
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
+
+                for (PgRule rule : view.getRules()) {
+                    graph.addVertex(rule);
+                    graph.addEdge(rule, view);
+                }
             }
         }
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
+            schema.getBareName();
             for (PgType type : schema.getTypes()) {
                 createTypeToObject(type, schema);
             }
@@ -152,10 +166,12 @@ public class DepcyGraph {
                 createFunctionToObject(func, schema);
             }
 
+            //TODO
             for(PgTable table : schema.getTables()) {
                 createFkeyToReferenced(table);
                 createTableToSequences(table, schema);
                 createTriggersToObjs(table, schema);
+                createRulesToObjs(table, schema);
                 createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
                     createPgStatementToType(col.getType(), schema, col);
@@ -212,7 +228,7 @@ public class DepcyGraph {
         createPgStatementToType(
                 new GenericColumn(
                         PgDiffUtils.getSecondObjectName(typeName),
-                        PgDiffUtils.getObjectName(typeName), null), 
+                        PgDiffUtils.getObjectName(typeName), null),
                 schema, statement);
     }
 
@@ -380,6 +396,23 @@ public class DepcyGraph {
                 }
             }
         }
+    }
+
+    private void createRulesToObjs(PgStatement target, PgSchema schema) {
+        if (DbObjType.TABLE == target.getStatementType()){
+            for (PgRule rule : ((PgTable)target).getRules()) {
+                graph.addVertex(rule);
+                graph.addEdge(rule, target);
+            }
+        } else {
+            if (DbObjType.VIEW == target.getStatementType()){
+                for (PgRule rule : ((PgView)target).getRules()) {
+                    graph.addVertex(rule);
+                    graph.addEdge(rule, target);
+                }
+            }
+        }
+
     }
 
     private void createTableToSequences(PgTable table, PgSchema schema) {

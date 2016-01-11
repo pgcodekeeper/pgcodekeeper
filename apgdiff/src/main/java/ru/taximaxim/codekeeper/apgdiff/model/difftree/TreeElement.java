@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 
 /**
@@ -160,8 +161,8 @@ public class TreeElement {
 
         case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
         case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
-        case TYPE:          return ((PgSchema) parent.getPgStatement(db)).getType(name);
-        case DOMAIN:      return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
+        case TYPE:       return ((PgSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
 
@@ -169,6 +170,12 @@ public class TreeElement {
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
+        case RULE:       if (parent.getType() == DbObjType.TABLE){
+            return ((PgTable) parent.getPgStatement(db)).getRule(name);
+        } else {
+            return ((PgView) parent.getPgStatement(db)).getRule(name);
+        }
+
         default:
             throw new IllegalStateException("Unknown element type: " + type);
         }

@@ -30,6 +30,7 @@ public class PgTable extends PgStatementWithSearchPath {
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<String> sequences = new ArrayList<>();
+    private final List<PgRule> rules = new ArrayList<>();
 
     /**
      * WITH clause. If value is null then it is not set, otherwise can be set to
@@ -325,6 +326,23 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     /**
+     * Finds rule according to specified rule {@code name}.
+     *
+     * @param name name of the rule to be searched
+     *
+     * @return found rule or null if no such rule has been found
+     */
+    public PgRule getRule(final String name) {
+        for (PgRule rule : rules) {
+            if (rule.getName().equals(name)) {
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Getter for {@link #indexes}. The list cannot be modified.
      *
      * @return {@link #indexes}
@@ -354,6 +372,15 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     public List<PgTrigger> getTriggers() {
         return Collections.unmodifiableList(triggers);
+    }
+
+    /**
+     * Getter for {@link #rules}. The list cannot be modified.
+     *
+     * @return {@link #rules}
+     */
+    public List<PgRule> getRules() {
+        return Collections.unmodifiableList(rules);
     }
 
     public List<String> getSequences() {
@@ -412,6 +439,12 @@ public class PgTable extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public void addRule(final PgRule rule) {
+        rules.add(rule);
+        rule.setParent(this);
+        resetHash();
+    }
+
     public boolean containsColumn(final String name) {
         return getColumn(name) != null;
     }
@@ -426,6 +459,10 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public boolean containsTrigger(String name) {
         return getTrigger(name) != null;
+    }
+
+    public boolean containsRule(String name) {
+        return getRule(name) != null;
     }
 
     /**
@@ -481,7 +518,8 @@ public class PgTable extends PgStatementWithSearchPath {
 
                     && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
                     && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
-                    && new HashSet<>(triggers).equals(new HashSet<>(table.triggers));
+                    && new HashSet<>(triggers).equals(new HashSet<>(table.triggers))
+                    && new HashSet<>(rules).equals(new HashSet<>(table.rules));
         }
 
         return eq;
@@ -509,6 +547,7 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + new HashSet<>(rules).hashCode();
         return result;
     }
 
@@ -550,7 +589,9 @@ public class PgTable extends PgStatementWithSearchPath {
         for(PgTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
         }
-
+        for(PgRule rule : rules) {
+            copy.addRule(rule.deepCopy());
+        }
         return copy;
     }
 

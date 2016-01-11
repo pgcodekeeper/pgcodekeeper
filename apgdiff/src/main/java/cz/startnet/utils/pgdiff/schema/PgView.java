@@ -29,6 +29,7 @@ public class PgView extends PgStatementWithSearchPath {
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
+    private final List<PgRule> rules = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -312,7 +313,8 @@ public class PgView extends PgStatementWithSearchPath {
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
-                    && Objects.equals(columnComments, view.getColumnComments());
+                    && Objects.equals(columnComments, view.getColumnComments())
+                    && new HashSet<>(rules).equals(new HashSet<>(view.rules));
         }
 
         return eq;
@@ -332,6 +334,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
+        result = prime * result + new HashSet<>(rules).hashCode();
         return result;
     }
 
@@ -360,7 +363,11 @@ public class PgView extends PgStatementWithSearchPath {
 
     @Override
     public PgView deepCopy() {
-        return shallowCopy();
+        PgView copy = shallowCopy();
+        for(PgRule rule : rules) {
+            copy.addRule(rule.deepCopy());
+        }
+        return copy;
     }
 
     /**
@@ -552,5 +559,32 @@ public class PgView extends PgStatementWithSearchPath {
                     + newValue.getDefaultValue()
                     + ';');
         }
+    }
+
+    /**
+     * Finds rule according to specified rule {@code name}.
+     *
+     * @param name name of the rule to be searched
+     *
+     * @return found rule or null if no such rule has been found
+     */
+    public PgRule getRule(final String name) {
+        for (PgRule rule : rules) {
+            if (rule.getName().equals(name)) {
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    public List<PgRule> getRules() {
+        return Collections.unmodifiableList(rules);
+    }
+
+    public void addRule(final PgRule rule) {
+        rules.add(rule);
+        rule.setParent(this);
+        resetHash();
     }
 }

@@ -21,5 +21,6 @@ public enum DbObjType {
     CONSTRAINT,
     INDEX,
     TRIGGER,
-    VIEW
+    VIEW,
+    RULE
 }

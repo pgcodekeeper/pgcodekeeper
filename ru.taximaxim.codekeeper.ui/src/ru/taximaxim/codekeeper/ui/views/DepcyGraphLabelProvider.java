@@ -14,23 +14,23 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, IEntityStyleProvider{
-    
+
     private boolean isSource = true;
-    
+
     private Color colorLBlue = new Color(Display.getDefault(), 216, 228, 248);
     private Color colorLGreen = new Color(Display.getDefault(), 204, 255, 204);
     private Color colorDBlue = new Color(Display.getDefault(), 1, 70, 122);
-    
+
     private static final Color HIGHLIGHT_COLOR = ColorConstants.yellow;
-    
+
     public DepcyGraphLabelProvider(boolean isSource) {
         this.isSource  = isSource;
     }
-    
+
     public void setIsSource(boolean isSource) {
         this.isSource = isSource;
     }
-    
+
     @Override
     public String getText(Object element) {
         if (element instanceof PgStatement){
@@ -61,6 +61,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
                 return "TBL " + st.getBareName(); //$NON-NLS-1$
             case TRIGGER:
                 return "TRG " + st.getBareName(); //$NON-NLS-1$
+            case RULE:
+                return "RULE " + st.getBareName(); //$NON-NLS-1$
             case TYPE:
                 return "TYPE " + st.getBareName(); //$NON-NLS-1$
             case VIEW:
@@ -130,13 +132,13 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     public boolean fisheyeNode(Object entity) {
         return false;
     }
-    
+
     @Override
     public void dispose() {
         colorLBlue.dispose();
         colorLGreen.dispose();
         colorDBlue.dispose();
-        
+
         super.dispose();
     }
 }

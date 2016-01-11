@@ -95,6 +95,7 @@ schema_create
     | index_statement
     | create_extension_statement
     | create_trigger_statement
+    | create_rewrite_statement
     | create_function_statement
     | create_sequence_statement
     | create_schema_statement
@@ -103,7 +104,7 @@ schema_create
     | create_event_trigger
     | create_type_statement
     | create_domain_statement)
-     
+
     | comment_on_statement
     | rule_common
     | set_statement
@@ -306,7 +307,7 @@ index_statement
   ;
 using_def
     :(USING method=schema_qualified_name)?
-    LEFT_PAREN sort_specifier_list RIGHT_PAREN param_clause?
+    (LEFT_PAREN sort_specifier_list RIGHT_PAREN)? param_clause?
     table_space? where_clause?
     ;
   
@@ -381,14 +382,51 @@ domain_constraint
 
 set_statement
     : SET (SESSION | LOCAL)? 
-      (config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+      (set_clause (COMMA set_clause)*
+    | config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
     | TIME ZONE (timezone=identifier | (LOCAL | DEFAULT))(COMMA (timezone=identifier | (LOCAL | DEFAULT)))*)
     ;
 
 set_statement_value
-    : value=value_expression | DEFAULT
+    : value= PLUS | value_expression | DEFAULT
     ;
-   
+
+
+    /*
+    ===============================================================================
+      CREATE REWRITE (RULE) statement
+    ===============================================================================
+    */
+
+create_rewrite_statement
+/*    : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=event_rewrite
+    TO table_name=schema_qualified_name where_rewrite? DO do_rewrite?
+    command=command_rewrite
+    ;*/
+    : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
+            TO table_name=schema_qualified_name where_clause? DO (ALSO | INSTEAD)?
+            command=command_rewrite2
+    ;
+    
+event_rewrite
+	: SELECT | INSERT | DELETE | UPDATE
+	;
+	
+do_rewrite
+	: ALSO | INSTEAD
+	;
+    
+where_rewrite
+    :WHERE where_expr=value_expression
+    ;
+    
+command_rewrite
+	: query_expression
+	| insert_statement
+	;
+
+   //=========================================================================================
+
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
@@ -1091,6 +1129,7 @@ valid_identifier_tokens
   | RESTART
   | RESTRICT
   | RETURNS
+  | RETURNING
   | REVOKE
 //  | RIGHT
   | RLIKE
@@ -1741,8 +1780,12 @@ table_primary
   7.8 <where clause>
 ===============================================================================
 */
-where_clause
-  : WHERE value_expression_primary_cast
+/*where_clause
+    : WHERE value_expression
+    ;*/
+    where_clause
+  : WHERE ((schema_qualified_name EQUAL ( value_expression_primary_cast
+    | ( LEFT_PAREN query_specification2 RIGHT_PAREN))) | value_expression)
   ;
 
 /*
@@ -2105,8 +2148,111 @@ null_ordering
   14.8 <insert statement>
 ===============================================================================
 */
-//
-//insert_statement
-//  : INSERT (OVERWRITE)? INTO schema_qualified_name (LEFT_PAREN column_name_list RIGHT_PAREN)? query_expression
-//  | INSERT (OVERWRITE)? INTO LOCATION path=Character_String_Literal (USING file_type=identifier (param_clause)?)? query_expression
-//  ;
+
+insert_statement
+  : INSERT (OVERWRITE)? INTO schema_qualified_name column_name_list? value_expression? query_specification2?
+  | INSERT (OVERWRITE)? INTO LOCATION path=Character_String_Literal (USING file_type=identifier (param_clause)?)?  query_expression
+  ;
+  
+column_name_list
+  : identifier+ (COMMA identifier+)*
+  ;
+
+query_specification2
+  : SELECT identifier+ DOT identifier+ (COMMA (identifier+ DOT identifier+))* table_expression?
+  ;
+
+select_list2
+  : select_sublist (COMMA select_sublist)*
+  ;
+
+
+
+      /*
+      ===============================================================================
+        CREATE NEW REWRITE (RULE) statement
+      ===============================================================================
+      */
+
+  create_rewrite_statement2
+      : (OR REPLACE)? RULE name=identifier AS ON event=(SELECT | INSERT | DELETE | UPDATE)
+      TO table_name=schema_qualified_name where_expr = where_clause? DO (ALSO | INSTEAD)?
+      command=command_rewrite2
+      ;
+
+  where_rewrite2
+      :WHERE where_expr=value_expression
+      ;
+
+  command_rewrite2
+  	: query_expression
+  	| insert_stmt_for_psql
+  	| update_stmt_for_psql
+  	| delete_stmt_for_psql
+  	| notify_stmt
+  	;
+
+
+
+   insert_stmt_for_psql
+   : ( INSERT INTO ( database_name DOT )? n_table_name ( LEFT_PAREN column_name_list RIGHT_PAREN )?
+      (value_expression
+      | query_specification
+      | DEFAULT VALUES)
+      returning_clause?
+      )
+   ;
+
+   delete_stmt_for_psql
+   : with_recursive? DELETE FROM ONLY? ( database_name DOT )? n_table_name MULTIPLY? ( AS? r_output_name)?
+     using_def?
+     (where_clause | where_current)?
+     returning_clause?
+   ;
+
+   update_stmt_for_psql
+   : with_recursive? UPDATE ONLY? ( database_name DOT )? n_table_name MULTIPLY? ( AS? r_output_name)?
+     //SET set_clause (COMMA set_clause)*
+     set_statement
+     from_clause?
+     (where_rewrite | where_current)?
+     returning_clause?
+   ;
+
+   set_clause
+   : (n_column_name (EQUAL | TO) (value_expression | DEFAULT)) | (LEFT_PAREN column_name_list RIGHT_PAREN) (EQUAL | TO)
+          (LEFT_PAREN (((value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))*) | query_expression) RIGHT_PAREN)
+   ;
+
+
+   returning_clause
+   : RETURNING MULTIPLY | column_name_list (AS r_output_name (COMMA r_output_name)*)?
+   ;
+
+   where_current
+   : WHERE CURRENT OF n_column_name
+   ;
+
+    r_output_name
+    : Identifier
+    ;
+
+    n_table_name
+     : identifier
+     ;
+
+    n_column_name
+         : identifier
+         ;
+
+    database_name
+         : identifier
+         ;
+
+    notify_stmt
+    : NOTIFY channel (COMMA string_value_expression)*
+    ;
+
+    channel
+    : Identifier
+    ;

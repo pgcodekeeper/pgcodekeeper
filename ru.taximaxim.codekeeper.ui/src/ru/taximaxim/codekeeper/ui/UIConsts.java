@@ -55,6 +55,13 @@ public interface UIConsts {
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
     }
 
+    interface PG_EDIT_PREF {
+        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
+        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
+        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
+        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
+    }
+
     public enum DBSources {
         SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
         SOURCE_TYPE_DB("db"), //$NON-NLS-1$
@@ -105,7 +112,7 @@ public interface UIConsts {
         String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
         String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
         String DIALOG_UPDATE_PROJECT = PLUGIN_ID.HELP + ".update_project_dialog"; //$NON-NLS-1$
-        
+
     }
 
     interface FILE {
@@ -129,6 +136,7 @@ public interface UIConsts {
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.gif"; //$NON-NLS-1$
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String ICONSAVECLIPBOARD = "/icons/save_clipboard.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

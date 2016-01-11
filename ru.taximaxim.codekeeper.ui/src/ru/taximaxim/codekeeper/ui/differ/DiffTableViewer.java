@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Paths;
@@ -385,6 +387,17 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
+            Button saveCheck2Clipboard = new Button(contButtons, SWT.PUSH);
+            saveCheck2Clipboard.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONSAVECLIPBOARD))));
+            saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    saveCheckedElements2ClipboardAsExpession();
+                }
+            });
+
             lblCheckedCount = new Label(contButtons, SWT.RIGHT);
             lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
         }
@@ -677,6 +690,25 @@ public class DiffTableViewer extends Composite {
                 viewerRefresh();
             }
         }
+    }
+
+    private void saveCheckedElements2ClipboardAsExpession(){
+        Object[] checkedElements = viewer.getCheckedElements();
+        if (checkedElements == null || checkedElements.length == 0){
+            return;
+        }
+        StringBuffer sb = new StringBuffer("^");
+        String str = ((TreeElement)checkedElements[0]).getName().replaceAll("\\(", "\\\\(");
+        str = str.replaceAll("\\)", "\\\\)");
+        sb.append(str).append("$");
+        for (int i = 1; i < checkedElements.length; i++){
+            TreeElement te = (TreeElement) checkedElements[i];
+            str = te.getName().replaceAll("\\(", "\\\\(");
+            str = str.replaceAll("\\)", "\\\\)");
+            sb.append("|").append("^").append(str).append("$");
+        }
+        StringSelection ss = new StringSelection(sb.toString());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
     }
 
     private void updateCheckedSet(boolean addEntry) {

@@ -265,6 +265,12 @@ public class ReferenceListener extends SQLParserBaseListener {
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine());
             setCommentToDefinition(null, name, DbObjType.TRIGGER, comment);
+            // rule
+        } else if (ctx.RULE() != null) {
+            addObjReference(null, name, DbObjType.RULE,
+                    StatementActions.COMMENT, ctx.name.getStart()
+                    .getStartIndex(), 0, ctx.name.getStart().getLine());
+            setCommentToDefinition(null, name, DbObjType.RULE, comment);
             // database
         } else if (ctx.DATABASE() != null) {
             // index

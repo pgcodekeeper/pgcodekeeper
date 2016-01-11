@@ -28,6 +28,7 @@
     <modules>
         <module>..</module>
         <module>../product</module>
+        <module>../product2</module>
         <module>../../apgdiff</module>
         <module>../../ru.taximaxim.codekeeper.ui</module>
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
