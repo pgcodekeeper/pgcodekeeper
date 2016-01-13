@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -799,7 +801,8 @@ public class JdbcLoader implements PgCatalogStrings {
         Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
-        String[] sequences = (String[])res.getArray("seqs").getArray();
+        Pattern pattern_search_seq_name = Pattern.compile("\'([a-z]|_)+\'");
+
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
                 // system columns
@@ -847,7 +850,14 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             t.addColumn(column);
             // SEQUENCES
-            t.addSequence(sequences[i]);
+            if (colDefaults[i] == null){
+                t.addSequence(null);
+            } else {
+                Matcher matcher = pattern_search_seq_name.matcher(colDefaults[i]);
+                if (matcher.find()){
+                    t.addSequence(matcher.group().replaceAll("\'", ""));
+                }
+            }
         }
 
 
@@ -909,7 +919,6 @@ public class JdbcLoader implements PgCatalogStrings {
                 setPrivileges(t.getColumn(colNames[i]), tableName, columnPrivileges, tableOwner, colNames[i]);
             }
         }
-
         return t;
     }
 
