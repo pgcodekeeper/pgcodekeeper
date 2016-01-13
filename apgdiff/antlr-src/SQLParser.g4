@@ -2195,7 +2195,7 @@ select_list2
 
 
    insert_stmt_for_psql
-	: ( INSERT INTO insert_table_name = n_table_name ( LEFT_PAREN column_name_list RIGHT_PAREN )?
+   : ( INSERT INTO insert_table_name=schema_qualified_name ( LEFT_PAREN column_name_list RIGHT_PAREN )?
       (value_expression
       | query_specification
       | DEFAULT VALUES)

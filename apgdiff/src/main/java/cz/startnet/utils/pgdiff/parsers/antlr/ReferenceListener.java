@@ -165,36 +165,25 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
                 .getStart().getLine());
 
-        /*        try {
-            String insertTableName = ParserAbstract.getFullCtxText(ctx.command.insert_stmt_for_psql().);
-            String insertTableSchema = ParserAbstract.getSchemaName(insertTableName);
+        try {
+            String insertTableName = ParserAbstract.getName(ctx.command.insert_stmt_for_psql().insert_table_name);
+            String insertTableSchema = ParserAbstract.getSchemaName(ctx.command.insert_stmt_for_psql().insert_table_name);
+            if (insertTableSchema == null){
+                insertTableSchema = getDefSchemaName();
+            } else {
+                addObjReference(null, insertTableSchema, DbObjType.SCHEMA,
+                        StatementActions.NONE,
+                        ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex(),
+                        0, ctx.command.insert_stmt_for_psql().insert_table_name
+                        .getStart().getLine());
+            }
             addObjReference(insertTableSchema, insertTableName, DbObjType.TABLE,
                     StatementActions.NONE,
-                    ctx.command.insert_stmt_for_psql().n_table_name().getStart().getStartIndex(), 0,
-                    ctx.command.insert_stmt_for_psql().n_table_name()
-                    .getStart().getLine());
+                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex() + insertTableSchema.length() + 1, 0,
+                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getLine());
         } catch (NullPointerException npe){
 
-        }*/
-
-        /*        String funcName = ParserAbstract.getName(ctx. function_parameters().name);
-        String funcSchema = ParserAbstract.getSchemaName(ctx.function_parameters().name);
-        int offset = 0;
-        if (funcSchema == null) {
-            funcSchema = getDefSchemaName();
-        } else {
-            offset = funcSchema.length() + 1;
-            addObjReference(null, funcSchema, DbObjType.SCHEMA,
-                    StatementActions.NONE, ctx.function_parameters().getStart()
-                    .getStartIndex(), 0, ctx.function_parameters()
-                    .getStart().getLine());
         }
-        addObjReference(funcSchema, funcName+"()", DbObjType.FUNCTION,
-                StatementActions.NONE, ctx.function_parameters().getStart()
-                .getStartIndex()
-                + offset, funcName.length(),
-                ctx.function_parameters().name.getStart().getLine());
-         */
         fillObjDefinition(schemaName, name, DbObjType.RULE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
@@ -674,12 +663,6 @@ public class ReferenceListener extends SQLParserBaseListener {
             loc.setObjNameLength(nameLength);
         }
         loc.setObjType(objType);
-        if (filePath.contains("zbxcountremotecalls.")){
-            filePath.contains("zbxcountremotecalls");
-        }
-        if (filePath.contains("rep2_errors_log.")){
-            filePath.contains("zbxcountremotecalls");
-        }
         List<PgObjLocation> refs = references.get(filePath);
         if (refs == null) {
             refs = new ArrayList<>();
