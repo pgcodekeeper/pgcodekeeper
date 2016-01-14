@@ -86,6 +86,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             }
         }
 
+
         if (hyperlinks.isEmpty()) {
             return null;
         }

@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -149,6 +150,41 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ctx.function_parameters().name.getStart().getLine());
 
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
+                .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
+        String name = ParserAbstract.getName(ctx.name);
+        String schemaName =ParserAbstract.getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
+        addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.table_name), DbObjType.TABLE,
+                StatementActions.NONE,
+                ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
+                .getStart().getLine());
+
+        try {
+            String insertTableName = ParserAbstract.getName(ctx.command.insert_stmt_for_psql().insert_table_name);
+            String insertTableSchema = ParserAbstract.getSchemaName(ctx.command.insert_stmt_for_psql().insert_table_name);
+            if (insertTableSchema == null){
+                insertTableSchema = getDefSchemaName();
+            } else {
+                addObjReference(null, insertTableSchema, DbObjType.SCHEMA,
+                        StatementActions.NONE,
+                        ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex(),
+                        0, ctx.command.insert_stmt_for_psql().insert_table_name
+                        .getStart().getLine());
+            }
+            addObjReference(insertTableSchema, insertTableName, DbObjType.TABLE,
+                    StatementActions.NONE,
+                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex() + insertTableSchema.length() + 1, 0,
+                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getLine());
+        } catch (NullPointerException npe){
+
+        }
+        fillObjDefinition(schemaName, name, DbObjType.RULE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
 

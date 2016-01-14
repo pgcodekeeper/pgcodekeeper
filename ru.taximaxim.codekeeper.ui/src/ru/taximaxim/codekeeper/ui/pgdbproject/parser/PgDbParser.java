@@ -228,12 +228,12 @@ public class PgDbParser implements IResourceChangeListener {
 
     public List<PgObjLocation> getObjsForPath(Path pathToFile) {
         List<PgObjLocation> locations = new ArrayList<>();
-        List<PgObjLocation> refs = objReferences.get(pathToFile);
+        List<PgObjLocation> refs = objReferences.get(pathToFile.toString());
         if (refs == null) {
             return locations;
         }
         for (PgObjLocation loc : refs) {
-            if (loc.getFilePath().equals(pathToFile)
+            if (loc.getFilePath().equals(pathToFile.toString())
                     && hasDefinition(loc)) {
                 locations.add(loc);
             }
