@@ -23,6 +23,8 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -323,17 +325,19 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         btnPgDump = new Button(grpSrc, SWT.RADIO);
-        btnPgDump.setText(Messages.db);
-        btnPgDump.addSelectionListener(new SelectionAdapter() {
+    	btnPgDump.setText(Messages.db);
+    	btnPgDump.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showDbPicker(true);
-                selectedDBSource = DBSources.SOURCE_TYPE_DB;
-                lblSourceInfo.setText(getSourceInfoText());
-                containerUpper.layout();
-            }
-        });
+    		@Override
+    		public void widgetSelected(SelectionEvent e) {
+    			showDbPicker(true);
+    			selectedDBSource = DBSources.SOURCE_TYPE_DB;
+    			lblSourceInfo.setText(getSourceInfoText());
+    			containerUpper.layout();
+    		}
+    	});
+        btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
+        
 
         btnJdbc = new Button(grpSrc, SWT.RADIO);
         btnJdbc.setText(Messages.jdbc);
@@ -432,6 +436,18 @@ public abstract class DiffPresentationPane extends Composite {
                 openElementInEditor(el, proj);
             }
         });
+        
+        Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				//TODO
+				btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
+				if (!btnPgDump.isVisible()){
+					btnJdbc.setSelection(true);
+				}
+			}
+		});
     }
 
     public void setTitleColor(RGB color){
