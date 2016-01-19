@@ -323,17 +323,19 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         btnPgDump = new Button(grpSrc, SWT.RADIO);
-        btnPgDump.setText(Messages.db);
-        btnPgDump.addSelectionListener(new SelectionAdapter() {
+    	btnPgDump.setText(Messages.db);
+    	btnPgDump.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showDbPicker(true);
-                selectedDBSource = DBSources.SOURCE_TYPE_DB;
-                lblSourceInfo.setText(getSourceInfoText());
-                containerUpper.layout();
-            }
-        });
+    		@Override
+    		public void widgetSelected(SelectionEvent e) {
+    			showDbPicker(true);
+    			selectedDBSource = DBSources.SOURCE_TYPE_DB;
+    			lblSourceInfo.setText(getSourceInfoText());
+    			containerUpper.layout();
+    		}
+    	});
+        btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
+        
 
         btnJdbc = new Button(grpSrc, SWT.RADIO);
         btnJdbc.setText(Messages.jdbc);

@@ -103,6 +103,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         super.init(site, input);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
+    
+    
 
     @Override
     protected void createPages() {
