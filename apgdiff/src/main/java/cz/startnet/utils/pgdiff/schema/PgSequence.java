@@ -216,10 +216,7 @@ public class PgSequence extends PgStatementWithSearchPath {
             sb.append(newSequence.getOwnerSQL());
         }
         
-        if (!oldSequence.getGrants().equals(newSequence.getGrants())
-                || !oldSequence.getRevokes().equals(newSequence.getRevokes())) {
-            sb.append(newSequence.getPrivilegesSQL());
-        }
+        addPrivilegeScript(oldSequence, newSequence, sb);
 
         if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
             sb.append("\n\n");

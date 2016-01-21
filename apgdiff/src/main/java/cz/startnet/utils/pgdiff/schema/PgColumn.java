@@ -318,10 +318,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             }
         }
         
-        if (!oldColumn.getGrants().equals(newColumn.getGrants())
-                || !oldColumn.getRevokes().equals(newColumn.getRevokes())) {
-            sb.append(newColumn.getPrivilegesSQL());
-        }
+        addPrivilegeScript(oldColumn, newColumn, sb);
         
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
             sb.append("\n\n");
