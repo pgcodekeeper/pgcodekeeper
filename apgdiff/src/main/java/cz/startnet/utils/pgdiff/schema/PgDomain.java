@@ -200,10 +200,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
             newDomain.appendOwnerSQL(sb);
         }
-        if (!oldDomain.getGrants().equals(newDomain.getGrants()) || 
-                !oldDomain.getRevokes().equals(newDomain.getRevokes())) {
-            newDomain.appendPrivileges(sb);
-        }
+        addPrivilegeScript(oldDomain, newDomain, sb);
         if (!Objects.equals(oldDomain.getComment(), newDomain.getComment())) {
             sb.append("\n\n");
             newDomain.appendCommentSql(sb);

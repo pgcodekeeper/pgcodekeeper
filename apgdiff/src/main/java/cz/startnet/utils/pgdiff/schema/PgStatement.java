@@ -401,4 +401,25 @@ public abstract class PgStatement {
     public String toString() {
         return name == null ? "Unnamed object" : name;
     }
+    
+    public void addPrivilegeScript(PgStatement oldObj, PgStatement newObj, StringBuilder sb){
+    	// находим список старых и новых GRAND и соответственно удоляем их или удаляем
+        if (!oldObj.getGrants().equals(newObj.getGrants())){
+        	Set<PgPrivilege> oldGrands = new LinkedHashSet<>(oldObj.getGrants());
+        	Set<PgPrivilege> newGrands = new LinkedHashSet<>(newObj.getGrants());
+        	oldGrands.removeAll(newObj.getGrants()); //список удаленный грандов
+        	newGrands.removeAll(oldObj.getGrants()); //список добавленных грандов
+        	for (PgPrivilege priv : oldGrands){
+        		sb.append(priv.getDropSQL());
+        	}
+        	for (PgPrivilege priv : oldGrands){
+        		sb.append(priv.getCreationSQL());
+        	}
+        }
+        
+        /*        if (!oldTable.getGrants().equals(newTable.getGrants())
+        || !oldTable.getRevokes().equals(newTable.getRevokes())) {
+    sb.append(newTable.getPrivilegesSQL());
+}*/
+    }
 }

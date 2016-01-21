@@ -161,11 +161,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         if (!Objects.equals(oldFunction.getOwner(), newFunction.getOwner())) {
             sb.append(newFunction.getOwnerSQL());
         }
-        if (!oldFunction.getGrants().equals(newFunction.getGrants())
-                || !oldFunction.getRevokes().equals(newFunction.getRevokes())) {
-            sb.append(newFunction.getPrivilegesSQL());
-        }
-
+        addPrivilegeScript(oldFunction, newFunction, sb);
         if (!Objects.equals(oldFunction.getComment(), newFunction.getComment())) {
             sb.append("\n\n");
             newFunction.appendCommentSql(sb);

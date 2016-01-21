@@ -10,6 +10,7 @@ public class PgPrivilege extends PgStatement {
     private final boolean revoke;
     private final String definition;
     
+    //Определяет какого типа привелегия (GRAND or REVOKE)
     public boolean isRevoke() {
         return revoke;
     }
@@ -36,13 +37,18 @@ public class PgPrivilege extends PgStatement {
                 .append(revoke? "REVOKE" : "GRANT")
                 .append(' ')
                 .append(definition)
-                .append(';')
+                .append(";\n")
                 .toString();
     }
     
     @Override
     public String getDropSQL() {
-        return null;
+    	return new StringBuilder()
+    			.append(revoke? "GRAND" : "REVOKE")
+    			.append(' ')
+    			.append(definition.replace("TO", "FROM"))
+    			.append(";\n")
+    			.toString();
     }
     
     @Override
