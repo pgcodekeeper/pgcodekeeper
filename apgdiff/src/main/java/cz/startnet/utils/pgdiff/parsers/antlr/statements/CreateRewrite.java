@@ -46,32 +46,29 @@ public class CreateRewrite extends ParserAbstract {
             rule.setAlso(true);
         }
 
-        PgTable pgTable = db.getSchema(schemaName).getTable(rule.getRuleTargetName());
-        if (pgTable != null){
-            pgTable.addRule(rule);
+        if (db.getSchema(schemaName) == null) {
+            logSkipedObject(schemaName, "RULE", rule.getRuleTargetName());
+            return null;
         } else {
-            PgView pgView = db.getSchema(schemaName).getView(rule.getRuleTargetName());
-            if (pgView != null){
-                pgView.addRule(rule);
+            PgTable pgTable = db.getSchema(schemaName).getTable(rule.getRuleTargetName());
+            if (pgTable != null){
+                pgTable.addRule(rule);
             } else {
-                Log.log(Log.LOG_ERROR,
-                        new StringBuilder().append("Rule ")
-                        .append(rule.getName())
-                        .append(" was added outside table or view for ").append(schemaName)
-                        .append(" schema ").toString());
+                PgView pgView = db.getSchema(schemaName).getView(rule.getRuleTargetName());
+                if (pgView != null){
+                    pgView.addRule(rule);
+                } else {
+                    Log.log(Log.LOG_ERROR,
+                            new StringBuilder().append("TABLE ")
+                            .append(rule.getRuleTargetName())
+                            .append(" not found on schema ").append(schemaName)
+                            .append(" That's why rule ").append(name)
+                            .append("will be skipped").toString());
+                    return null;
+                }
             }
         }
+
         return rule;
     }
-
-    /*    public static class WhenListener extends SQLParserBaseListener {
-        private String when;
-        @Override
-        public void exitWhen_trigger(When_triggerContext ctx) {
-            when = getFullCtxText(ctx.when_expr);
-        }
-        public String getWhen() {
-            return when;
-        }
-    }*/
 }

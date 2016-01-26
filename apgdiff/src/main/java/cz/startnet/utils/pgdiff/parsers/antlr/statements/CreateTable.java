@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -60,7 +61,12 @@ public class CreateTable extends ParserAbstract {
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
-                table.addInherits(getSchemaName(nameInher), getName(nameInher));
+                String inhSchemaName = getSchemaName(nameInher);
+                String inhTableName = getName(nameInher);
+                table.addInherits(inhSchemaName, inhTableName);
+                GenericColumn gc = new GenericColumn(inhSchemaName, inhTableName, null);
+                gc.setType(ViewReference.TABLE);
+                table.addDep(gc);
             }
         }
 
@@ -106,6 +112,7 @@ public class CreateTable extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addTable(table);
+
         return table;
     }
 }

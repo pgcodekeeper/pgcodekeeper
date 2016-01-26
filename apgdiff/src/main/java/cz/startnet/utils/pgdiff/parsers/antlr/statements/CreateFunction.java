@@ -44,6 +44,7 @@ public class CreateFunction extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addFunction(function);
+
         return function;
     }
 

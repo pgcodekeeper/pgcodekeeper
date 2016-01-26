@@ -49,9 +49,9 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.TRIGGER;
     }
-    
+
     public PgTrigger(String name, String rawStatement) {
-        super(name, rawStatement);        
+        super(name, rawStatement);
     }
 
     public void setBefore(final boolean before) {
@@ -149,14 +149,14 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgTrigger newTrg;
         if (newCondition instanceof PgTrigger) {
-            newTrg = (PgTrigger)newCondition; 
+            newTrg = (PgTrigger)newCondition;
         } else {
             return false;
         }
@@ -197,7 +197,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private String getFullFunction() {
         return function_full;
     }
-    
+
     public String getFunctionSignature() {
         return func_signature;
     }
@@ -279,7 +279,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
         return eq;
     }
-    
+
     public boolean compareWithoutComments(PgTrigger trigger) {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
@@ -316,7 +316,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + (comment == null ? 0 : comment.hashCode());
         return result;
     }
-    
+
     @Override
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst =
@@ -334,14 +334,15 @@ public class PgTrigger extends PgStatementWithSearchPath {
         for(String updCol : updateColumns) {
             triggerDst.addUpdateColumn(updCol);
         }
+        triggerDst.setDeps(getDeps());
         return triggerDst;
     }
-    
+
     @Override
     public PgTrigger deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();

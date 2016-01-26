@@ -183,7 +183,11 @@ public class ModelExporter {
         case INDEX:
         case TRIGGER:
             TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
+            if (elParent.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
+            } else {
+                processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
+            }
             break;
 
         case RULE:
@@ -222,7 +226,11 @@ public class ModelExporter {
         case INDEX:
         case TRIGGER:
             TreeElement elParent = el.getParent();
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            if (elParent.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            } else {
+                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
+            }
             break;
 
         case RULE:
@@ -294,7 +302,11 @@ public class ModelExporter {
             testParentSchema(elParent.getParent());
             // table actually, not schema
             testParentSchema(elParent);
-            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            if (elParent.getType() == DbObjType.TABLE){
+                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            } else {
+                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
+            }
             break;
 
         case TABLE:
@@ -539,6 +551,7 @@ public class ModelExporter {
             oldView = oldParentSchema.getView(st.getName());
             if (oldView != null) {
                 contents.addAll(oldView.getRules());
+                contents.addAll(oldView.getTriggers());
             }
         }
         // view to dump, initially assume old unmodified state
@@ -589,6 +602,12 @@ public class ModelExporter {
                     stChange = viewChange.getRule(elChange.getName());
                     if (elChange.getSide() == DiffSide.BOTH) {
                         stChangeOld = oldView.getRule(elChange.getName());
+                    }
+                    break;
+                case TRIGGER:
+                    stChange = viewChange.getTrigger(elChange.getName());
+                    if (elChange.getSide() == DiffSide.BOTH) {
+                        stChangeOld = oldView.getTrigger(elChange.getName());
                     }
                     break;
                 default:
@@ -789,6 +808,10 @@ public class ModelExporter {
                 groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
             }
 
+            for (PgTrigger trigger : view.getTriggers()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trigger, false));
+            }
+
             dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(view)));
         }
     }
@@ -906,9 +929,17 @@ public class ModelExporter {
         case CONSTRAINT:
         case INDEX:
         case TRIGGER:
-            st = parentSt;
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
-            file = new File(new File(file, schemaName), "TABLE");
+            if (parentSt.getStatementType() == DbObjType.TABLE){
+                file = new File(new File(file, schemaName), "TABLE");
+            } else {
+                if (parentSt.getStatementType() == DbObjType.VIEW){
+                    file = new File(new File(file, schemaName), "VIEW");
+                } else {
+                    Log.log(Log.LOG_ERROR, ModelExporter.class + ": " + st.getName() + "trigger out of table or view");
+                }
+            }
+            st = parentSt;
             break;
 
         case RULE:

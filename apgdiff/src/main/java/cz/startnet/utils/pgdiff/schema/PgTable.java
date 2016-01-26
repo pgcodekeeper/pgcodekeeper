@@ -508,20 +508,16 @@ public class PgTable extends PgStatementWithSearchPath {
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
-
             eq = super.equals(obj)
-
                     && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
                     && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
                     && new HashSet<>(triggers).equals(new HashSet<>(table.triggers))
                     && new HashSet<>(rules).equals(new HashSet<>(table.rules));
         }
-
         return eq;
     }
 
