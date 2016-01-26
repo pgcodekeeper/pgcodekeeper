@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract.FunctionSearcher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -283,6 +284,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 monitor.worked(1);
                 if (table != null){
                     s.addTable(table);
+                    //                    table.addDep(s);
                 }
             }
         }
@@ -299,7 +301,21 @@ public class JdbcLoader implements PgCatalogStrings {
                     PgConstraint constraint = getConstraint(resConstraints, schemaName, table.getName());
                     if (constraint != null){
                         table.addConstraint(constraint);
+                        //                        constraint.addDep(table);
                     }
+                }
+            }
+        }
+
+        // VIEWS
+        prepStatViews.setLong(1, schemaOid);
+        try(ResultSet resViews = prepStatViews.executeQuery()){
+            while (resViews.next()) {
+                PgDumpLoader.checkCancelled(monitor);
+                view = getView(resViews, schemaName);
+                monitor.worked(1);
+                if (view != null){
+                    s.addView(view);
                 }
             }
         }
@@ -326,24 +342,15 @@ public class JdbcLoader implements PgCatalogStrings {
             while(resTriggers.next()){
                 PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resTriggers.getString(CLASS_RELNAME));
-                if (table != null){
-                    PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                    if (trigger != null){
+                view = s.getView(resTriggers.getString(CLASS_RELNAME));
+                PgTrigger trigger = getTrigger(resTriggers, schemaName);
+                if (trigger != null){
+                    if (view != null){
+                        view.addTrigger(trigger);
+                    }
+                    if (table != null){
                         table.addTrigger(trigger);
                     }
-                }
-            }
-        }
-
-        // VIEWS
-        prepStatViews.setLong(1, schemaOid);
-        try(ResultSet resViews = prepStatViews.executeQuery()){
-            while (resViews.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                view = getView(resViews, schemaName);
-                monitor.worked(1);
-                if (view != null){
-                    s.addView(view);
                 }
             }
         }
@@ -674,6 +681,7 @@ public class JdbcLoader implements PgCatalogStrings {
         if (comment != null && !comment.isEmpty()) {
             e.setComment(args, PgDiffUtils.quoteString(comment));
         }
+
         return e;
     }
 
@@ -888,8 +896,12 @@ public class JdbcLoader implements PgCatalogStrings {
         if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null &&
                 inherits.length > 0){
             for (String inherited : inherits){
-                t.addInherits(
-                        PgDiffUtils.getSecondObjectName(inherited), PgDiffUtils.getObjectName(inherited));
+                String inhSchema = PgDiffUtils.getSecondObjectName(inherited);
+                String inhTable = PgDiffUtils.getObjectName(inherited);
+                t.addInherits(inhSchema, inhTable);
+                GenericColumn gc = new GenericColumn(schemaName, inhTable, null);
+                gc.setType(ViewReference.TABLE);
+                t.addDep(gc);
             }
         }
 
@@ -1038,12 +1050,24 @@ public class JdbcLoader implements PgCatalogStrings {
 
         t.setFunction(functionName, funcName+ "()");
 
+        if (t.getName().contains("trd_t_object_link")){
+            t.getName().contains("trd_t_object_link");
+        }
+
+        GenericColumn gc = new GenericColumn(res.getString(NAMESPACE_NSPNAME), functionName, null);
+        gc.setType(ViewReference.FUNCTION);
+
+        t.addDep(gc);
+
         t.setWhen(parseWhen(res.getString("definition")));
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()){
             t.setComment(this.args, PgDiffUtils.quoteString(comment));
         }
+
+
+
         return t;
     }
 
@@ -1109,6 +1133,7 @@ public class JdbcLoader implements PgCatalogStrings {
         if (command.contains("WHERE")){
             r.setRuleCondition(command.substring(command.indexOf("WHERE"), command.indexOf(sb.toString().trim())).trim());
         }
+
         return r;
     }
 
@@ -1221,6 +1246,7 @@ public class JdbcLoader implements PgCatalogStrings {
         if (comment != null && !comment.isEmpty()) {
             f.setComment(args, PgDiffUtils.quoteString(comment));
         }
+
         return f;
     }
 
@@ -1360,6 +1386,7 @@ public class JdbcLoader implements PgCatalogStrings {
         if (comment != null && !comment.isEmpty()){
             s.setComment(args, PgDiffUtils.quoteString(comment));
         }
+
         return s;
     }
 
