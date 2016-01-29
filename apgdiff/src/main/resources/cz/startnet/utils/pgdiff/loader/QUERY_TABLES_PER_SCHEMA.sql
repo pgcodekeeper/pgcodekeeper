@@ -31,7 +31,6 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_typcollation,
        subselectColumns.col_collationname,
        subselectColumns.col_collationnspname,
-       subselectColumns.seqs,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname as table_space,
@@ -54,7 +53,6 @@ FROM
             array_agg(columnsData.attnotnull ORDER BY columnsData.attnum) AS col_notnull,
             array_agg(columnsData.attstattarget ORDER BY columnsData.attnum) AS col_statictics,
             array_agg(columnsData.attislocal ORDER BY columnsData.attnum) AS col_local,
-            array_agg(columnsData.col_seq ORDER BY columnsData.attnum) AS seqs,
             array_agg(columnsData.attacl ORDER BY columnsData.attnum) AS col_acl,
             columnsData.reloptions,
             columnsData.toast_reloptions,
@@ -76,11 +74,6 @@ FROM
               attr.attnotnull,
               attr.attstattarget,
               attr.attislocal,
-              (SELECT cseq.oid::regclass::text
-               FROM pg_catalog.pg_class cseq
-               JOIN pg_catalog.pg_depend depseq ON cseq.oid = depseq.refobjid
-               WHERE cseq.relkind = 'S' 
-                   AND depseq.objid = attrdef.oid) col_seq,
               attr.attacl::text,
               c.reloptions,
               tc.reloptions AS toast_reloptions,

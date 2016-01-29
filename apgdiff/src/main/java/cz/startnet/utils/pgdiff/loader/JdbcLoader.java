@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -168,6 +169,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 if (connection != null)
                     connection.rollback();
             } catch (SQLException ex) {
+                ex.addSuppressed(e);
                 Log.log(Log.LOG_ERROR, "Cannot rollBack changes", ex);
             }
             throw new IOException(MessageFormat.format(
@@ -830,7 +832,7 @@ public class JdbcLoader implements PgCatalogStrings {
         Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
-        String[] sequences = (String[])res.getArray("seqs").getArray();
+
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
                 // system columns
@@ -878,7 +880,14 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             t.addColumn(column);
             // SEQUENCES
-            t.addSequence(sequences[i]);
+            if (colDefaults[i] != null){
+                Matcher matcher = PgColumn.PATTERN_SEQUENCE.matcher(colDefaults[i]);
+                if (matcher.matches()){
+                    String seq = matcher.group("schema") == null ? matcher.group("seq") :
+                        matcher.group("schema") + '.' + matcher.group("seq");
+                    t.addSequence(seq);
+                }
+            }
         }
 
 
@@ -940,7 +949,6 @@ public class JdbcLoader implements PgCatalogStrings {
                 setPrivileges(t.getColumn(colNames[i]), tableName, columnPrivileges, tableOwner, colNames[i]);
             }
         }
-
         return t;
     }
 
