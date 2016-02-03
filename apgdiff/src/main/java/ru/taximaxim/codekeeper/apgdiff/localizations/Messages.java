@@ -30,6 +30,8 @@ public final class Messages extends NLS {
     public static String Argument_ErrorUnknownOption;
     public static String Database_NewDatabaseIgnoredStatements;
     public static String Database_OriginalDatabaseIgnoredStatements;
+
+    public static String JdbcConnector_in_jdbc_connection;
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
     
