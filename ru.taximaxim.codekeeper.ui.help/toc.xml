@@ -2,7 +2,23 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="Руководство pgCodeKepeer" topic="html/toc.html">
+	<topic href="html/toc.html" label="Введение">	
+	</topic>
    <topic label="Начало работы">
       <anchor id="gettingstarted"/>
+   </topic>
+   <topic label="Задачи">
+      <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Создание нового проекта">
+      </topic>
+      <topic href="html/tasks/update_pgcodekeeper_project.html" label="Обновление проекта">
+      </topic>
+      <topic href="html/tasks/update_remote_db.html" label="Обноление БД">
+      </topic>
+      <topic href="html/tasks/list_obj.html" label="Наборы объектов">
+      </topic>
+      <topic href="html/tasks/search_obj.html" label="Поиск объекта">
+      </topic>
+      <topic href="html/tasks/edit_pgcodekeeper_project.html" label="Редактирование проекта">
+      </topic>
    </topic>
 </toc>

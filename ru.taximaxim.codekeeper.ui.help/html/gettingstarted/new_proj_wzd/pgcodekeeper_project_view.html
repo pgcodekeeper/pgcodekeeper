@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>pgCodeKeeper project view</title>
+    <link type="text/css" rel="stylesheet" href="../book.css"/>
+</head>
+
+<body>
+<h2>Основная панель проекта</h2>
+<p><b>Основная панель проекта</b> состоит из трех основных частей:</p>
+<ul>
+    <li>1. Панель сравнения</li>
+    <li>2. панель выбора источника БД</li>
+    <li>3. Панель изменений</li>
+</ul>
+<img alt="Основная панель проекта" src="../images/pgcodekeeper_project_view.png">
+<p><b>Панель сравнения</b> отображает список объектов, которые имеют отличия в сравниваемых схемах БД. 
+
+Изменение могут быть 3-х видов: удаление, создание, редактирование. 
+В зависимости от типа изменения объкты в списке изменений помечаются как delete, new и edit соответственно.</p>
+<p>В нижней части панели сравнения расположена панель инструментов предназначенная для работы со списком объектов. Они имеют следующее предназначение: </p>
+<ul>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/alpha_mode.gif"> - сбросить сортировку</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/check_all.gif"> - выделить все элементы</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/uncheck_all.gif"> - снять выделение со всех элементов</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/loop_obj.gif"> - инвертировать выделение элементов</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/save_edit.gif"> - сохранить набор выбранных элементов</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/delete_obj.gif"> - удаление набора выбранных элементов</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/list_obj.png"> - список сохраненных наборов выделенных элементов</li>
+    <li><img border="0" src="new_proj_wzd/images/pgcodekeeper_project_view/save_clipboard.png"> - копирование набора выбранных элементов в буфер обмена</li>
+</ul>
+<p>В верхней части панели распологается поле поиска объекта по имени</p>
+<p><b>Панель выбора источника БД</b> содержит параметры подключения к схеме БД, с которой будет сравниваться схема проекта. Имеется возможность ввода параметров в ручном так и в автоматичском режиме при помощи, 
+	<a href="../preferences/db_storage.html">
+		настройки хранилищ базы данных.
+	</a>
+</p>
+<p><b>Панель изменений</b> показывает изменения в SQL запросе объекта</p>
+</body>
+</html>

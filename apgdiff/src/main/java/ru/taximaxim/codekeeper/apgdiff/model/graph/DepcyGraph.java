@@ -212,7 +212,7 @@ public class DepcyGraph {
         createPgStatementToType(
                 new GenericColumn(
                         PgDiffUtils.getSecondObjectName(typeName),
-                        PgDiffUtils.getObjectName(typeName), null), 
+                        PgDiffUtils.getObjectName(typeName), null),
                 schema, statement);
     }
 
