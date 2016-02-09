@@ -31,25 +31,25 @@ public class PgColumn extends PgStatementWithSearchPath {
             "^(.+)[\\s]+NOT[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_DEFAULT = Pattern.compile(
             "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PATTERN_SEQUENCE = Pattern.compile(
+    public static final Pattern PATTERN_SEQUENCE = Pattern.compile(
             "^(?:nextval|setval)\\('(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
-            + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",
-            Pattern.CASE_INSENSITIVE);
+                    + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",
+                    Pattern.CASE_INSENSITIVE);
     private static final String ALTER_TABLE = "ALTER TABLE ";
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
-    
+
     private Integer statistics;
     private String defaultValue;
     private String type;
     private boolean nullValue = true;
     private String storage;
-    private List<GenericColumn> defaultFunctions = new ArrayList<>();
+    private final List<GenericColumn> defaultFunctions = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
         return DbObjType.COLUMN;
     }
-    
+
     public PgColumn(String name) {
         super(name, null);
     }
@@ -71,10 +71,10 @@ public class PgColumn extends PgStatementWithSearchPath {
      *
      * @return full definition of the column
      */
-    public String getFullDefinition(final boolean addDefaults, 
+    public String getFullDefinition(final boolean addDefaults,
             StringBuilder separateDefault) {
         final StringBuilder sbDefinition = new StringBuilder();
-        
+
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
         sbDefinition.append(' ');
@@ -144,9 +144,9 @@ public class PgColumn extends PgStatementWithSearchPath {
     public void addDefaultFunction(GenericColumn func) {
         defaultFunctions.add(func);
     }
-    
+
     public List<GenericColumn> getDefaultFunctions() {
-       return Collections.unmodifiableList(defaultFunctions); 
+        return Collections.unmodifiableList(defaultFunctions);
     }
 
     public void parseDefinition(final String definition, StringBuilder seqName) {
@@ -179,33 +179,33 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         setType(string);
     }
-    
+
     public String parseSequence(String definition) {
         Matcher seqMatcher = PATTERN_SEQUENCE.matcher(definition);
         if (seqMatcher.matches()) {
-            return seqMatcher.group("schema") == null ? 
+            return seqMatcher.group("schema") == null ?
                     seqMatcher.group("seq") : seqMatcher.group("schema") + "." + seqMatcher.group("seq");
         }
         return null;
     }
-    
+
     @Override
     public String getCreationSQL() {
         StringBuilder defaultStatement = new StringBuilder();
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getAlterTable())
-                .append("\n\tADD COLUMN ")
-                .append(getFullDefinition(false, defaultStatement))
-                .append(';');
+        .append("\n\tADD COLUMN ")
+        .append(getFullDefinition(false, defaultStatement))
+        .append(';');
         if (defaultStatement.length() > 0) {
             sbSQL.append("\n\n")
-                    .append(getAlterTable())
-                    .append(ALTER_COLUMN)
-                    .append(defaultStatement)
-                    .append(';');
+            .append(getAlterTable())
+            .append(ALTER_COLUMN)
+            .append(defaultStatement)
+            .append(';');
         }
         appendPrivileges(sbSQL);
-        
+
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
@@ -216,7 +216,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String getAlterTable() {
         return ALTER_TABLE + this.getParent().getName();
     }
-    
+
     @Override
     public String getDropSQL() {
         return getAlterTable() + "\n\tDROP COLUMN "
@@ -275,7 +275,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         if (!oldColumn.getType().equals(newColumn.getType())) {
             isNeedDepcies.set(true);
 
-            sb.append("\n\n" + getAlterTable()
+            sb.append(
+                    "\n\n" + getAlterTable()
                     + ALTER_COLUMN
                     + newColumn.getName()
                     + " TYPE "
@@ -317,25 +318,26 @@ public class PgColumn extends PgStatementWithSearchPath {
                         + newColumn.getName() + " SET NOT NULL;");
             }
         }
-        
-        addPrivilegeScript(oldColumn, newColumn, sb);
-        
+        if (!oldColumn.getGrants().equals(newColumn.getGrants())
+                || !oldColumn.getRevokes().equals(newColumn.getRevokes())) {
+            sb.append(newColumn.getPrivilegesSQL());
+        }
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
             sb.append("\n\n");
             newColumn.appendCommentSql(sb);
         }
         return sb.length() > startLength;
     }
-    
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgColumn) {
             PgColumn col = (PgColumn) obj;
-            
+
             eq = Objects.equals(name, col.getName())
                     && Objects.equals(type, col.getType())
                     && nullValue == col.getNullValue()
@@ -346,10 +348,10 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes);
         }
-        
+
         return eq;
     }
-    
+
     @Override
     public int computeHash() {
         final int prime = 31;
@@ -367,10 +369,10 @@ public class PgColumn extends PgStatementWithSearchPath {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         return result;
     }
-    
+
     @Override
     public PgColumn shallowCopy() {
-        PgColumn colDst = new PgColumn(getName()); 
+        PgColumn colDst = new PgColumn(getName());
         colDst.setDefaultValue(getDefaultValue());
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
@@ -388,7 +390,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         }
         return colDst;
     }
-    
+
     @Override
     public PgColumn deepCopy() {
         return shallowCopy();

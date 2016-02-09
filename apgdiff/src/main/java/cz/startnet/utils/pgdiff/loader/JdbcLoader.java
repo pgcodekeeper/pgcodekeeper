@@ -14,10 +14,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -89,16 +88,16 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private Connection connection;
     private final JdbcConnector connector;
-    private final IProgressMonitor monitor;
+    private final SubMonitor monitor;
     private final PgDiffArguments args;
     private GenericColumn currentObject;
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, new NullProgressMonitor());
+        this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
-            IProgressMonitor monitor) {
+            SubMonitor monitor) {
         this.connector = connector;
         this.args = pgDiffArguments;
         this.monitor = monitor;
@@ -119,14 +118,12 @@ public class JdbcLoader implements PgCatalogStrings {
             prepareData();
 
             // query total objects count
-            if (monitor instanceof SubMonitor){
-                try(Statement stmnt = connection.createStatement();
-                        ResultSet resCount = stmnt.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)){
-                    if (resCount.next()){
-                        ((SubMonitor)monitor).setWorkRemaining(resCount.getInt(1) + 50);
-                    }else{
-                        ((SubMonitor)monitor).setWorkRemaining(DEFAULT_OBJECTS_COUNT);
-                    }
+            try(Statement stmnt = connection.createStatement();
+                    ResultSet resCount = stmnt.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)){
+                if (resCount.next()){
+                    monitor.setWorkRemaining(resCount.getInt(1) + 50);
+                }else{
+                    monitor.setWorkRemaining(DEFAULT_OBJECTS_COUNT);
                 }
             }
 
@@ -162,19 +159,22 @@ public class JdbcLoader implements PgCatalogStrings {
 
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
-        } catch (SQLException sqlException){
-
         } catch (Exception e) {
             try {
-                if (connection != null)
+                if (connection != null) {
                     connection.rollback();
-            } catch (SQLException ex) {
+                }
+            } catch (Exception ex) {
+                e.addSuppressed(ex);
                 Log.log(Log.LOG_ERROR, "Cannot rollBack changes", ex);
+            }
+            if (e instanceof InterruptedException) {
+                throw (InterruptedException) e;
             }
             throw new IOException(MessageFormat.format(
                     Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
-        } finally{
+        } finally {
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources(connection, prepStatTables, prepStatViews, prepStatTriggers,
                     prepStatFunctions, prepStatSequences, prepStatConstraints,
@@ -227,8 +227,9 @@ public class JdbcLoader implements PgCatalogStrings {
     private void closeResources(AutoCloseable... resources) {
         for (int i = 0; i < resources.length; ++i) {
             try {
-                if (resources[i] != null)
+                if (resources[i] != null) {
                     resources[i].close();
+                }
             } catch (Exception ex) {
                 Log.log(Log.LOG_WARNING, "Could not close JDBC resource: "
                         + resources[i] + ", array index: " + i, ex);
@@ -838,7 +839,7 @@ public class JdbcLoader implements PgCatalogStrings {
         Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
-        String[] sequences = (String[])res.getArray("seqs").getArray();
+
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
                 // system columns
@@ -886,7 +887,14 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             t.addColumn(column);
             // SEQUENCES
-            t.addSequence(sequences[i]);
+            if (colDefaults[i] != null){
+                Matcher matcher = PgColumn.PATTERN_SEQUENCE.matcher(colDefaults[i]);
+                if (matcher.matches()){
+                    String seq = matcher.group("schema") == null ? matcher.group("seq") :
+                        matcher.group("schema") + '.' + matcher.group("seq");
+                    t.addSequence(seq);
+                }
+            }
         }
 
 
@@ -952,7 +960,6 @@ public class JdbcLoader implements PgCatalogStrings {
                 setPrivileges(t.getColumn(colNames[i]), tableName, columnPrivileges, tableOwner, colNames[i]);
             }
         }
-
         return t;
     }
 

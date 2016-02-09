@@ -371,6 +371,14 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String TreeDiffer_unknown_error;
+
+    public static String TreeDiffer_loading_schema;
+
+    public static String TreeDiffer_loading_schema_from;
+
+    public static String TreeDiffer_schema_load_error;
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;

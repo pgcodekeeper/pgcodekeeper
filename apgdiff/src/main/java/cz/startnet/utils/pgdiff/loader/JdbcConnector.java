@@ -19,14 +19,14 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcConnector {
-    private String host;
-    private int port;
-    private String user;
-    private String pass;
-    private String dbName;
-    private String encoding;
-    private String timezone;
-    
+    private final String host;
+    private final int port;
+    private final String user;
+    private final String pass;
+    private final String dbName;
+    private final String encoding;
+    private final String timezone;
+
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding, String timezone){
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
@@ -36,11 +36,11 @@ public class JdbcConnector {
         this.timezone = timezone;
         this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
     }
-    
+
     /**
      * Creates new connection instance with params specified in constructor.<br>
      * It is the caller responsibility to close connection.
-     * 
+     *
      * @return new connection
      * @throws IOException  If driver not found or a database access error occurs
      */
@@ -49,27 +49,25 @@ public class JdbcConnector {
             return establishConnection();
         } catch (ClassNotFoundException e) {
             throw new IOException(MessageFormat.format(
-                    Messages.Connection_JdbcDriverClassNotFound,
-                    e.getLocalizedMessage()), e);
+                    Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);
         } catch (SQLException e) {
             throw new IOException(MessageFormat.format(
                     Messages.Connection_DatabaseJdbcAccessError,
-                    e.getLocalizedMessage()), e);
+                    e.getLocalizedMessage(), Messages.JdbcConnector_in_jdbc_connection), e);
         }
     }
-    
-    private Connection establishConnection() throws SQLException, ClassNotFoundException{
+
+    private Connection establishConnection() throws SQLException, ClassNotFoundException {
         Properties props = new Properties();
-        props.setProperty("user", user);
-        props.setProperty("password", pass);
-        String apgdiffVer = "unknown";
+        props.setProperty("user", user); //$NON-NLS-1$
+        props.setProperty("password", pass); //$NON-NLS-1$
+        String apgdiffVer = "unknown"; //$NON-NLS-1$
         BundleContext bctx = Activator.getContext();
         if (bctx != null) {
             apgdiffVer = bctx.getBundle().getVersion().toString();
         }
-        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: "
-                + apgdiffVer);
-        
+        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer); //$NON-NLS-1$ //$NON-NLS-2$
+
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +  //$NON-NLS-1$
                 host + ":" + port + ", db name " + dbName + ", username " + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -77,15 +75,15 @@ public class JdbcConnector {
                 "jdbc:postgresql://" + host + ":" + port + "/" + dbName, props); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         return connection;
     }
-    
+
     String getEncoding(){
         return encoding;
     }
-    
+
     String getTimezone(){
         return timezone;
     }
-    
+
     private String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
         File pgPassFile;
@@ -101,7 +99,7 @@ public class JdbcConnector {
                     + "does not exist or is not a file: " + pgPassFile.getAbsolutePath()); //$NON-NLS-1$
             return ""; //$NON-NLS-1$
         }
-        
+
         String [] expectedTokens = {host, String.valueOf(port), dbName, user};
         try (Scanner sc = new Scanner(pgPassFile)){
             sc.useDelimiter(":|\n"); //$NON-NLS-1$
