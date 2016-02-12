@@ -10,7 +10,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.licensing.License;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -26,16 +30,22 @@ public final class Main {
         PgDiffArguments arguments = new PgDiffArguments();
 
         if (arguments.parse(writer, args)) {
-            if(arguments.isModeDiff()) {
-                diff(writer, arguments);
-            } else if(arguments.isModeParse()) {
-                parse(arguments);
+            try {
+                arguments.setLicense(new License(arguments.getLicensePath(), false));
+                if(arguments.isModeDiff()) {
+                    diff(writer, arguments);
+                } else if(arguments.isModeParse()) {
+                    parse(arguments);
+                }
+            } catch (LicenseException ex) {
+                writer.println(Messages.Main_license_error + ex.getLocalizedMessage());
+                Log.log(ex);
             }
         }
     }
 
     private static void diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, LicenseException {
         PgDiffScript script;
         try(PrintWriter encodedWriter = new UnixPrintWriter(
                 arguments.getDiffOutfile(), arguments.getOutCharsetName())) {
@@ -46,20 +56,19 @@ public final class Main {
                 arguments.isIgnoreRestartWith())) {
             try (PrintWriter encodedWriter = new UnixPrintWriter(
                     arguments.getDiffOutfile(), arguments.getOutCharsetName())) {
-                String msg = "Script contains dangerous statements,"
-                        + " use --allow-danger-ddl to override";
-                encodedWriter.println("-- " +msg);
+                String msg = Messages.Main_danger_statements;
+                encodedWriter.println("-- " + msg); //$NON-NLS-1$
                 writer.println(msg);
             }
         }
     }
 
-    private static void parse(PgDiffArguments arguments) throws IOException, InterruptedException {
+    private static void parse(PgDiffArguments arguments)
+            throws IOException, InterruptedException, LicenseException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
                 arguments.getParseSrcFormat(), arguments.getParseSrc(), arguments);
         new ModelExporter(new File(arguments.getParserOutdir()),
-                d, arguments.getOutCharsetName())
-        .exportFull();
+                d, arguments.getOutCharsetName()).exportFull();
     }
 
     private Main() {

@@ -1,9 +1,9 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -157,7 +158,7 @@ public class Differ implements IRunnableWithProgress {
                 writer.flush();
                 diffReverse = diffOut.toString(ApgdiffConsts.UTF_8).trim();
             }
-        } catch (UnsupportedEncodingException ex) {
+        } catch (IOException | LicenseException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 

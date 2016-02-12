@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -111,15 +112,17 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
-    public PgDatabase load() throws IOException, InterruptedException {
+    public PgDatabase load() throws IOException, InterruptedException, LicenseException {
         return load(false);
     }
 
     public PgDatabase load(boolean loadReferences)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
-        return load(loadReferences, d);
+        load(loadReferences, d);
+        args.getLicense().verifyDb(d);
+        return d;
     }
 
     private PgDatabase load(boolean loadReferences, PgDatabase intoDb)
@@ -160,7 +163,8 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, int monLvl,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException {
+            List<FunctionBodyContainer> funcBodies)
+                    throws InterruptedException, IOException, LicenseException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         File dir = new File(dirPath);
@@ -190,6 +194,8 @@ public class PgDumpLoader implements AutoCloseable {
                         monitor, monLvl, funcBodies);
             }
         }
+
+        arguments.getLicense().verifyDb(db);
         return db;
     }
 

@@ -25,6 +25,7 @@ import org.eclipse.ui.IStorageEditorInput;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -126,7 +127,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
     // currently cannot be cancelled because of antlr
     public void updateParser(IProgressMonitor monitor)
-            throws CoreException, InterruptedException, IOException {
+            throws CoreException, InterruptedException, IOException, LicenseException {
         List<Listener> listener = new ArrayList<>();
         if (parser != null) {
             listener.addAll(parser.getListeners());

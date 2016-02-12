@@ -86,6 +86,8 @@
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate$ADD_STATUS { *; }</option>
                         <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
+                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.License { *; }</option>
+                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException { *; }</option>
                     </options>
                     <libs>
                         <lib>${java.home}/lib/rt.jar</lib>

@@ -17,8 +17,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import org.osgi.framework.BundleContext;
 
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
@@ -70,7 +73,7 @@ public class MainTest {
     public void mainTest() throws IOException, URISyntaxException, InterruptedException{
         switch (args.testType) {
         case TEST_DIFF:
-            Main.main(args.arguments());
+            Main.main(args.args());
             File resFile = args.getDiffResultFile();
             File predefined = args.getPredefinedResultFile();
             assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
@@ -81,7 +84,7 @@ public class MainTest {
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
             break;
         case TEST_PARSE:
-            Main.main(args.arguments());
+            Main.main(args.args());
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
@@ -89,7 +92,7 @@ public class MainTest {
                     PrintStream ps = new PrintStream(baos)){
                 System.setOut(ps);
 
-                Main.main(args.arguments());
+                Main.main(args.args());
 
                 System.out.flush();
                 assertEquals("Output is not as expected", args.output(), baos.toString());
@@ -147,11 +150,28 @@ abstract class ArgumentsProvider implements Closeable{
     enum TestType {TEST_OUTPUT, TEST_DIFF, TEST_PARSE}
 
     public TestType testType = TestType.TEST_OUTPUT;
+    public boolean needLicense = false;
     public String resName = null;
     public File resFile = null;
     public File resDir = null;
 
-    public abstract String[] arguments() throws URISyntaxException, IOException;
+    public String[] args() throws URISyntaxException, IOException {
+        String[] aa = arguments();
+        if (needLicense) {
+            List<String> args = new ArrayList<>(aa.length + 2);
+            args.add("--license");
+            args.add(ApgdiffTestUtils.getTestLicenseUrl().toString());
+            args.addAll(Arrays.asList(aa));
+            return args.toArray(new String[args.size()]);
+        } else {
+            return aa;
+        }
+    }
+
+    /**
+     * Should only be called by {@link #args()} method!
+     */
+    protected abstract String[] arguments() throws URISyntaxException, IOException;
 
     public String output(){
         return "";
@@ -297,6 +317,7 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
     {
         super.resName = "add_cluster";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -326,6 +347,7 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
     {
         super.resName = "modify_function_args2";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -408,6 +430,7 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
 
     {
         super.resName = "drop_table";
+        super.needLicense = true;
     }
 
     @Override
@@ -442,6 +465,7 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
     {
         super.resName = "drop_table";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -470,6 +494,7 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
 
     {
         super.resName = "drop_column";
+        super.needLicense = true;
     }
 
     @Override
@@ -504,6 +529,7 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
     {
         super.resName = "drop_column";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -533,6 +559,7 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
 
     {
         super.resName = "modify_column_type";
+        super.needLicense = true;
     }
 
     @Override
@@ -567,6 +594,7 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -597,6 +625,7 @@ class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
 
     {
         super.resName = "modify_sequence_start_ignore_off";
+        super.needLicense = true;
     }
 
     @Override
@@ -631,6 +660,7 @@ class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
 
     {
         super.resName = "modify_sequence_start_ignore_off";
+        super.needLicense = true;
     }
 
     @Override
@@ -661,6 +691,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
+        super.needLicense = true;
     }
 
     @Override
@@ -699,6 +730,7 @@ class ArgumentsProvider_17 extends ArgumentsProvider{
     {
         super.resName = "loader/remote/testing_dump.sql";
         super.testType = TestType.TEST_PARSE;
+        super.needLicense = true;
     }
 
     @Override

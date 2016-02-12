@@ -20,6 +20,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -27,7 +29,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NormalizeProject extends AbstractHandler {
 
@@ -35,31 +36,30 @@ public class NormalizeProject extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell shell = HandlerUtil.getActiveShell(event);
         final PgDbProject proj = OpenProjectUtils.getProject(event);
-        
+
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), shell, false)) {
             return null;
         }
-        
+
         MessageBox mbSure = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
         mbSure.setText(Messages.NormalizeProject_normalize_project);
         mbSure.setMessage(Messages.NormalizeProject_are_you_sure);
         if (mbSure.open() != SWT.YES) {
             return null;
         }
-        
+
         Log.log(Log.LOG_INFO, "Normalizing project " + proj.getProjectName()); //$NON-NLS-1$
         Job job = new Job(Messages.NormalizeProject_normalizing_project) {
-            
+
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor mon = SubMonitor.convert(monitor, 
+                SubMonitor mon = SubMonitor.convert(monitor,
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
-                    PgDatabase db = DbSource.fromProject(proj)
-                                    .get(mon.newChild(1));
+                    PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();
-                } catch (IOException | CoreException ex) {
+                } catch (IOException | LicenseException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
                 } catch (InterruptedException e) {
@@ -69,7 +69,7 @@ public class NormalizeProject extends AbstractHandler {
             }
         };
         job.addJobChangeListener(new JobChangeAdapter() {
-            
+
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
@@ -101,7 +101,7 @@ public class NormalizeProject extends AbstractHandler {
                 ExceptionNotifier.notifyDefault(
                         Messages.ProjectEditorDiffer_error_refreshing_project, ex);
             }
-            
+
             if (shell.isDisposed()) {
                 return;
             }

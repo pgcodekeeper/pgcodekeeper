@@ -11,6 +11,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -50,7 +51,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             initRepoFromSource(pm);
 
             pm.done();
-        } catch (IOException | CoreException ex) {
+        } catch (IOException | CoreException | LicenseException ex) {
             throw new InvocationTargetException(ex, MessageFormat.format(
                     Messages.initProjectFromSource_ioexception_while_creating_project,
                     ex.getLocalizedMessage()));
@@ -64,7 +65,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
      * @throws InterruptedException
      */
     private void initRepoFromSource(SubMonitor pm)
-            throws IOException, InvocationTargetException, CoreException, InterruptedException {
+            throws InvocationTargetException, InterruptedException, CoreException,
+            IOException, LicenseException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;

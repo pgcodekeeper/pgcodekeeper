@@ -16,435 +16,210 @@ import org.osgi.framework.BundleContext;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.License;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
-/**
- * Contains parsed command line arguments.
- *
- * @author fordfrog
- */
 public class PgDiffArguments {
     // SONAR-OFF
-    private static final String DEFAULT_FORMAT = "dump";
+    private static final String DEFAULT_FORMAT = "dump"; //$NON-NLS-1$
     // SONAR-ON
 
-    /**
-     * Is program in diff mode.
-     */
     private boolean modeDiff;
-    /**
-     * Is program in parser mode.
-     */
     private boolean modeParse;
-    /**
-     * Path to the new dump file.
-     */
     private String newSrc;
-    /**
-     * Path to the original dump file.
-     */
     private String oldSrc;
-    /**
-     * New DB source format.
-     */
     private String newSrcFormat = DEFAULT_FORMAT;
-    /**
-     * Old DB source format.
-     */
     private String oldSrcFormat = DEFAULT_FORMAT;
-    /**
-     * File to write the diff into.
-     */
     private  String diffOutfile;
-    /**
-     * Path to the DB to parse.
-     */
     private String parseSrc;
-    /**
-     * Format of the DB to parse.
-     */
     private String parseSrcFormat = DEFAULT_FORMAT;
-    /**
-     * Directory to parse into.
-     */
     private String parserOutdir;
-    /**
-     * Input file charset name.
-     */
     private String inCharsetName = ApgdiffConsts.UTF_8;
-    /**
-     * Output file charset name.
-     */
     private String outCharsetName = ApgdiffConsts.UTF_8;
-    /**
-     * Whether to enclose all statements in transaction.
-     */
     private boolean addTransaction;
-    /**
-     * Whether to ignore DROP TABLE on script.
-     */
     private boolean ignoreDropTable;
-    /**
-     * Whether to ignore DROP COLUMN on script.
-     */
     private boolean ignoreDropColumn;
-    /**
-     * Whether to ignore ALTER COLUMN on script.
-     */
     private boolean ignoreAlterColumn;
-    /**
-     * Whether to ignore ALTER SEQUENCE RESTART WITH on script.
-     */
     private boolean ignoreRestartWith;
-    /**
-     * Whether to display apgdiff version.
-     */
     private boolean version;
-    /**
-     * Whether to display apgdiff help.
-     */
     private boolean help;
-
-    /**
-     * Whether to output information about ignored statements.
-     */
     private boolean outputIgnoredStatements;
-    /**
-     * Whether to list supported charsets.
-     */
     private boolean listCharsets;
-    /**
-     * Whether Slony triggers should be ignored.
-     */
     private boolean ignoreSlonyTriggers;
     /**
      * Whether ignore function bodies.
      * TODO придумать проверить из командной строки параметр
      */
     private boolean checkFunctionBodies = true;
-    /**
-     * timeZone for script operations
-     */
     private String timeZone;
-    /**
-     *  Whether ignore privilleges.
-     */
     private boolean ignorePrivileges;
-    /**
-     * Whether to force \n (Unix) newlines in user-data.
-     */
     private boolean forceUnixNewlines = true;
+    private String licensePath;
+    private License license;
 
-    /**
-     * Setter for {@link #modeDiff}
-     *
-     * @param modeDiff {@link #modeDiff}
-     */
     public void setModeDiff(final boolean modeDiff) {
         this.modeDiff = modeDiff;
     }
 
-    /**
-     * Getter for {@link #modeDiff}
-     *
-     * @return {@link #modeDiff}
-     */
     public boolean isModeDiff() {
         return modeDiff;
     }
 
-    /**
-     * Setter for {@link #modeParse}
-     *
-     * @param modeParse {@link #modeParse}
-     */
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
     }
 
-    /**
-     * Getter for {@link #modeParse}
-     *
-     * @return {@link #modeParse}
-     */
     public boolean isModeParse() {
         return modeParse;
     }
 
-    /**
-     * Setter for {@link #newSrc}
-     *
-     * @param newSrc {@link #newSrc}
-     */
     public void setNewSrc(final String newSrc) {
         this.newSrc = newSrc;
     }
 
-    /**
-     * Getter for {@link #newSrc}
-     *
-     * @return {@link #newSrc}
-     */
     public String getNewSrc() {
         return newSrc;
     }
 
-    /**
-     * Setter for {@link #oldSrc}
-     *
-     * @param oldSrc {@link #oldSrc}
-     */
     public void setOldSrc(final String oldSrc) {
         this.oldSrc = oldSrc;
     }
 
-    /**
-     * Getter for {@link #oldSrc}
-     *
-     * @return {@link #oldSrc}
-     */
     public String getOldSrc() {
         return this.oldSrc;
     }
 
-    /**
-     * Setter for {@link #newSrcFormat}
-     *
-     * @param newSrcFormat {@link #newSrcFormat}
-     */
     public void setNewSrcFormat(final String newSrcFormat) {
         this.newSrcFormat = newSrcFormat;
     }
 
-    /**
-     * Getter for {@link #oldSrc}
-     *
-     * @return {@link #oldSrc}
-     */
     public String getNewSrcFormat() {
         return this.newSrcFormat;
     }
 
-    /**
-     * Setter for {@link #oldSrcFormat}
-     *
-     * @param oldSrcFormat {@link #oldSrcFormat}
-     */
     public void setOldSrcFormat(final String oldSrcFormat) {
         this.oldSrcFormat = oldSrcFormat;
     }
 
-    /**
-     * Getter for {@link #oldSrcFormat}
-     *
-     * @return {@link #oldSrcFormat}
-     */
     public String getOldSrcFormat() {
         return this.oldSrcFormat;
     }
 
-    /**
-     * Setter for {@link #diffOutfile}
-     *
-     * @param diffOutfile {@link #diffOutfile}
-     */
     public void setDiffOutfile(final String diffOutfile) {
         this.diffOutfile = diffOutfile;
     }
 
-    /**
-     * Getter for {@link #diffOutfile}
-     *
-     * @return {@link #diffOutfile}
-     */
     public String getDiffOutfile() {
         return this.diffOutfile;
     }
 
-    /**
-     * Setter for {@link #parseSrc}
-     *
-     * @param parseSrc {@link #parseSrc}
-     */
     public void setParseSrc(final String parseSrc) {
         this.parseSrc = parseSrc;
     }
 
-    /**
-     * Getter for {@link #parseSrc}
-     *
-     * @return {@link #parseSrc}
-     */
     public String getParseSrc() {
         return this.parseSrc;
     }
 
-    /**
-     * Setter for {@link #parseSrcFormat}
-     *
-     * @param parseSrcFormat {@link #parseSrcFormat}
-     */
     public void setParseSrcFormat(final String parseSrcFormat) {
         this.parseSrcFormat = parseSrcFormat;
     }
 
-    /**
-     * Getter for {@link #parseSrcFormat}
-     *
-     * @return {@link #parseSrcFormat}
-     */
     public String getParseSrcFormat() {
         return this.parseSrcFormat;
     }
 
-    /**
-     * Setter for {@link #parserOutdir}
-     *
-     * @param parserOutdir {@link #parserOutdir}
-     */
     public void setParserOutdir(final String parserOutdir) {
         this.parserOutdir = parserOutdir;
     }
 
-    /**
-     * Getter for {@link #parserOutdir}
-     *
-     * @return {@link #parserOutdir}
-     */
     public String getParserOutdir() {
         return this.parserOutdir;
     }
 
-    /**
-     * Setter for {@link #addTransaction}.
-     *
-     * @param addTransaction {@link #addTransaction}
-     */
     public void setAddTransaction(final boolean addTransaction) {
         this.addTransaction = addTransaction;
     }
 
-    /**
-     * Getter for {@link #addTransaction}.
-     *
-     * @return {@link #addTransaction}
-     */
     public boolean isAddTransaction() {
         return addTransaction;
     }
 
-    /**
-     * Setter for {@link #ignoreDropTable}.
-     * @param ignoreDropTable {@link #ignoreDropTable}.
-     */
     public void setIgnoreDropTable(boolean ignoreDropTable) {
         this.ignoreDropTable = ignoreDropTable;
     }
-    /**
-     * Getter for {@link #ignoreDropTable}.
-     * @return {@link #ignoreDropTable}.
-     */
+
     public boolean isIgnoreDropTable() {
         return ignoreDropTable;
     }
 
-    /**
-     * Setter for {@link #ignoreDropColumn}.
-     * @param ignoreDropTable {@link #ignoreDropColumn}.
-     */
     public void setIgnoreDropColumn(boolean ignoreDropColumn) {
         this.ignoreDropColumn = ignoreDropColumn;
     }
-    /**
-     * Getter for {@link #ignoreDropColumn}.
-     * @return {@link #ignoreDropColumn}.
-     */
+
     public boolean isIgnoreDropColumn() {
         return ignoreDropColumn;
     }
 
-    /**
-     * Setter for {@link #ignoreAlterColumn}.
-     * @param ignoreDropTable {@link #ignoreAlterColumn}.
-     */
     public void setIgnoreAlterColumn(boolean ignoreAlterColumn) {
         this.ignoreAlterColumn = ignoreAlterColumn;
     }
-    /**
-     * Getter for {@link #ignoreAlterColumn}.
-     * @return {@link #ignoreAlterColumn}.
-     */
+
     public boolean isIgnoreAlterColumn() {
         return ignoreAlterColumn;
     }
 
-
-    /**
-     * Setter for {@link #ignoreRestartWith}.
-     * @param ignoreDropTable {@link #ignoreRestartWith}.
-     */
     public void setIgnoreRestartWith(boolean ignoreRestartWith) {
         this.ignoreRestartWith = ignoreRestartWith;
     }
-    /**
-     * Getter for {@link #ignoreRestartWith}.
-     * @return {@link #ignoreRestartWith}.
-     */
+
     public boolean isIgnoreRestartWith() {
         return ignoreRestartWith;
     }
 
-    /**
-     * Getter for {@link #outputIgnoredStatements}.
-     *
-     * @return {@link #outputIgnoredStatements}
-     */
     public boolean isOutputIgnoredStatements() {
         return outputIgnoredStatements;
     }
 
-    /**
-     * Setter for {@link #outputIgnoredStatements}.
-     *
-     * @param outputIgnoredStatements {@link #outputIgnoredStatements}
-     */
     public void setOutputIgnoredStatements(
             final boolean outputIgnoredStatements) {
         this.outputIgnoredStatements = outputIgnoredStatements;
     }
 
-    /**
-     * Setter for {@link #version}.
-     *
-     * @param version {@link #version}
-     */
     public void setVersion(final boolean version) {
         this.version = version;
     }
 
-    /**
-     * Getter for {@link #version}.
-     *
-     * @return {@link #version}
-     */
     public boolean isVersion() {
         return version;
     }
 
-    /**
-     * Getter for {@link #help}.
-     * @return the help {@link ##help}
-     */
     public boolean isHelp() {
         return help;
     }
 
-    /**
-     * Setter for {@link #help}.
-     * @param help {@link #help}
-     */
     public void setHelp(boolean help) {
         this.help = help;
+    }
+
+    public String getLicensePath() {
+        return licensePath;
+    }
+
+    public void setLicensePath(String licensePath) {
+        this.licensePath = licensePath;
+    }
+
+    public License getLicense() throws LicenseException {
+        if (license == null) {
+            throw new LicenseException(Messages.PgDiffArguments_no_license_set);
+        }
+        return license;
+    }
+
+    public void setLicense(License license) {
+        this.license = license;
     }
 
     /**
@@ -461,39 +236,39 @@ public class PgDiffArguments {
         int argsLength = args.length;
 
         for (int i = 0; i < argsLength; i++) {
-            if("--diff".equals(args[i])) {
+            if("--diff".equals(args[i])) { //$NON-NLS-1$
                 setModeDiff(true);
                 argsLength -= 3; // dont read last three parameters in the loop, they're not options
-            } else if("--parse".equals(args[i])) {
+            } else if("--parse".equals(args[i])) { //$NON-NLS-1$
                 setModeParse(true);
                 argsLength -= 2; // same for last two params in this mode
-            } else if("--dbOld-format".equals(args[i])) {
+            } else if("--dbOld-format".equals(args[i])) { //$NON-NLS-1$
                 String format = args[++i];
 
-                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     setOldSrcFormat(format);
                 } else {
-                    writer.println("Unsupported DB format!");
+                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
                     success = false;
                 }
-            } else if("--dbNew-format".equals(args[i])) {
+            } else if("--dbNew-format".equals(args[i])) { //$NON-NLS-1$
                 String format = args[++i];
 
-                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     setNewSrcFormat(format);
                 } else {
-                    writer.println("Unsupported DB format!");
+                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
                     success = false;
                 }
-            } else if ("--allow-danger-ddl".equals(args[i])) {
-                String[] ignores = args[++i].split(Pattern.quote(","));
+            } else if ("--allow-danger-ddl".equals(args[i])) { //$NON-NLS-1$
+                String[] ignores = args[++i].split(Pattern.quote(",")); //$NON-NLS-1$
                 for (String ignoredDanger : ignores) {
                     DangerStatement dst;
                     try {
                         dst = DangerStatement.valueOf(ignoredDanger);
                     } catch (IllegalArgumentException ex) {
                         // illegal ignore type
-                        writer.println("Incorrect --allow-danger-ddl option!");
+                        writer.println(Messages.PgDiffArguments_bad_danger_ddl);
                         success = false;
                         break;
                     }
@@ -512,41 +287,43 @@ public class PgDiffArguments {
                         break;
                     }
                 }
-            } else if("--db-format".equals(args[i])) {
+            } else if("--db-format".equals(args[i])) { //$NON-NLS-1$
                 String format = args[++i];
 
-                if("dump".equals(format) || "db".equals(format)) {
+                if("dump".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$
                     setParseSrcFormat(format);
                 } else {
-                    writer.println("Unsupported DB format for parsing!");
+                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
                     success = false;
                 }
-            } else if ("--add-transaction".equals(args[i])) {
+            } else if ("--add-transaction".equals(args[i])) { //$NON-NLS-1$
                 setAddTransaction(true);
-            } else if ("--no-check-function-bodies".equals(args[i])) {
+            } else if ("--no-check-function-bodies".equals(args[i])) { //$NON-NLS-1$
                 setCheckFunctionBodies(false);
-            } else if ("--no-privileges".equals(args[i])) {
+            } else if ("--no-privileges".equals(args[i])) { //$NON-NLS-1$
                 setIgnorePrivileges(true);
-            } else if ("--ignore-slony-triggers".equals(args[i])) {
+            } else if ("--ignore-slony-triggers".equals(args[i])) { //$NON-NLS-1$
                 setIgnoreSlonyTriggers(true);
-            } else if ("--in-charset-name".equals(args[i])) {
+            } else if ("--in-charset-name".equals(args[i])) { //$NON-NLS-1$
                 setInCharsetName(args[i + 1]);
                 i++;
-            } else if ("--list-charsets".equals(args[i])) {
+            } else if ("--list-charsets".equals(args[i])) { //$NON-NLS-1$
                 setListCharsets(true);
-            } else if ("--out-charset-name".equals(args[i])) {
+            } else if ("--out-charset-name".equals(args[i])) { //$NON-NLS-1$
                 setOutCharsetName(args[i + 1]);
                 i++;
-            } else if ("--time-zone".equals(args[i])) {
+            } else if ("--time-zone".equals(args[i])) { //$NON-NLS-1$
                 setTimeZone(args[i + 1]);
                 i++;
-            } else if ("--keep-newlines".equals(args[i])) {
+            } else if ("--keep-newlines".equals(args[i])) { //$NON-NLS-1$
                 setForceUnixNewlines(false);
-            } else if ("--output-ignored-statements".equals(args[i])) {
+            } else if ("--output-ignored-statements".equals(args[i])) { //$NON-NLS-1$
                 setOutputIgnoredStatements(true);
-            } else if ("--version".equals(args[i])) {
+            } else if("--license".equals(args[i])) { //$NON-NLS-1$
+                setLicensePath(args[++i]);
+            } else if ("--version".equals(args[i])) { //$NON-NLS-1$
                 setVersion(true);
-            } else if ("--help".equals(args[i])) {
+            } else if ("--help".equals(args[i])) { //$NON-NLS-1$
                 setHelp(true);
             } else {
                 writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
@@ -556,9 +333,9 @@ public class PgDiffArguments {
             }
         }
 
-        if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat())
-                || "db".equals(getParseSrcFormat())) {
-            throw new UnsupportedOperationException("DB connection is not yet implemented!");
+        if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat()) //$NON-NLS-1$ //$NON-NLS-2$
+                || "db".equals(getParseSrcFormat())) { //$NON-NLS-1$
+            throw new UnsupportedOperationException(Messages.PgDiffArguments_db_conn_not_impl);
         }
 
         if (args.length == 1 && isVersion()) {
@@ -573,7 +350,7 @@ public class PgDiffArguments {
         } else if(isModeDiff() == isModeParse()) {
             success = false;
             if(isModeDiff()) {
-                writer.println("Only one of --diff or --parse mode can be set!");
+                writer.println(Messages.PgDiffArguments_only_diff_parse);
             }
         } else if (args.length < 3) {
             success = false;
@@ -601,86 +378,40 @@ public class PgDiffArguments {
         return true;
     }
 
-    /**
-     * Prints program usage.
-     *
-     * @param writer writer to print the usage to
-     */
     private void printUsage(final PrintWriter writer) {
-        writer.println(
-                Messages.UsageHelp.replace("${tab}", "\t"));
+        writer.println(Messages.UsageHelp.replace("${tab}", "\t")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    /**
-     * Prints program version.
-     *
-     * @param writer writer to print the usage to
-     */
     private void printVersion(final PrintWriter writer) {
         BundleContext ctx = Activator.getContext();
         writer.println(MessageFormat.format(Messages.Version,
-                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion()));
+                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion())); //$NON-NLS-1$
     }
 
-    /**
-     * Getter for {@link #inCharsetName}.
-     *
-     * @return {@link #inCharsetName}
-     */
     public String getInCharsetName() {
         return inCharsetName;
     }
 
-    /**
-     * Setter for {@link #inCharsetName}.
-     *
-     * @param inCharsetName {@link #inCharsetName}
-     */
     public void setInCharsetName(final String inCharsetName) {
         this.inCharsetName = inCharsetName;
     }
 
-    /**
-     * Getter for {@link #outCharsetName}.
-     *
-     * @return {@link #outCharsetName}
-     */
     public String getOutCharsetName() {
         return outCharsetName;
     }
 
-    /**
-     * Setter for {@link #outCharsetName}.
-     *
-     * @param outCharsetName {@link #outCharsetName}
-     */
     public void setOutCharsetName(final String outCharsetName) {
         this.outCharsetName = outCharsetName;
     }
 
-    /**
-     * Getter for {@link #listCharsets}.
-     *
-     * @return {@link #listCharsets}
-     */
     public boolean isListCharsets() {
         return listCharsets;
     }
 
-    /**
-     * Setter for {@link #listCharsets}.
-     *
-     * @param listCharsets {@link #listCharsets}
-     */
     public void setListCharsets(final boolean listCharsets) {
         this.listCharsets = listCharsets;
     }
 
-    /**
-     * Lists supported charsets.
-     *
-     * @param writer writer
-     */
     private void listCharsets(final PrintWriter writer) {
         final SortedMap<String, Charset> charsets = Charset.availableCharsets();
 
@@ -689,69 +420,34 @@ public class PgDiffArguments {
         }
     }
 
-    /**
-     * Getter for {@link #ignoreSlonyTriggers}.
-     *
-     * @return {@link #ignoreSlonyTriggers}
-     */
     public boolean isIgnoreSlonyTriggers() {
         return ignoreSlonyTriggers;
     }
 
-    /**
-     * Setter for {@link #ignoreSlonyTriggers}.
-     *
-     * @param ignoreSlonyTriggers {@link #ignoreSlonyTriggers}
-     */
     public void setIgnoreSlonyTriggers(final boolean ignoreSlonyTriggers) {
         this.ignoreSlonyTriggers = ignoreSlonyTriggers;
     }
-    /**
-     * Setter for {@link #checkFunctionBodies}.
-     *
-     * @param checkFunctionBodies {@link #checkFunctionBodies}
-     */
+
     public void setCheckFunctionBodies(boolean checkFunctionBodies) {
         this.checkFunctionBodies = checkFunctionBodies;
     }
-    /**
-     * Getter for {@link #checkFunctionBodies}.
-     *
-     * @return {@link #checkFunctionBodies}
-     */
+
     public boolean isCheckFunctionBodies() {
         return checkFunctionBodies;
     }
-    /**
-     * Setter for {@link #timeZone}.
-     *
-     * @param timeZone {@link #timeZone}
-     */
+
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
-    /**
-     * Getter for {@link #timeZone}.
-     *
-     * @return {@link #timeZone}
-     */
+
     public String getTimeZone() {
         return timeZone;
     }
 
-    /**
-     * Setter for {@link #ignorePrivileges}.
-     *
-     * @param ignorePrivilleges {@link #ignorePrivileges}
-     */
     public void setIgnorePrivileges(boolean ignorePrivilleges) {
         this.ignorePrivileges = ignorePrivilleges;
     }
-    /**
-     * Getter for {@link #ignorePrivileges}.
-     *
-     * @return {@link #ignorePrivileges}
-     */
+
     public boolean isIgnorePrivileges() {
         return ignorePrivileges;
     }

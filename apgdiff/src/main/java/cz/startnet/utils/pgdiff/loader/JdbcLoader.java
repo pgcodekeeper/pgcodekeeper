@@ -49,6 +49,7 @@ import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -102,7 +103,7 @@ public class JdbcLoader implements PgCatalogStrings {
         this.monitor = monitor;
     }
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
+    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         try {
@@ -176,6 +177,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     prepStatFunctions, prepStatSequences, prepStatConstraints,
                     prepStatIndices, prepStatColumnsOfSchema, prepStatTypes);
         }
+        args.getLicense().verifyDb(d);
         return d;
     }
 

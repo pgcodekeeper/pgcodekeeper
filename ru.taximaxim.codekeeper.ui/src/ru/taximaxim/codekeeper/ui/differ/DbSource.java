@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -28,6 +29,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
 public abstract class DbSource {
 
@@ -47,7 +49,8 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    public PgDatabase get(SubMonitor monitor) throws IOException, InterruptedException {
+    public PgDatabase get(SubMonitor monitor)
+            throws IOException, InterruptedException, LicenseException {
         Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
 
         dbObject = this.loadInternal(monitor);
@@ -63,10 +66,10 @@ public abstract class DbSource {
     }
 
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException;
+            throws IOException, InterruptedException, LicenseException;
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines) {
+            boolean forceUnixNewlines) throws LicenseException, IOException {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -75,6 +78,7 @@ public abstract class DbSource {
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
         args.setForceUnixNewlines(forceUnixNewlines);
+        LicensePrefs.setLicense(args);
         return args;
     }
 
@@ -141,7 +145,8 @@ class DbSourceDirTree extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException, IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor)
+            throws InterruptedException, IOException, LicenseException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
@@ -162,7 +167,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LicenseException {
         int filesCount = countFilesInDir(proj.getPathToProject());
         monitor.subTask(Messages.dbSource_loading_tree);
         monitor.setWorkRemaining(filesCount);
@@ -219,7 +224,8 @@ class DbSourceFile extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException, IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor)
+            throws InterruptedException, IOException, LicenseException {
         monitor.subTask(Messages.dbSource_loading_dump);
 
         try {
@@ -301,7 +307,7 @@ class DbSourceDb extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LicenseException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
         try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -327,19 +333,23 @@ class DbSourceDb extends DbSource {
 class DbSourceJdbc extends DbSource {
 
     private final JdbcConnector jdbcConnector;
-    private final PgDiffArguments args;
+    private final String encoding, timezone;
+    private final boolean forceUnixNewlines;
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             String encoding, String timezone, boolean forceUnixNewlines) {
         super(dbName);
+        this.encoding = encoding;
+        this.timezone = timezone;
+        this.forceUnixNewlines = forceUnixNewlines;
         jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, encoding, timezone);
-        args = getPgDiffArgs(encoding, timezone, forceUnixNewlines);
     }
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
+        PgDiffArguments args = getPgDiffArgs(encoding, timezone, forceUnixNewlines);
         return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
     }
 }
