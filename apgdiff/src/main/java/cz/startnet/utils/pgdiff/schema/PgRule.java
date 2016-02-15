@@ -67,7 +67,7 @@ public class PgRule extends PgStatementWithSearchPath{
     }
     @Override
     public String getDropSQL() {
-        final StringBuilder sbSQL = new StringBuilder("DROP RULE");
+        final StringBuilder sbSQL = new StringBuilder("DROP RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(ruleTargetName)).append(";");
         return sbSQL.toString();

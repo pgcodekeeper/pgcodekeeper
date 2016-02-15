@@ -389,14 +389,16 @@ public class JdbcLoader implements PgCatalogStrings {
                 PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resRule.getString(CLASS_RELNAME));
                 view = s.getView(resRule.getString(CLASS_RELNAME));
+                PgRule rule = getRule(resRule, schemaName);
+                if ("_RETURN".equals(rule.getName())){
+                    continue;
+                }
                 if (table != null){
-                    PgRule rule = getRule(resRule, schemaName);
                     if (rule != null){
                         table.addRule(rule);
                     }
                 }
                 if (view != null){
-                    PgRule rule = getRule(resRule, schemaName);
                     if (rule != null){
                         view.addRule(rule);
                     }
@@ -1056,10 +1058,6 @@ public class JdbcLoader implements PgCatalogStrings {
         functionName = functionName.concat(")");
 
         t.setFunction(functionName, funcName+ "()");
-
-        if (t.getName().contains("trd_t_object_link")){
-            t.getName().contains("trd_t_object_link");
-        }
 
         GenericColumn gc = new GenericColumn(res.getString(NAMESPACE_NSPNAME), functionName, null);
         gc.setType(ViewReference.FUNCTION);

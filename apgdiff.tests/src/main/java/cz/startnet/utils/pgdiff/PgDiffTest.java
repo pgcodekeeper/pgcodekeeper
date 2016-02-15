@@ -290,7 +290,10 @@ public class PgDiffTest {
                     // Вью со звездочкой
                     {"multiply_view"},
                     {"multiply_view_1"},
-                    {"multiply_view_dif_schema"}
+                    {"multiply_view_dif_schema"},
+
+                    {"add_rule"},
+                    {"drop_rule"}
                 });
     }
 

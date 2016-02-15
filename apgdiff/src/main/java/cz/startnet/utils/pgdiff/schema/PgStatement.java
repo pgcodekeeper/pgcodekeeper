@@ -182,21 +182,31 @@ public abstract class PgStatement {
             throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, COLUMN, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
-        sb.append("\n\n-- ")
+        if (sb.lastIndexOf("\n") != sb.length()-1){
+            sb.append("\n");
+        }
+        sb.append("\n-- ")
         .append(type)
         .append(' ')
         .append(getName())
         .append(' ')
-        .append("GRANT\n");
+        .append("GRANT\n\n");
 
-        for (PgPrivilege priv : revokes) {
+        /*        for (PgPrivilege priv : revokes) {
             sb.append('\n').append(priv.getCreationSQL());
         }
         for (PgPrivilege priv : grants) {
             sb.append('\n').append(priv.getCreationSQL());
+        }*/
+
+        for (PgPrivilege priv : revokes) {
+            sb.append(priv.getCreationSQL());
+        }
+        for (PgPrivilege priv : grants) {
+            sb.append(priv.getCreationSQL());
         }
 
-        return sb;
+        return sb.replace(sb.length()-1, sb.length(), "");
     }
 
     public String getPrivilegesSQL() {
@@ -414,10 +424,11 @@ public abstract class PgStatement {
             Set<PgPrivilege> newGrands = new LinkedHashSet<>(newObj.getGrants());
             oldGrands.removeAll(newObj.getGrants()); //список удаленный грандов
             newGrands.removeAll(oldObj.getGrants()); //список добавленных грандов
+
             for (PgPrivilege priv : oldGrands){
                 sb.append(priv.getDropSQL());
             }
-            for (PgPrivilege priv : oldGrands){
+            for (PgPrivilege priv : newGrands){
                 sb.append(priv.getCreationSQL());
             }
         }

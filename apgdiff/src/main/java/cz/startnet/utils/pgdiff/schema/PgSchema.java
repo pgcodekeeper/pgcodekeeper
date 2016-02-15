@@ -115,8 +115,7 @@ public class PgSchema extends PgStatement {
         }
 
         addPrivilegeScript(oldSchema, newSchema, sb);
-        
-        	
+
         if (!Objects.equals(oldSchema.getComment(), newSchema.getComment())) {
             sb.append("\n\n");
             newSchema.appendCommentSql(sb);
@@ -357,23 +356,17 @@ public class PgSchema extends PgStatement {
             eq = true;
         } else if(obj instanceof PgSchema) {
             PgSchema schema = (PgSchema) obj;
-
             eq = super.equals(obj)
-
                     && new HashSet<>(domains).equals(new HashSet<>(schema.domains))
                     && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
                     && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
                     && new HashSet<>(views).equals(new HashSet<>(schema.views))
+                    //&& views.equals(schema.views)
                     && new HashSet<>(tables).equals(new HashSet<>(schema.tables))
                     && new HashSet<>(types).equals(new HashSet<>(schema.types));
         }
 
         return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     @Override
@@ -392,13 +385,7 @@ public class PgSchema extends PgStatement {
         result = prime * result + new HashSet<>(views).hashCode();
         result = prime * result + new HashSet<>(types).hashCode();
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        try {
-        System.out.println(tables.get(0).getParent().getParent().getStatementType()+ ":"+tables.get(0).getParent().getName() + " : " + result);
-        } catch (Exception e){
-        	
-        }
         return result;
-        
     }
 
     @Override

@@ -6,31 +6,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgPrivilege extends PgStatement {
-    
+
     private final boolean revoke;
     private final String definition;
-    
+
     //Определяет какого типа привелегия (GRAND or REVOKE)
     public boolean isRevoke() {
         return revoke;
     }
-    
+
     public String getDefinition() {
         return definition;
     }
-    
+
     public PgPrivilege(boolean revoke, String definition, String rawStatement) {
         super(null, rawStatement);
-        
+
         this.revoke = revoke;
         this.definition = definition;
     }
-    
+
     @Override
     public DbObjType getStatementType() {
         return null;
     }
-    
+
     @Override
     public String getCreationSQL() {
         return new StringBuilder()
@@ -40,27 +40,27 @@ public class PgPrivilege extends PgStatement {
                 .append(";\n")
                 .toString();
     }
-    
+
     @Override
     public String getDropSQL() {
-    	return new StringBuilder()
-    			.append(revoke? "GRAND" : "REVOKE")
-    			.append(' ')
-    			.append(definition.replace("TO", "FROM"))
-    			.append(";\n")
-    			.toString();
+        return new StringBuilder()
+                .append(revoke? "GRAND" : "REVOKE")
+                .append(' ')
+                .append(definition.replace("TO", "FROM"))
+                .append(";\n")
+                .toString();
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         return false;
     }
-    
+
     @Override
     public PgPrivilege deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgPrivilege shallowCopy() {
         return new PgPrivilege(isRevoke(), getDefinition(), getRawStatement());
@@ -69,7 +69,7 @@ public class PgPrivilege extends PgStatement {
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if (this == obj) {
             eq = true;
         } else if (obj instanceof PgPrivilege){
@@ -77,7 +77,7 @@ public class PgPrivilege extends PgStatement {
             eq = revoke == priv.isRevoke()
                     && Objects.equals(definition, priv.getDefinition());
         }
-        
+
         return eq;
     }
 

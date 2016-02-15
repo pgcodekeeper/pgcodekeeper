@@ -199,7 +199,6 @@ public class PartialExporterTest {
         Map<String, String> modifiedFiles = preset.modifiedFiles();
         LinkedList<String> newFiles = preset.newFiles();
         LinkedList<String> deletedFiles = preset.deletedFiles();
-
         Files.walkFileTree(exportDirFull, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                 new PartialExportTestFileVisitor(
                         exportDirFull, exportDirPartial,

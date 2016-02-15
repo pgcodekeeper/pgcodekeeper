@@ -282,15 +282,11 @@ public class PgDatabase extends PgStatement {
 
             eq = // super.equals(obj) && // redundant here
                     new HashSet<>(extensions).equals(new HashSet<>(db.extensions))
+                    //      && schemas.equals(db.schemas);
                     && new HashSet<>(schemas).equals(new HashSet<>(db.schemas));
         }
 
         return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     @Override
