@@ -31,7 +31,9 @@ public final class Main {
 
         if (arguments.parse(writer, args)) {
             try {
-                arguments.setLicense(new License(arguments.getLicensePath(), false));
+                License l = new License(arguments.getLicensePath());
+                l.verify(false);
+                arguments.setLicense(l);
                 if(arguments.isModeDiff()) {
                     diff(writer, arguments);
                 } else if(arguments.isModeParse()) {

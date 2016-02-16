@@ -34,14 +34,14 @@ public final class LicensingInternal {
             (byte)0x5A, (byte)0x8B, (byte)0xBF, (byte)0x08, (byte)0x77, (byte)0x40, (byte)0x16, (byte)0x32,
             (byte)0x6B, (byte)0x49, (byte)0x2D, (byte)0x4E, (byte)0x8C, (byte)0xEB, (byte)0xBE,
     };
-    private static final long PUBKEY_ID = 6359029032252458994L;
+    //private static final long PUBKEY_ID = 6359029032252458994L;
 
     // INFO FIELDS
     private static final String EDITION = "EDITION"; //$NON-NLS-1$
     private static final String ISSUED_ON = "ISSUED_ON"; //$NON-NLS-1$
     private static final String ISSUED_TO = "ISSUED_TO"; //$NON-NLS-1$
     private static final String EMAIL = "EMAIL"; //$NON-NLS-1$
-    private static final String VERSION = "VERSION"; //$NON-NLS-1$
+    //private static final String VERSION = "VERSION"; //$NON-NLS-1$
     // VALIDATION FIELDS
     private static final String CAPS = "CAPS"; //$NON-NLS-1$
     private static final String UI_CLI = "UI_CLI"; //$NON-NLS-1$
@@ -51,7 +51,7 @@ public final class LicensingInternal {
     private static final String MAX_SCHEMA_SIZE = "MAX_SCHEMA_SIZE"; //$NON-NLS-1$
 
     private static final SimpleDateFormat VALID_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
-    private static final String MAINAPP_BUNDLE = "ru.taximaxim.codekeeper.mainapp"; //$NON-NLS-1$
+    //private static final String MAINAPP_BUNDLE = "ru.taximaxim.codekeeper.mainapp"; //$NON-NLS-1$
     private static final String UI_BUNDLE = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
 
     private enum LicenseCaps {
@@ -190,7 +190,7 @@ public final class LicensingInternal {
         licenseContainer.setIssuedOn(license.getFeature(ISSUED_ON));
         licenseContainer.setIssuedTo(license.getFeature(ISSUED_TO));
         licenseContainer.setEmail(license.getFeature(EMAIL));
-        licenseContainer.setVersion(license.getFeature(VERSION));
+        //licenseContainer.setVersion(license.getFeature(VERSION));
         for (LicenseCaps r : getCaps(license.getFeature(CAPS))) {
             switch (r) {
             case UI_CLI:

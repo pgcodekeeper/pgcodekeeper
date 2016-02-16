@@ -39,6 +39,8 @@ public final class Messages extends NLS {
 
     public static String License_descr_template;
 
+    public static String License_version_any;
+
     public static String LicensingInternal_current_license;
 
     public static String LicensingInternal_expired;

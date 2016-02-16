@@ -284,6 +284,18 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
+    public static String LicensePrefs_browse;
+
+    public static String LicensePrefs_descr;
+
+    public static String LicensePrefs_file;
+
+    public static String LicensePrefs_integrated;
+
+    public static String LicensePrefs_loading_error;
+
+    public static String LicensePrefs_open;
+
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;

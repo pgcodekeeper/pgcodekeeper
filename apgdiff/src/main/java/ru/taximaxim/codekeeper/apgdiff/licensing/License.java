@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.apgdiff.licensing;
 
 import static ru.taximaxim.codekeeper.apgdiff.licensing.internal.LicensingInternal.fillLicenseInfo;
 import static ru.taximaxim.codekeeper.apgdiff.licensing.internal.LicensingInternal.loadLicense;
-import static ru.taximaxim.codekeeper.apgdiff.licensing.internal.LicensingInternal.verifyValidity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +15,7 @@ public class License {
 
     private final com.verhas.licensor.License license;
 
-    private String edition, issuedOn, issuedTo, email, version, validUntil,
+    private String edition, issuedOn, issuedTo, email, /*version,*/ validUntil,
     validSince, maxSchemaSize;
     private boolean uiCli, uiGui;
 
@@ -35,11 +34,11 @@ public class License {
     public void setEmail(String email) {
         this.email = email;
     }
-
+    /*
     public void setVersion(String version) {
         this.version = version;
     }
-
+     */
     public void setValidUntil(String validUntil) {
         this.validUntil = validUntil;
     }
@@ -63,18 +62,21 @@ public class License {
     /**
      * This method also accepts URLs to enable java-resource licenses in tests.
      */
-    public License(String filename, boolean isGui) throws IOException, LicenseException {
-        this(loadLicense(filename), isGui);
+    public License(String filename) throws IOException, LicenseException {
+        this(loadLicense(filename));
     }
 
-    public License(InputStream licenseStream, boolean isGui) throws IOException, LicenseException {
-        this(loadLicense(licenseStream), isGui);
+    public License(InputStream licenseStream) throws IOException, LicenseException {
+        this(loadLicense(licenseStream));
     }
 
-    private License(com.verhas.licensor.License license, boolean isGui) throws LicenseException {
-        verifyValidity(license, isGui);
+    private License(com.verhas.licensor.License license) throws LicenseException {
         this.license = license;
         fillLicenseInfo(license, this);
+    }
+
+    public void verify(boolean isGui) throws LicenseException {
+        LicensingInternal.verifyValidity(license, isGui);
     }
 
     public void verifyDb(PgDatabase db) throws LicenseException {
@@ -98,7 +100,7 @@ public class License {
             }
         }
         return MessageFormat.format(Messages.License_descr_template,
-                edition, issuedOn, issuedTo, email, version, caps, validUntil,
-                validSince, maxSchemaSize);
+                edition, issuedOn, issuedTo, email, Messages.License_version_any,
+                caps, validUntil, validSince, maxSchemaSize);
     }
 }

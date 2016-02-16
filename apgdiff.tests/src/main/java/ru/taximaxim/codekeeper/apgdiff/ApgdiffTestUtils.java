@@ -115,7 +115,7 @@ public final class ApgdiffTestUtils {
     public static void setLicense(PgDiffArguments args) throws IOException, LicenseException {
         // NOTE: TEST_LICENSE must provide full capabilities
         // so that GUI/CLI and other potential mode selections won't matter
-        args.setLicense(new License(ApgdiffTestUtils.class.getResourceAsStream(TEST_LICENSE), true));
+        args.setLicense(new License(ApgdiffTestUtils.class.getResourceAsStream(TEST_LICENSE)));
     }
 
     private ApgdiffTestUtils() {
