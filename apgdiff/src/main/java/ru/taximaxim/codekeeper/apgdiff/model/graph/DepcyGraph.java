@@ -391,13 +391,8 @@ public class DepcyGraph {
             for (GenericColumn gc : trigger.getDeps()){
                 switch (gc.getType()) {
                 case FUNCTION:
-                    try{
-                        PgFunction func = getSchemaForObject(schema, gc.table).getFunction(
-                                PgDiffUtils.getObjectName(gc.table));
-                        graph.addEdge(trigger, func);
-                    } catch (NullPointerException npe){
-                        System.out.println("Нуль поинтер в депси граф");
-                    }
+                    PgFunction func = db.getSchema(gc.schema).getFunction(gc.table);
+                    graph.addEdge(trigger, func);
                     break;
 
                 default:

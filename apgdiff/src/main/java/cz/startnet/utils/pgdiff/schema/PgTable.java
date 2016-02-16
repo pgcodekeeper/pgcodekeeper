@@ -566,6 +566,9 @@ public class PgTable extends PgStatementWithSearchPath {
         for (String segName : sequences) {
             tableDst.addSequence(segName);
         }
+        for (GenericColumn gc : getDeps()) {
+            tableDst.addDep(gc);
+        }
         tableDst.setOwner(getOwner());
         return tableDst;
     }

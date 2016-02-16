@@ -1059,7 +1059,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
         t.setFunction(functionName, funcName+ "()");
 
-        GenericColumn gc = new GenericColumn(res.getString(NAMESPACE_NSPNAME), functionName, null);
+        GenericColumn gc = new GenericColumn(res.getString(NAMESPACE_NSPNAME), funcName+"()", null);
         gc.setType(ViewReference.FUNCTION);
 
         t.addDep(gc);

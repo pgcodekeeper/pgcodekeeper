@@ -32,7 +32,6 @@ public final class DiffTree {
 
             PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
-
             // functions
             if(schemaLeft != null) {
                 leftSub = schemaLeft.getFunctions();

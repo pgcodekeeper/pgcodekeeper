@@ -48,8 +48,8 @@ public class CreateTrigger extends ParserAbstract {
 
 
         GenericColumn gc = new GenericColumn(
-                schemaName,
-                getFullCtxText(ctx.func_name),
+                getSchemaName(ctx.func_name.name),
+                getName(ctx.func_name.name) + "()",
                 null);
         gc.setType(ViewReference.FUNCTION);
         trigger.addDep(gc);
