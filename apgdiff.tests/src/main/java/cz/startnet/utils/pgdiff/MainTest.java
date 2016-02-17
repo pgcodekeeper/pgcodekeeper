@@ -305,7 +305,7 @@ class ArgumentsProvider_5 extends ArgumentsProvider{
     @SuppressWarnings("resource")
     @Override
     public String output() {
-        return "Only one of --diff or --parse mode can be set!" + "\n" + new ArgumentsProvider_usage().output();
+        return "Only one of --diff or --parse modes can be set!" + "\n" + new ArgumentsProvider_usage().output();
     }
 }
 
