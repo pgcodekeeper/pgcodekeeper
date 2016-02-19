@@ -28,19 +28,19 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DbPicker extends Group {
 
     private final boolean allowShellResize;
-    
+
     private Label lblFieldName;
     private CLabel lblWarnDbPass;
-    
+
     private LocalResourceManager lrm;
     private DbStorePicker dbStorePicker;
-    
-    private final Label lblName;
+
+    private final Text lblName;
     private final Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
-    
+
     private final ModifyListener ml;
-    
-    public Label getLblName() {
+
+    public Text getTxtName() {
         return lblName;
     }
 
@@ -70,34 +70,34 @@ public class DbPicker extends Group {
     public DbPicker(Composite parent, int style, final IPreferenceStore prefStore) {
         this(parent, style, prefStore, true);
     }
-    
+
     public DbPicker(Composite parent, int style, final IPreferenceStore prefStore,
             boolean allowShellResize) {
         super(parent, style);
         setLayout(new GridLayout(2, false));
-        
+
         this.allowShellResize = allowShellResize;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        
+
         lblFieldName = new Label(this, SWT.NONE);
         lblFieldName.setText(Messages.entry_name);
         GridData gd = new GridData();
         gd.exclude = true;
         lblFieldName.setLayoutData(gd);
         lblFieldName.setVisible(false);
-        
-        lblName = new Label(this, SWT.BORDER);
+
+        lblName = new Text(this, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = true;
         lblName.setLayoutData(gd);
         lblName.setVisible(false);
-        
+
         if (prefStore != null) {
             dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                     false, 2, 1));
             final SelectionAdapter sa = new SelectionAdapter() {
-                
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     fillDbFieldsFromDbInfo();
@@ -107,7 +107,7 @@ public class DbPicker extends Group {
             };
             dbStorePicker.addListenerToCombo(sa);
             dbStorePicker.addDisposeListener(new DisposeListener() {
-                
+
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
                     dbStorePicker.removeListenerToCombo(sa);
@@ -124,44 +124,44 @@ public class DbPicker extends Group {
                         !txtDbPass.getText().equals(dbInfo.dbpass) ||
                         !txtDbHost.getText().equals(dbInfo.dbhost) ||
                         !txtDbPort.getText().equals(String.valueOf(dbInfo.dbport)))) {
-                    
+
                     dbStorePicker.clearSelection();
                 }
                 notifyListeners(SWT.Modify, null);
                 layout();
-            }  
+            }
         };
 
         new Label(this, SWT.NONE).setText(Messages.dB_name);
-        
+
         txtDbName = new Text(this, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
+
         new Label(this, SWT.NONE).setText(Messages.dB_user);
-        
+
         txtDbUser = new Text(this, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
+
         new Label(this, SWT.NONE).setText(Messages.dB_password);
-        
+
         txtDbPass = new Text(this, SWT.BORDER | SWT.PASSWORD);
         txtDbPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDbPass.addModifyListener(new ModifyListener() {
-            
+
             @Override
             public void modifyText(ModifyEvent e) {
                 GridData gd = (GridData) lblWarnDbPass.getLayoutData();
-                
+
                 if((txtDbPass.getText().isEmpty() && !gd.exclude)
                         || (!txtDbPass.getText().isEmpty() && gd.exclude)) {
                     lblWarnDbPass.setVisible(!lblWarnDbPass.getVisible());
                     gd.exclude = !gd.exclude;
-                    
+
                     layout();
                 }
             }
         });
-        
+
         lblWarnDbPass = new CLabel(this, SWT.NONE);
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
@@ -171,19 +171,19 @@ public class DbPicker extends Group {
         gd.exclude = true;
         lblWarnDbPass.setLayoutData(gd);
         lblWarnDbPass.setVisible(false);
-        
+
         new Label(this, SWT.NONE).setText(Messages.dB_host);
-        
+
         txtDbHost = new Text(this, SWT.BORDER);
         txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
+
         new Label(this, SWT.NONE).setText(Messages.dbPicker_port);
-        
+
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
         txtDbPort.addVerifyListener(new VerifyListener() {
-            
+
             @Override
             public void verifyText(VerifyEvent e) {
                 try{
@@ -205,7 +205,7 @@ public class DbPicker extends Group {
             fillDbFieldsFromDbInfo();
         }
     }
-    
+
     public String getSelectedDbPresetName(){
         return dbStorePicker.getSelectedName();
     }
@@ -218,13 +218,13 @@ public class DbPicker extends Group {
             txtDbPass.removeModifyListener(ml);
             txtDbHost.removeModifyListener(ml);
             txtDbPort.removeModifyListener(ml);
-            
+
             txtDbName.setText(dbInfo.dbname);
             txtDbUser.setText(dbInfo.dbuser);
             txtDbPass.setText(dbInfo.dbpass);
             txtDbHost.setText(dbInfo.dbhost);
             txtDbPort.setText(String.valueOf(dbInfo.dbport));
-            
+
             txtDbName.addModifyListener(ml);
             txtDbUser.addModifyListener(ml);
             txtDbPass.addModifyListener(ml);
@@ -232,27 +232,27 @@ public class DbPicker extends Group {
             txtDbPort.addModifyListener(ml);
         }
     }
-    
+
     /**
      * Remove storePicker button and show Entry Name field.
      */
     public void setStoreEditMode() {
         ((GridData) lblFieldName.getLayoutData()).exclude = false;
         lblFieldName.setVisible(true);
-        
+
         ((GridData) lblName.getLayoutData()).exclude = false;
         lblName.setVisible(true);
-        
+
         if (dbStorePicker != null) {
             ((GridData) dbStorePicker.getLayoutData()).exclude = true;
             dbStorePicker.setVisible(false);
         }
-        
+
         txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
+
         layout();
     }
-    
+
     @Override
     public void layout() {
         if(allowShellResize) {
@@ -262,7 +262,7 @@ public class DbPicker extends Group {
             getShell().layout(true, true);
         }
     }
-        
+
     @Override
     protected void checkSubclass() {
         // allow subclassing, we just use Group as a Composite
