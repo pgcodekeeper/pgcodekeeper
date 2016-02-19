@@ -8,11 +8,11 @@
       <anchor id="gettingstarted"/>
    </topic>
    <topic label="Задачи">
-      <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Создание нового проекта">
+      <topic href="html/tasks/new_wizard.html" label="Создание нового проекта">
       </topic>
       <topic href="html/tasks/update_pgcodekeeper_project.html" label="Обновление проекта">
       </topic>
-      <topic href="html/tasks/update_remote_db.html" label="Обноление БД">
+      <topic href="html/tasks/update_remote_db.html" label="Обновление БД">
       </topic>
       <topic href="html/tasks/list_obj.html" label="Наборы объектов">
       </topic>

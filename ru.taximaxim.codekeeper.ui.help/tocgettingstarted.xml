@@ -4,20 +4,17 @@
 <toc label="Начало работы" link_to="toc.xml#gettingstarted"> 
 	<topic href="html/gettingstarted/installation_eclipse.html" label="Установка pgCodeKeeper"/>
     <topic href="html/gettingstarted/import_project.html" label="Импорт проекта"/>
-    <topic label="View and editors">
-    	<topic href="html/gettingstarted/pgcodekeeper_project_view.html" label="pgCodeKeeper project view"/>
-    	<topic href="html/gettingstarted/pg_depend_view.html" label="pg Зависимости"/>
+    <topic label="Виды и редакторы">
+    	<topic href="html/gettingstarted/pgcodekeeper_project_view.html" label="Редактор pgCodeKeeper">
+            <topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта"/>
+            <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей"/>
+        </topic>
     	<topic href="html/gettingstarted/sql_editor.html" label="SQL редактор pgCodeKeeper"/>
     	<topic href="html/gettingstarted/roll_on_script.html" label="Редактор скрипта наката"/>
+    	<topic href="html/gettingstarted/pg_depend_view.html" label="pg Зависимости"/>
     </topic>
- 	<topic href="html/gettingstarted/pgcodekeeper_editor.html" label="Редактор pgCodeKeeper">
-    	<topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей">
-    	</topic>
-    	<topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта">
-    	</topic>
- 	</topic>
 	 <topic href="html/preferences/main_page.html" label="Настройки">
-    	<topic href="html/preferences/exluded_objects.html" label="Исключенные объекты">
+    	<topic href="html/preferences/excluded_objects.html" label="Исключенные объекты">
     	</topic>
     	<topic href="html/preferences/db_update.html" label="Обновление БД">
     	</topic>
