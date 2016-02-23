@@ -162,7 +162,12 @@
         </profile>
         
         <profile>
-            <id>deploy-standalone</id>
+            <id>deploy-cli</id>
+            <!-- disable updatesite deployment when deploying standalone -->
+        </profile>
+        
+        <profile>
+            <id>deploy-cli-public</id>
             <!-- disable updatesite deployment when deploying standalone -->
         </profile>
         
