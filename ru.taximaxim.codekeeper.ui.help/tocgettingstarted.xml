@@ -16,6 +16,8 @@
 	 <topic href="html/preferences/main_page.html" label="Настройки">
     	<topic href="html/preferences/excluded_objects.html" label="Исключенные объекты">
     	</topic>
+     <topic href="html/preferences/licensing.html" label="Лицензия">
+     </topic>
     	<topic href="html/preferences/db_update.html" label="Обновление БД">
     	</topic>
     	<topic href="html/preferences/prj_update.html" label="Обновление проекта">
