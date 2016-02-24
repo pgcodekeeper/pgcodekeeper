@@ -35,6 +35,7 @@
                         </executions>
                         <configuration>
                             <obfuscate>true</obfuscate>
+                            <attachMap>true</attachMap>
                             <options>
                                 <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
                                 <option>-dontnote</option>
@@ -79,6 +80,26 @@
                                 <lib>${java.home}/lib/rt.jar</lib>
                             </libs>
                         </configuration>
+                    </plugin>
+                    
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>upload-proguardmap-ui</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <configuration>
+                                    <fromFile>${project.build.directory}/proguard_map.txt</fromFile>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/proguard/</url>
+                                    <toFile>${unqualifiedVersion}.${buildQualifier}-ui.txt</toFile>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

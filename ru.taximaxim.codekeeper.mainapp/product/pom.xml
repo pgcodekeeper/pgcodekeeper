@@ -17,16 +17,6 @@
         <public.current_version_dir>release</public.current_version_dir>
     </properties>
 
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>2.9</version>
-            </extension>
-        </extensions>
-    </build>
-
     <profiles>
         <profile>
             <id>deploy-cli</id>
@@ -150,7 +140,7 @@
                                     <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/</url>
                                     <commands>
                                         <command>unlink /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
-                                        <command>ln -s /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
+                                        <command>ln -s /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
                                     </commands>
                                 </configuration>
                             </execution>
