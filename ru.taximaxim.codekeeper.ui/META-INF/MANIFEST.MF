@@ -22,9 +22,10 @@ Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
  org.eclipse.core.expressions,
  org.eclipse.ui.navigator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: org.jgrapht,
+Import-Package: javax.mail;version="1.4.0",
+ javax.mail.internet;version="1.4.0",
+ org.jgrapht,
  org.osgi.framework;version="[1.6.0,2.0.0)"
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: lib/mail-1.4.jar,
- .
+Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor
