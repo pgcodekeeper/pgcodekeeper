@@ -8,7 +8,7 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.URIUtil;
 
-public class ApgdiffUtils {
+public final class ApgdiffUtils {
 
     /**
      * @param url url should NOT be URL-encoded

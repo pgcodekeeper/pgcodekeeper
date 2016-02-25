@@ -2,38 +2,38 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="Начало работы" link_to="toc.xml#gettingstarted"> 
- <topic href="html/gettingstarted/installation_eclipse.html" label="Установка">
-    <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания нового проекта">
-       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта">
-       </topic>
-       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы">
-       </topic>
+	<topic href="html/gettingstarted/installation_eclipse.html" label="Установка pgCodeKeeper"/>
+    <topic href="html/gettingstarted/import_project.html" label="Импорт проекта"/>
+    <topic label="View and editors">
+    	<topic href="html/gettingstarted/pgcodekeeper_project_view.html" label="pgCodeKeeper project view"/>
+    	<topic href="html/gettingstarted/pg_depend_view.html" label="pg Зависимости"/>
+    	<topic href="html/gettingstarted/sql_editor.html" label="SQL редактор pgCodeKeeper"/>
+    	<topic href="html/gettingstarted/roll_on_script.html" label="Редактор скрипта наката"/>
     </topic>
-    <topic href="html/gettingstarted/import_project.html" label="Импорт проекта">
+ 	<topic href="html/gettingstarted/pgcodekeeper_editor.html" label="Редактор pgCodeKeeper">
+    	<topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей">
+    	</topic>
+    	<topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта">
+    	</topic>
+ 	</topic>
+	 <topic href="html/preferences/main_page.html" label="Настройки">
+    	<topic href="html/preferences/exluded_objects.html" label="Исключенные объекты">
+    	</topic>
+    	<topic href="html/preferences/db_update.html" label="Обновление БД">
+    	</topic>
+    	<topic href="html/preferences/prj_update.html" label="Обновление проекта">
+    	</topic>
+     <topic href="html/preferences/using_reports.html" label="Отчеты об использовании">
+     </topic>
+     <topic href="html/preferences/project_editor.html" label="Редактор проекта">
+     </topic>
+    	<topic label="Редактор SQL">
+        	<topic href="html/preferences/syntax_highlighting.html" label="Подсветка синтаксиса">
+        	</topic>
+        	<topic href="html/preferences/sql_editor_templates.html" label="Шаблоны редактора SQL">
+        	</topic>
+    	</topic>
+    	<topic href="html/preferences/db_storage.html" label="Хранилище БД">
+    	</topic>
     </topic>
- </topic>
- <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="Редактор pgCodeKeeper">
-    <topic href="html/gettingstarted/roll_on_script.html" label="Скрипт наката изменений">
-    </topic>
-    <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей">
-    </topic>
-    <topic href="html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта">
-    </topic>
- </topic>
- <topic href="html/preferences/main_page.html" label="Настройки">
-    <topic href="html/preferences/exluded_objects.html" label="Исключенные объекты">
-    </topic>
-    <topic href="html/preferences/db_update.html" label="Обновление БД">
-    </topic>
-    <topic href="html/preferences/prj_update.html" label="Обновление проекта">
-    </topic>
-    <topic label="Редактор SQL">
-       <topic label="Подсветка синтаксиса">
-       </topic>
-       <topic label="Шаблоны редактора SQL">
-       </topic>
-    </topic>
-    <topic href="html/preferences/db_storage.html" label="Хранилище БД">
-    </topic>
- </topic>
 </toc>
