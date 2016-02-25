@@ -18,6 +18,100 @@
         <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java</sonar.exclusions>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.wvengen</groupId>
+                        <artifactId>proguard-maven-plugin</artifactId>
+                        <version>2.0.11</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>proguard</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <obfuscate>true</obfuscate>
+                            <attachMap>true</attachMap>
+                            <options>
+                                <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
+                                <option>-dontnote</option>
+                                <option>-allowaccessmodification</option>
+                                <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgObjLocation { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgStatement { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcConnector { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcRunner { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.StatementActions { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.GenericColumn { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiff { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$DiffSide { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts$WORK_DIR_NAMES { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate$ADD_STATUS { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.License { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.Main { *; }</option>
+                            </options>
+                            <libs>
+                                <lib>${java.home}/lib/rt.jar</lib>
+                            </libs>
+                        </configuration>
+                    </plugin>
+                    
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>upload-proguardmap-apgdiff</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <configuration>
+                                    <fromFile>${project.build.directory}/proguard_map.txt</fromFile>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/proguard/</url>
+                                    <toFile>${unqualifiedVersion}.${buildQualifier}-apgdiff.txt</toFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>test</id>
+            <!-- no obfuscation -->
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -37,60 +131,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.0.10</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>proguard</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <obfuscate>true</obfuscate>
-                    <options>
-                        <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
-                        <option>-dontnote</option>
-                        <option>-allowaccessmodification</option>
-                        <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgObjLocation { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgStatement { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcConnector { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcRunner { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.StatementActions { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.schema.GenericColumn { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts { *; }</option>
-                        <option>-keep public class cz.startnet.utils.pgdiff.PgDiff { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$DiffSide { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts$WORK_DIR_NAMES { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate$ADD_STATUS { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
-                    </options>
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                    </libs>
-                </configuration>
             </plugin>
         </plugins>
     </build>

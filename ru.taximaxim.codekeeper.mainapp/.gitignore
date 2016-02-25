@@ -1,6 +1,7 @@
 /bin
 /target
 /product/target
+/productinfocenter/target
 /ru.taximaxim.codeKeeper/workspace
 /updatesite/target
 /feature/target

@@ -60,6 +60,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -176,7 +177,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     InterruptedException {
                         try {
                             in.updateParser(monitor);
-                        } catch (CoreException | IOException ex) {
+                        } catch (CoreException | IOException | LicenseException ex) {
                             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
                         }
                     }
@@ -203,7 +204,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             try {
                 in.updateScript(this.getSourceViewer().getDocument().get());
                 in.updateParser(progressMonitor);
-            } catch (CoreException | IOException e) {
+            } catch (CoreException | IOException | LicenseException e) {
                 Log.log(Log.LOG_ERROR, "Cannot parse Editor input"); //$NON-NLS-1$
             } catch (InterruptedException ex) {
                 progressMonitor.setCanceled(true);

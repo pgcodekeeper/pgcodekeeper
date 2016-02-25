@@ -39,6 +39,7 @@ import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -136,11 +137,11 @@ public class PgAntlrLoaderTest {
     }
 
     @Test
-    public void loadSchema() throws InterruptedException, IOException {
+    public void loadSchema() throws InterruptedException, IOException, LicenseException {
 
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
-        PgDiffArguments args = new PgDiffArguments();
+        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
         PgDatabase d = ApgdiffTestUtils.loadTestDump(
@@ -175,13 +176,13 @@ public class PgAntlrLoaderTest {
      * @throws InterruptedException
      */
     @Test
-    public void exportFullDb() throws IOException, InterruptedException {
+    public void exportFullDb() throws IOException, InterruptedException, LicenseException {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
-        PgDiffArguments args = new PgDiffArguments();
+        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
         args.setInCharsetName(encoding);
         args.setForceUnixNewlines(false);
         PgDatabase dbFromFile = ApgdiffTestUtils.loadTestDump(
@@ -193,7 +194,7 @@ public class PgAntlrLoaderTest {
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
 
-            args = new PgDiffArguments();
+            args = ApgdiffTestUtils.getArgsLicensed();
             args.setInCharsetName(encoding);
             args.setForceUnixNewlines(false);
             args.setIgnoreSlonyTriggers(true);

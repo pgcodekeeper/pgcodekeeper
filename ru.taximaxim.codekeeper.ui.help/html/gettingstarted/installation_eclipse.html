@@ -9,24 +9,17 @@
 
 <body>
 <h2>Установка плагина pgCodeKeeper в Eclipse</h2>
-<p>Для работы плагина требуется установить его в Eclipse.
-Для этого необходимо загрузить Eclipse подходящий для Вашей платформы на сайте 
-<a href="https://www.eclipse.org/downloads">https://www.eclipse.org/downloads</a>, 
-либо использовать уже скачанный дистрибутив Eclipse.</p>
-<p>Для установки плагина нужно выбрать меню <b>Help - Install New Software</b>. 
-Появится окно позволяющее устанавливать плагины в Eclipse.</p>
-<p><img border="0" alt="Установка новых плагинов" src="../images/install_plugin.png"></p>
-<p>В поле <b>Work With</b> нужно нажать на кнопку <b>Add</b> и в диалоге ввести 
-адрес репозитория с плагином
-<b><a href="http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeperplugins/">
-http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeperplugins/</a></b>. 
-В поле имя ввести удобное имя, например pgCodeKeeper.</p>
-<p><img border="0" alt="Добавление репозитория" src="../images/add_repository.png"></p>
-<p>Затем в списке выбрать пакет pgCodeKeeper, нажать <b>Next</b>, <b>Next</b>, 
-согласиться с пользовательским соглашением, и начнется установка.</p>
-<p><img border="0" alt="Выбор пакета для установки" src="../images/package_plugin.png"></p>
-<p>Согласиться на установку и перезапуск Eclipse.</p>
-<p><img border="0" alt="Установка плагина" src="../images/plugin_install.png"></p>
-<p>На этом Установка плагина закончена.</p>
+<p>Самый простой путь получить pgCodeKeeper &ndash; сайт обновлений: 
+в запущенном экземпляре Eclipse версии 4.2 или выше, выбрать <b>Help > Install New Software...</b>
+Откроется мастер установки плагинов средствами сайта обновлений.</p>
+<p>В поле <b>Work With</b> ввести путь к сайту обновлений. Это может быть как удаленный ресурс
+<b><a href="http://pgcodekeeper.ru/update/release/">http://pgcodekeeper.ru/update/release/</a></b>, 
+так и локальный в вашей файловой системе.<br>
+После нажатия Enter в списке ниже появятся доступные для установки плагины.</p>
+<p>Выберите пакет pgCodeKeeper, согласитесь с установкой,
+ознакомьтесь с пользовательским соглашением, нажмите кнопку <b>Finish</b> и начнется установка.</p>
+<p><img border="0" alt="Выбор пакета для установки" src="../images/package_plugin.png" class='scale'></p>
+<p>По завершению установки для применения изменений необходимо перезапустить Eclipse</p>
+<p>Запустите Eclipse и выберите <b>Window > Perspective > Open Perspective > Other > pgCodeKeeper</b>.</p>
 </body>
 </html>
