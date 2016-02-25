@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -14,44 +13,15 @@
     <version>3.3.4-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>2.9</version>
-            </extension>
-        </extensions>
-    </build>
+    <properties>
+        <public.current_version_dir>release</public.current_version_dir>
+    </properties>
 
     <profiles>
         <profile>
-            <id>deploy-standalone</id>
+            <id>deploy-cli</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.eclipse.tycho</groupId>
-                        <artifactId>tycho-p2-director-plugin</artifactId>
-                        <version>${tycho.version}</version>
-                        <executions>
-                            <execution>
-                                <id>materialize-products</id>
-                                <goals>
-                                    <goal>materialize-products</goal>
-                                    <goal>archive-products</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <products>
-                                <product>
-                                    <id>ru.taximaxim.codekeeper.standalone.product</id>
-                                    <archiveFileName>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
-                                </product>
-                            </products>
-                        </configuration>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
@@ -64,7 +34,6 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>placeholder</serverId>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
@@ -75,5 +44,87 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>deploy-cli-public</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>public-version-history-cli</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/</url>
+                                    <commands>
+                                        <command>rm -rf /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
+                                        <command>mkdir /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
+                                    </commands>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>public-upload-cli</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <configuration>
+                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <fromDir>${project.build.directory}/products/</fromDir>
+                                    <includes>*.zip</includes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>public-link-current-cli</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/</url>
+                                    <commands>
+                                        <command>unlink /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
+                                        <command>ln -s /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
+                                    </commands>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-director-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <executions>
+                    <execution>
+                        <id>materialize-products</id>
+                        <goals>
+                            <goal>materialize-products</goal>
+                            <goal>archive-products</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <products>
+                        <product>
+                            <id>ru.taximaxim.codekeeper.standalone.product</id>
+                            <archiveFileName>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
+                        </product>
+                    </products>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
