@@ -387,6 +387,17 @@ public final class Messages extends NLS {
 
     public static String yesNoEditingSupport_yes;
 
+    //feedback_dialog
+
+    public static String name;
+    public static String e_mail;
+    public static String subject;
+    public static String feedback_message;
+    public static String add_log;
+
+    // other
+    public static String feedback_message_sent_successfull;
+
     // SONAR-ON
 
     static {
