@@ -212,7 +212,7 @@
                label="pgCodeKeeper">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                  label="send feedback"
+                  label="sent feedback"
                   mnemonic="F"
                   style="push">
             </command>
