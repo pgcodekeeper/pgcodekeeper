@@ -131,6 +131,9 @@ public class FeedBackDialog extends Dialog {
 
     @Override
     protected void okPressed() {
+        if (txtMessage == null || "".equals(txtMessage.getText())){
+            MessageDialog.openWarning(getParentShell(), "Feedback", "Text message is empty!");
+        }
         Properties properties = System.getProperties();
 
         properties.setProperty("mail.smtp.host", MAIL_HOST);
@@ -179,7 +182,7 @@ public class FeedBackDialog extends Dialog {
             Transport.send(message);
             Log.log(Log.LOG_INFO, Messages.feedback_message_sent_successfull);
         } catch (AddressException ae){
-            MessageDialog.openWarning(getParentShell(), "email", "email address incorrect");
+            MessageDialog.openWarning(getParentShell(), "Feedback", "E-mail address incorrect!");
             return;
         } catch (MessagingException mex) {
             Log.log(Log.LOG_ERROR, Messages.feedback_message_sent_successfull, mex);
