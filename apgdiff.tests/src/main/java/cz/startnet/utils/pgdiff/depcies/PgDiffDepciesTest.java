@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -136,11 +137,11 @@ public class PgDiffDepciesTest {
     }
 
     @Test(timeout = 120000)
-    public void runDiff() throws IOException, InterruptedException {
+    public void runDiff() throws IOException, InterruptedException, LicenseException {
 
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments args = new PgDiffArguments();
+        final PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(

@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -31,7 +32,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             parser = PgDbParser.getParserForBuilder(proj, monitor);
         } catch (InterruptedException ex) {
             // cancelled
-        } catch (IOException ex) {
+        } catch (IOException | LicenseException ex) {
             throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
         }
 
@@ -53,7 +54,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 parser.getObjFromProject(monitor);
             } catch (InterruptedException ex) {
                 // cancelled
-            } catch (IOException ex) {
+            } catch (IOException | LicenseException ex) {
                 throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
             }
             break;
@@ -102,7 +103,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     } catch (InterruptedException e) {
                         // cancelled
                         return false;
-                    } catch (IOException ex) {
+                    } catch (IOException | LicenseException ex) {
                         throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
                     }
                     break;

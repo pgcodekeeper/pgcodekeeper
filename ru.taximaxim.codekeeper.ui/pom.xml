@@ -11,70 +11,102 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.0.10</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>proguard</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <obfuscate>true</obfuscate>
-                    <options>
-                        <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
-                        <option>-dontnote</option>
-                        <option>-allowaccessmodification</option>
-                        <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.Diff { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectsPrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.CommitPrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorMainPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.natures.ProjectNature { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.properties.ProjectProperties { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.views.DepcyGraphView { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.MainPerspective { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.builders.ProjectBuilder { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.builders.BuilderTester { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant { *; }</option>
-                        <option>-keep class ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole { *; }</option>
-                        <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
-                    </options>
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                    </libs>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.wvengen</groupId>
+                        <artifactId>proguard-maven-plugin</artifactId>
+                        <version>2.0.11</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>proguard</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <obfuscate>true</obfuscate>
+                            <attachMap>true</attachMap>
+                            <options>
+                                <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
+                                <option>-dontnote</option>
+                                <option>-allowaccessmodification</option>
+                                <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.Diff { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectsPrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.CommitPrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorMainPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.natures.ProjectNature { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.properties.ProjectProperties { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.DepcyGraphView { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.MainPerspective { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.builders.ProjectBuilder { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.builders.BuilderTester { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant { *; }</option>
+                                <option>-keep class ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
+                            </options>
+                            <libs>
+                                <lib>${java.home}/lib/rt.jar</lib>
+                            </libs>
+                        </configuration>
+                    </plugin>
+                    
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0</version>
+                        <executions>
+                            <execution>
+                                <id>upload-proguardmap-ui</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload-single</goal>
+                                </goals>
+                                <configuration>
+                                    <fromFile>${project.build.directory}/proguard_map.txt</fromFile>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/proguard/</url>
+                                    <toFile>${unqualifiedVersion}.${buildQualifier}-ui.txt</toFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>test</id>
+            <!-- no obfuscation -->
+        </profile>
+    </profiles>
 </project>

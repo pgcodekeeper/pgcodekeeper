@@ -33,9 +33,11 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
 public class PgDbParser implements IResourceChangeListener {
 
@@ -82,7 +84,7 @@ public class PgDbParser implements IResourceChangeListener {
      * @throws IOException
      */
     public static PgDbParser getParserForBuilder(IProject proj, IProgressMonitor builderMonitor)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, LicenseException {
         PgDbParser parser = PROJ_PARSERS.get(proj);
         if (parser != null) {
             return parser;
@@ -97,19 +99,20 @@ public class PgDbParser implements IResourceChangeListener {
 
     public static PgDbParser getRollOnParser(InputStream input,
             String scriptFileEncoding, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException {
+            List<FunctionBodyContainer> funcBodies)
+                    throws InterruptedException, IOException, LicenseException {
         PgDbParser rollOnParser = new PgDbParser();
         rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodies);
         return rollOnParser;
     }
 
     public void getObjFromProject(IProgressMonitor monitor)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, LicenseException {
         getFullDBFromDirectory(proj.getLocationURI(), monitor);
     }
 
     public void getObjFromProjFile(URI fileURI, IProgressMonitor monitor)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, LicenseException {
         String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
@@ -117,6 +120,7 @@ public class PgDbParser implements IResourceChangeListener {
             Log.log(e);
         }
         PgDiffArguments args = new PgDiffArguments();
+        LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
         try (PgDumpLoader loader = new PgDumpLoader(new File(fileURI), args, monitor)) {
             PgDatabase db = loader.load(true);
@@ -169,7 +173,7 @@ public class PgDbParser implements IResourceChangeListener {
                     getFullDBFromDirectory(locationURI, monitor);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
-                } catch (IOException ex) {
+                } catch (IOException | LicenseException ex) {
                     return getLoadingErroStatus(ex);
                 }
                 return Status.OK_STATUS;
@@ -181,7 +185,7 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor)
-            throws InterruptedException, IOException {
+            throws InterruptedException, IOException, LicenseException {
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         String charset = ApgdiffConsts.UTF_8;
         try {
@@ -190,6 +194,7 @@ public class PgDbParser implements IResourceChangeListener {
             Log.log(e);
         }
         PgDiffArguments args = new PgDiffArguments();
+        LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
@@ -207,8 +212,10 @@ public class PgDbParser implements IResourceChangeListener {
 
     private void fillRefsFromInputStream(InputStream input,
             IProgressMonitor monitor, String scriptFileEncoding,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException {
+            List<FunctionBodyContainer> funcBodies)
+                    throws InterruptedException, IOException, LicenseException {
         PgDiffArguments args = new PgDiffArguments();
+        LicensePrefs.setLicense(args);
         args.setInCharsetName(scriptFileEncoding);
         @SuppressWarnings("resource")
         PgDatabase db = new PgDumpLoader(input, "bytestream:/", args, monitor).load(true); //$NON-NLS-1$
@@ -312,7 +319,7 @@ public class PgDbParser implements IResourceChangeListener {
         }
     }
 
-    public static IStatus getLoadingErroStatus(IOException ex) {
+    public static IStatus getLoadingErroStatus(Exception ex) {
         return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.PgDbParser_error_loading_db, ex);
     }
 }

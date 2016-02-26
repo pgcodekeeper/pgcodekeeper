@@ -1,3 +1,7 @@
+img.scale {
+    max-width: 98%;
+    height: auto;
+}
 P.Code {
     display: block;
     text-align: left;

@@ -38,6 +38,8 @@ public interface UIConsts {
         String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
+
+        String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -112,7 +114,6 @@ public interface UIConsts {
         String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
         String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
         String DIALOG_UPDATE_PROJECT = PLUGIN_ID.HELP + ".update_project_dialog"; //$NON-NLS-1$
-
     }
 
     interface FILE {

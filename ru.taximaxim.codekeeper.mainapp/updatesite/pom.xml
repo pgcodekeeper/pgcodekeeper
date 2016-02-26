@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.updatesite</artifactId>
-    <version>3.3.4-SNAPSHOT</version>
+    <version>3.4.0-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
@@ -22,13 +22,6 @@
     </properties>
     
     <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>2.6</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
@@ -43,10 +36,7 @@
 
     <profiles>
         <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>deploy-site</id>
             <build>
                 <plugins>
                     <plugin>
@@ -61,7 +51,6 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>clean-updatesite</serverId>
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${current_version_dir}/*</command>
@@ -75,7 +64,6 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>upload-updatesite</serverId>
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
@@ -88,7 +76,6 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>version-history-updatesite</serverId>
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
@@ -104,7 +91,7 @@
         </profile>
 
         <profile>
-            <id>deploy-public</id>
+            <id>deploy-site-public</id>
             <build>
                 <plugins>
                     <plugin>
@@ -119,7 +106,6 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>public-version-history-updatesite</serverId>
                                     <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/</url>
                                     <commands>
                                         <command>rm -rf /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</command>
@@ -134,7 +120,6 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>public-upload-updatesite</serverId>
                                     <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</url>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
@@ -147,7 +132,6 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>public-link-current-updatesite</serverId>
                                     <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/</url>
                                     <commands>
                                         <command>unlink /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
@@ -159,11 +143,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        
-        <profile>
-            <id>deploy-standalone</id>
-            <!-- disable updatesite deployment when deploying standalone -->
         </profile>
         
         <profile>
@@ -182,7 +161,6 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>placeholder4</serverId>
                                     <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${nightly_version_dir}/*</command>
@@ -196,7 +174,6 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <serverId>placeholder5</serverId>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
                                     <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>

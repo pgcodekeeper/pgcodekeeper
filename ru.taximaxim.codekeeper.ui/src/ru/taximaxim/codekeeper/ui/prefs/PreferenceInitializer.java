@@ -28,6 +28,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
+        store.setDefault(PREF.LICENSE_PATH, LicensePrefs.getInternalLicenseUrl().toString());
 
         store.setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
