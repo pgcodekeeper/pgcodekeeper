@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Paths;
@@ -56,6 +54,8 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -103,6 +103,7 @@ public class DiffTableViewer extends Composite {
     private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
     private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
+    private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}";
 
     private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
             DbObjType.values().length);
@@ -392,6 +393,7 @@ public class DiffTableViewer extends Composite {
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONSAVECLIPBOARD))));
             saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
+
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     saveCheckedElements2ClipboardAsExpession();
@@ -693,22 +695,33 @@ public class DiffTableViewer extends Composite {
     }
 
     private void saveCheckedElements2ClipboardAsExpession(){
-        Object[] checkedElements = viewer.getCheckedElements();
-        if (checkedElements == null || checkedElements.length == 0){
-            return;
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        for (TreeElement el : elements) {
+            if (!el.isSelected()) {
+                continue;
+            }
+            if (!first) {
+                sb.append('|');
+            } else {
+                first = false;
+            }
+            String name = el.getName();
+            for (int i = 0; i < name.length(); ++i) {
+                if (REGEX_SPECIAL_CHARS.indexOf(name.charAt(i)) != -1) {
+                    name = Pattern.quote(name);
+                    break;
+                }
+            }
+            sb.append('^').append(name).append('$');
         }
-        StringBuffer sb = new StringBuffer("^");
-        String str = ((TreeElement)checkedElements[0]).getName().replaceAll("\\(", "\\\\(");
-        str = str.replaceAll("\\)", "\\\\)");
-        sb.append(str).append("$");
-        for (int i = 1; i < checkedElements.length; i++){
-            TreeElement te = (TreeElement) checkedElements[i];
-            str = te.getName().replaceAll("\\(", "\\\\(");
-            str = str.replaceAll("\\)", "\\\\)");
-            sb.append("|").append("^").append(str).append("$");
+
+        if (sb.length() != 0) {
+            Clipboard clip = new Clipboard(getDisplay());
+            clip.setContents(new String[] { sb.toString() },
+                    new TextTransfer[] { TextTransfer.getInstance() });
+            clip.dispose();
         }
-        StringSelection ss = new StringSelection(sb.toString());
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
     }
 
     private void updateCheckedSet(boolean addEntry) {
