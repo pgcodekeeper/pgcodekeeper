@@ -148,4 +148,6 @@ public interface UIConsts {
         String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
+
+    String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 }

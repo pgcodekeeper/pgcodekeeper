@@ -34,8 +34,6 @@ public final class XmlHistory {
     private final String rootTag;
     private final String elementTag;
     private final String elementSetTag;
-    private final static String DEFAULT_HISTORY_STRING =
-            "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db";
 
     private XmlHistory(Builder builder) {
         this.maxEntries = builder.maxEntries;
@@ -90,17 +88,7 @@ public final class XmlHistory {
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {
-            history = new LinkedList<>();
-            history.add(DEFAULT_HISTORY_STRING);
-            dumpListToFile(history);
-            try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                    getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
-                XmlStringList xml = new XmlStringList(rootTag, elementTag);
-                history = xml.deserializeList(xmlReader);
-            } catch (IOException | SAXException isex) {
-                throw new IOException(MessageFormat.format(
-                        Messages.XmlHistory_read_error, isex.getLocalizedMessage()), isex);
-            }
+            history = null;
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);

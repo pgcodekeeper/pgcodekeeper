@@ -103,7 +103,7 @@ public class DiffTableViewer extends Composite {
     private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
     private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
-    private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}";
+    private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}"; //$NON-NLS-1$
 
     private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
             DbObjType.values().length);

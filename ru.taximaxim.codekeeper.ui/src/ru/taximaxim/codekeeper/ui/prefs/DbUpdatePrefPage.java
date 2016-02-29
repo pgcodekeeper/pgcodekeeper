@@ -17,6 +17,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
@@ -25,16 +26,16 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
-        IWorkbenchPreferencePage {
+IWorkbenchPreferencePage {
 
     private StringPrefListEditor listEditor;
     private final XmlHistory history;
-    
+
     public DbUpdatePrefPage() {
         super(GRID);
-        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED, 
-                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
+        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
+                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
+                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
 
@@ -60,29 +61,29 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
                 Messages.dBUpdatePrefPage_set_warning_when_next_statements_present,
                 getFieldEditorParent());
         addField(gfe);
-        
+
         BooleanFieldEditor showScriptOutputSeparately = new BooleanFieldEditor(
                 DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY,
                 Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
         addField(showScriptOutputSeparately);
-        
+
         BooleanFieldEditor transaction = new BooleanFieldEditor(
                 DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.dbUpdatePrefPage_script_add_transaction,
                 getFieldEditorParent());
         addField(transaction);
-        
+
         BooleanFieldEditor functionBodies = new BooleanFieldEditor(
                 DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies,
                 getFieldEditorParent());
         addField(functionBodies);
     }
-    
+
     @Override
     protected Control createContents(Composite parent) {
         super.createContents(parent);
-        
+
         Group grpCommandsEdit = new Group(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout();
         gridLayout.marginHeight = 0;
@@ -92,19 +93,19 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         gd.verticalIndent = 20;
         grpCommandsEdit.setLayoutData(gd);
         grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
-        
+
         listEditor = new StringPrefListEditor(grpCommandsEdit, false);
         updateList();
-        
+
         return parent;
     }
-    
+
     @Override
     protected void performDefaults() {
         super.performDefaults();
         updateList();
     }
-    
+
     @Override
     public boolean performOk() {
         try {
@@ -112,12 +113,12 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         } catch (IOException e) {
             ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
         }
-        
+
         return super.performOk();
     }
-    
+
     private void updateList() {
-        LinkedList<String> list= null;
+        LinkedList<String> list = null;
         try {
             list = history.getHistory();
         } catch (IOException e) {
@@ -125,6 +126,9 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         }
         if (list == null) {
             list = new LinkedList<>();
+        }
+        if (list.isEmpty()) {
+            list.add(UIConsts.DDL_DEFAULT_CMD);
         }
         listEditor.setInputList(list);
     }

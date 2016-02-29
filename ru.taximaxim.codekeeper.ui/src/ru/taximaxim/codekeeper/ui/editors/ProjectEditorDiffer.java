@@ -248,14 +248,14 @@ class CommitPage extends DiffPresentationPane {
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (mainPrefs.getBoolean(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT)){
             String rgb = mainPrefs.getString(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT);
-            String[] colors = rgb.split(",");
+            String[] colors = rgb.split(","); //$NON-NLS-1$
             setTitleColor(new RGB(
                     Integer.parseInt(colors[0]),
                     Integer.parseInt(colors[1]),
                     Integer.parseInt(colors[2])));
         } else {
             setTitleColor(null);
-        };
+        }
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()
                         .getResource(FILE.ICONBALLBLUE))));
@@ -439,7 +439,7 @@ class DiffPage extends DiffPresentationPane {
 
         if (mainPrefs.getBoolean(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT)){
             String rgb = mainPrefs.getString(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT);
-            String[] colors = rgb.split(",");
+            String[] colors = rgb.split(","); //$NON-NLS-1$
             setTitleColor(new RGB(
                     Integer.parseInt(colors[0]),
                     Integer.parseInt(colors[1]),

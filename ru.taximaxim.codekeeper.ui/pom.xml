@@ -61,6 +61,7 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.LicensePrefs { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.ProjectEditorPrefPage { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.natures.ProjectNature { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer { *; }</option>

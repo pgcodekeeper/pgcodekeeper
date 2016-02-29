@@ -486,7 +486,7 @@ public abstract class DiffPresentationPane extends Composite {
                     if (parentEl.getType() == DbObjType.VIEW){
                         file = new File(new File(file, schemaName4Rule), "VIEW");//$NON-NLS-1$
                     } else {
-                        Log.log(Log.LOG_ERROR, DiffPresentationPane.class + ": " + el.getName() + "rule out of table or view");
+                        Log.log(Log.LOG_ERROR, DiffPresentationPane.class + ": " + el.getName() + "rule out of table or view"); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
                 el = parentEl;

@@ -319,19 +319,22 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 DB_USER_PLACEHOLDER + '=' + dbUser + UIConsts._NL +
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
 
-        List<String> prev;
+        List<String> prev = null;
         try {
             prev = history.getHistory();
         } catch (IOException e1) {
             ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_loading_command_history, e1);
+        }
+        if (prev == null) {
             prev = new ArrayList<>();
         }
-        if (prev != null && !prev.isEmpty()) {
-            for (String el : prev) {
-                cmbScript.add(el);
-            }
-            cmbScript.select(0);
+        if (prev.isEmpty()) {
+            prev.add(UIConsts.DDL_DEFAULT_CMD);
         }
+        for (String el : prev) {
+            cmbScript.add(el);
+        }
+        cmbScript.select(0);
 
         cmbScript.addModifyListener(new ModifyListener() {
 

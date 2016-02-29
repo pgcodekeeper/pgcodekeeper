@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -19,6 +17,10 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
     private BooleanFieldEditor dbUpdateIsBackLight;
     private ColorFieldEditor prjDbBackLightColor;
 
+    public ProjectEditorPrefPage() {
+        super(GRID);
+    }
+
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
@@ -26,14 +28,13 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
 
     @Override
     protected void createFieldEditors() {
-        // TODO Auto-generated method stub
         prjUpdateIsBackLight =
                 new BooleanFieldEditor(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT,
                         Messages.pgProjectEditor_is_prj_update_backlight, getFieldEditorParent());
         addField(prjUpdateIsBackLight);
 
         prjUpdateBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT,
-                "", getFieldEditorParent());
+                "", getFieldEditorParent()); //$NON-NLS-1$
         addField(prjUpdateBackLightColor);
 
         dbUpdateIsBackLight =
@@ -41,19 +42,7 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
                         Messages.pgProjectEditor_is_db_update_backlight, getFieldEditorParent());
         addField(dbUpdateIsBackLight);
 
-        prjDbBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "", getFieldEditorParent());
+        prjDbBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "", getFieldEditorParent()); //$NON-NLS-1$
         addField(prjDbBackLightColor);
-    }
-
-    @Override
-    protected Control createContents(Composite parent) {
-        // TODO Auto-generated method stub
-        return super.createContents(parent);
-    }
-
-    @Override
-    protected void performApply() {
-        super.performApply();
-
     }
 }
