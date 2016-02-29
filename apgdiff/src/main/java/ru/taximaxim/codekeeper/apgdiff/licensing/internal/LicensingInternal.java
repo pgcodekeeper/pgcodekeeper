@@ -76,7 +76,8 @@ public final class LicensingInternal {
     public static License loadLicense(InputStream licenseStream) throws IOException, LicenseException {
         try {
             License l = new License();
-            l.loadKeyRing(LicensingInternal.class.getResourceAsStream(PUBKEY_RES), PUBKEY_DIGEST);
+            l.loadKeyRing(ru.taximaxim.codekeeper.apgdiff.licensing.License
+                    .class.getResourceAsStream(PUBKEY_RES), PUBKEY_DIGEST);
             l.setLicenseEncoded(licenseStream);
             return l;
         } catch (PGPException ex) {
