@@ -12,6 +12,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -30,8 +31,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -53,6 +52,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -64,6 +64,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -82,6 +83,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
 
@@ -94,8 +96,18 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
-            throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
+            String projectName = ((FileEditorInput)input).getFile().getProject().getName();
+            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+            try {
+                if (!(project.getNature(UIConsts.NATURE.ID) instanceof ProjectNature)){
+                    throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
+                }
+            } catch (CoreException e) {
+                throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type, e);
+            }
+            input = new ProjectEditorInput(project.getName());
         }
+
         ProjectEditorInput in = (ProjectEditorInput) input;
         if (in.getError() != null) {
             throw new PartInitException(in.getError().getLocalizedMessage());
@@ -105,8 +117,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         super.init(site, input);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
-    
-    
 
     @Override
     protected void createPages() {
