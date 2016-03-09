@@ -4,8 +4,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -42,7 +40,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -177,9 +174,6 @@ implements IExecutableExtension, INewWizard {
             workbench.getWorkingSetManager().addToWorkingSets(props.getProject(),
                     workingSets);
 
-            IFile file = props.getProject().getFile(UIConsts.FILE.CODEKEEPEREDITOR);
-            file.create(null, IResource.VIRTUAL, null);
-
             OpenEditor.openEditor(PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
@@ -188,10 +182,7 @@ implements IExecutableExtension, INewWizard {
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
             return false;
-        } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_codekeepereditor_file, e);
-            return true;
-        }
+        } 
         return true;
     }
 

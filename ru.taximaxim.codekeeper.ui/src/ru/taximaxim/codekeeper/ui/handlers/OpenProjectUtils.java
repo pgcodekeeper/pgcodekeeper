@@ -9,12 +9,15 @@ import java.util.Properties;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.Version;
 
@@ -39,6 +42,20 @@ public final class OpenProjectUtils {
             } catch (CoreException e) {
                 // silently return null incorrect project
                 return null;
+            }
+        }
+        return null;
+    }
+    
+    static IProject getSelectedProject() {
+    	IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (window != null)
+        {
+            IStructuredSelection selection = (IStructuredSelection) window.getSelectionService().getSelection();
+            Object firstElement = selection.getFirstElement();
+            if (firstElement instanceof IResource)
+            {
+                return ((IResource)firstElement).getProject();
             }
         }
         return null;
