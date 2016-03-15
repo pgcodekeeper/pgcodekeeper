@@ -911,7 +911,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 String inhSchema = PgDiffUtils.getSecondObjectName(inherited);
                 String inhTable = PgDiffUtils.getObjectName(inherited);
                 t.addInherits(inhSchema, inhTable);
-                GenericColumn gc = new GenericColumn(schemaName, inhTable, null);
+                GenericColumn gc = new GenericColumn(inhSchema, inhTable, null);
                 gc.setType(ViewReference.TABLE);
                 t.addDep(gc);
             }

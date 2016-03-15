@@ -188,6 +188,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
+        indexDst.setDeps(getDeps());
         return indexDst;
     }
     

@@ -93,7 +93,7 @@ public class DbPicker extends Group {
         lblName.setVisible(false);
 
         if (prefStore != null) {
-            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
+            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore, false);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                     false, 2, 1));
             final SelectionAdapter sa = new SelectionAdapter() {

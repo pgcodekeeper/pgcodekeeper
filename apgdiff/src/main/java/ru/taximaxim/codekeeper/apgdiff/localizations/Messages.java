@@ -74,6 +74,8 @@ public final class Messages extends NLS {
     public static String PgDiffArguments_only_diff_parse;
 
     public static String PgDiffArguments_unsupported_db_format;
+    
+    public static String Dll_script_execute_succesfull;
 
     // SONAR-ON
 

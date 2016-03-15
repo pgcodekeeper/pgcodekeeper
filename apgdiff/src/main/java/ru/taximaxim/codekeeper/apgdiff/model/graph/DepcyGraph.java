@@ -391,7 +391,7 @@ public class DepcyGraph {
             for (GenericColumn gc : trigger.getDeps()){
                 switch (gc.getType()) {
                 case FUNCTION:
-                    PgFunction func = db.getSchema(gc.schema).getFunction(gc.table);
+                    PgFunction func = db.getSchema(gc.schema).getFunction(PgDiffUtils.getObjectName(gc.table));
                     graph.addEdge(trigger, func);
                     break;
 

@@ -30,6 +30,7 @@ public interface UIConsts {
         String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
+        String DB_STORE_HISTORY = "prefDbStoreHistory"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
 
@@ -41,6 +42,8 @@ public interface UIConsts {
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
         String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
+        
+        String DB_STORE_PREF_PAGE = "ru.taximaxim.codekeeper.ui.dbstore"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {

@@ -30,8 +30,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -548,9 +546,6 @@ class DiffPage extends DiffPresentationPane {
         List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 list);
-        input.setDbParams(dbSrc.getTxtDbHost().getText(),
-                dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),
-                dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         .openEditor(input, EDITOR.ROLLON);
     }

@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,8 +135,44 @@ public class DbInfo {
         sb.delete(sb.length()-1, sb.length());
         return sb.toString();
     }
+    
+    public static List<String> getDumpFileHistory(String prefs){
+        String[] coordStrings = prefs.split(
+                Pattern.quote(String.valueOf(DELIM_ENTRY)));
+        return Arrays.asList(coordStrings);
+    }
+    
+    public static String dump2String(List<String> dumps){
+        StringBuffer sb = new StringBuffer();
+        for (String str : dumps){
+            sb.append(str);
+            sb.append(DELIM_ENTRY);
+        }
+        sb.delete(sb.length()-1, sb.length());
+        return sb.toString();
+    }
 
     public String getName(){
         return name;
+    }
+
+    public String getDbname() {
+        return dbname;
+    }
+
+    public String getDbuser() {
+        return dbuser;
+    }
+
+    public String getDbpass() {
+        return dbpass;
+    }
+
+    public String getDbhost() {
+        return dbhost;
+    }
+
+    public int getDbport() {
+        return dbport;
     }
 }

@@ -125,6 +125,9 @@ implements IWorkbenchPreferencePage {
         fEditButton.addListener(SWT.Selection, new Listener() {
             @Override
             public void handleEvent(Event e) {
+                if (listObjs.getList().getSelectionIndex() == -1){
+                    return;
+                }
                 String editDb = listObjs.getList().getSelection()[0];
 
                 DbStoreEditorDialog dialog =

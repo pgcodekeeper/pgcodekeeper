@@ -4,8 +4,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -39,13 +37,6 @@ implements IWorkbenchPreferencePage  {
     	
     	pgDumpFieldSwitch = new PgBooleanFieldEditor (PREF.PGDUMP_SWITCH,
                 Messages.generalPrefPage_pg_dump_switch, getFieldEditorParent());
-    	pgDumpFieldSwitch.getChangeControl(getFieldEditorParent()).addSelectionListener(new SelectionAdapter() {
-    		@Override
-    		public void widgetSelected(SelectionEvent e) {
-    			super.widgetSelected(e);
-    			pgDumpExeFile.setEnabled(pgDumpFieldSwitch.getBooleanValue(), getFieldEditorParent());
-    		}
-		});
     	addField(pgDumpFieldSwitch);
     	
     	pgDumpExeFile = new FileFieldEditor(PREF.PGDUMP_EXE_PATH,
@@ -56,11 +47,7 @@ implements IWorkbenchPreferencePage  {
                 return true;
             }
         };
-        if (getPreferenceStore().getBoolean(PREF.PGDUMP_SWITCH)){
-        	pgDumpExeFile.setEnabled(true, getFieldEditorParent());
-        } else {
-        	pgDumpExeFile.setEnabled(false, getFieldEditorParent());
-        }
+
         addField(pgDumpExeFile);
 
         addField(new StringFieldEditor(PREF.PGDUMP_CUSTOM_PARAMS,

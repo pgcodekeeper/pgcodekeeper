@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+
 public class JdbcRunner {
     private JdbcConnector connector;
 
@@ -27,7 +29,7 @@ public class JdbcRunner {
                         @Override
                         public String call() throws Exception {
                             stmnt.execute(script);
-                            return "success";
+                            return Messages.Dll_script_execute_succesfull;
                         }
                     });
             
@@ -43,7 +45,8 @@ public class JdbcRunner {
                 return "Script execution interrupted by user.";
             } catch (ExecutionException e) {
                 // exception thrown in callable's call() method
-                return e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
+                StringBuffer sb = new StringBuffer("ERROR INFO");
+                return sb.append(e.getCause() == null ? e.getMessage() : e.getCause().getMessage()).toString();
             }
         } catch (SQLException e) {
             return "Error: " + e.getMessage();
