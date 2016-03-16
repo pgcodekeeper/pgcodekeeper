@@ -373,7 +373,7 @@ public abstract class DiffPresentationPane extends Composite {
             break;
         case SOURCE_TYPE_DB:
         case SOURCE_TYPE_JDBC:
-            DbInfo storeDB = storePicker.getDbInfo();// store.get(cmbDbNames.getItem(cmbDbNames.getSelectionIndex()));
+            DbInfo storeDB = storePicker.getDbInfo();
             projProps.put(PROJ_PREF.DB_NAME, storeDB.getDbname());
             projProps.put(PROJ_PREF.DB_USER, storeDB.getDbuser());
             projProps.put(PROJ_PREF.DB_HOST, storeDB.getDbhost());
@@ -393,7 +393,10 @@ public abstract class DiffPresentationPane extends Composite {
         dbsProj = DbSource.fromProject(proj);
         DbInfo storeDB = storePicker.getDbInfo();
         if (storeDB == null) {
-            String dumpfile = storePicker.getSelectedName();
+            String dumpfile = storePicker.getPathOfFile();
+            if (dumpfile == null){
+                return false;
+            }
             File dump = new File(dumpfile);
             if (!dump.isFile()) {
                 MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);

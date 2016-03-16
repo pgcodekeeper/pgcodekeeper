@@ -1,11 +1,13 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.eclipse.core.runtime.Path;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -136,16 +138,20 @@ public class DbInfo {
         return sb.toString();
     }
     
-    public static List<String> getDumpFileHistory(String prefs){
+    public static List<Path> getDumpFileHistory(String prefs){
         String[] coordStrings = prefs.split(
                 Pattern.quote(String.valueOf(DELIM_ENTRY)));
-        return Arrays.asList(coordStrings);
+        List<Path> paths = new LinkedList<>();
+        for (String path : coordStrings){
+            paths.add(new Path(path));
+        }
+        return paths;
     }
     
-    public static String dump2String(List<String> dumps){
+    public static String dump2String(List<Path> dumps){
         StringBuffer sb = new StringBuffer();
-        for (String str : dumps){
-            sb.append(str);
+        for (Path path : dumps){
+            sb.append(path.toOSString());
             sb.append(DELIM_ENTRY);
         }
         sb.delete(sb.length()-1, sb.length());

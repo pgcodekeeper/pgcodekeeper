@@ -1,10 +1,10 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -46,10 +46,9 @@ public class DbStorePicker extends Group {
     private ComboViewer cmbDbNames2;
     private Combo cmbDbNames;
     private LocalResourceManager lrm;
-    private DbInfo dbinfo;
     private boolean isLoad;
     
-    private List<String> dumpFileHistory;
+    private List<Path> dumpFileHistory;
 
     private DbStoreChangeListener dbStoreChangeListener = new DbStoreChangeListener();
     
@@ -97,14 +96,15 @@ public class DbStorePicker extends Group {
             
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                if ("Загрузить из файла...".equals((String)cmbDbNames2.getStructuredSelection().getFirstElement())){
+                Object selected = cmbDbNames2.getStructuredSelection().getFirstElement();
+                if ((selected instanceof String) && "Загрузить из файла...".equals((String)selected)){
                     FileDialog fDialog = new FileDialog(getShell());
                     String pathToDump = fDialog.open();
                     if (pathToDump != null){
                         if (dumpFileHistory.size() == 3) {
                             dumpFileHistory.remove(0);
                         }
-                        dumpFileHistory.add(pathToDump);
+                        dumpFileHistory.add(new Path(pathToDump));
                         prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
                     }
                     cmbDbNames.select(cmbDbNames.getItemCount()-1);
@@ -132,29 +132,33 @@ public class DbStorePicker extends Group {
 
     private void loadStore() {
         store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
-
-        cmbDbNames2.setInput(store.keySet().toArray(new String[store.size()]));
+        List<Object> list = new LinkedList<>(store.values());
         if (isLoad){
-            cmbDbNames2.add("Загрузить из файла...");
-            for (String str : dumpFileHistory){
-                if (str != null && !str.isEmpty()){
-                    cmbDbNames2.add(str);
-                }
-            }
+            list.add("");
+            list.add("Загрузить из файла...");
+            list.addAll(dumpFileHistory);
         }
+        cmbDbNames2.setInput(list);
     }
 
     public DbInfo getDbInfo() {
-        String selectedName = cmbDbNames.getText();
-
-        if(!selectedName.isEmpty()) {
-            dbinfo = store.get(selectedName);
+        Object obj = cmbDbNames2.getStructuredSelection().getFirstElement();
+        if (obj instanceof DbInfo){
+            return (DbInfo) obj;
+        } else {
+            return null;
         }
-        return dbinfo;
     }
 
     public String getSelectedName (){
         return (String)cmbDbNames2.getStructuredSelection().getFirstElement();
+    }
+    
+    public String getPathOfFile(){
+        Object path = cmbDbNames2.getStructuredSelection().getFirstElement();
+        if (path instanceof Path){
+            return ((Path)path).toOSString();
+        } else return null;
     }
 
     public void clearSelection(){
@@ -199,14 +203,14 @@ public class DbStorePicker extends Group {
     private class DbStoreLabelProvider extends LabelProvider{
         @Override
         public String getText(Object element) {
-            File file = new File((String)element);
-            if (file.isFile()){
-                StringBuffer sb = new StringBuffer();
-                sb.append(file.getName()).append(" (").append((String)element).append(")");
-                return sb.toString();
+            if (element instanceof DbInfo){
+                return ((DbInfo)element).getName();
+            }
+            
+            if (element instanceof Path){
+                return ((Path)element).lastSegment();
             }
             return super.getText(element);
         }
-        
     }
 }
