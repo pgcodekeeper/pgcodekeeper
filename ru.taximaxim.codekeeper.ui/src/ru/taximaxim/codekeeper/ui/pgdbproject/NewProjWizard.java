@@ -14,6 +14,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -295,7 +296,7 @@ class PageDb extends WizardPage implements Listener {
     @Override
     public void createControl(final Composite parent) {
         container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
+        container.setLayout(new FillLayout(SWT.HORIZONTAL));
         
         storePicker = new DbStorePicker(container, SWT.NONE, false, mainPrefs, true);
         storePicker.addListenerToCombo(SWT.Selection, this);
