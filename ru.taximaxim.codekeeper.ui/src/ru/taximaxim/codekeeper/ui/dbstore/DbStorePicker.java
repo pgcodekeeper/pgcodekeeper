@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -167,6 +168,10 @@ public class DbStorePicker extends Group {
 
     public void addListenerToCombo(SelectionListener listener) {
         cmbDbNames.addSelectionListener(listener);
+    }
+    
+    public void addListenerToCombo(int eventType, Listener listener){
+        cmbDbNames.addListener(eventType, listener);
     }
 
     public void removeListenerToCombo(SelectionListener listener) {

@@ -1156,7 +1156,6 @@ public class JdbcLoader implements PgCatalogStrings {
         currentObject = new GenericColumn(schemaName, tableName, indexName);
         PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
-
         String definition = res.getString("definition");
         i.setDefinition(definition.substring(definition.indexOf("USING ")));
         i.setClusterIndex(res.getBoolean("isClustered"));
