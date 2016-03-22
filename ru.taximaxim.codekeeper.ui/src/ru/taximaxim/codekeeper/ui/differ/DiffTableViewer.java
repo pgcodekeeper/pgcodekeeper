@@ -659,19 +659,19 @@ public class DiffTableViewer extends Composite {
             switch (sorts.get(i).col) {
              
             case CHECK:
-                viewer.getTable().getColumn(0).setText(String.format("%s%d", arrow, i+1));
+                viewer.getTable().getColumn(0).setText(String.format("%d%s", i+1, arrow));
                 break;
             case TYPE:
-                columnType.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_object_type));
+                columnType.getColumn().setText(String.format("%d%s\t%s", i+1, arrow, Messages.diffTableViewer_object_type));
                 break;
             case CHANGE:
-                columnChange.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_change_type));
+                columnChange.getColumn().setText(String.format("%d%s\t%s", i+1, arrow, Messages.diffTableViewer_change_type));
                 break;
             case NAME:
-                columnName.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_object_name));
+                columnName.getColumn().setText(String.format("%d%s\t%s", i+1, arrow, Messages.diffTableViewer_object_name));
                 break;  
             case LOCATION:
-                columnLocation.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_container));
+                columnLocation.getColumn().setText(String.format("%d%s\t%s", i+1, arrow, Messages.diffTableViewer_container));
                 break;                        
             default:
                 break;
