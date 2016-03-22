@@ -224,6 +224,7 @@
       <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
+            filenames="codekeepereditor"
             icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
             name="%editor.name.keeperProjectEditor">
@@ -531,17 +532,71 @@
           </selectionEnablement>
        </linkHelper>
     </extension>
+    
+    <extension
+         id="navigator-content"
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="ru.taximaxim.codekeeper.ui.editors.ProjectEditorContentProvider"
+            icon="icons/app_icon16.png"
+            id="ru.taximaxim.codekeeper.ui.editors.myResourceContent"
+            labelProvider="ru.taximaxim.codekeeper.ui.editors.ProjectEditorLabelProvider"
+            name="Codekeeper editor navigator content"
+            priority="high">
+         <triggerPoints>
+            <or>
+               <and>
+                  <test
+                  	property="org.eclipse.core.resources.projectNature"
+                    value="ru.taximaxim.codekeeper.ui.nature">
+                  </test>
+                  <adapt
+                    type="org.eclipse.core.resources.IProject">
+                  </adapt>
+               </and>
+            </or>
+         </triggerPoints>
+         </navigatorContent>
+         <actionProvider
+             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorActionProvider"
+             id="ru.taximaxim.codekeeper.ui.editors.myActionProvider"> 
+            <enablement>
+               <or>
+               <and>
+                  <test
+                  	property="org.eclipse.core.resources.name"
+                    value="codekeepereditor">
+               </test>
+               </and>
+            </or>
+          </enablement>
+   	  </actionProvider>
+   </extension>
+    
     <extension
           point="org.eclipse.ui.navigator.viewer">
        <viewerContentBinding
-             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         viewerId="org.eclipse.ui.navigator.ProjectExplorer">
           <includes>
              <contentExtension
                    pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.codekeeperlinkHelper">
              </contentExtension>
+             <contentExtension
+                   pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.myResourceContent">
+             </contentExtension>
           </includes>
        </viewerContentBinding>
+       <viewerActionBinding
+             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+             <includes>
+             <actionExtension
+                   pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.myActionProvider">
+             </actionExtension>
+          </includes>
+       </viewerActionBinding>
     </extension>
+    
     <extension
           point="org.eclipse.ui.console.consolePageParticipants">
        <consolePageParticipant
@@ -553,5 +608,14 @@
              </instanceof>
           </enablement>
        </consolePageParticipant>
+    </extension>
+    <extension
+          point="org.eclipse.ui.bindings">
+       <key
+             commandId="ru.taximaxim.codekeeper.ui.openeditor"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="Ctrl+Shift+G">
+       </key>
     </extension>
 </plugin>

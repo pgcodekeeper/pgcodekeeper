@@ -128,7 +128,7 @@ public class DiffTableViewer extends Composite {
     private Button useRegEx;
     private final CheckboxTableViewer viewer;
     private final TableViewerFilter viewerFilter = new TableViewerFilter();
-    private TableViewerColumn columnType, columnChange, columnName, columnLocation;
+    private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
     private Label lblObjectCount;
     private Label lblCheckedCount;
     private ComboViewer cmbPrevChecked;
@@ -283,6 +283,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 comparator.clearSortList();
+                setColumnHeaders();
                 sortViewer(columnName.getColumn(), Columns.NAME);
                 viewer.refresh();
             }
@@ -506,10 +507,9 @@ public class DiffTableViewer extends Composite {
     }
 
     private void initColumns() {
-        TableViewerColumn columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
+        columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
 
         columnCheck.getColumn().setResizable(true);
-        columnCheck.getColumn().setText(" "); //$NON-NLS-1$
         columnCheck.getColumn().setMoveable(true);
 
         columnCheck.getColumn().addSelectionListener(
@@ -529,22 +529,20 @@ public class DiffTableViewer extends Composite {
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TableViewerColumn(viewer, SWT.LEFT);
 
-        columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
 
-        columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnType.getColumn().setResizable(true);
         columnType.getColumn().setMoveable(true);
 
-        columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnChange.getColumn().setResizable(true);
         columnChange.getColumn().setMoveable(true);
 
-        columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnLocation.getColumn().setResizable(true);
         columnLocation.getColumn().setMoveable(true);
 
+        setColumnHeaders();
+        
         columnName.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnName.getColumn(), Columns.NAME));
         columnType.getColumn().addSelectionListener(
@@ -616,6 +614,14 @@ public class DiffTableViewer extends Composite {
             }
         });
     }
+    
+    private void setColumnHeaders(){
+        columnCheck.getColumn().setText(" "); //$NON-NLS-1$
+        columnName.getColumn().setText(Messages.diffTableViewer_object_name);
+        columnType.getColumn().setText(Messages.diffTableViewer_object_type);
+        columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
+        columnLocation.getColumn().setText(Messages.diffTableViewer_container);
+    }
 
     private void updateColumnsWidth(){
         PixelConverter pc = new PixelConverter(viewer.getControl());
@@ -639,7 +645,6 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sortViewer(column, index);
-                viewer.refresh();
             }
         };
         return selectionAdapter;
@@ -647,9 +652,32 @@ public class DiffTableViewer extends Composite {
 
     private void sortViewer(final TableColumn column, final Columns index) {
         comparator.addSort(index);
-
-        viewer.getTable().setSortDirection(comparator.getSwtDirection());
-        viewer.getTable().setSortColumn(column);
+        List<ru.taximaxim.codekeeper.ui.differ.DiffTableViewer.TableViewerComparator.SortingColumn> sorts = 
+                comparator.getSortOrder();
+        for (int i=0; i<sorts.size(); i++){
+            String arrow = sorts.get(i).desc == false ? "\u25BF" : "\u25B5";
+            switch (sorts.get(i).col) {
+             
+            case CHECK:
+                viewer.getTable().getColumn(0).setText(String.format("%s%d", arrow, i+1));
+                break;
+            case TYPE:
+                columnType.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_object_type));
+                break;
+            case CHANGE:
+                columnChange.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_change_type));
+                break;
+            case NAME:
+                columnName.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_object_name));
+                break;  
+            case LOCATION:
+                columnLocation.getColumn().setText(String.format("%s%d\t%s", arrow, i+1, Messages.diffTableViewer_container));
+                break;                        
+            default:
+                break;
+            }
+        }
+        viewer.refresh();
     }
 
     /**
@@ -955,11 +983,16 @@ public class DiffTableViewer extends Composite {
         }
 
         private final LinkedList<SortingColumn> sortOrder = new LinkedList<>();
+        
+        public List<SortingColumn> getSortOrder(){
+            return sortOrder;
+        }
 
         public void clearSortList() {
             sortOrder.clear();
         }
 
+        @SuppressWarnings("unused")
         public int getSwtDirection() {
             if (sortOrder.isEmpty() || !sortOrder.getLast().desc) {
                 return SWT.UP;

@@ -304,6 +304,7 @@ public final class Messages extends NLS {
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
+    public static String NewProjWizard_error_creating_codekeepereditor_file;
     public static String NewProjWizard_error_saving_projprefs;
 
     public static String NewProjWizard_create_project;

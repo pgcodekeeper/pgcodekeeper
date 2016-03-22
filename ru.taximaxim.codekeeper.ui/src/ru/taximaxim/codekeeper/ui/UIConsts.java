@@ -142,6 +142,9 @@ public interface UIConsts {
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
         String ICONSAVECLIPBOARD = "/icons/save_clipboard.png"; //$NON-NLS-1$
+        String ICONSORTUP = "/icons/arrow_sort_up_%d.png"; //$NON-NLS-1$
+        String ICONSORTDOWN = "/icons/arrow_sort_down_%d.png"; //$NON-NLS-1$
+        String CODEKEEPEREDITOR = "codekeepereditor"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{
