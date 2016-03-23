@@ -175,10 +175,10 @@ public class DiffTableViewer extends Composite {
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
-
+        
         Composite filterComp = new Composite(this, SWT.NONE);
         filterComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout filterLayout = new GridLayout(2, false);
+        GridLayout filterLayout = new GridLayout(4, false);
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         filterComp.setLayout(filterLayout);
 
@@ -195,7 +195,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        useRegEx = new Button(filterComp, SWT.CHECK);
+        useRegEx = new Button(filterComp, SWT.TOGGLE);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
         useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
         useRegEx.addSelectionListener(new SelectionAdapter() {
@@ -263,31 +263,14 @@ public class DiffTableViewer extends Composite {
         initColumns();
 
         viewer.setContentProvider(new ArrayContentProvider());
-
-        Composite contButtons = new Composite(this, SWT.NONE);
+        
+        new Label(filterComp, SWT.NONE).setText("|");
+        
+        Composite contButtons = new Composite(filterComp, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 10, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 11, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
-
-        Button btnClearSort = new Button(contButtons, SWT.PUSH);
-        if (viewOnly) {
-            btnClearSort.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, true, false));
-        }
-        btnClearSort.setToolTipText(Messages.diffTableViewer_reset_sorting);
-        btnClearSort.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONDEFAULTSORT))));
-        btnClearSort.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                comparator.clearSortList();
-                setColumnHeaders();
-                sortViewer(columnName.getColumn(), Columns.NAME);
-                viewer.refresh();
-            }
-        });
 
         if (!viewOnly) {
             Button btnSelectAll = new Button(contButtons, SWT.PUSH);
@@ -352,6 +335,7 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.setContentProvider(new ArrayContentProvider());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             cmbPrevChecked.setInput(prevChecked.keySet());
+            cmbPrevChecked.getCombo().setBackground(parent.getBackground());
             cmbPrevChecked.addSelectionChangedListener(new ISelectionChangedListener() {
 
                 @Override
@@ -398,13 +382,17 @@ public class DiffTableViewer extends Composite {
                     saveCheckedElements2ClipboardAsExpession();
                 }
             });
+            
+            new Label(contButtons, SWT.NONE).setText("|");
 
-            lblCheckedCount = new Label(contButtons, SWT.RIGHT);
-            lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+            lblCheckedCount = new Label(contButtons, SWT.LEFT);
+            lblCheckedCount.setLayoutData(new GridData());// (SWT.DEFAULT, SWT.DEFAULT, true, false));
+        } else {
+            new Label(contButtons, SWT.NONE).setText("|");
         }
 
-        lblObjectCount = new Label(contButtons, SWT.RIGHT);
-        lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
+        lblObjectCount = new Label(contButtons, SWT.LEFT);
+        lblObjectCount.setLayoutData(new GridData());// (SWT.DEFAULT, SWT.DEFAULT, true, false));
 
         mainPrefs.addPropertyChangeListener(ignoresListener);
         viewer.getTable().addDisposeListener(new DisposeListener() {
@@ -508,7 +496,6 @@ public class DiffTableViewer extends Composite {
 
     private void initColumns() {
         columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
-
         columnCheck.getColumn().setResizable(true);
         columnCheck.getColumn().setMoveable(true);
 
@@ -644,6 +631,10 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if ((e.stateMask & SWT.CTRL) != 0){
+                    comparator.clearSortList();
+                    setColumnHeaders();
+                }
                 sortViewer(column, index);
             }
         };
