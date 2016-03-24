@@ -133,7 +133,7 @@ public class DbStorePicker extends Group {
 
     private void loadStore() {
         store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
-        List<Object> list = new LinkedList<>(store.values());
+        LinkedList<Object> list = new LinkedList<>(store.values());
         if (isLoad){
             list.add("");
             list.add("Загрузить из файла...");
