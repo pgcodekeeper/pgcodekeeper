@@ -19,8 +19,8 @@
 parser grammar SQLParser;
 
 options {
-	language=Java;
-	tokenVocab=SQLLexer;
+    language=Java;
+    tokenVocab=SQLLexer;
 }
 
 @header {
@@ -47,7 +47,7 @@ statement
   ;
 
 data_statement
-  : query_expression 
+  : select_stmt
   | copy_statement
   ;
 
@@ -63,8 +63,8 @@ data_statement
   ;
 
 copy_statement
-    : COPY (table_name=schema_qualified_name column_references? 
-           | ( query=query_expression ))
+    : COPY (table_name=schema_qualified_name column_references?
+           | ( query=select_stmt ))
         (FROM | TO) (filename=identifier | STDIN)
         (WITH? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
     ;
@@ -89,10 +89,10 @@ schema_statement
     | schema_alter
     | schema_drop
   ;
-  
+
 schema_create
     : CREATE (create_table_statement
-    | index_statement
+    | create_index_statement
     | create_extension_statement
     | create_trigger_statement
     | create_rewrite_statement
@@ -109,7 +109,7 @@ schema_create
     | rule_common
     | set_statement
     ;
-    
+
 schema_alter
     : ALTER (alter_function_statement
     | alter_schema_statement
@@ -123,19 +123,19 @@ schema_alter
     ;
 
 schema_drop
-    : DROP (drop_function_statement 
-    | drop_trigger_statement 
+    : DROP (drop_function_statement
+    | drop_trigger_statement
     | drop_statements)
     ;
-    
+
 alter_function_statement
-    : FUNCTION function_parameters 
+    : FUNCTION function_parameters
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
     | set_schema)
     ;
-    
+
 alter_schema_statement
     : schema_with_name (rename_to | owner_to)
     ;
@@ -155,11 +155,11 @@ alter_table_statement
 table_action
     : ADD COLUMN? table_column_definition
     | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name cascade_restrict?
-    | ALTER COLUMN? column=schema_qualified_name 
+    | ALTER COLUMN? column=schema_qualified_name
       ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=value_expression)?
       | (set_def_column
         | drop_def
-        | ((SET | DROP) NOT NULL) 
+        | ((SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
         | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
@@ -168,17 +168,17 @@ table_action
     | validate_constraint
     | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
-    | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
-    | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
-    | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name 
-    | CLUSTER ON index_name=schema_qualified_name 
+    | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
+    | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
+    | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
+    | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET storage_parameter
     | RESET LEFT_PAREN with_storage_parameter (COMMA with_storage_parameter)* RIGHT_PAREN
-    | INHERIT parent_table=schema_qualified_name 
-    | NO INHERIT parent_table=schema_qualified_name 
-    | OF type_name=schema_qualified_name 
+    | INHERIT parent_table=schema_qualified_name
+    | NO INHERIT parent_table=schema_qualified_name
+    | OF type_name=schema_qualified_name
     | NOT OF
     | owner_to
     | SET table_space
@@ -246,7 +246,7 @@ grant_option_for
     ;
 
 alter_sequence_statement
-    : SEQUENCE (IF EXISTS)? name=schema_qualified_name 
+    : SEQUENCE (IF EXISTS)? name=schema_qualified_name
      ( (sequence_body | RESTART (WITH? restart=identifier)?)*
     | set_schema
     | owner_to
@@ -254,7 +254,7 @@ alter_sequence_statement
     ;
 
 alter_view_statement
-    : VIEW (IF EXISTS)? name=schema_qualified_name 
+    : VIEW (IF EXISTS)? name=schema_qualified_name
      (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
     | owner_to
@@ -264,9 +264,9 @@ alter_view_statement
     ;
 
 alter_type_statement
-    : TYPE name=schema_qualified_name 
-      (set_schema 
-      | owner_to 
+    : TYPE name=schema_qualified_name
+      (set_schema
+      | owner_to
       | rename_to
       | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
@@ -288,7 +288,7 @@ alter_domain_statement
     ;
 
 type_action
-    :ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
+    : ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
     | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
     | ALTER ATTRIBUTE attribute_name=identifier (SET DATA)? TYPE data_type collate_identifier? cascade_restrict?
     ;
@@ -301,21 +301,22 @@ drop_def
     : DROP DEFAULT
     ;
 
-index_statement
-  : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name 
-    using_def
-  ;
-using_def
-    :(USING method=schema_qualified_name)?
-    (LEFT_PAREN sort_specifier_list RIGHT_PAREN)? param_clause?
-    table_space? where_clause?
+create_index_statement
+    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name
+        index_rest
     ;
-  
+
+index_rest
+    : (USING method=identifier)?
+      LEFT_PAREN sort_specifier_list RIGHT_PAREN
+      param_clause? table_space? (WHERE value_expression)?
+    ;
+
  create_extension_statement
     : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name WITH?
          schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
     ;
-    
+
 create_language_statement
     : (OR REPLACE)? TRUSTED? PROCEDURAL? LANGUAGE name=identifier
         (HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?)?
@@ -323,9 +324,9 @@ create_language_statement
 
 create_event_trigger
     : EVENT TRIGGER name=schema_qualified_name ON event=schema_qualified_name
-        (WHEN filter_variable=schema_qualified_name (IN 
-            LEFT_PAREN 
-                filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)* 
+        (WHEN filter_variable=schema_qualified_name (IN
+            LEFT_PAREN
+                filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
             RIGHT_PAREN AND?)+ )?
         EXECUTE PROCEDURE funct_name=value_expression
     ;
@@ -334,12 +335,12 @@ create_type_statement
     :TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
         | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
-        | RANGE LEFT_PAREN 
+        | RANGE LEFT_PAREN
                 (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
                 | CANONICAL EQUAL canonical_function=schema_qualified_name
-                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)? 
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)?
                 (COMMA (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
                 | COLLATION EQUAL collation=schema_qualified_name
@@ -369,7 +370,7 @@ create_type_statement
     ;
 
 create_domain_statement
-    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type 
+    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type
       (collate_identifier
       | DEFAULT def_value=value_expression
       | dom_constraint+=domain_constraint)*
@@ -381,67 +382,44 @@ domain_constraint
     ;
 
 set_statement
-    : SET (SESSION | LOCAL)? 
-      (set_clause (COMMA set_clause)*
-    | config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
-    | TIME ZONE (timezone=identifier | (LOCAL | DEFAULT))(COMMA (timezone=identifier | (LOCAL | DEFAULT)))*)
+    : SET (SESSION | LOCAL)?
+    (config_param=identifier (TO | EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
+    | TIME ZONE (timezone=identifier | (LOCAL | DEFAULT)))
     ;
 
 set_statement_value
-    : value= PLUS | value_expression | DEFAULT
+    : value_expression | DEFAULT
     ;
-
-
-    /*
-    ===============================================================================
-      CREATE REWRITE (RULE) statement
-    ===============================================================================
-    */
 
 create_rewrite_statement
-/*    : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=event_rewrite
-    TO table_name=schema_qualified_name where_rewrite? DO do_rewrite?
-    command=command_rewrite
-    ;*/
     : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
-            TO table_name=schema_qualified_name where_clause? DO (ALSO | INSTEAD)?
-            command=command_rewrite2
+     TO table_name=schema_qualified_name (WHERE value_expression)? DO (ALSO | INSTEAD)?
+     (NOTHING | commands+=rewrite_command | (LEFT_PAREN commands+=rewrite_command (SEMI_COLON commands+=rewrite_command)* RIGHT_PAREN) )
     ;
-    
-event_rewrite
-	: SELECT | INSERT | DELETE | UPDATE
-	;
-	
-do_rewrite
-	: ALSO | INSTEAD
-	;
-    
-where_rewrite
-    :WHERE where_expr=value_expression
-    ;
-    
-command_rewrite
-	: query_expression
-	| insert_statement
-	;
 
-   //=========================================================================================
+rewrite_command
+    : select_stmt
+    | insert_stmt_for_psql
+    | update_stmt_for_psql
+    | delete_stmt_for_psql
+    | notify_stmt
+    ;
 
 create_trigger_statement
     : CONSTRAINT? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
-    ON tabl_name=schema_qualified_name 
+    ON tabl_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE PROCEDURE func_name=function_parameters
     ;
-    
+
 when_trigger
     :WHEN when_expr=value_expression
     ;
-    
+
 rule_common
     : (GRANT | REVOKE grant_opt_for=grant_option_for?)
       body_rule=body_rules
@@ -460,18 +438,18 @@ body_rules
     | on_domain)
     body_rules_rest
     ;
-    
+
 body_rules_rest
     :(grant_to_rule | revoke_from_cascade_restrict)
     | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
     | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
       cascade_restrict?
     ;
-    
+
 grant_to_rule
     : TO roles_names (WITH GRANT OPTION)?
     ;
-    
+
 revoke_from_cascade_restrict
     : FROM roles_names cascade_restrict?
     ;
@@ -504,20 +482,20 @@ on_datawrapper_server_lang
     ;
 
 on_function
-    : (EXECUTE | ALL PRIVILEGES?) 
+    : (EXECUTE | ALL PRIVILEGES?)
         ON (FUNCTION obj_name+=function_parameters (COMMA obj_name+=function_parameters)*
            | ALL FUNCTIONS IN SCHEMA schema_name=names_references)
     ;
 
 on_large_object
-    : ((SELECT | UPDATE COMMA?)+  | ALL PRIVILEGES?) 
+    : ((SELECT | UPDATE COMMA?)+  | ALL PRIVILEGES?)
         ON LARGE OBJECT obj_name=names_references
     ;
 on_schema
-    : (((CREATE | USAGE) COMMA?)+ | ALL PRIVILEGES?) 
+    : (((CREATE | USAGE) COMMA?)+ | ALL PRIVILEGES?)
         ON SCHEMA obj_name=names_references
     ;
-    
+
 on_tablespace
     : (CREATE | ALL PRIVILEGES?)
         ON TABLESPACE obj_name=names_references
@@ -525,7 +503,7 @@ on_tablespace
 
 on_type
     : (USAGE | ALL PRIVILEGES?)
-        ON TYPE obj_name=names_references 
+        ON TYPE obj_name=names_references
     ;
 
 on_domain
@@ -534,23 +512,23 @@ on_domain
     ;
 
 roles_names
-    :(GROUP? role_name+=identifier | PUBLIC)(COMMA (GROUP? role_name+=identifier | PUBLIC))*
+    :(GROUP? role_name+=identifier)(COMMA (GROUP? role_name+=identifier))*
     ;
-    
+
 comment_on_statement
     : COMMENT ON(
-        AGGREGATE name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
-        | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN 
+        AGGREGATE name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN
+        | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN
         | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
         | FUNCTION name=schema_qualified_name function_args
-        | OPERATOR name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
+        | OPERATOR name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN
         | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
-        | PROCEDURAL? LANGUAGE 
-        | LARGE OBJECT 
+        | PROCEDURAL? LANGUAGE
+        | LARGE OBJECT
         | FOREIGN (DATA WRAPPER | TABLE)
-        | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE 
-            | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE 
+        | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE
+            | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE
             | TYPE | VIEW)
           ) name=schema_qualified_name
         ) IS (comment_text=Character_String_Literal | NULL)
@@ -563,7 +541,7 @@ comment_on_statement
 */
 create_function_statement
     : (OR REPLACE)? FUNCTION function_parameters
-        (RETURNS (rettype=value_expression_primary_cast | rettype_data=data_type | ret_table=function_ret_table))?
+        (RETURNS (rettype_data=data_type | ret_table=function_ret_table))?
           funct_body=create_funct_params
     ;
 
@@ -597,7 +575,7 @@ function_body
     ;
 
 function_arguments
-    :arg_mode=argmode? argname=identifier? (argtype_data=data_type | argtype_expres=value_expression_primary_cast) function_def_value?
+    :arg_mode=argmode? argname=identifier? argtype_data=data_type function_def_value?
     ;
 
 function_def_value
@@ -607,38 +585,46 @@ function_def_value
 function_attribute
     : ISSTRICT | ISCACHABLE
     ;
-        
+
 argmode
     : IN | OUT | INOUT | VARIADIC
     ;
-    
+
 create_sequence_statement
     : (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
     : INCREMENT BY? incr=signed_numerical_literal
-        | (MINVALUE minval=signed_numerical_literal | NO MINVALUE) 
+        | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
         | START WITH? start_val=signed_numerical_literal
         | CACHE cache_val=signed_numerical_literal
         | cycle_true=NO? cycle_val=CYCLE
         | OWNED BY (col_name=schema_qualified_name | NONE)
     ;
-    
+
+signed_numerical_literal
+  : sign? unsigned_numeric_literal
+  ;
+
+sign
+  : PLUS | MINUS
+  ;
+
 create_schema_statement
     : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? (schema_element+=statement)*
     ;
-    
+
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name column_name=column_references?
         (WITH LEFT_PAREN (view_option_name+=identifier (EQUAL view_option_value+=identifier)?)+ RIGHT_PAREN)?
-        AS v_query=query_expression
+        AS v_query=select_stmt
     ;
-    
+
 create_table_statement
-  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name 
-        (OF type_name=identifier)? 
+  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name
+        (OF type_name=identifier)?
         LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
         (INHERITS parent_table= column_references)?
         storage_parameter_oid?
@@ -655,11 +641,11 @@ table_column_def
 table_column_definition
     : column_name=identifier datatype=data_type? collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
     ;
-    
+
 with_options
     : WITH OPTIONS
     ;
-    
+
 like_option
     : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
     ;
@@ -672,9 +658,9 @@ constraint_common
     ;
 
 constr_body
-    :((EXCLUDE (USING index_method=identifier)? 
-            LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN 
-            index_parameters where_clause?) 
+    :((EXCLUDE (USING index_method=identifier)?
+            LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN
+            index_parameters (WHERE value_expression)?)
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
        | table_unique_prkey
@@ -682,17 +668,17 @@ constr_body
       )
       table_deferrable? table_initialy_immed?
     ;
-    
+
 table_unique_prkey
     : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
     ;
-    
+
 index_parameters
     : with_storage_parameter? (USING INDEX (table_space | schema_qualified_name))?
     ;
 
 common_constraint
-    :check_boolean_expression 
+    :check_boolean_expression
     | null_false=NOT? null_value=NULL
     ;
 
@@ -705,7 +691,7 @@ column_references
     :LEFT_PAREN names_references RIGHT_PAREN
     ;
 names_references
-    : name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
+    : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
     ;
 
 match_all
@@ -715,18 +701,18 @@ match_all
 check_boolean_expression
     : CHECK LEFT_PAREN expression=value_expression RIGHT_PAREN
     ;
-    
+
 storage_parameter
     : LEFT_PAREN
         storage_param=schema_qualified_name (EQUAL value=value_expression)?
         (COMMA storage_param=schema_qualified_name (EQUAL value=value_expression)?)*
-      RIGHT_PAREN 
+      RIGHT_PAREN
     ;
-    
+
 with_storage_parameter
     : WITH storage_parameter
     ;
-    
+
 storage_parameter_oid
     : with_storage_parameter | (WITH OIDS) | (WITHOUT OIDS)
     ;
@@ -734,19 +720,15 @@ storage_parameter_oid
 on_commit
     : ON COMMIT ((PRESERVE ROWS) | (DELETE ROWS) | DROP)
     ;
-    
+
 table_space
-    :TABLESPACE name=schema_qualified_name
+    : TABLESPACE name=schema_qualified_name
     ;
-    
+
 action
     : cascade_restrict
       | SET (NULL | DEFAULT)
     ;
-    
-table_elements
-  : LEFT_PAREN field_element (COMMA field_element)* RIGHT_PAREN
-  ;
 
 owner_to
     : OWNER TO name=identifier
@@ -775,20 +757,16 @@ create_connect_temporary_temp
     :CREATE | CONNECT | TEMPORARY | TEMP
     ;
 
-field_element
-  : name=identifier data_type
-  ;
-
 param_clause
   : WITH LEFT_PAREN param (COMMA param)* RIGHT_PAREN
   ;
 
 param
-  : key=identifier EQUAL value=numeric_value_expression
+  : key=identifier EQUAL value=value_expression
   ;
 
 partition_by_columns
-    : PARTITION BY numeric_primary (COMMA numeric_primary)*
+    : PARTITION BY value_expression (COMMA value_expression)*
     ;
 
 cascade_restrict
@@ -828,272 +806,423 @@ if_exist_names_restrict_cascade
 ===============================================================================
 */
 
+/*
+  old rule for default old identifier behavior
+  includes types
+*/
 identifier
-  : (Identifier
-  | QuotedIdentifier)
-  | DOUBLE_QUOTE? valid_identifier_tokens DOUBLE_QUOTE? 
+  : (Identifier | QuotedIdentifier)
+  | tokens_nonreserved
+  | tokens_nonreserved_types
+  | tokens_nonreserved_except_function_type
   ;
 
-/*
-  Tokens that can be used as identifiers.
-  Keywords of type "reserved (can be function of type)" are considered invalid identifiers (for now at least).
-*/
-valid_identifier_tokens
+identifier_nontype
+  : (Identifier | QuotedIdentifier)
+  | tokens_nonreserved;
+
+tokens_nonreserved
   : ABORT
+//  | A
+//  | ABS
+//  | ABSENT
   | ABSOLUTE
   | ACCESS
+//  | ACCORDING
   | ACTION
+//  | ADA
   | ADD
   | ADMIN
   | AFTER
   | AGGREGATE
   | ALIGNMENT
+//  | ALLOCATE
   | ALSO
   | ALTER
   | ALWAYS
+//  | ARE
+//  | ARRAY_AGG
+//  | ARRAY_MAX_CARDINALITY
+//  | ASENSITIVE
   | ASSERTION
   | ASSIGNMENT
   | AT
+//  | ATOMIC
   | ATTRIBUTE
-//  | AUTHORIZATION
+//  | ATTRIBUTES
   | AVG
   | BACKWARD
+//  | BASE64
   | BEFORE
   | BEGIN
-  | BETWEEN
-  | BIGINT
-//  | BINARY
-  | BIT
-  | BLOB
-  | BOOL
-  | BOOLEAN
+//  | BEGIN_FRAME
+//  | BEGIN_PARTITION
+//  | BERNOULLI
+//  | BIT_LENGTH
+//  | BLOCKED
+//  | BOM
+//  | BREADTH
   | BY
-  | BYTEA
+//  | C
   | CACHE
+//  | CALL
   | CALLED
   | CANONICAL
+//  | CARDINALITY
   | CASCADE
   | CASCADED
   | CATALOG
+//  | CATALOG_NAME
   | CATEGORY
+//  | CEIL
+//  | CEILING
   | CENTURY
   | CHAIN
-  | CHAR
-  | CHARACTER
   | CHARACTERISTICS
+//  | CHARACTERS
+//  | CHARACTER_LENGTH
+//  | CHARACTER_SET_CATALOG
+//  | CHARACTER_SET_NAME
+//  | CHARACTER_SET_SCHEMA
+//  | CHAR_LENGTH
   | CHECKPOINT
   | CLASS
+//  | CLASS_ORIGIN
+//  | CLOB
   | CLOSE
   | CLUSTER
-  | COALESCE
+//  | COBOL
   | COLLATABLE
-//  | COLLATION
+//  | COLLATION_CATALOG
+//  | COLLATION_NAME
+//  | COLLATION_SCHEMA
   | COLLECT
+//  | COLUMNS
+//  | COLUMN_NAME
+//  | COMMAND_FUNCTION
+//  | COMMAND_FUNCTION_CODE
   | COMMENT
   | COMMENTS
   | COMMIT
   | COMMITTED
-//  | CONCURRENTLY
+//  | CONDITION
+//  | CONDITION_NUMBER
   | CONFIGURATION
   | CONNECT
   | CONNECTION
+//  | CONNECTION_NAME
   | CONSTRAINTS
+//  | CONSTRAINT_CATALOG
+//  | CONSTRAINT_NAME
+//  | CONSTRAINT_SCHEMA
+//  | CONSTRUCTOR
+//  | CONTAINS
   | CONTENT
   | CONTINUE
+//  | CONTROL
   | CONVERSION
+//  | CONVERT
   | COPY
+//  | CORR
+//  | CORRESPONDING
   | COST
   | COUNT
-//  | CROSS
+//  | COVAR_POP
+//  | COVAR_SAMP
   | CSV
   | CUBE
+//  | CUME_DIST
   | CURRENT
-//  | CURRENT_SCHEMA
+//  | CURRENT_DEFAULT_TRANSFORM_GROUP
+//  | CURRENT_PATH
+//  | CURRENT_ROW
+//  | CURRENT_TRANSFORM_GROUP_FOR_TYPE
   | CURSOR
+//  | CURSOR_NAME
   | CYCLE
   | DATA
   | DATABASE
-  | DATE
+//  | DATALINK
+//  | DATETIME_INTERVAL_CODE
+//  | DATETIME_INTERVAL_PRECISION
   | DAY
+//  | DB
   | DEALLOCATE
-  | DEC
   | DECADE
-  | DECIMAL
   | DECLARE
   | DEFAULTS
   | DEFERRED
+//  | DEFINED
   | DEFINER
+//  | DEGREE
   | DELETE
   | DELIMITER
   | DELIMITERS
+//  | DENSE_RANK
+//  | DEPTH
+//  | DEREF
+//  | DERIVED
+//  | DESCRIBE
+//  | DESCRIPTOR
+//  | DETERMINISTIC
+//  | DIAGNOSTICS
   | DICTIONARY
   | DISABLE
   | DISCARD
+//  | DISCONNECT
+//  | DISPATCH
+//  | DLNEWCOPY
+//  | DLPREVIOUSCOPY
+//  | DLURLCOMPLETE
+//  | DLURLCOMPLETEONLY
+//  | DLURLCOMPLETEWRITE
+//  | DLURLPATH
+//  | DLURLPATHONLY
+//  | DLURLPATHWRITE
+//  | DLURLSCHEME
+//  | DLURLSERVER
+//  | DLVALUE
   | DOCUMENT
   | DOMAIN
-  | DOUBLE
   | DOW
   | DOY
   | DROP
+//  | DYNAMIC
+//  | DYNAMIC_FUNCTION
+//  | DYNAMIC_FUNCTION_CODE
   | EACH
   | ELEMENT
+//  | EMPTY
   | ENABLE
   | ENCODING
   | ENCRYPTED
   | END_EXEC
+//  | END_FRAME
+//  | END_PARTITION
+//  | ENFORCED
   | ENUM
   | EPOCH
+//  | EQUALS
   | ESCAPE
   | EVENT
   | EVERY
+//  | EXCEPTION
   | EXCLUDE
   | EXCLUDING
   | EXCLUSIVE
+//  | EXEC
   | EXECUTE
-  | EXISTS
+//  | EXP
   | EXPLAIN
+//  | EXPRESSION
   | EXTENDED
   | EXTENSION
   | EXTERNAL
-  | EXTRACT
   | FAMILY
+//  | FILE
   | FILTER
+//  | FINAL
   | FIRST
-  | FLOAT
-  | FLOAT4
-  | FLOAT8
+//  | FIRST_VALUE
+//  | FLAG
+//  | FLOOR
   | FOLLOWING
   | FORCE
   | FORCE_NOT_NULL
   | FORCE_QUOTE
   | FORMAT
+//  | FORTRAN
   | FORWARD
-//  | FREEZE
-//  | FULL
+//  | FOUND
+//  | FRAME_ROW
+//  | FREE
+//  | FS
   | FUNCTION
   | FUNCTIONS
   | FUSION
+//  | G
+//  | GENERAL
+//  | GENERATED
+//  | GET
   | GLOBAL
+//  | GO
+//  | GOTO
   | GRANTED
-  | GREATEST
+  | GROUPING
+//  | GROUPS
   | HANDLER
   | HEADER
+//  | HEX
+//  | HIERARCHY
   | HOLD
   | HOUR
+//  | ID
   | IDENTITY
   | IF
-//  | ILIKE
+//  | IGNORE
   | IMMEDIATE
+//  | IMMEDIATELY
   | IMMUTABLE
+//  | IMPLEMENTATION
   | IMPLICIT
+//  | IMPORT
   | INCLUDING
   | INCREMENT
+//  | INDENT
   | INDEX
   | INDEXES
-  | INET
-  | INET4
+//  | INDICATOR
   | INHERIT
   | INHERITS
   | INLINE
-//  | INNER
-  | INOUT
   | INPUT
   | INSENSITIVE
   | INSERT
+//  | INSTANCE
+//  | INSTANTIABLE
   | INSTEAD
-  | INT
-  | INT1
-  | INT2
-  | INT4
-  | INT8
-  | INTEGER
+//  | INTEGRITY
   | INTERNALLENGTH
   | INTERSECTION
-  | INTERVAL
   | INVOKER
-//  | IS
   | ISCACHABLE
-//  | ISNULL
   | ISODOW
   | ISOLATION
   | ISOYEAR
   | ISSTRICT
-//  | JOIN
+//  | K
   | KEY
+//  | KEY_MEMBER
+//  | KEY_TYPE
   | LABEL
+//  | LAG
   | LANGUAGE
   | LARGE
   | LAST
+//  | LAST_VALUE
   | LC_COLLATE
   | LC_CTYPE
+//  | LEAD
   | LEAKPROOF
-  | LEAST
-//  | LEFT
+//  | LENGTH
   | LEVEL
-//  | LIKE
+//  | LIBRARY
+//  | LIKE_REGEX
+//  | LINK
   | LISTEN
+//  | LN
   | LOAD
   | LOCAL
   | LOCATION
+//  | LOCATOR
   | LOCK
+//  | LOWER
+//  | M
   | MAIN
+//  | MAP
   | MAPPING
   | MATCH
+//  | MATCHED
   | MATERIALIZED
   | MAX
   | MAXVALUE
+//  | MAX_CARDINALITY
+//  | MEMBER
+//  | MERGE
+//  | MESSAGE_LENGTH
+//  | MESSAGE_OCTET_LENGTH
+//  | MESSAGE_TEXT
+//  | METHOD
   | MICROSECONDS
   | MILLENNIUM
   | MILLISECONDS
   | MIN
   | MINUTE
   | MINVALUE
+//  | MOD
   | MODE
+//  | MODIFIES
+//  | MODULE
   | MONTH
+//  | MORE
   | MOVE
-  | NAME
+//  | MULTISET
+//  | MUMPS
   | NAMES
-  | NATIONAL
-//  | NATURAL
-  | NCHAR
+//  | NAMESPACE
+//  | NCLOB
+//  | NESTING
+//  | NEW
   | NEXT
+//  | NFC
+//  | NFD
+//  | NFKC
+//  | NFKD
+//  | NIL
   | NO
-  | NONE
+//  | NORMALIZE
+//  | NORMALIZED
   | NOTHING
   | NOTIFY
-//  | NOTNULL
   | NOWAIT
-  | NULLIF
+//  | NTH_VALUE
+//  | NTILE
+//  | NULLABLE
   | NULLS
-  | NUMERIC
+//  | NUMBER
   | N_DISTINCT
   | N_DISTINCT_INHERITED
   | OBJECT
+//  | OCCURRENCES_REGEX
+//  | OCTETS
+//  | OCTET_LENGTH
   | OF
   | OFF
   | OIDS
+//  | OLD
+//  | OPEN
   | OPERATOR
   | OPTION
   | OPTIONS
-  | OUT
-//  | OUTER
+//  | ORDERING
+//  | ORDINALITY
+//  | OTHERS
   | OUTPUT
-//  | OVER
-//  | OVERLAPS
-  | OVERLAY
+//  | OVERRIDING
   | OWNED
   | OWNER
+//  | P
+//  | PAD
+//  | PARAMETER
+//  | PARAMETER_MODE
+//  | PARAMETER_NAME
+//  | PARAMETER_ORDINAL_POSITION
+//  | PARAMETER_SPECIFIC_CATALOG
+//  | PARAMETER_SPECIFIC_NAME
+//  | PARAMETER_SPECIFIC_SCHEMA
   | PARSER
   | PARTIAL
   | PARTITION
+//  | PASCAL
   | PASSEDBYVALUE
   | PASSING
+//  | PASSTHROUGH
   | PASSWORD
+//  | PATH
+//  | PERCENT
+//  | PERCENTILE_CONT
+//  | PERCENTILE_DISC
+//  | PERCENT_RANK
+//  | PERIOD
+//  | PERMISSION
   | PLAIN
   | PLANS
-  | POSITION
+//  | PLI
+//  | PORTION
+//  | POSITION_REGEX
+//  | POWER
+//  | PRECEDES
   | PRECEDING
-  | PRECISION
   | PREFERRED
   | PREPARE
   | PREPARED
@@ -1107,17 +1236,27 @@ valid_identifier_tokens
   | QUARTER
   | QUOTE
   | RANGE
+//  | RANK
   | READ
-  | REAL
+//  | READS
   | REASSIGN
   | RECEIVE
   | RECHECK
+//  | RECOVERY
   | RECURSIVE
   | REF
+//  | REFERENCING
   | REFRESH
-  | REGCLASS
-  | REGCONFIG
   | REGEXP
+//  | REGR_AVGX
+//  | REGR_AVGY
+//  | REGR_COUNT
+//  | REGR_INTERCEPT
+//  | REGR_R2
+//  | REGR_SLOPE
+//  | REGR_SXX
+//  | REGR_SXY
+//  | REGR_SYY
   | REINDEX
   | RELATIVE
   | RELEASE
@@ -1125,44 +1264,80 @@ valid_identifier_tokens
   | REPEATABLE
   | REPLACE
   | REPLICA
+//  | REQUIRING
   | RESET
+//  | RESPECT
   | RESTART
+//  | RESTORE
   | RESTRICT
+//  | RESULT
+//  | RETURN
+//  | RETURNED_CARDINALITY
+//  | RETURNED_LENGTH
+//  | RETURNED_OCTET_LENGTH
+//  | RETURNED_SQLSTATE
   | RETURNS
-  | RETURNING
   | REVOKE
-//  | RIGHT
   | RLIKE
   | ROLE
   | ROLLBACK
   | ROLLUP
-  | ROW
+//  | ROUTINE
+//  | ROUTINE_CATALOG
+//  | ROUTINE_NAME
+//  | ROUTINE_SCHEMA
   | ROWS
+//  | ROW_COUNT
+//  | ROW_NUMBER
   | RULE
   | SAVEPOINT
+//  | SCALE
   | SCHEMA
+//  | SCHEMA_NAME
+//  | SCOPE
+//  | SCOPE_CATALOG
+//  | SCOPE_NAME
+//  | SCOPE_SCHEMA
   | SCROLL
   | SEARCH
   | SECOND
+//  | SECTION
   | SECURITY
+//  | SELECTIVE
+//  | SELF
   | SEND
+//  | SENSITIVE
   | SEQUENCE
   | SEQUENCES
   | SERIALIZABLE
   | SERVER
+//  | SERVER_NAME
   | SESSION
   | SET
-  | SETOF
+  | SETS
   | SHARE
   | SHOW
-//  | SIMILAR
   | SIMPLE
-  | SMALLINT
+//  | SIZE
   | SNAPSHOT
+//  | SOURCE
+//  | SPACE
+//  | SPECIFIC
+//  | SPECIFICTYPE
+//  | SPECIFIC_NAME
+//  | SQL
+//  | SQLCODE
+//  | SQLERROR
+//  | SQLEXCEPTION
+//  | SQLSTATE
+//  | SQLWARNING
+//  | SQRT
   | STABLE
   | STANDALONE
   | START
+//  | STATE
   | STATEMENT
+//  | STATIC
   | STATISTICS
   | STDDEV_POP
   | STDDEV_SAMP
@@ -1171,72 +1346,185 @@ valid_identifier_tokens
   | STORAGE
   | STRICT
   | STRIP
-  | SUBSTRING
+//  | STRUCTURE
+//  | STYLE
+//  | SUBCLASS_ORIGIN
+//  | SUBMULTISET
+//  | SUBSTRING_REGEX
   | SUBTYPE
   | SUBTYPE_DIFF
   | SUBTYPE_OPCLASS
+//  | SUCCEEDS
   | SUM
   | SYSID
   | SYSTEM
+//  | SYSTEM_TIME
+//  | SYSTEM_USER
+//  | T
   | TABLES
+//  | TABLESAMPLE
   | TABLESPACE
+//  | TABLE_NAME
   | TEMP
   | TEMPLATE
   | TEMPORARY
-  | TEXT
-  | TIME
-  | TIMESTAMP
-  | TIMESTAMPTZ
-  | TIMETZ
+//  | TIES
   | TIMEZONE
   | TIMEZONE_HOUR
   | TIMEZONE_MINUTE
-  | TINYINT
+//  | TOKEN
+//  | TOP_LEVEL_COUNT
   | TRANSACTION
-  | TREAT
-  | TRIGGER
-  | TRIM
+//  | TRANSACTIONS_COMMITTED
+//  | TRANSACTIONS_ROLLED_BACK
+//  | TRANSACTION_ACTIVE
+//  | TRANSFORM
+//  | TRANSFORMS
+//  | TRANSLATE
+//  | TRANSLATE_REGEX
+//  | TRANSLATION
+//  | TRIGGER_CATALOG
+//  | TRIGGER_NAME
+//  | TRIGGER_SCHEMA
+//  | TRIM_ARRAY
   | TRUNCATE
   | TRUSTED
   | TYPE
   | TYPES
   | TYPMOD_IN
   | TYPMOD_OUT
+//  | UESCAPE
   | UNBOUNDED
   | UNCOMMITTED
+//  | UNDER
   | UNENCRYPTED
-  | UNKNOWN
+//  | UNLINK
   | UNLISTEN
   | UNLOGGED
+//  | UNNAMED
+//  | UNNEST
   | UNTIL
+//  | UNTYPED
   | UPDATE
+//  | UPPER
+//  | URI
   | USAGE
-  | UUID
+//  | USER_DEFINED_TYPE_CATALOG
+//  | USER_DEFINED_TYPE_CODE
+//  | USER_DEFINED_TYPE_NAME
+//  | USER_DEFINED_TYPE_SCHEMA
   | VACUUM
   | VALID
   | VALIDATE
   | VALIDATOR
   | VALUE
-  | VALUES
-  | VARBINARY
-  | VARBIT
-  | VARCHAR
+//  | VALUE_OF
   | VARIABLE
-  | VARYING
   | VAR_POP
   | VAR_SAMP
-//  | VERBOSE
   | VERSION
+//  | VERSIONING
   | VIEW
-  | VOID
   | VOLATILE
   | WEEK
+//  | WHENEVER
   | WHITESPACE
+//  | WIDTH_BUCKET
+//  | WITHIN
   | WITHOUT
   | WORK
   | WRAPPER
   | WRITE
+//  | XMLAGG
+//  | XMLBINARY
+//  | XMLCAST
+//  | XMLCOMMENT
+//  | XMLDECLARATION
+//  | XMLDOCUMENT
+//  | XMLITERATE
+//  | XMLNAMESPACES
+//  | XMLQUERY
+//  | XMLSCHEMA
+//  | XMLTABLE
+//  | XMLTEXT
+//  | XMLVALIDATE
+  | YEAR
+  | YES
+  | ZONE
+  ;
+
+tokens_nonreserved_types
+  : BLOB
+  | BOOL
+  | BYTEA
+  | CIDR
+  | DATE
+  | DOUBLE
+  | FLOAT4
+  | FLOAT8
+  | INET
+  | INET4
+  | INT1
+  | INT2
+  | INT4
+  | INT8
+  | MONEY
+  | NAME
+  | REGCLASS
+  | REGCONFIG
+  | TEXT
+  | TIMESTAMPTZ
+  | TIMETZ
+  | TINYINT
+  | TRIGGER
+  | UNKNOWN
+  | UUID
+  | VARBINARY
+  | VARBIT
+  | VARYING
+  | VOID
   | XML
+  ;
+
+tokens_nonreserved_except_function_type
+  : BETWEEN
+  | BIGINT
+  | BIT
+  | BOOLEAN
+  | CHAR
+  | CHARACTER
+  | COALESCE
+  | DEC
+  | DECIMAL
+  | EXISTS
+  | EXTRACT
+  | FLOAT
+  | GREATEST
+  | INOUT
+  | INT
+  | INTEGER
+  | INTERVAL
+  | LEAST
+  | NATIONAL
+  | NCHAR
+  | NONE
+  | NULLIF
+  | NUMERIC
+  | OUT
+  | OVERLAY
+  | POSITION
+  | PRECISION
+  | REAL
+  | ROW
+  | SETOF
+  | SMALLINT
+  | SUBSTRING
+  | TIME
+  | TIMESTAMP
+  | TREAT
+  | TRIM
+  | VALUES
+  | VARCHAR
   | XMLATTRIBUTES
   | XMLCONCAT
   | XMLELEMENT
@@ -1246,20 +1534,350 @@ valid_identifier_tokens
   | XMLPI
   | XMLROOT
   | XMLSERIALIZE
-  | YEAR
-  | YES
-  | ZONE
+  ;
+
+tokens_reserved_except_function_type
+  : AUTHORIZATION
+  | BINARY
+  | COLLATION
+  | CONCURRENTLY
+  | CROSS
+  | CURRENT_SCHEMA
+  | FREEZE
+  | FULL
+  | ILIKE
+  | INNER
+  | IS
+  | ISNULL
+  | JOIN
+  | LEFT
+  | LIKE
+  | NATURAL
+  | NOTNULL
+  | OUTER
+  | OVER
+  | OVERLAPS
+  | RIGHT
+  | SIMILAR
+  | VERBOSE
+  ;
+
+tokens_reserved
+  : ALL
+  | ANALYSE
+  | ANALYZE
+  | AND
+  | ANY
+  | ARRAY
+  | AS
+  | ASC
+  | ASYMMETRIC
+  | BOTH
+  | CASE
+  | CAST
+  | CHECK
+  | COLLATE
+  | COLUMN
+  | CONSTRAINT
+  | CREATE
+  | CURRENT_CATALOG
+  | CURRENT_DATE
+  | CURRENT_ROLE
+  | CURRENT_TIME
+  | CURRENT_TIMESTAMP
+  | CURRENT_USER
+  | DEFAULT
+  | DEFERRABLE
+  | DESC
+  | DISTINCT
+  | DO
+  | ELSE
+  | END
+  | EXCEPT
+  | FALSE
+  | FETCH
+  | FOR
+  | FOREIGN
+  | FROM
+  | GRANT
+  | GROUP
+  | HAVING
+  | IN
+  | INITIALLY
+  | INTERSECT
+  | INTO
+  | LATERAL
+  | LEADING
+  | LIMIT
+  | LOCALTIME
+  | LOCALTIMESTAMP
+  | NOT
+  | NULL
+  | OFFSET
+  | ON
+  | ONLY
+  | OR
+  | ORDER
+  | PLACING
+  | PRIMARY
+  | REFERENCES
+  | RETURNING
+  | SELECT
+  | SESSION_USER
+  | SOME
+  | SYMMETRIC
+  | TABLE
+  | THEN
+  | TO
+  | TRAILING
+  | TRUE
+  | UNION
+  | UNIQUE
+  | USER
+  | USING
+  | VARIADIC
+  | WHEN
+  | WHERE
+  | WINDOW
+  | WITH
   ;
 
 /*
 ===============================================================================
-  5.3 <literal>
+  6.1 <data types>
 ===============================================================================
 */
+
+schema_qualified_name_nontype
+  : identifier_nontype
+  | identifier DOT identifier_nontype
+  | identifier DOT identifier DOT identifier_nontype
+  ;
+
+data_type
+  : predefined_type (LEFT_BRACKET RIGHT_BRACKET)?
+  | SETOF value=predefined_type
+  ;
+
+predefined_type
+  : character_string_type
+  | binary_large_object_string_type
+  | numeric_type
+  | boolean_type
+  | datetime_type
+  | bit_type
+  | binary_type
+  | network_type
+  | (REGCLASS
+  | REGCONFIG
+  | TRIGGER
+  | UUID
+  | VOID
+  | UNKNOWN)
+  | schema_qualified_name_nontype
+  ;
+
+network_type
+  : CIDR
+  | INET
+  | INET4
+  ;
+
+character_string_type
+  : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
+  | NCHAR VARYING? type_length?
+  | VARCHAR type_length?
+  | (TEXT | NAME | XML)
+  ;
+
+type_length
+  : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
+  ;
+
+binary_large_object_string_type
+  : BLOB type_length?
+  | BYTEA type_length?
+  ;
+
+numeric_type
+  : exact_numeric_type | approximate_numeric_type
+  ;
+
+exact_numeric_type
+  : NUMERIC precision_param?
+  | DECIMAL precision_param?
+  | DEC precision_param?
+  | MONEY
+  | (INT1
+  | TINYINT
+  | INT2
+  | SMALLINT
+  | INT4
+  | INT
+  | INTEGER
+  | INT8
+  | BIGINT)
+  ;
+
+approximate_numeric_type
+  : FLOAT precision_param?
+  | (FLOAT4
+  | REAL
+  | FLOAT8)
+  | DOUBLE PRECISION
+  ;
+
+precision_param
+  : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
+  ;
+
+boolean_type
+  : BOOLEAN
+  | BOOL
+  ;
+
+datetime_type
+  : DATE
+  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
+  | TIMETZ
+  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
+  | TIMESTAMPTZ
+  | INTERVAL interval_field? type_length?
+  ;
+
+interval_field
+    : primary_datetime_field
+    | YEAR TO MONTH
+    | DAY TO HOUR
+    | DAY TO MINUTE
+    | DAY TO SECOND
+    | HOUR TO MINUTE
+    | HOUR TO SECOND
+    | MINUTE TO SECOND
+    ;
+
+bit_type
+  : BIT VARYING? type_length?
+  | VARBIT type_length?
+  ;
+
+binary_type
+  : BINARY VARYING? type_length?
+  | VARBINARY type_length?
+  ;
+
+/*
+===============================================================================
+  6.25 <value expression>
+===============================================================================
+*/
+value_expression
+  : vex
+  ;
+
+vex
+  : vex CAST_EXPRESSION data_type
+  | vex collate_identifier
+  | LEFT_PAREN vex RIGHT_PAREN
+  | vex LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | <assoc=right> (PLUS | MINUS) vex
+  | vex AT TIME ZONE vex
+  | vex EXP vex
+  | vex (MULTIPLY | DIVIDE | MODULAR) vex
+  | vex (PLUS | MINUS) vex
+
+  | vex (BIT_AND | VERTICAL_BAR | BIT_XOR | BIT_LSH | BIT_RSH
+        | CONCATENATION_OPERATOR | regex_matcher) vex
+  | (S_Root | C_Root | FACTORIAL FACTORIAL | ABS | TILDE) vex
+  | vex FACTORIAL
+
+  | vex NOT? IN (LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN)
+  | vex NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? vex_b AND vex
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
+  | vex (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex
+  | vex IS NOT? (truth_value | NULL)
+  | vex IS NOT? DISTINCT FROM vex
+  | vex IS NOT? DOCUMENT
+  | vex ISNULL
+  | vex NOTNULL
+
+  | datetime_overlaps
+  | <assoc=right> NOT vex
+  | vex AND vex
+  | vex OR vex
+
+  | value_expression_primary
+  ;
+
+// partial copy of vex
+// resolves (vex BETWEEN vex AND vex) vs. (vex AND vex) ambiguity
+// vex references that are not at alternative edge are referencing the full rule
+// see postgres' b_expr (src/backend/parser/gram.y)
+vex_b
+  : vex_b CAST_EXPRESSION data_type
+  | LEFT_PAREN vex RIGHT_PAREN
+  | vex_b LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | <assoc=right> (PLUS | MINUS) vex_b
+  | vex_b EXP vex_b
+  | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
+  | vex_b (PLUS | MINUS) vex_b
+
+  | vex_b (BIT_AND | VERTICAL_BAR | BIT_XOR | BIT_LSH | BIT_RSH
+        | CONCATENATION_OPERATOR | regex_matcher) vex_b
+  | (S_Root | C_Root | FACTORIAL FACTORIAL | ABS | TILDE) vex_b
+  | vex_b FACTORIAL
+
+  | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
+  | vex_b IS NOT? DISTINCT FROM vex_b
+  | vex IS NOT? DOCUMENT
+
+  | value_expression_primary
+  ;
+
+datetime_overlaps
+  : LEFT_PAREN vex COMMA vex RIGHT_PAREN OVERLAPS LEFT_PAREN vex COMMA vex RIGHT_PAREN
+  ;
+
+regex_matcher
+  : TILDE
+  | Not_Similar_To
+  | Similar_To_Case_Insensitive
+  | Not_Similar_To_Case_Insensitive
+  | Like
+  | Not_Like
+  | Ilike
+  | Not_Ilike
+  ;
+
+value_expression_primary
+  : unsigned_value_specification
+  | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN
+  | case_expression
+  | cast_specification
+  | extract_function
+  | system_function
+  | date_time_function
+  | string_value_function
+  | xml_function
+  | NULL
+  | comparison_mod
+  | EXISTS table_subquery
+  | function_call
+  | schema_qualified_name
+  | qualified_asterisk
+  | array_expression
+  | type_coersion
+  ;
 
 unsigned_value_specification
   : unsigned_numeric_literal
   | general_literal
+  ;
+
+unsigned_numeric_literal
+  : NUMBER_LITERAL
+  | REAL_NUMBER
   ;
 
 general_literal
@@ -1286,309 +1904,28 @@ date_literal
   : DATE date_string=Character_String_Literal
   ;
 
-/*
-===============================================================================
-  6.1 <data types>
-===============================================================================
-*/
-
-data_type
-  : predefined_type (LEFT_BRACKET RIGHT_BRACKET)?
-  | SETOF value=predefined_type
+truth_value
+  : TRUE | FALSE | UNKNOWN | ON | OFF
   ;
-
-predefined_type
-  : character_string_type
-  | binary_large_object_string_type
-  | numeric_type
-  | boolean_type
-  | datetime_type
-  | bit_type
-  | binary_type
-  | network_type
-  | (REGCLASS
-  | REGCONFIG
-  | TRIGGER
-  | UUID
-  | VOID
-  | INET)
-  | schema_qualified_name
-  ;
-    
-network_type
-  : INET4
-  ;
-
-character_string_type
-  : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
-  | NCHAR VARYING? type_length?
-  | VARCHAR type_length?
-  | (TEXT | INTERVAL)
-  ;
-
-type_length
-  : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
-  ;
-
-binary_large_object_string_type
-  : BLOB type_length?
-  | BYTEA type_length?
-  ;
-
-numeric_type
-  : exact_numeric_type | approximate_numeric_type
-  ;
-
-exact_numeric_type
-  : NUMERIC precision_param?
-  | DECIMAL precision_param?
-  | DEC precision_param?
-  | (INT1
-  | TINYINT
-  | INT2
-  | SMALLINT
-  | INT4
-  | INT
-  | INTEGER
-  | INT8
-  | BIGINT)
-  ;
-
-approximate_numeric_type
-  : FLOAT precision_param?
-  | (FLOAT4
-  | REAL
-  | FLOAT8)
-  | DOUBLE PRECISION?
-  ;
-
-precision_param
-  : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
-  ;
-
-boolean_type
-  : BOOLEAN
-  | BOOL
-  ;
-
-datetime_type
-  : DATE
-  | TIME ((WITH | WITHOUT) TIME ZONE)?
-  | TIMETZ
-  | TIMESTAMP ((WITH | WITHOUT) TIME ZONE)?
-  | TIMESTAMPTZ
-  ;
-
-bit_type
-  : BIT VARYING? type_length?
-  | VARBIT type_length?
-  ;
-
-binary_type
-  : BINARY VARYING? type_length?
-  | VARBINARY type_length?
-  ;
-
-/*
-===============================================================================
-  6.3 <value_expression_primary>
-===============================================================================
-*/
-value_expression_primary
-  : parenthesized_value_expression
-  | nonparenthesized_value_expression_primary
-  ;
-
-parenthesized_value_expression
-  : LEFT_PAREN value_expression RIGHT_PAREN
-  ;
-
-nonparenthesized_value_expression_primary
-  : unsigned_value_specification
-  | set_function_specification
-  | table_subquery
-  | case_expression
-  | cast_specification
-  | NULL
-  | all_array
-  | case_abbreviation
-  | name_or_func_calls
-  | array_expression
-  ;
-
-name_or_func_calls
-    :schema_qualified_name function_calls_paren?
-    ;
-
-function_calls_paren
-    : LEFT_PAREN (function_calls_args (COMMA function_calls_args)*)? RIGHT_PAREN
-    ;
-
-function_calls_args
-    : argname=identifier? argtype_expres=numeric_primary
-    ;
-/*
-===============================================================================
-  6.4 <unsigned value specification>
-===============================================================================
-*/
-
-unsigned_numeric_literal
-  : NUMBER_LITERAL
-  | REAL_NUMBER
-  ;
-
-signed_numerical_literal
-  : sign? unsigned_numeric_literal
-  ;
-
-/*
-===============================================================================
-  6.9 <set function specification>
-
-  Invoke an SQL-invoked routine.
-===============================================================================
-*/
-set_function_specification
-  : COUNT LEFT_PAREN MULTIPLY RIGHT_PAREN
-  | general_set_function filter_clause?
-  ;
-
-general_set_function
-  : set_function_type LEFT_PAREN set_qualifier? value_expression RIGHT_PAREN
-  ;
-
-set_function_type
-  : AVG
-  | MAX
-  | MIN
-  | SUM
-  | EVERY
-  | ANY
-  | SOME
-  | COUNT
-  | STDDEV_POP
-  | STDDEV_SAMP
-  | VAR_SAMP
-  | VAR_POP
-  | COLLECT
-  | FUSION
-  | INTERSECTION
-  ;
-
-filter_clause
-  : FILTER LEFT_PAREN where_clause RIGHT_PAREN
-  ;
-/*
-===============================================================================
-  6.11 <case expression>
-===============================================================================
-*/
 
 case_expression
-  : CASE value_expression_primary_cast? simple_when_clause+ else_clause? END
-  ;
-
-case_abbreviation
-  : NULLIF LEFT_PAREN numeric_value_expression COMMA value_expression_primary_cast  RIGHT_PAREN
-  | COALESCE LEFT_PAREN numeric_value_expression (COMMA value_expression_primary_cast)+ RIGHT_PAREN
+  : CASE value_expression? simple_when_clause+ else_clause? END
   ;
 
 simple_when_clause
-    : WHEN c=value_expression_primary_cast THEN r=value_expression_primary_cast
+    : WHEN c=value_expression THEN r=value_expression
     ;
 
 else_clause
-  : ELSE r=value_expression_primary_cast
+  : ELSE r=value_expression
   ;
-
-/*
-===============================================================================
-  6.12 <cast specification>
-===============================================================================
-*/
 
 cast_specification
-  : CAST LEFT_PAREN value_expression_primary AS data_type RIGHT_PAREN
+  : CAST LEFT_PAREN value_expression AS data_type RIGHT_PAREN
   ;
 
-/*
-===============================================================================
-  6.25 <value expression>
-===============================================================================
-*/
-value_expression
-  : common_value_expression
-  | boolean_value_expression
-  ;
-
-array_expression
-    : array_brackets
-    | array_parens
-    ;
-
-array_brackets
-    : ARRAY LEFT_BRACKET value_expression_primary_cast (COMMA value_expression_primary_cast)* RIGHT_BRACKET
-    ;
-
-array_parens
-    : ARRAY LEFT_PAREN query_expression RIGHT_PAREN
-    ; 
-
-all_array
-    : ALL LEFT_PAREN array_expression RIGHT_PAREN
-    ;
-  
-bit_operation
-    : string_value_expression BIT_AND string_value_expression
-    ;
-common_value_expression
-  : numeric_value_expression
-  | string_value_expression
-  | bit_operation
-  ;
-
-/*
-===============================================================================
-  6.26 <numeric value expression>
-
-  Specify a comparison of two row values.
-===============================================================================
-*/
-
-numeric_value_expression
-  : left=term (sign right=term)*
-  ;
-
-term
-  : left=factor ((MULTIPLY|DIVIDE|MODULAR) right=factor)*
-  ;
-
-factor
-  : sign? numeric_primary
-  ;
-
-numeric_primary
-  : value_expression_primary_cast
-  | numeric_value_function
-  | derived_column
-  ;
-
-value_expression_primary_cast
-    : value_expression_primary (CAST_EXPRESSION data_type)*
-    ;
-sign
-  : PLUS | MINUS
-  ;
-
-/*
-===============================================================================
-  6.27 <numeric value function>
-===============================================================================
-*/
-
-numeric_value_function
-  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM extract_source RIGHT_PAREN
+extract_function
+  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM value_expression RIGHT_PAREN
   ;
 
 extract_field
@@ -1597,202 +1934,196 @@ extract_field
   | extended_datetime_field
   ;
 
+primary_datetime_field
+    : YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
+    ;
+
+extended_datetime_field
+  : CENTURY | DECADE | DOW | DOY | EPOCH | ISODOW | ISOYEAR | MICROSECONDS | MILLENNIUM | MILLISECONDS | QUARTER | WEEK
+  ;
+
 time_zone_field
   : TIMEZONE | TIMEZONE_HOUR | TIMEZONE_MINUTE
   ;
 
-extract_source
-  : schema_qualified_name
-  | datetime_literal
-  ;
+system_function
+    : CURRENT_CATALOG
+    | CURRENT_SCHEMA (LEFT_PAREN RIGHT_PAREN)?
+    | CURRENT_USER
+    | SESSION_USER
+    | USER
+    ;
 
-/*
-===============================================================================
-  6.28 <string value expression>
-===============================================================================
-*/
-
-string_value_expression
-  : character_primary (CONCATENATION_OPERATOR character_primary)*
-  ;
-
-character_primary
-  : value_expression_primary_cast
-  | string_value_function
-  ;
-
-/*
-===============================================================================
-  6.29 <string value function>
-===============================================================================
-*/
+date_time_function
+    : CURRENT_DATE
+    | CURRENT_TIME type_length?
+    | CURRENT_TIMESTAMP type_length?
+    | LOCALTIME type_length?
+    | LOCALTIMESTAMP type_length?
+    ;
 
 string_value_function
-  : TRIM LEFT_PAREN trim_operands RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? value_expression? FROM? value_expression RIGHT_PAREN
+  | SUBSTRING LEFT_PAREN value_expression (FROM value_expression)? (FOR value_expression)? RIGHT_PAREN
+  | POSITION LEFT_PAREN value_expression IN value_expression RIGHT_PAREN
+  | OVERLAY LEFT_PAREN value_expression PLACING value_expression FROM value_expression (FOR value_expression)? RIGHT_PAREN
   ;
 
-trim_operands
-  : ((trim_specification)? (trim_character=string_value_expression)? FROM)? trim_source=string_value_expression
-  | trim_source=string_value_expression COMMA trim_character=string_value_expression
+xml_function
+    : XMLELEMENT LEFT_PAREN NAME name=identifier
+        (COMMA XMLATTRIBUTES LEFT_PAREN value_expression (AS attname=identifier)? (COMMA value_expression (AS attname=identifier)?)* RIGHT_PAREN)?
+        (value_expression (COMMA value_expression)?)? RIGHT_PAREN
+    | XMLFOREST LEFT_PAREN value_expression (AS name=identifier)? (COMMA value_expression (AS name=identifier)?)* RIGHT_PAREN
+    | XMLPI LEFT_PAREN NAME name=identifier (COMMA value_expression)? RIGHT_PAREN
+    | XMLROOT LEFT_PAREN value_expression COMMA VERSION (value_expression | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
+    | XMLEXISTS LEFT_PAREN value_expression PASSING (BY REF)? value_expression (BY REF)? RIGHT_PAREN
+    ;
+
+comparison_mod
+    : (ALL | ANY | SOME) LEFT_PAREN value_expression RIGHT_PAREN
+    ;
+
+function_call
+    : schema_qualified_name LEFT_PAREN (set_qualifier? value_expression (COMMA value_expression)* orderby_clause?)? RIGHT_PAREN
+        filter_clause? (OVER window_definition)?
+    ;
+
+filter_clause
+  : FILTER LEFT_PAREN WHERE value_expression RIGHT_PAREN
   ;
 
-trim_specification
-  : LEADING | TRAILING | BOTH
+window_definition
+  : w_name=identifier | LEFT_PAREN (w_name=identifier? partition_by_columns? orderby_clause? frame_clause?) RIGHT_PAREN
   ;
 
+frame_clause
+  : (RANGE | ROWS) (frame_bound | BETWEEN frame_bound AND frame_bound)
+  ;
+
+frame_bound
+  : (UNBOUNDED | value_expression) (PRECEDING | FOLLOWING)
+  | CURRENT ROW
+  ;
+
+qualified_asterisk
+  : (tb_name=schema_qualified_name DOT)? MULTIPLY
+  ;
+
+array_expression
+    : array_brackets
+    | array_query
+    ;
+
+array_brackets
+    : ARRAY LEFT_BRACKET value_expression (COMMA value_expression)* RIGHT_BRACKET
+    ;
+
+array_query
+    : ARRAY table_subquery
+    ;
+
+type_coersion
+    : data_type Character_String_Literal
+    ;
 /*
 ===============================================================================
-  6.34 <boolean value expression>
+  7.13 <query expression>
 ===============================================================================
 */
-
-boolean_value_expression
-  : or_predicate
+schema_qualified_name
+  : identifier ( DOT identifier ( DOT identifier )? )?
   ;
 
-or_predicate
-  : and_predicate (OR or_predicate)*
+set_qualifier
+  : DISTINCT | ALL
   ;
 
-and_predicate
-  : boolean_factor (AND and_predicate)*
+table_subquery
+  : LEFT_PAREN select_stmt RIGHT_PAREN
   ;
 
-boolean_factor
-  : NOT? boolean_test
+select_stmt
+    : with_clause? select_ops
+        orderby_clause?
+        (LIMIT (value_expression | ALL))?
+        (OFFSET value_expression (ROW | ROWS))?
+        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
+        ((FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)+)?
+    ;
+
+// select_stmt copy that doesn't consume external parens
+// for use in value_expression
+// we let the vex rule to consume as many parens as it can
+select_stmt_no_parens
+    : with_clause? select_ops_no_parens
+        orderby_clause?
+        (LIMIT (value_expression | ALL))?
+        (OFFSET value_expression (ROW | ROWS))?
+        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
+        ((FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)+)?
+    ;
+
+with_clause
+    : WITH RECURSIVE? query_name=identifier (LEFT_PAREN column_name=identifier (COMMA column_name=identifier)* RIGHT_PAREN)?
+        AS (select_stmt | values_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql)
+    ;
+
+select_ops
+    : LEFT_PAREN select_ops RIGHT_PAREN
+    | select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
+    | select_primary
+    ;
+
+// copy of select_ops for use in select_no_parens
+select_ops_no_parens
+    : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
+    | select_primary
+    ;
+
+select_primary
+    : SELECT
+        (set_qualifier (ON LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN)?)?
+        select_list
+        (FROM from_item (COMMA from_item)*)?
+        (WHERE value_expression)?
+        groupby_clause?
+        (HAVING value_expression)?
+        (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
+    | TABLE ONLY? schema_qualified_name MULTIPLY?
+    ;
+
+select_list
+  : select_sublist (COMMA select_sublist)*
   ;
 
-boolean_test
-  : boolean_primary is_clause?
+select_sublist
+  : value_expression (AS? identifier)?
   ;
 
-is_clause
-  : IS NOT? t=truth_value
-  ;
+from_item
+    : LEFT_PAREN from_item RIGHT_PAREN
+    | from_item CROSS JOIN from_item
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON value_expression
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
+    | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
+    | from_primary
+    ;
 
-truth_value
-  : TRUE | FALSE | UNKNOWN | ON | OFF
-  ;
+from_primary
+    : ONLY? schema_qualified_name MULTIPLY? alias_clasue?
+    | LATERAL? table_subquery alias_clasue
+    | LATERAL? function_call
+        (AS from_function_column_def | AS? alias=identifier (LEFT_PAREN column_alias=identifier (COMMA column_alias=identifier)* RIGHT_PAREN | from_function_column_def))
+    ;
 
-boolean_primary
-  : predicate
-  | value_expression_primary
-  ;
+alias_clasue
+    : AS? alias=identifier (LEFT_PAREN column_alias=identifier (COMMA column_alias=identifier)* RIGHT_PAREN)?
+    ;
 
-/*
-===============================================================================
-  7.2 <row value expression>
-===============================================================================
-*/
+from_function_column_def
+    : LEFT_PAREN column_alias=identifier data_type (COMMA column_alias=identifier data_type)* RIGHT_PAREN
+    ;
 
-/*
-===============================================================================
-  7.4 <table expression>
-===============================================================================
-*/
-
-table_expression
-  : from_clause
-    where_clause?
-    groupby_clause?
-    having_clause?
-    orderby_clause?
-    limit_clause?
-  ;
-
-/*
-===============================================================================
-  7.5 <from clause>
-===============================================================================
-*/
-
-from_clause
-  : FROM table_reference (COMMA table_reference)*
-  ;
-
-/*
-===============================================================================
-  7.6 <table reference>
-===============================================================================
-*/
-
-table_reference
-  : joined_table
-  | table_primary
-  ;
-
-/*
-===============================================================================
-  7.7 <joined table>
-===============================================================================
-*/
-
-joined_table
-  : table_primary joined_table_primary+
-  ;
-
-joined_table_primary
-  : cross_join
-  | qualified_join
-  | natural_join
-  ;
-
-cross_join
-  : CROSS JOIN r=table_primary
-  ;
-
-qualified_join
-  : t=join_type? JOIN r=table_primary s=join_specification
-  ;
-
-natural_join
-  : NATURAL t=join_type? JOIN r=table_primary
-  ;
-
-join_type
-  : INNER
-  | t=outer_join_type
-  ;
-
-outer_join_type
-  :  (LEFT | RIGHT | FULL) OUTER?
-  ;
-
-join_specification
-  : join_condition
-  | named_columns_join
-  ;
-
-join_condition
-  : ON boolean_value_expression
-  ;
-
-named_columns_join
-  : USING column_references
-  ;
-
-table_primary
-  : (name_or_func_calls | table_subquery) as_clause? column_references?
-  ;
-
-/*
-===============================================================================
-  7.8 <where clause>
-===============================================================================
-*/
-/*where_clause
-    : WHERE value_expression
-    ;*/
-    where_clause
-  : WHERE ((schema_qualified_name EQUAL ( value_expression_primary_cast
-    | ( LEFT_PAREN query_specification2 RIGHT_PAREN))) | value_expression)
-  ;
-
-/*
-===============================================================================
-  7.9 <group by clause>
-===============================================================================
-*/
 groupby_clause
   : GROUP BY g=grouping_element_list
   ;
@@ -1802,14 +2133,13 @@ grouping_element_list
   ;
 
 grouping_element
-  : rollup_list
-  | cube_list
+  : grouping_set_list
   | empty_grouping_set
   | ordinary_grouping_set
   ;
 
 ordinary_grouping_set
-  : value_expression_primary_cast
+  : value_expression
   | row_value_predicand_list
   ;
 
@@ -1817,306 +2147,17 @@ ordinary_grouping_set_list
   : ordinary_grouping_set (COMMA ordinary_grouping_set)*
   ;
 
-rollup_list
-  : ROLLUP LEFT_PAREN c=ordinary_grouping_set_list RIGHT_PAREN
-  ;
-
-cube_list
-  : CUBE LEFT_PAREN c=ordinary_grouping_set_list RIGHT_PAREN
+grouping_set_list
+  : (ROLLUP | CUBE | GROUPING SETS) LEFT_PAREN c=ordinary_grouping_set_list RIGHT_PAREN
   ;
 
 empty_grouping_set
   : LEFT_PAREN RIGHT_PAREN
   ;
 
-having_clause
-  : HAVING value_expression_primary_cast
-  ;
-
 row_value_predicand_list
-  : LEFT_PAREN value_expression_primary_cast (COMMA value_expression_primary_cast)* RIGHT_PAREN
+  : LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN
   ;
-
-/*
-===============================================================================
-  7.13 <query expression>
-===============================================================================
-*/
-query_expression
-  : non_join_query_expression
-  | joined_table
-  ;
-
-non_join_query_expression
-  : (non_join_query_term
-  | joined_table (UNION | EXCEPT) (ALL|DISTINCT)? query_term)
-    ((UNION | EXCEPT) (ALL|DISTINCT)? query_term)*
-  ;
-
-query_term
-  : non_join_query_term
-  | joined_table
-  ;
-
-non_join_query_term
-  : ( non_join_query_primary
-  | joined_table INTERSECT (ALL|DISTINCT)? query_primary)
-    (INTERSECT (ALL|DISTINCT)? query_primary)*
-  ;
-
-query_primary
-  : non_join_query_primary
-  | joined_table
-  ;
-
-non_join_query_primary
-  : simple_table
-  | LEFT_PAREN non_join_query_expression RIGHT_PAREN
-  ;
-
-simple_table
-  : with_recursive? query_specification
-  | explicit_table
-  ;
-
-with_recursive
-  : WITH RECURSIVE? with_query_name (COMMA with_query_name)*
-  ;
-
-with_query_name
-  : query_alias=identifier column_references? AS LEFT_PAREN query=query_expression RIGHT_PAREN
-  ;
-
-explicit_table
-  : TABLE schema_qualified_name
-  ;
-
-schema_qualified_name
-  : identifier  ( DOT  identifier (  DOT identifier )? )?
-  ;
-
-query_specification
-  : SELECT set_qualifier? select_list table_expression?
-  ;
-
-select_list
-  : select_sublist (COMMA select_sublist)*
-  ;
-
-select_sublist
-  : derived_column
-  | qualified_asterisk
-  ;
-
-derived_column
-  : value_expression_primary_cast (over_clause | as_clause)*
-  ;
-
-qualified_asterisk
-  : (tb_name=schema_qualified_name DOT)? MULTIPLY
-  ;
-
-set_qualifier
-  : DISTINCT | ALL
-  ;
-
-as_clause
-  : AS? identifier
-  ;
-
-over_clause
-    : OVER LEFT_PAREN (partition_by_columns | orderby_clause | order_specification)* RIGHT_PAREN
-    ;
-
-/*
-==============================================================================================
-  7.15 <subquery>
-
-  Specify a scalar value, a row, or a table derived from a query_expression .
-==============================================================================================
-*/
-
-table_subquery
-  : LEFT_PAREN query_expression RIGHT_PAREN
-  ;
-
-/*
-===============================================================================
-  8.1 <predicate>
-===============================================================================
-*/
-
-predicate
-  : comparison_predicate
-  | between_predicate
-  | in_predicate
-  | pattern_matching_predicate // like predicate and other similar predicates
-  | null_predicate
-  | exists_predicate
-  | distinct_predicate
-  ;
-
-/*
-===============================================================================
-  8.2 <comparison predicate>
-
-  Specify a comparison of two row values.
-===============================================================================
-*/
-comparison_predicate
-  : left=value_expression_primary_cast c=comp_op right=value_expression_primary_cast
-  ;
-
-comp_op
-  : EQUAL
-  | NOT_EQUAL
-  | LTH
-  | LEQ
-  | GTH
-  | GEQ
-  ;
-
-/*
-===============================================================================
-  8.3 <between predicate>
-===============================================================================
-*/
-
-between_predicate
-  : predicand=value_expression_primary_cast between_predicate_part_2
-  ;
-
-between_predicate_part_2
-  : NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? begin=value_expression_primary_cast AND end=value_expression_primary_cast
-  ;
-
-
-/*
-===============================================================================
-  8.4 <in predicate>
-===============================================================================
-*/
-
-in_predicate
-  : predicand=value_expression_primary_cast  NOT? IN in_predicate_value
-  ;
-
-in_predicate_value
-  : table_subquery
-  | row_value_predicand_list
-  ;
-
-/*
-===============================================================================
-  8.5, 8.6 <pattern matching predicate>
-
-  Specify a pattern-matching comparison.
-===============================================================================
-*/
-
-pattern_matching_predicate
-  : f=value_expression_primary_cast pattern_matcher value_expression_primary_cast
-  ;
-
-pattern_matcher
-  : NOT? negativable_matcher
-  | regex_matcher+
-  ;
-
-negativable_matcher
-  : (LIKE
-  | ILIKE
-  | REGEXP
-  | RLIKE)
-  | SIMILAR TO
-  ;
-
-regex_matcher
-  : Similar_To
-  | Not_Similar_To
-  | Similar_To_Case_Insensitive
-  | Not_Similar_To_Case_Insensitive
-  ;
-
-/*
-===============================================================================
-  8.7 <null predicate>
-
-  Specify a test for a null value.
-===============================================================================
-*/
-
-null_predicate
-  : predicand=value_expression_primary_cast IS n=NOT? NULL
-  ;
-
-/*
-==============================================================================================
-  8.8 <quantified comparison predicate>
-
-  Specify a quantified comparison.
-==============================================================================================
-*/
-/*
-==============================================================================================
-  8.9 <exists predicate>
-
-  Specify a test for a non_empty set.
-==============================================================================================
-*/
-
-exists_predicate
-  : NOT? EXISTS s=table_subquery
-  ;
-
-
-/*
-==============================================================================================
-  8.10 <unique predicate>
-
-  Specify a test for the absence of duplicate rows
-==============================================================================================
-*/
-
-/*
-==============================================================================================
-  8.10 <Distinct predicate>
-
-  Specify a test for the absence of duplicate rows
-==============================================================================================
-*/
-distinct_predicate
-  : left=value_expression_primary_cast IS NOT? DISTINCT FROM right=value_expression_primary_cast
-  ;
-/*
-===============================================================================
-  10.1 <interval qualifier>
-
-  Specify the precision of an interval data type.
-===============================================================================
-*/
-
-primary_datetime_field
-    :YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
-    ;
-
-extended_datetime_field
-  : CENTURY | DECADE | DOW | DOY | EPOCH | ISODOW | ISOYEAR | MICROSECONDS | MILLENNIUM | MILLISECONDS | QUARTER | WEEK
-  ;
-
-/*
-===============================================================================
-  10.4 <routine invocation>
-
-  Invoke an SQL-invoked routine.
-===============================================================================
-*/
-
-/*
-===============================================================================
-  14.1 <declare cursor>
-===============================================================================
-*/
 
 orderby_clause
   : ORDER BY sort_specifier_list
@@ -2127,16 +2168,14 @@ sort_specifier_list
   ;
 
 sort_specifier
-  : key=value_expression_primary_cast collate_iden=collate_identifier? opclass=schema_qualified_name? order=order_specification? null_order=null_ordering?
+  : key=value_expression
+    opclass=identifier? // this allows to share this rule with create_index; technically invalid syntax
+    order=order_specification?
+    null_order=null_ordering?
   ;
 
 order_specification
-  : ASC
-  | DESC
-  ;
-
-limit_clause
-  : LIMIT e=value_expression_primary_cast
+  : ASC | DESC | USING schema_qualified_name
   ;
 
 null_ordering
@@ -2144,115 +2183,58 @@ null_ordering
   ;
 
 /*
-===============================================================================
-  14.8 <insert statement>
-===============================================================================
+    TODO column_name
+    The name of a column in the table named by table_name. The column name can be qualified with a subfield name or array subscript, if needed.
+    (Inserting into only some fields of a composite column leaves the other fields null.)
+    NOTE: name qualification is not allowed (e.g. t1.c1)
+    this applies to UPDATE as well
 */
-
-insert_statement
-  : INSERT (OVERWRITE)? INTO schema_qualified_name column_name_list? value_expression? query_specification2?
-  | INSERT (OVERWRITE)? INTO LOCATION path=Character_String_Literal (USING file_type=identifier (param_clause)?)?  query_expression
-  ;
-  
-column_name_list
-  : identifier+ (COMMA identifier+)*
+insert_stmt_for_psql
+  : with_clause? INSERT INTO insert_table_name=schema_qualified_name
+  (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
+  (VALUES insert_values (COMMA insert_values)* | select_stmt | DEFAULT VALUES)
+  (RETURNING select_list)?
   ;
 
-query_specification2
-  : SELECT identifier+ DOT identifier+ (COMMA (identifier+ DOT identifier+))* table_expression?
+insert_values
+  : LEFT_PAREN (value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))* RIGHT_PAREN
   ;
 
-select_list2
-  : select_sublist (COMMA select_sublist)*
+delete_stmt_for_psql
+  : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  (USING using_table (COMMA using_table)*)?
+  (WHERE (value_expression | CURRENT OF cursor=identifier))?
+  (RETURNING select_list)?
   ;
 
+update_stmt_for_psql
+  : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  SET update_set (COMMA update_set)*
+  (FROM using_table (COMMA using_table)*)?
+  (WHERE (value_expression | WHERE CURRENT OF cursor=identifier))?
+  (RETURNING select_list)?
+  ;
 
+update_set
+  : column+=identifier EQUAL (value+=value_expression | DEFAULT)
+  | LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN EQUAL
+  (LEFT_PAREN (value+=value_expression | DEFAULT) (COMMA (value+=value_expression | DEFAULT))* RIGHT_PAREN
+    | table_subquery)
+  ;
 
-      /*
-      ===============================================================================
-        CREATE NEW REWRITE (RULE) statement
-      ===============================================================================
-      */
+using_table
+  : ONLY? schema_qualified_name MULTIPLY? (AS? identifier column_references?)?
+  ;
 
-  create_rewrite_statement2
-      : (OR REPLACE)? RULE name=identifier AS ON event=(SELECT | INSERT | DELETE | UPDATE)
-      TO table_name=schema_qualified_name where_expr = where_clause? DO (ALSO | INSTEAD)?
-      command=command_rewrite2
-      ;
+notify_stmt
+  : NOTIFY channel=identifier (COMMA payload=Character_String_Literal)?
+  ;
 
-  where_rewrite2
-      :WHERE where_expr=value_expression
-      ;
-
-  command_rewrite2
-  	: query_expression
-  	| insert_stmt_for_psql
-  	| update_stmt_for_psql
-  	| delete_stmt_for_psql
-  	| notify_stmt
-  	;
-
-
-
-   insert_stmt_for_psql
-   : ( INSERT INTO insert_table_name=schema_qualified_name ( LEFT_PAREN column_name_list RIGHT_PAREN )?
-      (value_expression
-      | query_specification
-      | DEFAULT VALUES)
-      returning_clause?
-      )
-   ;
-
-   delete_stmt_for_psql
-   : with_recursive? DELETE FROM ONLY? ( database_name DOT )? n_table_name MULTIPLY? ( AS? r_output_name)?
-     using_def?
-     (where_clause | where_current)?
-     returning_clause?
-   ;
-
-   update_stmt_for_psql
-   : with_recursive? UPDATE ONLY? ( database_name DOT )? n_table_name MULTIPLY? ( AS? r_output_name)?
-     //SET set_clause (COMMA set_clause)*
-     set_statement
-     from_clause?
-     (where_rewrite | where_current)?
-     returning_clause?
-   ;
-
-   set_clause
-   : (n_column_name (EQUAL | TO) (value_expression | DEFAULT)) | (LEFT_PAREN column_name_list RIGHT_PAREN) (EQUAL | TO)
-          (LEFT_PAREN (((value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))*) | query_expression) RIGHT_PAREN)
-   ;
-
-
-   returning_clause
-   : RETURNING MULTIPLY | column_name_list (AS r_output_name (COMMA r_output_name)*)?
-   ;
-
-   where_current
-   : WHERE CURRENT OF n_column_name
-   ;
-
-    r_output_name
-    : Identifier
-    ;
-
-    n_table_name
-     : identifier
-     ;
-
-    n_column_name
-         : identifier
-         ;
-
-    database_name
-         : identifier
-         ;
-
-    notify_stmt
-    : NOTIFY channel (COMMA string_value_expression)*
-    ;
-
-    channel
-    : Identifier
+values_stmt
+    : VALUES LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN
+        (COMMA LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN)*
+        orderby_clause?
+        (LIMIT (value_expression | ALL))?
+        (OFFSET value_expression (ROW | ROWS))?
+        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
     ;
