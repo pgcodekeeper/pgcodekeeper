@@ -98,7 +98,7 @@ public class DifferTest {
         DbSource dbTarget =
                 DbSource.fromFile(true, targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
 
-        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
+        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget, false);
 
         newDiffer.run(null);
 

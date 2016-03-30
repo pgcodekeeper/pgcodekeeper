@@ -138,7 +138,7 @@ public class DbStorePicker extends Group {
         if (isLoad){
             list.add("");
             list.add("Загрузить из файла...");
-            list.addAll(dumpFileHistory);
+            list.addAll(DbInfo.getDumpFileHistory(this.prefStore.getString(PREF.DB_STORE_HISTORY)));
         }
         cmbDbNames2.setInput(list);
     }
@@ -150,6 +150,14 @@ public class DbStorePicker extends Group {
         } else {
             return null;
         }
+    }
+    
+    public int getSelectionIndex(){
+        return cmbDbNames.getSelectionIndex();
+    }
+    
+    public void select(int index){
+        cmbDbNames.select(index);
     }
 
     public String getSelectedName (){

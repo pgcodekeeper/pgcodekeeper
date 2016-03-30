@@ -785,7 +785,8 @@ public class DiffTableViewer extends Composite {
     private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
         this.reverseDiffSide = reverseDiffSide;
         try {
-            this.treeRoot = (differ == null) ? null : differ.getDiffTree();
+            this.treeRoot = (differ == null) ? null : 
+                reverseDiffSide ? differ.getDiffTree() : differ.getDiffTreeRevert();
             this.dbSource = (differ == null) ? null :
                 reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
                 this.dbTarget = (differ == null) ? null :

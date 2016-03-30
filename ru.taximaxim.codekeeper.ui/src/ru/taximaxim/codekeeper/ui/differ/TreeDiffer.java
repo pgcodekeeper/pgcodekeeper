@@ -24,7 +24,8 @@ public class TreeDiffer implements IRunnableWithProgress {
     private final DbSource dbSource, dbTarget;
 
     private boolean finished;
-    private TreeElement diffTree;
+    private TreeElement diffTree, diffTreeRevert;
+    private final boolean needTwoWay;
 
     public DbSource getDbSource() throws PgCodekeeperUIException {
         checkFinished();
@@ -40,10 +41,16 @@ public class TreeDiffer implements IRunnableWithProgress {
         checkFinished();
         return diffTree;
     }
+    
+    public TreeElement getDiffTreeRevert() throws PgCodekeeperUIException {
+        checkFinished();
+        return diffTreeRevert;
+    }
 
-    public TreeDiffer(DbSource dbSource, DbSource dbTarget) {
+    public TreeDiffer(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
+        this.needTwoWay = needTwoWay;
     }
 
     private void checkFinished() throws PgCodekeeperUIException {
@@ -70,8 +77,16 @@ public class TreeDiffer implements IRunnableWithProgress {
         Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbSource.getOrigin() //$NON-NLS-1$
         + " tgt: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
 
-        pm.newChild(34).subTask(Messages.treeDiffer_building_diff_tree); // 100
+        pm.newChild(17).subTask(Messages.treeDiffer_building_diff_tree); // 83
         diffTree = DiffTree.create(dbSrc, dbTgt);
+        
+        if (needTwoWay){
+            Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbTarget.getOrigin() //$NON-NLS-1$
+            + " tgt: " + this.dbSource.getOrigin()); //$NON-NLS-1$
+
+            pm.newChild(17).subTask(Messages.treeDiffer_building_diff_tree); // 83
+            diffTreeRevert = DiffTree.create(dbTgt, dbSrc);
+        }
 
         PgDumpLoader.checkCancelled(pm);
         pm.done();
