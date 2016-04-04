@@ -701,6 +701,8 @@ class DiffPage extends DiffPresentationPane {
         } else {
             setTitleColor(null);
         }
+        
+        
 
         new Label(container, SWT.NONE).setImage(lrm.createImage(
                 ImageDescriptor.createFromURL(Activator.getContext().getBundle()

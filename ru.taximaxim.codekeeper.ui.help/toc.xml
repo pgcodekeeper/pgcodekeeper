@@ -24,6 +24,10 @@
       </topic>
       <topic href="html/tasks/open_pgcodekeeper_editor.html" label="Открытие редактора проекта">
       </topic>
+      <topic href="html/tasks/sorting.html" label="Сортировка списка изменений">
+      </topic>
+      <topic href="html/tasks/select_source_db.html" label="Выбор источника базы данных">
+      </topic>
    </topic>
    <topic href="html/preferences/licensing.html" label="Лицензирование">
    </topic>

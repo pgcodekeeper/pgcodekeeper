@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -33,6 +34,7 @@ implements IWorkbenchPreferencePage {
 
     private ListViewer listObjs;
     private String preference;
+    private boolean needUpdateDataBases = false;
     Map<String, DbInfo> dataBases;
 
     public DbStorePrefPage() {
@@ -149,6 +151,14 @@ implements IWorkbenchPreferencePage {
         fUpButton.addListener(SWT.Selection, new Listener() {
             @Override
             public void handleEvent(Event e) {
+                String tmp = listObjs.getList().getSelection()[0];
+                int selectIndex = listObjs.getList().getSelectionIndex();
+                if (selectIndex <= 0){
+                    return;
+                }
+                listObjs.getList().setItem(selectIndex, listObjs.getList().getItem(selectIndex - 1));
+                listObjs.getList().setItem(selectIndex - 1, tmp);
+                needUpdateDataBases = true;
             }
         });
 
@@ -159,7 +169,14 @@ implements IWorkbenchPreferencePage {
         fDownButton.addListener(SWT.Selection, new Listener() {
             @Override
             public void handleEvent(Event e) {
-
+                String tmp = listObjs.getList().getSelection()[0];
+                int selectIndex = listObjs.getList().getSelectionIndex();
+                if (selectIndex >= listObjs.getList().getItemCount() - 1){
+                    return;
+                }
+                listObjs.getList().setItem(selectIndex, listObjs.getList().getItem(selectIndex + 1));
+                listObjs.getList().setItem(selectIndex + 1, tmp);
+                needUpdateDataBases = true;
             }
         });
         updateList();
@@ -175,6 +192,14 @@ implements IWorkbenchPreferencePage {
 
     @Override
     public boolean performOk() {
+        if (needUpdateDataBases){
+            Map<String, DbInfo> temp = new LinkedHashMap<>();
+            for (String dataBase : listObjs.getList().getItems()){
+                temp.put(dataBase, dataBases.get(dataBase));
+            }
+            dataBases.clear();
+            dataBases.putAll(temp);
+        }
         if(getPreferenceStore() != null) {
             getPreferenceStore().setValue(PREF.DB_STORE, DbInfo.storeToPreference(dataBases));
         }
