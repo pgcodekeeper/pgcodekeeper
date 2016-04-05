@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -18,8 +19,8 @@ public class ManualDepciesDialog extends TrayDialog {
 
     private final List<Entry<PgStatement, PgStatement>> depciesSource;
     private final List<Entry<PgStatement, PgStatement>> depciesTarget;
-    private final List<PgStatement> objectsSource;
-    private final List<PgStatement> objectsTarget;
+    private final Map<String, PgStatement> objectsSource;
+    private final Map<String, PgStatement> objectsTarget;
     private final String groupSourceName;
     private final String groupTargetName;
     
@@ -37,7 +38,7 @@ public class ManualDepciesDialog extends TrayDialog {
     public ManualDepciesDialog(Shell shell,
             List<Entry<PgStatement, PgStatement>> depciesSource,
             List<Entry<PgStatement, PgStatement>> depciesTarget,
-            List<PgStatement> objectsSource, List<PgStatement> objectsTarget,
+            Map<String, PgStatement> objectsSource, Map<String, PgStatement> objectsTarget,
             String groupSourceName, String groupTargetName) {
         super(shell);
 

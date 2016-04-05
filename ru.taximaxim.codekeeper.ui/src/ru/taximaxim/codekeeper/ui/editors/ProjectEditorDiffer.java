@@ -732,8 +732,8 @@ class DiffPage extends DiffPresentationPane {
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(getShell(),
                         manualDepciesSource, manualDepciesTarget,
-                        PgDatabase.listViewsTables(dbSource.getDbObject()),
-                        PgDatabase.listViewsTables(dbTarget.getDbObject()),
+                        PgDatabase.listPgObjects(dbSource.getDbObject()),
+                        PgDatabase.listPgObjects(dbTarget.getDbObject()),
                         Messages.database, Messages.ProjectEditorDiffer_project);
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
@@ -797,7 +797,7 @@ class DiffPage extends DiffPresentationPane {
     }
 
     private void showEditor(Differ differ) throws PartInitException {
-        List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
+        List<PgStatement> list = (LinkedList<PgStatement>)PgDatabase.listPgObjects(dbSource.getDbObject()).values();
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 list);
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()

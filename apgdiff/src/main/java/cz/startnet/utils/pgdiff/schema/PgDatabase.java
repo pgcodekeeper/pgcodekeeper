@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -324,12 +326,46 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
 
-    public static List<PgStatement> listViewsTables(PgDatabase db) {
-        List<PgStatement> statements = new ArrayList<>();
-
-        for (PgSchema schema : db.getSchemas()) {
-            statements.addAll(schema.getViews());
-            statements.addAll(schema.getTables());
+    public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
+        Map<String, PgStatement> statements = new LinkedHashMap<String, PgStatement>();
+        
+        for (PgSchema schema : db.getSchemas()){
+            for (PgTable table : schema.getTables()){
+                statements.put(table.getQualifiedName().toLowerCase(), table);
+                for (PgRule rule : table.getRules()){
+                    statements.put(rule.getQualifiedName(), rule);
+                }
+                for (PgTrigger trigger : table.getTriggers()){
+                    statements.put(trigger.getQualifiedName(), trigger);
+                }
+                for (PgIndex index : table.getIndexes()){
+                    statements.put(index.getQualifiedName(), index);
+                }
+                for (PgColumn column : table.getColumns()){
+                    statements.put(column.getQualifiedName(), column);
+                }
+                for (PgConstraint constraint : table.getConstraints()){
+                    statements.put(constraint.getQualifiedName(), constraint);
+                }
+            }
+            for (PgView view : schema.getViews()){
+                statements.put(view.getQualifiedName().toLowerCase(), view);
+                for (PgRule rule : view.getRules()){
+                    statements.put(rule.getQualifiedName(), rule);
+                }
+                for (PgTrigger trigger : view.getTriggers()){
+                    statements.put(trigger.getQualifiedName(), trigger);
+                }
+            }
+            for (PgFunction function : schema.getFunctions()){
+                statements.put(function.getQualifiedName().toLowerCase(), function);
+            }
+            for (PgDomain domain :schema.getDomains()){
+                statements.put(domain.getQualifiedName().toLowerCase(), domain);
+            }
+            for (PgSequence sequence :schema.getSequences()){
+                statements.put(sequence.getQualifiedName().toLowerCase(), sequence);
+            }
         }
         return statements;
     }
