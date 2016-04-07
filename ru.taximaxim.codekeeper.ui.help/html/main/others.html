@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Дополнительные возможности</title>
+	<link type="text/css" rel="stylesheet" href="book.css"/>
+</head>
+
+<body>
+<h2>Дополнительные возможности</h2>
+<p>
+	В качестве альтернативы плагина для Eclipse IDE предоставляется возможность сравнения схем баз данных через командную строку.
+	Для этого необходимо скачать pgCodeKeeper-cli приложение, которое работает автономно.
+</p>
+<p>
+	Консольная сборка программы может быть использована для:
+	<ul>
+    	<li>создания из дампа файловой структуры "проекта" pgCodeKeeper (без проекта Eclipse)</li>
+    	<li>создания скриптов наката с использованием дампов и файловых структур pgCodeKeeper</li>
+    	<li>создания скриптов наката с использованием соединений к базам данных</li>
+	</ul>
+</p>
+<h3>Начало работы</h3>
+<p>
+	Последнюю версию cli сборки для вашей платформы на данный момент возможно скачать только по запросу.
+	Распаковать архив, выполнить pgcodekeeper-cli --apgdiff для проверки работоспособности. На MacOS нужно спуститься в поддиректорию pgcodekeeper-cli.app/Contents/MacOS/.
+</p>
+<p>
+	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --apgdiff --help</b>
+</p>
+<p>
+	<b>Например: pgcodekeeper-cli --apgdiff --diff --license /home/codekeeper/licenseFile --dbOld-format parsed --dbNew-format db /home/codekeeper/projects/test1/ jdbc:postgresql://localhost:5432/testdb1?user=user&password=password /home/codekeeper/projects/diff.sql</b>
+	Файл diff.sql содержит сгенерируемый скрипт наката для обновления базы данных
+</p>
+</body>
+</html>

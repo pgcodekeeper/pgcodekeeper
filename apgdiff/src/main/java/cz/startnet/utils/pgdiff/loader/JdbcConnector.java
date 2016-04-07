@@ -10,6 +10,8 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.BundleContext;
 
@@ -19,13 +21,14 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcConnector {
-    private final String host;
-    private final int port;
-    private final String user;
-    private final String pass;
-    private final String dbName;
+    private String host;
+    private int port;
+    private String user;
+    private String pass;
+    private String dbName;
     private final String encoding;
     private final String timezone;
+    private String url;
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding, String timezone){
         this.host = host;
@@ -35,6 +38,18 @@ public class JdbcConnector {
         this.encoding = encoding;
         this.timezone = timezone;
         this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
+        this.url = null;
+    }
+    
+    public JdbcConnector(String url){
+        this.url = url;
+        this.host = null;
+        this.port = 0;
+        this.user = null;
+        this.dbName = null;
+        this.encoding = ApgdiffConsts.UTF_8;
+        this.timezone = ApgdiffConsts.UTC;
+        this.pass = null;
     }
 
     /**
@@ -59,21 +74,50 @@ public class JdbcConnector {
 
     private Connection establishConnection() throws SQLException, ClassNotFoundException {
         Properties props = new Properties();
-        props.setProperty("user", user); //$NON-NLS-1$
-        props.setProperty("password", pass); //$NON-NLS-1$
         String apgdiffVer = "unknown"; //$NON-NLS-1$
         BundleContext bctx = Activator.getContext();
         if (bctx != null) {
             apgdiffVer = bctx.getBundle().getVersion().toString();
         }
-        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer); //$NON-NLS-1$ //$NON-NLS-2$
+        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
+        if (url != null && !url.isEmpty()){
+            Pattern userPattern = Pattern.compile(".*user=([a-zA-Z_]+).*"); 
+            Pattern passPattern = Pattern.compile(".*password=([0-9a-zA-Z_]+).*"); 
+            Matcher m = userPattern.matcher(url);
+            if(!m.find()){
+                    user = System.getProperty("user.name");
+                    props.put(user, user);
+            } else {
+                user = m.group(1);
+            }
+            m = passPattern.matcher(url);
+            if(!m.find()){
+                Pattern hostPortPattern = Pattern.compile(".*://([^:^/]*)(:([0-9]+))?/([0-9a-zA-Z_]+)?(.*)?");
+                m = hostPortPattern.matcher(url);
+                if (m.find()){
+                    host = m.group(1);
+                    port = Integer.valueOf(m.group(3));
+                    if (port == 0){
+                        port = ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT;
+                    }
+                    dbName = m.group(4);
+                    pass = getPgPassPassword();
+                    props.put("password", pass);
+                }
+            }
+            return DriverManager.getConnection(url, props);
+        }
+        
+        props.setProperty("user", user); //$NON-NLS-1$
+        props.setProperty("password", pass); //$NON-NLS-1$
+         //$NON-NLS-1$ //$NON-NLS-2$
 
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +  //$NON-NLS-1$
                 host + ":" + port + ", db name " + dbName + ", username " + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        Connection connection = DriverManager.getConnection(
+        return DriverManager.getConnection(
                 "jdbc:postgresql://" + host + ":" + port + "/" + dbName, props); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        return connection;
+        
     }
 
     String getEncoding(){

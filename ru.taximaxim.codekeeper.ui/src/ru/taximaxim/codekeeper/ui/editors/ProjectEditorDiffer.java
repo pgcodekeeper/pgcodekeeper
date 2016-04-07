@@ -797,7 +797,7 @@ class DiffPage extends DiffPresentationPane {
     }
 
     private void showEditor(Differ differ) throws PartInitException {
-        List<PgStatement> list = (LinkedList<PgStatement>)PgDatabase.listPgObjects(dbSource.getDbObject()).values();
+        List<PgStatement> list = new LinkedList<>(PgDatabase.listPgObjects(dbSource.getDbObject()).values());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 list);
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()

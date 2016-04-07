@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -79,7 +81,9 @@ public final class PgDiff {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments, null, 1, null);
         } else if(format.equals("db")) {
-            throw new UnsupportedOperationException("DB connection is not yet implemented!");
+            JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
+            return loader.getDbFromJdbc();
+            //throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
 
         throw new UnsupportedOperationException(

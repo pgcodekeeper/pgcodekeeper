@@ -384,7 +384,6 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // RULES
-        //TODO Add exception
         prepStatRules.setLong(1, schemaOid);
         try(ResultSet resRule = prepStatRules.executeQuery()){
             while(resRule.next()){
@@ -407,7 +406,6 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
         }
-
         setSequencesCacheValue(s);
         return s;
     }
@@ -1091,7 +1089,6 @@ public class JdbcLoader implements PgCatalogStrings {
      *      boolean before;
      * @param schemaName
      */
-    //TODO Доделать
     private PgRule getRule(ResultSet res, String schemaName)
             throws SQLException, UnsupportedEncodingException {
         String ruleName = res.getString("rulename");
