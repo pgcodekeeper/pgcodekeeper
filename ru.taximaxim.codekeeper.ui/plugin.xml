@@ -216,6 +216,12 @@
                   mnemonic="F"
                   style="push">
             </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                  label="diff databases"
+                  mnemonic="F"
+                  style="push">
+            </command>
          </menu>
       </menuContribution>
    </extension>

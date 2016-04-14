@@ -327,12 +327,12 @@ public abstract class DiffPresentationPane extends Composite {
     }
     
     public void setInputs(TreeDiffer treeDiffer, boolean isProjSrc){
-        diffTable.setInput(treeDiffer, !isProjSrc);
+        diffTable.setInput(treeDiffer, isProjSrc);
         diffPane.setInput(null);
     }
 
     public void clearInputs() {
-        diffTable.setInput(null, !isProjSrc);
+        diffTable.setInput(null, isProjSrc);
         diffPane.setInput(null);
     }
 

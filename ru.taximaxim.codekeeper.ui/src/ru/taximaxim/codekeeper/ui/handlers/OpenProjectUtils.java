@@ -29,20 +29,22 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public final class OpenProjectUtils {
 
-    static PgDbProject getProject(ExecutionEvent event) {
-        ISelection sel = HandlerUtil.getActiveMenuSelection(event);
-        IStructuredSelection selection = (IStructuredSelection) sel;
-        Object firstElement = selection.getFirstElement();
-        if (firstElement instanceof IProject) {
-            IProject proj = (IProject)firstElement;
-            try {
+    static PgDbProject getProject(ExecutionEvent event){
+        try{
+            ISelection sel = HandlerUtil.getActiveMenuSelection(event);
+            IStructuredSelection selection = (IStructuredSelection) sel;
+            if (selection == null){
+                return null;
+            }
+            Object firstElement = selection.getFirstElement();
+            if (firstElement instanceof IProject) {
+                IProject proj = (IProject)firstElement;
                 if (proj.getNature(NATURE.ID) != null) {
                     return new PgDbProject(proj);
                 }
-            } catch (CoreException e) {
-                // silently return null incorrect project
-                return null;
             }
+        } catch (CoreException ce){
+            Log.log(Log.LOG_ERROR, ce.getMessage());
         }
         return null;
     }

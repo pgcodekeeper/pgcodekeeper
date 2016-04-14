@@ -788,9 +788,9 @@ public class DiffTableViewer extends Composite {
             this.treeRoot = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDiffTree() : differ.getDiffTreeRevert();
             this.dbSource = (differ == null) ? null :
-                reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-                this.dbTarget = (differ == null) ? null :
-                    reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+                reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+            this.dbTarget = (differ == null) ? null :
+                    reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;

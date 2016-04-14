@@ -45,6 +45,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     private final List<PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private final Differ differ;
+    private final boolean isSrc2Trg;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private final IProject proj;
     private PgDbParser parser;
@@ -66,15 +67,11 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return scriptFileEncoding;
     }
 
-    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, List<PgStatement> list) {
+    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, List<PgStatement> list, boolean isSrc2Trg) {
         this.differ = differ;
-        this.proj = proj2.getProject();
+        this.proj = null;
         this.objList = list;
-        try {
-            this.scriptFileEncoding = proj2.getProjectCharset();
-        } catch (CoreException e) {
-            // Use UTF-8
-        }
+        this.isSrc2Trg = isSrc2Trg;
     }
 
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {
@@ -214,6 +211,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         this.dbPort = dbPort;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object getAdapter(Class adapter) {
         // TODO Auto-generated method stub
@@ -257,7 +255,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     public IStorage getStorage() {
         try {
             if (script == null) {
-                script = differ.getDiffDirect();
+                script = isSrc2Trg ? differ.getDiffDirect() : differ.getDiffReverse();
             }
             return new StringStorage(script);
         } catch (PgCodekeeperUIException e) {
@@ -273,6 +271,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             this.str = str;
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Object getAdapter(Class adapter) {
             return null;

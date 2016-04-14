@@ -1,9 +1,13 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -28,14 +32,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 public class DbStorePicker extends Group {
@@ -50,13 +57,34 @@ public class DbStorePicker extends Group {
     private boolean isLoad;
     
     private List<Path> dumpFileHistory;
+    private List<IProject> pgCodeKeeperProjectlist;
 
     private DbStoreChangeListener dbStoreChangeListener = new DbStoreChangeListener();
     
+    /**
+     * @param parent
+     * @param style
+     * @param allowShellResize
+     * @param prefStor
+     * @param isLoad if true then through the combobox there is a choice file_dump
+     */
     public DbStorePicker(Composite parent, int style, boolean allowShellResize,
-            IPreferenceStore prefStor, boolean isLoad) {
+            IPreferenceStore prefStor, boolean isLoad){
+        this(parent, style, allowShellResize, prefStor, isLoad, "");
+    }
+    
+    /**
+     * @param parent
+     * @param style
+     * @param allowShellResize
+     * @param prefStor
+     * @param isLoad if true then through the combobox there is a choice file_dump
+     * @param label
+     */
+    public DbStorePicker(Composite parent, int style, boolean allowShellResize,
+            IPreferenceStore prefStor, boolean isLoad, String label) {
         super(parent, style);
-        
+        setText(label);
         this.isLoad = isLoad;
         dumpFileHistory = new LinkedList<>();
         
@@ -67,6 +95,19 @@ public class DbStorePicker extends Group {
         this.prefStore = prefStor;
         
         dumpFileHistory.addAll(DbInfo.getDumpFileHistory(this.prefStore.getString(PREF.DB_STORE_HISTORY)));
+        
+        pgCodeKeeperProjectlist = new LinkedList<>();
+        if (isLoad){
+            for (IProject proj : ResourcesPlugin.getWorkspace().getRoot().getProjects()){
+                try {
+                    if (proj.isOpen() && proj.hasNature(NATURE.ID)){
+                        pgCodeKeeperProjectlist.add(proj);
+                    }
+                } catch (CoreException e1) {
+                    Log.log(Log.LOG_ERROR, e1.getLocalizedMessage());
+                }
+            }
+        }
 
         prefStore.addPropertyChangeListener(dbStoreChangeListener);
 
@@ -108,7 +149,19 @@ public class DbStorePicker extends Group {
                         dumpFileHistory.add(new Path(pathToDump));
                         prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
                     }
-                    cmbDbNames.select(cmbDbNames.getItemCount()-1);
+                    cmbDbNames.select(cmbDbNames.indexOf(new File(pathToDump).getName()));
+                }
+                if ((selected instanceof String) && "Загрузить из директории...".equals((String)selected)){
+                    DirectoryDialog dialog = new DirectoryDialog(getShell());
+                    String pathToDump = dialog.open();
+                    if (pathToDump != null){
+                        if (dumpFileHistory.size() == 3) {
+                            dumpFileHistory.remove(0);
+                        }
+                        dumpFileHistory.add(new Path(pathToDump));
+                        prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
+                    }
+                    cmbDbNames.select(cmbDbNames.indexOf(new File(pathToDump).getName()));
                 }
             }
         }); 
@@ -139,6 +192,10 @@ public class DbStorePicker extends Group {
             list.add("");
             list.add("Загрузить из файла...");
             list.addAll(DbInfo.getDumpFileHistory(this.prefStore.getString(PREF.DB_STORE_HISTORY)));
+            list.add("");
+            list.add("Загрузить из директории...");
+            if (pgCodeKeeperProjectlist != null)
+            list.addAll(pgCodeKeeperProjectlist);
         }
         cmbDbNames2.setInput(list);
     }
@@ -159,6 +216,11 @@ public class DbStorePicker extends Group {
     public void select(int index){
         cmbDbNames.select(index);
     }
+    
+    //TODO добавить селект в который будет передаваться объект и определяться айтем
+    public void select(String name){
+        cmbDbNames.select(cmbDbNames.indexOf(name));
+    }
 
     public String getSelectedName (){
         return (String)cmbDbNames2.getStructuredSelection().getFirstElement();
@@ -169,6 +231,33 @@ public class DbStorePicker extends Group {
         if (path instanceof Path){
             return ((Path)path).toOSString();
         } else return null;
+    }
+    
+    public String getPathOfProject(){
+        Object path = cmbDbNames2.getStructuredSelection().getFirstElement();
+        if (path instanceof IProject){
+            return ((IProject)path).getLocation().toOSString();
+        } else return null;
+    }
+    
+    public String getInfo(){
+        Object obj = cmbDbNames2.getStructuredSelection().getFirstElement();
+        if (obj instanceof IProject){
+            return ((IProject)obj).getLocation().toOSString();
+        } else if (obj instanceof Path){
+            return ((Path)obj).toOSString();
+        } else if (obj instanceof DbInfo){
+            DbInfo dbInfo = (DbInfo) obj;
+            StringBuffer sb = new StringBuffer();
+            sb.append(dbInfo.getDbhost())
+                .append(":")
+                .append(dbInfo.getDbport())
+                .append(":")
+                .append(dbInfo.getDbname());
+            return sb.toString();
+        } else {
+            return "";
+        }
     }
 
     public void clearSelection(){
@@ -202,6 +291,15 @@ public class DbStorePicker extends Group {
         // allow subclassing, we just use Group as a Composite
         // ~should~ be fine
     }
+    
+    //TODO доделать!!!!
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DbStorePicker)){
+            return false;
+        }
+        return true;
+    }
 
     private class DbStoreChangeListener implements IPropertyChangeListener {
 
@@ -220,9 +318,11 @@ public class DbStorePicker extends Group {
             if (element instanceof DbInfo){
                 return ((DbInfo)element).getName();
             }
-            
             if (element instanceof Path){
                 return ((Path)element).lastSegment();
+            }
+            if (element instanceof IProject){
+                return ((IProject)element).getName();
             }
             return super.getText(element);
         }

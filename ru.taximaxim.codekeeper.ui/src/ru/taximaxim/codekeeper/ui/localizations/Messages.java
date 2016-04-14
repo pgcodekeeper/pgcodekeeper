@@ -415,6 +415,11 @@ public final class Messages extends NLS {
 
     // other
     public static String feedback_message_sent_successfull;
+    
+    // diff wizard
+    public static String diffwizard_diffpage_source_warning;
+    public static String diffwizard_diffpage_target_warning;
+    public static String diffwizard_diffpage_select;
 
     // SONAR-ON
 

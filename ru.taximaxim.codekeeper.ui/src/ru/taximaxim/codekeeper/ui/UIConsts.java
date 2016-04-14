@@ -122,6 +122,7 @@ public interface UIConsts {
 
     interface FILE {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
+        String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$

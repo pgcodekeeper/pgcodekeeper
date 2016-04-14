@@ -15,7 +15,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -308,11 +307,11 @@ class PageDb extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        if (storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null){
+        if (storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null || storePicker.getPathOfProject() != null){
             setErrorMessage(null);
             return true;
         } else {
-            setErrorMessage("Select a db store or dump file!");
+            setErrorMessage("Select a db store, dump file or project!");
             return false;
         }
     }

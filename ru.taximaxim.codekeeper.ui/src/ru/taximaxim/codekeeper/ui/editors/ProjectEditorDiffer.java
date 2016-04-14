@@ -106,7 +106,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     private DbSource dbProject, dbRemote;
     private DbStorePicker storePickerPrj, storePickerRem;
     private Button btnGetChangesPrj, btnGetChangesRem;
-//    private TreeDiffer treeDiffer, treeDifferRevert;
     private DBSources selectedDBSource = DBSources.SOURCE_TYPE_JDBC;
     
     public DbStorePicker getStorePickerPrj() {
@@ -392,8 +391,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                             }*/
                             commit.setTreeDiffer(newDiffer);
                             diff.setTreeDiffer(newDiffer);
-                            commit.setInputs(newDiffer, false);
-                            diff.setInputs(newDiffer, true);
+                            commit.setInputs(newDiffer, true);
+                            diff.setInputs(newDiffer, false);
                             commit.diffLoaded();
                             diff.diffLoaded();
                         }
@@ -474,6 +473,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         return true;
     }
     
+    /**
+     * Set db source and db target for update project and update db tabs
+     */
     private void setDbSrcAndTrgToCommitAndDiffTab(){
         commit.setDbSource(dbProject);
         commit.setDbTarget(dbRemote);
@@ -799,7 +801,7 @@ class DiffPage extends DiffPresentationPane {
     private void showEditor(Differ differ) throws PartInitException {
         List<PgStatement> list = new LinkedList<>(PgDatabase.listPgObjects(dbSource.getDbObject()).values());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                list);
+                list, true);
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         .openEditor(input, EDITOR.ROLLON);
     }

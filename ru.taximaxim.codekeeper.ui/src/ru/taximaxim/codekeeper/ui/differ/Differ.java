@@ -117,6 +117,10 @@ public class Differ implements IRunnableWithProgress {
         return script;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     private void checkFinished() throws PgCodekeeperUIException {
         if(!finished) {
             throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);

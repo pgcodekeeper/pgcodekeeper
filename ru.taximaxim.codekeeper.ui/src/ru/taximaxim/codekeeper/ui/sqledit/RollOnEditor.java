@@ -12,13 +12,11 @@ import java.util.ListIterator;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -73,7 +71,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
@@ -237,14 +234,15 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         this.differ = addDepcy.getDiffer();
 
         this.oldDepcy = differ.getAdditionalDepciesSource();
-        differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
-        IEclipsePreferences projPrefs = new ProjectScope(addDepcy.getProject())
-                .getNode(UIConsts.PLUGIN_ID.THIS);
+        if (oldDepcy != null)
+            differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
+/*        IEclipsePreferences projPrefs = new ProjectScope(addDepcy.getProject())
+                .getNode(UIConsts.PLUGIN_ID.THIS);*/
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
-        this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        this.connectionTimezone = differ.getTimezone();//projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         this.scriptFileEncoding = addDepcy.getScriptFileEncoding();
         setDbParams(addDepcy.dbHost, addDepcy.dbPort, addDepcy.dbName,
                 addDepcy.dbUser, addDepcy.dbPass);
@@ -733,18 +731,17 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void partClosed(IWorkbenchPartReference partRef) {
         if (addDepcy != null) {
             if (isRunning) {
-                /*MessageBox errorDialog = new MessageBox(this.getEditorSite()
+                MessageBox errorDialog = new MessageBox(this.getEditorSite()
                         .getShell(), SWT.OK);
-                errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
-                errorDialog.open();*/
+                //errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
+                errorDialog.open();
             } else {
                 differ.setAdditionalDepciesSource(oldDepcy);
                 try {
                     history.addHistoryEntry(cmbScript.getText());
                 } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
-                            Messages.SqlScriptDialog_error_adding_command_history,
-                            e);
+                            Messages.SqlScriptDialog_error_adding_command_history, e);
                 }
             }
         }
