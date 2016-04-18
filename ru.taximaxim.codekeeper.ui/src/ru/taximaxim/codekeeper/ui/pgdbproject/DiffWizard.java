@@ -322,7 +322,8 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
-                sourceInfo.setText(storePickerSource.getInfo());
+  //              sourceInfo.setText(storePickerSource.getInfo());
+                sourceInfo.setText(getSourceInfo());
             }
         });
         
@@ -385,7 +386,8 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
-                targetInfo.setText(storePickerTarget.getInfo());
+ //               targetInfo.setText(storePickerTarget.getInfo());
+                targetInfo.setText(getTargetInfo());
             }
         });
         
@@ -417,6 +419,14 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezoneTarget.select(cmbTimezoneTarget.indexOf(ApgdiffConsts.UTC));
         
         setControl(container);
+    }
+    
+    private String getSourceInfo(){
+        return storePickerSource.getInfo();
+    }
+    
+    private String getTargetInfo(){
+        return storePickerTarget.getInfo();
     }
 
     @Override
