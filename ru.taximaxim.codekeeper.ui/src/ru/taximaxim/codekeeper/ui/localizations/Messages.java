@@ -420,6 +420,8 @@ public final class Messages extends NLS {
     public static String diffwizard_diffpage_source_warning;
     public static String diffwizard_diffpage_target_warning;
     public static String diffwizard_diffpage_select;
+    public static String diffwizard_pageresult_description;
+    public static String diffwizard_pagepartial_description;
 
     // SONAR-ON
 

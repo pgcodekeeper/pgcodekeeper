@@ -439,7 +439,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 return false;
             }
             dbRemote = DbSource.fromFile(projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                    dumpfile, proj.getProjectCharset());
+                    dumpfile, proj.getProjectCharset(), ApgdiffConsts.UTC);
             selectedDBSource = DBSources.SOURCE_TYPE_DUMP;
             setDbSrcAndTrgToCommitAndDiffTab();
             return true;

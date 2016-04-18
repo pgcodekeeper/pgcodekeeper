@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -45,7 +44,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
-public class DbStorePicker extends Group {
+public class DbStorePicker extends Composite {
 
     private final boolean allowShellResize;
 
@@ -84,7 +83,6 @@ public class DbStorePicker extends Group {
     public DbStorePicker(Composite parent, int style, boolean allowShellResize,
             IPreferenceStore prefStor, boolean isLoad, String label) {
         super(parent, style);
-        setText(label);
         this.isLoad = isLoad;
         dumpFileHistory = new LinkedList<>();
         

@@ -83,7 +83,7 @@ public class DbSourceTest {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
-            performTest(DbSource.fromDirTree(true, exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
+            performTest(DbSource.fromDirTree(true, exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8, ApgdiffConsts.UTC));
         }
     }
 
@@ -91,7 +91,7 @@ public class DbSourceTest {
     public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
+        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8, ApgdiffConsts.UTC));
     }
 
     @Test

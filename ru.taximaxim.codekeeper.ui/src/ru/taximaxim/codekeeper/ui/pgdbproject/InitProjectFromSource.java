@@ -11,6 +11,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
@@ -77,7 +78,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(proj.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                    dumpPath, proj.getProjectCharset()).get(taskpm);
+                    dumpPath, proj.getProjectCharset(), ApgdiffConsts.UTC).get(taskpm);
             break;
 
         case SOURCE_TYPE_JDBC:

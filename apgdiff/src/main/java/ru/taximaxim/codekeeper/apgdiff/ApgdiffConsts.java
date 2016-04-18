@@ -34,6 +34,46 @@ public interface ApgdiffConsts {
         String JDBC_DRIVER = "org.postgresql.Driver";
         int JDBC_DEFAULT_PORT = 5432;
     }
+    
+    String[] TIME_ZONES = {
+            "GMT", //$NON-NLS-1$
+            "UTC-12:00", //$NON-NLS-1$
+            "UTC-11:00", //$NON-NLS-1$
+            "UTC-10:00", //$NON-NLS-1$
+            "UTC-09:00", //$NON-NLS-1$
+            "UTC-08:00", //$NON-NLS-1$
+            "UTC-07:00", //$NON-NLS-1$
+            "UTC-06:00", //$NON-NLS-1$
+            "UTC-05:00", //$NON-NLS-1$
+            "UTC-04:00", //$NON-NLS-1$
+            "UTC-03:00", //$NON-NLS-1$
+            "UTC-02:00", //$NON-NLS-1$
+            "UTC-01:00", //$NON-NLS-1$
+            "UTC", //$NON-NLS-1$
+            "UTC+01:00", //$NON-NLS-1$
+            "UTC+02:00", //$NON-NLS-1$
+            "UTC+03:00", //$NON-NLS-1$
+            "UTC+04:00", //$NON-NLS-1$
+            "UTC+05:00", //$NON-NLS-1$
+            "UTC+06:00", //$NON-NLS-1$
+            "UTC+07:00", //$NON-NLS-1$
+            "UTC+08:00", //$NON-NLS-1$
+            "UTC+09:00", //$NON-NLS-1$
+            "UTC+10:00", //$NON-NLS-1$
+            "UTC+11:00", //$NON-NLS-1$
+            "UTC+12:00" //$NON-NLS-1$ 
+    };
+    
+    String[] ENCODINGS = {
+            "UTF-8", //$NON-NLS-1$
+            "UTF-16", //$NON-NLS-1$
+            "UTF-16BE", //$NON-NLS-1$
+            "UTF-16LE", //$NON-NLS-1$
+            "US-ASCII", //$NON-NLS-1$
+            "KOI8-R", //$NON-NLS-1$
+            "windows-1251", //$NON-NLS-1$
+            "windows-1252", //$NON-NLS-1$
+    };
 
     Set<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
             "abstime", //$NON-NLS-1$

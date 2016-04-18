@@ -6,13 +6,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -140,8 +137,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 }
                 dbSource = treediffer.getDbSource();
                 dbTarget = treediffer.getDbTarget();
-                timezone = pageDiff.getTimezone();
-                encoding = pageDiff.getEncoding();
+                timezone = pageDiff.getTimezoneSource();
+                encoding = pageDiff.getEncodingSource();
 
                 pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
                         treediffer);
@@ -213,8 +210,10 @@ class PageDiff extends WizardPage implements Listener {
     private final PgDbProject proj;
 
     private Composite container;
-    private Combo cmbEncoding;
-    private Combo cmbTimezone;
+    private Combo cmbEncodingSource;
+    private Combo cmbTimezoneSource;
+    private Combo cmbEncodingTarget;
+    private Combo cmbTimezoneTarget;
     private DbStorePicker storePickerSource, storePickerTarget;
     
     public PageDiff(String pageName, PgDbProject proj, IPreferenceStore mainPrefs) {
@@ -236,21 +235,31 @@ class PageDiff extends WizardPage implements Listener {
         throw new PgCodekeeperUIException(Messages.diffWizard_no_target_type_selection_found);
     }
 
-    public String getEncoding() {
-        return cmbEncoding.getText();
+    public String getEncodingSource() {
+        return cmbEncodingSource.getText();
     }
 
-    public String getTimezone() {
-        return cmbTimezone.getText();
+    public String getTimezoneSource() {
+        return cmbTimezoneSource.getText();
+    }
+    
+    public String getEncodingTarget() {
+        return cmbEncodingSource.getText();
+    }
+
+    public String getTimezoneTarget() {
+        return cmbTimezoneSource.getText();
     }
     
     public DbSource getSourceDb(boolean isSource) throws PgCodekeeperUIException {
         DbStorePicker storePicker = isSource ? storePickerSource : storePickerTarget;
+        String encoding = isSource ? cmbEncodingSource.getText() : cmbEncodingTarget.getText();
+        String timezone = isSource ? cmbTimezoneSource.getText() : cmbTimezoneTarget.getText();
         DbSource dbs = null;
         switch (getTargetType(storePicker)) {
         case DUMP:
             dbs = DbSource.fromFile(true,
-                    storePicker.getPathOfFile(), cmbEncoding.getText());
+                    storePicker.getPathOfFile(), encoding, timezone);
             break;
             
         case JDBC:
@@ -264,8 +273,8 @@ class PageDiff extends WizardPage implements Listener {
                         storePicker.getDbInfo().getDbuser(),
                         storePicker.getDbInfo().getDbpass(), 
                         storePicker.getDbInfo().getDbname(),
-                        cmbEncoding.getText(),
-                        cmbTimezone.getText());
+                        encoding,
+                        timezone);
             } else {
                 dbs = DbSource.fromJdbc(
                         storePicker.getDbInfo().getDbhost(),
@@ -273,14 +282,14 @@ class PageDiff extends WizardPage implements Listener {
                         storePicker.getDbInfo().getDbuser(),
                         storePicker.getDbInfo().getDbpass(), 
                         storePicker.getDbInfo().getDbname(),
-                        cmbEncoding.getText(),
-                        cmbTimezone.getText(),
+                        encoding,
+                        timezone,
                         true);
             }
             break;
         
         case PROJ:
-            dbs = DbSource.fromDirTree(true, storePicker.getPathOfProject(), cmbEncoding.getText());
+            dbs = DbSource.fromDirTree(true, storePicker.getPathOfProject(), encoding, timezone);
             break;
         default:
             throw new PgCodekeeperUIException(Messages.diffWizard_unexpected_target_type_value);
@@ -291,76 +300,122 @@ class PageDiff extends WizardPage implements Listener {
     @Override
     public void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout());
+        container.setLayout(new GridLayout(2, true));
         
-        storePickerSource = new DbStorePicker(container, SWT.BORDER, false, mainPrefs, true, Messages.diffWizard_source);
+        //Source column
+        Group sourceComp = new Group(container, SWT.BORDER);
+        sourceComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout gLayout = new GridLayout();
+        gLayout.marginWidth = gLayout.marginHeight = 0;
+        sourceComp.setLayout(gLayout);
+        sourceComp.setText(Messages.diffWizard_source);
+        
+        storePickerSource = new DbStorePicker(sourceComp, SWT.NONE, false, mainPrefs, true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         storePickerSource.setLayoutData(gd);
         
-        Text text1 = new Text(container, SWT.NONE);
-        text1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Text sourceInfo = new Text(sourceComp, SWT.NONE);
+        sourceInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePickerSource.addListenerToCombo(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
-                text1.setText(storePickerSource.getInfo());
+                sourceInfo.setText(storePickerSource.getInfo());
             }
         });
         
-        storePickerTarget = new DbStorePicker(container, SWT.BORDER, false, mainPrefs, true, Messages.diffWizard_target);
+        Composite grpEncodingSource = new Composite(sourceComp, SWT.NONE);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        grpEncodingSource.setLayoutData(gd);
+        grpEncodingSource.setLayout(new GridLayout(2, false));
+
+        new Label(grpEncodingSource, SWT.NONE).setText(Messages.diffWizard_target_encoding);
+
+        cmbEncodingSource = new Combo(grpEncodingSource,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        //Set<String> charsets = Charset.availableCharsets().keySet();
+        //cmbEncodingSource.setItems(charsets.toArray(new String[charsets.size()]));
+        String[] charsets = ApgdiffConsts.ENCODINGS;
+        Arrays.sort(charsets);
+        cmbEncodingSource.setItems(charsets);
+        try {
+            cmbEncodingSource.select(
+                    cmbEncodingSource.indexOf(proj!= null ? proj.getProjectCharset() : ApgdiffConsts.UTF_8));
+        } catch (CoreException e1) {
+            setErrorMessage(Messages.DiffWizard_project_charset_error);
+            Log.log(Log.LOG_ERROR, "Cannot get project charset", e1); //$NON-NLS-1$
+            cmbEncodingSource.select(
+                    cmbEncodingSource.indexOf(ApgdiffConsts.UTF_8));
+        }
+
+        new Label(grpEncodingSource, SWT.NONE).setText(Messages.diffWizard_target_timezone);
+
+        /* 
+         * Combo.setItem is very slow on gtk3
+         * Поэтому пока что мы добавляем ограниченное число временных зон. В дальнейшем если эта проблема 
+         * будет пофикшена, то можно будет вернуть весь список.
+         * Eclipse 4.5.2
+         */
+        //String[] availableTimezones = TimeZone.getAvailableIDs();
+        String[] availableTimezones = ApgdiffConsts.TIME_ZONES;
+        Arrays.sort(availableTimezones);
+        cmbTimezoneSource = new Combo(grpEncodingSource, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbTimezoneSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbTimezoneSource.setItems(availableTimezones);
+        cmbTimezoneSource.select(cmbTimezoneSource.indexOf(proj != null ?
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC) : ApgdiffConsts.UTC));
+        
+        //Target column
+        Group targetComp = new Group(container, SWT.BORDER);
+        targetComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        targetComp.setLayout(gLayout);
+        targetComp.setText(Messages.diffWizard_target);
+        
+        storePickerTarget = new DbStorePicker(targetComp, SWT.NONE, false, mainPrefs, true);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
         storePickerTarget.setLayoutData(gd);
         
-        Text text2 = new Text(container, SWT.NONE);
-        text2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Text targetInfo = new Text(targetComp, SWT.NONE);
+        targetInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         storePickerTarget.addListenerToCombo(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
-                text2.setText(storePickerTarget.getInfo());
+                targetInfo.setText(storePickerTarget.getInfo());
             }
         });
         
         if (proj != null){
             storePickerSource.select(proj.getProjectName());
-            storePickerTarget
-            .select(proj.getProjectName());
+            storePickerTarget.select(proj.getProjectName());
+            sourceInfo.setText(storePickerSource.getInfo());
+            targetInfo.setText(storePickerSource.getInfo());
         }
-
-        Group grpEncoding = new Group(container, SWT.NONE);
-        grpEncoding.setText(Messages.diffWizard_encoding);
+        
+        Composite grpEncodingTarget = new Composite(targetComp, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
-        grpEncoding.setLayoutData(gd);
-        grpEncoding.setLayout(new GridLayout(2, false));
+        grpEncodingTarget.setLayoutData(gd);
+        grpEncodingTarget.setLayout(new GridLayout(2, false));
 
-        new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_encoding);
+        new Label(grpEncodingTarget, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
-        cmbEncoding = new Combo(grpEncoding,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
-        Set<String> charsets = Charset.availableCharsets().keySet();
-        cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        try {
-            cmbEncoding.select(
-                    cmbEncoding.indexOf(proj!= null ? proj.getProjectCharset() : ApgdiffConsts.UTF_8));
-        } catch (CoreException e1) {
-            setErrorMessage(Messages.DiffWizard_project_charset_error);
-            Log.log(Log.LOG_ERROR, "Cannot get project charset", e1); //$NON-NLS-1$
-            cmbEncoding.select(
-                    cmbEncoding.indexOf(ApgdiffConsts.UTF_8));
-        }
+        cmbEncodingTarget = new Combo(grpEncodingTarget,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        //cmbEncodingTarget.setItems(charsets.toArray(new String[charsets.size()]));
+        cmbEncodingTarget.setItems(charsets);
+        cmbEncodingTarget.select(cmbEncodingTarget.indexOf(ApgdiffConsts.UTF_8));
 
-        new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
-
-        String[] availableTimezones = TimeZone.getAvailableIDs();
-        Arrays.sort(availableTimezones);
-        cmbTimezone = new Combo(grpEncoding, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
-        cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbTimezone.setItems(availableTimezones);
-        cmbTimezone.select(cmbTimezone.indexOf(proj != null ?
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC) : ApgdiffConsts.UTC));
-
+        new Label(grpEncodingTarget, SWT.NONE).setText(Messages.diffWizard_target_timezone);
+        
+        cmbTimezoneTarget = new Combo(grpEncodingTarget, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbTimezoneTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbTimezoneTarget.setItems(availableTimezones);
+        cmbTimezoneTarget.select(cmbTimezoneTarget.indexOf(ApgdiffConsts.UTC));
+        
         setControl(container);
     }
 
@@ -419,6 +474,7 @@ class PagePartial extends WizardPage {
         super(pageName, pageName, null);
         this.mainPrefs = mainPrefs;
         this.prevPage = prevPage;
+        setDescription(Messages.diffwizard_pagepartial_description);
     }
 
     public void layout() {
@@ -484,6 +540,7 @@ class PageResult extends WizardPage {
     public PageResult(String pageName, IWizardPage prevPage) {
         super(pageName, pageName, null);
         this.prevPage = prevPage;
+        setDescription(Messages.diffwizard_pageresult_description);
     }
 
     public void layout() {
