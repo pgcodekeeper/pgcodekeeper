@@ -316,14 +316,13 @@ class PageDiff extends WizardPage implements Listener {
         gd.verticalIndent = 12;
         storePickerSource.setLayoutData(gd);
         
-        Text sourceInfo = new Text(sourceComp, SWT.NONE);
+        final Text sourceInfo = new Text(sourceComp, SWT.NONE);
         sourceInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePickerSource.addListenerToCombo(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
-  //              sourceInfo.setText(storePickerSource.getInfo());
-                sourceInfo.setText(getSourceInfo());
+                sourceInfo.setText(storePickerSource.getInfo());
             }
         });
         
@@ -379,15 +378,14 @@ class PageDiff extends WizardPage implements Listener {
         gd.verticalIndent = 12;
         storePickerTarget.setLayoutData(gd);
         
-        Text targetInfo = new Text(targetComp, SWT.NONE);
+        final Text targetInfo = new Text(targetComp, SWT.NONE);
         targetInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         storePickerTarget.addListenerToCombo(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 getWizard().getContainer().updateButtons();
- //               targetInfo.setText(storePickerTarget.getInfo());
-                targetInfo.setText(getTargetInfo());
+                targetInfo.setText(storePickerTarget.getInfo());
             }
         });
         
@@ -419,14 +417,6 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezoneTarget.select(cmbTimezoneTarget.indexOf(ApgdiffConsts.UTC));
         
         setControl(container);
-    }
-    
-    private String getSourceInfo(){
-        return storePickerSource.getInfo();
-    }
-    
-    private String getTargetInfo(){
-        return storePickerTarget.getInfo();
     }
 
     @Override
