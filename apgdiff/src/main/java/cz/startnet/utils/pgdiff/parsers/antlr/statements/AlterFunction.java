@@ -1,6 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -15,8 +19,9 @@ public class AlterFunction extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.function_parameters().name);
-        String schemaName = getSchemaName(ctx.function_parameters().name);
+        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }

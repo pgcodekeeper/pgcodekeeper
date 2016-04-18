@@ -22,7 +22,9 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -898,8 +900,9 @@ public class JdbcLoader implements PgCatalogStrings {
         if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null &&
                 inherits.length > 0){
             for (String inherited : inherits){
-                t.addInherits(
-                        PgDiffUtils.getSecondObjectName(inherited), PgDiffUtils.getObjectName(inherited));
+                // TODO get separate IDs from DB
+                QNameParser qname = new QNameParser(inherited);
+                t.addInherits(qname.getSecondName(), qname.getFirstName());
             }
         }
 
@@ -957,8 +960,9 @@ public class JdbcLoader implements PgCatalogStrings {
         SQLParser parser = AntlrParser.makeBasicParser(string, getCurrentLocation());
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, parser.value_expression());
-        return new GenericColumn(ParserAbstract.getSchemaName(fs.getValue()),
-                ParserAbstract.getName(fs.getValue()), null);
+        List<IdentifierContext> ids = fs.getName().identifier();
+        return new GenericColumn(QNameParser.getSchemaName(ids),
+                QNameParser.getFirstName(ids), null);
     }
 
     private void fillStorageParams(StringBuilder storageParameters,

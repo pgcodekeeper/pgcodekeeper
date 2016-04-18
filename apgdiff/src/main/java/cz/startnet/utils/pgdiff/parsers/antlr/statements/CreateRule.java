@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -52,7 +53,7 @@ public class CreateRule extends ParserAbstract {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                PgFunction func = new PgFunction(getName(functparam.name), null);
+                PgFunction func = new PgFunction(QNameParser.getFirstName(functparam.name.identifier()), null);
                 fillArguments(functparam.function_args(), func, getDefSchemaName());
                 db.getSchema(getDefSchemaName())
                 .getFunction(func.getSignature())
@@ -124,9 +125,10 @@ public class CreateRule extends ParserAbstract {
         }
         // Разобрать объекты
         for (Schema_qualified_nameContext tbl : ctx_body.on_table().obj_name.name) {
-            String firstPart = getName(tbl);
-            String secondPart = getTableName(tbl);
-            String thirdPart = getSchemaName(tbl);
+            List<IdentifierContext> ids = tbl.identifier();
+            String firstPart = QNameParser.getFirstName(ids);
+            String secondPart = QNameParser.getSecondName(ids);
+            String thirdPart = QNameParser.getSchemaName(ids);
             String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
             if (thirdPart != null && !thirdPart.equals(secondPart)) {
                 schemaName = thirdPart;
@@ -179,9 +181,10 @@ public class CreateRule extends ParserAbstract {
         if (type == null) {
             return null;
         }
-        String firstPart = getName(name);
-        String secondPart = getTableName(name);
-        String thirdPart = getSchemaName(name);
+        List<IdentifierContext> ids = name.identifier();
+        String firstPart = QNameParser.getFirstName(ids);
+        String secondPart = QNameParser.getSecondName(ids);
+        String thirdPart = QNameParser.getSchemaName(ids);
         String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
         PgStatement statement = null;
         switch (type) {

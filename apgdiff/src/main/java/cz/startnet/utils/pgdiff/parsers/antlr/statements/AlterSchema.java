@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -16,7 +17,7 @@ public class AlterSchema extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.schema_with_name().name);
+        String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
         PgSchema sch = db.getSchema(name);
         if (sch == null) {
             logError("SCHEMA", name);

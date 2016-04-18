@@ -1,29 +1,34 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateIndex extends ParserAbstract {
-    private final Index_statementContext ctx;
+    private final Create_index_statementContext ctx;
 
-    public CreateIndex(Index_statementContext ctx, PgDatabase db) {
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
     }
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName =getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
-        ind.setTableName(getName(ctx.table_name));
-        ind.setDefinition(getFullCtxText(ctx.using_def()));
+        ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
+        ind.setDefinition(getFullCtxText(ctx.index_rest()));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             if (db.getSchema(schemaName) == null) {

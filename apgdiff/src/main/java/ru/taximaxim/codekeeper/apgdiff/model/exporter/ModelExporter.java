@@ -55,7 +55,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 public class ModelExporter {
 
     private static final int HASH_LENGTH = 10;
-    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
+    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
     private static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
 

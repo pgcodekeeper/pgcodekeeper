@@ -8,15 +8,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
@@ -68,89 +67,11 @@ public abstract class ParserAbstract {
         return ctx.start.getInputStream().getText(interval);
     }
 
-    /**
-     * Get list schema qualified names in string
-     * @param ctx list Schema_qualified_name
-     * @return List of strings
-     */
-    protected List<String> getNames(List<Schema_qualified_nameContext> ctx) {
-        List<String> result = new ArrayList<>();
-        for (Schema_qualified_nameContext name : ctx) {
-            result.add(name.getText());
-        }
-        return result;
-    }
-
-    public static String getName(Schema_qualified_nameContext name) {
-        int i = 0;
-        if (name == null) {
-            return null;
-        }
-        while (name.identifier(i + 1) != null) {
-            i++;
-        }
-        return removeQuotes(name.identifier(i));
-    }
-
-    /**
-     * Remove quotes from identifier
-     * @param name identifier context
-     * @return string name without quotes
-     */
-    public static String removeQuotes(IdentifierContext name) {
-        String identifier = name.getText();
-        // FIXME single identifier doesn't require splitNames
-        String unquotedName = PgDiffUtils.splitNames(identifier)[0];
-
-        return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
-    }
-
-    public static String getSchemaName(Schema_qualified_nameContext name) {
-        int i = 0;
-        if (name == null) {
-            return null;
-        }
-        while (name.identifier(i + 1) != null) {
-            i++;
-        }
-        switch (i) {
-        case 1:
-        case 2:
-            return removeQuotes(name.identifier(0));
-        default:
-            return null;
-        }
-    }
-
-    public static String getTableName(Schema_qualified_nameContext name) {
-        int i = 0;
-        if (name == null) {
-            return null;
-        }
-        while (name.identifier(i + 1) != null) {
-            i++;
-        }
-        // i points on name
-        switch (i) {
-        // its only name
-        case 0:
-            return null;
-            // may be unqualified table or schema name
-            // TODO case for schema(0).table(1) ?
-        case 1:
-            return removeQuotes(name.identifier(0));
-            // qualified table name on 1 position
-        case 2:
-            return removeQuotes(name.identifier(1));
-        }
-        return null;
-    }
-
     protected PgColumn getColumn(Table_column_definitionContext colCtx,
             List<String> sequences, Map<String, GenericColumn> defaultFucntions) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
-            col = new PgColumn(removeQuotes(colCtx.column_name));
+            col = new PgColumn(colCtx.column_name.getText());
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
@@ -246,26 +167,26 @@ public abstract class ParserAbstract {
     protected GenericColumn getFunctionCall(Value_expressionContext ctx) {
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, ctx);
-        if (fs.getValue() == null) {
+        if (fs.getName() == null) {
             return null;
         }
-        return new GenericColumn(getSchemaName(fs.getValue()),
-                getName(fs.getValue()), null);
+        List<IdentifierContext> ids = fs.getName().identifier();
+        return new GenericColumn(QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids));
     }
 
     public static class FunctionSearcher extends SQLParserBaseListener {
-        private Schema_qualified_nameContext value;
+        private Schema_qualified_nameContext name;
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
             String name = getName(ctx.schema_qualified_name());
             if (ctx.function_calls_paren() != null
                     && !name.equals("nextval")
-                    && value == null) {
-                value = ctx.schema_qualified_name();
+                    && name == null) {
+                name = ctx.schema_qualified_name();
             }
         }
-        public Schema_qualified_nameContext getValue() {
-            return value;
+        public Schema_qualified_nameContext getName() {
+            return name;
         }
     }
 
@@ -275,13 +196,9 @@ public abstract class ParserAbstract {
                 .function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
             if (argument.argname != null) {
-                arg.setName(removeQuotes(argument.argname));
+                arg.setName(argument.argname.getText());
             }
-            if (argument.argtype_data != null) {
-                arg.setDataType(getFullCtxText(argument.argtype_data));
-            } else if (argument.argtype_expres != null) {
-                arg.setDataType(getFullCtxText(argument.argtype_expres));
-            }
+            arg.setDataType(getFullCtxText(argument.argtype_data));
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument
                         .function_def_value().def_value));
@@ -306,9 +223,9 @@ public abstract class ParserAbstract {
                 if (ctx.function_calls_paren() == null) {
                     return;
                 }
-                Schema_qualified_nameContext name = ctx.schema_qualified_name();
-                String objName = getName(name);
-                String schemaName = getSchemaName(name);
+                List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
+                String objName = QNameParser.getFirstName(ids);
+                String schemaName = QNameParser.getSchemaName(ids);
                 if (schemaName == null) {
                     schemaName = defSchemaName;
                 }
@@ -330,20 +247,21 @@ public abstract class ParserAbstract {
 
     protected PgConstraint getTableConstraint(Constraint_commonContext ctx,
             String scmName, String tblName) {
-        String constrName = ctx.constraint_name == null ? "" : removeQuotes(ctx.constraint_name);
+        String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
 
         if (ctx.constr_body().FOREIGN() != null) {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
-            String tableName = getName(tblRef.reftable);
-            String schemaName = getSchemaName(tblRef.reftable);
+            List<IdentifierContext> ids = tblRef.reftable.identifier();
+            String tableName = QNameParser.getFirstName(ids);
+            String schemaName = QNameParser.getSchemaName(ids);
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
             }
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
-                constr.addForeignColumn(
-                        new GenericColumn(schemaName, tableName, getName(name)));
+                constr.addForeignColumn(new GenericColumn(
+                        schemaName, tableName, QNameParser.getFirstName(name.identifier())));
             }
         }
         if (ctx.constr_body().table_unique_prkey() != null) {
@@ -362,7 +280,8 @@ public abstract class ParserAbstract {
         constr.setPrimaryKey(ctx.PRIMARY() != null);
         for (Schema_qualified_nameContext name : ctx.column_references()
                 .names_references().name) {
-            constr.addColumn(new GenericColumn(scmName, tblName, getName(name)));
+            constr.addColumn(new GenericColumn(
+                    scmName, tblName, QNameParser.getFirstName(name.identifier())));
         }
     }
 
@@ -384,7 +303,7 @@ public abstract class ParserAbstract {
         if (constr.common_constraint().check_boolean_expression() != null) {
             String constr_name = "";
             if (constr.name != null) {
-                constr_name = getName(constr.name);
+                constr_name = QNameParser.getFirstName(constr.name.identifier());
             }
             PgConstraint constraint = new PgConstraint(constr_name,
                     getFullCtxText(constr));
@@ -433,7 +352,7 @@ public abstract class ParserAbstract {
             return;
         }
         if (ctx != null) {
-            st.setOwner(removeQuotes(ctx.name));
+            st.setOwner(ctx.name.getText());
         }
     }
 }

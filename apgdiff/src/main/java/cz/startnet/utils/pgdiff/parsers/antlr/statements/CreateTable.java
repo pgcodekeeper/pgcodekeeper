@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -30,9 +32,9 @@ public class CreateTable extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-
-        String name = getName(ctx.name);
-        String schemaName =getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
@@ -60,7 +62,8 @@ public class CreateTable extends ParserAbstract {
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
-                table.addInherits(getSchemaName(nameInher), getName(nameInher));
+                List<IdentifierContext> idsInh = nameInher.identifier();
+                table.addInherits(QNameParser.getSchemaName(idsInh), QNameParser.getFirstName(idsInh));
             }
         }
 
@@ -68,7 +71,7 @@ public class CreateTable extends ParserAbstract {
             table.setTablespace(tablespace);
         }
         if (ctx.table_space() != null) {
-            table.setTablespace(getName(ctx.table_space().name));
+            table.setTablespace(QNameParser.getFirstName(ctx.table_space().name.identifier()));
         }
 
         StringBuilder sb = new StringBuilder();

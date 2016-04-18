@@ -10,16 +10,11 @@ import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Nonparenthesized_value_expression_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Query_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_function_specificationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Simple_tableContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_primaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_query_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseVisitor;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -40,8 +35,9 @@ public class CreateView extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName = getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
@@ -51,8 +47,8 @@ public class CreateView extends ParserAbstract {
             view.setSelect(createSelect(ctx.v_query));
         }
         if (ctx.column_name != null) {
-            for (String column : getNames(ctx.column_name.names_references().name)) {
-                view.addColumnName(column);
+            for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
+                view.addColumnName(ParserAbstract.getFullCtxText(column));
             }
         }
         if (db.getSchema(schemaName) == null) {
@@ -165,8 +161,9 @@ public class CreateView extends ParserAbstract {
             String tblName = null;
             String schmName = null;
             if (ctx.tb_name != null) {
-                tblName = getName(ctx.tb_name);
-                schmName = getTableName(ctx.tb_name);
+                List<IdentifierContext> ids = ctx.tb_name.identifier();
+                tblName = QNameParser.getFirstName(ids);
+                schmName = QNameParser.getSecondName(ids);
             }
             columns.add(new GenericColumn(schmName, tblName, "*"));
             return null;

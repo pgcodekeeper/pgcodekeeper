@@ -7,9 +7,7 @@ import org.hamcrest.core.IsEqual;
 import org.junit.Assert;
 import org.junit.Test;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 
 /**
  * Tests {@link #ParserUtils}.
@@ -17,95 +15,75 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  * @author fordfrog
  */
 public class PgDiffUtilsTest {
-// SONAR-OFF
+    // SONAR-OFF
     @Test(timeout = 1000)
     public void testParseSchemaBothQuoted() {
-        final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
-        database.addSchema(schema);
-
-        Assert.assertThat(PgDiffUtils.getSchemaName(
-                "\"juzz_system\".\"f_obj_execute_node_select\"", database),
+        Assert.assertThat(
+                new QNameParser("\"juzz_system\".\"f_obj_execute_node_select\"").getSchemaName(),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaFirstQuoted() {
-        final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
-        database.addSchema(schema);
-
-        Assert.assertThat(PgDiffUtils.getSchemaName(
-                "\"juzz_system\".f_obj_execute_node_select", database),
+        Assert.assertThat(
+                new QNameParser("\"juzz_system\".f_obj_execute_node_select").getSchemaName(),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaSecondQuoted() {
-        final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
-        database.addSchema(schema);
-
-        Assert.assertThat(PgDiffUtils.getSchemaName(
-                "juzz_system.\"f_obj_execute_node_select\"", database),
+        Assert.assertThat(
+                new QNameParser("juzz_system.\"f_obj_execute_node_select\"").getSchemaName(),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaNoneQuoted() {
-        final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
-        database.addSchema(schema);
-
-        Assert.assertThat(PgDiffUtils.getSchemaName(
-                "juzz_system.f_obj_execute_node_select", database),
+        Assert.assertThat(
+                new QNameParser("juzz_system.f_obj_execute_node_select").getSchemaName(),
                 IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseSchemaThreeQuoted() {
-        final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
-        database.addSchema(schema);
-
-        Assert.assertThat(PgDiffUtils.getSchemaName(
-                "\"juzz_system\".\"f_obj_execute_node_select\".\"test\"",
-                database), IsEqual.equalTo("juzz_system"));
+        Assert.assertThat(
+                new QNameParser("\"juzz_system\".\"f_obj_execute_node_select\".\"test\"").getSchemaName(),
+                IsEqual.equalTo("juzz_system"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectBothQuoted() {
-        Assert.assertThat(PgDiffUtils.getObjectName(
-                "\"juzz_system\".\"f_obj_execute_node_select\""),
+        Assert.assertThat(new QNameParser(
+                "\"juzz_system\".\"f_obj_execute_node_select\"").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectFirstQuoted() {
-        Assert.assertThat(PgDiffUtils.getObjectName(
-                "\"juzz_system\".f_obj_execute_node_select"),
+        Assert.assertThat(new QNameParser(
+                "\"juzz_system\".f_obj_execute_node_select").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectSecondQuoted() {
-        Assert.assertThat(PgDiffUtils.getObjectName(
-                "juzz_system.\"f_obj_execute_node_select\""),
+        Assert.assertThat(new QNameParser(
+                "juzz_system.\"f_obj_execute_node_select\"").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectNoneQuoted() {
-        Assert.assertThat(PgDiffUtils.getObjectName(
-                "juzz_system.f_obj_execute_node_select"),
+        Assert.assertThat(new QNameParser(
+                "juzz_system.f_obj_execute_node_select").getFirstName(),
                 IsEqual.equalTo("f_obj_execute_node_select"));
     }
 
     @Test(timeout = 1000)
     public void testParseObjectThreeQuoted() {
-        Assert.assertThat(PgDiffUtils.getObjectName(
-                "\"juzz_system\".\"f_obj_execute_node_select\".\"test\""),
+        Assert.assertThat(new QNameParser(
+                "\"juzz_system\".\"f_obj_execute_node_select\".\"test\"").getFirstName(),
                 IsEqual.equalTo("test"));
     }
-// SONAR-ON
+    // SONAR-ON
 }

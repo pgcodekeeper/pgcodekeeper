@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -27,8 +29,9 @@ public class AlterTable extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName = getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
@@ -60,7 +63,7 @@ public class AlterTable extends ParserAbstract {
                     sequences.add(sequence);
                 }
                 GenericColumn func = getFunctionCall(tablAction.set_def_column().expression);
-                PgColumn col = tabl.getColumn(getName(tablAction.column));
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if (col != null && func != null) {
                     col.addDefaultFunction(func);
                 }
@@ -72,7 +75,7 @@ public class AlterTable extends ParserAbstract {
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {
-                String indexName = getName(tablAction.index_name);
+                String indexName = QNameParser.getFirstName(tablAction.index_name.identifier());
                 PgIndex index = tabl.getIndex(indexName);
                 if (index == null) {
                     logError(indexName, schemaName);
@@ -118,25 +121,27 @@ public class AlterTable extends ParserAbstract {
     }
 
     private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
-        if (table.getColumn(getName(tablAction.column)) == null) {
-            PgColumn col = new PgColumn(getName(tablAction.column));
+        String name = QNameParser.getFirstName(tablAction.column.identifier());
+        if (table.getColumn(name) == null) {
+            PgColumn col = new PgColumn(name);
             col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
             table.addColumn(col);
         } else {
-            table.getColumn(getName(tablAction.column)).setDefaultValue(
+            table.getColumn(name).setDefaultValue(
                     getFullCtxText(tablAction.set_def_column().expression));
         }
     }
 
     private void fillStatictics(PgTable table, Table_actionContext tablAction) {
-        if (table.getColumn(getName(tablAction.column)) == null) {
-            PgColumn col = new PgColumn(getName(tablAction.column));
+        String name = QNameParser.getFirstName(tablAction.column.identifier());
+        if (table.getColumn(name) == null) {
+            PgColumn col = new PgColumn(name);
             String number = tablAction.integer.getText();
 
             col.setStatistics(Integer.valueOf(number));
             table.addColumn(col);
         } else {
-            table.getColumn(getName(tablAction.column)).setStatistics(
+            table.getColumn(name).setStatistics(
                     Integer.valueOf(tablAction.integer.getText()));
         }
     }

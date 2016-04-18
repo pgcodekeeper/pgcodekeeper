@@ -693,6 +693,11 @@ StrictIdentifierChar
 */
 QuotedIdentifier
     : UnterminatedQuotedIdentifier '"'
+    // unquote so that we may always call getText() and not worry about quotes
+        {
+            String __tx = getText();
+            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
+        }
     ;
 // This is a quoted identifier which only contains valid characters but is not terminated
 fragment UnterminatedQuotedIdentifier

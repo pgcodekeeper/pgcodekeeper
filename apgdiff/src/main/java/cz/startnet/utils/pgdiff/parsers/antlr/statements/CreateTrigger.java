@@ -1,8 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
@@ -21,8 +25,9 @@ public class CreateTrigger extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName =getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
@@ -42,7 +47,7 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setFunction(getFullCtxText(ctx.func_name), getFullCtxText(ctx.func_name.name) + "()");
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name){
-                trigger.addUpdateColumn(getName(nameCol));
+                trigger.addUpdateColumn(QNameParser.getFirstName(nameCol.identifier()));
             }
         }
         WhenListener whenListener = new WhenListener();

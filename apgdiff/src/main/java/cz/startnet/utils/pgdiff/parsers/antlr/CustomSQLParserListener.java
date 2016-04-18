@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -12,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
@@ -19,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
@@ -75,7 +74,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
 
     @Override
-    public void exitIndex_statement(Index_statementContext ctx) {
+    public void exitCreate_index_statement(Create_index_statementContext ctx) {
         safeParseStatement(new CreateIndex(ctx, db));
     }
 
@@ -140,7 +139,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
-            db.setDefaultSchema(PgDiffUtils.getObjectName(confValue));
+            db.setDefaultSchema(confValue);
             break;
         case "default_with_oids":
             oids = confValue;

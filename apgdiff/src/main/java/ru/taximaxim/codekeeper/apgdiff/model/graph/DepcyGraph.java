@@ -12,7 +12,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -225,11 +225,15 @@ public class DepcyGraph {
             typeName = typeName.substring(0, typeName.lastIndexOf('['));
         }
 
-        createPgStatementToType(
-                new GenericColumn(
-                        PgDiffUtils.getSecondObjectName(typeName),
-                        PgDiffUtils.getObjectName(typeName), null),
-                schema, statement);
+        // temp optimization: do not parse system types
+        if (!ApgdiffConsts.SYS_TYPES.contains(typeName)) {
+            QNameParser qname = new QNameParser(typeName);
+            createPgStatementToType(
+                    new GenericColumn(
+                            qname.getSecondName(),
+                            qname.getFirstName(), null),
+                    schema, statement);
+        }
     }
 
     private void createPgStatementToType(GenericColumn dataType, PgSchema schema,
@@ -383,8 +387,9 @@ public class DepcyGraph {
             graph.addEdge(trigger, table);
 
             String funcDef = trigger.getFunctionSignature();
-            PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
-                    PgDiffUtils.getObjectName(funcDef));
+            QNameParser qname = new QNameParser(funcDef);
+            PgFunction func = getSchemaForObject(schema, qname)
+                    .getFunction(qname.getFirstName());
             if (func != null) {
                 graph.addVertex(func);
                 graph.addEdge(trigger, func);
@@ -417,8 +422,9 @@ public class DepcyGraph {
 
     private void createTableToSequences(PgTable table, PgSchema schema) {
         for (String seqName : table.getSequences()) {
-            PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
-                    PgDiffUtils.getObjectName(seqName));
+            QNameParser qname = new QNameParser(seqName);
+            PgSequence seq = getSchemaForObject(schema, qname)
+                    .getSequence(qname.getFirstName());
             if (seq != null) {
                 graph.addVertex(seq);
                 graph.addEdge(table, seq);
@@ -490,8 +496,8 @@ public class DepcyGraph {
      * @param objQualifiedName определение объекта (имя_объекта, либо имя_схемы.имя_объекта)
      * @return схема, содержащая объект, либо текущая схема
      */
-    private PgSchema getSchemaForObject(PgSchema currSchema, String objQualifiedName) {
-        String schemaName = PgDiffUtils.getSecondObjectName(objQualifiedName);
+    private PgSchema getSchemaForObject(PgSchema currSchema, QNameParser objQualifiedName) {
+        String schemaName = objQualifiedName.getSecondName();
         PgSchema schemaToSearch = null;
         if (schemaName != null) {
             schemaToSearch = db.getSchema(schemaName);

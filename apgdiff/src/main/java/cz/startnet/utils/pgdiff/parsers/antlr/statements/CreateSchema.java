@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.StatementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -16,7 +16,7 @@ public class CreateSchema extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
+        String name = QNameParser.getFirstName(ctx.name.identifier());
         if (name == null) {
             return null;
         }
@@ -25,12 +25,8 @@ public class CreateSchema extends ParserAbstract {
                 && !name.equals(ApgdiffConsts.PUBLIC)) {
             schema.setOwner(ctx.user_name.getText());
         }
-        StringBuilder elements = new StringBuilder(10);
-        for (StatementContext element : ctx.schema_element) {
-            elements.append(element.getText());
-        }
-        if (elements.length() > 0) {
-            schema.setDefinition(elements.toString());
+        if (ctx.schema_def != null) {
+            schema.setDefinition(getFullCtxText(ctx.schema_def));
         }
         PgSchema exists = db.getSchema(schema.getName());
         if (exists == null) {

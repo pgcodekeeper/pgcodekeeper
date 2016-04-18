@@ -1,9 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -21,8 +25,9 @@ public class CreateFunction extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.function_parameters().name);
-        String schemaName =getSchemaName(ctx.function_parameters().name);
+        List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
@@ -32,9 +37,6 @@ public class CreateFunction extends ParserAbstract {
 
         if (ctx.function_ret_table()!= null) {
             function.setReturns(getFullCtxText(ctx.function_ret_table()));
-        } else if(ctx.rettype != null) {
-            function.setReturns(getFullCtxText(ctx.rettype));
-            function.setReturnsName(parseReturns(ctx.rettype));
         } else if(ctx.rettype_data != null) {
             function.setReturns(getFullCtxText(ctx.rettype_data));
             function.setReturnsName(parseReturns(ctx.rettype_data));
@@ -52,11 +54,13 @@ public class CreateFunction extends ParserAbstract {
         new ParseTreeWalker().walk(snl, ctx);
         Schema_qualified_nameContext name = snl.getName();
         if (name != null) {
-            String typeName = getName(name);
+            List<IdentifierContext> ids = name.identifier();
+            String typeName = QNameParser.getFirstName(ids);
+
             if (ApgdiffConsts.SYS_TYPES.contains(typeName)) {
                 return null;
             }
-            String schemaName = getSchemaName(name);
+            String schemaName = QNameParser.getSchemaName(ids);
             if (schemaName == null) {
                 schemaName = getDefSchemaName();
             }

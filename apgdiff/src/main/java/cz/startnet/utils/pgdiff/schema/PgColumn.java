@@ -31,6 +31,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             "^(.+)[\\s]+NOT[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_DEFAULT = Pattern.compile(
             "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
+    // TODO unsupported quotes in quoted ids, move to QNameParser
     public static final Pattern PATTERN_SEQUENCE = Pattern.compile(
             "^(?:nextval|setval)\\('(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
                     + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",

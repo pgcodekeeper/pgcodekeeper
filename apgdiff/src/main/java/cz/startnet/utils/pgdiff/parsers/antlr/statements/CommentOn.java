@@ -1,6 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -25,9 +29,10 @@ public class CommentOn extends ParserAbstract {
             // maybe NULL if drop comment
             return null;
         }
-        String name = getName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         String comment = ctx.comment_text.getText();
-        String schemaName = getSchemaName(ctx.name);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
@@ -35,13 +40,13 @@ public class CommentOn extends ParserAbstract {
 
         // function
         if (ctx.function_args() != null) {
-            PgFunction func = new PgFunction(getName(ctx.name), null);
+            PgFunction func = new PgFunction(name, null);
             fillArguments(ctx.function_args(), func, getDefSchemaName());
             name = func.getSignature();
             schema.getFunction(name).setComment(db.getArguments(), comment);
             //column
         } else if (ctx.COLUMN() != null){
-            String tableName = getTableName(ctx.name);
+            String tableName = QNameParser.getSecondName(ids);
             if (schemaName.equals(tableName)) {
                 schema = db.getSchema(getDefSchemaName());
             }
@@ -61,7 +66,7 @@ public class CommentOn extends ParserAbstract {
             db.getExtension(name).setComment(db.getArguments(), comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {
-            String tableName = getName(ctx.table_name);
+            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
             PgTable table = schema.getTable(tableName);
             if (table == null) {
                 PgDomain dom = schema.getDomain(tableName);
@@ -75,14 +80,14 @@ public class CommentOn extends ParserAbstract {
             }
             // trigger
         } else if (ctx.TRIGGER() != null) {
-            String tableName = getName(ctx.table_name);
+            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
             schema.getTable(tableName).getTrigger(name).setComment(db.getArguments(), comment);
             // database
         } else if (ctx.DATABASE() !=null) {
             db.setComment(db.getArguments(), comment);
             // index
         } else if (ctx.INDEX() != null) {
-            String tableName = getName(ctx.table_name);
+            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
             if (schemaName.equals(tableName)) {
                 schema = db.getSchema(getDefSchemaName());
             }

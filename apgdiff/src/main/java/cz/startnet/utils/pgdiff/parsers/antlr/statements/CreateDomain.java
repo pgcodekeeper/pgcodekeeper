@@ -1,8 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -19,8 +23,9 @@ public class CreateDomain extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName = getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }

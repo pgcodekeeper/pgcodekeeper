@@ -39,6 +39,13 @@ sql
   : (statement SEMI_COLON)* EOF
   ;
 
+/*
+    Start symbol for qualified name matching
+*/
+qname_parser
+    : schema_qualified_name EOF
+    ;
+
 statement
   : data_statement
    /*| data_change_statement*/
@@ -417,7 +424,7 @@ create_trigger_statement
     ;
 
 when_trigger
-    :WHEN when_expr=value_expression
+    : WHEN LEFT_PAREN when_expr=value_expression RIGHT_PAREN
     ;
 
 rule_common
@@ -613,7 +620,11 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? (schema_element+=statement)*
+    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
+    ;
+
+schema_definition
+    : schema_element+=statement+
     ;
 
 create_view_statement
@@ -1855,12 +1866,10 @@ value_expression_primary
   | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN
   | case_expression
   | cast_specification
-  | extract_function
-  | system_function
-  | date_time_function
-  | string_value_function
-  | xml_function
   | NULL
+  // technically incorrect since ANY cannot be value_expression
+  // but fixing this would require to write a vex rule duplicating all operators
+  // like vex (op|op|op|...) comparison_mod
   | comparison_mod
   | EXISTS table_subquery
   | function_call
@@ -1924,6 +1933,16 @@ cast_specification
   : CAST LEFT_PAREN value_expression AS data_type RIGHT_PAREN
   ;
 
+function_call
+    : schema_qualified_name LEFT_PAREN (set_qualifier? value_expression (COMMA value_expression)* orderby_clause?)? RIGHT_PAREN
+        filter_clause? (OVER window_definition)?
+    | extract_function
+    | system_function
+    | date_time_function
+    | string_value_function
+    | xml_function
+    ;
+
 extract_function
   : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM value_expression RIGHT_PAREN
   ;
@@ -1965,7 +1984,7 @@ date_time_function
 string_value_function
   : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? value_expression? FROM? value_expression RIGHT_PAREN
   | SUBSTRING LEFT_PAREN value_expression (FROM value_expression)? (FOR value_expression)? RIGHT_PAREN
-  | POSITION LEFT_PAREN value_expression IN value_expression RIGHT_PAREN
+  | POSITION LEFT_PAREN vex_b IN value_expression RIGHT_PAREN
   | OVERLAY LEFT_PAREN value_expression PLACING value_expression FROM value_expression (FOR value_expression)? RIGHT_PAREN
   ;
 
@@ -1981,11 +2000,6 @@ xml_function
 
 comparison_mod
     : (ALL | ANY | SOME) LEFT_PAREN value_expression RIGHT_PAREN
-    ;
-
-function_call
-    : schema_qualified_name LEFT_PAREN (set_qualifier? value_expression (COMMA value_expression)* orderby_clause?)? RIGHT_PAREN
-        filter_clause? (OVER window_definition)?
     ;
 
 filter_clause
@@ -2064,17 +2078,21 @@ select_stmt_no_parens
     ;
 
 with_clause
-    : WITH RECURSIVE? query_name=identifier (LEFT_PAREN column_name=identifier (COMMA column_name=identifier)* RIGHT_PAREN)?
-        AS (select_stmt | values_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql)
+    : WITH RECURSIVE? with_query (COMMA with_query)*
+    ;
+
+with_query
+    : query_name=identifier (LEFT_PAREN column_name=identifier (COMMA column_name=identifier)* RIGHT_PAREN)?
+            AS LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
     ;
 
 select_ops
-    : LEFT_PAREN select_ops RIGHT_PAREN
+    : LEFT_PAREN select_stmt RIGHT_PAREN // parens can be used to apply "global" clauses (WITH etc) to a particular select in UNION expr
     | select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
     | select_primary
     ;
 
-// copy of select_ops for use in select_no_parens
+// copy of select_ops for use in select_stmt_no_parens
 select_ops_no_parens
     : select_ops (INTERSECT | UNION | EXCEPT) set_qualifier? select_ops
     | select_primary
@@ -2090,6 +2108,7 @@ select_primary
         (HAVING value_expression)?
         (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
     | TABLE ONLY? schema_qualified_name MULTIPLY?
+    | values_stmt
     ;
 
 select_list
@@ -2097,11 +2116,11 @@ select_list
   ;
 
 select_sublist
-  : value_expression (AS? identifier)?
+  : value_expression (AS? alias=identifier)?
   ;
 
 from_item
-    : LEFT_PAREN from_item RIGHT_PAREN
+    : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON value_expression
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
@@ -2110,18 +2129,20 @@ from_item
     ;
 
 from_primary
-    : ONLY? schema_qualified_name MULTIPLY? alias_clasue?
-    | LATERAL? table_subquery alias_clasue
+    : ONLY? schema_qualified_name MULTIPLY? alias_clause?
+    | LATERAL? table_subquery alias_clause
     | LATERAL? function_call
-        (AS from_function_column_def | AS? alias=identifier (LEFT_PAREN column_alias=identifier (COMMA column_alias=identifier)* RIGHT_PAREN | from_function_column_def))
+        (AS from_function_column_def 
+        | AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN | from_function_column_def)?
+        )?
     ;
 
-alias_clasue
-    : AS? alias=identifier (LEFT_PAREN column_alias=identifier (COMMA column_alias=identifier)* RIGHT_PAREN)?
+alias_clause
+    : AS? alias=identifier (LEFT_PAREN column_alias+=identifier (COMMA column_alias+=identifier)* RIGHT_PAREN)?
     ;
 
 from_function_column_def
-    : LEFT_PAREN column_alias=identifier data_type (COMMA column_alias=identifier data_type)* RIGHT_PAREN
+    : LEFT_PAREN column_alias+=identifier data_type (COMMA column_alias+=identifier data_type)* RIGHT_PAREN
     ;
 
 groupby_clause
@@ -2192,12 +2213,8 @@ null_ordering
 insert_stmt_for_psql
   : with_clause? INSERT INTO insert_table_name=schema_qualified_name
   (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
-  (VALUES insert_values (COMMA insert_values)* | select_stmt | DEFAULT VALUES)
+  (select_stmt | DEFAULT VALUES)
   (RETURNING select_list)?
-  ;
-
-insert_values
-  : LEFT_PAREN (value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))* RIGHT_PAREN
   ;
 
 delete_stmt_for_psql
@@ -2231,10 +2248,9 @@ notify_stmt
   ;
 
 values_stmt
-    : VALUES LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN
-        (COMMA LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN)*
-        orderby_clause?
-        (LIMIT (value_expression | ALL))?
-        (OFFSET value_expression (ROW | ROWS))?
-        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
+    : VALUES values_values (COMMA values_values)*
     ;
+
+values_values
+  : LEFT_PAREN (value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))* RIGHT_PAREN
+  ;
