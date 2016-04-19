@@ -147,7 +147,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
                 TreeElement filtered = treediffer.getDiffTree();
 
-               // IEclipsePreferences pref = proj.getPrefs();
                 differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
                         filtered, true,
                         timezone,
