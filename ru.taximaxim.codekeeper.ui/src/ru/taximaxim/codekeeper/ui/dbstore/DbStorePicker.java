@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -43,6 +45,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStorePicker extends Composite {
 
@@ -50,7 +53,7 @@ public class DbStorePicker extends Composite {
 
     private final IPreferenceStore prefStore;
     private Map<String, DbInfo> store;
-    private ComboViewer cmbDbNames2;
+    private ComboViewer cmbVwrDbNames;
     private Combo cmbDbNames;
     private LocalResourceManager lrm;
     private boolean isLoad;
@@ -116,8 +119,8 @@ public class DbStorePicker extends Composite {
         container.setLayout(gridLayout);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        cmbDbNames2 = new ComboViewer(container, SWT.READ_ONLY | SWT.DROP_DOWN);
-        cmbDbNames = cmbDbNames2.getCombo();
+        cmbVwrDbNames = new ComboViewer(container, SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbDbNames = cmbVwrDbNames.getCombo();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 100;
         cmbDbNames.setLayoutData(gd);
@@ -129,37 +132,33 @@ public class DbStorePicker extends Composite {
             }
         });
         
-        cmbDbNames2.setContentProvider(ArrayContentProvider.getInstance());
-        cmbDbNames2.setLabelProvider(new DbStoreLabelProvider());
+        cmbVwrDbNames.setContentProvider(ArrayContentProvider.getInstance());
+        cmbVwrDbNames.setLabelProvider(new DbStoreLabelProvider());
         
-        cmbDbNames2.addSelectionChangedListener(new ISelectionChangedListener() {
+        cmbVwrDbNames.addSelectionChangedListener(new ISelectionChangedListener() {
             
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                Object selected = cmbDbNames2.getStructuredSelection().getFirstElement();
-                if ((selected instanceof String) && "Загрузить из файла...".equals((String)selected)){
-                    FileDialog fDialog = new FileDialog(getShell());
-                    String pathToDump = fDialog.open();
-                    if (pathToDump != null){
+                Object selected = cmbVwrDbNames.getStructuredSelection().getFirstElement();
+                if (selected instanceof String){
+                    String path =  Messages.load_from_file.equals((String)selected) ? 
+                            new FileDialog(getShell()).open() :
+                                new DirectoryDialog(getShell()).open();
+                    if (path != null){
                         if (dumpFileHistory.size() == 3) {
                             dumpFileHistory.remove(0);
                         }
-                        dumpFileHistory.add(new Path(pathToDump));
+                        dumpFileHistory.add(new Path(path));
                         prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
+                        cmbDbNames.select(cmbDbNames.indexOf(new File(path).getName()));
+                    } else {
+                        cmbDbNames.select(cmbDbNames.indexOf(""));
                     }
-                    cmbDbNames.select(cmbDbNames.indexOf(new File(pathToDump).getName()));
                 }
-                if ((selected instanceof String) && "Загрузить из директории...".equals((String)selected)){
-                    DirectoryDialog dialog = new DirectoryDialog(getShell());
-                    String pathToDump = dialog.open();
-                    if (pathToDump != null){
-                        if (dumpFileHistory.size() == 3) {
-                            dumpFileHistory.remove(0);
-                        }
-                        dumpFileHistory.add(new Path(pathToDump));
-                        prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
-                    }
-                    cmbDbNames.select(cmbDbNames.indexOf(new File(pathToDump).getName()));
+                try {
+                    ((IPersistentPreferenceStore) prefStore).save();
+                } catch (IOException e) {
+                    Log.log(Log.LOG_WARNING, e.getLocalizedMessage());
                 }
             }
         }); 
@@ -188,18 +187,18 @@ public class DbStorePicker extends Composite {
         list.addAll(store.values());
         if (isLoad){
             list.add("");
-            list.add("Загрузить из файла...");
+            list.add(Messages.load_from_file);
             list.addAll(DbInfo.getDumpFileHistory(this.prefStore.getString(PREF.DB_STORE_HISTORY)));
             list.add("");
-            list.add("Загрузить из директории...");
+            list.add(Messages.load_from_directory);
             if (pgCodeKeeperProjectlist != null)
             list.addAll(pgCodeKeeperProjectlist);
         }
-        cmbDbNames2.setInput(list);
+        cmbVwrDbNames.setInput(list);
     }
 
     public DbInfo getDbInfo() {
-        Object obj = cmbDbNames2.getStructuredSelection().getFirstElement();
+        Object obj = cmbVwrDbNames.getStructuredSelection().getFirstElement();
         if (obj instanceof DbInfo){
             return (DbInfo) obj;
         } else {
@@ -221,25 +220,27 @@ public class DbStorePicker extends Composite {
     }
 
     public String getSelectedName (){
-        return (String)cmbDbNames2.getStructuredSelection().getFirstElement();
+        return (String)cmbVwrDbNames.getStructuredSelection().getFirstElement();
     }
     
     public String getPathOfFile(){
-        Object path = cmbDbNames2.getStructuredSelection().getFirstElement();
-        if (path instanceof Path){
+        Object path = cmbVwrDbNames.getStructuredSelection().getFirstElement();
+        if (path instanceof Path && new File(((Path)path).toOSString()).isFile()){
             return ((Path)path).toOSString();
         } else return null;
     }
     
     public String getPathOfProject(){
-        Object path = cmbDbNames2.getStructuredSelection().getFirstElement();
+        Object path = cmbVwrDbNames.getStructuredSelection().getFirstElement();
         if (path instanceof IProject){
             return ((IProject)path).getLocation().toOSString();
+        } else if (path instanceof Path && new File(((Path)path).toOSString()).isDirectory()){
+            return ((Path)path).toOSString();
         } else return null;
     }
     
     public String getInfo(){
-        Object obj = cmbDbNames2.getStructuredSelection().getFirstElement();
+        Object obj = cmbVwrDbNames.getStructuredSelection().getFirstElement();
         if (obj instanceof IProject){
             return ((IProject)obj).getLocation().toOSString();
         } else if (obj instanceof Path){
@@ -259,7 +260,7 @@ public class DbStorePicker extends Composite {
     }
 
     public void clearSelection(){
-        cmbDbNames2.setSelection(null);
+        cmbVwrDbNames.setSelection(null);
     }
 
     public void addListenerToCombo(SelectionListener listener) {

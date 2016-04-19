@@ -399,6 +399,10 @@ public final class Messages extends NLS {
     public static String yesNoEditingSupport_no;
 
     public static String yesNoEditingSupport_yes;
+    
+    public static String load_from_file;
+    public static String load_from_directory;
+    
 
     //feedback_dialog
 
