@@ -8,8 +8,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.Main;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
  * This class controls all aspects of the application's execution

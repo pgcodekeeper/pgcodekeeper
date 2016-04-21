@@ -20,11 +20,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 

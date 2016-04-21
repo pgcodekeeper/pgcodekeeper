@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
@@ -745,5 +747,12 @@ public final class PgDiffUtils {
     }
 
     private PgDiffUtils() {
+    }
+    
+    public static void checkCancelled(IProgressMonitor monitor)
+            throws InterruptedException {
+        if (monitor != null && monitor.isCanceled()) {
+            throw new InterruptedException();
+        }
     }
 }

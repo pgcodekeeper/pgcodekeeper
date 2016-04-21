@@ -316,6 +316,7 @@ class PageDiff extends WizardPage implements Listener {
         storePickerSource.setLayoutData(gd);
         
         final Text sourceInfo = new Text(sourceComp, SWT.NONE);
+        sourceInfo.setEnabled(false);
         sourceInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePickerSource.addListenerToCombo(new SelectionAdapter() {
             @Override
@@ -378,6 +379,7 @@ class PageDiff extends WizardPage implements Listener {
         storePickerTarget.setLayoutData(gd);
         
         final Text targetInfo = new Text(targetComp, SWT.NONE);
+        targetInfo.setEnabled(false);
         targetInfo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         storePickerTarget.addListenerToCombo(new SelectionAdapter() {

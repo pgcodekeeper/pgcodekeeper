@@ -161,7 +161,7 @@ public class PgAntlrLoaderTest {
         // check filtering mechanism
         // applying full unchanged diff tree created against an empty DB
         // should result in a fully copied or empty (depending on filter side) DB object
-        TreeElement dbTree = DiffTree.create(d, empty);
+        TreeElement dbTree = DiffTree.create(d, empty, null);
         dbTree.setAllChecked();
 
         Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);

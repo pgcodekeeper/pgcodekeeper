@@ -125,7 +125,7 @@ public class PgDiffDepciesTest {
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException {
+    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -160,7 +160,7 @@ public class PgDiffDepciesTest {
         runDiffSame(oldDbFull);
         runDiffSame(newDbFull);
 
-        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
         PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                 tree, oldDbFull, newDbFull, null, null);

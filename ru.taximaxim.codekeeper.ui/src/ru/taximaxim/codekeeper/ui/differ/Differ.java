@@ -17,7 +17,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -166,7 +166,7 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 
-        PgDumpLoader.checkCancelled(pm);
+        PgDiffUtils.checkCancelled(pm);
         pm.done();
         finished = true;
     }

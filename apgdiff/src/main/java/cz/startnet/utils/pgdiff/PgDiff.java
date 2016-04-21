@@ -103,10 +103,11 @@ public final class PgDiff {
      * @param arguments   object containing arguments settings
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
+     * @throws InterruptedException 
      */
     public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
-            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
+            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) throws InterruptedException {
+        TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 root, oldDbFull, newDbFull, null, null);

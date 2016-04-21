@@ -315,7 +315,6 @@ class DbSourceDb extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
-
         try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
             File dump = tf.get();
 

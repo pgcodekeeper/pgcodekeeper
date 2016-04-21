@@ -157,8 +157,8 @@ public class PartialExporterTest {
     }
 
     @Before
-    public void beforeTest() {
-        EXPORT_PRESETS[index-1].setDiffTree(DiffTree.create(dbSource, dbTarget));
+    public void beforeTest() throws InterruptedException {
+        EXPORT_PRESETS[index-1].setDiffTree(DiffTree.create(dbSource, dbTarget, null));
     }
 
     @Test

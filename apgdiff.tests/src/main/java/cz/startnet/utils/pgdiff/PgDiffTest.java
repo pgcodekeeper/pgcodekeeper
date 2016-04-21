@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assert;
@@ -298,8 +297,8 @@ public class PgDiffTest {
                 });
     }
 
-    private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
-            );
+/*    private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
+            );*/
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql, _new.sql and _diff.sql to the file name
@@ -312,7 +311,7 @@ public class PgDiffTest {
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    public void runDiffSame(PgDatabase db) throws IOException {
+    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();

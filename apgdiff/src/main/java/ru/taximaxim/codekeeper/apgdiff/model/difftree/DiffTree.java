@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.runtime.SubMonitor;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -16,12 +19,14 @@ public final class DiffTree {
     private static final List<? extends PgStatement> EMPTY_LIST =
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
-    public static TreeElement create(PgDatabase left, PgDatabase right) {
+    public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
         for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions())) {
             db.addChild(new TreeElement(res.getStatement(), res.getSide()));
         }
+        
+        PgDiffUtils.checkCancelled(sMonitor);
 
         for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
@@ -87,7 +92,9 @@ public final class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getViews();
             }
-
+            
+            PgDiffUtils.checkCancelled(sMonitor);
+            
             for (CompareResult view : compareLists(leftSub, rightSub)) {
                 TreeElement vw = new TreeElement(view.getStatement(), view.getSide());
                 elSchema.addChild(vw);
@@ -121,6 +128,7 @@ public final class DiffTree {
                 for (CompareResult trg : compareLists(leftViewSub, rightViewSub)) {
                     vw.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
                 }
+                PgDiffUtils.checkCancelled(sMonitor);
             }
 
             // tables
@@ -188,6 +196,7 @@ public final class DiffTree {
                 for (CompareResult constr : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(constr.getStatement(), constr.getSide()));
                 }
+                PgDiffUtils.checkCancelled(sMonitor);
             }
         }
 
