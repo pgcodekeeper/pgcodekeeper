@@ -147,6 +147,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
+    public final PgDbProject getProj() {
+        return proj;
+    }
+
     @Override
     protected void createPages() {
         int i;
