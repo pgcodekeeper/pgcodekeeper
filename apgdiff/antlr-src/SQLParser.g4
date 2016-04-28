@@ -1382,7 +1382,7 @@ name_or_func_calls
     ;
 
 function_calls_paren
-    : LEFT_PAREN (function_calls_args (COMMA function_calls_args)*)? RIGHT_PAREN
+    : LEFT_PAREN (set_qualifier? function_calls_args (COMMA function_calls_args)* orderby_clause?)? RIGHT_PAREN
     ;
 
 function_calls_args
