@@ -813,7 +813,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgSelect parseAntLrSelect(PgDatabase db, String statement) {
         SQLParser parser = AntlrParser.makeBasicParser(statement, getCurrentLocation());
         CreateView cv = new CreateView(null, db);
-        return cv.createSelect(parser.query_expression());
+        return cv.createSelect(parser.select_stmt());
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
@@ -959,7 +959,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private GenericColumn parseFunctionCall(String string) {
         SQLParser parser = AntlrParser.makeBasicParser(string, getCurrentLocation());
         FunctionSearcher fs = new FunctionSearcher();
-        ParseTreeWalker.DEFAULT.walk(fs, parser.value_expression());
+        ParseTreeWalker.DEFAULT.walk(fs, parser.vex());
         List<IdentifierContext> ids = fs.getName().identifier();
         return new GenericColumn(QNameParser.getSchemaName(ids),
                 QNameParser.getFirstName(ids), null);

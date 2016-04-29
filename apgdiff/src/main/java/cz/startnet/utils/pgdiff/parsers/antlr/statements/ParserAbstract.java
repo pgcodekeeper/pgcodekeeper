@@ -22,7 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -141,7 +141,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected String getSequence(Value_expressionContext default_expr) {
+    protected String getSequence(VexContext default_expr) {
         SeqNameListener name = new SeqNameListener();
         ParseTreeWalker.DEFAULT.walk(name, default_expr);
         return name.getSeqName();
@@ -164,7 +164,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected GenericColumn getFunctionCall(Value_expressionContext ctx) {
+    protected GenericColumn getFunctionCall(VexContext ctx) {
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, ctx);
         if (fs.getName() == null) {

@@ -163,7 +163,7 @@ table_action
     : ADD COLUMN? table_column_definition
     | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name cascade_restrict?
     | ALTER COLUMN? column=schema_qualified_name
-      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=value_expression)?
+      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
       | (set_def_column
         | drop_def
         | ((SET | DROP) NOT NULL)
@@ -266,7 +266,7 @@ alter_view_statement
     | set_schema
     | owner_to
     | rename_to
-    | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
+    | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=vex)?(COMMA view_option_name=identifier (EQUAL view_option_value=vex)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
     ;
 
@@ -301,7 +301,7 @@ type_action
     ;
 
 set_def_column
-    : SET DEFAULT expression=value_expression
+    : SET DEFAULT expression=vex
     ;
 
 drop_def
@@ -316,7 +316,7 @@ create_index_statement
 index_rest
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause? table_space? (WHERE value_expression)?
+      param_clause? table_space? (WHERE vex)?
     ;
 
  create_extension_statement
@@ -335,7 +335,7 @@ create_event_trigger
             LEFT_PAREN
                 filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
             RIGHT_PAREN AND?)+ )?
-        EXECUTE PROCEDURE funct_name=value_expression
+        EXECUTE PROCEDURE funct_name=vex
     ;
 
 create_type_statement
@@ -379,7 +379,7 @@ create_type_statement
 create_domain_statement
     : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type
       (collate_identifier
-      | DEFAULT def_value=value_expression
+      | DEFAULT def_value=vex
       | dom_constraint+=domain_constraint)*
     ;
 
@@ -395,12 +395,12 @@ set_statement
     ;
 
 set_statement_value
-    : value_expression | DEFAULT
+    : vex | DEFAULT
     ;
 
 create_rewrite_statement
     : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
-     TO table_name=schema_qualified_name (WHERE value_expression)? DO (ALSO | INSTEAD)?
+     TO table_name=schema_qualified_name (WHERE vex)? DO (ALSO | INSTEAD)?
      (NOTHING | commands+=rewrite_command | (LEFT_PAREN commands+=rewrite_command (SEMI_COLON commands+=rewrite_command)* RIGHT_PAREN) )
     ;
 
@@ -424,7 +424,7 @@ create_trigger_statement
     ;
 
 when_trigger
-    : WHEN LEFT_PAREN when_expr=value_expression RIGHT_PAREN
+    : WHEN LEFT_PAREN when_expr=vex RIGHT_PAREN
     ;
 
 rule_common
@@ -586,7 +586,7 @@ function_arguments
     ;
 
 function_def_value
-    : (DEFAULT | EQUAL) def_value=value_expression
+    : (DEFAULT | EQUAL) def_value=vex
     ;
 
 function_attribute
@@ -671,11 +671,11 @@ constraint_common
 constr_body
     :((EXCLUDE (USING index_method=identifier)?
             LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN
-            index_parameters (WHERE value_expression)?)
+            index_parameters (WHERE vex)?)
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
        | table_unique_prkey
-       | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
+       | DEFAULT (default_expr_data=data_type | default_expr=vex)
       )
       table_deferrable? table_initialy_immed?
     ;
@@ -710,13 +710,13 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=value_expression RIGHT_PAREN
+    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN
     ;
 
 storage_parameter
     : LEFT_PAREN
-        storage_param=schema_qualified_name (EQUAL value=value_expression)?
-        (COMMA storage_param=schema_qualified_name (EQUAL value=value_expression)?)*
+        storage_param=schema_qualified_name (EQUAL value=vex)?
+        (COMMA storage_param=schema_qualified_name (EQUAL value=vex)?)*
       RIGHT_PAREN
     ;
 
@@ -773,11 +773,11 @@ param_clause
   ;
 
 param
-  : key=identifier EQUAL value=value_expression
+  : key=identifier EQUAL value=vex
   ;
 
 partition_by_columns
-    : PARTITION BY value_expression (COMMA value_expression)*
+    : PARTITION BY vex (COMMA vex)*
     ;
 
 cascade_restrict
@@ -1662,7 +1662,6 @@ tokens_reserved
 schema_qualified_name_nontype
   : identifier_nontype
   | identifier DOT identifier_nontype
-  | identifier DOT identifier DOT identifier_nontype
   ;
 
 data_type
@@ -1782,10 +1781,6 @@ binary_type
   6.25 <value expression>
 ===============================================================================
 */
-value_expression
-  : vex
-  ;
-
 vex
   : vex CAST_EXPRESSION data_type
   | vex collate_identifier
@@ -1802,7 +1797,7 @@ vex
   | (S_Root | C_Root | FACTORIAL FACTORIAL | ABS | TILDE) vex
   | vex FACTORIAL
 
-  | vex NOT? IN (LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN)
+  | vex NOT? IN LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN
   | vex NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? vex_b AND vex
   | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
   | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
@@ -1841,7 +1836,7 @@ vex_b
 
   | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
   | vex_b IS NOT? DISTINCT FROM vex_b
-  | vex IS NOT? DOCUMENT
+  | vex_b IS NOT? DOCUMENT
 
   | value_expression_primary
   ;
@@ -1867,7 +1862,7 @@ value_expression_primary
   | case_expression
   | cast_specification
   | NULL
-  // technically incorrect since ANY cannot be value_expression
+  // technically incorrect since ANY cannot be value expression
   // but fixing this would require to write a vex rule duplicating all operators
   // like vex (op|op|op|...) comparison_mod
   | comparison_mod
@@ -1876,7 +1871,7 @@ value_expression_primary
   | schema_qualified_name
   | qualified_asterisk
   | array_expression
-  | type_coersion
+  | type_coercion
   ;
 
 unsigned_value_specification
@@ -1918,23 +1913,15 @@ truth_value
   ;
 
 case_expression
-  : CASE value_expression? simple_when_clause+ else_clause? END
-  ;
-
-simple_when_clause
-    : WHEN c=value_expression THEN r=value_expression
-    ;
-
-else_clause
-  : ELSE r=value_expression
+  : CASE vex? (WHEN vex THEN vex)+ (ELSE r=vex)? END
   ;
 
 cast_specification
-  : CAST LEFT_PAREN value_expression AS data_type RIGHT_PAREN
+  : (CAST | TREAT) LEFT_PAREN vex AS data_type RIGHT_PAREN
   ;
 
 function_call
-    : schema_qualified_name LEFT_PAREN (set_qualifier? value_expression (COMMA value_expression)* orderby_clause?)? RIGHT_PAREN
+    : schema_qualified_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
@@ -1944,7 +1931,7 @@ function_call
     ;
 
 extract_function
-  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM value_expression RIGHT_PAREN
+  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM vex RIGHT_PAREN
   ;
 
 extract_field
@@ -1982,28 +1969,28 @@ date_time_function
     ;
 
 string_value_function
-  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? value_expression? FROM? value_expression RIGHT_PAREN
-  | SUBSTRING LEFT_PAREN value_expression (FROM value_expression)? (FOR value_expression)? RIGHT_PAREN
-  | POSITION LEFT_PAREN vex_b IN value_expression RIGHT_PAREN
-  | OVERLAY LEFT_PAREN value_expression PLACING value_expression FROM value_expression (FOR value_expression)? RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? vex? FROM? vex RIGHT_PAREN
+  | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
+  | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
+  | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
   ;
 
 xml_function
     : XMLELEMENT LEFT_PAREN NAME name=identifier
-        (COMMA XMLATTRIBUTES LEFT_PAREN value_expression (AS attname=identifier)? (COMMA value_expression (AS attname=identifier)?)* RIGHT_PAREN)?
-        (value_expression (COMMA value_expression)?)? RIGHT_PAREN
-    | XMLFOREST LEFT_PAREN value_expression (AS name=identifier)? (COMMA value_expression (AS name=identifier)?)* RIGHT_PAREN
-    | XMLPI LEFT_PAREN NAME name=identifier (COMMA value_expression)? RIGHT_PAREN
-    | XMLROOT LEFT_PAREN value_expression COMMA VERSION (value_expression | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
-    | XMLEXISTS LEFT_PAREN value_expression PASSING (BY REF)? value_expression (BY REF)? RIGHT_PAREN
+        (COMMA XMLATTRIBUTES LEFT_PAREN vex (AS attname=identifier)? (COMMA vex (AS attname=identifier)?)* RIGHT_PAREN)?
+        (vex (COMMA vex)?)? RIGHT_PAREN
+    | XMLFOREST LEFT_PAREN vex (AS name=identifier)? (COMMA vex (AS name=identifier)?)* RIGHT_PAREN
+    | XMLPI LEFT_PAREN NAME name=identifier (COMMA vex)? RIGHT_PAREN
+    | XMLROOT LEFT_PAREN vex COMMA VERSION (vex | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
+    | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
     ;
 
 comparison_mod
-    : (ALL | ANY | SOME) LEFT_PAREN value_expression RIGHT_PAREN
+    : (ALL | ANY | SOME) LEFT_PAREN (vex | select_stmt_no_parens) RIGHT_PAREN
     ;
 
 filter_clause
-  : FILTER LEFT_PAREN WHERE value_expression RIGHT_PAREN
+  : FILTER LEFT_PAREN WHERE vex RIGHT_PAREN
   ;
 
 window_definition
@@ -2015,7 +2002,7 @@ frame_clause
   ;
 
 frame_bound
-  : (UNBOUNDED | value_expression) (PRECEDING | FOLLOWING)
+  : (UNBOUNDED | vex) (PRECEDING | FOLLOWING)
   | CURRENT ROW
   ;
 
@@ -2029,14 +2016,14 @@ array_expression
     ;
 
 array_brackets
-    : ARRAY LEFT_BRACKET value_expression (COMMA value_expression)* RIGHT_BRACKET
+    : ARRAY LEFT_BRACKET vex (COMMA vex)* RIGHT_BRACKET
     ;
 
 array_query
     : ARRAY table_subquery
     ;
 
-type_coersion
+type_coercion
     : data_type Character_String_Literal
     ;
 /*
@@ -2059,22 +2046,22 @@ table_subquery
 select_stmt
     : with_clause? select_ops
         orderby_clause?
-        (LIMIT (value_expression | ALL))?
-        (OFFSET value_expression (ROW | ROWS))?
-        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
-        ((FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)+)?
+        (LIMIT (vex | ALL))?
+        (OFFSET vex (ROW | ROWS))?
+        (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
+        (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
 
 // select_stmt copy that doesn't consume external parens
-// for use in value_expression
+// for use in vex
 // we let the vex rule to consume as many parens as it can
 select_stmt_no_parens
     : with_clause? select_ops_no_parens
         orderby_clause?
-        (LIMIT (value_expression | ALL))?
-        (OFFSET value_expression (ROW | ROWS))?
-        (FETCH (FIRST | NEXT) value_expression? (ROW | ROWS) ONLY)?
-        ((FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)+)?
+        (LIMIT (vex | ALL))?
+        (OFFSET vex (ROW | ROWS))?
+        (FETCH (FIRST | NEXT) vex? (ROW | ROWS) ONLY)?
+        (FOR (UPDATE | NO KEY UPDATE | SHARE | NO KEY SHARE) (OF schema_qualified_name (COMMA schema_qualified_name)*)? NOWAIT?)*
     ;
 
 with_clause
@@ -2100,12 +2087,12 @@ select_ops_no_parens
 
 select_primary
     : SELECT
-        (set_qualifier (ON LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN)?)?
+        (set_qualifier (ON LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN)?)?
         select_list
         (FROM from_item (COMMA from_item)*)?
-        (WHERE value_expression)?
+        (WHERE vex)?
         groupby_clause?
-        (HAVING value_expression)?
+        (HAVING vex)?
         (WINDOW w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN (COMMA w_name=identifier AS LEFT_PAREN window_definition RIGHT_PAREN)*)?
     | TABLE ONLY? schema_qualified_name MULTIPLY?
     | values_stmt
@@ -2116,13 +2103,13 @@ select_list
   ;
 
 select_sublist
-  : value_expression (AS? alias=identifier)?
+  : vex (AS? alias=identifier)?
   ;
 
 from_item
     : LEFT_PAREN from_item RIGHT_PAREN alias_clause?
     | from_item CROSS JOIN from_item
-    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON value_expression
+    | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item ON vex
     | from_item (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item USING column_references
     | from_item NATURAL (INNER | (LEFT | RIGHT | FULL) OUTER?)? JOIN from_item
     | from_primary
@@ -2160,7 +2147,7 @@ grouping_element
   ;
 
 ordinary_grouping_set
-  : value_expression
+  : vex
   | row_value_predicand_list
   ;
 
@@ -2177,7 +2164,7 @@ empty_grouping_set
   ;
 
 row_value_predicand_list
-  : LEFT_PAREN value_expression (COMMA value_expression)* RIGHT_PAREN
+  : LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
   ;
 
 orderby_clause
@@ -2189,7 +2176,7 @@ sort_specifier_list
   ;
 
 sort_specifier
-  : key=value_expression
+  : key=vex
     opclass=identifier? // this allows to share this rule with create_index; technically invalid syntax
     order=order_specification?
     null_order=null_ordering?
@@ -2220,7 +2207,7 @@ insert_stmt_for_psql
 delete_stmt_for_psql
   : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
   (USING using_table (COMMA using_table)*)?
-  (WHERE (value_expression | CURRENT OF cursor=identifier))?
+  (WHERE (vex | CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
 
@@ -2228,14 +2215,14 @@ update_stmt_for_psql
   : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
   SET update_set (COMMA update_set)*
   (FROM using_table (COMMA using_table)*)?
-  (WHERE (value_expression | WHERE CURRENT OF cursor=identifier))?
+  (WHERE (vex | WHERE CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
 
 update_set
-  : column+=identifier EQUAL (value+=value_expression | DEFAULT)
+  : column+=identifier EQUAL (value+=vex | DEFAULT)
   | LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN EQUAL
-  (LEFT_PAREN (value+=value_expression | DEFAULT) (COMMA (value+=value_expression | DEFAULT))* RIGHT_PAREN
+  (LEFT_PAREN (value+=vex | DEFAULT) (COMMA (value+=vex | DEFAULT))* RIGHT_PAREN
     | table_subquery)
   ;
 
@@ -2252,5 +2239,5 @@ values_stmt
     ;
 
 values_values
-  : LEFT_PAREN (value_expression | DEFAULT) (COMMA (value_expression | DEFAULT))* RIGHT_PAREN
+  : LEFT_PAREN (vex | DEFAULT) (COMMA (vex | DEFAULT))* RIGHT_PAREN
   ;

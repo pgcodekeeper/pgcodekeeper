@@ -37,7 +37,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -755,7 +755,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
     }
-    private void getSequence(Value_expressionContext default_expr) {
+    private void getSequence(VexContext default_expr) {
         SeqName name = new SeqName();
         new ParseTreeWalker().walk(name, default_expr);
     }

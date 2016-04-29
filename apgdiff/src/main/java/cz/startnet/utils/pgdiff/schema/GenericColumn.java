@@ -3,7 +3,9 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.util.Objects;
 
-public final class GenericColumn implements Serializable{
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+
+public final class GenericColumn implements Serializable {
 
     private static final long serialVersionUID = -5032985077177033449L;
     // SONAR-OFF
@@ -11,7 +13,7 @@ public final class GenericColumn implements Serializable{
     public final String table;
     public final String column;
     // SONAR-ON
-    private ViewReference type = ViewReference.COLUMN;
+    private DbObjType type = DbObjType.COLUMN;
 
     public GenericColumn(String schema, String table, String column) {
         this.schema = schema;
@@ -19,11 +21,11 @@ public final class GenericColumn implements Serializable{
         this.column = column;
     }
 
-    public void setType(ViewReference type) {
+    public void setType(DbObjType type) {
         this.type = type;
     }
 
-    public ViewReference getType() {
+    public DbObjType getType() {
         return type;
     }
 
@@ -67,12 +69,5 @@ public final class GenericColumn implements Serializable{
     public String toString() {
         return "schema: \"" + schema + "\"; table: \"" + table
                 + "\"; column: \"" + column + "\";";
-    }
-
-    public enum ViewReference {
-        COLUMN,
-        FUNCTION,
-        TABLE,
-        SYSTEM
     }
 }
