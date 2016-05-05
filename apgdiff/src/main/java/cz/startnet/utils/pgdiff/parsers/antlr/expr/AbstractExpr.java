@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,7 +28,7 @@ public abstract class AbstractExpr {
     public AbstractExpr(String schema) {
         this.schema = schema;
         parent = null;
-        depcies = new HashSet<>();
+        depcies = new LinkedHashSet<>();
     }
 
     protected AbstractExpr(AbstractExpr parent) {
@@ -80,26 +80,30 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addColumnDepcy(Schema_qualified_nameContext qname) {
+    /**
+     * @return column name or null if referenced qname is not found
+     */
+    protected String addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
-        if (ids.size() < 2) {
-            // TODO table-less columns are pending full analysis
-            return;
-        }
-        String schema = QNameParser.getThirdName(ids);
-        String table = QNameParser.getSecondName(ids);
         String column = QNameParser.getFirstName(ids);
 
-        Entry<String, GenericColumn> ref = findReference(schema, table, column);
-        if (ref == null) {
-            Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                    + schema + ' ' + table + ' ' + column);
-            return;
-        }
+        // TODO table-less columns are pending full analysis
+        if (ids.size() > 1) {
+            String schema = QNameParser.getThirdName(ids);
+            String table = QNameParser.getSecondName(ids);
 
-        GenericColumn referencedTable = ref.getValue();
-        if (referencedTable != null) {
-            depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column));
+            Entry<String, GenericColumn> ref = findReference(schema, table, column);
+            if (ref == null) {
+                Log.log(Log.LOG_WARNING, "Unknown column reference: "
+                        + schema + ' ' + table + ' ' + column);
+                return null;
+            }
+
+            GenericColumn referencedTable = ref.getValue();
+            if (referencedTable != null) {
+                depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column));
+            }
         }
+        return column;
     }
 }

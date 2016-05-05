@@ -94,7 +94,7 @@ public class ValueExpr extends AbstractExpr {
 
             if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                new Select(this).select(new SelectStmt(subSelectStmt));
+                ret = new Select(this).select(new SelectStmt(subSelectStmt)).get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
             } else if ((cast = primary.cast_specification()) != null) {
@@ -113,7 +113,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((function = primary.function_call()) != null) {
                 function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
-                addColumnDepcy(qname);
+                ret = addColumnDepcy(qname);
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
             } else if ((array = primary.array_expression()) != null) {
@@ -145,6 +145,7 @@ public class ValueExpr extends AbstractExpr {
         } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
         }
+        return ret;
     }
 
     /**
@@ -158,6 +159,7 @@ public class ValueExpr extends AbstractExpr {
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
+
         if (funcName != null) {
             ret = addObjectDepcy(funcName.identifier(), DbObjType.FUNCTION);
             args = addVexCtxtoList(args, function.vex());

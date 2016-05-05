@@ -2167,6 +2167,14 @@ row_value_predicand_list
   : LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
   ;
 
+values_stmt
+    : VALUES values_values (COMMA values_values)*
+    ;
+
+values_values
+  : LEFT_PAREN (vex | DEFAULT) (COMMA (vex | DEFAULT))* RIGHT_PAREN
+  ;
+
 orderby_clause
   : ORDER BY sort_specifier_list
   ;
@@ -2232,12 +2240,4 @@ using_table
 
 notify_stmt
   : NOTIFY channel=identifier (COMMA payload=Character_String_Literal)?
-  ;
-
-values_stmt
-    : VALUES values_values (COMMA values_values)*
-    ;
-
-values_values
-  : LEFT_PAREN (vex | DEFAULT) (COMMA (vex | DEFAULT))* RIGHT_PAREN
   ;

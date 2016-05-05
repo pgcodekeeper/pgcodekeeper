@@ -15,14 +15,22 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
@@ -100,6 +108,10 @@ public class Select extends AbstractExpr {
                             (schema == null || unaliased.schema.equals(schema))) {
                         if (dereferenced == null) {
                             dereferenced = unaliased;
+                            if (schema != null) {
+                                // fully qualified, no ambiguity search needed
+                                break;
+                            }
                         } else {
                             Log.log(Log.LOG_WARNING, "Ambiguous reference: " + name);
                         }
@@ -234,6 +246,8 @@ public class Select extends AbstractExpr {
             ret = new Select(this).selectOps(selectOps.selectOps(0));
             new Select(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
+            Values_stmtContext values;
+
             if (primary.SELECT() != null) {
                 // from defines the namespace so it goes before everything else
                 if (primary.FROM() != null) {
@@ -257,14 +271,60 @@ public class Select extends AbstractExpr {
 
                 if ((primary.set_qualifier() != null && primary.ON() != null)
                         || primary.WHERE() != null || primary.HAVING() != null) {
-
+                    for (VexContext v : primary.vex()) {
+                        vex.vex(new Vex(v));
+                    }
                 }
+
+                Groupby_clauseContext groupBy = primary.groupby_clause();
+                if (groupBy != null) {
+                    for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
+                        Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
+                        Grouping_set_listContext groupingSets;
+
+                        if (groupingSet != null) {
+                            groupingSet(groupingSet, vex);
+                        } else if ((groupingSets = group.grouping_set_list()) != null) {
+                            for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
+                                groupingSet(groupingSubset, vex);
+                            }
+                        }
+                    }
+                }
+
+                if (primary.WINDOW() != null) {
+                    for (Window_definitionContext window : primary.window_definition()) {
+                        vex.window(window);
+                    }
+                }
+            } else if (primary.TABLE() != null) {
+                addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
+            } else if ((values = primary.values_stmt()) != null) {
+                ValueExpr vex = new ValueExpr(this);
+                for (Values_valuesContext vals : values.values_values()) {
+                    for (VexContext v : vals.vex()) {
+                        vex.vex(new Vex(v));
+                    }
+                }
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
             }
-            // TODO
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
         return ret;
+    }
+
+    private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
+        VexContext v = groupingSet.vex();
+        Row_value_predicand_listContext predicandList;
+        if (v != null) {
+            vex.vex(new Vex(v));
+        } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
+            for (VexContext predicand : predicandList.vex()) {
+                vex.vex(new Vex(predicand));
+            }
+        }
     }
 
     private void from(From_itemContext fromItem) {
@@ -289,10 +349,23 @@ public class Select extends AbstractExpr {
         } else if (fromItem.JOIN() != null) {
             from(fromItem.from_item(0));
             from(fromItem.from_item(1));
-            VexContext joinOn = fromItem.vex();
-            if (joinOn != null) {
-                // TODO do we analyze this expr at this point? later?
-                // column references?
+
+            if (fromItem.ON() != null) {
+                VexContext joinOn = fromItem.vex();
+                boolean oldLateral = lateralAllowed;
+                // technically incorrect simplification
+                // joinOn expr only does not have access to anything in this FROM
+                // except JOIN operand subtrees
+                // but since we're not doing expression validity checks
+                // we pretend that joinOn has access to everything
+                // that a usual LATERAL expr has access to
+                // this greatly simplifies analysis logic here
+                try {
+                    lateralAllowed = true;
+                    new ValueExpr(this).vex(new Vex(joinOn));
+                } finally {
+                    lateralAllowed = oldLateral;
+                }
             }
         } else if ((primary = fromItem.from_primary()) != null) {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
