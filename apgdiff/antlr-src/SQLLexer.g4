@@ -663,6 +663,8 @@ LineComment
 
 Identifier
     : IdentifierStartChar IdentifierChar*
+    // always lowercase unquoted ids
+        { setText(getText().toLowerCase()); }
     ;
 fragment
 IdentifierStartChar

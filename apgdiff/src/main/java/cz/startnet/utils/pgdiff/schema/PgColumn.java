@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -25,12 +24,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgColumn extends PgStatementWithSearchPath {
 
-    private static final Pattern PATTERN_NULL = Pattern.compile(
-            "^(.+)[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PATTERN_NOT_NULL = Pattern.compile(
-            "^(.+)[\\s]+NOT[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PATTERN_DEFAULT = Pattern.compile(
-            "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
     // TODO unsupported quotes in quoted ids, move to QNameParser
     public static final Pattern PATTERN_SEQUENCE = Pattern.compile(
             "^(?:nextval|setval)\\('(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
@@ -42,6 +35,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     private Integer statistics;
     private String defaultValue;
     private String type;
+    private String collation;
     private boolean nullValue = true;
     private String storage;
     private final List<GenericColumn> defaultFunctions = new ArrayList<>();
@@ -80,6 +74,9 @@ public class PgColumn extends PgStatementWithSearchPath {
         sbDefinition.append(cName);
         sbDefinition.append(' ');
         sbDefinition.append(type);
+        if (collation != null) {
+            sbDefinition.append(" COLLATE ").append(collation);
+        }
 
         if (defaultValue != null && !defaultValue.isEmpty()) {
             StringBuilder sbDefault = sbDefinition;
@@ -142,52 +139,21 @@ public class PgColumn extends PgStatementWithSearchPath {
         return type;
     }
 
+    public void setCollation(final String collation) {
+        this.collation = collation;
+        resetHash();
+    }
+
+    public String getCollation() {
+        return collation;
+    }
+
     public void addDefaultFunction(GenericColumn func) {
         defaultFunctions.add(func);
     }
 
     public List<GenericColumn> getDefaultFunctions() {
         return Collections.unmodifiableList(defaultFunctions);
-    }
-
-    public void parseDefinition(final String definition, StringBuilder seqName) {
-        String string = definition;
-
-        Matcher matcher = PATTERN_NOT_NULL.matcher(string);
-
-        if (matcher.matches()) {
-            string = matcher.group(1).trim();
-            setNullValue(false);
-        } else {
-            matcher = PATTERN_NULL.matcher(string);
-
-            if (matcher.matches()) {
-                string = matcher.group(1).trim();
-                setNullValue(true);
-            }
-        }
-
-        matcher = PATTERN_DEFAULT.matcher(string);
-
-        if (matcher.matches()) {
-            string = matcher.group(1).trim();
-            String seqNameStr = parseSequence(matcher.group(2).trim());
-            if (seqNameStr != null && !seqNameStr.isEmpty()) {
-                seqName.append(seqNameStr);
-            }
-            setDefaultValue(matcher.group(2).trim());
-        }
-
-        setType(string);
-    }
-
-    public String parseSequence(String definition) {
-        Matcher seqMatcher = PATTERN_SEQUENCE.matcher(definition);
-        if (seqMatcher.matches()) {
-            return seqMatcher.group("schema") == null ?
-                    seqMatcher.group("seq") : seqMatcher.group("schema") + "." + seqMatcher.group("seq");
-        }
-        return null;
     }
 
     @Override
@@ -273,19 +239,24 @@ public class PgColumn extends PgStatementWithSearchPath {
                     + " SET STORAGE " + newStorage + ';');
         }
 
-        if (!oldColumn.getType().equals(newColumn.getType())) {
+        if (!oldColumn.getType().equals(newColumn.getType()) ||
+                (newColumn.getCollation() != null &&
+                !newColumn.getCollation().equals(oldColumn.getCollation()))) {
             isNeedDepcies.set(true);
 
             sb.append(
                     "\n\n" + getAlterTable()
                     + ALTER_COLUMN
-                    + newColumn.getName()
+                    + PgDiffUtils.getQuotedName(newColumn.getName())
                     + " TYPE "
-                    + newColumn.getType()
-                    + "; /* "
-                    + MessageFormat.format(Messages.Table_TypeParameterChange,
-                            newColumn.getParent().getName(),
-                            oldColumn.getType(), newColumn.getType()) + " */");
+                    + newColumn.getType());
+            if (newColumn.getCollation() != null) {
+                sb.append(" COLLATE ")
+                .append(newColumn.getCollation());
+            }
+            sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
+                    newColumn.getParent().getName(),
+                    oldColumn.getType(), newColumn.getType()) + " */");
         }
 
         final String oldDefault = (oldColumn.getDefaultValue() == null) ? ""
@@ -343,6 +314,7 @@ public class PgColumn extends PgStatementWithSearchPath {
 
             eq = Objects.equals(name, col.getName())
                     && Objects.equals(type, col.getType())
+                    && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
                     && Objects.equals(defaultValue, col.getDefaultValue())
                     && Objects.equals(statistics, col.getStatistics())
@@ -366,7 +338,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         result = prime * result + (nullValue ? itrue : ifalse);
         result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());

@@ -341,10 +341,13 @@ public class DepcyGraph {
                     continue;
                 }
                 PgColumn clmn = tbl.getColumn(clmnName);
-                // TODO реализовать нормально inherits сейчас колонка с inherits
-                // не содержить элементов
+                if (clmn == null && !tbl.getInherits().isEmpty()) {
+                    // TODO заглушка "несуществующих" inherited колонок
+                    continue;
+                }
                 testNotNull(clmn, MessageFormat.format(Messages.View_CannotFindColumn,
                         view.getName(), scm.getName(), tblName, clmnName));
+
                 graph.addEdge(view, clmn);
                 continue;
             }
@@ -378,13 +381,16 @@ public class DepcyGraph {
             graph.addVertex(trigger);
             graph.addEdge(trigger, table);
 
-            String funcDef = trigger.getFunctionSignature();
-            if (funcDef.lastIndexOf(')') != -1) {
-                funcDef = funcDef.substring(0, funcDef.indexOf('('));
+            String funcName = trigger.getFunctionSignature();
+            String funcSig = "";
+            int paren = funcName.indexOf('(');
+            if (paren != -1) {
+                funcSig = funcName.substring(paren);
+                funcName = funcName.substring(0, paren);
             }
-            QNameParser qname = new QNameParser(funcDef);
+            QNameParser qname = new QNameParser(funcName);
             PgFunction func = getSchemaForObject(schema, qname)
-                    .getFunction(qname.getFirstName());
+                    .getFunction(qname.getFirstName() + funcSig);
             if (func != null) {
                 graph.addVertex(func);
                 graph.addEdge(trigger, func);

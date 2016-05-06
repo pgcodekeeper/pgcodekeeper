@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -73,6 +72,10 @@ public abstract class ParserAbstract {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(colCtx.column_name.getText());
+            col.setType(getFullCtxText(colCtx.datatype));
+            if (colCtx.collate_name != null) {
+                col.setCollation(getFullCtxText(colCtx.collate_name.collation));
+            }
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
@@ -84,62 +87,16 @@ public abstract class ParserAbstract {
                     if (func != null) {
                         defaultFucntions.put(colCtx.column_name.getText(), func);
                     }
-                } else if (column_constraint.constr_body().default_expr_data != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint
-                            .constr_body().default_expr_data));
                 }
 
-                if (column_constraint.constr_body().common_constraint() != null) {
-                    if (column_constraint.constr_body().common_constraint().null_value != null) {
-                        col.setNullValue(column_constraint.constr_body()
-                                .common_constraint().null_false == null);
-                    }
+                Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+                if (comConstr != null && comConstr.null_value != null) {
+                    col.setNullValue(comConstr.null_false == null);
                 }
-            }
-            if (colCtx.datatype != null) {
-                col.setType(getWrongColumn(colCtx));
             }
         }
 
         return col;
-    }
-    /**
-     * Made only for compatibility with apgdiff
-     * Should be removed after refactor!
-     * @param fullCtxText
-     * @return type of column
-     */
-    private String getWrongColumn(Table_column_definitionContext colCtx) {
-        ColumnDefinition cd = new ColumnDefinition();
-        ParseTreeWalker.DEFAULT.walk(cd, colCtx);
-
-        PgColumn col = new PgColumn("");
-        col.parseDefinition(getFullCtxText(colCtx.datatype) + " " + cd.getDefinition(), new StringBuilder(1));
-        return col.getType();
-    }
-
-    private static class ColumnDefinition extends SQLParserBaseListener {
-        StringBuilder sb = new StringBuilder();
-        @Override
-        public void exitCollate_identifier(Collate_identifierContext ctx) {
-            sb.append(getFullCtxText(ctx)).append(" ");
-        }
-        @Override
-        public void exitWith_options(With_optionsContext ctx) {
-            sb.append(getFullCtxText(ctx)).append(" ");
-        }
-        @Override
-        public void exitConstraint_common(Constraint_commonContext ctx) {
-            sb.append(getFullCtxText(ctx)).append(" ");
-        }
-        public String getDefinition() {
-            if (sb.length() > 0) {
-                // удалить последний пробел
-                sb.setLength(sb.length() - 1);
-                return sb.toString();
-            }
-            return null;
-        }
     }
 
     protected String getSequence(VexContext default_expr) {

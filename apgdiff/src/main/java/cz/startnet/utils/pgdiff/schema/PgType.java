@@ -472,13 +472,19 @@ public class PgType extends PgStatementWithSearchPath {
         for (PgColumn attr : newType.getAttrs()) {
             PgColumn oldAttr = oldType.getAttr(attr.getName());
             if (oldAttr != null) {
-                if (!oldAttr.getType().equals(attr.getType())) {
+                if (!oldAttr.getType().equals(attr.getType()) ||
+                        (attr.getCollation() != null &&
+                        !attr.getCollation().equals(oldAttr.getCollation()))) {
                     isNeedDepcies.set(true);
                     attrSb.append("\n\tALTER ATTRIBUTE ")
                     .append(PgDiffUtils.getQuotedName(attr.getName()))
                     .append(" TYPE ")
-                    .append(attr.getType())
-                    .append(", ");
+                    .append(attr.getType());
+                    if (attr.getCollation() != null) {
+                        attrSb.append(" COLLATE ")
+                        .append(attr.getCollation());
+                    }
+                    attrSb.append(", ");
                 }
             } else {
                 attrSb.append("\n\tADD ATTRIBUTE ")

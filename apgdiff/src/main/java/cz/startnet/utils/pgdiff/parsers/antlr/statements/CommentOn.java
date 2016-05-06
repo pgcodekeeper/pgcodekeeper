@@ -87,10 +87,6 @@ public class CommentOn extends ParserAbstract {
             db.setComment(db.getArguments(), comment);
             // index
         } else if (ctx.INDEX() != null) {
-            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
-            if (schemaName.equals(tableName)) {
-                schema = db.getSchema(getDefSchemaName());
-            }
             PgIndex index = null;
             for (PgTable table : schema.getTables()) {
                 index = table.getIndex(name);

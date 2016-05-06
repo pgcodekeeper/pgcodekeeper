@@ -30,7 +30,7 @@ CREATE TABLE testtable (
     field4 double precision,
     field5 boolean DEFAULT false,
     field6 integer DEFAULT 0,
-    field7 double DEFAULT 1 NOT NULL
+    field7 double precision DEFAULT 1 NOT NULL
 );
 
 

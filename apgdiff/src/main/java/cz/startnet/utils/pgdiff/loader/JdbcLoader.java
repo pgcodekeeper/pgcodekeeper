@@ -831,15 +831,14 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
-            String columnTypeName = colTypeName[i];
+            column.setType(colTypeName[i]);
 
             // unbox
             long collation = colCollation[i];
             if (collation != 0 && collation != colTypCollation[i]) {
-                columnTypeName += " COLLATE " + PgDiffUtils.getQuotedName(colCollationSchema[i])
-                + '.' + PgDiffUtils.getQuotedName(colCollationName[i]);
+                column.setCollation(PgDiffUtils.getQuotedName(colCollationSchema[i])
+                        + '.' + PgDiffUtils.getQuotedName(colCollationName[i]));
             }
-            column.setType(columnTypeName);
 
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()){

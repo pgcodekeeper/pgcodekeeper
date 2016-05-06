@@ -629,7 +629,7 @@ table_column_def
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type? collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
+    : column_name=identifier datatype=data_type collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
     ;
 
 with_options
@@ -654,7 +654,7 @@ constr_body
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
        | table_unique_prkey
-       | DEFAULT (default_expr_data=data_type | default_expr=vex)
+       | DEFAULT default_expr=vex
       )
       table_deferrable? table_initialy_immed?
     ;

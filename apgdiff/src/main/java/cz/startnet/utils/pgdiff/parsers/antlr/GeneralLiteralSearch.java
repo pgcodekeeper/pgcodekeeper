@@ -6,7 +6,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 
 
 public class GeneralLiteralSearch extends SQLParserBaseListener {
-    
+
     private String seqName="";
     private General_literalContext ctx;
     private boolean found = false;
@@ -24,6 +24,7 @@ public class GeneralLiteralSearch extends SQLParserBaseListener {
         }
     }
 
+    // TODO needs proper qualified name, dequoting work
     public String getSeqName() {
         return seqName.substring(1, seqName.length() - 1);
     }
