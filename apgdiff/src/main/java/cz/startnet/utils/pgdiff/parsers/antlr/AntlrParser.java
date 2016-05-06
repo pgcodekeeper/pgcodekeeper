@@ -103,6 +103,6 @@ class CustomSQLErrorListener extends BaseErrorListener {
             String msg, RecognitionException e) {
         Log.log(Log.LOG_WARNING, "ANTLR Error:\n"
                 + parsedObjectName + " line " + line + ':' + charPositionInLine
-                + ' ' + msg);
+                + ' ' + msg, e);
     }
 }

@@ -313,7 +313,6 @@ public class DepcyGraph {
             String tblName = col.table;
             String clmnName = col.column;
 
-            // пропускаем системные вещи, например count(*), AVG и т.д.
             // TODO: вынести "pg_.*" в настройки, сейчас жестко забито
             // чтобы пропускать выборку из pg_views - системной таблицы
             if (tblName == null
@@ -331,7 +330,7 @@ public class DepcyGraph {
             if (tbl != null) {
                 graph.addEdge(view, tbl);
 
-                if (SYS_COLUMNS.contains(clmnName)){
+                if (clmnName == null || SYS_COLUMNS.contains(clmnName)){
                     continue;
                 }
                 // Если колонка называется * то это ссылки на все колонки из вью
@@ -344,9 +343,6 @@ public class DepcyGraph {
                 PgColumn clmn = tbl.getColumn(clmnName);
                 // TODO реализовать нормально inherits сейчас колонка с inherits
                 // не содержить элементов
-                if (clmn == null) {
-                    continue;
-                }
                 testNotNull(clmn, MessageFormat.format(Messages.View_CannotFindColumn,
                         view.getName(), scm.getName(), tblName, clmnName));
                 graph.addEdge(view, clmn);
@@ -363,8 +359,6 @@ public class DepcyGraph {
                 // редактировать правила на эти функции, либо
                 // вычислять в коде, скорее всего правила
                 PgFunction func = resolveFunctionCall(scm, tblName);
-                // do not check for (func == null) because it can be a system function
-                // which currently does not get skipped
                 if (func != null) {
                     graph.addEdge(view, func);
                 }
@@ -385,6 +379,9 @@ public class DepcyGraph {
             graph.addEdge(trigger, table);
 
             String funcDef = trigger.getFunctionSignature();
+            if (funcDef.lastIndexOf(')') != -1) {
+                funcDef = funcDef.substring(0, funcDef.indexOf('('));
+            }
             QNameParser qname = new QNameParser(funcDef);
             PgFunction func = getSchemaForObject(schema, qname)
                     .getFunction(qname.getFirstName());
