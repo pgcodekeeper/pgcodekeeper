@@ -169,26 +169,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                 StatementActions.NONE,
                 ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
                 .getStart().getLine());
-
-        try {
-            String insertTableName = ParserAbstract.getName(ctx.command.insert_stmt_for_psql().insert_table_name);
-            String insertTableSchema = ParserAbstract.getSchemaName(ctx.command.insert_stmt_for_psql().insert_table_name);
-            if (insertTableSchema == null){
-                insertTableSchema = getDefSchemaName();
-            } else {
-                addObjReference(null, insertTableSchema, DbObjType.SCHEMA,
-                        StatementActions.NONE,
-                        ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex(),
-                        0, ctx.command.insert_stmt_for_psql().insert_table_name
-                        .getStart().getLine());
-            }
-            addObjReference(insertTableSchema, insertTableName, DbObjType.TABLE,
-                    StatementActions.NONE,
-                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getStartIndex() + insertTableSchema.length() + 1, 0,
-                    ctx.command.insert_stmt_for_psql().insert_table_name.getStart().getLine());
-        } catch (NullPointerException npe){
-
-        }
+        // TODO process references in statements/expressions
         fillObjDefinition(schemaName, name, DbObjType.RULE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }

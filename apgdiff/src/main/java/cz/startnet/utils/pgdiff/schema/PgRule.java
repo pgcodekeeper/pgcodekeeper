@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,64 +17,110 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgRule extends PgStatementWithSearchPath{
 
-    public PgRule(String name, String rawStatement) {
-        super(name, rawStatement);
-        instead = false;
-        also = false;
-        orReplace = false;
-    }
     public enum PgRuleEventType {
         SELECT, INSERT, UPDATE, DELETE
     }
 
-    private boolean orReplace;
-    private PgRuleEventType ruleEvent;
-    private String ruleTargetName;
-    private String ruleCondition;
-    private String ruleCommand;
+    private PgRuleEventType event;
+    private String targetName;
+    private String condition;
     private boolean instead;
-    private boolean also;
+    private final List<String> commands = new ArrayList<>();
 
-    @Override
-    public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent().getParent();
-    }
     @Override
     public DbObjType getStatementType() {
         return DbObjType.RULE;
     }
+
+    public PgRuleEventType getEvent() {
+        return event;
+    }
+
+    public void setEvent(PgRuleEventType event) {
+        this.event = event;
+        resetHash();
+    }
+
+    public String getTargetName() {
+        return targetName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+        resetHash();
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+        resetHash();
+    }
+
+    public boolean isInstead() {
+        return instead;
+    }
+
+    public void setInstead(boolean instead) {
+        this.instead = instead;
+        resetHash();
+    }
+
+    public List<String> getCommands() {
+        return Collections.unmodifiableList(commands);
+    }
+
+    public void addCommand(String command) {
+        commands.add(command);
+        resetHash();
+    }
+
+    public PgRule(String name, String rawStatement) {
+        super(name, rawStatement);
+    }
+
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE");
-        if (isOrReplace()){
-            sbSQL.append(" OR REPLACE");
-        }
-        sbSQL.append(" RULE ");
+        sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" AS\n    ON ").append(getRuleEvent().toString());
-        sbSQL.append(" TO ").append(getRuleTargetName());
-        if (getRuleCondition() != null && !"".equals(getRuleCondition())){
-            sbSQL.append("\n   ").append(getRuleCondition());
+        sbSQL.append(" AS\n    ON ").append(getEvent());
+        sbSQL.append(" TO ").append(PgDiffUtils.getQuotedName(getTargetName()));
+        if (getCondition() != null && !getCondition().isEmpty()){
+            sbSQL.append("\n  WHERE ").append(getCondition());
         }
         sbSQL.append(" DO ");
         if (isInstead()){
             sbSQL.append("INSTEAD ");
         }
-
-        if (isAlso()){
-            sbSQL.append("ALSO ");
+        switch (commands.size()) {
+        case 0:
+            sbSQL.append("NOTHING");
+            break;
+        case 1:
+            // space before is defined by get_query_def
+            sbSQL.append(' ').append(commands.get(0));
+            break;
+        default:
+            sbSQL.append('(');
+            for (String command : commands) {
+                sbSQL.append(' ').append(command).append(";\n");
+            }
+            sbSQL.append(')');
         }
-        sbSQL.append(getRuleCommand()).append(";");
-        return sbSQL.toString();
+        return sbSQL.append(';').toString();
     }
+
     @Override
     public String getDropSQL() {
-        final StringBuilder sbSQL = new StringBuilder("DROP RULE");
+        StringBuilder sbSQL = new StringBuilder("DROP RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(ruleTargetName)).append(";");
+        sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(getTargetName())).append(';');
         return sbSQL.toString();
     }
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
@@ -81,6 +130,7 @@ public class PgRule extends PgStatementWithSearchPath{
         } else {
             return false;
         }
+
         PgRule oldRule = this;
         if (!oldRule.compareWithoutComments(newRule)) {
             isNeedDepcies.set(true);
@@ -92,23 +142,26 @@ public class PgRule extends PgStatementWithSearchPath{
         }
         return sb.length() > startLength;
     }
+
     @Override
     public PgRule shallowCopy() {
-        PgRule pgRule = new PgRule(getName(), getRawStatement());
-        pgRule.setRuleTargetName(getRuleTargetName());
-        pgRule.setInstead(isInstead());
-        pgRule.setAlso(isAlso());
-        pgRule.setOrReplace(isOrReplace());
-        pgRule.setRuleCondition(getRuleCondition());
-        pgRule.setRuleCommand(getRuleCommand());
-        pgRule.setRuleEvent(getRuleEvent());
-        pgRule.setComment(getComment());
-        return pgRule;
+        PgRule ruleDst = new PgRule(getName(), getRawStatement());
+        ruleDst.setEvent(getEvent());
+        ruleDst.setTargetName(getTargetName());
+        ruleDst.setCondition(getCondition());
+        ruleDst.setInstead(isInstead());
+        ruleDst.setComment(getComment());
+        for (String command : commands) {
+            ruleDst.addCommand(command);
+        }
+        return ruleDst;
     }
+
     @Override
     public PgRule deepCopy() {
         return shallowCopy();
     }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -125,69 +178,28 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     public boolean compareWithoutComments(PgRule rule) {
-        return (ruleEvent == rule.ruleEvent)
-                && (instead == rule.isInstead())
-                && (ruleCondition != null? ruleCondition.equals(rule.getRuleCondition()) :
-                    ruleCondition == rule.getRuleCondition())
-                && (ruleCommand != null? ruleCommand.equals(rule.getRuleCommand()) :
-                    ruleCommand == rule.getRuleCommand());
+        return event == rule.event
+                && Objects.equals(targetName, rule.getTargetName())
+                && Objects.equals(condition, rule.getCondition())
+                && instead == rule.isInstead()
+                && commands.equals(rule.commands);
     }
 
     @Override
     protected int computeHash() {
-        if (ruleCommand != null && ruleCommand.startsWith("CREATE")){
-            return ruleCommand.hashCode();
-        }
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((event == null) ? 0 : event.hashCode());
+        result = prime * result + ((targetName == null) ? 0 : targetName.hashCode());
+        result = prime * result + ((condition == null) ? 0 : condition.hashCode());
         result = prime * result + (instead ? 1231 : 1237);
-        result = prime * result + ((ruleCommand == null) ? 0 : ruleCommand.hashCode());
-        result = prime * result + ((ruleCondition == null) ? 0 : ruleCondition.hashCode());
-        result = prime * result + ((ruleEvent == null) ? 0 : ruleEvent.hashCode());
-        result = prime * result + ((ruleTargetName == null) ? 0 : ruleTargetName.hashCode());
+        result = prime * result + ((commands == null) ? 0 : commands.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
-    public PgRuleEventType getRuleEvent() {
-        return ruleEvent;
-    }
-    public void setRuleEvent(PgRuleEventType ruleEvent) {
-        this.ruleEvent = ruleEvent;
-    }
-    public String getRuleTargetName() {
-        return ruleTargetName;
-    }
-    public void setRuleTargetName(String ruleTableName) {
-        this.ruleTargetName = ruleTableName;
-    }
-    public String getRuleCondition() {
-        return ruleCondition;
-    }
-    public void setRuleCondition(String ruleCondition) {
-        this.ruleCondition = ruleCondition;
-    }
-    public boolean isInstead() {
-        return instead;
-    }
-    public void setInstead(boolean instead) {
-        this.instead = instead;
-    }
-    public boolean isAlso() {
-        return also;
-    }
-    public void setAlso(boolean also) {
-        this.also = also;
-    }
-    public String getRuleCommand() {
-        return ruleCommand;
-    }
-    public void setRuleCommand(String ruleCommand) {
-        this.ruleCommand = ruleCommand;
-    }
-    public boolean isOrReplace() {
-        return orReplace;
-    }
-    public void setOrReplace(boolean orReplace) {
-        this.orReplace = orReplace;
-    }
 
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema) this.getParent().getParent();
+    }
 }

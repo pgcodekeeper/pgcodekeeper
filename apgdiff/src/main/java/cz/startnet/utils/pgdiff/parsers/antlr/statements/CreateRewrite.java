@@ -1,9 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -18,60 +24,49 @@ public class CreateRewrite extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName =getSchemaName(ctx.name);
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
+
         PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
-        rule.setRuleTargetName(ctx.table_name.getText());
-
-        if (ctx.OR()!=null && ctx.REPLACE()!=null){
-            rule.setOrReplace(true);
-        }
-
-        if (ctx.where_clause() != null){
-            rule.setRuleCondition(getFullCtxText(ctx.where_clause()));
-        }
-        if (ctx.command != null){
-            String command = getFullCtxText(ctx.command);
-            rule.setRuleCommand(command);
-        }
-        rule.setRuleEvent(PgRuleEventType.valueOf(ctx.event.getText()));
+        rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
+        rule.setTargetName(ctx.table_name.getText());
+        rule.setCondition(getCondition(ctx));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
+        setCommands(ctx, rule);
 
-        if (ctx.ALSO() != null){
-            rule.setAlso(true);
-        }
-
-        PgTable pgTable = db.getSchema(schemaName).getTable(rule.getRuleTargetName());
-        if (pgTable != null){
-            pgTable.addRule(rule);
+        PgSchema schema = db.getSchema(schemaName);
+        PgTable table = schema.getTable(rule.getTargetName());
+        if (table != null){
+            table.addRule(rule);
         } else {
-            PgView pgView = db.getSchema(schemaName).getView(rule.getRuleTargetName());
-            if (pgView != null){
-                pgView.addRule(rule);
+            PgView view = schema.getView(rule.getTargetName());
+            if (view != null){
+                view.addRule(rule);
             } else {
-                Log.log(Log.LOG_ERROR,
-                        new StringBuilder().append("Rule ")
-                        .append(rule.getName())
-                        .append(" was added outside table or view for ").append(schemaName)
-                        .append(" schema ").toString());
+                Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
+                        " is missing its container " + rule.getTargetName() +
+                        " in schema " + schemaName);
             }
         }
         return rule;
     }
 
-    /*    public static class WhenListener extends SQLParserBaseListener {
-        private String when;
-        @Override
-        public void exitWhen_trigger(When_triggerContext ctx) {
-            when = getFullCtxText(ctx.when_expr);
+    public static String getCondition(Create_rewrite_statementContext ctx) {
+        return ctx.WHERE() == null ? null : getFullCtxText(ctx.vex());
+    }
+
+    public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule) {
+        if (ctx.NOTHING() != null) {
+            return;
         }
-        public String getWhen() {
-            return when;
+        for (Rewrite_commandContext cmd : ctx.commands) {
+            rule.addCommand(getFullCtxText(cmd));
         }
-    }*/
+    }
 }

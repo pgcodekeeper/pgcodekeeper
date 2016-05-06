@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -152,7 +153,7 @@ public abstract class ParserAbstract {
         private String seqName;
 
         @Override
-        public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
+        public void enterFunction_call(Function_callContext ctx) {
             GeneralLiteralSearch seq = new GeneralLiteralSearch();
             ParseTreeWalker.DEFAULT.walk(seq, ctx);
             if (seq.isFound()) {
@@ -175,18 +176,17 @@ public abstract class ParserAbstract {
     }
 
     public static class FunctionSearcher extends SQLParserBaseListener {
-        private Schema_qualified_nameContext name;
+        private Schema_qualified_nameContext fname;
         @Override
-        public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
-            String name = getName(ctx.schema_qualified_name());
-            if (ctx.function_calls_paren() != null
-                    && !name.equals("nextval")
-                    && name == null) {
-                name = ctx.schema_qualified_name();
+        public void enterFunction_call(Function_callContext ctx) {
+            Schema_qualified_nameContext qname = ctx.schema_qualified_name();
+            String name = QNameParser.getFirstName(qname.identifier());
+            if (fname == null && !"nextval".equals(name)) {
+                fname = qname;
             }
         }
         public Schema_qualified_nameContext getName() {
-            return name;
+            return fname;
         }
     }
 
@@ -219,10 +219,7 @@ public abstract class ParserAbstract {
         final List<GenericColumn> funcSignature = new ArrayList<>();
         new ParseTreeWalker().walk(new SQLParserBaseListener() {
             @Override
-            public void exitName_or_func_calls(Name_or_func_callsContext ctx) {
-                if (ctx.function_calls_paren() == null) {
-                    return;
-                }
+            public void enterFunction_call(Function_callContext ctx) {
                 List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
                 String objName = QNameParser.getFirstName(ids);
                 String schemaName = QNameParser.getSchemaName(ids);

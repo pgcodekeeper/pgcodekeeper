@@ -14,7 +14,6 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -318,7 +317,6 @@ public class DepcyGraph {
             // TODO: вынести "pg_.*" в настройки, сейчас жестко забито
             // чтобы пропускать выборку из pg_views - системной таблицы
             if (tblName == null
-                    || col.getType() == ViewReference.SYSTEM
                     || (col.table != null && col.table.startsWith("pg_"))
                     || SYS_SCHEMAS.contains(scmName)){
                 continue;
@@ -359,7 +357,7 @@ public class DepcyGraph {
             if (vw != null){
                 graph.addVertex(vw);
                 graph.addEdge(view, vw);
-            } else if (col.getType() == ViewReference.FUNCTION) {
+            } else if (col.getType() == DbObjType.FUNCTION) {
                 // TODO: Сейчас пропускаются функции типа upper,
                 // replace, toChar, now, что делать либо
                 // редактировать правила на эти функции, либо

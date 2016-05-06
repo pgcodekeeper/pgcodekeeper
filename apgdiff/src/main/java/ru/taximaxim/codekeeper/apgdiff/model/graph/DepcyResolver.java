@@ -291,13 +291,13 @@ public class DepcyResolver {
             PgRule rule = (PgRule) statement;
             switch (rule.getParent().getStatementType()) {
             case TABLE:
-                PgTable ruleTable = oldSchema.getTable(rule.getRuleTargetName());
+                PgTable ruleTable = oldSchema.getTable(rule.getTargetName());
                 if (ruleTable != null) {
                     return ruleTable.getRule(rule.getName());
                 }
                 break;
             case VIEW:
-                PgView ruleView = oldSchema.getView(rule.getRuleTargetName());
+                PgView ruleView = oldSchema.getView(rule.getTargetName());
                 if (ruleView != null) {
                     return ruleView.getRule(rule.getName());
                 }

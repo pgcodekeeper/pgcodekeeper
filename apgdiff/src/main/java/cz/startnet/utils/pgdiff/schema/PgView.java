@@ -313,11 +313,32 @@ public class PgView extends PgStatementWithSearchPath {
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
-                    && Objects.equals(columnComments, view.getColumnComments())
+                    && Objects.equals(columnComments, view.getColumnComments());
+        }
+
+        return eq;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean eq = false;
+
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgView) {
+            PgView view = (PgView) obj;
+
+            eq = super.equals(obj)
+
                     && new HashSet<>(rules).equals(new HashSet<>(view.rules));
         }
 
         return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
