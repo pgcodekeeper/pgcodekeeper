@@ -10,7 +10,7 @@ SELECT ccc.relname,
        tgargs,
        tgrelid as table_oid,
        tgattr::int2[] as col_numbers,
-       pg_get_triggerdef(t.oid,false) AS definition,
+       pg_get_triggerdef(t.oid,false) || ';' AS definition,
        d.description as comment
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid

@@ -352,6 +352,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
+        colDst.setCollation(getCollation());
         colDst.setType(getType());
         colDst.setComment(getComment());
         for (PgPrivilege priv : grants) {

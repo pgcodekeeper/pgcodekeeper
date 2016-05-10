@@ -38,8 +38,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
  */
 public final class PgDiff {
 
-    private static DepcyResolver depRes;
-
     /**
      * Creates diff on the two database schemas.
      *
@@ -132,22 +130,21 @@ public final class PgDiff {
             script.addStatement("START TRANSACTION;");
         }
 
-        depRes = null;
-        if (oldDbFull != null && newDbFull != null) {
-            try {
-                depRes = new DepcyResolver(oldDbFull, newDbFull);
-            } catch (PgCodekeeperException e) {
-                throw new IllegalStateException(MessageFormat.format(
-                        "Error creating dependency graph: {0}",
-                        e.getLocalizedMessage()), e);
-            }
+        DepcyResolver depRes;
+        try {
+            depRes = new DepcyResolver(oldDbFull, newDbFull);
+        } catch (PgCodekeeperException e) {
+            // TODO remove unchecked wrapping?
+            throw new IllegalStateException(MessageFormat.format(
+                    "Error creating dependency graph: {0}",
+                    e.getLocalizedMessage()), e);
+        }
 
-            if (additionalDepciesSource != null) {
-                depRes.addCustomDepciesToOld(additionalDepciesSource);
-            }
-            if (additionalDepciesTarget != null) {
-                depRes.addCustomDepciesToNew(additionalDepciesTarget);
-            }
+        if (additionalDepciesSource != null) {
+            depRes.addCustomDepciesToOld(additionalDepciesSource);
+        }
+        if (additionalDepciesTarget != null) {
+            depRes.addCustomDepciesToNew(additionalDepciesTarget);
         }
 
         List<TreeElement> selected = new ArrayList<>(2 * root.countDescendants());

@@ -579,17 +579,14 @@ public class JdbcLoader implements PgCatalogStrings {
 
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
-                StringBuilder sbDef = new StringBuilder(atttypes[i]);
+                a.setType(atttypes[i]);
 
                 // unbox
                 long attcollation = attcollations[i];
                 if (attcollation != 0 && attcollation != atttypcollations[i]) {
-                    sbDef.append(" COLLATE ")
-                    .append(PgDiffUtils.getQuotedName(attcollationnspnames[i]))
-                    .append('.')
-                    .append(PgDiffUtils.getQuotedName(attcollationnames[i]));
+                    a.setCollation(PgDiffUtils.getQuotedName(attcollationnspnames[i])
+                            + '.' + PgDiffUtils.getQuotedName(attcollationnames[i]));
                 }
-                a.setType(sbDef.toString());
                 t.addAttr(a);
                 if (attcomments[i] != null && !attcomments[i].isEmpty()) {
                     a.setComment(args, PgDiffUtils.quoteString(attcomments[i]));

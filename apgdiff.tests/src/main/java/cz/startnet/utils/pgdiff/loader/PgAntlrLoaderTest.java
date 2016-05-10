@@ -40,6 +40,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -352,7 +353,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
-        col.setType("int PRIMARY KEY");
+        col.setType("int");
         table.addColumn(col);
 
         col = new PgColumn("number_pool_id");
@@ -729,6 +730,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addView(view);
 
         PgSelect select = new PgSelect("");
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "email"));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "created"));
@@ -742,6 +744,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addView(view);
 
         select = new PgSelect("");
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
 
         view.setSelect(select);
@@ -978,6 +981,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         view.addColumnComment("id", "'view id col'");
 
         PgSelect select = new PgSelect("");
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "id"));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "text"));
 
@@ -1052,8 +1056,10 @@ class PgDB16 extends PgDatabaseObjectCreator {
         schema.addView(view);
 
         PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", null, DbObjType.TABLE));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
 
         view.setSelect(select);
 
@@ -1102,9 +1108,12 @@ class PgDB17 extends PgDatabaseObjectCreator {
         schema.addView(view);
 
         PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", null, DbObjType.TABLE));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", null, DbObjType.TABLE));
+        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
 
         view.setSelect(select);
 

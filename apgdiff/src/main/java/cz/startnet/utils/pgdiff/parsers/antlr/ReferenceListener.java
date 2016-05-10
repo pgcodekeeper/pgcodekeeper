@@ -135,23 +135,21 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ctx.tabl_name.getStart().getStartIndex(), 0, ctx.tabl_name
                 .getStart().getLine());
 
-        String funcName = QNameParser.getFirstName(ctx.function_parameters().name.identifier());
-        String funcSchema = QNameParser.getSchemaName(ctx.function_parameters().name.identifier());
+        List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
+        String funcName = QNameParser.getFirstName(funcIds);
+        String funcSchema = QNameParser.getSchemaName(funcIds);
         int offset = 0;
         if (funcSchema == null) {
             funcSchema = getDefSchemaName();
         } else {
             offset = funcSchema.length() + 1;
             addObjReference(null, funcSchema, DbObjType.SCHEMA,
-                    StatementActions.NONE, ctx.function_parameters().getStart()
-                    .getStartIndex(), 0, ctx.function_parameters()
-                    .getStart().getLine());
+                    StatementActions.NONE, ctx.func_name.getStart().getStartIndex(),
+                    0, ctx.func_name.getStart().getLine());
         }
         addObjReference(funcSchema, funcName+"()", DbObjType.FUNCTION,
-                StatementActions.NONE, ctx.function_parameters().getStart()
-                .getStartIndex()
-                + offset, funcName.length(),
-                ctx.function_parameters().name.getStart().getLine());
+                StatementActions.NONE, ctx.func_name.getStart().getStartIndex()+ offset,
+                funcName.length(), ctx.func_name.schema_qualified_name().getStart().getLine());
 
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
@@ -252,7 +250,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             schemaName = getDefSchemaName();
         }
         // function
-        if (ctx.function_args() != null) {
+
+        if (ctx.FUNCTION() != null) {
             PgFunction func = new PgFunction(name, null);
             ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName());
             name = func.getSignature();

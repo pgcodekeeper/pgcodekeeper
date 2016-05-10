@@ -399,7 +399,7 @@ create_trigger_statement
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
-    EXECUTE PROCEDURE func_name=function_parameters
+    EXECUTE PROCEDURE func_name=function_call
     ;
 
 when_trigger

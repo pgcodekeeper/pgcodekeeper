@@ -12,17 +12,18 @@ public final class GenericColumn implements Serializable {
     public final String schema;
     public final String table;
     public final String column;
+    public final DbObjType type;
     // SONAR-ON
-    private DbObjType type = DbObjType.COLUMN;
 
-    public GenericColumn(String schema, String table, String column) {
+    public GenericColumn(String schema, String table, String column, DbObjType type) {
         this.schema = schema;
         this.table = table;
         this.column = column;
+        this.type = type;
     }
 
-    public void setType(DbObjType type) {
-        this.type = type;
+    public GenericColumn(String schema, String table, String column) {
+        this(schema, table, column, DbObjType.COLUMN);
     }
 
     public DbObjType getType() {
