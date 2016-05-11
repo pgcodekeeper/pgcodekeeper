@@ -485,16 +485,20 @@ public final class PgDiffUtils {
             "ZONE"
     };
 
-    private static String getQuotedName(final String name,
-            final boolean excludeKeywords) {
-        if (name.contains("-") || name.contains(".") || name.contains("\"")) {
+    private static String getQuotedName(String name, boolean excludeKeywords) {
+        if (name.isEmpty()) {
+            return name;
+        }
+
+        char c = name.charAt(0);
+        if ((c < 'a' || c > 'z') && c != '_') {
             return quoteName(name);
         }
 
-        for (int i = 0; i < name.length(); i++) {
-            final char chr = name.charAt(i);
+        for (int i = 1; i < name.length(); i++) {
+            c = name.charAt(i);
 
-            if (Character.isUpperCase(chr)) {
+            if ((c < 'a' || c > 'z') && (c < '0' || c > '9') && c != '_') {
                 return quoteName(name);
             }
         }

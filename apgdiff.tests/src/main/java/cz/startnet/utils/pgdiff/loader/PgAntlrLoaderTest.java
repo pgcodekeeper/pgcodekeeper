@@ -500,6 +500,7 @@ class PgDB5 extends PgDatabaseObjectCreator {
         PgFunction func = new PgFunction("gtsq_in", "");
         func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
         func.setReturns("gtsq");
+        func.setReturnsName(new GenericColumn("public", "gtsq", null, DbObjType.TYPE));
         schema.addFunction(func);
 
         PgFunction.Argument arg = new PgFunction.Argument();

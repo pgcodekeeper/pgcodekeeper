@@ -119,7 +119,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         return returnsName;
     }
 
-
     /**
      * @param returnsName имя типа объекта на которое указывает функция
      */
@@ -240,6 +239,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         if (obj instanceof PgFunction) {
             PgFunction func  = (PgFunction) obj;
             return checkForChanges(func)
+                    && Objects.equals(returnsName, func.getReturnsName())
                     && Objects.equals(owner, func.getOwner())
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes)
@@ -256,6 +256,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         result = prime * result + ((returns == null) ? 0 : returns.hashCode());
+        result = prime * result + ((returnsName == null) ? 0 : returnsName.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());

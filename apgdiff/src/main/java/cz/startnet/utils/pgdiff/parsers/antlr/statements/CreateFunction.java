@@ -2,19 +2,17 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
@@ -49,40 +47,18 @@ public class CreateFunction extends ParserAbstract {
         return function;
     }
 
-    private GenericColumn parseReturns(ParserRuleContext ctx) {
-        SchemaNameListener snl = new SchemaNameListener();
-        new ParseTreeWalker().walk(snl, ctx);
-        Schema_qualified_nameContext name = snl.getName();
-        if (name != null) {
-            List<IdentifierContext> ids = name.identifier();
-            String typeName = QNameParser.getFirstName(ids);
+    private GenericColumn parseReturns(Data_typeContext ctx) {
+        Schema_qualified_name_nontypeContext type = ctx.predefined_type().schema_qualified_name_nontype();
+        if (type != null) {
+            String typeName = type.identifier_nontype().getText();
 
             if (ApgdiffConsts.SYS_TYPES.contains(typeName)) {
                 return null;
             }
-            String schemaName = QNameParser.getSchemaName(ids);
-            if (schemaName == null) {
-                schemaName = getDefSchemaName();
-            }
-            return new GenericColumn(schemaName, typeName, null);
+            IdentifierContext schemaNameCtx = type.identifier();
+            String schemaName = schemaNameCtx == null ? getDefSchemaName() : schemaNameCtx.getText();
+            return new GenericColumn(schemaName, typeName, null, DbObjType.TYPE);
         }
         return null;
     }
 }
-
-/**
- * Находит и возвращает первое попавшееся имя с указанием схемы или без нее
- */
-class SchemaNameListener extends SQLParserBaseListener {
-    private Schema_qualified_nameContext name;
-    @Override
-    public void exitSchema_qualified_name(Schema_qualified_nameContext ctx) {
-        if (name == null) {
-            name = ctx;
-        }
-    }
-    Schema_qualified_nameContext getName() {
-        return name;
-    }
-}
-

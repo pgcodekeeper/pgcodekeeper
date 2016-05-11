@@ -952,11 +952,25 @@ public class JdbcLoader implements PgCatalogStrings {
     private void fillStorageParams(StringBuilder storageParameters,
             Array arr, boolean isToast) throws SQLException {
         String[] options = (String[])arr.getArray();
-        for (String option : options) {
+        for (String pair : options) {
+            int sep = pair.indexOf('=');
+            String option, value;
+            if (sep == -1) {
+                option = pair;
+                value = "";
+            } else {
+                option = pair.substring(0, sep);
+                value = pair.substring(sep + 1);
+            }
+            if (!value.equals(PgDiffUtils.getQuotedName(value))) {
+                // only quote non-ids; pg_dump behavior
+                value = PgDiffUtils.quoteString(value);
+            }
+
             if (isToast) {
                 storageParameters.append("toast.");
             }
-            storageParameters.append(option).append(", ");
+            storageParameters.append(option).append('=').append(value).append(", ");
         }
     }
 
@@ -1168,7 +1182,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     returnType.getFullName(schemaName));
             if (!ApgdiffConsts.SYS_TYPES.contains(returnType.getSchemaQualifiedName(schemaName))) {
                 f.setReturnsName(new GenericColumn(returnType.getParentSchema(),
-                        returnType.getTypeName(), null));
+                        returnType.getTypeName(), null, DbObjType.TYPE));
             }
         }
 

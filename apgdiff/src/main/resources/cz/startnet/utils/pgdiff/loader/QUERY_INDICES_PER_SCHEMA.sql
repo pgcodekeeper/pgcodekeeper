@@ -1,4 +1,4 @@
--- extension owned indicies are skipped by table != null check in java code
+-- extension owned indices are skipped by table != null check in java code
 
 SELECT ccc.relname AS table_name,
     i.indisunique,
