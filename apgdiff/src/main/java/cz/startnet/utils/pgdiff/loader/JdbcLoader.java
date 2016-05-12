@@ -96,6 +96,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private final SubMonitor monitor;
     private final PgDiffArguments args;
     private GenericColumn currentObject;
+    private String currentOperation;
 
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
@@ -113,16 +114,18 @@ public class JdbcLoader implements PgCatalogStrings {
         d.setArguments(args);
         try {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
+            setCurrentOperation("connection setup");
             connection = connector.getConnection();
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             connection.setReadOnly(true);
-
             setTimeZone(connector.getTimezone());
+
             prepareStatements();
             prepareData();
 
             // query total objects count
+            setCurrentOperation("object count query");
             try(Statement stmnt = connection.createStatement();
                     ResultSet resCount = stmnt.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)){
                 if (resCount.next()){
@@ -133,6 +136,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
 
             Log.log(Log.LOG_INFO, "Querying schemas");
+            setCurrentOperation("schemas query");
             try(Statement stmnt = connection.createStatement();
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
 
@@ -150,6 +154,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
 
             Log.log(Log.LOG_INFO, "Querying extensions");
+            setCurrentOperation("extensions query");
             try(Statement stmnt = connection.createStatement();
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
@@ -199,6 +204,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private void prepareData() throws SQLException {
         try(Statement stmnt = connection.createStatement()){
             // fill in rolenames
+            setCurrentOperation("roles query");
             try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")){
                 while (res.next()){
                     cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
@@ -206,6 +212,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
 
             // fill in data types
+            setCurrentOperation("type cache query");
             try(ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)){
                 while (res.next()){
                     JdbcType type = new JdbcType(res.getString("typname"), res.getString("castedType"),
@@ -218,6 +225,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void prepareStatements() throws SQLException{
+        setCurrentOperation("prepared statements");
         prepStatTables = connection.prepareStatement(JdbcQueries.QUERY_TABLES_PER_SCHEMA);
         prepStatViews = connection.prepareStatement(JdbcQueries.QUERY_VIEWS_PER_SCHEMA);
         prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA);
@@ -258,14 +266,17 @@ public class JdbcLoader implements PgCatalogStrings {
         if (!schemaName.equals(ApgdiffConsts.PUBLIC) && comment != null && !comment.isEmpty()){
             s.setComment(args, PgDiffUtils.quoteString(comment));
         }
-
-        // setting current schema as default
-        try(Statement stmnt = connection.createStatement()){
-            stmnt.execute("SET search_path TO " + schemaName + ";");
-        }
         // END SCHEMA
 
+        // setting current schema as default
+        setCurrentOperation("set search_path query");
+        try(Statement stmnt = connection.createStatement()){
+            stmnt.execute("SET search_path = " + PgDiffUtils.getQuotedName(schemaName)
+            + ", pg_catalog;");
+        }
+
         // TYPES
+        setCurrentOperation("types query");
         prepStatTypes.setLong(1, schemaOid);
         try(ResultSet resTypes = prepStatTypes.executeQuery()){
             while (resTypes.next()) {
@@ -283,6 +294,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // TABLES
+        setCurrentOperation("tables query");
         prepStatTables.setLong(1, schemaOid);
         try(ResultSet resTables = prepStatTables.executeQuery()){
             while (resTables.next()) {
@@ -296,6 +308,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // CONSTRAINTS
+        setCurrentOperation("constraints query");
         prepStatConstraints.setLong(1, schemaOid);
         try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
             while (resConstraints.next()){
@@ -310,7 +323,8 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
 
-        // INDECIES
+        // INDICES
+        setCurrentOperation("indices query");
         prepStatIndices.setLong(1, schemaOid);
         try(ResultSet resIndecies = prepStatIndices.executeQuery()){
             while (resIndecies.next()){
@@ -327,6 +341,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // TRIGGERS
+        setCurrentOperation("triggers query");
         prepStatTriggers.setLong(1, schemaOid);
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
@@ -342,6 +357,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // VIEWS
+        setCurrentOperation("views query");
         prepStatViews.setLong(1, schemaOid);
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
@@ -355,6 +371,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // FUNCTIONS
+        setCurrentOperation("functions query");
         prepStatFunctions.setLong(1, schemaOid);
         try(ResultSet resFuncs = prepStatFunctions.executeQuery()){
             while (resFuncs.next()){
@@ -367,6 +384,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // SEQUENCES
+        setCurrentOperation("sequences query");
         prepStatSequences.setLong(1, schemaOid);
         try(ResultSet resSeq = prepStatSequences.executeQuery()){
             while(resSeq.next()){
@@ -380,6 +398,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // RULES
+        setCurrentOperation("rules query");
         prepStatRules.setLong(1, schemaOid);
         try(ResultSet resRule = prepStatRules.executeQuery()){
             while(resRule.next()){
@@ -636,6 +655,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void setSequencesCacheValue(PgSchema s) throws SQLException {
+        setCurrentOperation("sequences cache_value query");
         final String prefix = "SELECT sequence_name, cache_value FROM ";
         final String postfix = " WHERE cache_value != 1";
         final String union = "\nUNION \n";
@@ -1441,6 +1461,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private void prepareDataForSchema(Long schemaOid) throws SQLException{
         // fill in map with columns of tables and indices of schema
+        setCurrentOperation("schema columns cache query");
         prepStatColumnsOfSchema.setLong(1, schemaOid);
         try(ResultSet res = prepStatColumnsOfSchema.executeQuery();){
             cachedColumnNamesByTableOid.clear();
@@ -1504,7 +1525,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private String getCurrentLocation() {
         StringBuilder sb = new StringBuilder("jdbc:");
         if (currentObject == null) {
-            return sb.append(currentObject).toString();
+            return sb.append(currentOperation).toString();
         } else {
             if (currentObject.schema != null) {
                 sb.append('/').append(currentObject.schema);
@@ -1517,5 +1538,10 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
         return sb.toString();
+    }
+
+    private void setCurrentOperation(String operation) {
+        currentObject = null;
+        currentOperation = operation;
     }
 }
