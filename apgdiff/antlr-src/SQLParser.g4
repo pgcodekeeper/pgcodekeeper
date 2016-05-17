@@ -380,7 +380,10 @@ set_statement_value
 create_rewrite_statement
     : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
      TO table_name=schema_qualified_name (WHERE vex)? DO (ALSO | INSTEAD)?
-     (NOTHING | commands+=rewrite_command | (LEFT_PAREN commands+=rewrite_command (SEMI_COLON commands+=rewrite_command)* RIGHT_PAREN) )
+     (NOTHING
+        | commands+=rewrite_command
+        | (LEFT_PAREN (commands+=rewrite_command SEMI_COLON)* commands+=rewrite_command SEMI_COLON? RIGHT_PAREN)
+     )
     ;
 
 rewrite_command

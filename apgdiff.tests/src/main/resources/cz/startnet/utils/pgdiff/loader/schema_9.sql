@@ -40,6 +40,9 @@ ud.id
 "   i   d   "
 FROM user_data ud;
 
---CREATE RULE on_delete AS ON DELETE TO "user" DO INSTEAD DELETE FROM user_data WHERE (user_data.id = old.id);
---CREATE RULE on_insert AS ON INSERT TO "user" DO INSTEAD (INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created));
---CREATE RULE on_update AS ON UPDATE TO "user" DO INSTEAD (UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id));
+CREATE TABLE t_ruleinsert(c1 int);
+
+CREATE RULE on_delete AS ON DELETE TO "user" DO ALSO DELETE FROM user_data WHERE (user_data.id = old.id);
+CREATE RULE on_insert AS ON INSERT TO "user" DO INSTEAD (INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created); INSERT INTO t1(c1) DEFAULT VALUES);
+CREATE RULE on_update AS ON UPDATE TO "user" DO INSTEAD (UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id));
+CREATE RULE on_select AS ON SELECT TO user_data WHERE (1=1) DO INSTEAD NOTHING;

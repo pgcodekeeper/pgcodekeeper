@@ -29,6 +29,8 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgRule;
+import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -714,16 +716,28 @@ class PgDB9 extends PgDatabaseObjectCreator {
         col.setType("timestamp with time zone");
         col.setDefaultValue("now()");
         table.addColumn(col);
-
         table.setOwner("postgres");
+
+        PgRule rule = new PgRule("on_select", "");
+        rule.setEvent(PgRuleEventType.SELECT);
+        rule.setTargetName("user_data");
+        rule.setCondition("(1=1)");
+        rule.setInstead(true);
+        table.addRule(rule);
 
         PgSequence seq = new PgSequence("user_id_seq", "");
         seq.setIncrement("1");
         seq.setCache("1");
         seq.setOwnedBy("user_data.id");
         schema.addSequence(seq);
-
         seq.setOwner("postgres");
+
+        table = new PgTable("t_ruleinsert", "");
+        schema.addTable(table);
+
+        col = new PgColumn("c1");
+        col.setType("int");
+        table.addColumn(col);
 
         PgView view = new PgView("user", "");
         view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
@@ -735,10 +749,29 @@ class PgDB9 extends PgDatabaseObjectCreator {
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "email"));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "created"));
-
         view.setSelect(select);
-
         view.setOwner("postgres");
+
+        rule = new PgRule("on_delete", "");
+        rule.setEvent(PgRuleEventType.DELETE);
+        rule.setTargetName("user");
+        rule.addCommand("DELETE FROM user_data WHERE (user_data.id = old.id)");
+        view.addRule(rule);
+
+        rule = new PgRule("on_insert", "");
+        rule.setEvent(PgRuleEventType.INSERT);
+        rule.setTargetName("user");
+        rule.setInstead(true);
+        rule.addCommand("INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created)");
+        rule.addCommand("INSERT INTO t1(c1) DEFAULT VALUES");
+        view.addRule(rule);
+
+        rule = new PgRule("on_update", "");
+        rule.setEvent(PgRuleEventType.UPDATE);
+        rule.setTargetName("user");
+        rule.setInstead(true);
+        rule.addCommand("UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
+        view.addRule(rule);
 
         view = new PgView("ws_test", "");
         view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
@@ -747,7 +780,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
         select = new PgSelect("");
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", null, DbObjType.TABLE));
         select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
-
         view.setSelect(select);
 
         return d;
