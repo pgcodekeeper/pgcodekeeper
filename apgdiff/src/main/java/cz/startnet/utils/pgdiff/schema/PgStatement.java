@@ -108,11 +108,6 @@ public abstract class PgStatement {
 
             case CONSTRAINT:
             case TRIGGER:
-                sb.append(PgDiffUtils.getQuotedName(getName()))
-                .append(" ON ")
-                .append(PgDiffUtils.getQuotedName(getParent().getName()));
-                break;
-
             case RULE:
                 sb.append(PgDiffUtils.getQuotedName(getName()))
                 .append(" ON ")

@@ -133,7 +133,6 @@ public class DepcyGraph {
                 }
 
                 for (PgRule rule : table.getRules()) {
-
                     graph.addVertex(rule);
                     graph.addEdge(rule, table);
                 }
@@ -152,7 +151,6 @@ public class DepcyGraph {
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
-            schema.getBareName();
             for (PgType type : schema.getTypes()) {
                 createTypeToObject(type, schema);
             }
@@ -165,12 +163,10 @@ public class DepcyGraph {
                 createFunctionToObject(func, schema);
             }
 
-            //TODO
             for(PgTable table : schema.getTables()) {
                 createFkeyToReferenced(table);
                 createTableToSequences(table, schema);
                 createTriggersToObjs(table, schema);
-                createRulesToObjs(table, schema);
                 createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
                     createPgStatementToType(col.getType(), schema, col);
@@ -402,23 +398,6 @@ public class DepcyGraph {
                 }
             }
         }
-    }
-
-    private void createRulesToObjs(PgStatement target, PgSchema schema) {
-        if (DbObjType.TABLE == target.getStatementType()){
-            for (PgRule rule : ((PgTable)target).getRules()) {
-                graph.addVertex(rule);
-                graph.addEdge(rule, target);
-            }
-        } else {
-            if (DbObjType.VIEW == target.getStatementType()){
-                for (PgRule rule : ((PgView)target).getRules()) {
-                    graph.addVertex(rule);
-                    graph.addEdge(rule, target);
-                }
-            }
-        }
-
     }
 
     private void createTableToSequences(PgTable table, PgSchema schema) {

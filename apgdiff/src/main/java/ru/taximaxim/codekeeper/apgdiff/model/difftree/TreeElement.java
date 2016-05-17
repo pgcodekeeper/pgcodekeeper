@@ -170,11 +170,15 @@ public class TreeElement {
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
-        case RULE:       if (parent.getType() == DbObjType.TABLE){
-            return ((PgTable) parent.getPgStatement(db)).getRule(name);
-        } else {
-            return ((PgView) parent.getPgStatement(db)).getRule(name);
-        }
+        case RULE:
+            switch(parent.getType()) {
+            case TABLE:
+                return ((PgTable) parent.getPgStatement(db)).getRule(name);
+            case VIEW:
+                return ((PgView) parent.getPgStatement(db)).getRule(name);
+            default:
+                throw new IllegalStateException("Illegal RULE parent: " + type);
+            }
 
         default:
             throw new IllegalStateException("Unknown element type: " + type);

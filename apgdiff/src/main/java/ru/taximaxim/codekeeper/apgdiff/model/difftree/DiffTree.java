@@ -13,9 +13,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
 
-    private static final List<? extends PgStatement> EMPTY_LIST =
-            Collections.unmodifiableList(new ArrayList<PgStatement>());
-
     public static TreeElement create(PgDatabase left, PgDatabase right) {
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
@@ -27,8 +24,8 @@ public final class DiffTree {
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
             db.addChild(elSchema);
 
-            List<? extends PgStatement> leftSub = EMPTY_LIST;
-            List<? extends PgStatement> rightSub = EMPTY_LIST;
+            List<? extends PgStatement> leftSub = Collections.emptyList();
+            List<? extends PgStatement> rightSub = Collections.emptyList();
 
             PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
@@ -93,8 +90,8 @@ public final class DiffTree {
                 TreeElement vw = new TreeElement(view.getStatement(), view.getSide());
                 elSchema.addChild(vw);
 
-                List<? extends PgStatement> leftViewSub = EMPTY_LIST;
-                List<? extends PgStatement> rightViewSub = EMPTY_LIST;
+                List<? extends PgStatement> leftViewSub = Collections.emptyList();
+                List<? extends PgStatement> rightViewSub = Collections.emptyList();
 
                 PgView viewLeft = (PgView) view.getLeft();
                 PgView viewRight = (PgView) view.getRight();
@@ -124,8 +121,8 @@ public final class DiffTree {
                 TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
                 elSchema.addChild(tbl);
 
-                List<? extends PgStatement> leftTableSub = EMPTY_LIST;
-                List<? extends PgStatement> rightTableSub = EMPTY_LIST;
+                List<? extends PgStatement> leftTableSub = Collections.emptyList();
+                List<? extends PgStatement> rightTableSub = Collections.emptyList();
 
                 PgTable tableLeft = (PgTable) resSub.getLeft();
                 PgTable tableRight = (PgTable) resSub.getRight();

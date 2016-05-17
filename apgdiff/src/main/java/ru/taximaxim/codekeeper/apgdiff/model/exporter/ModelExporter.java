@@ -431,8 +431,6 @@ public class ModelExporter {
             case CONSTRAINT:
             case INDEX:
             case TRIGGER:
-                elTableChange = elChange.getParent();
-                break;
             case RULE:
                 elTableChange = elChange.getParent();
                 break;
@@ -481,9 +479,6 @@ public class ModelExporter {
                     }
                     break;
                 default:
-                    stChange = null;
-                }
-                if (stChange == null) {
                     continue;
                 }
 
@@ -511,11 +506,10 @@ public class ModelExporter {
      * @param elCause The element that caused the table processing.
      * It is expected to be popped from the {@link #changeList}.
      */
-    // TODO всемто этого добавить ветку в processTableAndContents
     private void processViewAndContents(TreeElement el, PgStatement st,
             TreeElement elCause) throws IOException{
         if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
-            // table is dropped entirely
+            // view is dropped entirely
             return;
         }
         TreeElement elParent = el.getParent();
@@ -550,16 +544,8 @@ public class ModelExporter {
             TreeElement elChange = it.next();
             TreeElement elViewChange;
             switch (elChange.getType()) {
-            case TABLE:
-                elViewChange = elChange;
-                break;
             case VIEW:
                 elViewChange = elChange;
-                break;
-            case CONSTRAINT:
-            case INDEX:
-            case TRIGGER:
-                elViewChange = elChange.getParent();
                 break;
             case RULE:
                 elViewChange = elChange.getParent();
@@ -578,9 +564,8 @@ public class ModelExporter {
                 viewPrimary = viewChange;
             } else {
                 PgStatementWithSearchPath stChange, stChangeOld = null;
-                //TODO Переписать комментарий
-                // now get the table based on the child's DiffSide
-                // otherwise BOTH (new) table may be chosen to get LEFT children
+                // now get the view based on the child's DiffSide
+                // otherwise BOTH (new) view may be chosen to get LEFT children
                 // which it does not contain
                 viewChange = (elChange.getSide() == DiffSide.LEFT ?
                         oldParentSchema : newParentSchema).getView(elChange.getParent().getName());
@@ -592,9 +577,6 @@ public class ModelExporter {
                     }
                     break;
                 default:
-                    stChange = null;
-                }
-                if (stChange == null) {
                     continue;
                 }
 
@@ -879,7 +861,6 @@ public class ModelExporter {
         }
     }
 
-    @SuppressWarnings("incomplete-switch")
     private String getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
@@ -912,21 +893,19 @@ public class ModelExporter {
             break;
 
         case RULE:
-            //st = parentSt;
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
             if (parentSt.getStatementType() == DbObjType.TABLE){
                 file = new File(new File(file, schemaName), "TABLE");
+            } else if (parentSt.getStatementType() == DbObjType.VIEW){
+                file = new File(new File(file, schemaName), "VIEW");
             } else {
-                if (parentSt.getStatementType() == DbObjType.VIEW){
-                    file = new File(new File(file, schemaName), "VIEW");
-                } else {
-                    Log.log(Log.LOG_ERROR, ModelExporter.class + ": " + st.getName() + "rule out of table or view");
-                }
+                Log.log(Log.LOG_ERROR, "Rule out of table or view: " + st.getName());
             }
             st = parentSt;
             break;
 
         case DATABASE:
+        case COLUMN:
         }
 
         return new File(file, addExtension ?

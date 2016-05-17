@@ -36,6 +36,33 @@ public class PgView extends PgStatementWithSearchPath {
         return DbObjType.VIEW;
     }
 
+    /**
+     * Finds rule according to specified rule {@code name}.
+     *
+     * @param name name of the rule to be searched
+     *
+     * @return found rule or null if no such rule has been found
+     */
+    public PgRule getRule(final String name) {
+        for (PgRule rule : rules) {
+            if (rule.getName().equals(name)) {
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    public List<PgRule> getRules() {
+        return Collections.unmodifiableList(rules);
+    }
+
+    public void addRule(final PgRule rule) {
+        rules.add(rule);
+        rule.setParent(this);
+        resetHash();
+    }
+
     public PgView(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -580,32 +607,5 @@ public class PgView extends PgStatementWithSearchPath {
                     + newValue.getDefaultValue()
                     + ';');
         }
-    }
-
-    /**
-     * Finds rule according to specified rule {@code name}.
-     *
-     * @param name name of the rule to be searched
-     *
-     * @return found rule or null if no such rule has been found
-     */
-    public PgRule getRule(final String name) {
-        for (PgRule rule : rules) {
-            if (rule.getName().equals(name)) {
-                return rule;
-            }
-        }
-
-        return null;
-    }
-
-    public List<PgRule> getRules() {
-        return Collections.unmodifiableList(rules);
-    }
-
-    public void addRule(final PgRule rule) {
-        rules.add(rule);
-        rule.setParent(this);
-        resetHash();
     }
 }
