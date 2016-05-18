@@ -343,6 +343,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OBJECT: [oO] [bB] [jJ] [eE] [cC] [tT];
     OF: [oO] [fF];
     OFF: [oO] [fF] [fF];
+    OID: [oO] [iI] [dD];
     OIDS: [oO] [iI] [dD] [sS];
     OPERATOR: [oO] [pP] [eE] [rR] [aA] [tT] [oO] [rR];
     OPTION: [oO] [pP] [tT] [iI] [oO]  [nN];

@@ -267,7 +267,7 @@ public class DiffTableViewer extends Composite {
 
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 10, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 11, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
 

@@ -1463,6 +1463,7 @@ tokens_nonreserved_types
   | INT8
   | MONEY
   | NAME
+  | OID
   | REGCLASS
   | REGCONFIG
   | TEXT
@@ -1660,7 +1661,8 @@ predefined_type
   | bit_type
   | binary_type
   | network_type
-  | (REGCLASS
+  | (OID
+  | REGCLASS
   | REGCONFIG
   | TRIGGER
   | UUID
