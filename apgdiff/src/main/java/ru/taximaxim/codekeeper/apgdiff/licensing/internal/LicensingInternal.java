@@ -50,7 +50,7 @@ public final class LicensingInternal {
     private static final String VALID_SINCE = "VALID_SINCE"; //$NON-NLS-1$
     private static final String MAX_SCHEMA_SIZE = "MAX_SCHEMA_SIZE"; //$NON-NLS-1$
 
-    private static final SimpleDateFormat VALID_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
+    private static final String VALID_DATE_FORMAT = "yyyy-MM-dd"; //$NON-NLS-1$
     //private static final String MAINAPP_BUNDLE = "ru.taximaxim.codekeeper.mainapp"; //$NON-NLS-1$
     private static final String UI_BUNDLE = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
 
@@ -118,13 +118,14 @@ public final class LicensingInternal {
                 }
             }
 
+            SimpleDateFormat dateFormat = new SimpleDateFormat(VALID_DATE_FORMAT);
             long now = System.currentTimeMillis();
             String since = license.getFeature(VALID_SINCE);
-            if (now < VALID_DATE_FORMAT.parse(since).getTime()) {
+            if (now < dateFormat.parse(since).getTime()) {
                 badLicense(Messages.LicensingInternal_inactive, since);
             }
             String until = license.getFeature(VALID_UNTIL);
-            if (now >= VALID_DATE_FORMAT.parse(until).getTime()) {
+            if (now >= dateFormat.parse(until).getTime()) {
                 badLicense(Messages.LicensingInternal_expired, until);
             }
         } catch (LicenseException ex) {
