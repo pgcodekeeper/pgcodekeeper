@@ -21,7 +21,7 @@ public interface ApgdiffConsts {
 
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
     String VERSION_PROP_NAME = "version";
-    String EXPORT_CURRENT_VERSION = "0.4.1";
+    String EXPORT_CURRENT_VERSION = "0.5.0";
     String EXPORT_MIN_VERSION = "0.2.9";
     String SET_TIMEZONE = "SET TIMEZONE TO ''{0}'';";
 
