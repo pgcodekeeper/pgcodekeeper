@@ -127,6 +127,15 @@ public class CommentOn extends ParserAbstract {
             // domain
         } else if (ctx.DOMAIN() != null) {
             schema.getDomain(name).setComment(db.getArguments(), comment);
+            // rule
+        } else if (ctx.RULE() != null) {
+            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
+            PgTable table = schema.getTable(tableName);
+            if (table != null) {
+                table.getRule(name).setComment(db.getArguments(), comment);
+            } else {
+                schema.getView(tableName).getRule(name).setComment(db.getArguments(), comment);
+            }
         }
         return null;
     }

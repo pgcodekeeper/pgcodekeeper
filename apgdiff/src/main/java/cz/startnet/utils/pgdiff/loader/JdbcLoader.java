@@ -1119,7 +1119,11 @@ public class JdbcLoader implements PgCatalogStrings {
                 .schema_create().create_rewrite_statement();
         r.setCondition(CreateRewrite.getCondition(ruleCtx));
         CreateRewrite.setCommands(ruleCtx, r);
-
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()){
+            r.setComment(args, PgDiffUtils.quoteString(comment));
+        }
         return r;
     }
 

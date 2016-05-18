@@ -110,7 +110,13 @@ public class PgRule extends PgStatementWithSearchPath{
             }
             sbSQL.append(')');
         }
-        return sbSQL.append(';').toString();
+        sbSQL.append(';');
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+        return sbSQL.toString();
     }
 
     @Override

@@ -102,3 +102,8 @@ COMMENT ON INDEX test_pkey IS 'primary key';
 CREATE TRIGGER test_trigger BEFORE UPDATE ON test FOR EACH STATEMENT EXECUTE PROCEDURE trigger_fnc();
 
 COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
+
+
+CREATE RULE test_rule AS ON DELETE TO test DO NOTHING;
+
+COMMENT ON RULE test_rule ON test IS 'test rule';
