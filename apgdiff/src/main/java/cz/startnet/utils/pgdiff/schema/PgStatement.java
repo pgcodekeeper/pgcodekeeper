@@ -85,8 +85,7 @@ public abstract class PgStatement {
      * Sets {@link #comment} with newlines as requested in arguments.
      */
     public void setComment(PgDiffArguments args, String comment) {
-        setComment(args.isForceUnixNewlines() ?
-                comment.replace("\r", "") : comment);
+        setComment(args.isForceUnixNewlines() ? comment.replace("\r", "") : comment);
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {

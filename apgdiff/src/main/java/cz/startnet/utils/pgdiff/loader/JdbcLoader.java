@@ -1118,7 +1118,7 @@ public class JdbcLoader implements PgCatalogStrings {
         Create_rewrite_statementContext ruleCtx = parser.sql().statement(0).schema_statement()
                 .schema_create().create_rewrite_statement();
         r.setCondition(CreateRewrite.getCondition(ruleCtx));
-        CreateRewrite.setCommands(ruleCtx, r);
+        CreateRewrite.setCommands(ruleCtx, r, args);
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()){

@@ -90,9 +90,9 @@ public class PgFunction extends PgStatementWithSearchPath {
      * Sets {@link #body} with newlines as requested in arguments.
      */
     public void setBody(PgDiffArguments args, String body) {
-        setBody(args.isForceUnixNewlines() ?
-                body.replace("\r", "") : body);
+        setBody(args.isForceUnixNewlines() ? body.replace("\r", "") : body);
     }
+
     public String getBody() {
         return body;
     }

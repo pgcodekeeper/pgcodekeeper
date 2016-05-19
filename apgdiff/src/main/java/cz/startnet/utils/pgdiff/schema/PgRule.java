@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -75,6 +76,13 @@ public class PgRule extends PgStatementWithSearchPath{
     public void addCommand(String command) {
         commands.add(command);
         resetHash();
+    }
+
+    /**
+     * Adds {@link #command} to {@link #commands} with newlines as requested in arguments.
+     */
+    public void addCommand(PgDiffArguments args, String command) {
+        addCommand(args.isForceUnixNewlines() ? command.replace("\r", "") : command);
     }
 
     public PgRule(String name, String rawStatement) {

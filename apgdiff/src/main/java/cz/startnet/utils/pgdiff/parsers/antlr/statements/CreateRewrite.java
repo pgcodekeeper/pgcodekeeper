@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -38,7 +39,7 @@ public class CreateRewrite extends ParserAbstract {
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule);
+        setCommands(ctx, rule, db.getArguments());
 
         PgSchema schema = db.getSchema(schemaName);
         PgTable table = schema.getTable(rule.getTargetName());
@@ -61,12 +62,10 @@ public class CreateRewrite extends ParserAbstract {
         return ctx.WHERE() == null ? null : getFullCtxText(ctx.vex());
     }
 
-    public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule) {
-        if (ctx.NOTHING() != null) {
-            return;
-        }
+    public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
+            PgDiffArguments args) {
         for (Rewrite_commandContext cmd : ctx.commands) {
-            rule.addCommand(getFullCtxText(cmd));
+            rule.addCommand(args, getFullCtxText(cmd));
         }
     }
 }
