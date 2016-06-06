@@ -12,6 +12,8 @@ import java.nio.file.attribute.DosFileAttributeView;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -606,6 +608,8 @@ public class ModelExporter {
         mkdirObjects(null, parentDir.toString());
         File tablesDir = mkdirObjects(parentDir, "TABLE");
 
+        Collections.sort(contents, ExportTableOrder.INSTANCE);
+
         StringBuilder groupSql = new StringBuilder(getDumpSql(table));
 
         for (PgStatementWithSearchPath st : contents) {
@@ -737,10 +741,7 @@ public class ModelExporter {
         for (PgTable table : tables) {
             StringBuilder groupSql = new StringBuilder(getDumpSql(table));
 
-            for (PgConstraint constr : table.getConstraints()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
-            }
-
+            // please honor the order imposed by ExportTableOrder here
             for (PgIndex idx : table.getIndexes()) {
                 groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
             }
@@ -751,6 +752,10 @@ public class ModelExporter {
 
             for (PgRule rule : table.getRules()) {
                 groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
+            }
+
+            for (PgConstraint constr : table.getConstraints()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
             }
 
             dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
@@ -910,5 +915,28 @@ public class ModelExporter {
 
         return new File(file, addExtension ?
                 getExportedFilenameSql(st) : getExportedFilename(st)).toString();
+    }
+}
+
+/**
+ * Sets fixed order for table subelements export as historically defined by DiffTree.create().
+ */
+class ExportTableOrder implements Comparator<PgStatementWithSearchPath> {
+
+    public static final ExportTableOrder INSTANCE = new ExportTableOrder();
+
+    @Override
+    public int compare(PgStatementWithSearchPath o1, PgStatementWithSearchPath o2) {
+        return getTableSubelementRank(o1) - getTableSubelementRank(o2);
+    }
+
+    private int getTableSubelementRank(PgStatementWithSearchPath el) {
+        switch (el.getStatementType()) {
+        case INDEX:     return 0;
+        case TRIGGER:   return 1;
+        case RULE:      return 2;
+        case CONSTRAINT:return 3;
+        default: throw new IllegalArgumentException("Illegal table subelement: " + el.getName());
+        }
     }
 }
