@@ -1,9 +1,35 @@
-WITH extension_deps AS (
+CREATE OR REPLACE FUNCTION get_tables7() RETURNS table(relname2 name,
+       relacl2 aclitem[],
+       relowner2 bigint,
+       definition2 text,
+       comment text,
+       column_names name[],
+       column_comments text[],
+       column_defaults text[],
+       column_acl text[]) AS 
+$$
+DECLARE
+schema_name text;
+oid bigint;
+BEGIN
+	FOR oid, schema_name IN SELECT 
+	n.oid::bigint,
+       n.nspname
+FROM pg_catalog.pg_namespace n
+JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
+    AND n.nspname NOT LIKE ('pg_%')
+    AND n.nspname != 'information_schema'
+LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
+LOOP
+	EXECUTE 'SET search_path TO ' || schema_name;
+	RETURN QUERY (WITH extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_extension'::regclass 
         AND dep.deptype = 'e'
 )
+
+
 
 SELECT relname,
        relacl,
@@ -38,6 +64,16 @@ LEFT JOIN
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
-WHERE relnamespace = ?
+WHERE relnamespace = oid
     AND relkind = 'v'
-    AND c.oid NOT IN (SELECT objid FROM extension_deps)
+    AND c.oid NOT IN (SELECT objid FROM extension_deps));
+
+
+    
+END LOOP;
+RETURN;
+END
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_tables7();
+--SHOW search_path;
