@@ -276,6 +276,7 @@ public final class Messages extends NLS {
 
     public static String ProjectProperties_force_unix_newlines;
     public static String generalPrefPage_pg_dump_custom_parameters;
+    public static String generalPrefPage_pg_dump_switch;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
