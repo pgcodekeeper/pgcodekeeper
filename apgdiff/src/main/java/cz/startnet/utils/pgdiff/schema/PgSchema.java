@@ -114,10 +114,9 @@ public class PgSchema extends PgStatement {
             sb.append(newSchema.getOwnerSQL());
         }
 
-        if (!oldSchema.getGrants().equals(newSchema.getGrants())
-                || !oldSchema.getRevokes().equals(newSchema.getRevokes())) {
-            sb.append(newSchema.getPrivilegesSQL());
-        }
+        addPrivilegeScript(oldSchema, newSchema, sb);
+        
+        	
         if (!Objects.equals(oldSchema.getComment(), newSchema.getComment())) {
             sb.append("\n\n");
             newSchema.appendCommentSql(sb);
@@ -393,7 +392,13 @@ public class PgSchema extends PgStatement {
         result = prime * result + new HashSet<>(views).hashCode();
         result = prime * result + new HashSet<>(types).hashCode();
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        try {
+        System.out.println(tables.get(0).getParent().getParent().getStatementType()+ ":"+tables.get(0).getParent().getName() + " : " + result);
+        } catch (Exception e){
+        	
+        }
         return result;
+        
     }
 
     @Override

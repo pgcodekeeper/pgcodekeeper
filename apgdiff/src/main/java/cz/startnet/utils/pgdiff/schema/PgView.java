@@ -170,10 +170,7 @@ public class PgView extends PgStatementWithSearchPath {
             sb.append(newView.getOwnerSQL());
         }
 
-        if (!oldView.getGrants().equals(newView.getGrants())
-                || !oldView.getRevokes().equals(newView.getRevokes())) {
-            sb.append(newView.getPrivilegesSQL());
-        }
+        addPrivilegeScript(oldView, newView, sb);
 
         if (!Objects.equals(oldView.getComment(), newView.getComment())) {
             sb.append("\n\n");
