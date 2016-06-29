@@ -6,13 +6,16 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
@@ -21,6 +24,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
@@ -54,6 +58,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  */
 public class ReferenceListener extends SQLParserBaseListener {
+
+    /*
+     * TYPE
+     * DOMAIN
+     */
 
     private String defSchema = ApgdiffConsts.PUBLIC;
     private final String filePath;
@@ -153,6 +162,34 @@ public class ReferenceListener extends SQLParserBaseListener {
 
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
+        addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.dat_type), DbObjType.TYPE,
+                StatementActions.NONE,
+                ctx.dat_type.getStart().getStartIndex(), 0,
+                ctx.dat_type.getStart().getLine());
+        fillObjDefinition(schemaName, name, DbObjType.DOMAIN,
+                ctx.name.getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitCreate_type_statement(Create_type_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
+        fillObjDefinition(schemaName, name, DbObjType.TYPE,
+                ctx.name.getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
 
     @Override
@@ -524,6 +561,32 @@ public class ReferenceListener extends SQLParserBaseListener {
             schemaName = getDefSchemaName();
         }
         addObjReference(schemaName, name, DbObjType.VIEW,
+                StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
+                ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        }
+        addObjReference(schemaName, name, DbObjType.DOMAIN,
+                StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
+                ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitAlter_type_statement(Alter_type_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        }
+        addObjReference(schemaName, name, DbObjType.TYPE,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
                 ctx.name.getStart().getLine());
     }
