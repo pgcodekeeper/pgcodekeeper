@@ -5,6 +5,10 @@ REVOKE ALL ON TYPE typ_composite FROM botov_av;
 REVOKE ALL ON TYPE typ_composite FROM PUBLIC;
 REVOKE ALL ON TYPE typ_composite FROM maindb;
 
+REVOKE ALL ON TYPE dom FROM botov_av;
+REVOKE ALL ON TYPE dom FROM PUBLIC;
+REVOKE ALL ON TYPE dom FROM maindb;
+
 REVOKE ALL ON SEQUENCE test_id_seq FROM botov_av;
 REVOKE ALL ON SEQUENCE test_id_seq FROM maindb;
 

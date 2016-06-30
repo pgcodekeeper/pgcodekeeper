@@ -17,6 +17,16 @@ GRANT ALL ON TYPE typ_composite TO botov_av;
 GRANT ALL ON TYPE typ_composite TO PUBLIC;
 GRANT ALL ON TYPE typ_composite TO fordfrog;
 
+REVOKE ALL ON TYPE dom FROM maindb;
+
+-- DOMAIN dom GRANT
+
+REVOKE ALL ON TYPE dom FROM PUBLIC;
+REVOKE ALL ON TYPE dom FROM botov_av;
+GRANT ALL ON TYPE dom TO botov_av;
+GRANT ALL ON TYPE dom TO PUBLIC;
+GRANT ALL ON TYPE dom TO fordfrog;
+
 REVOKE ALL ON SEQUENCE test_id_seq FROM maindb;
 
 -- SEQUENCE test_id_seq GRANT

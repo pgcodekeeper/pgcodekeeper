@@ -213,7 +213,10 @@ public class CreateRule extends ParserAbstract {
             break;
         case TYPE:
             statement = db.getSchema(schemaName).getType(firstPart);
-            break;
+            // if type not found try domain
+            if (statement != null) {
+                break;
+            }
         case DOMAIN:
             statement = db.getSchema(schemaName).getDomain(firstPart);
             break;
