@@ -1,0 +1,1 @@
+REVOKE ALL(c1) ON TABLE t1 FROM maindb;

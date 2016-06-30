@@ -46,7 +46,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -422,12 +421,11 @@ public class ReferenceListener extends SQLParserBaseListener {
 
 
         for (Schema_qualified_nameContext name : obj_name) {
-            addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
-                    ParserAbstract.getFullCtxText(ctx.body_rule), ParserAbstract.getFullCtxText(ctx)));
+            addToDB(name, type);
         }
     }
 
-    private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private void addToDB(Schema_qualified_nameContext name, DbObjType type) {
         if (type == null) {
             return;
         }

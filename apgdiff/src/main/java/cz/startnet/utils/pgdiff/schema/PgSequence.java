@@ -30,7 +30,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.SEQUENCE;
     }
-    
+
     public PgSequence(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -114,7 +114,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-    
+
     @Override
     public String getFullSQL() {
         StringBuilder sb = new StringBuilder(super.getFullSQL());
@@ -135,7 +135,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
@@ -147,7 +147,7 @@ public class PgSequence extends PgStatementWithSearchPath {
             return false;
         }
         PgSequence oldSequence = this;
-        StringBuilder sbSQL = new StringBuilder(); 
+        StringBuilder sbSQL = new StringBuilder();
         sbSQL.setLength(0);
 
         final String oldIncrement = oldSequence.getIncrement();
@@ -211,12 +211,12 @@ public class PgSequence extends PgStatementWithSearchPath {
                     + PgDiffUtils.getQuotedName(newSequence.getName())
                     + sbSQL.toString() + ";");
         }
-        
+
         if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
             sb.append(newSequence.getOwnerSQL());
         }
-        
-        addPrivilegeScript(oldSequence, newSequence, sb);
+
+        alterPrivileges(newSequence, sb);
 
         if (!Objects.equals(oldSequence.getComment(), newSequence.getComment())) {
             sb.append("\n\n");
@@ -269,11 +269,11 @@ public class PgSequence extends PgStatementWithSearchPath {
         this.ownedBy = ownedBy;
         resetHash();
     }
-    
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-        
+
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgSequence) {
@@ -291,7 +291,7 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && Objects.equals(owner, seq.getOwner())
                     && Objects.equals(comment, seq.getComment());
         }
-        
+
         return eq;
     }
 
@@ -336,12 +336,12 @@ public class PgSequence extends PgStatementWithSearchPath {
         sequenceDst.setOwner(getOwner());
         return sequenceDst;
     }
-    
+
     @Override
     public PgSequence deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();

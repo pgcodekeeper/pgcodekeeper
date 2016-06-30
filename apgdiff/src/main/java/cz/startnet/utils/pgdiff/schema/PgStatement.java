@@ -150,8 +150,7 @@ public abstract class PgStatement {
     }
 
     protected StringBuilder appendPrivileges(StringBuilder sb) {
-        if (grants.isEmpty() &&
-                revokes.isEmpty()) {
+        if (grants.isEmpty() && revokes.isEmpty()) {
             return sb;
         }
 
@@ -190,6 +189,24 @@ public abstract class PgStatement {
 
     public String getPrivilegesSQL() {
         return appendPrivileges(new StringBuilder()).toString();
+    }
+
+    protected void alterPrivileges(PgStatement newObj, StringBuilder sb){
+        // first drop (revoke) missing grants
+        boolean grantsChanged = false;
+        Set<PgPrivilege> newGrants = newObj.getGrants();
+        for (PgPrivilege grant : grants) {
+            if (!newGrants.contains(grant)) {
+                grantsChanged = true;
+                sb.append('\n').append(grant.getDropSQL());
+            }
+        }
+
+        // now set all privileges if there are any changes
+        grantsChanged = grantsChanged || grants.size() != newGrants.size();
+        if (grantsChanged || !revokes.equals(newObj.getRevokes())) {
+            newObj.appendPrivileges(sb);
+        }
     }
 
     public String getOwner() {
@@ -394,26 +411,5 @@ public abstract class PgStatement {
     @Override
     public String toString() {
         return name == null ? "Unnamed object" : name;
-    }
-    
-    public void addPrivilegeScript(PgStatement oldObj, PgStatement newObj, StringBuilder sb){
-    	// находим список старых и новых GRAND и соответственно удоляем их или удаляем
-        if (!oldObj.getGrants().equals(newObj.getGrants())){
-        	Set<PgPrivilege> oldGrands = new LinkedHashSet<>(oldObj.getGrants());
-        	Set<PgPrivilege> newGrands = new LinkedHashSet<>(newObj.getGrants());
-        	oldGrands.removeAll(newObj.getGrants()); //список удаленный грандов
-        	newGrands.removeAll(oldObj.getGrants()); //список добавленных грандов
-        	for (PgPrivilege priv : oldGrands){
-        		sb.append(priv.getDropSQL());
-        	}
-        	for (PgPrivilege priv : oldGrands){
-        		sb.append(priv.getCreationSQL());
-        	}
-        }
-        
-        /*        if (!oldTable.getGrants().equals(newTable.getGrants())
-        || !oldTable.getRevokes().equals(newTable.getRevokes())) {
-    sb.append(newTable.getPrivilegesSQL());
-}*/
     }
 }

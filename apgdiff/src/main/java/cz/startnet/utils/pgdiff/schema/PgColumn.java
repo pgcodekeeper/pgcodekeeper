@@ -291,7 +291,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             }
         }
 
-        addPrivilegeScript(oldColumn, newColumn, sb);
+        alterPrivileges(newColumn, sb);
 
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
             sb.append("\n\n");

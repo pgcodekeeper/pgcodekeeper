@@ -529,7 +529,7 @@ public class PgType extends PgStatementWithSearchPath {
         if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
             newType.appendOwnerSQL(sb);
         }
-        addPrivilegeScript(oldType, newType, sb);
+        alterPrivileges(newType, sb);
         if (!Objects.equals(oldType.getComment(), newType.getComment())) {
             sb.append("\n\n");
             newType.appendCommentSql(sb);
