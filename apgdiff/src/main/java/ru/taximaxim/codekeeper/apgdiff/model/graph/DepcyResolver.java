@@ -282,9 +282,21 @@ public class DepcyResolver {
             return oldSchema.getTable(statement.getName());
         case TRIGGER:
             PgTrigger trig = (PgTrigger) statement;
-            PgTable table = oldSchema.getTable(trig.getTableName());
-            if (table != null) {
-                return table.getTrigger(trig.getName());
+            switch (trig.getParent().getStatementType()) {
+            case TABLE:
+                PgTable trgTable = oldSchema.getTable(trig.getTableName());
+                if (trgTable != null) {
+                    return trgTable.getTrigger(trig.getName());
+                }
+                break;
+            case VIEW:
+                PgView trgView = oldSchema.getView(trig.getTableName());
+                if (trgView != null) {
+                    return trgView.getTrigger(trig.getName());
+                }
+                break;
+            default:
+                break;
             }
             break;
         case RULE:

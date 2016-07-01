@@ -323,8 +323,21 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
 
-        // INDICES
-        setCurrentOperation("indices query");
+        // VIEWS
+        setCurrentOperation("views query");
+        prepStatViews.setLong(1, schemaOid);
+        try(ResultSet resViews = prepStatViews.executeQuery()){
+            while (resViews.next()) {
+                PgDumpLoader.checkCancelled(monitor);
+                PgView view = getView(resViews, schemaName);
+                monitor.worked(1);
+                if (view != null){
+                    s.addView(view);
+                }
+            }
+        }
+
+        // INDECIES
         prepStatIndices.setLong(1, schemaOid);
         try(ResultSet resIndecies = prepStatIndices.executeQuery()){
             while (resIndecies.next()){
@@ -347,25 +360,15 @@ public class JdbcLoader implements PgCatalogStrings {
             while(resTriggers.next()){
                 PgDumpLoader.checkCancelled(monitor);
                 PgTable table = s.getTable(resTriggers.getString(CLASS_RELNAME));
-                if (table != null){
-                    PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                    if (trigger != null){
+                PgView view = s.getView(resTriggers.getString(CLASS_RELNAME));
+                PgTrigger trigger = getTrigger(resTriggers, schemaName);
+                if (trigger != null){
+                    if (view != null){
+                        view.addTrigger(trigger);
+                    }
+                    if (table != null){
                         table.addTrigger(trigger);
                     }
-                }
-            }
-        }
-
-        // VIEWS
-        setCurrentOperation("views query");
-        prepStatViews.setLong(1, schemaOid);
-        try(ResultSet resViews = prepStatViews.executeQuery()){
-            while (resViews.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgView view = getView(resViews, schemaName);
-                monitor.worked(1);
-                if (view != null){
-                    s.addView(view);
                 }
             }
         }
@@ -893,7 +896,6 @@ public class JdbcLoader implements PgCatalogStrings {
             }
         }
 
-
         // INHERITS
         Array arrInherits = res.getArray("inherited");
         String [] inherits = null;
@@ -902,7 +904,11 @@ public class JdbcLoader implements PgCatalogStrings {
             for (String inherited : inherits){
                 // TODO get separate IDs from DB
                 QNameParser qname = new QNameParser(inherited);
-                t.addInherits(qname.getSecondName(), qname.getFirstName());
+                String inhSchema = qname.getSecondName();
+                String inhTable = qname.getFirstName();
+                t.addInherits(inhSchema, inhTable);
+                GenericColumn gc = new GenericColumn(inhSchema, inhTable, null, DbObjType.TABLE);
+                t.addDep(gc);
             }
         }
 
@@ -1068,6 +1074,9 @@ public class JdbcLoader implements PgCatalogStrings {
         functionName = functionName.concat(")");
 
         t.setFunction(functionName, funcName+ "()");
+
+        GenericColumn gc = new GenericColumn(res.getString(NAMESPACE_NSPNAME), res.getString("proname"), null, DbObjType.FUNCTION);
+        t.addDep(gc);
 
         t.setWhen(parseWhen(res.getString("definition")));
         // COMMENT

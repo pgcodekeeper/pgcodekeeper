@@ -30,6 +30,7 @@ public class PgView extends PgStatementWithSearchPath {
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
+    private final List<PgTrigger> triggers = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -354,7 +355,8 @@ public class PgView extends PgStatementWithSearchPath {
 
             eq = super.equals(obj)
 
-                    && new HashSet<>(rules).equals(new HashSet<>(view.rules));
+                    && new HashSet<>(rules).equals(new HashSet<>(view.rules))
+                    && new HashSet<>(triggers).equals(new HashSet<>(view.triggers));
         }
 
         return eq;
@@ -380,6 +382,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         result = prime * result + new HashSet<>(rules).hashCode();
+        result = prime * result + new HashSet<>(triggers).hashCode();
         return result;
     }
 
@@ -411,6 +414,9 @@ public class PgView extends PgStatementWithSearchPath {
         PgView copy = shallowCopy();
         for(PgRule rule : rules) {
             copy.addRule(rule.deepCopy());
+        }
+        for(PgTrigger trigger : triggers) {
+            copy.addTrigger(trigger.deepCopy());
         }
         return copy;
     }
@@ -604,5 +610,32 @@ public class PgView extends PgStatementWithSearchPath {
                     + newValue.getDefaultValue()
                     + ';');
         }
+    }
+
+    /**
+     * Finds trigger according to specified rule {@code name}.
+     *
+     * @param name name of the trigger to be searched
+     *
+     * @return found trigger or null if no such trigger has been found
+     */
+    public PgTrigger getTrigger(final String name) {
+        for (PgTrigger trigger : triggers) {
+            if (trigger.getName().equals(name)) {
+                return trigger;
+            }
+        }
+
+        return null;
+    }
+
+    public List<PgTrigger> getTriggers() {
+        return Collections.unmodifiableList(triggers);
+    }
+
+    public void addTrigger(final PgTrigger trigger) {
+        triggers.add(trigger);
+        trigger.setParent(this);
+        resetHash();
     }
 }

@@ -107,6 +107,18 @@ public final class DiffTree {
                 for (CompareResult rule : compareLists(leftViewSub, rightViewSub)) {
                     vw.addChild(new TreeElement(rule.getStatement(), rule.getSide()));
                 }
+
+                // triggers
+                if(viewLeft != null) {
+                    leftViewSub = viewLeft.getTriggers();
+                }
+                if(viewRight != null) {
+                    rightViewSub = viewRight.getTriggers();
+                }
+
+                for (CompareResult trg : compareLists(leftViewSub, rightViewSub)) {
+                    vw.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
+                }
             }
 
             // tables

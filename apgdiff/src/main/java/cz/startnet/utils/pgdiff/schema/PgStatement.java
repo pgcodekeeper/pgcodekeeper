@@ -1,7 +1,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,9 +35,12 @@ public abstract class PgStatement {
     private volatile int hash;
     private volatile boolean hashComputed;
 
+    private List<GenericColumn> deps;
+
     public PgStatement(String name, String rawStatement) {
         this.name = name;
         this.rawStatement = rawStatement;
+        this.deps = new ArrayList<GenericColumn>();
     }
 
     public String getRawStatement() {
@@ -411,5 +416,21 @@ public abstract class PgStatement {
     @Override
     public String toString() {
         return name == null ? "Unnamed object" : name;
+    }
+
+    public List<GenericColumn> getDeps() {
+        return deps;
+    }
+
+    public void setDeps(List<GenericColumn> deps) {
+        this.deps = deps;
+    }
+
+    public void addDep(GenericColumn newDep){
+        this.deps.add(newDep);
+    }
+    //TODO
+    public void removeDep(){
+
     }
 }

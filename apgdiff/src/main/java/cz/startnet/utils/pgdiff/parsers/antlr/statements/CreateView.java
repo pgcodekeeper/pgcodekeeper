@@ -47,6 +47,7 @@ public class CreateView extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addView(view);
+
         return view;
     }
 

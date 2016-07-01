@@ -27,7 +27,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -146,6 +145,11 @@ public class DepcyGraph {
                     graph.addVertex(rule);
                     graph.addEdge(rule, view);
                 }
+
+                for (PgTrigger trigger : view.getTriggers()) {
+                    graph.addVertex(trigger);
+                    graph.addEdge(trigger, view);
+                }
             }
         }
 
@@ -167,7 +171,7 @@ public class DepcyGraph {
                 createFkeyToReferenced(table);
                 createTableToSequences(table, schema);
                 createTriggersToObjs(table, schema);
-                createTableToTable(table, schema);
+                createTableToTable(table);
                 for (PgColumn col : table.getColumns()) {
                     createPgStatementToType(col.getType(), schema, col);
                     columnToFunction(col, schema);
@@ -176,6 +180,7 @@ public class DepcyGraph {
 
             for(PgView view : schema.getViews()) {
                 createViewToQueried(view, schema);
+                createTriggersToObjs(view, schema);
             }
         }
 
@@ -291,14 +296,15 @@ public class DepcyGraph {
         }
     }
 
-    private void createTableToTable(PgTable table, PgSchema schema) {
-        for (Inherits inherit : table.getInherits()) {
-            if (inherit.getKey() != null) {
-                schema = db.getSchema(inherit.getKey());
-            }
-            PgTable tabl = schema.getTable(inherit.getValue());
-            if (tabl != null) {
-                graph.addEdge(table, tabl);
+    private void createTableToTable(PgTable table) {//, PgSchema schema) {
+        for (GenericColumn gc : table.getDeps()){
+            switch (gc.getType()) {
+            case TABLE:
+                graph.addEdge(table, db.getSchema(gc.schema).getTable(gc.table));
+                break;
+
+            default:
+                break;
             }
         }
     }
@@ -377,24 +383,41 @@ public class DepcyGraph {
             graph.addVertex(trigger);
             graph.addEdge(trigger, table);
 
-            String funcName = trigger.getFunctionSignature();
-            String funcSig = "";
-            int paren = funcName.indexOf('(');
-            if (paren != -1) {
-                funcSig = funcName.substring(paren);
-                funcName = funcName.substring(0, paren);
+            for (GenericColumn gc : trigger.getDeps()){
+                switch (gc.getType()) {
+                case FUNCTION:
+                    PgFunction func = db.getSchema(gc.schema).getFunction(gc.table);
+                    graph.addEdge(trigger, func);
+                    break;
+
+                default:
+                    break;
+                }
             }
-            QNameParser qname = new QNameParser(funcName);
-            PgFunction func = getSchemaForObject(schema, qname)
-                    .getFunction(qname.getFirstName() + funcSig);
-            if (func != null) {
-                graph.addVertex(func);
-                graph.addEdge(trigger, func);
-            }
+
             for (String col_name : trigger.getUpdateColumns()) {
                 PgColumn col = table.getColumn(col_name);
                 if (col != null) {
                     graph.addEdge(trigger, col);
+                }
+            }
+        }
+    }
+
+    private void createTriggersToObjs(PgView view, PgSchema schema) {
+        for (PgTrigger trigger : view.getTriggers()) {
+            graph.addVertex(trigger);
+            graph.addEdge(trigger, view);
+
+            for (GenericColumn gc : trigger.getDeps()){
+                switch (gc.getType()) {
+                case FUNCTION:
+                    PgFunction func = db.getSchema(gc.schema).getFunction(gc.table);
+                    graph.addEdge(trigger, func);
+                    break;
+
+                default:
+                    break;
                 }
             }
         }

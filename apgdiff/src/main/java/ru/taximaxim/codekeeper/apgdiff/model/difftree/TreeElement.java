@@ -165,9 +165,12 @@ public class TreeElement {
         case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
-
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
-        case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
+        case TRIGGER:    if (parent.getType() == DbObjType.TABLE){
+            return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
+        } else {
+            return ((PgView) parent.getPgStatement(db)).getTrigger(name);
+        }
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         case RULE:

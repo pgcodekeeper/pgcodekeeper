@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTable extends ParserAbstract {
     private final Create_table_statementContext ctx;
@@ -63,7 +64,11 @@ public class CreateTable extends ParserAbstract {
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
                 List<IdentifierContext> idsInh = nameInher.identifier();
-                table.addInherits(QNameParser.getSchemaName(idsInh), QNameParser.getFirstName(idsInh));
+                String inhSchemaName = QNameParser.getSchemaName(idsInh);
+                String inhTableName = QNameParser.getFirstName(idsInh);
+                table.addInherits(inhSchemaName, inhTableName);
+                GenericColumn gc = new GenericColumn(inhSchemaName, inhTableName, null, DbObjType.TABLE);
+                table.addDep(gc);
             }
         }
 
