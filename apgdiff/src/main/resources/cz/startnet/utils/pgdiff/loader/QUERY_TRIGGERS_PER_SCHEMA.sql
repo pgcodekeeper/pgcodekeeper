@@ -9,6 +9,7 @@ SELECT ccc.relname,
        tgrelid::regclass::text,
        tgargs,
        tgrelid as table_oid,
+       ccc.relkind,
        tgattr::int2[] as col_numbers,
        pg_get_triggerdef(t.oid,false) || ';' AS definition,
        d.description as comment

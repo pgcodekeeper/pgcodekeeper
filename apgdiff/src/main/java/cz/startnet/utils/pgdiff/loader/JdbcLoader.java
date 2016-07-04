@@ -359,15 +359,19 @@ public class JdbcLoader implements PgCatalogStrings {
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
                 PgDumpLoader.checkCancelled(monitor);
-                PgTable table = s.getTable(resTriggers.getString(CLASS_RELNAME));
-                PgView view = s.getView(resTriggers.getString(CLASS_RELNAME));
                 PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                if (trigger != null){
-                    if (view != null){
-                        view.addTrigger(trigger);
-                    }
-                    if (table != null){
-                        table.addTrigger(trigger);
+                if (trigger != null) {
+                    String containerName = resTriggers.getString(CLASS_RELNAME);
+                    if ("v".equals(resTriggers.getString("relkind"))) {
+                        PgView view = s.getView(containerName);
+                        if (view != null) {
+                            view.addTrigger(trigger);
+                        }
+                    } else {
+                        PgTable table = s.getTable(containerName);
+                        if (table != null) {
+                            table.addTrigger(trigger);
+                        }
                     }
                 }
             }

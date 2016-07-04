@@ -563,6 +563,7 @@ public class ModelExporter {
                 elViewChange = elChange;
                 break;
             case RULE:
+            case TRIGGER:
                 elViewChange = elChange.getParent();
                 break;
             default:
@@ -914,28 +915,20 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
-        case TRIGGER:
-            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
-            if (parentSt.getStatementType() == DbObjType.TABLE){
-                file = new File(new File(file, schemaName), "TABLE");
-            } else {
-                if (parentSt.getStatementType() == DbObjType.VIEW){
-                    file = new File(new File(file, schemaName), "VIEW");
-                } else {
-                    Log.log(Log.LOG_ERROR, ModelExporter.class + ": " + st.getName() + "trigger out of table or view");
-                }
-            }
             st = parentSt;
+            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
+            file = new File(new File(file, schemaName), "TABLE");
             break;
 
         case RULE:
+        case TRIGGER:
             schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
             if (parentSt.getStatementType() == DbObjType.TABLE){
                 file = new File(new File(file, schemaName), "TABLE");
             } else if (parentSt.getStatementType() == DbObjType.VIEW){
                 file = new File(new File(file, schemaName), "VIEW");
             } else {
-                Log.log(Log.LOG_ERROR, "Rule out of table or view: " + st.getName());
+                Log.log(Log.LOG_ERROR, type + " out of table or view: " + st.getName());
             }
             st = parentSt;
             break;

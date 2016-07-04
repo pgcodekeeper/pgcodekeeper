@@ -166,25 +166,21 @@ public class TreeElement {
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
-        case TRIGGER:    if (parent.getType() == DbObjType.TABLE){
-            return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
-        } else {
-            return ((PgView) parent.getPgStatement(db)).getTrigger(name);
-        }
+        case TRIGGER:
+            switch (parent.type) {
+            case TABLE:  return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
+            case VIEW:   return ((PgView) parent.getPgStatement(db)).getTrigger(name);
+            default:     throw new IllegalStateException("Illegal TRIGGER parent: " + parent.type);
+            }
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         case RULE:
             switch(parent.getType()) {
-            case TABLE:
-                return ((PgTable) parent.getPgStatement(db)).getRule(name);
-            case VIEW:
-                return ((PgView) parent.getPgStatement(db)).getRule(name);
-            default:
-                throw new IllegalStateException("Illegal RULE parent: " + type);
+            case TABLE:  return ((PgTable) parent.getPgStatement(db)).getRule(name);
+            case VIEW:   return ((PgView) parent.getPgStatement(db)).getRule(name);
+            default:     throw new IllegalStateException("Illegal RULE parent: " + parent.type);
             }
-
-        default:
-            throw new IllegalStateException("Unknown element type: " + type);
+        default:         throw new IllegalStateException("Unknown element type: " + type);
         }
     }
 

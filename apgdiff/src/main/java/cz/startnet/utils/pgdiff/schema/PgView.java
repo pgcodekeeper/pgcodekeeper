@@ -64,6 +64,33 @@ public class PgView extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    /**
+     * Finds trigger according to specified rule {@code name}.
+     *
+     * @param name name of the trigger to be searched
+     *
+     * @return found trigger or null if no such trigger has been found
+     */
+    public PgTrigger getTrigger(final String name) {
+        for (PgTrigger trigger : triggers) {
+            if (trigger.getName().equals(name)) {
+                return trigger;
+            }
+        }
+
+        return null;
+    }
+
+    public List<PgTrigger> getTriggers() {
+        return Collections.unmodifiableList(triggers);
+    }
+
+    public void addTrigger(final PgTrigger trigger) {
+        triggers.add(trigger);
+        trigger.setParent(this);
+        resetHash();
+    }
+
     public PgView(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -610,32 +637,5 @@ public class PgView extends PgStatementWithSearchPath {
                     + newValue.getDefaultValue()
                     + ';');
         }
-    }
-
-    /**
-     * Finds trigger according to specified rule {@code name}.
-     *
-     * @param name name of the trigger to be searched
-     *
-     * @return found trigger or null if no such trigger has been found
-     */
-    public PgTrigger getTrigger(final String name) {
-        for (PgTrigger trigger : triggers) {
-            if (trigger.getName().equals(name)) {
-                return trigger;
-            }
-        }
-
-        return null;
-    }
-
-    public List<PgTrigger> getTriggers() {
-        return Collections.unmodifiableList(triggers);
-    }
-
-    public void addTrigger(final PgTrigger trigger) {
-        triggers.add(trigger);
-        trigger.setParent(this);
-        resetHash();
     }
 }
