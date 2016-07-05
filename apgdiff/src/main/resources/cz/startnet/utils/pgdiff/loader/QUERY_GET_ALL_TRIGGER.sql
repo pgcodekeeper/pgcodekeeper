@@ -1,0 +1,1 @@
+SELECT * FROM performance.get_all_trigger();

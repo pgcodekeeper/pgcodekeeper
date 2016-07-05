@@ -69,6 +69,12 @@
             id="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
             name="%command.name.removeBuilder">
       </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader"
+            id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+            name="%command.name.improvePerformanceJdbc">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -178,6 +184,11 @@
                      </iterate>
                   </and>
                </visibleWhen>
+            </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+                  label="%command.label.improvePerformanceJdbc"
+                  style="push">
             </command>
          </menu>
       </menuContribution>
