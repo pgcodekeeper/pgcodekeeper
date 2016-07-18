@@ -1,1 +1,1 @@
-SELECT * FROM performance.get_all_view();
+SELECT * FROM pgcodekeeperhelper.get_all_view();

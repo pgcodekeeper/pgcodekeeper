@@ -22,7 +22,12 @@ public class TreeElement {
 
     public abstract static class ListGeneratorPredicate {
 
-        public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
+        public enum ADD_STATUS {
+            ADD, ADD_SUBTREE, SKIP_THIS, SKIP_SUBTREE
+        }
+
+        public ADD_STATUS parentStatus = ADD_STATUS.ADD;
+        public TreeElement parentElement = null;
 
         public abstract ADD_STATUS shouldAddToList(TreeElement el);
     }
@@ -95,13 +100,12 @@ public class TreeElement {
         this.type = statement.getStatementType();
     }
 
-
     public boolean hasChildren() {
         return !children.isEmpty();
     }
 
     public void addChild(TreeElement child) {
-        if(child.parent != null) {
+        if (child.parent != null) {
             throw new IllegalStateException(
                     "Cannot add a child that already has a parent!");
         }
@@ -112,8 +116,8 @@ public class TreeElement {
     }
 
     public TreeElement getChild(String name, DbObjType type) {
-        for(TreeElement el : children) {
-            if((type == null || el.type == type) && el.name.equals(name)) {
+        for (TreeElement el : children) {
+            if ((type == null || el.type == type) && el.name.equals(name)) {
                 return el;
             }
         }
@@ -131,7 +135,7 @@ public class TreeElement {
 
     public int countDescendants() {
         int descendants = 0;
-        for(TreeElement sub : children) {
+        for (TreeElement sub : children) {
             descendants++;
             descendants += sub.countDescendants();
         }
@@ -150,28 +154,41 @@ public class TreeElement {
      * @return
      */
     public PgStatement getPgStatement(PgDatabase db) {
-        switch(type) {
+        switch (type) {
         // container (if root) and database end recursion
         // if container is not root - just pass through it
-        case DATABASE:   return db;
+        case DATABASE:
+            return db;
 
         // other elements just get from their parent, and their parent from a parent above them etc
-        case EXTENSION:  return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
-        case SCHEMA:     return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
+        case EXTENSION:
+            return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
+        case SCHEMA:
+            return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
 
-        case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
-        case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
-        case TYPE:       return ((PgSchema) parent.getPgStatement(db)).getType(name);
-        case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
-        case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
-        case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+        case FUNCTION:
+            return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
+        case SEQUENCE:
+            return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
+        case TYPE:
+            return ((PgSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN:
+            return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
+        case VIEW:
+            return ((PgSchema) parent.getPgStatement(db)).getView(name);
+        case TABLE:
+            return ((PgSchema) parent.getPgStatement(db)).getTable(name);
 
-        case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
-        case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
-        case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
-        case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
+        case INDEX:
+            return ((PgTable) parent.getPgStatement(db)).getIndex(name);
+        case TRIGGER:
+            return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
+        case CONSTRAINT:
+            return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        case COLUMN:
+            return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         case RULE:
-            switch(parent.getType()) {
+            switch (parent.getType()) {
             case TABLE:
                 return ((PgTable) parent.getPgStatement(db)).getRule(name);
             case VIEW:
@@ -201,6 +218,7 @@ public class TreeElement {
         TreeElement parent = findElement(st.getParent());
         return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
     }
+
     /**
      * создает коллекцию с измененными элементами
      */
@@ -215,8 +233,17 @@ public class TreeElement {
             return result;
         }
 
+        if (addStatus == ADD_STATUS.ADD_SUBTREE) {
+            predicate.parentStatus = ADD_STATUS.ADD_SUBTREE;
+            predicate.parentElement = this;
+        }
+
         for (TreeElement child : getChildren()) {
             child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
+        }
+
+        if (predicate != null && predicate.parentElement == this) {
+            predicate.parentStatus = ADD_STATUS.ADD;
         }
 
         boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
@@ -230,6 +257,7 @@ public class TreeElement {
         result.add(this);
         return result;
     }
+
     /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
      * left -> right, right -> left, both->both
@@ -268,7 +296,7 @@ public class TreeElement {
      * @param root дерево
      * @param result список с выбранными элементами
      */
-    public static void getSelected(TreeElement root, List<TreeElement> result){
+    public static void getSelected(TreeElement root, List<TreeElement> result) {
         if (root.isSelected()) {
             result.add(root);
         }
@@ -286,11 +314,12 @@ public class TreeElement {
             child.setAllChecked();
         }
     }
+
     /**
      * @return признак наличия выбранных элементов в поддереве начиная с текущего узла
      */
     public boolean isSubTreeSelected() {
-        for(TreeElement child : getChildren()) {
+        for (TreeElement child : getChildren()) {
             if (child.isSubTreeSelected()) {
                 return true;
             }
@@ -321,7 +350,7 @@ public class TreeElement {
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
-        }else if(obj instanceof TreeElement) {
+        } else if (obj instanceof TreeElement) {
             TreeElement other = (TreeElement) obj;
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())

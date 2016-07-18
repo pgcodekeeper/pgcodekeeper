@@ -128,8 +128,7 @@ public class PgDumpLoader implements AutoCloseable {
     private PgDatabase load(boolean loadReferences, PgDatabase intoDb)
             throws IOException, InterruptedException {
         checkCancelled(monitor);
-        SQLParserBaseListener listener = (loadReferences ?
-                new ReferenceListener(intoDb, inputObjectName)
+        SQLParserBaseListener listener = (loadReferences ? new ReferenceListener(intoDb, inputObjectName)
                 : new CustomSQLParserListener(intoDb, inputObjectName));
         AntlrParser.parseInputStream(input, args.getInCharsetName(), inputObjectName,
                 listener, monitor, monitoringLevel);
@@ -164,7 +163,7 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, int monLvl,
             List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, LicenseException {
+            throws InterruptedException, IOException, LicenseException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
         File dir = new File(dirPath);

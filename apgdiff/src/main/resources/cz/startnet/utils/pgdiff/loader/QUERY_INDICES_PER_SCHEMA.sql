@@ -19,8 +19,9 @@ JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = i.indexrelid,
 pg_get_indexdef(c.oid) definition
+
 WHERE ccc.relkind = 'r'
-    AND ccc.relnamespace = ?
+	AND ccc.relnamespace = ?
     AND i.indisprimary = FALSE
     AND i.indisexclusion = FALSE
     AND cons.conindid is NULL

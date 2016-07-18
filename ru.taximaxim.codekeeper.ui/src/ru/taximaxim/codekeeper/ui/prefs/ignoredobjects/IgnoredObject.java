@@ -43,16 +43,16 @@ public class IgnoredObject {
     public void setIgnoreContent(boolean ignoreContent) {
         this.ignoreContent = ignoreContent;
     }
-    
+
     public boolean match(String objName) {
         if (isRegular) {
-            return Pattern.compile(name,Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+            return Pattern.compile(name, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
                     .matcher(objName).find();
         } else {
-            return name.equals(objName);
+            return name.equals(objName.replaceAll("(\\([a-zA-Z0-9,]*\\))", ""));
         }
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -76,7 +76,7 @@ public class IgnoredObject {
         }
         return eq;
     }
-    
+
     @Override
     public String toString() {
         int result = 0;
@@ -88,7 +88,7 @@ public class IgnoredObject {
         }
         return name + " " + result; //$NON-NLS-1$
     }
-    
+
     public static LinkedList<IgnoredObject> parsePrefs(List<String> propertyValues) {
         LinkedList<IgnoredObject> result = new LinkedList<>();
         for (String prop : propertyValues) {
@@ -99,7 +99,7 @@ public class IgnoredObject {
         }
         return result;
     }
-    
+
     private static IgnoredObject parseLine(String line) {
         try {
             int lastSpace = line.lastIndexOf(' ');
@@ -114,10 +114,10 @@ public class IgnoredObject {
             int val = Integer.parseInt(pattern);
             boolean isRegular = (val & BooleanChangeValues.REGULAR
                     .getStatusFlagValue()) == BooleanChangeValues.REGULAR
-                    .getStatusFlagValue();
+                            .getStatusFlagValue();
             boolean ignoreContent = (val & BooleanChangeValues.IGNORE_CONTENT
                     .getStatusFlagValue()) == BooleanChangeValues.IGNORE_CONTENT
-                    .getStatusFlagValue();
+                            .getStatusFlagValue();
             return new IgnoredObject(name, isRegular, ignoreContent);
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             Log.log(Log.LOG_ERROR,

@@ -74,7 +74,7 @@ public class AntlrParser {
 
             @Override
             public void exitEveryRule(ParserRuleContext ctx) {
-                if (ctx.depth() <= monitoringLevel){
+                if (ctx.depth() <= monitoringLevel) {
                     monitor.worked(1);
                 }
             }

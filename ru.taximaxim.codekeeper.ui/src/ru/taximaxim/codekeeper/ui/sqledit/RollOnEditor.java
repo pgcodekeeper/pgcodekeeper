@@ -89,7 +89,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
     private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
 
-    private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
+    private static final String RUN_SCRIPT_LABEL = Messages.sqlScriptDialog_run_script;
     private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
 
     private XmlHistory history;
@@ -127,6 +127,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
+
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
             IVerticalRuler ruler, int styles) {
@@ -138,7 +139,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-
 
         return sw;
     }
@@ -159,12 +159,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     Messages.SqlScriptDialog_error_get_script, e);
         }
     }
+
     @Override
     public void init(IEditorSite site, IEditorInput input)
             throws PartInitException {
         // открыть с помощью кодкипера на каком-то скрипте
         if (input instanceof DepcyFromPSQLOutput) {
-            final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
+            final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput) input;
             initializeDepcyInput(in);
             try {
                 if (this.getSourceViewer() != null) {
@@ -174,7 +175,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
                     @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                    InterruptedException {
+                            InterruptedException {
                         try {
                             in.updateParser(monitor);
                         } catch (CoreException | IOException | LicenseException ex) {
@@ -211,6 +212,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         }
     }
+
     @Override
     public void dispose() {
         getEditorSite().getWorkbenchWindow().getPartService().removePartListener(this);
@@ -237,6 +239,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         setDbParams(addDepcy.dbHost, addDepcy.dbPort, addDepcy.dbName,
                 addDepcy.dbUser, addDepcy.dbPass);
     }
+
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
         this.dbHost = dbHost;
@@ -270,7 +273,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 picker.setVisible(!btnHidePicker.getSelection());
-                ((GridData)picker.getLayoutData()).exclude = btnHidePicker.getSelection();
+                ((GridData) picker.getLayoutData()).exclude = btnHidePicker.getSelection();
                 PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(),
                         PREF.IS_DDL_UPDATE_OVER_JDBC_INFO, String.valueOf(btnHidePicker.getSelection()));
                 parent.layout();
@@ -313,7 +316,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + UIConsts._NL +
+        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' + dbName + UIConsts._NL +
                 DB_HOST_PLACEHOLDER + '=' + dbHost + UIConsts._NL +
                 DB_PORT_PLACEHOLDER + '=' + dbPort + UIConsts._NL +
                 DB_USER_PLACEHOLDER + '=' + dbUser + UIConsts._NL +
@@ -365,13 +368,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             public void widgetSelected(SelectionEvent e) {
                 boolean isJdbc = btnJdbcToggle.getSelection();
                 notJdbc.setVisible(!isJdbc);
-                ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
+                ((GridData) notJdbc.getLayoutData()).exclude = isJdbc;
 
                 picker.setVisible(isJdbc && !btnHidePicker.getSelection());
-                ((GridData)picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
+                ((GridData) picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
 
                 btnHidePicker.setVisible(isJdbc);
-                GridData gd = (GridData)btnHidePicker.getLayoutData();
+                GridData gd = (GridData) btnHidePicker.getLayoutData();
                 if (gd != null) {
                     gd.exclude = !isJdbc;
                 }
@@ -447,7 +450,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                                 .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
                             new ScriptRunResultDialog(RollOnEditor.this
                                     .getEditorSite().getShell(), scriptOutput)
-                            .open();
+                                            .open();
                         }
                         showAddDepcyDialog();
                     }
@@ -494,7 +497,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT));
     }
 
-    private class RunButtonHandler extends SelectionAdapter{
+    private class RunButtonHandler extends SelectionAdapter {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
@@ -504,7 +507,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 // new runnable to unlock the UI thread
                 Runnable launcher;
 
-                if (btnJdbcToggle.getSelection()){
+                if (btnJdbcToggle.getSelection()) {
                     Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
                     final String jdbcHost = picker.getTxtDbHost().getText();
@@ -518,12 +521,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         @Override
                         public void run() {
                             String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
-                            try{
+                            try {
                                 JdbcConnector connector = new JdbcConnector(
                                         jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
                                         scriptFileEncoding, connectionTimezone);
                                 output = new JdbcRunner(connector).runScript(textRetrieved);
-                                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                                if (addDepcy != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                     addDepcy.getDependenciesFromOutput(output);
                                 }
                             } catch (IOException e) {
@@ -534,7 +537,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             }
                         }
                     };
-                }else{
+                } else {
                     Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                     final List<String> command = new ArrayList<>(Arrays.asList(
                             getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
@@ -548,7 +551,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     @Override
                     public void uncaughtException(Thread t, Throwable e) {
                         ExceptionNotifier.notifyDefault(
-                                Messages.sqlScriptDialog_exception_during_script_execution,e);
+                                Messages.sqlScriptDialog_exception_during_script_execution, e);
                     }
                 });
                 scriptThread.start();
@@ -575,7 +578,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             FileDialog fd = new FileDialog(RollOnEditor.this.getEditorSite().getShell(), SWT.SAVE);
             fd.setText(Messages.sqlScriptDialog_save_as);
             fd.setOverwrite(true);
-            fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
+            fd.setFilterExtensions(new String[] { "*.sql", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
             String scriptFileName = fd.open();
 
             if (scriptFileName != null) {
@@ -608,8 +611,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get();
-                try (PrintWriter writer =
-                        new PrintWriter(outFile, scriptFileEncoding)) {
+                try (PrintWriter writer = new PrintWriter(outFile, scriptFileEncoding)) {
                     writer.write(textRetrieved);
                 }
 
@@ -621,11 +623,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
                 ProcessBuilder pb = new ProcessBuilder(command);
                 sr.launchAndRedirect(pb);
-                if (addDepcy!=null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                if (addDepcy != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                     addDepcy.getDependenciesFromOutput(sr.getStorage());
                 }
             } catch (IOException ex) {
-                if (addDepcy!=null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                if (addDepcy != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                     addDepcy.getDependenciesFromOutput(sr.getStorage());
                     if (!addDepcy.isAddDepcyEmpty()) {
                         // actually parsed some depcies, do not rethrow
@@ -677,7 +679,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 }
                 IEditorInput input = RollOnEditor.this.getEditorInput();
                 if (input instanceof DepcyFromPSQLOutput) {
-                    ((DepcyFromPSQLOutput)input).updateScript(differ.getDiffDirect());
+                    ((DepcyFromPSQLOutput) input).updateScript(differ.getDiffDirect());
                 }
                 RollOnEditor.this.setInput(input);
 
@@ -729,9 +731,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     public void partActivated(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partBroughtToTop(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
         if (addDepcy != null) {
@@ -752,18 +756,23 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         }
     }
+
     @Override
     public void partDeactivated(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partOpened(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partHidden(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partVisible(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partInputChanged(IWorkbenchPartReference partRef) {
     }

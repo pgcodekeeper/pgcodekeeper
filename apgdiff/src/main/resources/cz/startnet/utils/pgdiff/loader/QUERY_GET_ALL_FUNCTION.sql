@@ -1,1 +1,1 @@
-SELECT * FROM performance.get_all_function();
+SELECT * FROM pgcodekeeperhelper.get_all_function();

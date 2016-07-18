@@ -1,6 +1,6 @@
-CREATE SCHEMA performance;
+CREATE SCHEMA pgcodekeeperhelper;
 
-CREATE OR REPLACE FUNCTION performance.get_all_table()
+CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_table()
   RETURNS TABLE(oid bigint,
 	nspname text,
        relname name,
@@ -41,7 +41,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -169,17 +169,17 @@ LEFT JOIN
 
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
   LANGUAGE plpgsql;
 
-SELECT * FROM performance.get_all_table();
+SELECT * FROM pgcodekeeperhelper.get_all_table();
   
   ------------------------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION performance.get_all_view()
+CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_view()
   RETURNS TABLE(relname name,  nspname text, relacl aclitem[], relowner bigint, definition text, comment text, column_names name[], column_comments text[], column_defaults text[], column_acl text[]) AS
 $BODY$
 DECLARE
@@ -197,7 +197,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (WITH extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
@@ -244,7 +244,7 @@ WHERE relnamespace = oid
     AND c.oid NOT IN (SELECT objid FROM extension_deps));
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
@@ -252,7 +252,7 @@ $BODY$
   
   ------------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_function()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_function()
   RETURNS TABLE(proname name,
 	nspname text,
         proowner oid,
@@ -293,7 +293,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -340,7 +340,7 @@ WHERE pronamespace = schema_oid
 
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
@@ -348,7 +348,7 @@ $BODY$
   
   -----------------------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_index()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_index()
   RETURNS TABLE(table_name name,
 	indisunique boolean,
     relname name,
@@ -374,7 +374,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -408,7 +408,7 @@ ORDER BY relname);
 
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
@@ -418,7 +418,7 @@ $BODY$
   
   -----------------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_constraint()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_constraint()
   RETURNS TABLE(relname name, nspname text,
     conname name,
     contype "char",
@@ -451,7 +451,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -487,7 +487,7 @@ WHERE ccc.relkind = 'r'
     AND ccc.relnamespace = schema_oid);
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
@@ -495,10 +495,11 @@ $BODY$
   
   -------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_sequence()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_sequence()
   RETURNS TABLE(sequence_oid oid, nspname text,
        relowner oid,
        relname name,
+       cache_value text,
        start_value bigint,
        minimum_value bigint,
        maximum_value bigint,
@@ -525,7 +526,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -541,6 +542,7 @@ SELECT c.oid AS sequence_oid,
 schema_name,
        c.relowner,
        c.relname,
+       pgcodekeeperhelper.get_cache_value(schema_name, c.relname) AS cache_value,
        p.start_value::bigint AS start_value,
        p.minimum_value::bigint AS minimum_value,
        p.maximum_value::bigint AS maximum_value,
@@ -565,22 +567,36 @@ WHERE c.relnamespace = schema_oid
     AND c.oid NOT IN (SELECT objid FROM extension_deps));
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
+END
+$BODY$
+  LANGUAGE plpgsql;
+
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_cache_value(text, text)
+  RETURNS text AS
+$BODY$
+DECLARE
+ total text;
+BEGIN
+--EXECUTE 'SELECT cache_value FROM ' || $1 || '.' || $2 || ' ' || into total;
+EXECUTE FORMAT ('SELECT cache_value FROM %s.%s ',$1,$2) into total;
+--EXECUTE 'SELECT cache_value FROM avia.t_bases_avia_id_seq ' into total;
+RETURN total;
 END
 $BODY$
   LANGUAGE plpgsql;
   
   -------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_trigger()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_trigger()
   RETURNS TABLE(relname name,
        proname name,
        nspname name,
+       nspnametv text,
        tgname name,
        tgfoid oid,
        tgtype smallint,
-       tgrelid text,
        tgargs bytea,
        table_oid oid,
        col_numbers int2[],
@@ -602,7 +618,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -611,10 +627,10 @@ LOOP
 SELECT ccc.relname,
        p.proname,
        nsp.nspname,
+       schema_name,
        t.tgname,
        t.tgfoid,
        t.tgtype,
-       t.tgrelid::regclass::text,
        t.tgargs,
        t.tgrelid as table_oid,
        t.tgattr::int2[] as col_numbers,
@@ -631,7 +647,7 @@ WHERE ccc.relkind = 'r'
     AND tgisinternal = FALSE);
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$
@@ -639,7 +655,7 @@ $BODY$
   
     -------------------------------------------------------------------------------------------------
   
-  CREATE OR REPLACE FUNCTION performance.get_all_rule()
+  CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_rule()
   RETURNS TABLE(relname name, 
 		nspname text,
 		rulename name, 
@@ -664,7 +680,7 @@ JOIN pg_catalog.pg_roles r ON n.nspowner = r.oid
     AND n.nspname != 'information_schema'
 LEFT JOIN pg_catalog.pg_description d ON n.oid = d.objoid
 LOOP
-	EXECUTE 'SET search_path TO ' || schema_name;
+	EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
 	RETURN QUERY (
 
 
@@ -686,7 +702,7 @@ WHERE ccc.relnamespace = schema_oid AND
     NOT ((ccc.relkind = 'v' OR ccc.relkind = 'm') AND r.ev_type = '1' AND r.is_instead));
 
 END LOOP;
-EXECUTE 'SET search_path TO ' || schema_name_current;
+EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);
 RETURN;
 END
 $BODY$

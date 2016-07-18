@@ -13,7 +13,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src/main/resources"/>
-	<classpathentry exported="true" kind="lib" path="lib/postgresql-9.3-1102-jdbc41.jar" sourcepath="lib/postgresql-9.3-1102-jdbc41-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jgrapht-core-0.9.0.jar" sourcepath="lib/jgrapht-core-0.9.0-sources.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.4.1208.jar" sourcepath="lib/postgresql-9.4.1208.jre7-sources.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
