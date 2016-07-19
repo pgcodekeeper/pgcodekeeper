@@ -349,6 +349,7 @@ public class PgView extends PgStatementWithSearchPath {
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
+                    && defaultValues.equals(view.defaultValues)
                     && grants.equals(view.grants)
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())

@@ -279,7 +279,6 @@ public class PgTable extends PgStatementWithSearchPath {
             sb.append(newTable.getOwnerSQL());
         }
 
-
         alterPrivileges(newTable, sb);
 
         if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
