@@ -400,12 +400,13 @@ public class PgSchema extends PgStatement {
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            schemaDst.addPrivilege(priv.shallowCopy());
+            schemaDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            schemaDst.addPrivilege(priv.shallowCopy());
+            schemaDst.addPrivilege(priv.deepCopy());
         }
         schemaDst.setOwner(getOwner());
+        schemaDst.deps.addAll(deps);
         return schemaDst;
     }
 

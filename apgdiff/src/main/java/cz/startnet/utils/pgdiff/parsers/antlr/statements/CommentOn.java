@@ -31,11 +31,8 @@ public class CommentOn extends ParserAbstract {
         }
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         String comment = ctx.comment_text.getText();
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
         PgSchema schema = db.getSchema(schemaName);
 
         // function

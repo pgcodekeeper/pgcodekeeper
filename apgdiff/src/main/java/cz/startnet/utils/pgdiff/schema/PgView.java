@@ -25,7 +25,6 @@ public class PgView extends PgStatementWithSearchPath {
 
     private String query;
     private String normalizedQuery;
-    private PgSelect select;
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
@@ -282,16 +281,6 @@ public class PgView extends PgStatementWithSearchPath {
         return normalizedQuery;
     }
 
-    public void setSelect(PgSelect select) {
-        this.select = select;
-        select.setParent(this);
-        resetHash();
-    }
-
-    public PgSelect getSelect() {
-        return select;
-    }
-
     /**
      * Adds/replaces column default value specification.
      */
@@ -358,7 +347,6 @@ public class PgView extends PgStatementWithSearchPath {
             PgView view = (PgView) obj;
             eq = Objects.equals(name, view.getName())
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
-                    && Objects.equals(select, view.getSelect())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
                     && grants.equals(view.grants)
@@ -404,7 +392,6 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((normalizedQuery == null) ? 0 : normalizedQuery.hashCode());
-        result = prime * result + ((select == null) ? 0 : select.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
@@ -417,22 +404,18 @@ public class PgView extends PgStatementWithSearchPath {
     public PgView shallowCopy() {
         PgView viewDst = new PgView(getName(), getRawStatement());
         viewDst.setQuery(getQuery());
-        viewDst.setSelect(select.shallowCopy());
         viewDst.setComment(getComment());
         viewDst.setColumnNames(new ArrayList<>(columnNames));
-        for(DefaultValue defval : defaultValues) {
-            viewDst.addColumnDefaultValue(defval.getColumnName(), defval.getDefaultValue());
-        }
-        for(ColumnComment colcomment : columnComments) {
-            viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
-        }
+        viewDst.defaultValues.addAll(defaultValues);
+        viewDst.columnComments.addAll(columnComments);
         for (PgPrivilege priv : revokes) {
-            viewDst.addPrivilege(priv.shallowCopy());
+            viewDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            viewDst.addPrivilege(priv.shallowCopy());
+            viewDst.addPrivilege(priv.deepCopy());
         }
         viewDst.setOwner(getOwner());
+        viewDst.deps.addAll(deps);
         return viewDst;
     }
 

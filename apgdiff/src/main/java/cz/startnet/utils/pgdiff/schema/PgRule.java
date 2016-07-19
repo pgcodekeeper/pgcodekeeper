@@ -165,9 +165,8 @@ public class PgRule extends PgStatementWithSearchPath{
         ruleDst.setCondition(getCondition());
         ruleDst.setInstead(isInstead());
         ruleDst.setComment(getComment());
-        for (String command : commands) {
-            ruleDst.addCommand(command);
-        }
+        ruleDst.commands.addAll(commands);
+        ruleDst.deps.addAll(deps);
         return ruleDst;
     }
 

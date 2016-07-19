@@ -55,11 +55,8 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
-        String schema = QNameParser.getSchemaName(ids);
-        if (schema == null) {
-            schema = this.schema;
-        }
-        GenericColumn depcy = new GenericColumn(schema, QNameParser.getFirstName(ids), null, type);
+        String schema = QNameParser.getSchemaName(ids, this.schema);
+        GenericColumn depcy = new GenericColumn(schema, QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
@@ -73,7 +70,7 @@ public abstract class AbstractExpr {
             String schema = qual == null ? this.schema : qual.getText();
 
             depcies.add(new GenericColumn(schema,
-                    typeName.identifier_nontype().getText(), null, DbObjType.TYPE));
+                    typeName.identifier_nontype().getText(), DbObjType.TYPE));
         }
     }
 
@@ -98,7 +95,7 @@ public abstract class AbstractExpr {
 
             GenericColumn referencedTable = ref.getValue();
             if (referencedTable != null) {
-                depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column));
+                depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column, DbObjType.COLUMN));
             }
         }
         return column;

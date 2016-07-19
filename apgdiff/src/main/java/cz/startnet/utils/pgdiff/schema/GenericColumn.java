@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class GenericColumn implements Serializable {
@@ -22,20 +24,86 @@ public final class GenericColumn implements Serializable {
         this.type = type;
     }
 
-    public GenericColumn(String schema, String table, String column) {
-        this(schema, table, column, DbObjType.COLUMN);
+    public GenericColumn(String schema, String object, DbObjType type) {
+        this(schema, object, null, type);
     }
 
-    public DbObjType getType() {
-        return type;
+    public GenericColumn(String schema, DbObjType type) {
+        this(schema, null, type);
     }
 
-    public GenericColumn(String table, String column) {
-        this(null, table, column);
+    public PgStatement getStatement(PgDatabase db) {
+        PgStatement st = doGetStatement(db);
+        if (st == null) {
+            Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
+        }
+        return st;
     }
 
-    public GenericColumn(String column) {
-        this(null, column);
+    private PgStatement doGetStatement(PgDatabase db) {
+        if (type == null) {
+            return null;
+        }
+
+        PgSchema s = db.getSchema(schema);
+        if (s == null && type != DbObjType.DATABASE && type != DbObjType.EXTENSION) {
+            return null;
+        }
+
+        PgTable t;
+        switch (type) {
+        case DATABASE: return db;
+        case SCHEMA: return s;
+        case EXTENSION: return db.getExtension(schema);
+
+        // TODO relations are also types
+        case TYPE: return s.getType(table);
+        case DOMAIN: return s.getDomain(table);
+        case SEQUENCE: return s.getSequence(table);
+        case FUNCTION: return resolveFunctionCall(s, table);
+        case TABLE: return s.getTable(table);
+
+        case COLUMN:
+            t = s.getTable(table);
+            return t == null ? null : t.getColumn(column);
+        case CONSTRAINT:
+            t = s.getTable(table);
+            return t == null ? null : t.getConstraint(column);
+        case INDEX:
+            t = s.getTable(table);
+            return t == null ? null : t.getIndex(column);
+        case TRIGGER:
+            t = s.getTable(table);
+            return t == null ? null : t.getTrigger(column);
+
+        case VIEW: return s.getView(table);
+        case RULE:
+            t = s.getTable(table);
+            return t == null ? s.getView(table).getRule(column) : t.getRule(column);
+
+        default: throw new IllegalStateException("Unhandled DbObjType: " + type);
+        }
+    }
+
+    private PgFunction resolveFunctionCall(PgSchema schema, String funcName) {
+        // in some cases (like triggers) we already have a signature reference, try it first
+        // eventually this will become the norm (pending function call analysis)
+        // and bare name lookup will become deprecated
+        PgFunction func = schema.getFunction(funcName);
+        if (func != null) {
+            return func;
+        }
+
+        int found = 0;
+        for (PgFunction f : schema.getFunctions()) {
+            if (f.getBareName().equals(funcName)) {
+                ++found;
+                func = f;
+            }
+        }
+        // TODO right now we don't have means to resolve overloaded function calls
+        // to avoid false dependencies skip resolving overloaded calls completely
+        return found == 1 ? func : null;
     }
 
     @Override
@@ -68,7 +136,23 @@ public final class GenericColumn implements Serializable {
 
     @Override
     public String toString() {
-        return "schema: \"" + schema + "\"; table: \"" + table
-                + "\"; column: \"" + column + "\";";
+        StringBuilder sb = new StringBuilder();
+        if (schema != null) {
+            sb.append(PgDiffUtils.getQuotedName(schema));
+        }
+        if (table != null) {
+            if (sb.length() > 0) {
+                sb.append('.');
+            }
+            sb.append(PgDiffUtils.getQuotedName(table));
+        }
+        if (column != null) {
+            if (sb.length() > 0) {
+                sb.append('.');
+            }
+            sb.append(PgDiffUtils.getQuotedName(column));
+        }
+        sb.append(" (").append(type).append(')');
+        return sb.toString();
     }
 }

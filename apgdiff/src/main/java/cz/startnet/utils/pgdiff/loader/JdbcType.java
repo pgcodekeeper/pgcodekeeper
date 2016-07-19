@@ -3,8 +3,13 @@ package cz.startnet.utils.pgdiff.loader;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+
 public class JdbcType{
-    
+
     private static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
     static {
         DATA_TYPE_ALIASES.put("int8","bigint");
@@ -28,65 +33,61 @@ public class JdbcType{
         DATA_TYPE_ALIASES.put("timestamp","timestamp without time zone");
         DATA_TYPE_ALIASES.put("bpchar","character");
     }
-    
-    private String typmodout;
-    private String typeName;
-    private String parentSchema;
-    private boolean isArrayType;
-    
-    /** 
-     * There are types, which names begin from underscore: they are simple 
-     * arrays and have 0 in typarray column. 
+
+    private final long oid;
+    private final String typeName;
+    private final String parentSchema;
+    private final boolean isArrayType;
+
+    /**
+     * There are types, which names begin from underscore: they are simple
+     * arrays and have 0 in typarray column.
      * <br><br>
-     * There are also vector types - their typarray column values are not 0, 
+     * There are also vector types - their typarray column values are not 0,
      * we do not convert those to simple arrays
      */
-    public JdbcType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
-        if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
-            if (DATA_TYPE_ALIASES.containsKey(typelem)){
-                this.typeName = DATA_TYPE_ALIASES.get(typelem);
-            }else{
-                this.typeName = typelem;
-            }
-            this.isArrayType = true;
-        }else{
-            this.typeName = DATA_TYPE_ALIASES.containsKey(typeName) ? 
-                    DATA_TYPE_ALIASES.get(typeName) : typeName;
-        }
-        this.typmodout = typmodout;
+    public JdbcType(long oid, String typeName, String typelem, long typarray, String parentSchema) {
+        this.oid = oid;
         this.parentSchema = parentSchema;
+        this.isArrayType = typarray == 0L && typelem != null;
+
+        String mainTypeName = typeName;
+        if (isArrayType){
+            mainTypeName = typelem;
+        }
+        String typeNameAlias = DATA_TYPE_ALIASES.get(mainTypeName);
+        this.typeName = typeNameAlias == null ? mainTypeName : typeNameAlias;
     }
-    
-    /**
-     * Returns type modifier output function name (typmodout of pg_type)
-     */
-    public String getTypmodout() {
-        return typmodout;
-    }
-    
-    /**
-     * Returns type name. Can be either simple type name, or typename[]
-     */
+
     public String getTypeName() {
         return typeName;
     }
-    
+
     public String getParentSchema() {
         return parentSchema;
     }
-    
+
     public String getSchemaQualifiedName(String targetSchemaName) {
-        return (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
-                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+        String qname = PgDiffUtils.getQuotedName(typeName);
+        if (!"pg_catalog".equals(parentSchema) && !targetSchemaName.equals(parentSchema)) {
+            qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
+        }
+        return qname;
     }
-    
+
     /**
-     * Returns the name of this type. If the type's schema name 
+     * Returns the name of this type. If the type's schema name
      * differs from targetSchemaName, the returned type name is schema-qualified.
      * If this type is of array type, appends "[]" to the end.
      */
     public String getFullName(String targetSchemaName){
         String schemaQualName = getSchemaQualifiedName(targetSchemaName);
         return isArrayType ? schemaQualName + "[]" : schemaQualName;
+    }
+
+    public void addTypeDepcy(PgStatement st) {
+        if (!JdbcLoader.isBuiltin(oid)) {
+            st.addDep(new GenericColumn(parentSchema, typeName, DbObjType.TYPE));
+        }
     }
 }

@@ -29,7 +29,6 @@ public class PgTable extends PgStatementWithSearchPath {
     private final List<PgTrigger> triggers = new ArrayList<>();
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
-    private final List<String> sequences = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
 
     /**
@@ -382,17 +381,6 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(rules);
     }
 
-    public List<String> getSequences() {
-        return Collections.unmodifiableList(sequences);
-    }
-
-    public void addSequence(final String string) {
-        if (string != null && !sequences.contains(string)) {
-            sequences.add(string);
-            resetHash();
-        }
-    }
-
     public void setWith(final String with) {
         this.with = with;
         resetHash();
@@ -496,7 +484,6 @@ public class PgTable extends PgStatementWithSearchPath {
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
                     && revokes.equals(table.revokes)
-                    && sequences.equals(table.sequences)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment());
         }
@@ -538,7 +525,6 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + new HashSet<>(triggers).hashCode();
-        result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
@@ -551,23 +537,19 @@ public class PgTable extends PgStatementWithSearchPath {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
-        for(Inherits inh : inherits) {
-            tableDst.addInherits(inh.getKey(), inh.getValue());
-        }
+        tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
-            tableDst.addColumn(colSrc.shallowCopy());
+            tableDst.addColumn(colSrc.deepCopy());
         }
         tableDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            tableDst.addPrivilege(priv.shallowCopy());
+            tableDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            tableDst.addPrivilege(priv.shallowCopy());
-        }
-        for (String segName : sequences) {
-            tableDst.addSequence(segName);
+            tableDst.addPrivilege(priv.deepCopy());
         }
         tableDst.setOwner(getOwner());
+        tableDst.deps.addAll(deps);
         return tableDst;
     }
 

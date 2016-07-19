@@ -21,10 +21,7 @@ public class AlterFunction extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());

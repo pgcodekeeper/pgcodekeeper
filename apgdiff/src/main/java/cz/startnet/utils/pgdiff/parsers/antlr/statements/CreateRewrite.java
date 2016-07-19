@@ -27,11 +27,7 @@ public class CreateRewrite extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
-
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setTargetName(ctx.table_name.getText());

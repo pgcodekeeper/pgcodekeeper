@@ -128,9 +128,9 @@ public class CreateRule extends ParserAbstract {
             List<IdentifierContext> ids = tbl.identifier();
             String firstPart = QNameParser.getFirstName(ids);
             String secondPart = QNameParser.getSecondName(ids);
-            String thirdPart = QNameParser.getSchemaName(ids);
+            String thirdPart = QNameParser.getSchemaName(ids, getDefSchemaName());
             String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
-            if (thirdPart != null && !thirdPart.equals(secondPart)) {
+            if (!thirdPart.equals(secondPart)) {
                 schemaName = thirdPart;
                 firstPart = secondPart;
             }
@@ -184,12 +184,12 @@ public class CreateRule extends ParserAbstract {
         List<IdentifierContext> ids = name.identifier();
         String firstPart = QNameParser.getFirstName(ids);
         String secondPart = QNameParser.getSecondName(ids);
-        String thirdPart = QNameParser.getSchemaName(ids);
+        String thirdPart = QNameParser.getSchemaName(ids, getDefSchemaName());
         String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            if (thirdPart != null && !thirdPart.equals(secondPart)) {
+            if (!thirdPart.equals(secondPart)) {
                 schemaName = thirdPart;
                 firstPart = secondPart;
             }

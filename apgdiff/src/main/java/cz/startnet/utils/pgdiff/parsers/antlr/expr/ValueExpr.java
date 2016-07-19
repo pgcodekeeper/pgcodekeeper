@@ -69,6 +69,7 @@ public class ValueExpr extends AbstractExpr {
         boolean doneWork = true;
 
         if (vex.castExpression() != null && dataType != null) {
+            // TODO check reg*** casts and try getting additional depcies from literal
             addTypeDepcy(dataType);
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION

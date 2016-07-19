@@ -328,12 +328,13 @@ public class PgSequence extends PgStatementWithSearchPath {
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            sequenceDst.addPrivilege(priv.shallowCopy());
+            sequenceDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            sequenceDst.addPrivilege(priv.shallowCopy());
+            sequenceDst.addPrivilege(priv.deepCopy());
         }
         sequenceDst.setOwner(getOwner());
+        sequenceDst.deps.addAll(deps);
         return sequenceDst;
     }
 

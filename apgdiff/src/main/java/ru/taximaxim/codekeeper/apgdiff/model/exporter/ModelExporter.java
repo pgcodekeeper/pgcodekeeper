@@ -183,21 +183,17 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
-        case TRIGGER:
             TreeElement elParent = el.getParent();
+            processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
+            break;
+
+        case TRIGGER:
+        case RULE:
+            elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(oldDb), el);
             } else {
                 processViewAndContents(elParent, elParent.getPgStatement(oldDb), el);
-            }
-            break;
-
-        case RULE:
-            TreeElement elParent4Rule = el.getParent();
-            if (elParent4Rule.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent4Rule, elParent4Rule.getPgStatement(oldDb), el);
-            } else {
-                processViewAndContents(elParent4Rule, elParent4Rule.getPgStatement(oldDb), el);
             }
             break;
 
@@ -226,8 +222,13 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
-        case TRIGGER:
             TreeElement elParent = el.getParent();
+            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
+            break;
+
+        case TRIGGER:
+        case RULE:
+            elParent = el.getParent();
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
@@ -235,14 +236,6 @@ public class ModelExporter {
             }
             break;
 
-        case RULE:
-            TreeElement elParent4Rule = el.getParent();
-            if (elParent4Rule.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent4Rule, elParent4Rule.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent4Rule, elParent4Rule.getPgStatement(newDb), el);
-            }
-            break;
 
         case TABLE:
             processTableAndContents(el, stInNew, el);
@@ -290,17 +283,14 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
-        case RULE:
             testParentSchema(elParent.getParent());
             // table actually, not schema
             testParentSchema(elParent);
-            if (elParent.getType() == DbObjType.TABLE){
-                processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
-            } else {
-                processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
-            }
+            processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
+
         case TRIGGER:
+        case RULE:
             testParentSchema(elParent.getParent());
             // table actually, not schema
             testParentSchema(elParent);

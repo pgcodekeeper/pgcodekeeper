@@ -6,9 +6,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -38,7 +35,6 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String collation;
     private boolean nullValue = true;
     private String storage;
-    private final List<GenericColumn> defaultFunctions = new ArrayList<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -146,14 +142,6 @@ public class PgColumn extends PgStatementWithSearchPath {
 
     public String getCollation() {
         return collation;
-    }
-
-    public void addDefaultFunction(GenericColumn func) {
-        defaultFunctions.add(func);
-    }
-
-    public List<GenericColumn> getDefaultFunctions() {
-        return Collections.unmodifiableList(defaultFunctions);
     }
 
     @Override
@@ -270,14 +258,8 @@ public class PgColumn extends PgStatementWithSearchPath {
                         + newColumn.getName() + " DROP DEFAULT;");
             } else {
                 sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
-                        + newColumn.getName() + " SET DEFAULT " + newDefault
-                        + ';');
-                // Если колонка изменила, только если присутсвуют ссылки на
-                // функцию, иначе она не будет создаваться перед изменением
-                // колонки
-                if (!newColumn.defaultFunctions.isEmpty()) {
-                    isNeedDepcies.set(true);
-                }
+                        + newColumn.getName() + " SET DEFAULT " + newDefault + ';');
+                isNeedDepcies.set(true);
             }
         }
 
@@ -353,14 +335,12 @@ public class PgColumn extends PgStatementWithSearchPath {
         colDst.setType(getType());
         colDst.setComment(getComment());
         for (PgPrivilege priv : grants) {
-            colDst.addPrivilege(priv.shallowCopy());
+            colDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : revokes) {
-            colDst.addPrivilege(priv.shallowCopy());
+            colDst.addPrivilege(priv.deepCopy());
         }
-        for (GenericColumn f : defaultFunctions) {
-            colDst.addDefaultFunction(f);
-        }
+        colDst.deps.addAll(deps);
         return colDst;
     }
 

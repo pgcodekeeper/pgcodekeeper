@@ -6,7 +6,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -26,37 +25,43 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private String tableName;
     private boolean unique;
     private boolean isPrimaryKey;
-    private final List<GenericColumn> columns = new ArrayList<>();
-    private final List<GenericColumn> refs = new ArrayList<>();
+    private final List<String> columns = new ArrayList<>();
+    private GenericColumn refTable;
+    private final List<String> refs = new ArrayList<>();
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
      */
-    public List<GenericColumn> getColumns() {
+    public List<String> getColumns() {
         return Collections.unmodifiableList(columns);
     }
-    
+
     /**
-     * Добавить колонку к списку колонок PrimaryKey или Unique 
+     * Добавить колонку к списку колонок PrimaryKey или Unique
      */
-    public boolean addColumn(GenericColumn genericColumn) {
-        return columns.add(genericColumn);    
+    public void addColumn(String genericColumn) {
+        columns.add(genericColumn);
     }
-    
-    public void addAllColumns(Collection<GenericColumn> cols) {
-        for (GenericColumn col : cols) {
-            columns.add(col);
-        }
-    }
-    
-    public void addForeignColumn(GenericColumn referencedColumn) {
-        refs.add(referencedColumn);
-    }
-    
-    public List<GenericColumn> getRefs(){
+
+    public List<String> getForeignColumns(){
         return Collections.unmodifiableList(refs);
     }
-    
+
+    public void addForeignColumn(String referencedColumn) {
+        refs.add(referencedColumn);
+    }
+
+    public GenericColumn getForeignTable() {
+        return refTable;
+    }
+
+    public void setForeignTable(GenericColumn foreignTable) {
+        if (foreignTable.type != DbObjType.TABLE || foreignTable.column != null) {
+            throw new IllegalArgumentException("Incorrect foreign table ref!");
+        }
+        this.refTable  = foreignTable;
+    }
+
     public boolean isPrimaryKey() {
         return isPrimaryKey;
     }
@@ -77,8 +82,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
     }
-    
-    
+
+
     public PgConstraint(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -122,14 +127,14 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgConstraint newConstr;
         if (newCondition instanceof PgConstraint) {
-            newConstr = (PgConstraint)newCondition; 
+            newConstr = (PgConstraint)newCondition;
         } else {
             return false;
         }
@@ -188,7 +193,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
-    
+
     @Override
     public PgConstraint shallowCopy() {
         PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement());
@@ -197,16 +202,17 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setComment(getComment());
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
-        constraintDst.addAllColumns(columns);
+        constraintDst.columns.addAll(columns);
         constraintDst.refs.addAll(refs);
+        constraintDst.deps.addAll(deps);
         return constraintDst;
     }
-    
+
     @Override
     public PgConstraint deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();

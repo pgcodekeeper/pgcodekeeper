@@ -31,10 +31,7 @@ public class CreateTrigger extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()));
         trigger.setTableName(ctx.tabl_name.getText());
         trigger.setBefore(ctx.before_true != null);
@@ -48,16 +45,17 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnInsert(ctx.insert_true!= null);
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
-        trigger.setFunction(getFullCtxText(ctx.func_name),
-                getFullCtxText(ctx.func_name.schema_qualified_name()) + "()");
+        trigger.setFunction(getFullCtxText(ctx.func_name));
 
-        GenericColumn gc = new GenericColumn(schemaName, getFullCtxText(ctx.func_name),
-                null, DbObjType.FUNCTION);
-        trigger.addDep(gc);
+        List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
+        trigger.addDep(new GenericColumn(QNameParser.getSchemaName(funcIds, getDefSchemaName()),
+                QNameParser.getFirstName(funcIds) + "()", DbObjType.FUNCTION));
 
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name){
-                trigger.addUpdateColumn(QNameParser.getFirstName(nameCol.identifier()));
+                String col = QNameParser.getFirstName(nameCol.identifier());
+                trigger.addUpdateColumn(col);
+                trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
             }
         }
         WhenListener whenListener = new WhenListener();

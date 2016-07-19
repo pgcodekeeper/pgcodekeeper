@@ -21,7 +21,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,7 +31,6 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -42,7 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -396,7 +393,6 @@ class PgDB3 extends PgDatabaseObjectCreator {
         col.setDefaultValue("nextval('\"admins_aid_seq\"'::regclass)");
         col.setNullValue(false);
         table.addColumn(col);
-        table.addSequence("\"admins_aid_seq\"");
 
         col = new PgColumn("companyid");
         col.setType("integer");
@@ -487,7 +483,6 @@ class PgDB4 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         col.setDefaultValue("nextval('call_logs_id_seq'::regclass)");
         table.addColumn(col);
-        table.addSequence("call_logs_id_seq");
 
         return d;
     }
@@ -502,7 +497,6 @@ class PgDB5 extends PgDatabaseObjectCreator {
         PgFunction func = new PgFunction("gtsq_in", "");
         func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
         func.setReturns("gtsq");
-        func.setReturnsName(new GenericColumn("public", "gtsq", null, DbObjType.TYPE));
         schema.addFunction(func);
 
         PgFunction.Argument arg = new PgFunction.Argument();
@@ -705,7 +699,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         col.setDefaultValue("nextval('user_id_seq'::regclass)");
         table.addColumn(col);
-        table.addSequence("user_id_seq");
 
         col = new PgColumn("email");
         col.setType("character varying(128)");
@@ -744,12 +737,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
 
-        PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "email"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "created"));
-        view.setSelect(select);
         view.setOwner("postgres");
 
         rule = new PgRule("on_delete", "");
@@ -776,11 +763,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
         view = new PgView("ws_test", "");
         view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
         schema.addView(view);
-
-        select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
-        view.setSelect(select);
 
         return d;
     }
@@ -969,7 +951,6 @@ class PgDB14 extends PgDatabaseObjectCreator {
         col.setComment("'id column'");
         col.setDefaultValue("nextval('test_id_seq'::regclass)");
         table.addColumn(col);
-        table.addSequence("test_id_seq");
 
         col = new PgColumn("text");
         col.setType("character varying(20)");
@@ -1013,13 +994,6 @@ class PgDB14 extends PgDatabaseObjectCreator {
         view.setComment("'test view'");
         view.addColumnComment("id", "'view id col'");
 
-        PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "id"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "text"));
-
-        view.setSelect(select);
-
         view.setOwner("fordfrog");
 
         PgTrigger trigger = new PgTrigger("test_trigger", "");
@@ -1027,7 +1001,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         trigger.setOnUpdate(true);
         trigger.setTableName("test");
         trigger.setForEachRow(false);
-        trigger.setFunction("trigger_fnc()", "trigger_fnc()");
+        trigger.setFunction("trigger_fnc()");
         table.addTrigger(trigger);
 
         trigger.setComment("'test trigger'");
@@ -1088,14 +1062,6 @@ class PgDB16 extends PgDatabaseObjectCreator {
                 + " JOIN t_chart c ON t.id = c.id");
         schema.addView(view);
 
-        PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
-
-        view.setSelect(select);
-
         return d;
     }
 }
@@ -1139,16 +1105,6 @@ class PgDB17 extends PgDatabaseObjectCreator {
         view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
                 + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
         schema.addView(view);
-
-        PgSelect select = new PgSelect("");
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", null, DbObjType.TABLE));
-        select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
-
-        view.setSelect(select);
 
         return d;
     }

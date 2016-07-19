@@ -344,12 +344,12 @@ create_type_statement
             | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
             | PASSEDBYVALUE
             | ALIGNMENT EQUAL alignment=data_type
-            | STORAGE EQUAL storage=identifier
-            | LIKE EQUAL like_type=identifier
+            | STORAGE EQUAL storage=(PLAIN | EXTERNAL | EXTENDED | MAIN)
+            | LIKE EQUAL like_type=data_type
             | CATEGORY EQUAL category=Character_String_Literal
             | PREFERRED EQUAL preferred=truth_value
             | DEFAULT EQUAL default_value=Character_String_Literal
-            | ELEMENT EQUAL element=identifier
+            | ELEMENT EQUAL element=data_type
             | DELIMITER EQUAL delimiter=Character_String_Literal
             | COLLATABLE EQUAL collatable=truth_value))*
         RIGHT_PAREN)?

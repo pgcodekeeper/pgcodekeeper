@@ -29,10 +29,7 @@ public class CreateType extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTypeForm form = PgTypeForm.SHELL;
         if (ctx.RANGE() != null) {
             form = PgTypeForm.RANGE;
@@ -45,13 +42,15 @@ public class CreateType extends ParserAbstract {
         }
         PgType type = new PgType(name, form, getFullCtxText(ctx.getParent()));
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr, new ArrayList<String>(), new HashMap<String, GenericColumn>()));
+            type.addAttr(getColumn(attr, new ArrayList<String>(), new HashMap<String, GenericColumn>(), getDefSchemaName()));
+            addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
         for (Token enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
         if (ctx.subtype_name != null) {
             type.setSubtype(getFullCtxText(ctx.subtype_name));
+            addTypeAsDepcy(ctx.subtype_name, type, getDefSchemaName());
         }
         if (ctx.subtype_operator_class != null) {
             type.setSubtypeOpClass(getFullCtxText(ctx.subtype_operator_class));
@@ -65,6 +64,7 @@ public class CreateType extends ParserAbstract {
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
         }
+        // TODO function depcies; caution: may introduce cyclic depcies
         if (ctx.input_function != null) {
             type.setInputFunction(getFullCtxText(ctx.input_function));
         }
@@ -94,7 +94,7 @@ public class CreateType extends ParserAbstract {
             type.setAlignment(getFullCtxText(ctx.alignment));
         }
         if (ctx.storage != null) {
-            type.setStorage(getFullCtxText(ctx.storage));
+            type.setStorage(ctx.storage.getText());
         }
         if (ctx.like_type != null) {
             type.setLikeType(getFullCtxText(ctx.like_type));
@@ -110,6 +110,7 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.element != null) {
             type.setElement(getFullCtxText(ctx.element));
+            addTypeAsDepcy(ctx.element, type, getDefSchemaName());
         }
         if (ctx.delimiter != null) {
             type.setDelimiter(ctx.delimiter.getText());

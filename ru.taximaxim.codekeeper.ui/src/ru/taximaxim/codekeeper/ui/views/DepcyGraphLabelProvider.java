@@ -39,7 +39,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
             case COLUMN:
                 break;
             case CONSTRAINT:
-                if (!((PgConstraint)st).getRefs().isEmpty()) {
+                if (!((PgConstraint)st).getForeignColumns().isEmpty()) {
                     return "FK " + st.getBareName(); //$NON-NLS-1$
                 }
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$

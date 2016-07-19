@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -28,14 +27,11 @@ public class CreateView extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            view.setSelect(createSelect(ctx.v_query, schemaName));
+            createSelect(ctx.v_query, schemaName, view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
@@ -51,14 +47,12 @@ public class CreateView extends ParserAbstract {
         return view;
     }
 
-    public static PgSelect createSelect(Select_stmtContext selectCtx, String schemaName) {
+    public static void createSelect(Select_stmtContext selectCtx, String schemaName, PgView v) {
         Select selectAnalyzer = new Select(schemaName);
         selectAnalyzer.select(new SelectStmt(selectCtx));
 
-        PgSelect select = new PgSelect(getFullCtxText(selectCtx));
         for (GenericColumn col : selectAnalyzer.getDepcies()) {
-            select.addColumn(col);
+            v.addDep(col);
         }
-        return select;
     }
 }
