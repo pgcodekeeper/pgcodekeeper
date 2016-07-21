@@ -55,7 +55,7 @@ public class Select extends AbstractExpr {
      */
     private final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
     /**
-     * Column alias' are in a separate set since they have two values as the Key.
+     * Column alias' are in a separate sets (per table) since they have two values as the Key.
      * This is not a Map because we don't connect column aliases with their columns.<br>
      * Columns of non-dereferenceable objects are aliases by default and need not to be added to this set.
      */
@@ -66,13 +66,16 @@ public class Select extends AbstractExpr {
     private final Set<String> cte = new HashSet<>();
     /**
      * Flags for proper FROM (subquery) analysis.<br>
-     * {@link #findReference(String)} assumes that when inFrom is set the FROM clause
-     * of that query is analyzed and skips that namespace entirely unless lateralAllowed is also set
+     * {@link #findReference(String)} assumes that when {@link #inFrom} is set the FROM clause
+     * of that query is analyzed and skips that namespace entirely unless {@link #lateralAllowed} is also set
      * (when analyzing a lateral FROM subquery or a function call).<br>
      * This assumes that {@link #from(From_itemContext)} is the first method to fill the namespace.<br>
      * Note: caller of {@link #from(From_itemContext)} is responsible for setting {@link #inFrom} flag.
      */
     private boolean inFrom;
+    /**
+     * @see #inFrom
+     */
     private boolean lateralAllowed;
 
     public Select(String schema) {

@@ -20,7 +20,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgTable extends PgStatementWithSearchPath {
+public class PgTable extends PgStatementWithSearchPath
+implements PgRuleContainer, PgTriggerContainer {
 
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<Inherits> inherits = new ArrayList<>();
@@ -312,6 +313,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return found trigger or null if no such trigger has been found
      */
+    @Override
     public PgTrigger getTrigger(final String name) {
         for (PgTrigger trigger : triggers) {
             if (trigger.getName().equals(name)) {
@@ -329,6 +331,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return found rule or null if no such rule has been found
      */
+    @Override
     public PgRule getRule(final String name) {
         for (PgRule rule : rules) {
             if (rule.getName().equals(name)) {
@@ -367,6 +370,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #triggers}
      */
+    @Override
     public List<PgTrigger> getTriggers() {
         return Collections.unmodifiableList(triggers);
     }
@@ -376,6 +380,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #rules}
      */
+    @Override
     public List<PgRule> getRules() {
         return Collections.unmodifiableList(rules);
     }
@@ -419,12 +424,14 @@ public class PgTable extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    @Override
     public void addTrigger(final PgTrigger trigger) {
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
     }
 
+    @Override
     public void addRule(final PgRule rule) {
         rules.add(rule);
         rule.setParent(this);

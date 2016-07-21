@@ -8,10 +8,11 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 
 /**
@@ -166,20 +167,10 @@ public class TreeElement {
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
-        case TRIGGER:
-            switch (parent.type) {
-            case TABLE:  return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
-            case VIEW:   return ((PgView) parent.getPgStatement(db)).getTrigger(name);
-            default:     throw new IllegalStateException("Illegal TRIGGER parent: " + parent.type);
-            }
+        case TRIGGER:    return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
-        case RULE:
-            switch(parent.getType()) {
-            case TABLE:  return ((PgTable) parent.getPgStatement(db)).getRule(name);
-            case VIEW:   return ((PgView) parent.getPgStatement(db)).getRule(name);
-            default:     throw new IllegalStateException("Illegal RULE parent: " + parent.type);
-            }
+        case RULE:       return ((PgRuleContainer) parent.getPgStatement(db)).getRule(name);
         default:         throw new IllegalStateException("Unknown element type: " + type);
         }
     }

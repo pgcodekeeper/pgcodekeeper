@@ -78,7 +78,7 @@ public class CommentOn extends ParserAbstract {
             // trigger
         } else if (ctx.TRIGGER() != null) {
             String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
-            schema.getTable(tableName).getTrigger(name).setComment(db.getArguments(), comment);
+            schema.getTriggerContainer(tableName).getTrigger(name).setComment(db.getArguments(), comment);
             // database
         } else if (ctx.DATABASE() !=null) {
             db.setComment(db.getArguments(), comment);
@@ -127,12 +127,7 @@ public class CommentOn extends ParserAbstract {
             // rule
         } else if (ctx.RULE() != null) {
             String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
-            PgTable table = schema.getTable(tableName);
-            if (table != null) {
-                table.getRule(name).setComment(db.getArguments(), comment);
-            } else {
-                schema.getView(tableName).getRule(name).setComment(db.getArguments(), comment);
-            }
+            schema.getRuleContainer(tableName).getRule(name).setComment(db.getArguments(), comment);
         }
         return null;
     }

@@ -42,11 +42,13 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -282,7 +284,6 @@ public class JdbcLoader implements PgCatalogStrings {
             while (resTypes.next()) {
                 PgDumpLoader.checkCancelled(monitor);
                 PgStatement typeOrDomain = getTypeDomain(resTypes, schemaName);
-                monitor.worked(1);
                 if (typeOrDomain != null){
                     if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
                         s.addDomain((PgDomain) typeOrDomain);
@@ -359,19 +360,11 @@ public class JdbcLoader implements PgCatalogStrings {
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
                 PgDumpLoader.checkCancelled(monitor);
-                PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                if (trigger != null) {
-                    String containerName = resTriggers.getString(CLASS_RELNAME);
-                    if ("v".equals(resTriggers.getString("relkind"))) {
-                        PgView view = s.getView(containerName);
-                        if (view != null) {
-                            view.addTrigger(trigger);
-                        }
-                    } else {
-                        PgTable table = s.getTable(containerName);
-                        if (table != null) {
-                            table.addTrigger(trigger);
-                        }
+                PgTriggerContainer c = s.getTriggerContainer(resTriggers.getString(CLASS_RELNAME));
+                if (c != null) {
+                    PgTrigger trigger = getTrigger(resTriggers, schemaName);
+                    if (trigger != null) {
+                        c.addTrigger(trigger);
                     }
                 }
             }
@@ -410,15 +403,12 @@ public class JdbcLoader implements PgCatalogStrings {
         try(ResultSet resRule = prepStatRules.executeQuery()){
             while(resRule.next()){
                 PgDumpLoader.checkCancelled(monitor);
-                String ruleRel = resRule.getString(CLASS_RELNAME);
-                PgTable table = s.getTable(ruleRel);
-                PgView view;
-                if (table != null){
+                PgRuleContainer c = s.getRuleContainer(resRule.getString(CLASS_RELNAME));
+                if (c != null){
                     PgRule rule = getRule(resRule, schemaName);
-                    table.addRule(rule);
-                } else if ((view = s.getView(ruleRel)) != null){
-                    PgRule rule = getRule(resRule, schemaName);
-                    view.addRule(rule);
+                    if (rule != null) {
+                        c.addRule(rule);
+                    }
                 }
             }
         }
@@ -920,11 +910,15 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         // INHERITS
-        String[] inhrelnames = (String[]) res.getArray("inhrelnames").getArray();
-        String[] inhnspnames = (String[]) res.getArray("inhnspnames").getArray();
-        for (int i = 0; i < inhrelnames.length; ++i) {
-            t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
-            t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
+        Array inhrelsarray = res.getArray("inhrelnames");
+        if (inhrelsarray != null) {
+            String[] inhrelnames = (String[]) inhrelsarray.getArray();
+            String[] inhnspnames = (String[]) res.getArray("inhnspnames").getArray();
+
+            for (int i = 0; i < inhrelnames.length; ++i) {
+                t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
+                t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
+            }
         }
 
         // STORAGE PARAMETERS

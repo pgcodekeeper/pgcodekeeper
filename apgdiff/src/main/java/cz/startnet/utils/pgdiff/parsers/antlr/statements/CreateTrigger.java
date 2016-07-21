@@ -13,10 +13,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -62,25 +62,21 @@ public class CreateTrigger extends ParserAbstract {
         ParseTreeWalker.DEFAULT.walk(whenListener, ctx);
         trigger.setWhen(whenListener.getWhen());
 
-        if (db.getSchema(schemaName) == null) {
+        PgSchema schema = db.getSchema(schemaName);
+        if (schema == null) {
             logSkipedObject(schemaName, "TRIGGER", trigger.getTableName());
             return null;
         } else {
-            PgTable pgTable = db.getSchema(schemaName).getTable(trigger.getTableName());
-            if (pgTable != null){
-                pgTable.addTrigger(trigger);
+            PgTriggerContainer c = schema.getTriggerContainer(trigger.getTableName());
+            if (c != null){
+                c.addTrigger(trigger);
             } else {
-                PgView pgView = db.getSchema(schemaName).getView(trigger.getTableName());
-                if (pgView != null){
-                    pgView.addTrigger(trigger);
-                } else {
-                    Log.log(Log.LOG_ERROR,
-                            new StringBuilder().append("TABLE ")
-                            .append(trigger.getTableName())
-                            .append(" not found on schema ").append(schemaName)
-                            .append(" That's why trigger ").append(name)
-                            .append("will be skipped").toString());
-                }
+                Log.log(Log.LOG_ERROR,
+                        new StringBuilder().append("trigger container ")
+                        .append(trigger.getTableName())
+                        .append(" not found on schema ").append(schemaName)
+                        .append(" That's why trigger ").append(name)
+                        .append("will be skipped").toString());
                 return null;
             }
         }

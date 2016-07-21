@@ -400,21 +400,13 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         List<IdentifierContext> ids = name.identifier();
         String firstPart = QNameParser.getFirstName(ids);
-        String secondPart = QNameParser.getSecondName(ids);
-        String thirdPart = QNameParser.getSchemaName(ids, getDefSchemaName());
-        String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         switch (type) {
         case TABLE:
             setTableType(addObjReference(schemaName, firstPart, type,
                     StatementActions.NONE, name.getStart().getStartIndex(), 0,
                     name.getStart().getLine()));
             return;
-        case COLUMN:
-            if (!thirdPart.equals(secondPart)) {
-                schemaName = thirdPart;
-                firstPart = secondPart;
-            }
-            break;
         case SCHEMA:
             schemaName = null;
             break;

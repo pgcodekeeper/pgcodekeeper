@@ -33,14 +33,31 @@ public final class GenericColumn implements Serializable {
     }
 
     public PgStatement getStatement(PgDatabase db) {
-        PgStatement st = doGetStatement(db);
+        PgStatement st;
+        // special case otherwise log is spammed by view columns
+        if (type == DbObjType.COLUMN) {
+            // look up relation (any)
+            PgStatement rel = doGetStatement(db, DbObjType.TABLE);
+            if (rel != null) {
+                if (rel.getStatementType() != DbObjType.TABLE) {
+                    // return silently if non-table
+                    return null;
+                } else {
+                    st = ((PgTable) rel).getColumn(column);
+                }
+            } else {
+                st = null;
+            }
+        } else {
+            st = doGetStatement(db, type);
+        }
         if (st == null) {
             Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
         }
         return st;
     }
 
-    private PgStatement doGetStatement(PgDatabase db) {
+    private PgStatement doGetStatement(PgDatabase db, DbObjType type) {
         if (type == null) {
             return null;
         }
@@ -56,13 +73,14 @@ public final class GenericColumn implements Serializable {
         case SCHEMA: return s;
         case EXTENSION: return db.getExtension(schema);
 
-        // TODO relations are also types
-        case TYPE: return s.getType(table);
+        case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);
-        case SEQUENCE: return s.getSequence(table);
-        case FUNCTION: return resolveFunctionCall(s, table);
-        case TABLE: return s.getTable(table);
+        case SEQUENCE: s.getSequence(table);
+        case FUNCTION: return resolveFunctionCall(s);
+        case TABLE: return getRelation(s);
+        case VIEW: return s.getView(table);
 
+        // handled in getStatement, left here for consistency
         case COLUMN:
             t = s.getTable(table);
             return t == null ? null : t.getColumn(column);
@@ -72,31 +90,63 @@ public final class GenericColumn implements Serializable {
         case INDEX:
             t = s.getTable(table);
             return t == null ? null : t.getIndex(column);
-        case TRIGGER:
-            t = s.getTable(table);
-            return t == null ? null : t.getTrigger(column);
 
-        case VIEW: return s.getView(table);
+        case TRIGGER:
+            PgTriggerContainer ct = s.getTriggerContainer(table);
+            return ct == null ? null : ct.getTrigger(column);
         case RULE:
-            t = s.getTable(table);
-            return t == null ? s.getView(table).getRule(column) : t.getRule(column);
+            PgRuleContainer cr = s.getRuleContainer(table);
+            return cr == null ? null : cr.getRule(column);
 
         default: throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
     }
 
-    private PgFunction resolveFunctionCall(PgSchema schema, String funcName) {
+    private PgStatement getRelation(PgSchema s) {
+        PgStatement st = s.getTable(table);
+        if (st != null) {
+            return st;
+        }
+        st = s.getView(table);
+        if (st != null) {
+            return st;
+        }
+        st = s.getSequence(table);
+        if (st != null) {
+            return st;
+        }
+        // TODO matviews, foreign tables probably go here (they have relkind values in pg_class)
+        // indices and composite types are also pg_class relations
+        // but they should never be reffered to as tables (or other "selectable" relations)
+        return null;
+    }
+
+    private PgStatement getType(PgSchema s) {
+        PgStatement st = s.getType(table);
+        if (st != null) {
+            return st;
+        }
+        st = s.getDomain(table);
+        if (st != null) {
+            return st;
+        }
+        // every "selectable" relation can be used as a type
+        // getRelation should only look for "selectable" relations
+        return getRelation(s);
+    }
+
+    private PgFunction resolveFunctionCall(PgSchema schema) {
         // in some cases (like triggers) we already have a signature reference, try it first
         // eventually this will become the norm (pending function call analysis)
         // and bare name lookup will become deprecated
-        PgFunction func = schema.getFunction(funcName);
+        PgFunction func = schema.getFunction(table);
         if (func != null) {
             return func;
         }
 
         int found = 0;
         for (PgFunction f : schema.getFunctions()) {
-            if (f.getBareName().equals(funcName)) {
+            if (f.getBareName().equals(table)) {
                 ++found;
                 func = f;
             }

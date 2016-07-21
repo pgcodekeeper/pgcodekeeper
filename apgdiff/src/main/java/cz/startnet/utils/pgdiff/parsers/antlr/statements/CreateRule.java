@@ -37,7 +37,6 @@ public class CreateRule extends ParserAbstract {
         String col_rule = "";
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
-        List<IdentifierContext> col_names = new ArrayList<>();
         if (ctx.body_rule.body_rules_rest().obj_name != null) {
             obj_name = ctx.body_rule.body_rules_rest().obj_name.name;
         } else if (ctx.body_rule.on_table() != null) {
@@ -80,8 +79,7 @@ public class CreateRule extends ParserAbstract {
 
         for (Schema_qualified_nameContext name : obj_name) {
             addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
-                    col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)),
-                    col_names);
+                    col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)));
         }
 
         return null;
@@ -127,19 +125,13 @@ public class CreateRule extends ParserAbstract {
         for (Schema_qualified_nameContext tbl : ctx_body.on_table().obj_name.name) {
             List<IdentifierContext> ids = tbl.identifier();
             String firstPart = QNameParser.getFirstName(ids);
-            String secondPart = QNameParser.getSecondName(ids);
-            String thirdPart = QNameParser.getSchemaName(ids, getDefSchemaName());
-            String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
-            if (!thirdPart.equals(secondPart)) {
-                schemaName = thirdPart;
-                firstPart = secondPart;
-            }
+            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
             //привилегии пишем так как получили одной строкой
             PgTable tblSt = db.getSchema(schemaName).getTable(firstPart);
             if (tblSt == null) {
                 addToDB(tbl, DbObjType.TABLE, new PgPrivilege(
                         ctx.REVOKE() != null, getFullCtxText(ctx.body_rule),
-                        getFullCtxText(ctx)), null);
+                        getFullCtxText(ctx)));
                 continue;
             }
             // применить привилегию к текущему объекту таблица
@@ -149,8 +141,7 @@ public class CreateRule extends ParserAbstract {
                 addToDB(tbl, DbObjType.TABLE,
                         new PgPrivilege(ctx.REVOKE() != null,
                         MessageFormat.format(tblPrivilege.toString(), firstPart),
-                        getFullCtxText(ctx)),
-                        null);
+                        getFullCtxText(ctx)));
             }
 
             // Если таблица, то поискать в ней колонки и добавить в каждую свою привилегию
@@ -176,23 +167,16 @@ public class CreateRule extends ParserAbstract {
         }
     }
 
-    private PgStatement addToDB(Schema_qualified_nameContext name,
-            DbObjType type, PgPrivilege pgPrivilege, List<IdentifierContext> col_names) {
+    private PgStatement addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
             return null;
         }
         List<IdentifierContext> ids = name.identifier();
         String firstPart = QNameParser.getFirstName(ids);
-        String secondPart = QNameParser.getSecondName(ids);
-        String thirdPart = QNameParser.getSchemaName(ids, getDefSchemaName());
-        String schemaName = secondPart == null ? getDefSchemaName() : secondPart;
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            if (!thirdPart.equals(secondPart)) {
-                schemaName = thirdPart;
-                firstPart = secondPart;
-            }
             statement = db.getSchema(schemaName).getTable(firstPart);
             if (statement == null) {
                 statement = db.getSchema(schemaName).getView(firstPart);

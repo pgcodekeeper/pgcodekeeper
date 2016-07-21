@@ -228,6 +228,22 @@ public class PgSchema extends PgStatement {
     }
 
     /**
+     * @return rule-containing element with matching name (either TABLE or VIEW)
+     */
+    public PgRuleContainer getRuleContainer(String name) {
+        PgRuleContainer container = getTable(name);
+        return container == null ? getView(name) : container;
+    }
+
+    /**
+     * @return trigger-containing element with matching name (either TABLE or VIEW)
+     */
+    public PgTriggerContainer getTriggerContainer(String name) {
+        PgTriggerContainer container = getTable(name);
+        return container == null ? getView(name) : container;
+    }
+
+    /**
      * Finds type according to specified type {@code name}.
      *
      * @param name name of the type to be searched

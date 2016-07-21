@@ -10,10 +10,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
@@ -38,18 +37,13 @@ public class CreateRewrite extends ParserAbstract {
         setCommands(ctx, rule, db.getArguments());
 
         PgSchema schema = db.getSchema(schemaName);
-        PgTable table = schema.getTable(rule.getTargetName());
-        if (table != null){
-            table.addRule(rule);
+        PgRuleContainer c = schema.getRuleContainer(rule.getTargetName());
+        if (c != null){
+            c.addRule(rule);
         } else {
-            PgView view = schema.getView(rule.getTargetName());
-            if (view != null){
-                view.addRule(rule);
-            } else {
-                Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
-                        " is missing its container " + rule.getTargetName() +
-                        " in schema " + schemaName);
-            }
+            Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
+                    " is missing its container " + rule.getTargetName() +
+                    " in schema " + schemaName);
         }
         return rule;
     }
