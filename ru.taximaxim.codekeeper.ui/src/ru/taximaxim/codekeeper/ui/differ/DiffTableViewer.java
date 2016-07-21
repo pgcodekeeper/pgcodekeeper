@@ -87,8 +87,8 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.ui.antlr.IgnoreObjectContainer;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreBaseListener;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParserMainListener;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreBaseListener;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParserMainListener;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -825,7 +825,7 @@ public class DiffTableViewer extends Composite {
                         .getLocation().toOSString() + File.separator + FILE.IGNORED_OBJECTS);
                 if (ignoreFile.exists()) {
 
-                    SQLWIgnoreBaseListener listener = new SQLWIgnoreParserMainListener(ignObjCont);
+                    SQLIgnoreBaseListener listener = new SQLIgnoreParserMainListener(ignObjCont);
                     AntlrParser.parseInputStream(new FileInputStream(ignoreFile),
                             "UTF-8", "", listener);
                     ignores.addAll(ignObjCont.getIgnoredObjects());

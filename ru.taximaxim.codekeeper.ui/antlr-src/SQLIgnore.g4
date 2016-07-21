@@ -16,7 +16,7 @@
  limitations under the License.
  */
 
-grammar SQLWIgnore;
+grammar SQLIgnore;
 
 options {
     language=Java;

@@ -17,7 +17,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.CompileUnitContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.CompileUnitContext;
 
 public class AntlrParser {
 
@@ -25,7 +25,7 @@ public class AntlrParser {
      * Constructs a {@link SQLParser} object with the stream as the token source
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
-    public static SQLWIgnoreParser makeBasicParser(InputStream stream, String charset,
+    public static SQLIgnoreParser makeBasicParser(InputStream stream, String charset,
             String parsedObjectName) throws IOException {
         return makeBasicParser(
                 new ANTLRInputStream(new InputStreamReader(stream, charset)),
@@ -36,19 +36,19 @@ public class AntlrParser {
      * Constructs a {@link SQLParser} object with the string as the token source
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
-    public static SQLWIgnoreParser makeBasicParser(String string, String parsedObjectName) {
+    public static SQLIgnoreParser makeBasicParser(String string, String parsedObjectName) {
         return makeBasicParser(new ANTLRInputStream(string), parsedObjectName);
     }
 
-    private static SQLWIgnoreParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName) {
+    private static SQLIgnoreParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName) {
         CustomSQLErrorListener errListener = new CustomSQLErrorListener(parsedObjectName);
 
-        SQLWIgnoreLexer lexer = new SQLWIgnoreLexer(stream);
+        SQLIgnoreLexer lexer = new SQLIgnoreLexer(stream);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errListener);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-        SQLWIgnoreParser parser = new SQLWIgnoreParser(tokens);
+        SQLIgnoreParser parser = new SQLIgnoreParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(errListener);
 
@@ -56,8 +56,8 @@ public class AntlrParser {
     }
 
     public static void parseInputStream(InputStream inputStream, String charsetName,
-            String parsedObjectName, SQLWIgnoreBaseListener listener) throws IOException {
-        SQLWIgnoreParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName);
+            String parsedObjectName, SQLIgnoreBaseListener listener) throws IOException {
+        SQLIgnoreParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName);
 
         //final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
         parser.addParseListener(new ParseTreeListener() {

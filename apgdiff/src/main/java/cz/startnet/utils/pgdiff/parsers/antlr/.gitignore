@@ -7,15 +7,3 @@
 /SqlParserMain.java
 /SQLParserVisitor.java
 /SQLParserBaseVisitor.java
-/SQLWIgnoreLexer.java
-/SQLWIgnoreLexer.tokens
-/SQLWIgnoreParser.java
-/SQLWIgnoreParser.tokens
-/SQLWIgnoreParserBaseListener.java
-/SQLWIgnoreParserBaseVisitor.java
-/SQLWIgnoreParserListener.java
-/SQLWIgnoreParserVisitor.java
-/SQLWIgnoreParserMainListener.java
-/SQLWIgnoreParserLexer.java
-/SQLWIgnoreParserLexer.tokens
-/SQLWIgnoreParserParser.java

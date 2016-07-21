@@ -1691,10 +1691,10 @@ public class JdbcLoader implements PgCatalogStrings {
                     PgSchema schema = db.getSchema(triggers.getString(NAMESPACE_NSPNAME_TV));
                     PgTrigger trigger = getTrigger(triggers, schema.getName());
                     if (trigger != null && (table = schema.getTable(triggers.getString(
-                            NAMESPACE_NSPNAME_TV))) != null) {
+                            CLASS_RELNAME))) != null) {
                         table.addTrigger(trigger);
                     } else if (trigger != null && (view = schema.getView(triggers.getString(
-                            NAMESPACE_NSPNAME_TV))) != null) {
+                            CLASS_RELNAME))) != null) {
                         //TODO uncomment after merge with akifiev_an 
                         //view.addTrigger(trigger);
                     } else {

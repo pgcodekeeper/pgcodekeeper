@@ -1,17 +1,17 @@
 package ru.taximaxim.codekeeper.ui.antlr;
 
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.BlackContext;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.FlagContext;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.Hide_ruleContext;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.Show_ruleContext;
-import ru.taximaxim.codekeeper.ui.antlr.SQLWIgnoreParser.WhiteContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.BlackContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.FlagContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.Hide_ruleContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.Show_ruleContext;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParser.WhiteContext;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObject;
 
-public class SQLWIgnoreParserMainListener extends SQLWIgnoreBaseListener {
+public class SQLIgnoreParserMainListener extends SQLIgnoreBaseListener {
 
     private IgnoreObjectContainer ioc;
 
-    public SQLWIgnoreParserMainListener(IgnoreObjectContainer ioc) {
+    public SQLIgnoreParserMainListener(IgnoreObjectContainer ioc) {
         this.ioc = ioc;
     }
 
