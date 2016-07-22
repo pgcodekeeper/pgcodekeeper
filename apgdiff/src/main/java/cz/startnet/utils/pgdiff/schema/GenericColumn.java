@@ -51,7 +51,7 @@ public final class GenericColumn implements Serializable {
         } else {
             st = doGetStatement(db, type);
         }
-        if (st == null) {
+        if (st == null && type != DbObjType.FUNCTION) {
             Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
         }
         return st;

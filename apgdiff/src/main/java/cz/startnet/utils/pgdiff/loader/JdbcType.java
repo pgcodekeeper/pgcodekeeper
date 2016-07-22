@@ -68,11 +68,15 @@ public class JdbcType{
     }
 
     public String getSchemaQualifiedName(String targetSchemaName) {
-        String qname = PgDiffUtils.getQuotedName(typeName);
-        if (!"pg_catalog".equals(parentSchema) && !targetSchemaName.equals(parentSchema)) {
-            qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
+        if ("pg_catalog".equals(parentSchema)) {
+            return typeName;
+        } else {
+            String qname = PgDiffUtils.getQuotedName(typeName);
+            if (!targetSchemaName.equals(parentSchema)) {
+                qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
+            }
+            return qname;
         }
-        return qname;
     }
 
     /**
