@@ -32,7 +32,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -87,7 +86,7 @@ public class Select extends AbstractExpr {
     }
 
     @Override
-    protected Select findCte(String cteName) {
+    protected AbstractExpr findCte(String cteName) {
         return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
@@ -171,7 +170,7 @@ public class Select extends AbstractExpr {
         }
         boolean exists = !columns.add(column);
         if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' '  + column);
+            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
         }
         return !exists;
     }
@@ -179,16 +178,17 @@ public class Select extends AbstractExpr {
     public List<String> select(SelectStmt select) {
         With_clauseContext with = select.withClause();
         if (with != null) {
-            boolean recursive = with.RECURSIVE() != null;
+            withPerform(with, cte);
+            /*            boolean recursive = with.RECURSIVE() != null;
             for (With_queryContext withQuery : with.with_query()) {
                 String withName = withQuery.query_name.getText();
-
+            
                 Select_stmtContext withSelect = withQuery.select_stmt();
                 if (withSelect == null) {
                     Log.log(Log.LOG_WARNING, "Skipped analisys of modifying CTE " + withName);
                     continue;
                 }
-
+            
                 // add CTE name to the visible CTEs list after processing the query for normal CTEs
                 // and before for recursive ones
                 Select withProcessor = new Select(this);
@@ -204,7 +204,7 @@ public class Select extends AbstractExpr {
                 if (duplicate) {
                     Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
                 }
-            }
+            }*/
         }
 
         List<String> ret = selectOps(select.selectOps());

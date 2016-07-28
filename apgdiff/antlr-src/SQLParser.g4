@@ -2197,14 +2197,14 @@ insert_stmt_for_psql
   ;
 
 delete_stmt_for_psql
-  : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   (USING using_table (COMMA using_table)*)?
   (WHERE (vex | CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
 
 update_stmt_for_psql
-  : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   SET update_set (COMMA update_set)*
   (FROM using_table (COMMA using_table)*)?
   (WHERE (vex | WHERE CURRENT OF cursor=identifier))?

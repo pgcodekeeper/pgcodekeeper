@@ -2,11 +2,14 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
@@ -34,7 +37,7 @@ public class CreateRewrite extends ParserAbstract {
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule, db.getArguments());
+        setCommands(ctx, rule, db.getArguments(), schemaName);
 
         PgSchema schema = db.getSchema(schemaName);
         PgRuleContainer c = schema.getRuleContainer(rule.getTargetName());
@@ -53,8 +56,16 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
-            PgDiffArguments args) {
+            PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
+            ParserRuleContext parser = null;
+            if ((parser = cmd.insert_stmt_for_psql()) != null) {
+                UtilExpr.createInsert(parser, schemaName, rule);
+            } else if (cmd.delete_stmt_for_psql() != null) {
+                UtilExpr.createDelete(cmd.delete_stmt_for_psql(), schemaName, rule);
+            } else if (cmd.update_stmt_for_psql() != null) {
+                UtilExpr.createUpdate(cmd.update_stmt_for_psql(), schemaName, rule);
+            }
             rule.addCommand(args, getFullCtxText(cmd));
         }
     }
