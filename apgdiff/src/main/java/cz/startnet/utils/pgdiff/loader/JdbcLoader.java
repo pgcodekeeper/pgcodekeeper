@@ -26,9 +26,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract.FunctionSearcher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -219,7 +220,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     long oid = res.getLong(OID);
                     JdbcType type = new JdbcType(
                             oid, res.getString("typname"), res.getString("typelem"),
-                            res.getLong("typarray"), res.getString(NAMESPACE_NSPNAME));
+                            res.getLong("typarray"), res.getString(NAMESPACE_NSPNAME), res.getString("elemName"));
                     cachedTypeNamesByOid.put(oid, type);
                 }
             }
@@ -827,7 +828,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
         SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation());
-        CreateView.createSelect(parser.sql().statement(0).data_statement().select_stmt(), schemaName, v);
+        UtilExpr.create(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException {

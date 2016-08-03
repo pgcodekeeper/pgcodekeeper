@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
@@ -30,7 +32,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -59,6 +60,12 @@ public class ValueExpr extends AbstractExpr {
         return l;
     }
 
+    @Override
+    protected List<String> analize(ParserRuleContext ruleCtx) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     public String vex(Vex vex) {
         String ret = null;
         Data_typeContext dataType = vex.dataType();
@@ -75,7 +82,7 @@ public class ValueExpr extends AbstractExpr {
             // TODO pending DbObjType.COLLATION
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
-            new Select(this).select(new SelectStmt(selectStmt));
+            new Select(this).analize(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
                 vex(new Vex(v));
@@ -95,7 +102,7 @@ public class ValueExpr extends AbstractExpr {
 
             if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                ret = new Select(this).select(new SelectStmt(subSelectStmt)).get(0);
+                ret = new Select(this).analize(subSelectStmt).get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
             } else if ((cast = primary.cast_specification()) != null) {
@@ -106,11 +113,11 @@ public class ValueExpr extends AbstractExpr {
                 if (compModVex != null) {
                     vex(new Vex(compModVex));
                 } else {
-                    new Select(this).select(new SelectStmt(compMod.select_stmt_no_parens()));
+                    new Select(this).analize(compMod.select_stmt_no_parens());
                 }
             } else if (primary.EXISTS() != null &&
                     (subquery = primary.table_subquery()) != null) {
-                new Select(this).select(new SelectStmt(subquery.select_stmt()));
+                new Select(this).analize(subquery.select_stmt());
             } else if ((function = primary.function_call()) != null) {
                 function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
@@ -122,8 +129,8 @@ public class ValueExpr extends AbstractExpr {
                 if (arrayb != null) {
                     subOperands = addVexCtxtoList(subOperands, arrayb.vex());
                 } else {
-                    new Select(this).select(new SelectStmt(
-                            array.array_query().table_subquery().select_stmt()));
+                    new Select(this).analize(
+                            array.array_query().table_subquery().select_stmt());
                 }
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 addTypeDepcy(typeCoercion.data_type());

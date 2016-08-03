@@ -6,10 +6,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -31,7 +29,7 @@ public class CreateView extends ParserAbstract {
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            createSelect(ctx.v_query, schemaName, view);
+            UtilExpr.create(ctx.v_query, new Select(schemaName), view);//createSelect(ctx.v_query, schemaName, view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
@@ -45,14 +43,5 @@ public class CreateView extends ParserAbstract {
         db.getSchema(schemaName).addView(view);
 
         return view;
-    }
-
-    public static void createSelect(Select_stmtContext selectCtx, String schemaName, PgView v) {
-        Select selectAnalyzer = new Select(schemaName);
-        selectAnalyzer.select(new SelectStmt(selectCtx));
-
-        for (GenericColumn col : selectAnalyzer.getDepcies()) {
-            v.addDep(col);
-        }
     }
 }

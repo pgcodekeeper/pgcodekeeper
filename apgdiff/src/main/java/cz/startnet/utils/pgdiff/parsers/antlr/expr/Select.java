@@ -3,12 +3,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
@@ -25,6 +24,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_list
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
@@ -40,29 +40,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class Select extends AbstractExpr {
-
-    /**
-     * The local namespace of this Select.<br>
-     * String-Reference pairs keep track of external table aliases and names.<br>
-     * String-null pairs keep track of internal query names that have only the Alias.
-     */
-    private final Map<String, GenericColumn> namespace = new HashMap<>();
-    /**
-     * Unaliased namespace keeps track of tables that have no Alias.<br>
-     * It has to be separate since same-named unaliased tables from different schemas
-     * can be used, requiring qualification.
-     */
-    private final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
-    /**
-     * Column alias' are in a separate sets (per table) since they have two values as the Key.
-     * This is not a Map because we don't connect column aliases with their columns.<br>
-     * Columns of non-dereferenceable objects are aliases by default and need not to be added to this set.
-     */
-    private final Map<String, Set<String>> columnAliases = new HashMap<>();
-    /**
-     * CTE names that current level of FROM has access to.
-     */
-    private final Set<String> cte = new HashSet<>();
+    
     /**
      * Flags for proper FROM (subquery) analysis.<br>
      * {@link #findReference(String)} assumes that when {@link #inFrom} is set the FROM clause
@@ -143,68 +121,19 @@ public class Select extends AbstractExpr {
         return super.findReference(schema, name, column);
     }
 
-    private boolean addReference(String alias, GenericColumn object) {
-        boolean exists = namespace.containsKey(alias);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
+    @Override
+    protected List<String> analize(ParserRuleContext ruleCtx) {
+        SelectStmt select = null;
+        if (ruleCtx instanceof Select_stmtContext) {
+            select = new SelectStmt((Select_stmtContext) ruleCtx);
+        } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
+            select = new SelectStmt((Select_stmt_no_parensContext) ruleCtx);
         } else {
-            namespace.put(alias, object);
+            return null;
         }
-        return !exists;
-    }
-
-    private boolean addRawTableReference(GenericColumn qualifiedTable) {
-        boolean exists = !unaliasedNamespace.add(qualifiedTable);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate unaliased table: "
-                    + qualifiedTable.schema + ' ' + qualifiedTable.table);
-        }
-        return !exists;
-    }
-
-    private boolean addColumnReference(String alias, String column) {
-        Set<String> columns = columnAliases.get(alias);
-        if (columns == null) {
-            columns = new HashSet<>();
-            columnAliases.put(alias, columns);
-        }
-        boolean exists = !columns.add(column);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
-        }
-        return !exists;
-    }
-
-    public List<String> select(SelectStmt select) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             withPerform(with, cte);
-            /*            boolean recursive = with.RECURSIVE() != null;
-            for (With_queryContext withQuery : with.with_query()) {
-                String withName = withQuery.query_name.getText();
-            
-                Select_stmtContext withSelect = withQuery.select_stmt();
-                if (withSelect == null) {
-                    Log.log(Log.LOG_WARNING, "Skipped analisys of modifying CTE " + withName);
-                    continue;
-                }
-            
-                // add CTE name to the visible CTEs list after processing the query for normal CTEs
-                // and before for recursive ones
-                Select withProcessor = new Select(this);
-                SelectStmt withStmt = new SelectStmt(withSelect);
-                boolean duplicate;
-                if (recursive) {
-                    duplicate = !cte.add(withName);
-                    withProcessor.select(withStmt);
-                } else {
-                    withProcessor.select(withStmt);
-                    duplicate = !cte.add(withName);
-                }
-                if (duplicate) {
-                    Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
-                }
-            }*/
         }
 
         List<String> ret = selectOps(select.selectOps());
@@ -242,7 +171,7 @@ public class Select extends AbstractExpr {
 
         if (selectOps.leftParen() != null && selectOps.rightParen() != null &&
                 selectStmt != null) {
-            ret = select(new SelectStmt(selectStmt));
+            ret = analize(selectStmt);
         } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
@@ -403,7 +332,7 @@ public class Select extends AbstractExpr {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    new Select(this).select(new SelectStmt(subquery.select_stmt()));
+                    new Select(this).analize(subquery.select_stmt());
                     addReference(alias.alias.getText(), null);
                 } finally {
                     lateralAllowed = oldLateral;

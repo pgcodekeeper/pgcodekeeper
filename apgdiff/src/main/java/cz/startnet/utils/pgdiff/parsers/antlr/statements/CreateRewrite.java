@@ -9,6 +9,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -20,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
+    
     public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -59,12 +65,18 @@ public class CreateRewrite extends ParserAbstract {
             PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
             ParserRuleContext parser = null;
-            if ((parser = cmd.insert_stmt_for_psql()) != null) {
-                UtilExpr.createInsert(parser, schemaName, rule);
-            } else if (cmd.delete_stmt_for_psql() != null) {
-                UtilExpr.createDelete(cmd.delete_stmt_for_psql(), schemaName, rule);
-            } else if (cmd.update_stmt_for_psql() != null) {
-                UtilExpr.createUpdate(cmd.update_stmt_for_psql(), schemaName, rule);
+            AbstractExpr analizer = null;
+            if ((parser = cmd.select_stmt()) != null) {
+                analizer = new Select(schemaName);
+            } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
+                analizer = new Insert(schemaName);
+            } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
+                analizer = new Delete(schemaName);
+            } else if ((parser = cmd.update_stmt_for_psql()) != null) {
+                analizer = new Update(schemaName);
+            }
+            if (parser != null && analizer != null) {
+                UtilExpr.create(parser, analizer, rule);
             }
             rule.addCommand(args, getFullCtxText(cmd));
         }
