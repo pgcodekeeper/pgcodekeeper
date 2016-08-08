@@ -46,14 +46,15 @@ public class JdbcType{
      * There are also vector types - their typarray column values are not 0,
      * we do not convert those to simple arrays
      */
-    public JdbcType(long oid, String typeName, String typelem, long typarray, String parentSchema) {
+    public JdbcType(long oid, String typeName, long typelem, long typarray, String parentSchema,
+            String elemname) {
         this.oid = oid;
         this.parentSchema = parentSchema;
-        this.isArrayType = typarray == 0L && typelem != null;
+        this.isArrayType = typarray == 0L && typelem != 0L;
 
         String mainTypeName = typeName;
         if (isArrayType){
-            mainTypeName = typelem;
+            mainTypeName = elemname;
         }
         String typeNameAlias = DATA_TYPE_ALIASES.get(mainTypeName);
         this.typeName = typeNameAlias == null ? mainTypeName : typeNameAlias;

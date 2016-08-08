@@ -217,9 +217,9 @@ public class JdbcLoader implements PgCatalogStrings {
             try(ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)){
                 while (res.next()){
                     long oid = res.getLong(OID);
-                    JdbcType type = new JdbcType(
-                            oid, res.getString("typname"), res.getString("typelem"),
-                            res.getLong("typarray"), res.getString(NAMESPACE_NSPNAME));
+                    JdbcType type = new JdbcType(oid, res.getString("typname"),
+                            res.getLong("typelem"), res.getLong("typarray"),
+                            res.getString(NAMESPACE_NSPNAME), res.getString("elemname"));
                     cachedTypeNamesByOid.put(oid, type);
                 }
             }
