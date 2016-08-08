@@ -827,7 +827,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
-        SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation());
+		SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation(), null);
         UtilExpr.create(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 
@@ -975,7 +975,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     // TODO отрефакторить в вычитку всех зависимостей из экспрешшена
     private GenericColumn parseFunctionCall(String def, String defSchema) {
-        SQLParser parser = AntlrParser.makeBasicParser(def, getCurrentLocation());
+		SQLParser parser = AntlrParser.makeBasicParser(def, getCurrentLocation());
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, parser.vex());
         if (fs.getName() == null) {

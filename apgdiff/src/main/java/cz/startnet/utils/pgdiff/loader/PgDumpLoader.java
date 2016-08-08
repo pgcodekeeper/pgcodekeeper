@@ -10,12 +10,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
@@ -52,9 +54,15 @@ public class PgDumpLoader implements AutoCloseable {
 
     private List<FunctionBodyContainer> funcBodyReferences;
 
+	private List<AntlrError> errors = new LinkedList<>();
+
     public List<FunctionBodyContainer> getFuncBodyReferences() {
         return funcBodyReferences;
     }
+
+	public List<AntlrError> getErrors() {
+		return errors;
+	}
 
     public PgDumpLoader(InputStream input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
@@ -132,7 +140,7 @@ public class PgDumpLoader implements AutoCloseable {
                 new ReferenceListener(intoDb, inputObjectName)
                 : new CustomSQLParserListener(intoDb, inputObjectName));
         AntlrParser.parseInputStream(input, args.getInCharsetName(), inputObjectName,
-                listener, monitor, monitoringLevel);
+				listener, monitor, monitoringLevel, errors);
 
         if (loadReferences) {
             funcBodyReferences = ((ReferenceListener) listener).getFunctionBodies();

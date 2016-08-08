@@ -14,6 +14,10 @@ public interface UIConsts {
         String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
+	interface MARKER {
+		String ID = PLUGIN_ID.THIS + ".pgSQLMarker"; //$NON-NLS-1$
+	}
+
     interface COMMAND {
         String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
         String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
