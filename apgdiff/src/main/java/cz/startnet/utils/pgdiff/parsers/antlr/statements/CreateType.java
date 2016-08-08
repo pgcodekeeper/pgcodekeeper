@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
@@ -88,6 +89,10 @@ public class CreateType extends ParserAbstract {
         }
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
+        }
+        List<TerminalNode> variable = ctx.VARIABLE();
+        if (!variable.isEmpty()) {
+            type.setInternalLength(variable.get(0).getText());
         }
         type.setPassedByValue(!ctx.PASSEDBYVALUE().isEmpty());
         if (ctx.alignment != null) {

@@ -677,7 +677,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
         for (int i = 0; i < seqs.size(); i++){
             PgSequence seq = seqs.get(i);
-            unionSeqCache.append(prefix).append(seq.getName()).append(postfix);
+            unionSeqCache.append(prefix).append(PgDiffUtils.getQuotedName(seq.getName())).append(postfix);
             if (i < (seqs.size() - 1)){
                 unionSeqCache.append(union);
             }
