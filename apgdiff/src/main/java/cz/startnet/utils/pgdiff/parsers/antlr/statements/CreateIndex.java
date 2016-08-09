@@ -5,10 +5,14 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
@@ -41,6 +45,15 @@ public class CreateIndex extends ParserAbstract {
                 return null;
             }
             db.getSchema(schemaName).getTable(ind.getTableName()).addIndex(ind);
+        }
+        // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
+        for (Sort_specifierContext sort_ctx : ctx.index_rest().sort_specifier_list().sort_specifier()){
+            Schema_qualified_nameContext schema_ctx;
+            if ((schema_ctx = sort_ctx.key.value_expression_primary().schema_qualified_name()) != null){
+                ind.addDep(new GenericColumn(
+                        QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName()),
+                        ind.getTableName(), schema_ctx.identifier(0).getText(), DbObjType.COLUMN));
+            }
         }
         return ind;
     }
