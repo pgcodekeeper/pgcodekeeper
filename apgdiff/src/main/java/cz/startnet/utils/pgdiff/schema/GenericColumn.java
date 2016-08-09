@@ -75,7 +75,7 @@ public final class GenericColumn implements Serializable {
 
         case TYPE: return getType(s);
         case DOMAIN: return s.getDomain(table);
-        case SEQUENCE: s.getSequence(table);
+        case SEQUENCE: return s.getSequence(table);
         case FUNCTION: return resolveFunctionCall(s);
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
