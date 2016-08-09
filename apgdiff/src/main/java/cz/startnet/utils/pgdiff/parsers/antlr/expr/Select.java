@@ -39,8 +39,8 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class Select extends AbstractExpr {
-    
+public class Select extends AbstractExprWithNmspc {
+
     /**
      * Flags for proper FROM (subquery) analysis.<br>
      * {@link #findReference(String)} assumes that when {@link #inFrom} is set the FROM clause
@@ -66,10 +66,6 @@ public class Select extends AbstractExpr {
     @Override
     protected AbstractExpr findCte(String cteName) {
         return cte.contains(cteName) ? this : super.findCte(cteName);
-    }
-
-    private boolean hasCte(String cteName) {
-        return findCte(cteName) != null;
     }
 
     @Override
@@ -151,7 +147,7 @@ public class Select extends AbstractExpr {
             }
             if(vexs != null) {
                 for (VexContext vexCtx : vexs) {
-                    vex.vex(new Vex(vexCtx));
+                    vex.analize(new Vex(vexCtx));
                 }
             }
         }
@@ -197,14 +193,14 @@ public class Select extends AbstractExpr {
                 ret = new ArrayList<>();
                 ValueExpr vex = new ValueExpr(this);
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                    String column = vex.vex(new Vex(target.vex()));
+                    String column = vex.analize(new Vex(target.vex()));
                     ret.add(target.alias == null ? column : target.alias.getText());
                 }
 
                 if ((primary.set_qualifier() != null && primary.ON() != null)
                         || primary.WHERE() != null || primary.HAVING() != null) {
                     for (VexContext v : primary.vex()) {
-                        vex.vex(new Vex(v));
+                        vex.analize(new Vex(v));
                     }
                 }
 
@@ -235,7 +231,7 @@ public class Select extends AbstractExpr {
                 ValueExpr vex = new ValueExpr(this);
                 for (Values_valuesContext vals : values.values_values()) {
                     for (VexContext v : vals.vex()) {
-                        vex.vex(new Vex(v));
+                        vex.analize(new Vex(v));
                     }
                 }
             } else {
@@ -251,10 +247,10 @@ public class Select extends AbstractExpr {
         VexContext v = groupingSet.vex();
         Row_value_predicand_listContext predicandList;
         if (v != null) {
-            vex.vex(new Vex(v));
+            vex.analize(new Vex(v));
         } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
             for (VexContext predicand : predicandList.vex()) {
-                vex.vex(new Vex(predicand));
+                vex.analize(new Vex(predicand));
             }
         }
     }
@@ -294,7 +290,7 @@ public class Select extends AbstractExpr {
                 // this greatly simplifies analysis logic here
                 try {
                     lateralAllowed = true;
-                    new ValueExpr(this).vex(new Vex(joinOn));
+                    new ValueExpr(this).analize(new Vex(joinOn));
                 } finally {
                     lateralAllowed = oldLateral;
                 }

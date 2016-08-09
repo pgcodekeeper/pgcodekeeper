@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
@@ -65,7 +65,7 @@ public class CreateRewrite extends ParserAbstract {
             PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
             ParserRuleContext parser = null;
-            AbstractExpr analizer = null;
+            AbstractExprWithNmspc analizer = null;
             if ((parser = cmd.select_stmt()) != null) {
                 analizer = new Select(schemaName);
             } else if ((parser = cmd.insert_stmt_for_psql()) != null) {

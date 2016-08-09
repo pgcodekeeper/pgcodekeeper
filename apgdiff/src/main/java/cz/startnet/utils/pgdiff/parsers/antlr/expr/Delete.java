@@ -8,17 +8,17 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class Delete extends AbstractExpr {
+public class Delete extends AbstractExprWithNmspc {
 
     protected Delete(AbstractExpr parent) {
         super(parent);
@@ -33,10 +33,6 @@ public class Delete extends AbstractExpr {
         return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
-    private boolean hasCte(String cteName) {
-        return findCte(cteName) != null;
-    }
-
     @Override
     protected List<String> analize(ParserRuleContext ruleCtx) {
         Delete_stmt_for_psqlContext delete = (Delete_stmt_for_psqlContext) ruleCtx;
@@ -45,99 +41,24 @@ public class Delete extends AbstractExpr {
             withPerform(with, cte);
         }
 
-        Schema_qualified_nameContext table = delete.delete_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
-
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-
-            }
-
-            if (delete.alias != null) {
-                addReference(delete.alias.getText(), depcy);
-            }
-
+        if (delete.delete_table_name != null) {
+            UtilExpr.addAliasRef(delete.delete_table_name, this, delete.alias);
             if (delete.USING() != null) {
                 for (Using_tableContext usingTable : delete.using_table()) {
-                    tableIds = usingTable.schema_qualified_name().identifier();
-                    tableName = QNameParser.getFirstName(tableIds);
-                    isCte = tableIds.size() == 1 && hasCte(tableName);
-                    depcy = null;
-
-                    if (isCte) {
-                        addReference(tableName, null);
-                    } else {
-                        depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                        addRawTableReference(depcy);
-                    }
-                    if (usingTable.identifier() != null) {
-                        addReference(usingTable.identifier().getText(), depcy);
+                    UtilExpr.addAliasRef(usingTable.schema_qualified_name(), this, usingTable.alias);
+                    String aliasName = usingTable.alias.getText();
+                    Column_referencesContext col_ctx;
+                    if ((col_ctx = usingTable.column_references()) != null) {
+                        for (Schema_qualified_nameContext ids : col_ctx.names_references().name) {
+                            addColumnReference(aliasName, QNameParser.getFirstName(ids.identifier()));
+                        }
                     }
                 }
             }
 
-            if (delete.WHERE() != null && delete.vex() != null) {
-                new ValueExpr(this).vex(new Vex(delete.vex()));
-            }
-        }
-        return null;
-    }
-
-    public List<String> delete(Delete_stmt_for_psqlContext delete) {
-        With_clauseContext with = delete.with_clause();
-        if (with != null) {
-            withPerform(with, cte);
-        }
-
-        Schema_qualified_nameContext table = delete.delete_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
-
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-
-            }
-
-            if (delete.alias != null) {
-                addReference(delete.alias.getText(), depcy);
-            }
-
-            if (delete.USING() != null) {
-                for (Using_tableContext usingTable : delete.using_table()) {
-                    tableIds = usingTable.schema_qualified_name().identifier();
-                    tableName = QNameParser.getFirstName(tableIds);
-                    isCte = tableIds.size() == 1 && hasCte(tableName);
-                    depcy = null;
-
-                    if (isCte) {
-                        addReference(tableName, null);
-                    } else {
-                        depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                        addRawTableReference(depcy);
-                    }
-                    if (usingTable.identifier() != null) {
-                        addReference(usingTable.identifier().getText(), depcy);
-                    }
-                }
-            }
-
-            if (delete.WHERE() != null && delete.vex() != null) {
-                new ValueExpr(this).vex(new Vex(delete.vex()));
+            VexContext vex;
+            if (delete.WHERE() != null && (vex = delete.vex()) != null) {
+                new ValueExpr(this).analize(new Vex(vex));
             }
         }
         return null;

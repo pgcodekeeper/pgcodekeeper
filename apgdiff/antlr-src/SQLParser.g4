@@ -2219,7 +2219,7 @@ update_set
   ;
 
 using_table
-  : ONLY? schema_qualified_name MULTIPLY? (AS? identifier column_references?)?
+  : ONLY? schema_qualified_name MULTIPLY? (AS? alias=identifier column_references?)?
   ;
 
 notify_stmt

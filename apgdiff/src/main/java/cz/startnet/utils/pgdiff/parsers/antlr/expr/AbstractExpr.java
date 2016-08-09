@@ -1,16 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -20,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -30,24 +27,6 @@ public abstract class AbstractExpr {
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
 
-    /**
-     * The local namespace of this Select.<br>
-     * String-Reference pairs keep track of external table aliases and names.<br>
-     * String-null pairs keep track of internal query names that have only the Alias.
-     */
-    protected final Map<String, GenericColumn> namespace = new HashMap<>();
-    /**
-     * Unaliased namespace keeps track of tables that have no Alias.<br>
-     * It has to be separate since same-named unaliased tables from different schemas
-     * can be used, requiring qualification.
-     */
-    protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
-    /**
-     * Column alias' are in a separate sets (per table) since they have two values as the Key.
-     * This is not a Map because we don't connect column aliases with their columns.<br>
-     * Columns of non-dereferenceable objects are aliases by default and need not to be added to this set.
-     */
-    protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
      * CTE names that current level of FROM has access to.
      */
@@ -173,37 +152,5 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected boolean addReference(String alias, GenericColumn object) {
-        boolean exists = namespace.containsKey(alias);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
-        } else {
-            namespace.put(alias, object);
-        }
-        return !exists;
-    }
-
-    protected boolean addRawTableReference(GenericColumn qualifiedTable) {
-        boolean exists = !unaliasedNamespace.add(qualifiedTable);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate unaliased table: "
-                    + qualifiedTable.schema + ' ' + qualifiedTable.table);
-        }
-        return !exists;
-    }
-
-    protected boolean addColumnReference(String alias, String column) {
-        Set<String> columns = columnAliases.get(alias);
-        if (columns == null) {
-            columns = new HashSet<>();
-            columnAliases.put(alias, columns);
-        }
-        boolean exists = !columns.add(column);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
-        }
-        return !exists;
-    }
-
-    protected abstract List<String> analize(ParserRuleContext ruleCtx);
+    protected abstract String analize(Vex vex);
 }

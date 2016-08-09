@@ -3,8 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
@@ -61,12 +59,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     @Override
-    protected List<String> analize(ParserRuleContext ruleCtx) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String vex(Vex vex) {
+    protected String analize(Vex vex) {
         String ret = null;
         Data_typeContext dataType = vex.dataType();
         Collate_identifierContext collate;
@@ -85,7 +78,7 @@ public class ValueExpr extends AbstractExpr {
             new Select(this).analize(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
-                vex(new Vex(v));
+                analize(new Vex(v));
             }
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
@@ -106,12 +99,12 @@ public class ValueExpr extends AbstractExpr {
             } else if ((caseExpr = primary.case_expression()) != null) {
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
             } else if ((cast = primary.cast_specification()) != null) {
-                vex(new Vex(cast.vex()));
+                analize(new Vex(cast.vex()));
                 addTypeDepcy(cast.data_type());
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
-                    vex(new Vex(compModVex));
+                    analize(new Vex(compModVex));
                 } else {
                     new Select(this).analize(compMod.select_stmt_no_parens());
                 }
@@ -138,7 +131,7 @@ public class ValueExpr extends AbstractExpr {
 
             if (subOperands != null) {
                 for (Vex v : subOperands) {
-                    vex(v);
+                    analize(v);
                 }
             }
         } else {
@@ -148,7 +141,7 @@ public class ValueExpr extends AbstractExpr {
         List<Vex> operands = vex.vex();
         if (!operands.isEmpty()) {
             for (Vex v : operands) {
-                vex(v);
+                analize(v);
             }
         } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
@@ -178,20 +171,20 @@ public class ValueExpr extends AbstractExpr {
             }
             Filter_clauseContext filter = function.filter_clause();
             if (filter != null) {
-                vex(new Vex(filter.vex()));
+                analize(new Vex(filter.vex()));
             }
             Window_definitionContext window = function.window_definition();
             if (window != null) {
                 window(window);
             }
         } else if ((extract = function.extract_function()) != null) {
-            vex(new Vex(extract.vex()));
+            analize(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
             args = addVexCtxtoList(args, string.vex());
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
-                vex(new Vex(vexB));
+                analize(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
@@ -199,7 +192,7 @@ public class ValueExpr extends AbstractExpr {
 
         if (args != null) {
             for (Vex v : args) {
-                vex(v);
+                analize(v);
             }
         }
         return ret;
@@ -207,7 +200,7 @@ public class ValueExpr extends AbstractExpr {
 
     public void orderBy(Orderby_clauseContext orderBy) {
         for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
-            vex(new Vex(sort.vex()));
+            analize(new Vex(sort.vex()));
         }
     }
 
@@ -215,7 +208,7 @@ public class ValueExpr extends AbstractExpr {
         Partition_by_columnsContext partition = window.partition_by_columns();
         if (partition != null) {
             for (VexContext v : partition.vex()) {
-                vex(new Vex(v));
+                analize(new Vex(v));
             }
         }
 
@@ -227,7 +220,7 @@ public class ValueExpr extends AbstractExpr {
         Frame_clauseContext frame = window.frame_clause();
         if (frame != null) {
             for (Frame_boundContext bound : frame.frame_bound()) {
-                vex(new Vex(bound.vex()));
+                analize(new Vex(bound.vex()));
             }
         }
     }

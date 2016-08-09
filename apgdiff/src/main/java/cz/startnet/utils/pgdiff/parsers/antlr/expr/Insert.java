@@ -9,12 +9,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class Insert extends AbstractExpr {
+public class Insert extends AbstractExprWithNmspc {
 
 
     /**
@@ -35,10 +33,6 @@ public class Insert extends AbstractExpr {
         return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
-    private boolean hasCte(String cteName) {
-        return findCte(cteName) != null;
-    }
-
     @Override
     protected List<String> analize(ParserRuleContext ruleCtx) {
         Insert_stmt_for_psqlContext insert = (Insert_stmt_for_psqlContext) ruleCtx;
@@ -46,64 +40,17 @@ public class Insert extends AbstractExpr {
         if (with != null) {
             withPerform(with, cte);
         }
-
-        Schema_qualified_nameContext table = insert.insert_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-            String schemaName = QNameParser.getSchemaName(tableIds, getDefaultSchemaName());
-
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
-
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-
-            }
-
+		if (insert.insert_table_name != null) {
+			UtilExpr.addAliasRef(insert.insert_table_name, this, null);
             if (insert.LEFT_PAREN() != null && insert.RIGHT_PAREN() != null) {
+				List<IdentifierContext> tableIds = insert.insert_table_name.identifier();
+				String schemaName = QNameParser.getSchemaName(tableIds, getDefaultSchemaName());
+				String tableName = QNameParser.getFirstName(tableIds);
                 addColumnDepcy(schemaName, tableName, insert.column);
             }
-            if (insert.select_stmt() != null) {
-                //UtilExpr.create(insert.select_stmt(), new Select(this), pg);
-                //new Select(this).analize(new SelectStmt(insert.select_stmt()));
-                new Select(this).analize(insert.select_stmt());
-            }
-        }
-        return null;
-    }
-
-    public List<String> insert(Insert_stmt_for_psqlContext insert) {
-        With_clauseContext with = insert.with_clause();
-        if (with != null) {
-            withPerform(with, cte);
-        }
-
-        Schema_qualified_nameContext table = insert.insert_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-            String schemaName = QNameParser.getSchemaName(tableIds, getDefaultSchemaName());
-
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
-
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-
-            }
-
-            if (insert.LEFT_PAREN() != null && insert.RIGHT_PAREN() != null) {
-                addColumnDepcy(schemaName, tableName, insert.column);
-            }
-            if (insert.select_stmt() != null) {
-                new Select(this).analize(insert.select_stmt());
+			Select_stmtContext select_ctx;
+			if ((select_ctx = insert.select_stmt()) != null) {
+				new Select(this).analize(select_ctx);
             }
         }
         return null;

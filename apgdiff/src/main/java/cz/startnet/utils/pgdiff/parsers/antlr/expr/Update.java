@@ -8,8 +8,10 @@ import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
@@ -18,9 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class Update extends AbstractExpr {
+public class Update extends AbstractExprWithNmspc {
 
     protected Update(AbstractExpr parent) {
         super(parent);
@@ -35,10 +36,6 @@ public class Update extends AbstractExpr {
         return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
-    private boolean hasCte(String cteName) {
-        return findCte(cteName) != null;
-    }
-
     @Override
     protected List<String> analize(ParserRuleContext ruleCtx) {
         Update_stmt_for_psqlContext update = (Update_stmt_for_psqlContext) ruleCtx;
@@ -47,138 +44,46 @@ public class Update extends AbstractExpr {
             withPerform(with, cte);
         }
 
-        Schema_qualified_nameContext table = update.update_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-            //String schemaName = QNameParser.getSchemaName(tableIds, getDefaultSchemaName());
+        if (update.update_table_name != null) {
+            UtilExpr.addAliasRef(update.update_table_name, this, update.alias);
 
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
+            if (update.SET() != null) {
+                for (Update_setContext updateSet : update.update_set()) {
+                    Table_subqueryContext subQuery;
+                    if ((subQuery = updateSet.table_subquery()) != null) {
+                        new Select(this).analize(subQuery.select_stmt());
+                    } else if (updateSet.value != null && !updateSet.value.isEmpty()) {
+                        List<IdentifierContext> tableIds = update.update_table_name.identifier();
+                        addColumnDepcy(
+                                QNameParser.getSchemaName(tableIds, getDefaultSchemaName()),
+                                QNameParser.getFirstName(tableIds),
+                                updateSet.column);
 
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-
-            }
-
-            if (update.alias != null) {
-                addReference(update.alias.getText(), depcy);
+                        for (VexContext vex : updateSet.value) {
+                            new ValueExpr(this).analize(new Vex(vex));
+                        }
+                    }
+                }
             }
 
             if (update.FROM() != null) {
                 for (Using_tableContext usingTable : update.using_table()) {
-                    //QNameParser.
-                    tableIds = usingTable.schema_qualified_name().identifier();
-                    tableName = QNameParser.getFirstName(tableIds);
-                    //schemaName = QNameParser.getSchemaName(tableIds, getDefaultSchemaName());
-                    isCte = tableIds.size() == 1 && hasCte(tableName);
-                    depcy = null;
-
-                    if (isCte) {
-                        addReference(tableName, null);
-                    } else {
-                        depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                        addRawTableReference(depcy);
-                    }
-                    if (usingTable.identifier() != null) {
-                        addReference(usingTable.identifier().getText(), depcy);
-                    }
-
-                    if (usingTable.column_references() != null) {
-                        for (Schema_qualified_nameContext ids : usingTable.column_references()
+                    UtilExpr.addAliasRef(usingTable.schema_qualified_name(), this, usingTable.alias);
+                    String aliasName = usingTable.alias.getText();
+                    Column_referencesContext col_ctx;
+                    if ((col_ctx = usingTable.column_references()) != null) {
+                        for (Schema_qualified_nameContext ids : col_ctx
                                 .names_references().name) {
-                            addColumnReference(usingTable.identifier().getText(), QNameParser.getFirstName(ids
+                            addColumnReference(aliasName, QNameParser.getFirstName(ids
                                     .identifier()));
                         }
                     }
                 }
             }
 
-            if (update.SET() != null) {
-                for (Update_setContext updateSet : update.update_set()) {
-                    if (updateSet.table_subquery() != null) {
-                        new Select(this).analize(updateSet.table_subquery().select_stmt());
-                    } else if (updateSet.value != null && !updateSet.value.isEmpty()) {
-                        for (VexContext vex : updateSet.value) {
-                            new ValueExpr(this).vex(new Vex(vex));
-                        }
-                    }
-                }
-            }
-
-            if (update.WHERE() != null && update.vex() != null) {
-                new ValueExpr(this).vex(new Vex(update.vex()));
-            }
-        }
-        return null;
-    }
-
-    public List<String> update(Update_stmt_for_psqlContext update) {
-        With_clauseContext with = update.with_clause();
-        if (with != null) {
-            withPerform(with, cte);
-        }
-
-        Schema_qualified_nameContext table = update.update_table_name;
-        if (table != null) {
-            List<IdentifierContext> tableIds = table.identifier();
-            String tableName = QNameParser.getFirstName(tableIds);
-            
-            boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-            GenericColumn depcy = null;
-
-            if (isCte) {
-                addReference(tableName, null);
-            } else {
-                depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                addRawTableReference(depcy);
-            }
-
-            if (update.alias != null) {
-                addReference(update.alias.getText(), depcy);
-            }
-
-            if (update.FROM() != null) {
-                for (Using_tableContext usingTable : update.using_table()) {
-                    tableIds = usingTable.schema_qualified_name().identifier();
-                    tableName = QNameParser.getFirstName(tableIds);
-                    isCte = tableIds.size() == 1 && hasCte(tableName);
-                    depcy = null;
-                    if (isCte) {
-                        addReference(tableName, null);
-                    } else {
-                        depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                        addRawTableReference(depcy);
-                    }
-                    if (usingTable.identifier() != null) {
-                        addReference(usingTable.identifier().getText(), depcy);
-                    }
-                    if (usingTable.column_references() != null) {
-                        for (Schema_qualified_nameContext ids : usingTable.column_references()
-                                .names_references().name) {
-                            addColumnReference(usingTable.identifier().getText(), QNameParser.getFirstName(ids
-                                    .identifier()));
-                        }
-                    }
-                }
-            }
-            if (update.SET() != null) {
-                for (Update_setContext updateSet : update.update_set()) {
-                    if (updateSet.table_subquery() != null) {
-                        new Select(this).analize(updateSet.table_subquery().select_stmt());
-                    } else if (updateSet.value != null && !updateSet.value.isEmpty()) {
-                        for (VexContext vex : updateSet.value) {
-                            new ValueExpr(this).vex(new Vex(vex));
-                        }
-                    }
-                }
-            }
-
-            if (update.WHERE() != null && update.vex() != null) {
-                new ValueExpr(this).vex(new Vex(update.vex()));
+            VexContext vex;
+            if (update.WHERE() != null && (vex = update.vex()) != null) {
+                new ValueExpr(this).analize(new Vex(vex));
             }
         }
         return null;
