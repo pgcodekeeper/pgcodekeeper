@@ -1,13 +1,28 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class GenericColumn implements Serializable {
+
+    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+            "information_schema", "pg_catalog"
+    })));
+
+    @Deprecated
+    // TODO detect these by separating their tokens from identifiers in parser
+    private static final Collection<String> SYS_COLUMNS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+            "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
+    })));
 
     private static final long serialVersionUID = -5032985077177033449L;
     // SONAR-OFF
@@ -33,7 +48,20 @@ public final class GenericColumn implements Serializable {
     }
 
     public PgStatement getStatement(PgDatabase db) {
-        PgStatement st;
+        return doGetStatement(db, type);
+    }
+
+    // debug method with selective logging
+    private PgStatement doGetStatementLog(PgDatabase db, DbObjType type) {
+        PgStatement st = doGetStatement(db, type);
+        if (st != null) {
+            return st;
+        }
+
+        if (isBuiltin() || "postgis".equals(schema) || type == DbObjType.FUNCTION) {
+            return null;
+        }
+
         // special case otherwise log is spammed by view columns
         if (type == DbObjType.COLUMN) {
             // look up relation (any)
@@ -42,19 +70,22 @@ public final class GenericColumn implements Serializable {
                 if (rel.getStatementType() != DbObjType.TABLE) {
                     // return silently if non-table
                     return null;
-                } else {
-                    st = ((PgTable) rel).getColumn(column);
+                } else if (!((PgTable) rel).getInherits().isEmpty()) {
+                    // or if inherited column
+                    return null;
                 }
-            } else {
-                st = null;
             }
-        } else {
-            st = doGetStatement(db, type);
         }
-        if (st == null && type != DbObjType.FUNCTION) {
-            Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
-        }
-        return st;
+
+        // not a silent failure, log
+        Log.log(Log.LOG_WARNING, "Could not find statement for reference: " + this);
+        return null;
+    }
+
+    private boolean isBuiltin() {
+        return (type == DbObjType.TYPE && ApgdiffConsts.SYS_TYPES.contains(table))
+                || SYS_SCHEMAS.contains(schema) || SYS_COLUMNS.contains(column)
+                || (table != null && table.startsWith("pg_"));
     }
 
     private PgStatement doGetStatement(PgDatabase db, DbObjType type) {
