@@ -46,13 +46,15 @@ public class CreateIndex extends ParserAbstract {
             }
             db.getSchema(schemaName).getTable(ind.getTableName()).addIndex(ind);
         }
+
+        String tableSchemaName = QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName());
+        ind.addDep(new GenericColumn(tableSchemaName, ind.getTableName(), DbObjType.TABLE));
         // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
         for (Sort_specifierContext sort_ctx : ctx.index_rest().sort_specifier_list().sort_specifier()){
             Schema_qualified_nameContext schema_ctx;
             if ((schema_ctx = sort_ctx.key.value_expression_primary().schema_qualified_name()) != null){
-                ind.addDep(new GenericColumn(
-                        QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName()),
-                        ind.getTableName(), schema_ctx.identifier(0).getText(), DbObjType.COLUMN));
+                ind.addDep(new GenericColumn(tableSchemaName, ind.getTableName(),
+                        schema_ctx.identifier(0).getText(), DbObjType.COLUMN));
             }
         }
         return ind;
