@@ -586,28 +586,16 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CIDR : [cC] [iI] [dD] [rR];
 
 // Operators
-TILDE : '~';
-Not_Similar_To : '!~';
-Similar_To_Case_Insensitive : '~*';
-Not_Similar_To_Case_Insensitive : '!~*';
-Like : '~~';
-Not_Like : '!~~';
-Ilike : '~~*';
-Not_Ilike : '!~~*';
-S_Root : '|/';
-C_Root : '||/';
 
 // Cast Operator
 CAST_EXPRESSION
   : COLON COLON
   ;
 
-ASSIGN  : ':=';
 EQUAL  : '=';
 COLON :  ':';
 SEMI_COLON :  ';';
 COMMA : ',';
-CONCATENATION_OPERATOR : VERTICAL_BAR VERTICAL_BAR;
 NOT_EQUAL  : '<>' | '!=';
 LTH : '<';
 LEQ : '<=';
@@ -621,21 +609,17 @@ MULTIPLY: '*';
 DIVIDE  : '/';
 MODULAR : '%';
 EXP : '^';
-FACTORIAL : '!';
-ABS: '@';
 
 DOT : '.';
 UNDERLINE : '_';
-VERTICAL_BAR : '|';
 QUOTE_CHAR : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR : '$';
 LEFT_BRACKET : '[';
 RIGHT_BRACKET : ']';
-BIT_AND : '&';
-BIT_XOR : '#';
-BIT_LSH : '<<';
-BIT_RSH : '>>';
+
+fragment
+Operator : [\~\!\@\#\^\&\|\`\?\+\-\*\/\%\<\>\=];
 
 NUMBER_LITERAL : Digit+;
 
@@ -655,6 +639,10 @@ BlockComment
 LineComment
     :   '--' ~[\r\n]* -> channel(HIDDEN)
     ;
+
+OP_CHARS
+	:	Operator+
+	;
 
 /*
 ===============================================================================

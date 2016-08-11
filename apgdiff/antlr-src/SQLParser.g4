@@ -1765,38 +1765,33 @@ binary_type
   6.25 <value expression>
 ===============================================================================
 */
+
 vex
   : vex CAST_EXPRESSION data_type
-  | vex collate_identifier
   | LEFT_PAREN vex RIGHT_PAREN
   | vex LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
+  | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
   | vex AT TIME ZONE vex
   | vex EXP vex
   | vex (MULTIPLY | DIVIDE | MODULAR) vex
   | vex (PLUS | MINUS) vex
-
-  | vex (BIT_AND | VERTICAL_BAR | BIT_XOR | BIT_LSH | BIT_RSH
-        | CONCATENATION_OPERATOR | regex_matcher) vex
-  | (S_Root | C_Root | FACTORIAL FACTORIAL | ABS | TILDE) vex
-  | vex FACTORIAL
-
+  | vex OP_CHARS vex
+  | vex OP_CHARS
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
   | vex NOT? IN LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN
   | vex NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? vex_b AND vex
-  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
-  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
   | vex (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex
   | vex IS NOT? (truth_value | NULL)
   | vex IS NOT? DISTINCT FROM vex
   | vex IS NOT? DOCUMENT
   | vex ISNULL
   | vex NOTNULL
-
   | datetime_overlaps
   | <assoc=right> NOT vex
   | vex AND vex
   | vex OR vex
-
   | value_expression_primary
   ;
 
@@ -1812,32 +1807,16 @@ vex_b
   | vex_b EXP vex_b
   | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
   | vex_b (PLUS | MINUS) vex_b
-
-  | vex_b (BIT_AND | VERTICAL_BAR | BIT_XOR | BIT_LSH | BIT_RSH
-        | CONCATENATION_OPERATOR | regex_matcher) vex_b
-  | (S_Root | C_Root | FACTORIAL FACTORIAL | ABS | TILDE) vex_b
-  | vex_b FACTORIAL
-
+  | vex_b OP_CHARS vex_b
+  | vex_b OP_CHARS
   | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
   | vex_b IS NOT? DISTINCT FROM vex_b
   | vex_b IS NOT? DOCUMENT
-
   | value_expression_primary
   ;
 
 datetime_overlaps
   : LEFT_PAREN vex COMMA vex RIGHT_PAREN OVERLAPS LEFT_PAREN vex COMMA vex RIGHT_PAREN
-  ;
-
-regex_matcher
-  : TILDE
-  | Not_Similar_To
-  | Similar_To_Case_Insensitive
-  | Not_Similar_To_Case_Insensitive
-  | Like
-  | Not_Like
-  | Ilike
-  | Not_Ilike
   ;
 
 value_expression_primary
