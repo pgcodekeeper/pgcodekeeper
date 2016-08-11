@@ -61,6 +61,7 @@ public class ValueExpr extends AbstractExpr {
     public String analyze(Vex vex) {
         String ret = null;
         Data_typeContext dataType = vex.dataType();
+        @SuppressWarnings("unused")
         Collate_identifierContext collate;
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
@@ -87,6 +88,7 @@ public class ValueExpr extends AbstractExpr {
             Table_subqueryContext subquery;
             Function_callContext function;
             Schema_qualified_nameContext qname;
+            @SuppressWarnings("unused")
             Qualified_asteriskContext ast;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;

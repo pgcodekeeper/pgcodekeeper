@@ -1166,6 +1166,14 @@ public class JdbcLoader implements PgCatalogStrings {
             i.setComment(args, PgDiffUtils.quoteString(comment));
         }
 
+        i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
+        Array array;
+        if ((array = res.getArray("cols")) != null){
+            String[] cols = (String[]) array.getArray();
+            for (String col : cols){
+                i.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
+            }
+        }
         return i;
     }
 

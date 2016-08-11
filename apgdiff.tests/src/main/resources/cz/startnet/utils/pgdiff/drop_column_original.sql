@@ -40,6 +40,7 @@ ALTER TABLE public.testtable OWNER TO fordfrog;
 
 CREATE INDEX testindex ON testtable USING btree (field3);
 
+CREATE INDEX testindex2 ON testtable USING btree (field5);
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
