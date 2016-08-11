@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -14,9 +16,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
 public class ProjectBuilder extends IncrementalProjectBuilder {
 
@@ -87,6 +94,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 if (!(delta.getResource() instanceof IFile)) {
                     return true;
                 }
+				PgDiffArguments args = new PgDiffArguments();
                 sub.worked(1);
 
                 switch (delta.getKind()) {
@@ -95,7 +103,26 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 case IResourceDelta.REPLACED:
                     parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
                     break;
+				case IResourceDelta.CHANGED:
+					IFile iFile = (IFile) delta.getResource();
 
+					iFile.deleteMarkers(null, false, IResource.DEPTH_INFINITE);
+					try {
+						LicensePrefs.setLicense(args);
+						PgDumpLoader dumpLoader = new PgDumpLoader(iFile.getContents(),
+								delta.getResource().getLocation().toOSString(), args);
+						dumpLoader.load(true);
+						dumpLoader.close();
+						for (AntlrError antlrError : dumpLoader.getErrors()) {
+							IMarker marker = iFile.createMarker(UIConsts.MARKER.ID);
+							marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
+							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+							marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
+						}
+					} catch (IOException | LicenseException | InterruptedException ex) {
+						throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
+					}
+					break;
                 default:
                     try {
                         parser.getObjFromProjFile(
