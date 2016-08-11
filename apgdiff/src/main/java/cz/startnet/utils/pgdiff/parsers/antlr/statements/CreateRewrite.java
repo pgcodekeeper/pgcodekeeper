@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
-    
+
     public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -76,6 +76,8 @@ public class CreateRewrite extends ParserAbstract {
                 analyzer = new Update(schemaName);
             }
             if (parser != null && analyzer != null) {
+                analyzer.addReference("new", null);
+                analyzer.addReference("old", null);
                 UtilExpr.analyze(parser, analyzer, rule);
             }
             rule.addCommand(args, getFullCtxText(cmd));

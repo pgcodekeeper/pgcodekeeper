@@ -116,7 +116,10 @@ public abstract class AbstractExprWithNmspc extends AbstractExpr {
         }
     }
 
-    protected boolean addReference(String alias, GenericColumn object) {
+    /**
+     * Clients may use this to setup pseudo-variable names before expression analysis.
+     */
+    public boolean addReference(String alias, GenericColumn object) {
         boolean exists = namespace.containsKey(alias);
         if (exists) {
             Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
