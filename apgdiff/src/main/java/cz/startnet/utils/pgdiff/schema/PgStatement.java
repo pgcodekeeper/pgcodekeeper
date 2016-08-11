@@ -1,7 +1,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,6 +31,7 @@ public abstract class PgStatement {
     protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
 
     private PgStatement parent;
+    protected final List<GenericColumn> deps = new ArrayList<>();
 
     private volatile int hash;
     private volatile boolean hashComputed;
@@ -70,6 +73,14 @@ public abstract class PgStatement {
         }
 
         this.parent = parent;
+    }
+
+    public List<GenericColumn> getDeps() {
+        return Collections.unmodifiableList(deps);
+    }
+
+    public void addDep(GenericColumn dep){
+        deps.add(dep);
     }
 
     public String getComment() {

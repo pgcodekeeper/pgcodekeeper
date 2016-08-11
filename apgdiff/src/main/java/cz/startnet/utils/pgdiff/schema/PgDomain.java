@@ -218,17 +218,18 @@ public class PgDomain extends PgStatementWithSearchPath {
         copy.setOwner(getOwner());
         copy.setComment(getComment());
         for (PgConstraint constr : constraints) {
-            copy.addConstraint(constr.shallowCopy());
+            copy.addConstraint(constr.deepCopy());
         }
         for (PgConstraint constr : constrsNotValid) {
-            copy.addConstrNotValid(constr.shallowCopy());
+            copy.addConstrNotValid(constr.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.deepCopy());
         }
+        copy.deps.addAll(deps);
         return copy;
     }
 

@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assert;
@@ -24,6 +23,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 
@@ -297,8 +297,6 @@ public class PgDiffTest {
                 });
     }
 
-    private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
-            );
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql, _new.sql and _diff.sql to the file name
@@ -309,6 +307,7 @@ public class PgDiffTest {
     public PgDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
         Locale.setDefault(Locale.ENGLISH);
+        Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException {

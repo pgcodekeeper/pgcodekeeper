@@ -21,10 +21,7 @@ public class CreateSequence extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()));
         long inc = 0;
         String maxValue = null;

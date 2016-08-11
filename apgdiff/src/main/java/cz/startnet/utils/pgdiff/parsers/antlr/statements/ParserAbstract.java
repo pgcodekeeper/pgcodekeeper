@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -19,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
@@ -32,6 +34,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -67,12 +70,13 @@ public abstract class ParserAbstract {
         return ctx.start.getInputStream().getText(interval);
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx,
-            List<String> sequences, Map<String, GenericColumn> defaultFucntions) {
+    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
+            Map<String, GenericColumn> defaultFucntions, String defSchema) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(colCtx.column_name.getText());
             col.setType(getFullCtxText(colCtx.datatype));
+            addTypeAsDepcy(colCtx.datatype, col, defSchema);
             if (colCtx.collate_name != null) {
                 col.setCollation(getFullCtxText(colCtx.collate_name.collation));
             }
@@ -83,7 +87,8 @@ public abstract class ParserAbstract {
                     if (sequence != null) {
                         sequences.add(sequence);
                     }
-                    GenericColumn func = getFunctionCall(column_constraint.constr_body().default_expr);
+                    GenericColumn func = getFunctionCall(
+                            column_constraint.constr_body().default_expr, defSchema);
                     if (func != null) {
                         defaultFucntions.put(colCtx.column_name.getText(), func);
                     }
@@ -122,14 +127,15 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected GenericColumn getFunctionCall(VexContext ctx) {
+    protected GenericColumn getFunctionCall(VexContext ctx, String defSchema) {
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, ctx);
         if (fs.getName() == null) {
             return null;
         }
         List<IdentifierContext> ids = fs.getName().identifier();
-        return new GenericColumn(QNameParser.getSchemaName(ids), QNameParser.getFirstName(ids));
+        return new GenericColumn(QNameParser.getSchemaName(ids, defSchema),
+                QNameParser.getFirstName(ids), DbObjType.FUNCTION);
     }
 
     public static class FunctionSearcher extends SQLParserBaseListener {
@@ -149,19 +155,20 @@ public abstract class ParserAbstract {
 
     public static void fillArguments(Function_argsContext function_argsContext,
             PgFunction function, String defSchemaName) {
-        for (Function_argumentsContext argument : function_argsContext
-                .function_arguments()) {
+        for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
             if (argument.argname != null) {
                 arg.setName(argument.argname.getText());
             }
             arg.setDataType(getFullCtxText(argument.argtype_data));
+            addTypeAsDepcy(argument.data_type(), function, defSchemaName);
+
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument
                         .function_def_value().def_value));
                 for (GenericColumn objName : parseDefValues(argument
                         .function_def_value().def_value, defSchemaName)) {
-                    arg.addDefaultObject(objName);
+                    function.addDep(objName);
                 }
             }
             if (argument.arg_mode != null) {
@@ -179,11 +186,8 @@ public abstract class ParserAbstract {
             public void enterFunction_call(Function_callContext ctx) {
                 List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
                 String objName = QNameParser.getFirstName(ids);
-                String schemaName = QNameParser.getSchemaName(ids);
-                if (schemaName == null) {
-                    schemaName = defSchemaName;
-                }
-                funcSignature.add(new GenericColumn(schemaName, objName, null));
+                String schemaName = QNameParser.getSchemaName(ids, defSchemaName);
+                funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
             }
         }, defExpression);
         return funcSignature;
@@ -209,13 +213,15 @@ public abstract class ParserAbstract {
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String tableName = QNameParser.getFirstName(ids);
-            String schemaName = QNameParser.getSchemaName(ids);
-            if (schemaName == null) {
-                schemaName = db.getDefaultSchema().getName();
-            }
+            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+            GenericColumn ftable = new GenericColumn(schemaName, tableName, DbObjType.TABLE);
+            constr.setForeignTable(ftable);
+            constr.addDep(ftable);
+
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
-                constr.addForeignColumn(new GenericColumn(
-                        schemaName, tableName, QNameParser.getFirstName(name.identifier())));
+                String colName = QNameParser.getFirstName(name.identifier());
+                constr.addForeignColumn(colName);
+                constr.addDep(new GenericColumn(schemaName, tableName, colName, DbObjType.COLUMN));
             }
         }
         if (ctx.constr_body().table_unique_prkey() != null) {
@@ -234,8 +240,7 @@ public abstract class ParserAbstract {
         constr.setPrimaryKey(ctx.PRIMARY() != null);
         for (Schema_qualified_nameContext name : ctx.column_references()
                 .names_references().name) {
-            constr.addColumn(new GenericColumn(
-                    scmName, tblName, QNameParser.getFirstName(name.identifier())));
+            constr.addColumn(QNameParser.getFirstName(name.identifier()));
         }
     }
 
@@ -307,6 +312,15 @@ public abstract class ParserAbstract {
         }
         if (ctx != null) {
             st.setOwner(ctx.name.getText());
+        }
+    }
+
+    static void addTypeAsDepcy(Data_typeContext ctx, PgStatement st, String schema) {
+        Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
+        if (qname != null) {
+            IdentifierContext schemaCtx = qname.identifier();
+            st.addDep(new GenericColumn(schemaCtx == null ? schema : schemaCtx.getText(),
+                    qname.identifier_nontype().getText(), DbObjType.TYPE));
         }
     }
 }

@@ -2,22 +2,30 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
+
     public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -27,11 +35,7 @@ public class CreateRewrite extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
-
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setTargetName(ctx.table_name.getText());
@@ -39,21 +43,16 @@ public class CreateRewrite extends ParserAbstract {
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule, db.getArguments());
+        setCommands(ctx, rule, db.getArguments(), schemaName);
 
         PgSchema schema = db.getSchema(schemaName);
-        PgTable table = schema.getTable(rule.getTargetName());
-        if (table != null){
-            table.addRule(rule);
+        PgRuleContainer c = schema.getRuleContainer(rule.getTargetName());
+        if (c != null){
+            c.addRule(rule);
         } else {
-            PgView view = schema.getView(rule.getTargetName());
-            if (view != null){
-                view.addRule(rule);
-            } else {
-                Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
-                        " is missing its container " + rule.getTargetName() +
-                        " in schema " + schemaName);
-            }
+            Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
+                    " is missing its container " + rule.getTargetName() +
+                    " in schema " + schemaName);
         }
         return rule;
     }
@@ -63,8 +62,24 @@ public class CreateRewrite extends ParserAbstract {
     }
 
     public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
-            PgDiffArguments args) {
+            PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
+            ParserRuleContext parser = null;
+            AbstractExprWithNmspc analyzer = null;
+            if ((parser = cmd.select_stmt()) != null) {
+                analyzer = new Select(schemaName);
+            } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
+                analyzer = new Insert(schemaName);
+            } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
+                analyzer = new Delete(schemaName);
+            } else if ((parser = cmd.update_stmt_for_psql()) != null) {
+                analyzer = new Update(schemaName);
+            }
+            if (parser != null && analyzer != null) {
+                analyzer.addReference("new", null);
+                analyzer.addReference("old", null);
+                UtilExpr.analyze(parser, analyzer, rule);
+            }
             rule.addCommand(args, getFullCtxText(cmd));
         }
     }

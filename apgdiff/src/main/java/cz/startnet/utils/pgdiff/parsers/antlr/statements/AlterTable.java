@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends ParserAbstract {
 
@@ -31,10 +32,7 @@ public class AlterTable extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTable tabl = db.getSchema(schemaName).getTable(name);
 
         List<String> sequences = new ArrayList<>();
@@ -55,17 +53,19 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, defaultFunctions));
+                        sequences, defaultFunctions, getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
                 if (sequence != null) {
                     sequences.add(sequence);
                 }
-                GenericColumn func = getFunctionCall(tablAction.set_def_column().expression);
-                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if (col != null && func != null) {
-                    col.addDefaultFunction(func);
+                GenericColumn func = getFunctionCall(tablAction.set_def_column().expression, getDefSchemaName());
+                if (func != null) {
+                    PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                    if (col != null) {
+                        col.addDep(func);
+                    }
                 }
             }
             if (tablAction.tabl_constraint != null) {
@@ -108,13 +108,15 @@ public class AlterTable extends ParserAbstract {
             // из др таблицы
             // совместимость с текущей версией экспорта
             if (tabl.getInherits().isEmpty()) {
-                tabl.addSequence(seq);
+                QNameParser seqName = new QNameParser(seq);
+                tabl.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
+                        seqName.getFirstName(), DbObjType.SEQUENCE));
             }
         }
-        for (Entry<String, GenericColumn> function: defaultFunctions.entrySet()) {
+        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
             PgColumn col = tabl.getColumn(function.getKey());
             if (col != null) {
-                col.addDefaultFunction(function.getValue());
+                col.addDep(function.getValue());
             }
         }
         return null;

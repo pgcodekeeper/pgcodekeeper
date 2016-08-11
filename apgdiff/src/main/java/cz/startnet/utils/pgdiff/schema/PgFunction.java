@@ -26,7 +26,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
-    private GenericColumn returnsName;
 
     @Override
     public DbObjType getStatementType() {
@@ -112,20 +111,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    /**
-     * @return имя типа объекта на который указывает функция
-     */
-    public GenericColumn getReturnsName() {
-        return returnsName;
-    }
-
-    /**
-     * @param returnsName имя типа объекта на которое указывает функция
-     */
-    public void setReturnsName(GenericColumn returnsName) {
-        this.returnsName = returnsName;
-    }
-
     @Override
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
@@ -197,6 +182,7 @@ public class PgFunction extends PgStatementWithSearchPath {
      * data types.
      *
      * @return function signature
+     * TODO cache/pre-store this value?
      */
     public String getSignature() {
         return appendFunctionSignature(new StringBuilder(), false, false).toString();
@@ -235,7 +221,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         if (obj instanceof PgFunction) {
             PgFunction func  = (PgFunction) obj;
             return checkForChanges(func)
-                    && Objects.equals(returnsName, func.getReturnsName())
                     && Objects.equals(owner, func.getOwner())
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes)
@@ -252,7 +237,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         result = prime * result + ((returns == null) ? 0 : returns.hashCode());
-        result = prime * result + ((returnsName == null) ? 0 : returnsName.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
@@ -266,7 +250,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         private String name;
         private String dataType;
         private String defaultExpression;
-        private final List<GenericColumn> defaultObjects = new ArrayList<>();
 
         public String getDataType() {
             return dataType;
@@ -298,20 +281,6 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         public void setName(final String name) {
             this.name = name;
-        }
-
-        /**
-         * @return список сигнатур функций использованных в выражении по умолчанию
-         */
-        public List<GenericColumn> getDefaultObjects() {
-            return Collections.unmodifiableList(defaultObjects);
-        }
-
-        /**
-         * @param defaultObjects сигнатура функции использованная в выражении по умолчанию
-         */
-        public void addDefaultObject(GenericColumn defaultObject) {
-            defaultObjects.add(defaultObject);
         }
 
         public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
@@ -373,7 +342,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
-        functionDst.setReturnsName(getReturnsName());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
@@ -382,16 +350,16 @@ public class PgFunction extends PgStatementWithSearchPath {
             argDst.setMode(argSrc.getMode());
             argDst.setDataType(argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
-            argDst.defaultObjects.addAll(argSrc.defaultObjects);
             functionDst.addArgument(argDst);
         }
         for (PgPrivilege priv : revokes) {
-            functionDst.addPrivilege(priv.shallowCopy());
+            functionDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            functionDst.addPrivilege(priv.shallowCopy());
+            functionDst.addPrivilege(priv.deepCopy());
         }
         functionDst.setOwner(getOwner());
+        functionDst.deps.addAll(deps);
         return functionDst;
     }
 

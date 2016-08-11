@@ -9,6 +9,7 @@ SELECT ccc.relname,
        tgrelid::regclass::text,
        tgargs,
        tgrelid as table_oid,
+       ccc.relkind,
        tgattr::int2[] as col_numbers,
        pg_get_triggerdef(t.oid,false) || ';' AS definition,
        d.description as comment
@@ -18,6 +19,6 @@ LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid
     AND d.objsubid = 0
 JOIN pg_catalog.pg_proc p ON p.oid = tgfoid
 JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid
-WHERE ccc.relkind = 'r'
+WHERE (ccc.relkind = 'r' OR ccc.relkind = 'v')
     AND ccc.relnamespace = ?
     AND tgisinternal = FALSE

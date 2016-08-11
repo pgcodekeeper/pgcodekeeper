@@ -22,8 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgTrigger extends PgStatementWithSearchPath {
 
-    private String function_full;
-    private String func_signature;
+    private String function;
     private String tableName;
     /**
      * Whether the trigger should be fired BEFORE or AFTER action. Default is
@@ -49,9 +48,9 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.TRIGGER;
     }
-    
+
     public PgTrigger(String name, String rawStatement) {
-        super(name, rawStatement);        
+        super(name, rawStatement);
     }
 
     public void setBefore(final boolean before) {
@@ -133,7 +132,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         }
 
         sbSQL.append("\n\tEXECUTE PROCEDURE ");
-        sbSQL.append(getFullFunction());
+        sbSQL.append(getFunction());
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
@@ -149,14 +148,14 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgTrigger newTrg;
         if (newCondition instanceof PgTrigger) {
-            newTrg = (PgTrigger)newCondition; 
+            newTrg = (PgTrigger)newCondition;
         } else {
             return false;
         }
@@ -181,25 +180,13 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return forEachRow;
     }
 
-    /**
-     * @param full_func_def
-     *            full function calls with parameters and others
-     * @param func_signature
-     *            only name with "()" cause triggers can use only functions
-     *            without parameters
-     */
-    public void setFunction(final String full_func_def, String func_signature) {
-        this.function_full = full_func_def;
-        this.func_signature = func_signature;
+    public void setFunction(final String function) {
+        this.function = function;
         resetHash();
     }
 
-    private String getFullFunction() {
-        return function_full;
-    }
-    
-    public String getFunctionSignature() {
-        return func_signature;
+    private String getFunction() {
+        return function;
     }
 
     public void setOnDelete(final boolean onDelete) {
@@ -279,12 +266,11 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
         return eq;
     }
-    
+
     public boolean compareWithoutComments(PgTrigger trigger) {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
-                && Objects.equals(function_full, trigger.getFullFunction())
-                && Objects.equals(func_signature, trigger.getFunctionSignature())
+                && Objects.equals(function, trigger.getFunction())
                 && Objects.equals(name, trigger.getName())
                 && (onDelete == trigger.isOnDelete())
                 && (onInsert == trigger.isOnInsert())
@@ -303,8 +289,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + (before ? itrue : ifalse);
         result = prime * result + (forEachRow ? itrue : ifalse);
-        result = prime * result + (function_full == null ? 0 : function_full.hashCode());
-        result = prime * result + (func_signature == null ? 0 : getFunctionSignature().hashCode());
+        result = prime * result + (function == null ? 0 : function.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + (onDelete ? itrue : ifalse);
         result = prime * result + (onInsert ? itrue : ifalse);
@@ -316,14 +301,14 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + (comment == null ? 0 : comment.hashCode());
         return result;
     }
-    
+
     @Override
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst =
                 new PgTrigger(getName(), getRawStatement());
         triggerDst.setBefore(isBefore());
         triggerDst.setForEachRow(isForEachRow());
-        triggerDst.setFunction(getFullFunction(), getFunctionSignature());
+        triggerDst.setFunction(getFunction());
         triggerDst.setOnDelete(isOnDelete());
         triggerDst.setOnInsert(isOnInsert());
         triggerDst.setOnTruncate(isOnTruncate());
@@ -331,17 +316,16 @@ public class PgTrigger extends PgStatementWithSearchPath {
         triggerDst.setTableName(getTableName());
         triggerDst.setWhen(getWhen());
         triggerDst.setComment(getComment());
-        for(String updCol : updateColumns) {
-            triggerDst.addUpdateColumn(updCol);
-        }
+        triggerDst.updateColumns.addAll(updateColumns);
+        triggerDst.deps.addAll(deps);
         return triggerDst;
     }
-    
+
     @Override
     public PgTrigger deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();

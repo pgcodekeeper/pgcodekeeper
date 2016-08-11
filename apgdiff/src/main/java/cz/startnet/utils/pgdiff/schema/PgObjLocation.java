@@ -80,7 +80,8 @@ public class PgObjLocation implements Serializable {
 
     public PgObjLocation(String schema, String name, String column, int offset,
             String filePath, int lineNumber) {
-        this.objName = new GenericColumn(schema, name, column);
+        // TODO pass through object type from caller if it becomes necessary
+        this.objName = new GenericColumn(schema, name, column, null);
         this.offset = offset;
         this.filePath = filePath;
         this.lineNumber = lineNumber;

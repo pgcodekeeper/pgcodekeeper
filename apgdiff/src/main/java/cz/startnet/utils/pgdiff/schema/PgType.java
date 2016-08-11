@@ -558,16 +558,14 @@ public class PgType extends PgStatementWithSearchPath {
     public PgType shallowCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement());
         for (PgColumn attr : attrs) {
-            copy.addAttr(attr.shallowCopy());
+            copy.addAttr(attr.deepCopy());
         }
-        for (String enum_ : enums) {
-            copy.addEnum(enum_);
-        }
+        copy.enums.addAll(enums);
         for (PgPrivilege priv : grants) {
-            copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : revokes) {
-            copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.deepCopy());
         }
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());
@@ -594,6 +592,7 @@ public class PgType extends PgStatementWithSearchPath {
         copy.setCollatable(getCollatable());
         copy.setOwner(getOwner());
         copy.setComment(getComment());
+        copy.deps.addAll(deps);
         return copy;
     }
 

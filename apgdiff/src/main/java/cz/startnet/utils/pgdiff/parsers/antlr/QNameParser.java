@@ -18,8 +18,8 @@ public final class QNameParser {
         return getLastId(ids, 3);
     }
 
-    public static String getSchemaName(List<IdentifierContext> ids) {
-        return ids.size() < 2 ? null : ids.get(0).getText();
+    public static String getSchemaName(List<IdentifierContext> ids, String defaultSchema) {
+        return ids.size() < 2 ? defaultSchema : ids.get(0).getText();
     }
 
     private static String getLastId(List<IdentifierContext> ids, int i) {
@@ -49,7 +49,7 @@ public final class QNameParser {
         return getThirdName(parts);
     }
 
-    public String getSchemaName() {
-        return getSchemaName(parts);
+    public String getSchemaName(String defaultSchema) {
+        return getSchemaName(parts, defaultSchema);
     }
 }

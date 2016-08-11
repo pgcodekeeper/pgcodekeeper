@@ -6,12 +6,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
@@ -28,14 +25,11 @@ public class CreateView extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            view.setSelect(createSelect(ctx.v_query, schemaName));
+            UtilExpr.analyze(ctx.v_query, new Select(schemaName), view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
@@ -47,17 +41,7 @@ public class CreateView extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addView(view);
+
         return view;
-    }
-
-    public static PgSelect createSelect(Select_stmtContext selectCtx, String schemaName) {
-        Select selectAnalyzer = new Select(schemaName);
-        selectAnalyzer.select(new SelectStmt(selectCtx));
-
-        PgSelect select = new PgSelect(getFullCtxText(selectCtx));
-        for (GenericColumn col : selectAnalyzer.getDepcies()) {
-            select.addColumn(col);
-        }
-        return select;
     }
 }
