@@ -1,5 +1,7 @@
+-- extension owned indices are skipped by table != null check in java code
+
 SELECT  cls.relname,
-	cls2.relname AS table_name,
+	clsrel.relname AS table_name,
 	nsp.nspname AS namespace,
 	ind.indisunique,
 	ind.indisclustered as isClustered,
@@ -9,9 +11,9 @@ SELECT  cls.relname,
 		FROM pg_catalog.pg_attribute attr
 		WHERE attr.attrelid = ind.indrelid 
 			AND attr.attnum = any(ind.indkey)) AS cols
-FROM pg_catalog.pg_class cls
-JOIN pg_catalog.pg_index ind ON cls.oid = ind.indexrelid
-JOIN pg_catalog.pg_class cls2 ON cls2.oid = ind.indrelid
+FROM pg_catalog.pg_index ind
+JOIN pg_catalog.pg_class cls ON cls.oid = ind.indexrelid
+JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid
 LEFT JOIN pg_catalog.pg_namespace nsp ON nsp.oid = cls.relnamespace
 LEFT JOIN pg_catalog.pg_description des ON ind.indexrelid = des.objoid
     AND des.objsubid = 0
@@ -21,4 +23,3 @@ WHERE cls.relkind = 'i'
     AND ind.indisprimary = FALSE
     AND ind.indisexclusion = FALSE
     AND cons.conindid is NULL
-ORDER BY relname

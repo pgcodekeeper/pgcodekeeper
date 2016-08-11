@@ -275,7 +275,7 @@ public class JdbcLoader implements PgCatalogStrings {
         setCurrentOperation("set search_path query");
         try (Statement stmnt = connection.createStatement()) {
             stmnt.execute("SET search_path = " + PgDiffUtils.getQuotedName(schemaName)
-                    + ", pg_catalog;");
+            + ", pg_catalog;");
         }
 
         // TYPES
@@ -1167,9 +1167,9 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
-        Array array;
-        if ((array = res.getArray("cols")) != null){
-            String[] cols = (String[]) array.getArray();
+        Array colsArray = res.getArray("cols");
+        if (colsArray != null) {
+            String[] cols = (String[]) colsArray.getArray();
             for (String col : cols){
                 i.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
             }
@@ -1328,7 +1328,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     val = PgDiffUtils.quoteString(val);
                 }
                 body.append("\n    SET ").append(par).append(" TO ")
-                        .append(val);
+                .append(val);
             }
         }
 
