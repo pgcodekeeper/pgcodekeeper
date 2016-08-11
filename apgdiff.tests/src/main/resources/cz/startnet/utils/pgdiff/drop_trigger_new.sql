@@ -52,6 +52,9 @@ CREATE TABLE test_table (
 
 ALTER TABLE public.test_table OWNER TO fordfrog;
 
+CREATE VIEW test_view AS 
+    SELECT test_table.id FROM test_table;
+
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
