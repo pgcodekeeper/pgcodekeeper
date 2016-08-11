@@ -9,8 +9,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -54,15 +54,15 @@ public class PgDumpLoader implements AutoCloseable {
 
     private List<FunctionBodyContainer> funcBodyReferences;
 
-	private List<AntlrError> errors = new LinkedList<>();
+    private final List<AntlrError> errors = new ArrayList<>();
 
     public List<FunctionBodyContainer> getFuncBodyReferences() {
         return funcBodyReferences;
     }
 
-	public List<AntlrError> getErrors() {
-		return errors;
-	}
+    public List<AntlrError> getErrors() {
+        return errors;
+    }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
             PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
@@ -140,7 +140,7 @@ public class PgDumpLoader implements AutoCloseable {
                 new ReferenceListener(intoDb, inputObjectName)
                 : new CustomSQLParserListener(intoDb, inputObjectName));
         AntlrParser.parseInputStream(input, args.getInCharsetName(), inputObjectName,
-				listener, monitor, monitoringLevel, errors);
+                listener, monitor, monitoringLevel, errors);
 
         if (loadReferences) {
             funcBodyReferences = ((ReferenceListener) listener).getFunctionBodies();

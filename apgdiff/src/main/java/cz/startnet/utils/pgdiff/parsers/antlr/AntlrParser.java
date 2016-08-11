@@ -28,27 +28,23 @@ public class AntlrParser {
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
     public static SQLParser makeBasicParser(InputStream stream, String charset,
-			String parsedObjectName, List<AntlrError> errors) throws IOException {
+            String parsedObjectName, List<AntlrError> errors) throws IOException {
         return makeBasicParser(
                 new ANTLRInputStream(new InputStreamReader(stream, charset)),
-				parsedObjectName, errors);
+                parsedObjectName, errors);
     }
 
     /**
      * Constructs a {@link SQLParser} object with the string as the token source
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
-	public static SQLParser makeBasicParser(String string, String parsedObjectName, List<AntlrError> errors) {
-		return makeBasicParser(new ANTLRInputStream(string), parsedObjectName, errors);
+    public static SQLParser makeBasicParser(String string, String parsedObjectName) {
+        return makeBasicParser(new ANTLRInputStream(string), parsedObjectName, null);
     }
 
-	public static SQLParser makeBasicParser(String string, String parsedObjectName) {
-		return makeBasicParser(new ANTLRInputStream(string), parsedObjectName, null);
-	}
-
-	private static SQLParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName,
-			List<AntlrError> errors) {
-		CustomSQLErrorListener errListener = new CustomSQLErrorListener(parsedObjectName, errors);
+    private static SQLParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName,
+            List<AntlrError> errors) {
+        CustomSQLErrorListener errListener = new CustomSQLErrorListener(parsedObjectName, errors);
 
         SQLLexer lexer = new SQLLexer(stream);
         lexer.removeErrorListeners();
@@ -64,8 +60,8 @@ public class AntlrParser {
 
     public static void parseInputStream(InputStream inputStream, String charsetName,
             String parsedObjectName, SQLParserBaseListener listener,
-			IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException {
-		SQLParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName, errors);
+            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException {
+        SQLParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName, errors);
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
         parser.addParseListener(new ParseTreeListener() {
@@ -98,11 +94,11 @@ public class AntlrParser {
 class CustomSQLErrorListener extends BaseErrorListener {
 
     private final String parsedObjectName;
-	private List<AntlrError> errors;
+    private final List<AntlrError> errors;
 
-	public CustomSQLErrorListener(String parsedObjectName, List<AntlrError> errors) {
+    public CustomSQLErrorListener(String parsedObjectName, List<AntlrError> errors) {
         this.parsedObjectName = parsedObjectName;
-		this.errors = errors;
+        this.errors = errors;
     }
 
     @Override
@@ -112,6 +108,8 @@ class CustomSQLErrorListener extends BaseErrorListener {
         Log.log(Log.LOG_WARNING, "ANTLR Error:\n"
                 + parsedObjectName + " line " + line + ':' + charPositionInLine
                 + ' ' + msg, e);
-		errors.add(new AntlrError(line, charPositionInLine, msg));
+        if (errors != null) {
+            errors.add(new AntlrError(line, charPositionInLine, msg));
+        }
     }
 }

@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
@@ -94,35 +94,39 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 if (!(delta.getResource() instanceof IFile)) {
                     return true;
                 }
-				PgDiffArguments args = new PgDiffArguments();
+                PgDiffArguments args = new PgDiffArguments();
                 sub.worked(1);
 
                 switch (delta.getKind()) {
                 case IResourceDelta.REMOVED:
                 case IResourceDelta.REMOVED_PHANTOM:
+                    // TODO why does REPLACED follow REMOVED path?
                 case IResourceDelta.REPLACED:
                     parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
                     break;
-				case IResourceDelta.CHANGED:
-					IFile iFile = (IFile) delta.getResource();
+                case IResourceDelta.CHANGED:
+                    // FIXME this must go via default path
+                    // marker placement should either be done in PgDbParser or error list must be returned here
+                    // markers should be
+                    IFile iFile = (IFile) delta.getResource();
 
-					iFile.deleteMarkers(null, false, IResource.DEPTH_INFINITE);
-					try {
-						LicensePrefs.setLicense(args);
-						PgDumpLoader dumpLoader = new PgDumpLoader(iFile.getContents(),
-								delta.getResource().getLocation().toOSString(), args);
-						dumpLoader.load(true);
-						dumpLoader.close();
-						for (AntlrError antlrError : dumpLoader.getErrors()) {
-							IMarker marker = iFile.createMarker(UIConsts.MARKER.ID);
-							marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-							marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
-						}
-					} catch (IOException | LicenseException | InterruptedException ex) {
-						throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
-					}
-					break;
+                    iFile.deleteMarkers(null, false, IResource.DEPTH_INFINITE);
+                    try {
+                        LicensePrefs.setLicense(args);
+                        PgDumpLoader dumpLoader = new PgDumpLoader(iFile.getContents(),
+                                delta.getResource().getLocation().toOSString(), args);
+                        dumpLoader.load(true);
+                        dumpLoader.close();
+                        for (AntlrError antlrError : dumpLoader.getErrors()) {
+                            IMarker marker = iFile.createMarker(MARKER.ERROR);
+                            marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
+                            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+                            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
+                        }
+                    } catch (IOException | LicenseException | InterruptedException ex) {
+                        throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
+                    }
+                    break;
                 default:
                     try {
                         parser.getObjFromProjFile(

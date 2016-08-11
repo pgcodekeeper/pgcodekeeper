@@ -535,8 +535,8 @@
        </consolePageParticipant>
     </extension>
     <extension
-          id="pgSQLMarker"
-          name="Pg SQL marker"
+          id="ru.taximaxim.codekeeper.ui.sql.errormarker"
+          name="%marker.sql.error.name"
           point="org.eclipse.core.resources.markers">
        <super
              type="org.eclipse.core.resources.problemmarker">
@@ -544,9 +544,6 @@
        <super
              type="org.eclipse.core.resources.textmarker">
        </super>
-       <attribute
-             name="ru.taximaxim.codekeeper.ui.message">
-       </attribute>
        <persistent
              value="true">
        </persistent>

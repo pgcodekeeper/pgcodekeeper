@@ -275,7 +275,7 @@ public class JdbcLoader implements PgCatalogStrings {
         setCurrentOperation("set search_path query");
         try (Statement stmnt = connection.createStatement()) {
             stmnt.execute("SET search_path = " + PgDiffUtils.getQuotedName(schemaName)
-                    + ", pg_catalog;");
+            + ", pg_catalog;");
         }
 
         // TYPES
@@ -826,7 +826,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
-        SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation(), null);
+        SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation());
         UtilExpr.analyze(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 
@@ -1328,7 +1328,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     val = PgDiffUtils.quoteString(val);
                 }
                 body.append("\n    SET ").append(par).append(" TO ")
-                        .append(val);
+                .append(val);
             }
         }
 

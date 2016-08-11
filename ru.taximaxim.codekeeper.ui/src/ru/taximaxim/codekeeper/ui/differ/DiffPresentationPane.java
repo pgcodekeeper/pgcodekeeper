@@ -325,17 +325,17 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         btnPgDump = new Button(grpSrc, SWT.RADIO);
-    	btnPgDump.setText(Messages.db);
-    	btnPgDump.addSelectionListener(new SelectionAdapter() {
+        btnPgDump.setText(Messages.db);
+        btnPgDump.addSelectionListener(new SelectionAdapter() {
 
-    		@Override
-    		public void widgetSelected(SelectionEvent e) {
-    			showDbPicker(true);
-    			selectedDBSource = DBSources.SOURCE_TYPE_DB;
-    			lblSourceInfo.setText(getSourceInfoText());
-    			containerUpper.layout();
-    		}
-    	});
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showDbPicker(true);
+                selectedDBSource = DBSources.SOURCE_TYPE_DB;
+                lblSourceInfo.setText(getSourceInfoText());
+                containerUpper.layout();
+            }
+        });
         btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
         
 
@@ -438,16 +438,16 @@ public abstract class DiffPresentationPane extends Composite {
         });
         
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-			
-			@Override
-			public void propertyChange(PropertyChangeEvent arg0) {
-				//TODO
-				btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
-				if (!btnPgDump.isVisible()){
-					btnJdbc.setSelection(true);
-				}
-			}
-		});
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent arg0) {
+                //TODO
+                btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
+                if (!btnPgDump.isVisible()){
+                    btnJdbc.setSelection(true);
+                }
+            }
+        });
     }
 
     public void setTitleColor(RGB color){
