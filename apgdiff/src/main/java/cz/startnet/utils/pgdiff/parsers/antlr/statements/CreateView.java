@@ -29,7 +29,7 @@ public class CreateView extends ParserAbstract {
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            UtilExpr.create(ctx.v_query, new Select(schemaName), view);//createSelect(ctx.v_query, schemaName, view);
+            UtilExpr.analyze(ctx.v_query, new Select(schemaName), view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {

@@ -1,15 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
@@ -17,7 +14,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
@@ -43,7 +39,7 @@ public class Select extends AbstractExprWithNmspc {
 
     /**
      * Flags for proper FROM (subquery) analysis.<br>
-     * {@link #findReference(String)} assumes that when {@link #inFrom} is set the FROM clause
+     * {@link #findReferenceInNmspc(String, String, String)} assumes that when {@link #inFrom} is set the FROM clause
      * of that query is analyzed and skips that namespace entirely unless {@link #lateralAllowed} is also set
      * (when analyzing a lateral FROM subquery or a function call).<br>
      * This assumes that {@link #from(From_itemContext)} is the first method to fill the namespace.<br>
@@ -64,61 +60,12 @@ public class Select extends AbstractExprWithNmspc {
     }
 
     @Override
-    protected AbstractExpr findCte(String cteName) {
-        return cte.contains(cteName) ? this : super.findCte(cteName);
+    protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
+        return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
     @Override
-    protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
-        if (!inFrom || lateralAllowed) {
-            boolean found;
-            GenericColumn dereferenced = null;
-            if (schema == null && namespace.containsKey(name)) {
-                found = true;
-                dereferenced = namespace.get(name);
-            } else if (!unaliasedNamespace.isEmpty()) {
-                // simple empty check to save some allocations
-                // it will almost always be empty
-                for (GenericColumn unaliased : unaliasedNamespace) {
-                    if (unaliased.table.equals(name) &&
-                            (schema == null || unaliased.schema.equals(schema))) {
-                        if (dereferenced == null) {
-                            dereferenced = unaliased;
-                            if (schema != null) {
-                                // fully qualified, no ambiguity search needed
-                                break;
-                            }
-                        } else {
-                            Log.log(Log.LOG_WARNING, "Ambiguous reference: " + name);
-                        }
-                    }
-                }
-                found = dereferenced != null;
-            } else {
-                found = false;
-            }
-
-            if (found) {
-                // column aliases imply there must be a corresponding table alias
-                // so we may defer their lookup until here
-
-                // also, if we cannot dereference an existing name it's safe to assume
-                // all its columns are aliases
-                // this saves a lookup and extra space in columnAliases
-                if (column != null && dereferenced != null) {
-                    Set<String> columns = columnAliases.get(name);
-                    if (columns != null && columns.contains(column)) {
-                        dereferenced = null;
-                    }
-                }
-                return new SimpleEntry<>(name, dereferenced);
-            }
-        }
-        return super.findReference(schema, name, column);
-    }
-
-    @Override
-    protected List<String> analize(ParserRuleContext ruleCtx) {
+    public List<String> analyze(ParserRuleContext ruleCtx) {
         SelectStmt select = null;
         if (ruleCtx instanceof Select_stmtContext) {
             select = new SelectStmt((Select_stmtContext) ruleCtx);
@@ -129,7 +76,7 @@ public class Select extends AbstractExprWithNmspc {
         }
         With_clauseContext with = select.withClause();
         if (with != null) {
-            withPerform(with, cte);
+            analyzeCte(with);
         }
 
         List<String> ret = selectOps(select.selectOps());
@@ -147,7 +94,7 @@ public class Select extends AbstractExprWithNmspc {
             }
             if(vexs != null) {
                 for (VexContext vexCtx : vexs) {
-                    vex.analize(new Vex(vexCtx));
+                    vex.analyze(new Vex(vexCtx));
                 }
             }
         }
@@ -165,9 +112,8 @@ public class Select extends AbstractExprWithNmspc {
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
 
-        if (selectOps.leftParen() != null && selectOps.rightParen() != null &&
-                selectStmt != null) {
-            ret = analize(selectStmt);
+        if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
+            ret = analyze(selectStmt);
         } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
@@ -193,14 +139,14 @@ public class Select extends AbstractExprWithNmspc {
                 ret = new ArrayList<>();
                 ValueExpr vex = new ValueExpr(this);
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                    String column = vex.analize(new Vex(target.vex()));
+                    String column = vex.analyze(new Vex(target.vex()));
                     ret.add(target.alias == null ? column : target.alias.getText());
                 }
 
                 if ((primary.set_qualifier() != null && primary.ON() != null)
                         || primary.WHERE() != null || primary.HAVING() != null) {
                     for (VexContext v : primary.vex()) {
-                        vex.analize(new Vex(v));
+                        vex.analyze(new Vex(v));
                     }
                 }
 
@@ -231,7 +177,7 @@ public class Select extends AbstractExprWithNmspc {
                 ValueExpr vex = new ValueExpr(this);
                 for (Values_valuesContext vals : values.values_values()) {
                     for (VexContext v : vals.vex()) {
-                        vex.analize(new Vex(v));
+                        vex.analyze(new Vex(v));
                     }
                 }
             } else {
@@ -247,10 +193,10 @@ public class Select extends AbstractExprWithNmspc {
         VexContext v = groupingSet.vex();
         Row_value_predicand_listContext predicandList;
         if (v != null) {
-            vex.analize(new Vex(v));
+            vex.analyze(new Vex(v));
         } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
             for (VexContext predicand : predicandList.vex()) {
-                vex.analize(new Vex(predicand));
+                vex.analyze(new Vex(predicand));
             }
         }
     }
@@ -290,7 +236,7 @@ public class Select extends AbstractExprWithNmspc {
                 // this greatly simplifies analysis logic here
                 try {
                     lateralAllowed = true;
-                    new ValueExpr(this).analize(new Vex(joinOn));
+                    new ValueExpr(this).analyze(new Vex(joinOn));
                 } finally {
                     lateralAllowed = oldLateral;
                 }
@@ -302,33 +248,12 @@ public class Select extends AbstractExprWithNmspc {
             Function_callContext function;
 
             if (table != null) {
-                List<IdentifierContext> tableIds = table.identifier();
-                String tableName = QNameParser.getFirstName(tableIds);
-
-                boolean isCte = tableIds.size() == 1 && hasCte(tableName);
-                GenericColumn depcy = null;
-                if (!isCte) {
-                    depcy = addObjectDepcy(tableIds, DbObjType.TABLE);
-                }
-
-                if (alias != null) {
-                    String aliasName = alias.alias.getText();
-                    if (addReference(aliasName, depcy) && !isCte &&
-                            !alias.column_alias.isEmpty()) {
-                        for (IdentifierContext columnAlias : alias.column_alias) {
-                            addColumnReference(aliasName, columnAlias.getText());
-                        }
-                    }
-                } else if (isCte) {
-                    addReference(tableName, null);
-                } else {
-                    addRawTableReference(depcy);
-                }
+                addNameReference(table, alias);
             } else if ((subquery = primary.table_subquery()) != null) {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    new Select(this).analize(subquery.select_stmt());
+                    new Select(this).analyze(subquery.select_stmt());
                     addReference(alias.alias.getText(), null);
                 } finally {
                     lateralAllowed = oldLateral;

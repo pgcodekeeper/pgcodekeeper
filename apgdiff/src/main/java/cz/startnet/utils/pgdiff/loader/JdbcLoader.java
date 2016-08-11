@@ -828,7 +828,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
         SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation());
-        UtilExpr.create(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
+        UtilExpr.analyze(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException {

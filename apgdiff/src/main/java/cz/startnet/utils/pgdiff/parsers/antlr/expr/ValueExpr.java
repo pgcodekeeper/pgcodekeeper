@@ -58,8 +58,7 @@ public class ValueExpr extends AbstractExpr {
         return l;
     }
 
-    @Override
-    protected String analize(Vex vex) {
+    public String analyze(Vex vex) {
         String ret = null;
         Data_typeContext dataType = vex.dataType();
         Collate_identifierContext collate;
@@ -75,10 +74,10 @@ public class ValueExpr extends AbstractExpr {
             // TODO pending DbObjType.COLLATION
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
-            new Select(this).analize(selectStmt);
+            new Select(this).analyze(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
-                analize(new Vex(v));
+                analyze(new Vex(v));
             }
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
@@ -95,22 +94,22 @@ public class ValueExpr extends AbstractExpr {
 
             if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                ret = new Select(this).analize(subSelectStmt).get(0);
+                ret = new Select(this).analyze(subSelectStmt).get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
             } else if ((cast = primary.cast_specification()) != null) {
-                analize(new Vex(cast.vex()));
+                analyze(new Vex(cast.vex()));
                 addTypeDepcy(cast.data_type());
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
-                    analize(new Vex(compModVex));
+                    analyze(new Vex(compModVex));
                 } else {
-                    new Select(this).analize(compMod.select_stmt_no_parens());
+                    new Select(this).analyze(compMod.select_stmt_no_parens());
                 }
             } else if (primary.EXISTS() != null &&
                     (subquery = primary.table_subquery()) != null) {
-                new Select(this).analize(subquery.select_stmt());
+                new Select(this).analyze(subquery.select_stmt());
             } else if ((function = primary.function_call()) != null) {
                 function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
@@ -122,7 +121,7 @@ public class ValueExpr extends AbstractExpr {
                 if (arrayb != null) {
                     subOperands = addVexCtxtoList(subOperands, arrayb.vex());
                 } else {
-                    new Select(this).analize(
+                    new Select(this).analyze(
                             array.array_query().table_subquery().select_stmt());
                 }
             } else if ((typeCoercion = primary.type_coercion()) != null) {
@@ -131,7 +130,7 @@ public class ValueExpr extends AbstractExpr {
 
             if (subOperands != null) {
                 for (Vex v : subOperands) {
-                    analize(v);
+                    analyze(v);
                 }
             }
         } else {
@@ -141,7 +140,7 @@ public class ValueExpr extends AbstractExpr {
         List<Vex> operands = vex.vex();
         if (!operands.isEmpty()) {
             for (Vex v : operands) {
-                analize(v);
+                analyze(v);
             }
         } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
@@ -171,20 +170,20 @@ public class ValueExpr extends AbstractExpr {
             }
             Filter_clauseContext filter = function.filter_clause();
             if (filter != null) {
-                analize(new Vex(filter.vex()));
+                analyze(new Vex(filter.vex()));
             }
             Window_definitionContext window = function.window_definition();
             if (window != null) {
                 window(window);
             }
         } else if ((extract = function.extract_function()) != null) {
-            analize(new Vex(extract.vex()));
+            analyze(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
             args = addVexCtxtoList(args, string.vex());
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
-                analize(new Vex(vexB));
+                analyze(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
@@ -192,7 +191,7 @@ public class ValueExpr extends AbstractExpr {
 
         if (args != null) {
             for (Vex v : args) {
-                analize(v);
+                analyze(v);
             }
         }
         return ret;
@@ -200,7 +199,7 @@ public class ValueExpr extends AbstractExpr {
 
     public void orderBy(Orderby_clauseContext orderBy) {
         for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
-            analize(new Vex(sort.vex()));
+            analyze(new Vex(sort.vex()));
         }
     }
 
@@ -208,7 +207,7 @@ public class ValueExpr extends AbstractExpr {
         Partition_by_columnsContext partition = window.partition_by_columns();
         if (partition != null) {
             for (VexContext v : partition.vex()) {
-                analize(new Vex(v));
+                analyze(new Vex(v));
             }
         }
 
@@ -220,7 +219,7 @@ public class ValueExpr extends AbstractExpr {
         Frame_clauseContext frame = window.frame_clause();
         if (frame != null) {
             for (Frame_boundContext bound : frame.frame_bound()) {
-                analize(new Vex(bound.vex()));
+                analyze(new Vex(bound.vex()));
             }
         }
     }

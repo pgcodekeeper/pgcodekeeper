@@ -65,18 +65,18 @@ public class CreateRewrite extends ParserAbstract {
             PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
             ParserRuleContext parser = null;
-            AbstractExprWithNmspc analizer = null;
+            AbstractExprWithNmspc analyzer = null;
             if ((parser = cmd.select_stmt()) != null) {
-                analizer = new Select(schemaName);
+                analyzer = new Select(schemaName);
             } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
-                analizer = new Insert(schemaName);
+                analyzer = new Insert(schemaName);
             } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
-                analizer = new Delete(schemaName);
+                analyzer = new Delete(schemaName);
             } else if ((parser = cmd.update_stmt_for_psql()) != null) {
-                analizer = new Update(schemaName);
+                analyzer = new Update(schemaName);
             }
-            if (parser != null && analizer != null) {
-                UtilExpr.create(parser, analizer, rule);
+            if (parser != null && analyzer != null) {
+                UtilExpr.analyze(parser, analyzer, rule);
             }
             rule.addCommand(args, getFullCtxText(cmd));
         }
