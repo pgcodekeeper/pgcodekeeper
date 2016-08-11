@@ -37,8 +37,12 @@ public abstract class AbstractExpr {
         depcies = parent.depcies;
     }
 
-    protected Select findCte(String cteName) {
+    protected AbstractExprWithNmspc findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
+    }
+
+    protected boolean hasCte(String cteName) {
+        return findCte(cteName) != null;
     }
 
     /**
@@ -55,15 +59,14 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
-        String schema = QNameParser.getSchemaName(ids, this.schema);
-        GenericColumn depcy = new GenericColumn(schema, QNameParser.getFirstName(ids), type);
+        GenericColumn depcy = new GenericColumn(
+                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
 
     protected void addTypeDepcy(Data_typeContext type) {
-        Schema_qualified_name_nontypeContext typeName =
-                type.predefined_type().schema_qualified_name_nontype();
+        Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
 
         if (typeName != null) {
             IdentifierContext qual = typeName.identifier();
@@ -99,5 +102,14 @@ public abstract class AbstractExpr {
             }
         }
         return column;
+    }
+
+    protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
+        List<IdentifierContext> ids = table.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, schema);
+        String tableName = QNameParser.getFirstName(ids);
+        for (IdentifierContext col : cols) {
+            depcies.add(new GenericColumn(schemaName, tableName, col.getText(), DbObjType.COLUMN));
+        }
     }
 }

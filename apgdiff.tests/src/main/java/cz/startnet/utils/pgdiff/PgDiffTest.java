@@ -23,6 +23,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 
@@ -306,6 +307,7 @@ public class PgDiffTest {
     public PgDiffTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
         Locale.setDefault(Locale.ENGLISH);
+        Log.log(Log.LOG_DEBUG, fileNameTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException {

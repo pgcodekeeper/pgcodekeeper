@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
@@ -123,6 +124,7 @@ public class PgDiffDepciesTest {
         this.dbTemplate = fileNameTemplate;
         this.userSelTemplate = userSelTemplate;
         Locale.setDefault(Locale.ENGLISH);
+        Log.log(Log.LOG_DEBUG, dbTemplate + ' ' + userSelTemplate);
     }
 
     public void runDiffSame(PgDatabase db) throws IOException {

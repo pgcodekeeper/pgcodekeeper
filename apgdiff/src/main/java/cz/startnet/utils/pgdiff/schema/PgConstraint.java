@@ -56,10 +56,10 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
 
     public void setForeignTable(GenericColumn foreignTable) {
-        if (foreignTable.type != DbObjType.TABLE || foreignTable.column != null) {
+        if (foreignTable != null && (foreignTable.type != DbObjType.TABLE || foreignTable.column != null)) {
             throw new IllegalArgumentException("Incorrect foreign table ref!");
         }
-        this.refTable  = foreignTable;
+        this.refTable = foreignTable;
     }
 
     public boolean isPrimaryKey() {
@@ -203,6 +203,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
         constraintDst.columns.addAll(columns);
+        constraintDst.setForeignTable(getForeignTable());
         constraintDst.refs.addAll(refs);
         constraintDst.deps.addAll(deps);
         return constraintDst;
