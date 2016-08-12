@@ -62,7 +62,8 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
-        if (signatureCache != null) {
+        boolean cache = !includeDefaultValues && !includeArgNames;
+        if (cache && signatureCache != null) {
             return sb.append(signatureCache);
         }
         final int sigStart = sb.length();
@@ -81,7 +82,9 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         sb.append(')');
 
-        signatureCache = sb.substring(sigStart, sb.length());
+        if (cache) {
+            signatureCache = sb.substring(sigStart, sb.length());
+        }
         return sb;
     }
 
