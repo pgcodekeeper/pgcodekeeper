@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgFunction extends PgStatementWithSearchPath {
 
+    private String signatureCache;
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
@@ -61,9 +62,12 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
-        sb.append(PgDiffUtils.getQuotedName(name));
+        if (signatureCache != null) {
+            return sb.append(signatureCache);
+        }
+        final int sigStart = sb.length();
 
-        sb.append('(');
+        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
             if (!includeArgNames && argument.getMode().equalsIgnoreCase("OUT")) {
@@ -77,6 +81,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         sb.append(')');
 
+        signatureCache = sb.substring(sigStart, sb.length());
         return sb;
     }
 
@@ -182,10 +187,12 @@ public class PgFunction extends PgStatementWithSearchPath {
      * data types.
      *
      * @return function signature
-     * TODO cache/pre-store this value?
      */
     public String getSignature() {
-        return appendFunctionSignature(new StringBuilder(), false, false).toString();
+        if (signatureCache == null) {
+            signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
+        }
+        return signatureCache;
     }
 
     /**

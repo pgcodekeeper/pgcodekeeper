@@ -165,12 +165,23 @@ public final class GenericColumn implements Serializable {
         // getRelation should only look for "selectable" relations
         return getRelation(s);
     }
-
+    /*
+     * // optimization debug tools
+    public static final Map<String, Integer> ZERO = new HashMap<>();
+    public static final Map<String, Integer> MANY = new HashMap<>();
+     */
     private PgFunction resolveFunctionCall(PgSchema schema) {
         // in some cases (like triggers) we already have a signature reference, try it first
         // eventually this will become the norm (pending function call analysis)
         // and bare name lookup will become deprecated
-        PgFunction func = schema.getFunction(table);
+
+        // for now optimize by preferring bareName path for names with no signature (no parens)
+        // later we can make a requirement of caching signatures when loading functions
+
+        PgFunction func = null;
+        if (table.indexOf('(') != -1) {
+            func = schema.getFunction(table);
+        }
         if (func != null) {
             return func;
         }
@@ -182,6 +193,19 @@ public final class GenericColumn implements Serializable {
                 func = f;
             }
         }
+        /*
+        Map<String, Integer> m;
+        if (found != 1) {
+            m = found == 0 ? ZERO : MANY;
+            Integer i = m.get(table);
+            if (i == null) {
+                i = 0;
+            } else {
+                ++i;
+            }
+            m.put(table, i);
+        }
+         */
         // TODO right now we don't have means to resolve overloaded function calls
         // to avoid false dependencies skip resolving overloaded calls completely
         return found == 1 ? func : null;
