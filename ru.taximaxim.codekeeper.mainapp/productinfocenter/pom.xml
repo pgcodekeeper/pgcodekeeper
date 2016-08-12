@@ -30,7 +30,7 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <url>ftp://ftp:ftp@storage/pgCodeKeeper/</url>
+                                    <url>ftp://ftp:ftp@storage.chelny.taximaxim.ru/pgCodeKeeper/</url>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
                                 </configuration>

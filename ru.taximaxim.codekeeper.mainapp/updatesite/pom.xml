@@ -51,7 +51,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${current_version_dir}/*</command>
                                     </commands>
@@ -64,7 +64,7 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
                                 </configuration>
@@ -76,7 +76,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
                                         <command>mkdir /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>

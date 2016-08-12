@@ -97,7 +97,7 @@
                                 </goals>
                                 <configuration>
                                     <fromFile>${project.build.directory}/proguard_map.txt</fromFile>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/proguard/</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/proguard/</url>
                                     <toFile>${unqualifiedVersion}.${buildQualifier}-ui.txt</toFile>
                                 </configuration>
                             </execution>

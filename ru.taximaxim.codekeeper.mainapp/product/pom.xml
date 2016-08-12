@@ -36,7 +36,7 @@
                                 <configuration>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
                                 </configuration>
                             </execution>
                         </executions>
