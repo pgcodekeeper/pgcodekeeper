@@ -31,11 +31,8 @@ public class CommentOn extends ParserAbstract {
         }
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         String comment = ctx.comment_text.getText();
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
         PgSchema schema = db.getSchema(schemaName);
 
         // function
@@ -81,7 +78,7 @@ public class CommentOn extends ParserAbstract {
             // trigger
         } else if (ctx.TRIGGER() != null) {
             String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
-            schema.getTable(tableName).getTrigger(name).setComment(db.getArguments(), comment);
+            schema.getTriggerContainer(tableName).getTrigger(name).setComment(db.getArguments(), comment);
             // database
         } else if (ctx.DATABASE() !=null) {
             db.setComment(db.getArguments(), comment);
@@ -130,12 +127,7 @@ public class CommentOn extends ParserAbstract {
             // rule
         } else if (ctx.RULE() != null) {
             String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
-            PgTable table = schema.getTable(tableName);
-            if (table != null) {
-                table.getRule(name).setComment(db.getArguments(), comment);
-            } else {
-                schema.getView(tableName).getRule(name).setComment(db.getArguments(), comment);
-            }
+            schema.getRuleContainer(tableName).getRule(name).setComment(db.getArguments(), comment);
         }
         return null;
     }

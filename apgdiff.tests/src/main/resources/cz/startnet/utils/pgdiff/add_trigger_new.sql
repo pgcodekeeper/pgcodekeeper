@@ -52,6 +52,9 @@ CREATE TABLE test_table (
 
 ALTER TABLE public.test_table OWNER TO fordfrog;
 
+CREATE VIEW test_view AS 
+    SELECT test_table.id FROM test_table;
+
 --
 -- Name: test_table_trigger; Type: TRIGGER; Schema: public; Owner: fordfrog
 --
@@ -61,6 +64,15 @@ CREATE TRIGGER test_table_trigger
     FOR EACH ROW
     EXECUTE PROCEDURE test_table_trigger();
 
+CREATE TRIGGER test_view_trigger1
+    INSTEAD OF INSERT OR UPDATE ON test_view
+    FOR EACH ROW
+    EXECUTE PROCEDURE test_table_trigger();
+
+CREATE TRIGGER test_view_trigger2
+    AFTER INSERT OR UPDATE ON test_view
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE test_table_trigger();
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres

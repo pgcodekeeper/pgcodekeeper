@@ -115,6 +115,7 @@ public class PgExtension extends PgStatement {
         PgExtension extDst = new PgExtension(getName(), getRawStatement());
         extDst.setSchema(getSchema());
         extDst.setComment(getComment());
+        extDst.deps.addAll(deps);
         return extDst;
     }
 

@@ -344,12 +344,12 @@ create_type_statement
             | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
             | PASSEDBYVALUE
             | ALIGNMENT EQUAL alignment=data_type
-            | STORAGE EQUAL storage=identifier
-            | LIKE EQUAL like_type=identifier
+            | STORAGE EQUAL storage=(PLAIN | EXTERNAL | EXTENDED | MAIN)
+            | LIKE EQUAL like_type=data_type
             | CATEGORY EQUAL category=Character_String_Literal
             | PREFERRED EQUAL preferred=truth_value
             | DEFAULT EQUAL default_value=Character_String_Literal
-            | ELEMENT EQUAL element=identifier
+            | ELEMENT EQUAL element=data_type
             | DELIMITER EQUAL delimiter=Character_String_Literal
             | COLLATABLE EQUAL collatable=truth_value))*
         RIGHT_PAREN)?
@@ -2176,14 +2176,14 @@ insert_stmt_for_psql
   ;
 
 delete_stmt_for_psql
-  : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  : with_clause? DELETE FROM ONLY? delete_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   (USING using_table (COMMA using_table)*)?
   (WHERE (vex | CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
 
 update_stmt_for_psql
-  : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? identifier)?
+  : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   SET update_set (COMMA update_set)*
   (FROM using_table (COMMA using_table)*)?
   (WHERE (vex | WHERE CURRENT OF cursor=identifier))?
@@ -2198,7 +2198,7 @@ update_set
   ;
 
 using_table
-  : ONLY? schema_qualified_name MULTIPLY? (AS? identifier column_references?)?
+  : ONLY? schema_qualified_name MULTIPLY? alias_clause?
   ;
 
 notify_stmt

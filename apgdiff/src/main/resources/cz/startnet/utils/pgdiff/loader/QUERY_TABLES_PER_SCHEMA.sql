@@ -23,6 +23,7 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_names,
        subselectColumns.col_defaults,
        subselectColumns.col_comments,
+       subselectColumns.atttypids as col_type_ids,
        subselectColumns.atttypname as col_type_name,
        subselectColumns.col_notnull,
        subselectColumns.col_collation,
@@ -35,7 +36,8 @@ SELECT subselectColumns.oid::bigint,
        comments.description AS table_comment,
        subselectColumns.spcname as table_space,
        subselectColumns.relhasoids as has_oids,
-       subselectInherits.inherited,
+       subselectInherits.inhrelnames,
+       subselectInherits.inhnspnames,
        subselectColumns.reloptions,
        subselectColumns.toast_reloptions
 FROM
@@ -49,6 +51,7 @@ FROM
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
             array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
             array_agg(columnsData.description ORDER BY columnsData.attnum) AS col_comments,
+            array_agg(columnsData.atttypid ORDER BY columnsData.attnum) AS atttypids,
             array_agg(columnsData.atttypname ORDER BY columnsData.attnum) AS atttypname,
             array_agg(columnsData.attnotnull ORDER BY columnsData.attnum) AS col_notnull,
             array_agg(columnsData.attstattarget ORDER BY columnsData.attnum) AS col_statictics,
@@ -70,6 +73,7 @@ FROM
               c.relhasoids,
               pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
               comments.description,
+              attr.atttypid,
               pg_catalog.format_type(attr.atttypid, attr.atttypmod) AS atttypname,
               attr.attnotnull,
               attr.attstattarget,
@@ -107,12 +111,17 @@ FROM
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
 LEFT JOIN
-    (SELECT array_agg(subinh.inherits)::text[] AS inherited,
+    (SELECT
+        array_agg(subinh.inhrelname ORDER BY subinh.inhrelid, subinh.inhseqno) AS inhrelnames,
+        array_agg(subinh.inhnspname ORDER BY subinh.inhrelid, subinh.inhseqno) AS inhnspnames,
         subinh.inhrelid
      FROM
          (SELECT inhrelid,
-             inh.inhparent::regclass AS inherits,
+             inhrel.relname as inhrelname,
+             inhns.nspname as inhnspname,
              inh.inhseqno
           FROM pg_catalog.pg_inherits inh
+          LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
+          LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
           ORDER BY inhrelid, inh.inhseqno ) subinh
      GROUP BY subinh.inhrelid ) subselectInherits ON subselectInherits.inhrelid = subselectColumns.oid

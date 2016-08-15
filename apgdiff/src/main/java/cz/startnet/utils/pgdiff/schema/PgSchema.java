@@ -228,6 +228,22 @@ public class PgSchema extends PgStatement {
     }
 
     /**
+     * @return rule-containing element with matching name (either TABLE or VIEW)
+     */
+    public PgRuleContainer getRuleContainer(String name) {
+        PgRuleContainer container = getTable(name);
+        return container == null ? getView(name) : container;
+    }
+
+    /**
+     * @return trigger-containing element with matching name (either TABLE or VIEW)
+     */
+    public PgTriggerContainer getTriggerContainer(String name) {
+        PgTriggerContainer container = getTable(name);
+        return container == null ? getView(name) : container;
+    }
+
+    /**
      * Finds type according to specified type {@code name}.
      *
      * @param name name of the type to be searched
@@ -400,12 +416,13 @@ public class PgSchema extends PgStatement {
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            schemaDst.addPrivilege(priv.shallowCopy());
+            schemaDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            schemaDst.addPrivilege(priv.shallowCopy());
+            schemaDst.addPrivilege(priv.deepCopy());
         }
         schemaDst.setOwner(getOwner());
+        schemaDst.deps.addAll(deps);
         return schemaDst;
     }
 

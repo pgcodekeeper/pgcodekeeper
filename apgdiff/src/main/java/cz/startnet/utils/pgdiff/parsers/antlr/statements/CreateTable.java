@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTable extends ParserAbstract {
     private final Create_table_statementContext ctx;
@@ -34,11 +35,7 @@ public class CreateTable extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
-
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
@@ -48,22 +45,31 @@ public class CreateTable extends ParserAbstract {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
-                table.addColumn(getColumn(colCtx.table_column_definition(), sequences, defaultFunctions));
+                table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
+                        defaultFunctions, getDefSchemaName()));
             }
         }
         for (String seq : sequences) {
-            table.addSequence(seq);
+            QNameParser seqName = new QNameParser(seq);
+            table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
+                    seqName.getFirstName(), DbObjType.SEQUENCE));
         }
-        for (Entry<String, GenericColumn> function: defaultFunctions.entrySet()) {
+        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
             PgColumn col = table.getColumn(function.getKey());
             if (col != null) {
-                col.addDefaultFunction(function.getValue());
+                col.addDep(function.getValue());
             }
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
                 List<IdentifierContext> idsInh = nameInher.identifier();
-                table.addInherits(QNameParser.getSchemaName(idsInh), QNameParser.getFirstName(idsInh));
+                String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
+                String inhTableName = QNameParser.getFirstName(idsInh);
+                table.addInherits(inhSchemaName, inhTableName);
+                GenericColumn gc = new GenericColumn(
+                        inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
+                                inhTableName, DbObjType.TABLE);
+                table.addDep(gc);
             }
         }
 

@@ -47,13 +47,13 @@ SELECT  -- GENERAL
     pg_catalog.pg_get_expr(typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
     t.typdefault, -- if using this, single-quote and escape it
     t.typelem,
-    pg_catalog.format_type(t.typelem, NULL) AS typelemname, -- result depends on search_path!
     t.typdelim, -- don't output if == ','
     t.typcollation, -- collatable == (collation != 0)
     -- END BASE
 
     -- DOMAIN
-    pg_catalog.format_type(t.typbasetype, t.typtypmod) AS dom_basetype,
+    pg_catalog.format_type(t.typbasetype, t.typtypmod) AS dom_basetypefmt,
+    t.typbasetype AS dom_basetype,
     -- collation from BASE
     (SELECT tbase.typcollation FROM pg_catalog.pg_type tbase WHERE tbase.oid = t.typbasetype) AS dom_basecollation,
     (SELECT cl.collname FROM collations cl WHERE cl.oid = t.typcollation) AS dom_collationname, -- don't output if typcollation = dom_basecollation
@@ -72,7 +72,7 @@ SELECT  -- GENERAL
     -- END ENUM
 
     -- RANGE
-    pg_catalog.format_type(r.rngsubtype, NULL) AS rngsubtype,
+    r.rngsubtype,
     opc.opcname, -- don't output opclass if opcdefault == true; always qualify
     (SELECT n.nspname FROM nspnames n WHERE n.oid = opc.opcnamespace) AS opcnspname,
     opc.opcdefault,
@@ -89,6 +89,7 @@ SELECT  -- GENERAL
     -- COMPOSITE
     comp_attrs.attnames AS comp_attnames,
     comp_attrs.atttypdefns AS comp_atttypdefns,
+    comp_attrs.atttypids AS comp_atttypids,
     comp_attrs.attcollations AS comp_attcollations,
     comp_attrs.atttypcollations AS comp_atttypcollations,
     comp_attrs.attcollationnames AS comp_attcollationnames, -- don't output if comp_attcollations[i] = comp_atttypcollations[i]
@@ -115,6 +116,7 @@ LEFT JOIN
          comp_attrs_list.attrelid,
          array_agg(comp_attrs_list.attname ORDER BY comp_attrs_list.attnum) AS attnames,
          array_agg(comp_attrs_list.atttypdefn ORDER BY comp_attrs_list.attnum) AS atttypdefns,
+         array_agg(comp_attrs_list.atttypid ORDER BY comp_attrs_list.attnum) AS atttypids,
          array_agg(comp_attrs_list.attcollation ORDER BY comp_attrs_list.attnum) AS attcollations,
          array_agg(comp_attrs_list.atttypcollation ORDER BY comp_attrs_list.attnum) AS atttypcollations,
          array_agg(comp_attrs_list.attcollationname ORDER BY comp_attrs_list.attnum) AS attcollationnames,
@@ -126,6 +128,7 @@ LEFT JOIN
               a.attrelid,
               a.attname,
               pg_catalog.format_type(a.atttypid, a.atttypmod) AS atttypdefn,
+              a.atttypid,
               a.attcollation,
               ta.typcollation AS atttypcollation,
               cl.collname AS attcollationname,

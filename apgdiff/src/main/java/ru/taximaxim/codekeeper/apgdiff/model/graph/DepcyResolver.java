@@ -21,14 +21,13 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgRule;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -39,15 +38,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class DepcyResolver {
 
-    private PgDatabase oldDb;
-    private PgDatabase newDb;
-    private DepcyGraph oldDepcyGraph;
-    private DepcyGraph newDepcyGraph;
-    private Set<ActionContainer> actions = new LinkedHashSet<>();
+    private final PgDatabase oldDb;
+    private final PgDatabase newDb;
+    private final DepcyGraph oldDepcyGraph;
+    private final DepcyGraph newDepcyGraph;
+    private final Set<ActionContainer> actions = new LinkedHashSet<>();
     /**
      * Хранит запущенные итерации, используется для предотвращения циклического прохода по графу
      */
-    private Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
+    private final Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
 
     public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
         return oldDepcyGraph.getGraph();
@@ -281,29 +280,15 @@ public class DepcyResolver {
         case TABLE:
             return oldSchema.getTable(statement.getName());
         case TRIGGER:
-            PgTrigger trig = (PgTrigger) statement;
-            PgTable table = oldSchema.getTable(trig.getTableName());
-            if (table != null) {
-                return table.getTrigger(trig.getName());
+            PgTriggerContainer ct = oldSchema.getTriggerContainer(statement.getParent().getName());
+            if (ct != null) {
+                return ct.getTrigger(statement.getName());
             }
             break;
         case RULE:
-            PgRule rule = (PgRule) statement;
-            switch (rule.getParent().getStatementType()) {
-            case TABLE:
-                PgTable ruleTable = oldSchema.getTable(rule.getTargetName());
-                if (ruleTable != null) {
-                    return ruleTable.getRule(rule.getName());
-                }
-                break;
-            case VIEW:
-                PgView ruleView = oldSchema.getView(rule.getTargetName());
-                if (ruleView != null) {
-                    return ruleView.getRule(rule.getName());
-                }
-                break;
-            default:
-                break;
+            PgRuleContainer cr = oldSchema.getRuleContainer(statement.getParent().getName());
+            if (cr != null) {
+                return cr.getRule(statement.getName());
             }
             break;
         case INDEX:

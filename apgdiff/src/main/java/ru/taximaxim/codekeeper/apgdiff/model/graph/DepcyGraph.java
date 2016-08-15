@@ -1,8 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -11,8 +8,6 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -20,31 +15,17 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
-
-    private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
-            "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
-    });
-
-    // expect no nulls here
-    private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
-            "information_schema", "pg_catalog"});
 
     private final DirectedGraph<PgStatement, DefaultEdge> graph =
             new SimpleDirectedGraph<>(DefaultEdge.class);
@@ -76,14 +57,15 @@ public class DepcyGraph {
         return db;
     }
 
-    public DepcyGraph(PgDatabase graphSrc) throws PgCodekeeperException {
+    public DepcyGraph(PgDatabase graphSrc) {
         db = graphSrc.deepCopy();
         create();
     }
 
-    private void create() throws PgCodekeeperException {
+    private void create() {
         graph.addVertex(db);
 
+        // first pass: object tree
         for(PgSchema schema : db.getSchemas()) {
             graph.addVertex(schema);
             graph.addEdge(schema, db);
@@ -146,351 +128,98 @@ public class DepcyGraph {
                     graph.addVertex(rule);
                     graph.addEdge(rule, view);
                 }
-            }
-        }
 
-        // second loop: dependencies of objects from likely different schemas
-        for(PgSchema schema : db.getSchemas()) {
-            for (PgType type : schema.getTypes()) {
-                createTypeToObject(type, schema);
-            }
-
-            for (PgDomain dom : schema.getDomains()) {
-                createPgStatementToType(dom.getDataType(), schema, dom);
-            }
-
-            for (PgFunction func : schema.getFunctions()) {
-                createFunctionToObject(func, schema);
-            }
-
-            for(PgTable table : schema.getTables()) {
-                createFkeyToReferenced(table);
-                createTableToSequences(table, schema);
-                createTriggersToObjs(table, schema);
-                createTableToTable(table, schema);
-                for (PgColumn col : table.getColumns()) {
-                    createPgStatementToType(col.getType(), schema, col);
-                    columnToFunction(col, schema);
+                for (PgTrigger trigger : view.getTriggers()) {
+                    graph.addVertex(trigger);
+                    graph.addEdge(trigger, view);
                 }
             }
-
-            for(PgView view : schema.getViews()) {
-                createViewToQueried(view, schema);
-            }
         }
-
         for(PgExtension ext : db.getExtensions()) {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
+        }
 
-            if (ext.getSchema() != null) {
-                PgSchema schema = db.getSchema(ext.getSchema());
-                if (schema != null) {
-                    graph.addEdge(ext, schema);
+        // second pass: dependency graph
+        for(PgSchema schema : db.getSchemas()) {
+            processDeps(schema);
+
+            for(PgFunction func : schema.getFunctions()) {
+                processDeps(func);
+            }
+            for(PgSequence seq : schema.getSequences()) {
+                processDeps(seq);
+            }
+            for (PgType type : schema.getTypes()) {
+                processDeps(type);
+            }
+            for (PgDomain domain : schema.getDomains()) {
+                processDeps(domain);
+            }
+            for(PgTable table : schema.getTables()) {
+                processDeps(table);
+
+                for(PgColumn col : table.getColumns()) {
+                    processDeps(col);
+                }
+                for(PgIndex idx : table.getIndexes()) {
+                    processDeps(idx);
+                }
+                for (PgConstraint cons : table.getConstraints()) {
+                    processDeps(cons);
+                    createFkeyToUnique(cons);
+                }
+                for (PgTrigger trg : table.getTriggers()) {
+                    processDeps(trg);
+                }
+                for (PgRule rule : table.getRules()) {
+                    processDeps(rule);
                 }
             }
+            for(PgView view : schema.getViews()) {
+                processDeps(view);
+
+                for (PgRule rule : view.getRules()) {
+                    processDeps(rule);
+                }
+                for (PgTrigger trg : view.getTriggers()) {
+                    processDeps(trg);
+                }
+            }
+        }
+        for(PgExtension ext : db.getExtensions()) {
+            processDeps(ext);
         }
     }
 
-    private void columnToFunction(PgColumn col, PgSchema schema) {
-        for (GenericColumn func : col.getDefaultFunctions()) {
-            PgSchema funcSchema = schema;
-            if (func.schema != null && !schema.getName().equals(func.schema)) {
-                funcSchema = db.getSchema(func.schema);
-            }
-            if (funcSchema == null) {
-                continue;
-            }
-
-            PgFunction function = resolveFunctionCall(funcSchema, func.table);
-            if (function != null) {
-                graph.addEdge(col, function);
-                graph.addEdge(col.getParent(), function);
-            }
-        }
-    }
-
-    private void createPgStatementToType(String dataType, PgSchema schema,
-            PgStatement statement) {
-        String typeName = dataType;
-        if (dataType.lastIndexOf(')') != -1) {
-            typeName = dataType.substring(0, dataType.lastIndexOf('('));
-        }
-        if (typeName.lastIndexOf(']') != -1) {
-            typeName = typeName.substring(0, typeName.lastIndexOf('['));
-        }
-
-        // temp optimization: do not parse system types
-        if (!ApgdiffConsts.SYS_TYPES.contains(typeName)) {
-            QNameParser qname = new QNameParser(typeName);
-            createPgStatementToType(
-                    new GenericColumn(
-                            qname.getSecondName(),
-                            qname.getFirstName(), null),
-                    schema, statement);
-        }
-    }
-
-    private void createPgStatementToType(GenericColumn dataType, PgSchema schema,
-            PgStatement statement) {
-        if (!ApgdiffConsts.SYS_TYPES.contains(dataType.table)) {
-            PgSchema resolvedSchema = dataType.schema == null ?
-                    schema : db.getSchema(dataType.schema);
-            if (resolvedSchema != null) {
-                PgStatement type = resolvedSchema.getType(dataType.table);
-                if (type == null) {
-                    type = resolvedSchema.getDomain(dataType.table);
-                }
-                if (type == null) {
-                    type = resolvedSchema.getTable(dataType.table);
-                }
-                if (type == null) {
-                    type = resolvedSchema.getView(dataType.table);
-                }
-                if (type != null) {
-                    graph.addEdge(statement, type);
-                }
-            }
-        }
-    }
-
-    private void createTypeToObject(PgType type, PgSchema schema) {
-        if (type.getSubtype() != null) {
-            createPgStatementToType(type.getSubtype(), schema, type);
-        }
-        if (type.getElement() != null) {
-            // assume that implicit array types are never loaded
-            // and we have only explicit element definitions
-            createPgStatementToType(type.getElement(), schema, type);
-        }
-        for (PgColumn attr : type.getAttrs()) {
-            createPgStatementToType(attr.getType(), schema, type);
-        }
-
-        // TODO type funcs, caution: may introduce cyclic depcies
-    }
-
-    private void createFunctionToObject(PgFunction func, PgSchema schema) {
-        if (func.getReturnsName() != null) {
-            createPgStatementToType(func.getReturnsName(), schema, func);
-        }
-
-        for (Argument arg : func.getArguments()) {
-            createPgStatementToType(arg.getDataType(), schema, func);
-
-            for (GenericColumn obj : arg.getDefaultObjects()) {
-                PgSchema resolvedSchema = schema;
-                if (obj.schema != null) {
-                    resolvedSchema = db.getSchema(obj.schema);
-                }
-                PgFunction function = resolveFunctionCall(resolvedSchema, obj.table);
-                if (function != null) {
-                    graph.addEdge(func, function);
-                }
-            }
-        }
-    }
-
-    private void createTableToTable(PgTable table, PgSchema schema) {
-        for (Inherits inherit : table.getInherits()) {
-            if (inherit.getKey() != null) {
-                schema = db.getSchema(inherit.getKey());
-            }
-            PgTable tabl = schema.getTable(inherit.getValue());
-            if (tabl != null) {
-                graph.addEdge(table, tabl);
-            }
-        }
-    }
-
-    private void createViewToQueried(PgView view, PgSchema schema) throws PgCodekeeperException {
-        for (GenericColumn col : view.getSelect().getColumns()){
-            String scmName = col.schema;
-            String tblName = col.table;
-            String clmnName = col.column;
-
-            // TODO: вынести "pg_.*" в настройки, сейчас жестко забито
-            // чтобы пропускать выборку из pg_views - системной таблицы
-            if (tblName == null
-                    || (col.table != null && col.table.startsWith("pg_"))
-                    || SYS_SCHEMAS.contains(scmName)){
-                continue;
-            }
-
-            PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
-
-            testNotNull(scm, MessageFormat.format(Messages.View_CannotFindSchema,
-                    view.getName(), tblName, scm.getName()));
-
-            PgTable tbl = scm.getTable(tblName);
-            if (tbl != null) {
-                graph.addEdge(view, tbl);
-
-                if (clmnName == null || SYS_COLUMNS.contains(clmnName)){
-                    continue;
-                }
-                // Если колонка называется * то это ссылки на все колонки из вью
-                if (clmnName.equals("*")) {
-                    for (PgColumn col1 : tbl.getColumns()) {
-                        graph.addEdge(view, col1);
-                    }
-                    continue;
-                }
-                PgColumn clmn = tbl.getColumn(clmnName);
-                if (clmn == null && !tbl.getInherits().isEmpty()) {
-                    // TODO заглушка "несуществующих" inherited колонок
-                    continue;
-                }
-                testNotNull(clmn, MessageFormat.format(Messages.View_CannotFindColumn,
-                        view.getName(), scm.getName(), tblName, clmnName));
-
-                graph.addEdge(view, clmn);
-                continue;
-            }
-
-            PgView vw = scm.getView(tblName);
-            if (vw != null){
-                graph.addVertex(vw);
-                graph.addEdge(view, vw);
-            } else if (col.getType() == DbObjType.FUNCTION) {
-                // TODO: Сейчас пропускаются функции типа upper,
-                // replace, toChar, now, что делать либо
-                // редактировать правила на эти функции, либо
-                // вычислять в коде, скорее всего правила
-                PgFunction func = resolveFunctionCall(scm, tblName);
-                if (func != null) {
-                    graph.addEdge(view, func);
-                }
-            } else {
-                Log.log(Log.LOG_WARNING, "Depcy: View " + view.getName()
-                + " references table/view/function " + tblName
-                + " that doesn't exist!");
+    private void processDeps(PgStatement st) {
+        for (GenericColumn dep : st.getDeps()) {
+            PgStatement depSt = dep.getStatement(db);
+            if (depSt != null) {
+                graph.addEdge(st, depSt);
             }
         }
     }
 
     /**
-     * От триггера к функции, таблице, колонкам
+     * The only way to find this depcy is to compare refcolumns against all existing unique
+     * contraints/keys in reftable.
+     * Unfortunately they might not exist at the stage where {@link PgStatement#getDeps()}
+     * are populated so we have to defer their lookup until here.
      */
-    private void createTriggersToObjs(PgTable table, PgSchema schema) {
-        for (PgTrigger trigger : table.getTriggers()) {
-            graph.addVertex(trigger);
-            graph.addEdge(trigger, table);
-
-            String funcName = trigger.getFunctionSignature();
-            String funcSig = "";
-            int paren = funcName.indexOf('(');
-            if (paren != -1) {
-                funcSig = funcName.substring(paren);
-                funcName = funcName.substring(0, paren);
-            }
-            QNameParser qname = new QNameParser(funcName);
-            PgFunction func = getSchemaForObject(schema, qname)
-                    .getFunction(qname.getFirstName() + funcSig);
-            if (func != null) {
-                graph.addVertex(func);
-                graph.addEdge(trigger, func);
-            }
-            for (String col_name : trigger.getUpdateColumns()) {
-                PgColumn col = table.getColumn(col_name);
-                if (col != null) {
-                    graph.addEdge(trigger, col);
-                }
-            }
-        }
-    }
-
-    private void createTableToSequences(PgTable table, PgSchema schema) {
-        for (String seqName : table.getSequences()) {
-            QNameParser qname = new QNameParser(seqName);
-            PgSequence seq = getSchemaForObject(schema, qname)
-                    .getSequence(qname.getFirstName());
-            if (seq != null) {
-                graph.addVertex(seq);
-                graph.addEdge(table, seq);
-            }
-        }
-    }
-
-    private void createFkeyToReferenced(PgTable table) throws PgCodekeeperException {
-        for (PgConstraint cons : table.getConstraints()) {
-            graph.addVertex(cons);
-            graph.addEdge(cons, table);
-
-            Collection<GenericColumn> refs = cons.getRefs();
-            for (GenericColumn ref : refs) {
-                if (SYS_COLUMNS.contains(ref.column)) {
-                    continue;
-                }
-
-                PgSchema refSchema = db.getSchema(ref.schema);
-                testNotNull(refSchema, MessageFormat.format(
-                        Messages.RefColumn_CannotFindSchema, table.getName(),
-                        cons.getName(), ref.schema));
-
-                PgTable refTable = refSchema.getTable(ref.table);
-                testNotNull(refTable, MessageFormat.format(
-                        Messages.RefColumn_CannotFindTable, table.getName(),
-                        cons.getName(), ref.schema, ref.table));
-
-                graph.addEdge(cons, refTable);
-
-                PgColumn refColumn = refTable.getColumn(ref.column);
-                testNotNull(refColumn, MessageFormat.format(
-                        Messages.RefColumn_CannotFindColumn, table.getName(),
-                        cons.getName(), ref.column, ref.schema, ref.table));
-
-                graph.addEdge(cons, refColumn);
-
-                for (PgConstraint refConstr : refTable.getConstraints()) {
-                    if (refConstr.isPrimaryKey() || refConstr.isUnique()) {
-                        if (refConstr.getColumns().equals(refs)) {
-                            graph.addEdge(cons, refConstr);
-                        }
-                        // только к одному ключу или уникальному констрейнту
-                        break;
+    private void createFkeyToUnique(PgConstraint con) {
+        List<String> refs = con.getForeignColumns();
+        GenericColumn refTable = con.getForeignTable();
+        if (!refs.isEmpty() && refTable != null) {
+            PgTable table = (PgTable) refTable.getStatement(db);
+            if (table != null) {
+                // TODO UNIQUE INDEX can be used here too
+                for (PgConstraint refCon : table.getConstraints()) {
+                    if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
+                        graph.addEdge(con, refCon);
                     }
                 }
             }
-        }
-    }
-
-    private PgFunction resolveFunctionCall(PgSchema schema, String funcName) {
-        int found = 0;
-        PgFunction func = null;
-        for (PgFunction f : schema.getFunctions()) {
-            if (f.getBareName().equals(funcName)) {
-                ++found;
-                func = f;
-            }
-        }
-        // TODO right now we don't have means to resolve overloaded function calls
-        // to avoid false dependencies skip resolving overloaded calls completely
-        return found == 1 ? func : null;
-    }
-
-    /**
-     * Возвращает схему, на которую указывает строковое определение объекта,
-     * либо текущую схему
-     * @param currSchema текущая схема
-     * @param objQualifiedName определение объекта (имя_объекта, либо имя_схемы.имя_объекта)
-     * @return схема, содержащая объект, либо текущая схема
-     */
-    private PgSchema getSchemaForObject(PgSchema currSchema, QNameParser objQualifiedName) {
-        String schemaName = objQualifiedName.getSecondName();
-        PgSchema schemaToSearch = null;
-        if (schemaName != null) {
-            schemaToSearch = db.getSchema(schemaName);
-        }
-        if (schemaToSearch == null) {
-            schemaToSearch = currSchema;
-        }
-        return schemaToSearch;
-    }
-
-    private void testNotNull(Object o, String message) throws PgCodekeeperException{
-        if (o == null){
-            throw new PgCodekeeperException(message);
         }
     }
 

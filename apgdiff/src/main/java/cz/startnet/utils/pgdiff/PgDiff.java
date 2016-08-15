@@ -151,7 +151,7 @@ public final class PgDiff {
         TreeElement.getSelected(root, selected);
 
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
-        selected.addAll(addColumnsAsElements(oldDbFull, newDbFull, selected));
+        addColumnsAsElements(oldDbFull, newDbFull, selected);
         // ---КОСТЫЛЬ-----------
 
         Collections.sort(selected, new CompareTree());
@@ -188,12 +188,11 @@ public final class PgDiff {
      * После реализации колонок как подэлементов таблицы выпилить метод!
      */
     @Deprecated
-    private static List<TreeElement> addColumnsAsElements(PgDatabase oldDbFull,
-            PgDatabase newDbFull, List<TreeElement> selected) {
+    private static void addColumnsAsElements(PgDatabase oldDbFull, PgDatabase newDbFull,
+            List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
-            if (el.getType() == DbObjType.TABLE
-                    && el.getSide() == DiffSide.BOTH) {
+            if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
                 PgTable oldTbl =(PgTable) el.getPgStatement(oldDbFull);
                 PgTable newTbl =(PgTable) el.getPgStatement(newDbFull);
                 for (PgColumn oldCol : oldTbl.getColumns()) {
@@ -221,7 +220,7 @@ public final class PgDiff {
                 }
             }
         }
-        return tempColumns;
+        selected.addAll(tempColumns);
     }
 
     /**

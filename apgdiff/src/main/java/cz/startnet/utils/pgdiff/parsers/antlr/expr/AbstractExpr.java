@@ -37,8 +37,12 @@ public abstract class AbstractExpr {
         depcies = parent.depcies;
     }
 
-    protected Select findCte(String cteName) {
+    protected AbstractExprWithNmspc findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
+    }
+
+    protected boolean hasCte(String cteName) {
+        return findCte(cteName) != null;
     }
 
     /**
@@ -55,25 +59,21 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
-        String schema = QNameParser.getSchemaName(ids);
-        if (schema == null) {
-            schema = this.schema;
-        }
-        GenericColumn depcy = new GenericColumn(schema, QNameParser.getFirstName(ids), null, type);
+        GenericColumn depcy = new GenericColumn(
+                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
 
     protected void addTypeDepcy(Data_typeContext type) {
-        Schema_qualified_name_nontypeContext typeName =
-                type.predefined_type().schema_qualified_name_nontype();
+        Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
 
         if (typeName != null) {
             IdentifierContext qual = typeName.identifier();
             String schema = qual == null ? this.schema : qual.getText();
 
             depcies.add(new GenericColumn(schema,
-                    typeName.identifier_nontype().getText(), null, DbObjType.TYPE));
+                    typeName.identifier_nontype().getText(), DbObjType.TYPE));
         }
     }
 
@@ -98,9 +98,18 @@ public abstract class AbstractExpr {
 
             GenericColumn referencedTable = ref.getValue();
             if (referencedTable != null) {
-                depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column));
+                depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column, DbObjType.COLUMN));
             }
         }
         return column;
+    }
+
+    protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
+        List<IdentifierContext> ids = table.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, schema);
+        String tableName = QNameParser.getFirstName(ids);
+        for (IdentifierContext col : cols) {
+            depcies.add(new GenericColumn(schemaName, tableName, col.getText(), DbObjType.COLUMN));
+        }
     }
 }

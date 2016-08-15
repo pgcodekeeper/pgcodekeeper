@@ -20,7 +20,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgTable extends PgStatementWithSearchPath {
+public class PgTable extends PgStatementWithSearchPath
+implements PgRuleContainer, PgTriggerContainer {
 
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<Inherits> inherits = new ArrayList<>();
@@ -29,7 +30,6 @@ public class PgTable extends PgStatementWithSearchPath {
     private final List<PgTrigger> triggers = new ArrayList<>();
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
-    private final List<String> sequences = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
 
     /**
@@ -280,7 +280,6 @@ public class PgTable extends PgStatementWithSearchPath {
             sb.append(newTable.getOwnerSQL());
         }
 
-
         alterPrivileges(newTable, sb);
 
         if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
@@ -314,6 +313,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return found trigger or null if no such trigger has been found
      */
+    @Override
     public PgTrigger getTrigger(final String name) {
         for (PgTrigger trigger : triggers) {
             if (trigger.getName().equals(name)) {
@@ -331,6 +331,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return found rule or null if no such rule has been found
      */
+    @Override
     public PgRule getRule(final String name) {
         for (PgRule rule : rules) {
             if (rule.getName().equals(name)) {
@@ -369,6 +370,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #triggers}
      */
+    @Override
     public List<PgTrigger> getTriggers() {
         return Collections.unmodifiableList(triggers);
     }
@@ -378,19 +380,9 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #rules}
      */
+    @Override
     public List<PgRule> getRules() {
         return Collections.unmodifiableList(rules);
-    }
-
-    public List<String> getSequences() {
-        return Collections.unmodifiableList(sequences);
-    }
-
-    public void addSequence(final String string) {
-        if (string != null && !sequences.contains(string)) {
-            sequences.add(string);
-            resetHash();
-        }
     }
 
     public void setWith(final String with) {
@@ -432,12 +424,14 @@ public class PgTable extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    @Override
     public void addTrigger(final PgTrigger trigger) {
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
     }
 
+    @Override
     public void addRule(final PgRule rule) {
         rules.add(rule);
         rule.setParent(this);
@@ -496,7 +490,6 @@ public class PgTable extends PgStatementWithSearchPath {
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
                     && revokes.equals(table.revokes)
-                    && sequences.equals(table.sequences)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment());
         }
@@ -507,20 +500,16 @@ public class PgTable extends PgStatementWithSearchPath {
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
-
             eq = super.equals(obj)
-
                     && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
                     && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
                     && new HashSet<>(triggers).equals(new HashSet<>(table.triggers))
                     && new HashSet<>(rules).equals(new HashSet<>(table.rules));
         }
-
         return eq;
     }
 
@@ -542,7 +531,6 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + new HashSet<>(triggers).hashCode();
-        result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
@@ -555,23 +543,19 @@ public class PgTable extends PgStatementWithSearchPath {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
-        for(Inherits inh : inherits) {
-            tableDst.addInherits(inh.getKey(), inh.getValue());
-        }
+        tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
-            tableDst.addColumn(colSrc.shallowCopy());
+            tableDst.addColumn(colSrc.deepCopy());
         }
         tableDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
-            tableDst.addPrivilege(priv.shallowCopy());
+            tableDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : grants) {
-            tableDst.addPrivilege(priv.shallowCopy());
-        }
-        for (String segName : sequences) {
-            tableDst.addSequence(segName);
+            tableDst.addPrivilege(priv.deepCopy());
         }
         tableDst.setOwner(getOwner());
+        tableDst.deps.addAll(deps);
         return tableDst;
     }
 

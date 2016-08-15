@@ -10,7 +10,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>3.5.4-SNAPSHOT</version>
+    <version>3.6.1-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
@@ -36,7 +36,7 @@
                                 <configuration>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
                                 </configuration>
                             </execution>
                         </executions>
@@ -61,7 +61,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/</url>
                                     <commands>
                                         <command>rm -rf /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
                                         <command>mkdir /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
@@ -75,7 +75,7 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
                                 </configuration>
@@ -87,7 +87,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/cli/</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/</url>
                                     <commands>
                                         <command>unlink /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
                                         <command>ln -s /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>

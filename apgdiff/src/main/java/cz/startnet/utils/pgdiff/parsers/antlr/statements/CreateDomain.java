@@ -25,12 +25,10 @@ public class CreateDomain extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids);
-        if (schemaName == null) {
-            schemaName = getDefSchemaName();
-        }
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgDomain domain = new PgDomain(name, getFullCtxText(ctx.getParent()));
         domain.setDataType(getFullCtxText(ctx.dat_type));
+        addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));
         }

@@ -27,7 +27,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     public DbObjType getStatementType() {
         return DbObjType.INDEX;
     }
-    
+
     public PgIndex(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -54,10 +54,10 @@ public class PgIndex extends PgStatementWithSearchPath {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
-        
+
         return sbSQL.toString();
     }
-    
+
     public void setDefinition(final String definition) {
         this.definition = definition;
         resetHash();
@@ -66,7 +66,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     public String getDefinition() {
         return definition;
     }
-    
+
     public void setClusterIndex(boolean value) {
         clusterIndex = value;
         resetHash();
@@ -80,14 +80,14 @@ public class PgIndex extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
-    
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgIndex newIndex;
         if (newCondition instanceof PgIndex) {
-            newIndex = (PgIndex)newCondition; 
+            newIndex = (PgIndex)newCondition;
         } else {
             return false;
         }
@@ -96,14 +96,14 @@ public class PgIndex extends PgStatementWithSearchPath {
             isNeedDepcies.set(true);
             return true;
         }
-        
-        if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() && 
+
+        if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((PgTable)newIndex.getParent()).isClustered()) {
-             sb.append("\n\nALTER TABLE "
-                        + PgDiffUtils.getQuotedName(oldIndex.getTableName())
-                        + " SET WITHOUT CLUSTER;");
+            sb.append("\n\nALTER TABLE "
+                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
+                    + " SET WITHOUT CLUSTER;");
         }
-        
+
         if (!Objects.equals(oldIndex.getComment(), newIndex.getComment())) {
             sb.append("\n\n");
             newIndex.appendCommentSql(sb);
@@ -122,7 +122,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
         return sbSQL.toString();
     }
-    
+
     public void setTableName(final String tableName) {
         this.tableName = tableName;
         resetHash();
@@ -163,7 +163,7 @@ public class PgIndex extends PgStatementWithSearchPath {
                 && Objects.equals(tableName, index.getTableName())
                 && unique == index.isUnique();
     }
-    
+
 
     @Override
     public int computeHash() {
@@ -179,7 +179,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
-    
+
     @Override
     public PgIndex shallowCopy() {
         PgIndex indexDst = new PgIndex(getName(), getRawStatement());
@@ -188,14 +188,15 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
+        indexDst.deps.addAll(deps);
         return indexDst;
     }
-    
+
     @Override
     public PgIndex deepCopy() {
         return shallowCopy();
     }
-    
+
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();

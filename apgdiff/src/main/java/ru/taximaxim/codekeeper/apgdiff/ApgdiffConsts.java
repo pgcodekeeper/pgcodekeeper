@@ -1,9 +1,9 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Stores string constants
@@ -35,7 +35,9 @@ public interface ApgdiffConsts {
         int JDBC_DEFAULT_PORT = 5432;
     }
 
-    Set<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+    @Deprecated
+    // improve builtins detection using tokens and jdbc ways
+    Collection<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$
@@ -45,6 +47,7 @@ public interface ApgdiffConsts {
             "anynonarray", //$NON-NLS-1$
             "anyrange", //$NON-NLS-1$
             "bigint", //$NON-NLS-1$
+            "bigserial",
             "bit", //$NON-NLS-1$
             "bit varying", //$NON-NLS-1$
             "boolean", //$NON-NLS-1$
@@ -71,6 +74,7 @@ public interface ApgdiffConsts {
             "internal", //$NON-NLS-1$
             "interval", //$NON-NLS-1$
             "json", //$NON-NLS-1$
+            "jsonb",
             "language_handler", //$NON-NLS-1$
             "line", //$NON-NLS-1$
             "lseg", //$NON-NLS-1$
@@ -98,6 +102,7 @@ public interface ApgdiffConsts {
             "regprocedure", //$NON-NLS-1$
             "regtype", //$NON-NLS-1$
             "reltime", //$NON-NLS-1$
+            "serial",
             "smallint", //$NON-NLS-1$
             "smgr", //$NON-NLS-1$
             "text", //$NON-NLS-1$
