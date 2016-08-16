@@ -62,6 +62,7 @@ public class ValueExpr extends AbstractExpr {
         String ret = null;
         Data_typeContext dataType = vex.dataType();
         @SuppressWarnings("unused")
+        // TODO OpCtx user-operator reference
         Collate_identifierContext collate;
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;

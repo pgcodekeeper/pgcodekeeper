@@ -1776,12 +1776,14 @@ vex
   | vex EXP vex
   | vex (MULTIPLY | DIVIDE | MODULAR) vex
   | vex (PLUS | MINUS) vex
-  | vex OP_CHARS vex
-  | vex OP_CHARS
-  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
-  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
+  // TODO a lot of ambiguities between 3 next alternatives
+  | vex op vex
+  | op vex
+  | vex op
   | vex NOT? IN LEFT_PAREN (select_stmt_no_parens | vex (COMMA vex)*) RIGHT_PAREN
   | vex NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? vex_b AND vex
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex
+  | vex NOT? (LIKE | ILIKE | SIMILAR TO) vex ESCAPE vex
   | vex (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex
   | vex IS NOT? (truth_value | NULL)
   | vex IS NOT? DISTINCT FROM vex
@@ -1807,12 +1809,18 @@ vex_b
   | vex_b EXP vex_b
   | vex_b (MULTIPLY | DIVIDE | MODULAR) vex_b
   | vex_b (PLUS | MINUS) vex_b
-  | vex_b OP_CHARS vex_b
-  | vex_b OP_CHARS
+  | vex_b op vex_b
+  | op vex_b
+  | vex_b op
   | vex_b (LTH | GTH | LEQ | GEQ | EQUAL | NOT_EQUAL) vex_b
   | vex_b IS NOT? DISTINCT FROM vex_b
   | vex_b IS NOT? DOCUMENT
   | value_expression_primary
+  ;
+
+op
+  : OP_CHARS
+  | OPERATOR LEFT_PAREN identifier DOT OP_CHARS RIGHT_PAREN
   ;
 
 datetime_overlaps

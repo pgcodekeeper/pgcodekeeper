@@ -19,9 +19,9 @@
 lexer grammar SQLLexer;
 
 @header {
-    package cz.startnet.utils.pgdiff.parsers.antlr;
-    import java.util.ArrayDeque;
-    import java.util.Deque;
+package cz.startnet.utils.pgdiff.parsers.antlr;
+import java.util.ArrayDeque;
+import java.util.Deque;
 }
 
 @members {
@@ -585,6 +585,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SETS : [sS] [eE] [tT] [sS];
     CIDR : [cC] [iI] [dD] [rR];
 
+fragment UNDERLINE : '_';
+
 // Operators
 
 // Cast Operator
@@ -592,11 +594,11 @@ CAST_EXPRESSION
   : COLON COLON
   ;
 
-EQUAL  : '=';
+EQUAL : '=';
 COLON :  ':';
 SEMI_COLON :  ';';
 COMMA : ',';
-NOT_EQUAL  : '<>' | '!=';
+NOT_EQUAL : '<>' | '!=';
 LTH : '<';
 LEQ : '<=';
 GTH : '>';
@@ -611,26 +613,11 @@ MODULAR : '%';
 EXP : '^';
 
 DOT : '.';
-UNDERLINE : '_';
 QUOTE_CHAR : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR : '$';
 LEFT_BRACKET : '[';
 RIGHT_BRACKET : ']';
-
-fragment
-Operator : [\~\!\@\#\^\&\|\`\?\+\-\*\/\%\<\>\=];
-
-NUMBER_LITERAL : Digit+;
-
-fragment
-Digit : '0'..'9';
-
-REAL_NUMBER
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
-    ;
 
 BlockComment
     :   '/*' .*? '*/' -> channel(HIDDEN)
@@ -640,9 +627,36 @@ LineComment
     :   '--' ~[\r\n]* -> channel(HIDDEN)
     ;
 
+// must follow all explicitly defined operators and comments
+// so that they are matched first
 OP_CHARS
-	:	Operator+
-	;
+    // may not end with + or -
+    : OperatorBasic+ OperatorBasicEnd
+    // may end with any character but must include at least one of OperatorSpecial
+    | (OperatorBasic | OperatorSpecial)* OperatorSpecial (OperatorBasic | OperatorSpecial)*
+    ;
+
+fragment
+OperatorBasic
+    : [+*<>=]
+    // check so that comment start sequences are not matched by this
+    | '-' {_input.LA(1) != '-'}?
+    | '/' {_input.LA(1) != '*'}?;
+fragment
+OperatorBasicEnd: [*/<>=];
+fragment
+OperatorSpecial: [~!@#%^&|`?];
+
+NUMBER_LITERAL : Digit+;
+
+fragment
+Digit : '0'..'9';
+
+REAL_NUMBER
+    :   Digit+ '.' Digit* EXPONENT?
+    |   '.' Digit+ EXPONENT?
+    |   Digit+ EXPONENT
+    ;
 
 /*
 ===============================================================================
@@ -717,7 +731,7 @@ ESC_SEQUENCES
     : (ESC_SEQ)
     ;
 fragment
-EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
+EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
 
 fragment
 HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
@@ -767,9 +781,8 @@ White_Space
   : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
-
 BAD
-  : . -> channel(HIDDEN)
+  : .
   ;
 
 mode DollarQuotedStringMode;
