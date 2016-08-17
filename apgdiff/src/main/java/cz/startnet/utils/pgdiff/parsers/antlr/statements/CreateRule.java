@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +22,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateRule extends ParserAbstract {
     private final Rule_commonContext ctx;
+    private final boolean revoke;
 
     public CreateRule(Rule_commonContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
+        revoke = ctx.REVOKE() != null;
     }
 
     @Override
@@ -57,9 +58,9 @@ public class CreateRule extends ParserAbstract {
                 db.getSchema(getDefSchemaName())
                 .getFunction(func.getSignature())
                 .addPrivilege(
-                        new PgPrivilege(ctx.REVOKE() != null,
-                        getFullCtxText(ctx.body_rule),
-                        getFullCtxText(ctx)));
+                        new PgPrivilege(revoke,
+                                getFullCtxText(ctx.body_rule),
+                                getFullCtxText(ctx)));
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -78,7 +79,7 @@ public class CreateRule extends ParserAbstract {
 
 
         for (Schema_qualified_nameContext name : obj_name) {
-            addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
+            addToDB(name, type, new PgPrivilege(revoke,
                     col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)));
         }
 
@@ -95,14 +96,14 @@ public class CreateRule extends ParserAbstract {
         // собрать информацию о привилегиях на колонки
         Map<String, List<String>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : ctx_body.on_table().priv_tbl_col) {
-            String privName = priv.table_column_privilege().getText();
+            String privName = getFullCtxText(priv.table_column_privilege());
             // это привилегия на таблицу
             if (priv.column.isEmpty()) {
                 tbl_priv.add(privName);
                 continue;
             }
             for (IdentifierContext col : priv.column) {
-                String colName = col.getText();
+                String colName = getFullCtxText(col);
                 List<String> privList = colPriv.get(colName);
                 if (privList == null) {
                     privList = new ArrayList<>();
@@ -118,48 +119,46 @@ public class CreateRule extends ParserAbstract {
         }
         if (tblPrivilege.length() > 0) {
             tblPrivilege.setLength(tblPrivilege.length() - 1);
-            tblPrivilege.append(" ON TABLE {0} ");
-            tblPrivilege.append(getFullCtxText(ctx_body.body_rules_rest()));
+            tblPrivilege.append(" ON TABLE ");
         }
         // Разобрать объекты
         for (Schema_qualified_nameContext tbl : ctx_body.on_table().obj_name.name) {
+            String tableName = getFullCtxText(tbl);
             List<IdentifierContext> ids = tbl.identifier();
             String firstPart = QNameParser.getFirstName(ids);
             String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
             //привилегии пишем так как получили одной строкой
             PgTable tblSt = db.getSchema(schemaName).getTable(firstPart);
+            // если таблица не найдена попробовать вьюхи и проч. общим методом
             if (tblSt == null) {
                 addToDB(tbl, DbObjType.TABLE, new PgPrivilege(
-                        ctx.REVOKE() != null, getFullCtxText(ctx.body_rule),
+                        revoke, getFullCtxText(ctx.body_rule),
                         getFullCtxText(ctx)));
-                continue;
-            }
-            // применить привилегию к текущему объекту таблица
-            // здесь рассматривается случай grant SELECT, UPDATE(c2) - SELECT
-            // добавляется тут ко всему объекту
-            if (tblPrivilege.length() > 0) {
-                addToDB(tbl, DbObjType.TABLE,
-                        new PgPrivilege(ctx.REVOKE() != null,
-                        MessageFormat.format(tblPrivilege.toString(), firstPart),
-                        getFullCtxText(ctx)));
-            }
+            } else {
+                // применить привилегию к текущему объекту таблица
+                // здесь рассматривается случай grant SELECT, UPDATE(c2)
+                // SELECT добавляется тут ко всему объекту
+                if (tblPrivilege.length() > 0) {
+                    tblSt.addPrivilege(new PgPrivilege(revoke,
+                            tblPrivilege + tableName + ' ' + getFullCtxText(ctx_body.body_rules_rest()),
+                            getFullCtxText(ctx)));
+                }
 
-            // Если таблица, то поискать в ней колонки и добавить в каждую свою привилегию
-            if (tblSt != null) {
-                for (String colName : colPriv.keySet()) {
-                    PgColumn col = tblSt.getColumn(colName);
-                    if (col != null) {
+                // Если таблица, то поискать в ней колонки и добавить в каждую свою привилегию
+                for (PgColumn col : tblSt.getColumns()) {
+                    List<String> privList = colPriv.get(col.getName());
+                    if (privList != null) {
                         StringBuilder privilege = new StringBuilder();
-                        for (String priv : colPriv.get(colName)) {
-                            privilege.append(priv).append("(").append(colName).append("), ");
+                        for (String priv : privList) {
+                            privilege.append(priv).append('(').append(col.getName()).append("), ");
                         }
                         // Здесь не должно быть пустых привилегий для колонок,
                         // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
                         privilege.setLength(privilege.length() - 2);
-                        privilege.append(" ON TABLE ").append(firstPart).append(" ");
+                        privilege.append(" ON TABLE ").append(tableName).append(' ');
                         privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
 
-                        col.addPrivilege(new PgPrivilege(ctx.REVOKE() != null,
+                        col.addPrivilege(new PgPrivilege(revoke,
                                 privilege.toString(), getFullCtxText(ctx)));
                     }
                 }
