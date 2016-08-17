@@ -69,6 +69,12 @@
             id="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
             name="%command.name.removeBuilder">
       </command>
+      <command
+      		categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.FeedBack"
+            id="ru.taximaxim.codekeeper.ui.feedBack"
+            name="Обратная связь">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -197,6 +203,20 @@
                mode="FORCE_TEXT"
                style="toggle">
          </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               id="ru.taximaxim.codekeeper.ui.mainmenu.pgcodekeeper"
+               label="pgCodeKeeper">
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                  label="sent feedback"
+                  mnemonic="F"
+                  style="push">
+            </command>
+         </menu>
       </menuContribution>
    </extension>
    <extension
