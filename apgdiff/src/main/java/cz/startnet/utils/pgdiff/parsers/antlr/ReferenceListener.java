@@ -301,7 +301,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else if (ctx.DATABASE() != null) {
             // index
         } else if (ctx.INDEX() != null) {
-            String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
+            String tableName = QNameParser.getFirstName(ctx.name.identifier());
             if (schemaName.equals(tableName)) {
                 schemaName = getDefSchemaName();
             }
