@@ -263,7 +263,7 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().pack();
         initColumns();
 
-        viewer.setContentProvider(new ArrayContentProvider());
+        viewer.setContentProvider(ArrayContentProvider.getInstance());
 
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -349,7 +349,7 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.getCombo().setToolTipText(
                     Messages.diffTableViewer_Input_name_for_save_checked_elements);
-            cmbPrevChecked.setContentProvider(new ArrayContentProvider());
+            cmbPrevChecked.setContentProvider(ArrayContentProvider.getInstance());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             cmbPrevChecked.setInput(prevChecked.keySet());
             cmbPrevChecked.addSelectionChangedListener(new ISelectionChangedListener() {

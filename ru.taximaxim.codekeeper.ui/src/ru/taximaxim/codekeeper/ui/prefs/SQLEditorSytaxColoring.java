@@ -70,7 +70,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         listIgnoredObjs = new ListViewer(composite);
         listIgnoredObjs.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        listIgnoredObjs.setContentProvider(new ArrayContentProvider());
+        listIgnoredObjs.setContentProvider(ArrayContentProvider.getInstance());
         listIgnoredObjs.setLabelProvider(new LabelProvider());
         listIgnoredObjs.setSorter(new ViewerSorter());
         listIgnoredObjs.addSelectionChangedListener(new ISelectionChangedListener() {

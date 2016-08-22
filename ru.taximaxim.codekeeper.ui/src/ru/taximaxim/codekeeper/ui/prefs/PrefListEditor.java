@@ -8,9 +8,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -18,212 +17,215 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.MessageBox;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public abstract class PrefListEditor<T> extends Composite {
+public abstract class PrefListEditor<T, V extends StructuredViewer> extends Composite {
 
-    protected StructuredViewer viewerObjs;
-    private LinkedList<T> objsList = new LinkedList<>();
-    private final boolean doSorting;
-    private Button upBtn;
-    private Button downBtn;
-    private Button btnDelete;
-    private Button btnAdd;
-    private T newVal;
+    private List<T> objsList = new LinkedList<>();
 
-    public PrefListEditor(Composite parent, boolean doSorting) {
+    private final V viewerObjs;
+    private final Button btnAdd, btnEdit, btnDelete, upBtn, downBtn;
+
+    public PrefListEditor(Composite parent, boolean doSorting, boolean doEdit, boolean noMargins) {
         super(parent, SWT.NONE);
 
-        this.doSorting = doSorting;
+        LocalResourceManager lrm = new LocalResourceManager(
+                JFaceResources.getResources(), this);
+
         GridLayout gridLayout = new GridLayout(2, false);
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
+        if (noMargins) {
+            gridLayout.marginHeight = 0;
+            gridLayout.marginWidth = 0;
+        }
         this.setLayout(gridLayout);
         this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        populateUiContent(this);
-    }
+        viewerObjs = createViewer(this);
 
-    private void populateUiContent(Composite parent){
-        LocalResourceManager lrm = new LocalResourceManager(
-                JFaceResources.getResources(), this);
-        final Text txtNewValue = new Text(parent, SWT.BORDER);
-        txtNewValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        btnAdd = new Button(parent, SWT.PUSH);
+        btnAdd = new Button(this, SWT.PUSH);
+        btnAdd.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         btnAdd.setToolTipText(Messages.add);
-        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator
-                .getContext().getBundle().getResource(FILE.ICONADD))));
+        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONADD))));
         btnAdd.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                T newValue = getObject(txtNewValue.getText().trim());
-                if (newValue != null && !objsList.contains(newValue)) {
+                T newValue = getNewObject(null);
+                while (newValue != null && objsList.contains(newValue)) {
+                    // duplicate
+                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+                    mb.setText("Cannot add item!");
+                    mb.setMessage(errorAlreadyExists(newValue));
+                    mb.open();
+
+                    // request object again preserving info already entered
+                    newValue = getNewObject(newValue);
+                }
+                if (newValue != null) {
                     objsList.add(0, newValue);
-                    newVal = newValue;
-                    txtNewValue.setText(""); //$NON-NLS-1$
                     viewerObjs.refresh();
-                } else {
-                    newVal = null;
                 }
             }
         });
 
-        createViewer(this);
+        if (doEdit) {
+            btnEdit = new Button(this, SWT.PUSH);
+            btnEdit.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            btnEdit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONEDIT))));
+            btnEdit.addSelectionListener(new SelectionAdapter() {
 
-        Composite comp = new Composite(parent, SWT.NONE);
-        GridLayout gridLayout = new GridLayout(3, false);
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
-        comp.setLayout(gridLayout);
-        comp.setLayoutData(new GridData());
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
+                    if (selection.isEmpty()) {
+                        return;
+                    }
+                    @SuppressWarnings("unchecked")
+                    T sel = (T) selection.getFirstElement();
+                    T newObj = getNewObject(sel);
+                    while (newObj != null && !sel.equals(newObj) && objsList.contains(newObj)) {
+                        // duplicate
+                        MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+                        mb.setText("Cannot edit item!");
+                        mb.setMessage(errorAlreadyExists(newObj));
+                        mb.open();
 
-        btnDelete = new Button(comp, SWT.PUSH);
-        btnDelete.setLayoutData(new GridData());
+                        // request object again preserving info already entered
+                        newObj = getNewObject(newObj);
+                    }
+                    if (newObj != null) {
+                        // replace existing, iterator way is more efficient on LinkedList
+                        ListIterator<T> it = objsList.listIterator();
+                        while (it.hasNext()) {
+                            T match = it.next();
+                            if (match == sel) {
+                                it.set(newObj);
+                                break;
+                            }
+                        }
+                        viewerObjs.refresh();
+                    }
+                }
+            });
+        } else {
+            btnEdit = null;
+        }
+
+        btnDelete = new Button(this, SWT.PUSH);
+        btnDelete.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         btnDelete.setToolTipText(Messages.delete);
         btnDelete.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONDEL))));
+                Activator.getContext().getBundle().getResource(FILE.ICONDEL))));
         btnDelete.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                deleteSelected();
-            }
-        });
-
-        upBtn = new Button(comp, SWT.PUSH);
-        upBtn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONUP))));
-        upBtn.setLayoutData(new GridData(GridData.END));
-        upBtn.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (viewerObjs.getSelection().isEmpty()) {
+                IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
+                if (selection.isEmpty()) {
                     return;
                 }
-                IStructuredSelection selection = (IStructuredSelection) viewerObjs
-                        .getSelection();
-                @SuppressWarnings("unchecked")
-                T sel = ((T) selection.getFirstElement());
-                ListIterator<T> it = objsList.listIterator();
-                while (it.hasNext()) {
-                    T match = it.next();
-                    if (match == sel) {
-                        it.previous();
-                        if (it.hasPrevious()) {
-                            T prev = it.previous();
-                            it.set(sel);
-                            it.next();
-                            it.next();
-                            it.set(prev);
-                            viewerObjs.refresh();
-                        }
-                        return;
-                    }
+                if (objsList.remove(selection.getFirstElement())) {
+                    viewerObjs.refresh();
                 }
             }
         });
 
-        downBtn = new Button(comp, SWT.PUSH);
-        downBtn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONDOWN))));
-        downBtn.setLayoutData(new GridData(GridData.END));
-        downBtn.addSelectionListener(new SelectionAdapter() {
+        if (!doSorting) {
+            upBtn = new Button(this, SWT.PUSH);
+            upBtn.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            upBtn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONUP))));
+            upBtn.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (viewerObjs.getSelection().isEmpty()) {
-                    return;
-                }
-                IStructuredSelection selection = (IStructuredSelection) viewerObjs
-                        .getSelection();
-                @SuppressWarnings("unchecked")
-                T sel = ((T) selection.getFirstElement());
-                ListIterator<T> it = objsList.listIterator();
-                while (it.hasNext()) {
-                    T match = it.next();
-                    if (match == sel) {
-                        if (it.hasNext()) {
-                            T next = it.next();
-                            it.set(sel);
-                            it.previous();
-                            it.previous();
-                            it.set(next);
-                            viewerObjs.refresh();
-                        }
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
+                    if (selection.isEmpty()) {
                         return;
                     }
+                    Object sel = selection.getFirstElement();
+                    ListIterator<T> it = objsList.listIterator();
+                    while (it.hasNext()) {
+                        T match = it.next();
+                        if (match == sel) {
+                            it.previous();
+                            if (it.hasPrevious()) {
+                                T prev = it.previous();
+                                it.set(match);
+                                it.next();
+                                it.next();
+                                it.set(prev);
+                                viewerObjs.refresh();
+                            }
+                            return;
+                        }
+                    }
                 }
-            }
-        });
-        if (doSorting){
-            viewerObjs.setSorter(new ViewerSorter());
-            upBtn.setEnabled(false);
-            downBtn.setEnabled(false);
+            });
+
+            downBtn = new Button(this, SWT.PUSH);
+            downBtn.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            downBtn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONDOWN))));
+            downBtn.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
+                    if (selection.isEmpty()) {
+                        return;
+                    }
+                    Object sel = selection.getFirstElement();
+                    ListIterator<T> it = objsList.listIterator();
+                    while (it.hasNext()) {
+                        T match = it.next();
+                        if (match == sel) {
+                            if (it.hasNext()) {
+                                T next = it.next();
+                                it.set(match);
+                                it.previous();
+                                it.previous();
+                                it.set(next);
+                                viewerObjs.refresh();
+                            }
+                            return;
+                        }
+                    }
+                }
+            });
+        } else {
+            viewerObjs.setComparator(new ViewerComparator());
+            upBtn = null;
+            downBtn = null;
         }
     }
 
-    protected abstract T getObject(String name);
+    protected abstract V createViewer(Composite parent);
 
-    protected abstract void createViewer(Composite parent);
+    /**
+     * @param oldObject old edited object or duplicate object that user have created on the previous call
+     * @return newly created object or null
+     */
+    protected abstract T getNewObject(T oldObject);
 
-    public Object deleteSelected() {
-        IStructuredSelection selection =
-                (IStructuredSelection) viewerObjs.getSelection();
-        Object objToRemove = selection.getFirstElement();
-        if (objToRemove == null) {
-            return null;
-        }
-
-        objsList.remove(objToRemove);
-        viewerObjs.refresh();
-        return objToRemove;
-    }
-
-    public Object getSelected() {
-        return ((IStructuredSelection)viewerObjs.getSelection()).getFirstElement();
-    }
+    protected abstract String errorAlreadyExists(T obj);
 
     public List<T> getList(){
         return objsList;
     }
 
-    public StructuredViewer getListViewer() {
+    public V getViewer() {
         return viewerObjs;
-    }
-
-    public Button getDelDtn() {
-        return btnDelete;
-    }
-
-    public Button getAddBtn() {
-        return btnAdd;
     }
 
     public void setInputList(LinkedList<T> list){
         objsList = list;
         viewerObjs.setInput(objsList);
-        viewerObjs.refresh();
-    }
-
-    public void select(T name) {
-        viewerObjs.setSelection(new StructuredSelection(name));
-    }
-
-    public void select(int index) {
-        viewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
-    }
-
-    public T getNewEntry() {
-        return newVal;
     }
 }

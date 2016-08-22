@@ -162,7 +162,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         String replaced = output.replaceAll("[ ]{2,}", " ") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("\r\n", "\n") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("(\n[ ]+)", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        String[] lines = replaced.split(Pattern.quote("\n")); //$NON-NLS-1$
+        String[] lines = replaced.split("\n"); //$NON-NLS-1$
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (PATTERN_ERROR.matcher(line).matches()) {
@@ -175,7 +175,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         }
 
         if (begin != -1 && end != -1 && (end - begin) >= 2) {
-            String words[] = lines[begin + 1].split(Pattern.quote(" ")); //$NON-NLS-1$
+            String words[] = lines[begin + 1].split(" "); //$NON-NLS-1$
             // parse first case separately, as it starts from extra word "details"
             addDepcy.add(new AbstractMap.SimpleEntry<>(
                     words[2], words[words.length - 1]));
@@ -185,9 +185,8 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
 
     private void parseDependencies(String[] lines, int begin, int end) {
-        String space = Pattern.quote(" "); //$NON-NLS-1$
         for (int i = begin; i < end; i++) {
-            String words[] = lines[i].split(space);
+            String words[] = lines[i].split(" "); //$NON-NLS-1$
             addDepcy.add(new AbstractMap.SimpleEntry<>(
                     words[1], words[words.length - 1]));
         }

@@ -19,13 +19,6 @@ public final class Messages extends NLS {
 
     public static String jdbcConnector_error_reading_pgpass_file;
 
-    // apgdiff.model.graph
-    public static String RefColumn_CannotFindSchema;
-    public static String RefColumn_CannotFindTable;
-    public static String RefColumn_CannotFindColumn;
-    public static String View_CannotFindSchema;
-    public static String View_CannotFindColumn;
-
     // pgdiff
     public static String Argument_ErrorUnknownOption;
     public static String Database_NewDatabaseIgnoredStatements;

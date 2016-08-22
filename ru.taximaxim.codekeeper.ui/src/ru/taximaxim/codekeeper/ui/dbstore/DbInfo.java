@@ -1,10 +1,8 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.text.MessageFormat;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -15,18 +13,22 @@ public class DbInfo {
     /**
      * Delimiter for spacing parts of the coordinates.
      */
-    private static final char DELIM = '\t';
+    private static final String DELIM = "\t";
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private static final char DELIM_ENTRY = '\n';
+    private static final String DELIM_ENTRY = "\n";
 
-    String name;
-    String dbname;
-    String dbuser;
-    String dbpass;
-    String dbhost;
-    int dbport;
+    final String name;
+    final String dbname;
+    final String dbuser;
+    final String dbpass;
+    final String dbhost;
+    final int dbport;
+
+    public String getName() {
+        return name;
+    }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
@@ -39,7 +41,7 @@ public class DbInfo {
     }
 
     private DbInfo(String coords) {
-        String[] parts = coords.split(Pattern.quote(String.valueOf(DELIM)), -1);
+        String[] parts = coords.split(DELIM, -1);
 
         try {
             if(parts.length > DBINFO_LINE_PARTS_COUNT) {
@@ -60,12 +62,27 @@ public class DbInfo {
         }
     }
 
-    public static DbInfo getEmpty(String name) {
-        return new DbInfo(name, "", "", "", "", 0); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof DbInfo)) {
+            return false;
+        }
+        DbInfo other = (DbInfo) obj;
+        return name.equals(other.name);
     }
 
-    public static DbInfo getEmptyNamed(String name) {
-        return new DbInfo(name, name, "", "", "", 0); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
     }
 
     @Override
@@ -92,50 +109,27 @@ public class DbInfo {
         return sb.toString();
     }
 
-    public static Map<String, DbInfo> preferenceToStore(String preference) {
-        String[] coordStrings = preference.split(
-                Pattern.quote(String.valueOf(DELIM_ENTRY)));
-
-        // use LinkedHashmap for insertion-order iteration
-        Map<String, DbInfo> store = new LinkedHashMap<>(coordStrings.length);
+    public static LinkedList<DbInfo> preferenceToStore(String preference) {
+        LinkedList<DbInfo> store = new LinkedList<>();
+        String[] coordStrings = preference.split(DELIM_ENTRY);
         for(String coords : coordStrings) {
             try {
-                DbInfo c = new DbInfo(coords);
-                store.put(c.name, c);
+                store.add(new DbInfo(coords));
             } catch(IllegalArgumentException ex) {
                 // just ignore broken entries
                 // the store won't have them in and they will be consequently deleted from preferences
                 Log.log(ex);
             }
         }
-
         return store;
     }
 
-    public static String storeToPreference(Map<String, DbInfo> store, List<String> list) {
+    public static String storeToPreference(List<DbInfo> store) {
         StringBuilder sb = new StringBuilder();
-        int count = 0;
-        for (String entry : list) {
-            sb.append(store.get(entry));
-            if (count++ < list.size() - 1) {
-                sb.append(DELIM_ENTRY);
-            }
+        for (DbInfo entry : store) {
+            sb.append(entry).append(DELIM_ENTRY);
         }
+        sb.setLength(sb.length() - 1);
         return sb.toString();
-    }
-
-    public static String storeToPreference(Map<String, DbInfo> store) {
-        StringBuilder sb = new StringBuilder();
-
-        for (DbInfo info : store.values()){
-            sb.append(info);
-            sb.append(DELIM_ENTRY);
-        }
-        sb.delete(sb.length()-1, sb.length());
-        return sb.toString();
-    }
-
-    public String getName(){
-        return name;
     }
 }

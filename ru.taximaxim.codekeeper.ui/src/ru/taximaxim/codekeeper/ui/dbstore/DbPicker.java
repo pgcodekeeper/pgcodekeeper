@@ -4,14 +4,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -29,19 +27,18 @@ public class DbPicker extends Group {
 
     private final boolean allowShellResize;
 
-    private Label lblFieldName;
-    private CLabel lblWarnDbPass;
+    private final Label lblFieldName;
+    private final CLabel lblWarnDbPass;
 
-    private LocalResourceManager lrm;
-    private DbStorePicker dbStorePicker;
+    private final LocalResourceManager lrm;
+    private final DbStorePicker dbStorePicker;
 
-    private final Text lblName;
-    private final Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
+    private final Text txtName, txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
 
     private final ModifyListener ml;
 
     public Text getTxtName() {
-        return lblName;
+        return txtName;
     }
 
     public Text getTxtDbName() {
@@ -86,33 +83,26 @@ public class DbPicker extends Group {
         lblFieldName.setLayoutData(gd);
         lblFieldName.setVisible(false);
 
-        lblName = new Text(this, SWT.BORDER);
+        txtName = new Text(this, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = true;
-        lblName.setLayoutData(gd);
-        lblName.setVisible(false);
+        txtName.setLayoutData(gd);
+        txtName.setVisible(false);
 
         if (prefStore != null) {
             dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
-            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-                    false, 2, 1));
-            final SelectionAdapter sa = new SelectionAdapter() {
+            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+            dbStorePicker.addListenerToCombo(new ISelectionChangedListener() {
 
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void selectionChanged(SelectionChangedEvent event) {
                     fillDbFieldsFromDbInfo();
                     notifyListeners(SWT.Modify, null);
                     layout();
                 }
-            };
-            dbStorePicker.addListenerToCombo(sa);
-            dbStorePicker.addDisposeListener(new DisposeListener() {
-
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    dbStorePicker.removeListenerToCombo(sa);
-                }
             });
+        } else {
+            dbStorePicker = null;
         }
         ml = new ModifyListener(){
 
@@ -240,8 +230,9 @@ public class DbPicker extends Group {
         ((GridData) lblFieldName.getLayoutData()).exclude = false;
         lblFieldName.setVisible(true);
 
-        ((GridData) lblName.getLayoutData()).exclude = false;
-        lblName.setVisible(true);
+        ((GridData) txtName.getLayoutData()).exclude = false;
+        txtName.setVisible(true);
+        txtName.setFocus();
 
         if (dbStorePicker != null) {
             ((GridData) dbStorePicker.getLayoutData()).exclude = true;

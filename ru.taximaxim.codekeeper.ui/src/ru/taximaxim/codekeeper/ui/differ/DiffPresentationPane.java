@@ -325,19 +325,19 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         btnPgDump = new Button(grpSrc, SWT.RADIO);
-    	btnPgDump.setText(Messages.db);
-    	btnPgDump.addSelectionListener(new SelectionAdapter() {
+        btnPgDump.setText(Messages.db);
+        btnPgDump.addSelectionListener(new SelectionAdapter() {
 
-    		@Override
-    		public void widgetSelected(SelectionEvent e) {
-    			showDbPicker(true);
-    			selectedDBSource = DBSources.SOURCE_TYPE_DB;
-    			lblSourceInfo.setText(getSourceInfoText());
-    			containerUpper.layout();
-    		}
-    	});
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showDbPicker(true);
+                selectedDBSource = DBSources.SOURCE_TYPE_DB;
+                lblSourceInfo.setText(getSourceInfoText());
+                containerUpper.layout();
+            }
+        });
         btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
-        
+
 
         btnJdbc = new Button(grpSrc, SWT.RADIO);
         btnJdbc.setText(Messages.jdbc);
@@ -436,18 +436,18 @@ public abstract class DiffPresentationPane extends Composite {
                 openElementInEditor(el, proj);
             }
         });
-        
+
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-			
-			@Override
-			public void propertyChange(PropertyChangeEvent arg0) {
-				//TODO
-				btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
-				if (!btnPgDump.isVisible()){
-					btnJdbc.setSelection(true);
-				}
-			}
-		});
+
+            @Override
+            public void propertyChange(PropertyChangeEvent arg0) {
+                //TODO
+                btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
+                if (!btnPgDump.isVisible()){
+                    btnJdbc.setSelection(true);
+                }
+            }
+        });
     }
 
     public void setTitleColor(RGB color){
@@ -572,7 +572,7 @@ public abstract class DiffPresentationPane extends Composite {
             break;
         }
         String preset = dbSrc.getSelectedDbPresetName();
-        if (preset.isEmpty()){
+        if (preset == null){
             value.append("     ").append(Messages.connection_details); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());

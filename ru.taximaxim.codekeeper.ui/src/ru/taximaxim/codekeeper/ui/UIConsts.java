@@ -24,6 +24,11 @@ public interface UIConsts {
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
     }
 
+    interface PREF_PAGE {
+        int WIDTH_HINT_PX = 240;
+        String DB_STORE = PLUGIN_ID.THIS +  ".dbstore"; //$NON-NLS-1$
+    }
+
     interface PREF {
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$

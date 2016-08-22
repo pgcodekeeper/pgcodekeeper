@@ -26,14 +26,15 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class IgnoredObjectsPrefPage extends PreferencePage
-        implements IWorkbenchPreferencePage {
+implements IWorkbenchPreferencePage {
+
     private IgnoredObjectPrefListEditor listEditor;
-    
+
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
-    
+
     private void updateList() {
         String preference = getPreferenceStore().getString(PREF.IGNORE_OBJECTS);
 
@@ -56,13 +57,13 @@ public class IgnoredObjectsPrefPage extends PreferencePage
         gridLayout.marginWidth = 0;
         parent.setLayout(gridLayout);
         parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        
+
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
-        
-        listEditor = new IgnoredObjectPrefListEditor(parent, true);
+
+        listEditor = new IgnoredObjectPrefListEditor(parent, true, true);
 
         updateList();
-        
+
         return parent;
     }
 

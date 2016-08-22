@@ -20,6 +20,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -94,7 +95,7 @@ IWorkbenchPreferencePage {
         grpCommandsEdit.setLayoutData(gd);
         grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
 
-        listEditor = new StringPrefListEditor(grpCommandsEdit, false);
+        listEditor = new StringPrefListEditor(grpCommandsEdit, false, false, PREF_PAGE.WIDTH_HINT_PX);
         updateList();
 
         return parent;
