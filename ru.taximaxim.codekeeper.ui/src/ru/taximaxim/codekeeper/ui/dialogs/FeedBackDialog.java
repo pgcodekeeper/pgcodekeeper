@@ -1,14 +1,17 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.text.MessageFormat;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
+import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -35,6 +38,7 @@ import org.eclipse.swt.widgets.Text;
 import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class FeedBackDialog extends Dialog {
@@ -43,6 +47,15 @@ public class FeedBackDialog extends Dialog {
     private static final String LOG_FILE_NAME = "codekeeper.log"; //$NON-NLS-1$
     private static final String MAIL_HOST = "mail.chelny.taximaxim.ru"; //$NON-NLS-1$
     private static final String MAIL_HOST_PROP = "mail.smtp.host"; //$NON-NLS-1$
+    private static final PasswordAuthentication CREDENTIALS = new PasswordAuthentication(
+            "pgcodekeeper-feedback@chelny.taximaxim.ru", "***REMOVED***"); //$NON-NLS-1$ //$NON-NLS-2$
+    private static final Authenticator AUTH = new Authenticator() {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return CREDENTIALS;
+        };
+    };
+    private static final String MAIL_AUTH_PROP = "mail.smtp.auth";
 
     private Text userName;
     private Text emailFrom;
@@ -114,11 +127,12 @@ public class FeedBackDialog extends Dialog {
             return;
         }
 
-        Properties properties = new Properties();
-        properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
-        Session session = Session.getInstance(properties);
-
         try {
+            Properties properties = new Properties();
+            properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
+            properties.setProperty(MAIL_AUTH_PROP, Boolean.TRUE.toString());
+            Session session = Session.getInstance(properties, AUTH);
+
             MimeMessage message = new MimeMessage(session);
 
             InternetAddress internetAddress = new InternetAddress(emailFrom.getText());
@@ -169,9 +183,10 @@ public class FeedBackDialog extends Dialog {
             mb.setMessage(Messages.FeedBackDialog_enter_email);
             mb.open();
         } catch (MessagingException mex) {
+            Log.log(mex);
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.FeedBackDialog_could_not_send);
-            mb.setMessage(Messages.FeedBackDialog_failure_instruction);
+            mb.setMessage(MessageFormat.format(Messages.FeedBackDialog_failure_instruction, mex.getLocalizedMessage()));
             mb.open();
         }
     }
