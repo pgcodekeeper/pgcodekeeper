@@ -22,6 +22,7 @@
       <update label="%url.update.label" url="http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeperplugins/"/>
       <discovery label="Eclipse Data Tools Platform (DTP) Project" url="http://download.eclipse.org/datatools/updates"/>
       <discovery label="Eclipse Git Team Provider" url="http://download.eclipse.org/egit/updates"/>
+      <discovery label="Eclipse Orbit Mars.2+" url="http://download.eclipse.org/tools/orbit/downloads/drops/R20160221192158/repository/"/>
    </url>
 
    <requires>
@@ -33,6 +34,7 @@
       <import plugin="org.eclipse.ui.console" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.ui.ide" version="3.7.0" match="compatible"/>
       <import plugin="org.eclipse.zest.core"/>
+      <import plugin="javax.mail" version="1.4.0" match="compatible"/>
    </requires>
 
    <plugin
