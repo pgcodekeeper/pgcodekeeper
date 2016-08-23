@@ -72,7 +72,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             grpDbData.getTxtDbUser().setText(this.dbInitial.dbuser);
             grpDbData.getTxtDbPass().setText(this.dbInitial.dbpass);
             grpDbData.getTxtDbHost().setText(this.dbInitial.dbhost);
-            grpDbData.getTxtDbPort().setText("" + this.dbInitial.dbport);
+            grpDbData.getTxtDbPort().setText("" + this.dbInitial.dbport); //$NON-NLS-1$
         }
 
         return area;

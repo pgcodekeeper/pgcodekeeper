@@ -13,11 +13,11 @@ public class DbInfo {
     /**
      * Delimiter for spacing parts of the coordinates.
      */
-    private static final String DELIM = "\t";
+    private static final String DELIM = "\t"; //$NON-NLS-1$
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private static final String DELIM_ENTRY = "\n";
+    private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
 
     final String name;
     final String dbname;

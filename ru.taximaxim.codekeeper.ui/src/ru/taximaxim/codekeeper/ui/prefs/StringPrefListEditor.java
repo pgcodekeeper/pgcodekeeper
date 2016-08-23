@@ -10,6 +10,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class StringPrefListEditor extends PrefListEditor<String, ListViewer> {
 
     private final int viewerWidthHint;
@@ -22,13 +24,13 @@ public class StringPrefListEditor extends PrefListEditor<String, ListViewer> {
 
     @Override
     protected String getNewObject(String oldObject) {
-        InputDialog d = new InputDialog(getShell(), "New string...", "New string:", oldObject, null);
+        InputDialog d = new InputDialog(getShell(), Messages.StringPrefListEditor_new_string, Messages.StringPrefListEditor_enter_string, oldObject, null);
         return d.open() == InputDialog.OK ? d.getValue() : null;
     }
 
     @Override
     protected String errorAlreadyExists(String obj) {
-        return MessageFormat.format("Element \"{0}\" is already present in the list!", obj);
+        return MessageFormat.format(Messages.StringPrefListEditor_already_resent, obj);
     }
 
     @Override

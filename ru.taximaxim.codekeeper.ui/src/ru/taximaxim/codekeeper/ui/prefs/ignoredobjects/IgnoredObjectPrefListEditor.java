@@ -52,7 +52,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
     @Override
     protected String errorAlreadyExists(IgnoredObject obj) {
         return MessageFormat.format(
-                "Entry \"{0}\" is already present in the list with given parameters!", obj.getName());
+                Messages.IgnoredObjectPrefListEditor_already_present, obj.getName());
     }
 
     @Override
@@ -137,13 +137,13 @@ class NewIgnoredObjectDialog extends InputDialog {
     }
 
     public NewIgnoredObjectDialog(Shell shell, IgnoredObject objInitial) {
-        super(shell, "New ignored object...", "Object Name:",
+        super(shell, Messages.IgnoredObjectPrefListEditor_new_ignored, Messages.IgnoredObjectPrefListEditor_object_name,
                 objInitial == null ? null : objInitial.getName(),
                         new IInputValidator() {
 
             @Override
             public String isValid(String newText) {
-                return newText.isEmpty() ? "Enter object name." : null;
+                return newText.isEmpty() ? Messages.IgnoredObjectPrefListEditor_enter_name : null;
             }
         });
         this.objInitial = objInitial;
@@ -158,10 +158,10 @@ class NewIgnoredObjectDialog extends InputDialog {
         c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         btnPattern = new Button(c, SWT.CHECK);
-        btnPattern.setText("Pattern (Regex)");
+        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
 
         btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText("Ignore contents");
+        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());

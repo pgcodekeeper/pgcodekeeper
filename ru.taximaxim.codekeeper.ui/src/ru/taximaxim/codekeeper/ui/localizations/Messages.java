@@ -9,7 +9,6 @@ public final class Messages extends NLS {
     // SONAR-OFF
 
     // common phrases
-    public static String unexpected_error_while_saving_preferences;
     public static String dB_host;
     public static String dB_name;
     public static String dB_password;
@@ -109,12 +108,9 @@ public final class Messages extends NLS {
     public static String dbInfo_bad_dbinfo_string;
     public static String dbInfo_too_many_parts_in_dbinfo_string;
     public static String dbPicker_port;
-    public static String dbStoreEditorDialog_cannot_add_entry;
     public static String dbStoreEditorDialog_cannot_save_entry;
     public static String dbStoreEditorDialog_db_info;
     public static String dbStoreEditorDialog_db_store_editor;
-    public static String dbStoreEditorDialog_entry_with_this_name_already_exists;
-    public static String dbStoreEditorDialog_name_cannot_be_empty_or_whitespace;
     public static String dbStoreEditorDialog_not_valid_port_number;
 
     // ui.differ
@@ -228,7 +224,6 @@ public final class Messages extends NLS {
 
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
-    public static String dbStorePrefPage_edit_db_store;
     public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
@@ -243,6 +238,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStorePrefPage_already_present;
+
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
     public static String DiffPaneViewer_project;
@@ -285,6 +282,18 @@ public final class Messages extends NLS {
 
     public static String pgProjectEditor_is_prj_update_backlight;
     public static String pgProjectEditor_is_db_update_backlight;
+
+    public static String IgnoredObjectPrefListEditor_already_present;
+
+    public static String IgnoredObjectPrefListEditor_contents;
+
+    public static String IgnoredObjectPrefListEditor_enter_name;
+
+    public static String IgnoredObjectPrefListEditor_new_ignored;
+
+    public static String IgnoredObjectPrefListEditor_object_name;
+
+    public static String IgnoredObjectPrefListEditor_pattern;
 
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
@@ -349,6 +358,10 @@ public final class Messages extends NLS {
     public static String PgDbProject_error_deleting_project;
     public static String PgDbProject_error_opening_project;
     public static String PreferenceInitializer_error_saving_prefs;
+
+    public static String PrefListEditor_cannot_add;
+
+    public static String PrefListEditor_cannot_edit;
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_diff_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
@@ -384,6 +397,12 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
 
+    public static String StringPrefListEditor_already_resent;
+
+    public static String StringPrefListEditor_enter_string;
+
+    public static String StringPrefListEditor_new_string;
+
     public static String TreeDiffer_unknown_error;
 
     public static String TreeDiffer_loading_schema;
@@ -403,15 +422,33 @@ public final class Messages extends NLS {
 
     public static String name;
     public static String e_mail;
-    public static String subject;
     public static String feedback_message;
     public static String add_log;
 
-    // other
-    public static String feedback_message_sent_successfull;
+    public static String FeedBackDialog_could_not_send;
+
+    public static String FeedBackDialog_emty_msg;
+
+    public static String FeedBackDialog_enter_email;
+
+    public static String FeedBackDialog_enter_msg;
+
+    public static String FeedBackDialog_failure_instruction;
+
+    public static String FeedBackDialog_feedback;
+
+    public static String FeedBackDialog_feedback_sent;
+
+    public static String FeedBackDialog_feedback_subject;
+
+    public static String FeedBackDialog_invalid_address;
+
+    public static String FeedBackDialog_send;
+
+    public static String FeedBackDialog_thank_you;
 
     // SONAR-ON
-
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

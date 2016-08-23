@@ -73,7 +73,7 @@
       		categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.FeedBack"
             id="ru.taximaxim.codekeeper.ui.feedBack"
-            name="Обратная связь">
+            name="%command.name.feedback">
       </command>
    </extension>
    <extension
@@ -209,11 +209,12 @@
             locationURI="menu:org.eclipse.ui.main.menu">
          <menu
                id="ru.taximaxim.codekeeper.ui.mainmenu.pgcodekeeper"
-               label="pgCodeKeeper">
+               label="%menu.label.pgcodekeeper.main"
+               mnemonic="%menu.mnemonic.pgcodekeeper.main">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                  label="sent feedback"
-                  mnemonic="F"
+                  label="%command.label.feedback"
+                  mnemonic="%command.mnemonic.feedback"
                   style="push">
             </command>
          </menu>

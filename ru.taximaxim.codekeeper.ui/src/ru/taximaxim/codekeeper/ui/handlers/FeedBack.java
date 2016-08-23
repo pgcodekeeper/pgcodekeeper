@@ -3,13 +3,12 @@ package ru.taximaxim.codekeeper.ui.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IHandler;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.dialogs.FeedBackDialog;
 
-public class FeedBack extends AbstractHandler implements IHandler{
+public class FeedBack extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -18,5 +17,4 @@ public class FeedBack extends AbstractHandler implements IHandler{
         dialog.open();
         return null;
     }
-
 }

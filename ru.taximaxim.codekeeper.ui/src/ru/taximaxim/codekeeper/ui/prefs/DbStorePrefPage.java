@@ -78,7 +78,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
 
     @Override
     protected String errorAlreadyExists(DbInfo obj) {
-        return MessageFormat.format("Entry \"{0}\" is already present in the list!", obj.getName());
+        return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getName());
     }
 
     @Override

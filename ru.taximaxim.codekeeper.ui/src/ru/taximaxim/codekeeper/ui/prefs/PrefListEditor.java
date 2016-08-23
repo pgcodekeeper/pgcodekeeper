@@ -59,7 +59,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
                 while (newValue != null && objsList.contains(newValue)) {
                     // duplicate
                     MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                    mb.setText("Cannot add item!");
+                    mb.setText(Messages.PrefListEditor_cannot_add);
                     mb.setMessage(errorAlreadyExists(newValue));
                     mb.open();
 
@@ -92,7 +92,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
                     while (newObj != null && !sel.equals(newObj) && objsList.contains(newObj)) {
                         // duplicate
                         MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                        mb.setText("Cannot edit item!");
+                        mb.setText(Messages.PrefListEditor_cannot_edit);
                         mb.setMessage(errorAlreadyExists(newObj));
                         mb.open();
 
