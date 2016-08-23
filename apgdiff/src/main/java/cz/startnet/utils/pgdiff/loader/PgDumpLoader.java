@@ -41,7 +41,7 @@ public class PgDumpLoader implements AutoCloseable {
      * NOTE: constraints, triggers and indexes are now stored in tables,
      * those directories are here for backward compatibility only
      */
-    private static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
+    protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
             "DOMAIN", "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX",
             "TRIGGER", "VIEW" };
 
@@ -133,7 +133,7 @@ public class PgDumpLoader implements AutoCloseable {
         return d;
     }
 
-    private PgDatabase load(boolean loadReferences, PgDatabase intoDb)
+    protected PgDatabase load(boolean loadReferences, PgDatabase intoDb)
             throws IOException, InterruptedException {
         checkCancelled(monitor);
         SQLParserBaseListener listener = (loadReferences ?

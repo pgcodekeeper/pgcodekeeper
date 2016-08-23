@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -107,9 +108,9 @@ class CustomSQLErrorListener extends BaseErrorListener {
             String msg, RecognitionException e) {
         Log.log(Log.LOG_WARNING, "ANTLR Error:\n"
                 + parsedObjectName + " line " + line + ':' + charPositionInLine
-                + ' ' + msg, e);
+                + ' ' + msg);
         if (errors != null) {
-            errors.add(new AntlrError(line, charPositionInLine, msg));
+            errors.add(new AntlrError((Token) offendingSymbol, msg));
         }
     }
 }

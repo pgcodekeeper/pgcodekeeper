@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
@@ -144,6 +145,8 @@ public class TreeDiffer implements IRunnableWithProgress {
                 return Status.CANCEL_STATUS;
             } catch (IOException | LicenseException ex) {
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.TreeDiffer_schema_load_error, ex);
+            } catch (CoreException e) {
+                return Status.CANCEL_STATUS;
             } finally {
                 mpm.done();
             }

@@ -3,24 +3,39 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-public class SQLEditor extends AbstractDecoratedTextEditor {
+public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
 
     public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor"; //$NON-NLS-1$
     static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
@@ -46,10 +61,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
 
     public SQLEditor() {
         super();
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
                 getSharedColors(), getPreferenceStore()));
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
         if (IContentOutlinePage.class.equals(adapter)) {
@@ -111,5 +128,37 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
             parser.removeListener(list);
         }
         super.dispose();
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        IResource file = ResourceUtil.getResource(getEditorInput());
+        IResourceDelta delta = event.getDelta();
+        if (delta != null && file != null) {
+            IResourceDelta child = delta.findMember(file.getFullPath());
+            if (child != null && (child.getFlags() & IResourceDelta.MARKERS) != 0) {
+                Display.getDefault().syncExec(new Runnable() {
+                    public void run() {
+                        firePropertyChange(IWorkbenchPart.PROP_TITLE);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public Image getTitleImage() {
+        final Image image = super.getTitleImage();
+        try {
+            IResource file = ResourceUtil.getResource(getEditorInput());
+            DecorationOverlayIcon icon = new DecorationOverlayIcon(image, ImageDescriptor.createFromURL(Activator
+                    .getContext().getBundle()
+                    .getResource(FILE.DECORATEWARNING)), IDecoration.BOTTOM_LEFT);
+            return (file.findMarkers(UIConsts.MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) ? icon
+                    .createImage() : image;
+        } catch (CoreException e) {
+            Log.log(Log.LOG_WARNING, e.getLocalizedMessage());
+            return image;
+        }
     }
 }

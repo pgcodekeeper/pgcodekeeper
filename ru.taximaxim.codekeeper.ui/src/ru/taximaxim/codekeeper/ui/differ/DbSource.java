@@ -50,7 +50,7 @@ public abstract class DbSource {
     }
 
     public PgDatabase get(SubMonitor monitor)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException, LicenseException, CoreException {
         Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
 
         dbObject = this.loadInternal(monitor);
@@ -66,7 +66,7 @@ public abstract class DbSource {
     }
 
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException, LicenseException;
+            throws IOException, InterruptedException, LicenseException, CoreException;
 
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines) throws LicenseException, IOException {
@@ -167,7 +167,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException, LicenseException, CoreException {
         int filesCount = countFilesInDir(proj.getPathToProject());
         monitor.subTask(Messages.dbSource_loading_tree);
         monitor.setWorkRemaining(filesCount);
@@ -179,8 +179,8 @@ class DbSourceProject extends DbSource {
             throw new IOException(e.getLocalizedMessage(), e);
         }
         IEclipsePreferences pref = proj.getPrefs();
-        return PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                proj.getPathToProject().toString(),
+        return ru.taximaxim.codekeeper.ui.loader.PgDumpLoader.loadDatabaseSchemaFromIProject(
+                proj.getProject(),
                 getPgDiffArgs(charset, ApgdiffConsts.UTC, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, 1, null);
     }

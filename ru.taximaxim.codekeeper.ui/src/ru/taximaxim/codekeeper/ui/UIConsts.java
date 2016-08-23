@@ -15,9 +15,10 @@ public interface UIConsts {
     }
 
     interface MARKER {
-        String SQLMARKER = PLUGIN_ID.THIS + ".sql"; //$NON-NLS-1$
-        String ERROR = SQLMARKER + ".errormarker"; //$NON-NLS-1$
+        String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
     }
+
+    public static final String DECORATOR = PLUGIN_ID.THIS + ".decorator";
 
     interface COMMAND {
         String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
@@ -126,6 +127,7 @@ public interface UIConsts {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
+        String DECORATEWARNING = "/icons/decorate_warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
         String ICONUP = "/icons/up.png"; //$NON-NLS-1$
         String ICONDOWN = "/icons/down.png"; //$NON-NLS-1$
