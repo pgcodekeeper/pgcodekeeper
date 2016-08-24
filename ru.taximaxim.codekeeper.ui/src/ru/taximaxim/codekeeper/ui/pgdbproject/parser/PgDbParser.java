@@ -12,9 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,7 +25,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -35,9 +33,8 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.ui.loader.PgUIDumpLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
@@ -124,9 +121,9 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
-        try (PgDumpLoader loader = new PgDumpLoader(iFile.getContents(), iFile.getLocation().toOSString(), args,
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args,
                 monitor)) {
-            PgDatabase db = loader.load(true);
+            PgDatabase db = loader.loadFile(true, new PgDatabase());
             for (String key : db.getObjDefinitions().keySet()) {
                 objDefinitions.put(key, db.getObjDefinitions().get(key));
             }
@@ -134,16 +131,6 @@ public class PgDbParser implements IResourceChangeListener {
                 objReferences.put(key, db.getObjReferences().get(key));
             }
             fillFunctionBodies(objDefinitions, objReferences, loader.getFuncBodyReferences());
-            iFile.deleteMarkers(UIConsts.MARKER.ERROR, false, IResource.DEPTH_ZERO);
-            for (AntlrError antlrError : loader.getErrors()) {
-                IMarker marker = iFile.createMarker(UIConsts.MARKER.ERROR);
-                marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
-                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-                marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
-                marker.setAttribute(IMarker.CHAR_START, antlrError.getStart());
-                marker.setAttribute(IMarker.CHAR_END, antlrError.getStop() + 1);
-                marker.setAttribute(IMarker.TEXT, antlrError.getText());
-            }
         }
     }
 
@@ -209,7 +196,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
-        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromIProject(
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 pgProject.getProject(),
                 args, monitor, 1, funcBodies);
         objDefinitions = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjDefinitions());

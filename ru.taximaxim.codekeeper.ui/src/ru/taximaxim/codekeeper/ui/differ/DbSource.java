@@ -179,7 +179,7 @@ class DbSourceProject extends DbSource {
             throw new IOException(e.getLocalizedMessage(), e);
         }
         IEclipsePreferences pref = proj.getPrefs();
-        return ru.taximaxim.codekeeper.ui.loader.PgDumpLoader.loadDatabaseSchemaFromIProject(
+        return ru.taximaxim.codekeeper.ui.loader.PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 proj.getProject(),
                 getPgDiffArgs(charset, ApgdiffConsts.UTC, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, 1, null);

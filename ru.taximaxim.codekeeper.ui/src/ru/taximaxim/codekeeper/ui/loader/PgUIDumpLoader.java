@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.loader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +14,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,27 +24,37 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
-public class PgDumpLoader extends cz.startnet.utils.pgdiff.loader.PgDumpLoader{
+public class PgUIDumpLoader extends PgDumpLoader {
 
-    public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
-        super(input, inputObjectName, args, monitor, monitoringLevel);
+    private final IFile file;
+
+    public PgUIDumpLoader(IFile ifile, //InputStream input, String inputObjectName,
+            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) throws CoreException {
+        //super(input, inputObjectName, args, monitor, monitoringLevel);
+        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
+        file = ifile;
     }
 
     /**
      * This constructor sets the monitoring level to the default of 1.
+     * @throws CoreException 
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor) {
-        super(input, inputObjectName, args, monitor, 1);
+    public PgUIDumpLoader(IFile ifile, //InputStream input, String inputObjectName,
+            PgDiffArguments args, IProgressMonitor monitor) throws CoreException {
+        //super(input, inputObjectName, args, monitor, 1);
+        super(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, 1);
+        file = ifile;
     }
 
     /**
      * This constructor uses {@link NullProgressMonitor}.
+     * @throws CoreException 
      */
-    public PgDumpLoader(InputStream input, String inputObjectName,
-            PgDiffArguments args) {
-        super(input, inputObjectName, args, new NullProgressMonitor(), 0);
+    public PgUIDumpLoader(IFile ifile, //InputStream input, String inputObjectName,
+            PgDiffArguments args) throws CoreException {
+        //super(input, inputObjectName, args, new NullProgressMonitor(), 0);
+        super(ifile.getContents(), ifile.getLocation().toOSString(), args, new NullProgressMonitor(), 0);
+        file = ifile;
     }
 
     /**
@@ -105,25 +115,37 @@ public class PgDumpLoader extends cz.startnet.utils.pgdiff.loader.PgDumpLoader{
             IResource[] iResources = iFolder.members();
             for (IResource iResource : iResources){
                 if (iResource instanceof IFile && "sql".equals(iResource.getFileExtension())) {
-                    ((IFile) iResource).deleteMarkers(UIConsts.MARKER.ERROR, false, IResource.DEPTH_ZERO);
-                    try (PgDumpLoader loader = new PgDumpLoader(((IFile)iResource).getContents(), iResource.getLocation().toOSString(), arguments, monitor, monLvl)){
-                        loader.load(funcBodies != null, db);
-
-                        for (AntlrError antlrError : loader.getErrors()) {
-                            IMarker marker = ((IFile) iResource).createMarker(UIConsts.MARKER.ERROR);
-                            marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
-                            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-                            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
-                            marker.setAttribute(IMarker.CHAR_START, antlrError.getStart());
-                            marker.setAttribute(IMarker.CHAR_END, antlrError.getStop() + 1);
-                            marker.setAttribute(IMarker.TEXT, antlrError.getText());
-                        }
-                        if (funcBodies != null) {
-                            funcBodies.addAll(loader.getFuncBodyReferences());
-                        }
-                    }
+                    loadFile(arguments, (IFile) iResource, db, monitor, monLvl, funcBodies);
                 }
             }
         }
+    }
+
+    public static void loadFile(PgDiffArguments arguments, IFile ifile, PgDatabase db, IProgressMonitor monitor,
+            int monLvl,
+            List<FunctionBodyContainer> funcBodies) throws CoreException, IOException, InterruptedException {
+        ifile.deleteMarkers(UIConsts.MARKER.ERROR, false, IResource.DEPTH_ZERO);
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(ifile, arguments,
+                monitor, monLvl)) {
+            loader.loadFile(funcBodies != null, db);
+            if (funcBodies != null) {
+                funcBodies.addAll(loader.getFuncBodyReferences());
+            }
+        }
+    }
+
+    public PgDatabase loadFile(boolean loadReferences, PgDatabase db) throws InterruptedException, IOException,
+            CoreException {
+        load(loadReferences, db);
+        for (AntlrError antlrError : getErrors()) {
+            IMarker marker = file.createMarker(UIConsts.MARKER.ERROR);
+            marker.setAttribute(IMarker.LINE_NUMBER, antlrError.getLine());
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
+            marker.setAttribute(IMarker.CHAR_START, antlrError.getStart());
+            marker.setAttribute(IMarker.CHAR_END, antlrError.getStop() + 1);
+            marker.setAttribute(IMarker.TEXT, antlrError.getText());
+        }
+        return null;
     }
 }
