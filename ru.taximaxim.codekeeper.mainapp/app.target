@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="98">
+<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="99">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.junit" version="4.12.0.v201504281640"/>
 <unit id="org.hamcrest.core" version="1.3.0.v201303031735"/>
+<unit id="javax.mail" version="1.4.0.v201005080615"/>
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">

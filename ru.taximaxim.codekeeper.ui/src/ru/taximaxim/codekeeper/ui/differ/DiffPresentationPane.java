@@ -337,7 +337,6 @@ public abstract class DiffPresentationPane extends Composite {
             }
         });
         btnPgDump.setVisible(mainPrefs.getBoolean(PREF.PGDUMP_SWITCH));
-        
 
         btnJdbc = new Button(grpSrc, SWT.RADIO);
         btnJdbc.setText(Messages.jdbc);
@@ -436,9 +435,9 @@ public abstract class DiffPresentationPane extends Composite {
                 openElementInEditor(el, proj);
             }
         });
-        
+
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-            
+
             @Override
             public void propertyChange(PropertyChangeEvent arg0) {
                 //TODO
@@ -572,7 +571,7 @@ public abstract class DiffPresentationPane extends Composite {
             break;
         }
         String preset = dbSrc.getSelectedDbPresetName();
-        if (preset.isEmpty()){
+        if (preset == null){
             value.append("     ").append(Messages.connection_details); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());

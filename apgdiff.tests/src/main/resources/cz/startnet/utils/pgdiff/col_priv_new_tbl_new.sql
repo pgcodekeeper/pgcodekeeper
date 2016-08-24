@@ -39,9 +39,9 @@ CREATE TABLE t1 (
 );
 
 
-ALTER TABLE public.t1 OWNER TO botov_av;
+ALTER TABLE t1 OWNER TO botov_av;
 
-GRANT ALL ON TABLE public.t1 TO PUBLIC;
+GRANT ALL ON TABLE t1 TO PUBLIC;
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --

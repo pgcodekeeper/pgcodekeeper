@@ -13,14 +13,14 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor.BooleanChangeValues;
 
 class YesNoEditingSupport extends EditingSupport {
-    
-    enum Values {
+
+    enum YesNoValues {
         NO(Messages.yesNoEditingSupport_no),
         YES(Messages.yesNoEditingSupport_yes);
-        
+
         private String localizedName;
-        
-        private Values(String localizedName) {
+
+        private YesNoValues(String localizedName) {
             this.localizedName = localizedName;
         }
         @Override
@@ -29,16 +29,16 @@ class YesNoEditingSupport extends EditingSupport {
         }
     }
 
-    private ComboBoxViewerCellEditor cellEditor;
-    private BooleanChangeValues type;
-    private ColumnViewer viewer;
-    
+    private final ComboBoxViewerCellEditor cellEditor;
+    private final BooleanChangeValues type;
+    private final ColumnViewer viewer;
+
     public YesNoEditingSupport(ColumnViewer viewer, BooleanChangeValues type) {
         super(viewer);
         cellEditor = new ComboBoxViewerCellEditor((Composite) getViewer().getControl(), SWT.READ_ONLY);
         cellEditor.setLabelProvider(new LabelProvider());
-        cellEditor.setContentProvider(new ArrayContentProvider());
-        cellEditor.setInput(Values.values());
+        cellEditor.setContentProvider(ArrayContentProvider.getInstance());
+        cellEditor.setInput(YesNoValues.values());
         this.type = type;
         this.viewer = viewer;
     }
@@ -64,10 +64,10 @@ class YesNoEditingSupport extends EditingSupport {
 
     @Override
     protected void setValue(Object element, Object value) {
-        if (element instanceof IgnoredObject && value instanceof Values) {
+        if (element instanceof IgnoredObject && value instanceof YesNoValues) {
             IgnoredObject data = (IgnoredObject) element;
-            Values newValue = (Values) value;
-            boolean boolValue = newValue == Values.NO ? false : true;
+            YesNoValues newValue = (YesNoValues) value;
+            boolean boolValue = newValue == YesNoValues.NO ? false : true;
             switch (type) {
             case IGNORE_CONTENT:
                 if (data.isIgnoreContent() != boolValue) {
@@ -84,4 +84,3 @@ class YesNoEditingSupport extends EditingSupport {
         }
     }
 }
-

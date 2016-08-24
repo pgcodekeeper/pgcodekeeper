@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -537,7 +536,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 }else{
                     Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                     final List<String> command = new ArrayList<>(Arrays.asList(
-                            getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
+                            getReplacedString().split(" "))); //$NON-NLS-1$
 
                     launcher = new RunScriptExternal(textRetrieved, command);
                 }

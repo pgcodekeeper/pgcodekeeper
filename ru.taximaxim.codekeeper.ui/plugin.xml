@@ -1,576 +1,618 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension
-         point="org.eclipse.ui.console.consoleFactories">
+    <extension point="org.eclipse.ui.console.consoleFactories">
         <consoleFactory
             class="ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory"
             icon="icons/app_icon16.png"
-            label="%consoleFactory.label.keeperConsole"></consoleFactory>
+            label="%consoleFactory.label.keeperConsole">
+        </consoleFactory>
     </extension>
-    <extension
-         point="org.eclipse.ui.contexts">
+    <extension point="org.eclipse.ui.contexts">
         <context
             id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
             name="%context.name.keeperContext"
-            parentId="org.eclipse.ui.contexts.window"></context>
+            parentId="org.eclipse.ui.contexts.window">
+        </context>
     </extension>
-    <extension
-         point="org.eclipse.ui.commands">
+    <extension point="org.eclipse.ui.commands">
         <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            name="%category.name.keeperCategory"></category>
+            name="%category.name.keeperCategory">
+        </category>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Diff"
             id="ru.taximaxim.codekeeper.ui.command.Diff"
-            name="%command.commandname.Diff"></command>
+            name="%command.commandname.Diff">
+        </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenEditor"
             id="ru.taximaxim.codekeeper.ui.openeditor"
-            name="%command.name.openProjectEditor"></command>
+            name="%command.name.openProjectEditor">
+        </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
             id="ru.taximaxim.codekeeper.ui.toggleDepcySrc"
             name="%command.name.SourceDepcies">
-            <state class="org.eclipse.jface.commands.ToggleState"
-                            id="ru.taximaxim.codekeeper.ui.toggleDepcySrcstate"/>
+            <state
+                class="org.eclipse.jface.commands.ToggleState"
+                id="ru.taximaxim.codekeeper.ui.toggleDepcySrcstate" />
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
             id="ru.taximaxim.codekeeper.ui.toggleDepcyTgt"
             name="%command.name.TargetDepcies">
-            <state class="org.eclipse.jface.commands.ToggleState"
-                            id="ru.taximaxim.codekeeper.ui.toggleDepcyTgtstate"/>
+            <state
+                class="org.eclipse.jface.commands.ToggleState"
+                id="ru.taximaxim.codekeeper.ui.toggleDepcyTgtstate" />
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.NormalizeProject"
             id="ru.taximaxim.codekeeper.ui.command.normalizeProject"
-            name="%command.name.normalizeProject"></command>
+            name="%command.name.normalizeProject">
+        </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddBuilder"
             id="ru.taximaxim.codekeeper.ui.command.AddBuilder"
-            name="%command.name.addBuilder"></command>
+            name="%command.name.addBuilder">
+        </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder"
             id="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
-            name="%command.name.removeBuilder"></command>
+            name="%command.name.removeBuilder">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.FeedBack"
+            id="ru.taximaxim.codekeeper.ui.feedBack"
+            name="%command.name.feedback">
+        </command>
     </extension>
-    <extension
-         point="org.eclipse.ui.menus">
+    <extension point="org.eclipse.ui.menus">
         <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <menu
-               label="%menu.label.pgCodeKeeper">
+            <menu label="%menu.label.pgCodeKeeper">
                 <command
-                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
-                  icon="icons/app_icon16.png"
-                  label="%command.label.openProjectEditor"
-                  style="push"></command>
-                <visibleWhen
-                  checkEnabled="false">
-                    <with
-                     variable="activeMenuSelection">
+                    commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                    icon="icons/app_icon16.png"
+                    label="%command.label.openProjectEditor"
+                    style="push">
+                </command>
+                <visibleWhen checkEnabled="false">
+                    <with variable="activeMenuSelection">
                         <iterate
-                        ifEmpty="false"
-                        operator="and">
+                            ifEmpty="false"
+                            operator="and">
                             <test
-                           property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature"></test>
-                            <adapt
-                           type="org.eclipse.core.resources.IProject"></adapt>
+                                property="org.eclipse.core.resources.projectNature"
+                                value="ru.taximaxim.codekeeper.ui.nature">
+                            </test>
+                            <adapt type="org.eclipse.core.resources.IProject">
+                            </adapt>
                         </iterate>
                     </with>
                 </visibleWhen>
                 <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  icon="icons/compare_view.gif"
-                  label="%handledmenuitem.label.Diff"
-                  mnemonic="%command.mnemonic.Diff"
-                  style="push"></command>
+                    commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                    icon="icons/compare_view.gif"
+                    label="%handledmenuitem.label.Diff"
+                    mnemonic="%command.mnemonic.Diff"
+                    style="push">
+                </command>
                 <separator
-                  name="ru.taximaxim.codekeeper.ui.separator1"
-                  visible="true"></separator>
+                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    visible="true">
+                </separator>
                 <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.normalizeProject"
-                  label="%command.label.normalizeProject"
-                  mnemonic="%command.mnemonic.normalizeProject"
-                  style="push"></command>
+                    commandId="ru.taximaxim.codekeeper.ui.command.normalizeProject"
+                    label="%command.label.normalizeProject"
+                    mnemonic="%command.mnemonic.normalizeProject"
+                    style="push">
+                </command>
                 <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.AddBuilder"
-                  label="%command.label.addBuilder"
-                  style="push">
-                    <visibleWhen
-                     checkEnabled="false">
+                    commandId="ru.taximaxim.codekeeper.ui.command.AddBuilder"
+                    label="%command.label.addBuilder"
+                    style="push">
+                    <visibleWhen checkEnabled="false">
                         <and>
-                            <count
-                           value="1"></count>
+                            <count value="1">
+                            </count>
                             <iterate
-                           ifEmpty="false"
-                           operator="and">
+                                ifEmpty="false"
+                                operator="and">
                                 <test
-                           property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature"></test>
-                                <adapt
-                           type="org.eclipse.core.resources.IProject"></adapt>
+                                    property="org.eclipse.core.resources.projectNature"
+                                    value="ru.taximaxim.codekeeper.ui.nature">
+                                </test>
+                                <adapt type="org.eclipse.core.resources.IProject">
+                                </adapt>
                             </iterate>
                             <iterate>
                                 <not>
                                     <test
-                                 forcePluginActivation="true"
-                                 property="ru.taximaxim.codekeeper.ui.builders.isEnabled"></test>
+                                        forcePluginActivation="true"
+                                        property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
+                                    </test>
                                 </not>
                             </iterate>
                         </and>
                     </visibleWhen>
                 </command>
                 <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
-                  label="%command.label.removeBuilder"
-                  style="push">
-                    <visibleWhen
-                     checkEnabled="false">
+                    commandId="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
+                    label="%command.label.removeBuilder"
+                    style="push">
+                    <visibleWhen checkEnabled="false">
                         <and>
-                            <count
-                           value="1"></count>
+                            <count value="1">
+                            </count>
                             <iterate
-                           ifEmpty="false"
-                           operator="and">
-                                <test 
-                            property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature"></test>
-                                <adapt
-                           type="org.eclipse.core.resources.IProject"></adapt>
+                                ifEmpty="false"
+                                operator="and">
+                                <test
+                                    property="org.eclipse.core.resources.projectNature"
+                                    value="ru.taximaxim.codekeeper.ui.nature">
+                                </test>
+                                <adapt type="org.eclipse.core.resources.IProject">
+                                </adapt>
                             </iterate>
                             <iterate>
                                 <test
-                              forcePluginActivation="true"
-                              property="ru.taximaxim.codekeeper.ui.builders.isEnabled"></test>
+                                    forcePluginActivation="true"
+                                    property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
+                                </test>
                             </iterate>
                         </and>
                     </visibleWhen>
                 </command>
             </menu>
         </menuContribution>
+        <menuContribution locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.toggleDepcySrc"
+                icon="icons/ball_blue.png"
+                label="%command.label.SourceDepcies"
+                mode="FORCE_TEXT"
+                style="toggle">
+            </command>
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.toggleDepcyTgt"
+                icon="icons/ball_green.png"
+                label="%command.label.TargetDepcies"
+                mode="FORCE_TEXT"
+                style="toggle">
+            </command>
+        </menuContribution>
         <menuContribution
-            locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
-            <command
-               commandId="ru.taximaxim.codekeeper.ui.toggleDepcySrc"
-               icon="icons/ball_blue.png"
-               label="%command.label.SourceDepcies"
-               mode="FORCE_TEXT"
-               style="toggle"></command>
-            <command
-               commandId="ru.taximaxim.codekeeper.ui.toggleDepcyTgt"
-               icon="icons/ball_green.png"
-               label="%command.label.TargetDepcies"
-               mode="FORCE_TEXT"
-               style="toggle"></command>
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+            <menu
+                id="ru.taximaxim.codekeeper.ui.mainmenu.pgcodekeeper"
+                label="%menu.label.pgcodekeeper.main"
+                mnemonic="%menu.mnemonic.pgcodekeeper.main">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                    label="%command.label.feedback"
+                    mnemonic="%command.mnemonic.feedback"
+                    style="push">
+                </command>
+            </menu>
         </menuContribution>
     </extension>
-    <extension
-         point="org.eclipse.ui.editors">
+    <extension point="org.eclipse.ui.editors">
         <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
             icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
-            name="%editor.name.keeperProjectEditor"></editor>
+            name="%editor.name.keeperProjectEditor">
+        </editor>
         <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor"
             contributorClass="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor"
             default="false"
             filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.SQLEditor"
-            name="%editor.name.sqlEditor"></editor>
+            name="%editor.name.sqlEditor">
+        </editor>
         <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"
             default="false"
             filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.RollOnEditor"
-            name="%editor.name.ddlUpdateEditor"></editor>
+            name="%editor.name.ddlUpdateEditor">
+        </editor>
     </extension>
-    <extension
-         point="org.eclipse.ui.preferencePages">
+    <extension point="org.eclipse.ui.preferencePages">
         <page
             class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
             id="ru.taximaxim.codekeeper.ui.general"
-            name="%page.name.keeperPrefPage"></page>
+            name="%page.name.keeperPrefPage">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.LicensePrefs"
             id="ru.taximaxim.codekeeper.ui.license"
-            name="%page.name.license"></page>
+            name="%page.name.license">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbstore"
-            name="%page.name.dbstore"></page>
+            name="%page.name.dbstore">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectsPrefPage"
             id="ru.taximaxim.codekeeper.ui.ignoredobjects"
-            name="%page.name.ignored_objects"></page>
+            name="%page.name.ignored_objects">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.CommitPrefPage"
             id="ru.taximaxim.codekeeper.ui.commitprefpage"
-            name="%page.name.commit_pref_page"></page>
+            name="%page.name.commit_pref_page">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
-            name="%page.name.db_update_pref_page"></page>
+            name="%page.name.db_update_pref_page">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorMainPage"
             id="ru.taximaxim.codekeeper.ui.sqleditor"
-            name="%page.name.sqlEditor"></page>
+            name="%page.name.sqlEditor">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.sqleditor"
             class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring"
             id="ru.taximaxim.codekeeper.ui.sqlsyntaxcoloring"
-            name="%page.name.sqlEditorColors"></page>
+            name="%page.name.sqlEditorColors">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.sqleditor"
             class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage"
             id="ru.taximaxim.codekeeper.ui.sqleditortemplates"
-            name="%page.name.sqlEditorTemplates"></page>
+            name="%page.name.sqlEditorTemplates">
+        </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.ProjectEditorPrefPage"
             id="ru.taximaxim.codekeeper.ui.pgProjectEditor"
-            name="%page.name.pgProjectEditor"></page>
+            name="%page.name.pgProjectEditor">
+        </page>
     </extension>
-    <extension
-         point="org.eclipse.ui.newWizards">
+    <extension point="org.eclipse.ui.newWizards">
         <wizard
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
             icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.newprojwizard"
             name="%wizard.name.keeperNewWizard"
-            project="true"></wizard>
+            project="true">
+        </wizard>
         <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-            name="%category.name.keeperNewWizard"></category>
+            name="%category.name.keeperNewWizard">
+        </category>
     </extension>
     <extension
-         id="ru.taximaxim.codekeeper.ui.nature"
-         point="org.eclipse.core.resources.natures">
+        id="ru.taximaxim.codekeeper.ui.nature"
+        point="org.eclipse.core.resources.natures">
         <runtime>
-            <run
-               class="ru.taximaxim.codekeeper.ui.natures.ProjectNature"></run>
+            <run class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+            </run>
         </runtime>
-        <builder
-            id="ru.taximaxim.codekeeper.ui.builder"></builder>
+        <builder id="ru.taximaxim.codekeeper.ui.builder">
+        </builder>
     </extension>
-    <extension
-         point="org.eclipse.core.runtime.preferences">
-        <initializer
-            class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer"></initializer>
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
+        </initializer>
     </extension>
-    <extension
-         point="org.eclipse.ui.propertyPages">
+    <extension point="org.eclipse.ui.propertyPages">
         <page
             class="ru.taximaxim.codekeeper.ui.properties.ProjectProperties"
             id="ru.taximaxim.codekeeper.ui.proj_properties"
             name="%page.name.keeperPropPage">
             <enabledWhen>
                 <and>
-                    <instanceof
-                     value="org.eclipse.core.resources.IProject"></instanceof>
-                    <adapt
-                     type="org.eclipse.core.resources.IProject"></adapt>
+                    <instanceof value="org.eclipse.core.resources.IProject">
+                    </instanceof>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                    </adapt>
                     <test
-                     property="org.eclipse.core.resources.projectNature"
-                     value="ru.taximaxim.codekeeper.ui.nature"></test>
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
                 </and>
             </enabledWhen>
         </page>
     </extension>
-    <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+    <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector
             activate="true"
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector"
             id="ru.taximaxim.codekeeper.ui.pgcodekeeperhyperlinkDetector"
             name="pgCodeKeeper SQL HyperLink Detector"
-            targetId="ru.taximaxim.codekeeper.ui.SQLEditorTarget"></hyperlinkDetector>
+            targetId="ru.taximaxim.codekeeper.ui.SQLEditorTarget">
+        </hyperlinkDetector>
     </extension>
-    <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+    <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
         <target
             id="ru.taximaxim.codekeeper.ui.SQLEditorTarget"
-            name="SQL Editor Target"></target>
+            name="SQL Editor Target">
+        </target>
     </extension>
     <extension point="org.eclipse.ui.views">
-        <view id="ru.taximaxim.codekeeper.ui.depcyview"
-         name="%view.name.DepcyView"
-         class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
-         icon="icons/add_obj.gif"
-      />
+        <view
+            id="ru.taximaxim.codekeeper.ui.depcyview"
+            name="%view.name.DepcyView"
+            class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
+            icon="icons/add_obj.gif" />
     </extension>
-    <extension
-          point="org.eclipse.ui.perspectives">
+    <extension point="org.eclipse.ui.perspectives">
         <perspective
-             class="ru.taximaxim.codekeeper.ui.MainPerspective"
-             icon="icons/app_icon16.png"
-             id="ru.taximaxim.codekeeper.ui.mainperspective"
-             name="%perspective.name.keeper"></perspective>
+            class="ru.taximaxim.codekeeper.ui.MainPerspective"
+            icon="icons/app_icon16.png"
+            id="ru.taximaxim.codekeeper.ui.mainperspective"
+            name="%perspective.name.keeper">
+        </perspective>
     </extension>
-    <extension
-          point="org.eclipse.ui.perspectiveExtensions">
-        <perspectiveExtension
-             targetID="ru.taximaxim.codekeeper.ui.mainperspective">
-            <viewShortcut
-                id="ru.taximaxim.codekeeper.ui.depcyview"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.ui.navigator.ProjectExplorer"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.ui.console.ConsoleView"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.pde.runtime.LogView"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.ui.views.ContentOutline"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.ui.views.ProgressView"></viewShortcut>
-            <viewShortcut
-                id="org.eclipse.ui.views.ProblemView"></viewShortcut>
-            <newWizardShortcut
-                id="ru.taximaxim.codekeeper.ui.newprojwizard"></newWizardShortcut>
-            <perspectiveShortcut
-                id="org.eclipse.egit.ui.GitRepositoryExploring"></perspectiveShortcut>
-            <perspectiveShortcut
-                id="org.eclipse.jdt.ui.JavaPerspective"></perspectiveShortcut>
-            <perspectiveShortcut
-                id="org.eclipse.ui.resourcePerspective"></perspectiveShortcut>
-            <perspectiveShortcut
-                id="org.eclipse.team.ui.TeamSynchronizingPerspective"></perspectiveShortcut>
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="ru.taximaxim.codekeeper.ui.mainperspective">
+            <viewShortcut id="ru.taximaxim.codekeeper.ui.depcyview">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.ui.console.ConsoleView">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.pde.runtime.LogView">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.ui.views.ContentOutline">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.ui.views.ProgressView">
+            </viewShortcut>
+            <viewShortcut id="org.eclipse.ui.views.ProblemView">
+            </viewShortcut>
+            <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newprojwizard">
+            </newWizardShortcut>
+            <perspectiveShortcut id="org.eclipse.egit.ui.GitRepositoryExploring">
+            </perspectiveShortcut>
+            <perspectiveShortcut id="org.eclipse.jdt.ui.JavaPerspective">
+            </perspectiveShortcut>
+            <perspectiveShortcut id="org.eclipse.ui.resourcePerspective">
+            </perspectiveShortcut>
+            <perspectiveShortcut id="org.eclipse.team.ui.TeamSynchronizingPerspective">
+            </perspectiveShortcut>
             <view
                 id="org.eclipse.ui.navigator.ProjectExplorer"
                 minimized="false"
                 ratio="0.25"
                 relationship="left"
-                relative="org.eclipse.ui.editorss"></view>
+                relative="org.eclipse.ui.editorss">
+            </view>
             <view
                 id="ru.taximaxim.codekeeper.ui.depcyview"
                 minimized="false"
                 ratio="0.5"
                 relationship="bottom"
-                relative="org.eclipse.ui.navigator.ProjectExplorer"></view>
+                relative="org.eclipse.ui.navigator.ProjectExplorer">
+            </view>
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
                 relationship="stack"
-                relative="ru.taximaxim.codekeeper.ui.depcyview"></view>
+                relative="ru.taximaxim.codekeeper.ui.depcyview">
+            </view>
             <view
                 id="org.eclipse.ui.console.ConsoleView"
                 minimized="false"
                 ratio="0.85"
                 relationship="bottom"
-                relative="org.eclipse.ui.editorss"></view>
+                relative="org.eclipse.ui.editorss">
+            </view>
             <view
                 id="org.eclipse.ui.views.ProgressView"
                 minimized="false"
                 relationship="stack"
-                relative="org.eclipse.ui.console.ConsoleView"></view>
+                relative="org.eclipse.ui.console.ConsoleView">
+            </view>
         </perspectiveExtension>
     </extension>
     <extension
-          id="ru.taximaxim.codekeeper.ui.builder"
-          name="%builder.name"
-          point="org.eclipse.core.resources.builders">
+        id="ru.taximaxim.codekeeper.ui.builder"
+        name="%builder.name"
+        point="org.eclipse.core.resources.builders">
         <builder>
-            <run
-                class="ru.taximaxim.codekeeper.ui.builders.ProjectBuilder"></run>
+            <run class="ru.taximaxim.codekeeper.ui.builders.ProjectBuilder">
+            </run>
         </builder>
     </extension>
-    <extension
-          point="org.eclipse.core.expressions.propertyTesters">
+    <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-             class="ru.taximaxim.codekeeper.ui.builders.BuilderTester"
-             id="ru.taximaxim.codekeeper.ui.BuilderTester"
-             namespace="ru.taximaxim.codekeeper.ui.builders"
-             properties="isEnabled"
-             type="java.lang.Object"></propertyTester>
+            class="ru.taximaxim.codekeeper.ui.builders.BuilderTester"
+            id="ru.taximaxim.codekeeper.ui.BuilderTester"
+            namespace="ru.taximaxim.codekeeper.ui.builders"
+            properties="isEnabled"
+            type="java.lang.Object">
+        </propertyTester>
     </extension>
     <extension
-          id="ru.taximaxim.codekeeper.ui.editorTemplates"
-          name="%templates.name.sqlEditor"
-          point="org.eclipse.ui.editors.templates">
+        id="ru.taximaxim.codekeeper.ui.editorTemplates"
+        name="%templates.name.sqlEditor"
+        point="org.eclipse.ui.editors.templates">
         <contextType
-             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
-             id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
-             name="SQLEditor Context Type"></contextType>
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+            id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
+            name="SQLEditor Context Type">
+        </contextType>
         <include
-             file="sql_templates/templates.xml"
-             translations="sql_templates/sqlTemplate.properties"></include>
+            file="sql_templates/templates.xml"
+            translations="sql_templates/sqlTemplate.properties">
+        </include>
     </extension>
-    <extension
-          point="org.eclipse.ui.elementFactories">
+    <extension point="org.eclipse.ui.elementFactories">
         <factory
-             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
-             id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"></factory>
+            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
+            id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
+        </factory>
     </extension>
-    <extension
-          point="org.eclipse.ui.navigator.linkHelper">
+    <extension point="org.eclipse.ui.navigator.linkHelper">
         <linkHelper
-             class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
-             id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
+            class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
+            id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
             <editorInputEnablement>
-                <instanceof
-                   value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput"></instanceof>
+                <instanceof value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
+                </instanceof>
             </editorInputEnablement>
             <selectionEnablement>
-                <adapt
-                   type="org.eclipse.core.resources.IProject">
+                <adapt type="org.eclipse.core.resources.IProject">
                     <test
-                      property="org.eclipse.core.resources.projectNature"
-                      value="ru.taximaxim.codekeeper.ui.nature"></test>
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
                 </adapt>
             </selectionEnablement>
         </linkHelper>
     </extension>
-    <extension
-          point="org.eclipse.ui.navigator.viewer">
-        <viewerContentBinding
-             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+    <extension point="org.eclipse.ui.navigator.viewer">
+        <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
             <includes>
-                <contentExtension
-                   pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.codekeeperlinkHelper"></contentExtension>
+                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.codekeeperlinkHelper">
+                </contentExtension>
             </includes>
         </viewerContentBinding>
-        <viewerContentBinding
-             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+        <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
             <includes>
-                <contentExtension
-                   pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.peOutline"></contentExtension>
+                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.peOutline"></contentExtension>
             </includes>
         </viewerContentBinding>
-        <viewerActionBinding
-              viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+        <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
             <includes>
-                <actionExtension
-                    pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.pgNavigatorActionProvider"></actionExtension>
+                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.pgNavigatorActionProvider"></actionExtension>
             </includes>
         </viewerActionBinding>
     </extension>
-    <extension
-          point="org.eclipse.ui.console.consolePageParticipants">
+    <extension point="org.eclipse.ui.console.consolePageParticipants">
         <consolePageParticipant
-             class="ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant"
-             id="ru.taximaxim.codekeeper.ui.consoles.ForceShowConsole">
+            class="ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant"
+            id="ru.taximaxim.codekeeper.ui.consoles.ForceShowConsole">
             <enablement>
-                <instanceof
-                   value="ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole"></instanceof>
+                <instanceof value="ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole">
+                </instanceof>
             </enablement>
         </consolePageParticipant>
     </extension>
     <extension
-          id="ru.taximaxim.codekeeper.ui.sql.errormarker"
-          name="%marker.sql.error.name"
-          point="org.eclipse.core.resources.markers">
-        <super
-             type="org.eclipse.core.resources.problemmarker"></super>
-        <super
-             type="org.eclipse.core.resources.textmarker"></super>
-        <persistent
-             value="true"></persistent>
+        id="ru.taximaxim.codekeeper.ui.sql.errormarker"
+        name="%marker.sql.error.name"
+        point="org.eclipse.core.resources.markers">
+        <super type="org.eclipse.core.resources.problemmarker">
+        </super>
+        <super type="org.eclipse.core.resources.textmarker">
+        </super>
+        <persistent value="true">
+        </persistent>
     </extension>
     <extension
-          id="navigator-content"
-          point="org.eclipse.ui.navigator.navigatorContent">
+        id="navigator-content"
+        point="org.eclipse.ui.navigator.navigatorContent">
         <navigatorContent
-          	 id="ru.taximaxim.codekeeper.ui.views.navigator.peOutline"
-          	 name="%navigator.outline.content"
-          	 contentProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineContentProvider"
-          	 labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineLabelProvider"
-          	 
-             activeByDefault="true"
-             
-             icon="icons/app_icon16.png"
-             priority="normal">
+            id="ru.taximaxim.codekeeper.ui.views.navigator.peOutline"
+            name="%navigator.outline.content"
+            contentProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineContentProvider"
+            labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineLabelProvider"
+            activeByDefault="true"
+            icon="icons/app_icon16.png"
+            priority="normal">
             <triggerPoints>
                 <or>
                     <and>
-                        <adapt
-                      type="org.eclipse.core.resources.IFile"></adapt>
+                        <adapt type="org.eclipse.core.resources.IFile">
+                        </adapt>
                         <test
-                       property="org.eclipse.core.resources.extension"
-                       value="sql"></test>
+                            property="org.eclipse.core.resources.extension"
+                            value="sql">
+                        </test>
                     </and>
                 </or>
             </triggerPoints>
         </navigatorContent>
         <actionProvider
-              class="ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider"
-              id="ru.taximaxim.codekeeper.ui.views.navigator.pgNavigatorActionProvider">
+            class="ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider"
+            id="ru.taximaxim.codekeeper.ui.views.navigator.pgNavigatorActionProvider">
             <enablement>
                 <and>
                     <test
-                       property="org.eclipse.core.resources.extension"
-                       value="sql"></test>
+                        property="org.eclipse.core.resources.extension"
+                        value="sql">
+                    </test>
                 </and>
             </enablement>
         </actionProvider>
     </extension>
-    <extension
-          point="org.eclipse.ui.decorators">
+    <extension point="org.eclipse.ui.decorators">
         <decorator
-             adaptable="true"
-             class="ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator"
-             icon="icons/warning.gif"
-             id="ru.taximaxim.codekeeper.ui.decorator"
-             label="%marker.decorator.label"
-             lightweight="true"
-             location="BOTTOM_LEFT"
-             state="true">
+            adaptable="true"
+            class="ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator"
+            icon="icons/warning.gif"
+            id="ru.taximaxim.codekeeper.ui.decorator"
+            label="%marker.decorator.label"
+            lightweight="true"
+            location="BOTTOM_LEFT"
+            state="true">
             <enablement>
                 <or>
-                    <objectClass
-                      name="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent"></objectClass>
-                    <objectClass
-                      name="org.eclipse.core.resources.IResource"></objectClass>
+                    <objectClass name="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent">
+                    </objectClass>
+                    <objectClass name="org.eclipse.core.resources.IResource">
+                    </objectClass>
                 </or>
             </enablement>
         </decorator>
     </extension>
     <extension point="org.eclipse.ui.editors.annotationTypes">
-        <type markerSeverity="0"
-                                        super="org.eclipse.ui.workbench.texteditor.info"
-                                        name="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
-                                        markerType="ru.taximaxim.codekeeper.ui.sql.errormarker"/>
+        <type
+            markerSeverity="0"
+            super="org.eclipse.ui.workbench.texteditor.info"
+            name="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
+            markerType="ru.taximaxim.codekeeper.ui.sql.errormarker" />
     </extension>
-	<extension
-		id="ru.taximaxim.ui.markerannotation"
-		name="%marker.annotation.name"
-		point="org.eclipse.ui.editors.markerAnnotationSpecification">
+    <extension
+        id="ru.taximaxim.ui.markerannotation"
+        name="%marker.annotation.name"
+        point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-			annotationType="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
-			includeOnPreferencePage="true"
-			overviewRulerPreferenceKey="clruler"
-			overviewRulerPreferenceValue="true"
-			colorPreferenceKey="clcolor"
-			colorPreferenceValue="255,255,0"
-			textPreferenceKey="cltext"
-			textPreferenceValue="true"
-			verticalRulerPreferenceKey="clvertical"
-			verticalRulerPreferenceValue="true"
-			textStylePreferenceKey="clstyle"
-			textStylePreferenceValue="BOX"></specification>
-	</extension>
+            annotationType="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
+            includeOnPreferencePage="true"
+            overviewRulerPreferenceKey="clruler"
+            overviewRulerPreferenceValue="true"
+            colorPreferenceKey="clcolor"
+            colorPreferenceValue="255,255,0"
+            textPreferenceKey="cltext"
+            textPreferenceValue="true"
+            verticalRulerPreferenceKey="clvertical"
+            verticalRulerPreferenceValue="true"
+            textStylePreferenceKey="clstyle"
+            textStylePreferenceValue="BOX">
+        </specification>
+    </extension>
     <extension point="org.eclipse.ui.editors.markerUpdaters">
-		<updater
-			id="ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"
-			class="ru.taximaxim.codekeeper.ui.sqledit.marker.SQLMarkerUpdate"
-			markerType="ru.taximaxim.codekeeper.ui.sql.errormarker"></updater>
+        <updater
+            id="ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"
+            class="ru.taximaxim.codekeeper.ui.sqledit.marker.SQLMarkerUpdate"
+            markerType="ru.taximaxim.codekeeper.ui.sql.errormarker">
+        </updater>
     </extension>
 </plugin>

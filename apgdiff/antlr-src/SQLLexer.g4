@@ -19,9 +19,9 @@
 lexer grammar SQLLexer;
 
 @header {
-    package cz.startnet.utils.pgdiff.parsers.antlr;
-    import java.util.ArrayDeque;
-    import java.util.Deque;
+package cz.startnet.utils.pgdiff.parsers.antlr;
+import java.util.ArrayDeque;
+import java.util.Deque;
 }
 
 @members {
@@ -585,30 +585,20 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SETS : [sS] [eE] [tT] [sS];
     CIDR : [cC] [iI] [dD] [rR];
 
+fragment UNDERLINE : '_';
+
 // Operators
-TILDE : '~';
-Not_Similar_To : '!~';
-Similar_To_Case_Insensitive : '~*';
-Not_Similar_To_Case_Insensitive : '!~*';
-Like : '~~';
-Not_Like : '!~~';
-Ilike : '~~*';
-Not_Ilike : '!~~*';
-S_Root : '|/';
-C_Root : '||/';
 
 // Cast Operator
 CAST_EXPRESSION
   : COLON COLON
   ;
 
-ASSIGN  : ':=';
-EQUAL  : '=';
+EQUAL : '=';
 COLON :  ':';
 SEMI_COLON :  ';';
 COMMA : ',';
-CONCATENATION_OPERATOR : VERTICAL_BAR VERTICAL_BAR;
-NOT_EQUAL  : '<>' | '!=';
+NOT_EQUAL : '<>' | '!=';
 LTH : '<';
 LEQ : '<=';
 GTH : '>';
@@ -621,32 +611,13 @@ MULTIPLY: '*';
 DIVIDE  : '/';
 MODULAR : '%';
 EXP : '^';
-FACTORIAL : '!';
-ABS: '@';
 
 DOT : '.';
-UNDERLINE : '_';
-VERTICAL_BAR : '|';
 QUOTE_CHAR : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR : '$';
 LEFT_BRACKET : '[';
 RIGHT_BRACKET : ']';
-BIT_AND : '&';
-BIT_XOR : '#';
-BIT_LSH : '<<';
-BIT_RSH : '>>';
-
-NUMBER_LITERAL : Digit+;
-
-fragment
-Digit : '0'..'9';
-
-REAL_NUMBER
-    :   ('0'..'9')+ '.' ('0'..'9')* EXPONENT?
-    |   '.' ('0'..'9')+ EXPONENT?
-    |   ('0'..'9')+ EXPONENT
-    ;
 
 BlockComment
     :   '/*' .*? '*/' -> channel(HIDDEN)
@@ -654,6 +625,37 @@ BlockComment
 
 LineComment
     :   '--' ~[\r\n]* -> channel(HIDDEN)
+    ;
+
+// must follow all explicitly defined operators and comments
+// so that they are matched first
+OP_CHARS
+    // may not end with + or -
+    : OperatorBasic+ OperatorBasicEnd
+    // may end with any character but must include at least one of OperatorSpecial
+    | (OperatorBasic | OperatorSpecial)* OperatorSpecial (OperatorBasic | OperatorSpecial)*
+    ;
+
+fragment
+OperatorBasic
+    : [+*<>=]
+    // check so that comment start sequences are not matched by this
+    | '-' {_input.LA(1) != '-'}?
+    | '/' {_input.LA(1) != '*'}?;
+fragment
+OperatorBasicEnd: [*/<>=];
+fragment
+OperatorSpecial: [~!@#%^&|`?];
+
+NUMBER_LITERAL : Digit+;
+
+fragment
+Digit : '0'..'9';
+
+REAL_NUMBER
+    :   Digit+ '.' Digit* EXPONENT?
+    |   '.' Digit+ EXPONENT?
+    |   Digit+ EXPONENT
     ;
 
 /*
@@ -729,7 +731,7 @@ ESC_SEQUENCES
     : (ESC_SEQ)
     ;
 fragment
-EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
+EXPONENT : ('e'|'E') ('+'|'-')? Digit+ ;
 
 fragment
 HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
@@ -779,9 +781,8 @@ White_Space
   : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
-
 BAD
-  : . -> channel(HIDDEN)
+  : .
   ;
 
 mode DollarQuotedStringMode;

@@ -290,6 +290,11 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public int computeHash() {
         final int prime = 31;
         int result = 1;

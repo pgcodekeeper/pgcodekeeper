@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <profiles>
@@ -48,6 +48,7 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.FeedBack { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>
@@ -97,7 +98,7 @@
                                 </goals>
                                 <configuration>
                                     <fromFile>${project.build.directory}/proguard_map.txt</fromFile>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/proguard/</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/proguard/</url>
                                     <toFile>${unqualifiedVersion}.${buildQualifier}-ui.txt</toFile>
                                 </configuration>
                             </execution>

@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class LicensePrefs extends PreferencePage
@@ -61,7 +62,9 @@ implements IWorkbenchPreferencePage {
         new Label(composite, SWT.NONE).setText(Messages.LicensePrefs_file);
 
         txtLicense = new Text(composite, SWT.BORDER);
-        txtLicense.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = PREF_PAGE.WIDTH_HINT_PX - PREF_PAGE.WIDTH_HINT_PX / 6;
+        txtLicense.setLayoutData(gd);
         txtLicense.addTraverseListener(new TraverseListener() {
 
             @Override

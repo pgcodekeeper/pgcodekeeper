@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.SortedMap;
-import java.util.regex.Pattern;
 
 import org.osgi.framework.BundleContext;
 
@@ -261,7 +260,7 @@ public class PgDiffArguments {
                     success = false;
                 }
             } else if ("--allow-danger-ddl".equals(args[i])) { //$NON-NLS-1$
-                String[] ignores = args[++i].split(Pattern.quote(",")); //$NON-NLS-1$
+                String[] ignores = args[++i].split(","); //$NON-NLS-1$
                 for (String ignoredDanger : ignores) {
                     DangerStatement dst;
                     try {

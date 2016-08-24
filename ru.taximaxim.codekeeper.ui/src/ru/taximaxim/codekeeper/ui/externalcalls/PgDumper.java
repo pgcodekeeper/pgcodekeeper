@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDumper {
-    
+
     private static final Pattern PATTERN_VERSION = Pattern.compile(
             "^(?:pg_dump[\\s]+\\(PostgreSQL.*\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$"); //$NON-NLS-1$
 
@@ -23,9 +23,9 @@ public class PgDumper {
 
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
-    
+
     private final String dumpFile;
-    
+
     public PgDumper(String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding, String timezone, String dumpFile) {
@@ -38,37 +38,36 @@ public class PgDumper {
         this.encoding = encoding;
         this.timezone = timezone;
         this.dumpFile = dumpFile;
-        
-        List<String> listCustom = new ArrayList<>(
-                Arrays.asList(customParams.split(Pattern.quote(" ")))); //$NON-NLS-1$
+
+        List<String> listCustom = new ArrayList<>(Arrays.asList(customParams.split(" "))); //$NON-NLS-1$
         listCustom.removeAll(Arrays.asList(new String[] { "" })); //$NON-NLS-1$
         this.customParams = Collections.unmodifiableList(listCustom);
     }
-    
+
     /**
      * Constructs an object for simple operations,
      * not requiring credentials and other information.
-     * 
+     *
      * Such operations WILL THROW NPEs when performed on this object.
-     * 
+     *
      * @param exePgdump
      */
     public PgDumper(String exePgdump) {
         this.exePgdump = exePgdump;
-        
+
         customParams = Arrays.asList();
         host = user = pass = dbname = encoding = timezone = dumpFile = null;
         port = 0;
     }
-    
+
     public void pgDump() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--file=" + dumpFile, //$NON-NLS-1$
                 "--schema-only", //$NON-NLS-1$
                 "--no-password"); //$NON-NLS-1$
-        
+
         pgdump.command().addAll(customParams);
-        
+
         ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
         env.addEnv("PGHOST", host); //$NON-NLS-1$
         env.addEnv("PGPORT", port); //$NON-NLS-1$
@@ -77,10 +76,10 @@ public class PgDumper {
         env.addEnv("PGPASSWORD", pass); //$NON-NLS-1$
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
         env.addEnv("PGTZ", timezone); //$NON-NLS-1$
-        
+
         new StdStreamRedirector().launchAndRedirect(pgdump);
     }
-    
+
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$

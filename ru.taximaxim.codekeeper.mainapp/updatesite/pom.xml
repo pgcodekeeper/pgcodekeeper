@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.updatesite</artifactId>
-    <version>3.5.5-SNAPSHOT</version>
+    <version>3.6.2-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
@@ -51,7 +51,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${current_version_dir}/*</command>
                                     </commands>
@@ -64,7 +64,7 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
                                 </configuration>
@@ -76,7 +76,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
                                         <command>rm -rf /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
                                         <command>mkdir /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
@@ -106,7 +106,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/</url>
                                     <commands>
                                         <command>rm -rf /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</command>
                                         <command>mkdir /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</command>
@@ -120,7 +120,7 @@
                                     <goal>upload</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</url>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
                                 </configuration>
@@ -132,7 +132,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://levsha_aa@10.84.0.21/var/www/pgcodekeeper/update/</url>
+                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/</url>
                                     <commands>
                                         <command>unlink /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
                                         <command>ln -s /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
