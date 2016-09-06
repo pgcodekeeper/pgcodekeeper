@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -217,8 +218,9 @@ public abstract class DiffPresentationPane extends Composite {
                         public void run(IProgressMonitor monitor) throws InvocationTargetException,
                         InterruptedException {
                             try {
-                                proj.getProject().refreshLocal(
-                                        IResource.DEPTH_INFINITE, monitor);
+                                proj.getProject().refreshLocal(IResource.DEPTH_INFINITE,
+                                        SubMonitor.convert(monitor));
+                                monitor.done();
                             } catch (CoreException ex) {
                                 throw new InvocationTargetException(ex, ex.getLocalizedMessage());
                             }

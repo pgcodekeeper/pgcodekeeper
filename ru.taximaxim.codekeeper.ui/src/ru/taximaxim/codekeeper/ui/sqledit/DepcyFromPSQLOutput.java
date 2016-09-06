@@ -125,7 +125,6 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return addDepcy.isEmpty();
     }
 
-    // currently cannot be cancelled because of antlr
     public void updateParser(IProgressMonitor monitor)
             throws CoreException, InterruptedException, IOException, LicenseException {
         List<Listener> listener = new ArrayList<>();
@@ -214,7 +213,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -225,7 +224,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     @Override
     public ImageDescriptor getImageDescriptor() {
-        // TODO Auto-generated method stub
+        // FIXME null is illegal here
         return null;
     }
     @Override
@@ -273,7 +272,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         }
 
         @Override
-        public Object getAdapter(Class adapter) {
+        public <T> T getAdapter(Class<T> adapter) {
             return null;
         }
 

@@ -29,8 +29,8 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -42,12 +42,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     private SQLEditorContentOutlinePage fOutlinePage;
     private IEditorInput input;
-    
-    private Listener list = new Listener() {
+    private Image errorTitleImage;
+
+    private final Listener list = new Listener() {
 
         @Override
         public void handleEvent(Event event) {
-            Display.getDefault().asyncExec(new Runnable() {
+            getSite().getWorkbenchWindow().getWorkbench().getDisplay().asyncExec(new Runnable() {
 
                 @Override
                 public void run() {
@@ -60,33 +61,31 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     };
 
     public SQLEditor() {
-        super();
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
                 getSharedColors(), getPreferenceStore()));
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(Class adapter) {
-        if (IContentOutlinePage.class.equals(adapter)) {
+        if (IContentOutlinePage.class.isAssignableFrom(adapter)) {
             if (fOutlinePage != null) {
-                return fOutlinePage;    
+                return fOutlinePage;
             }
         }
         return super.getAdapter(adapter);
     }
-    
+
     @Override
     protected void createActions() {
         super.createActions();
-        
+
         ResourceBundle bundle= ResourceBundle.getBundle(Messages.BUNDLE_NAME);
         ContentAssistAction action= new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
     }
-    
+
     @Override
     public void init(IEditorSite site, IEditorInput input)
             throws PartInitException {
@@ -104,7 +103,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             fOutlinePage.setInput(getEditorInput());
         }
     }
-    
+
     PgDbParser getParser() {
         if (input instanceof DepcyFromPSQLOutput) {
             return ((DepcyFromPSQLOutput) input).getParser();
@@ -115,17 +114,21 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                     return PgDbParser.getParser(proj);
                 }
             } catch (CoreException e) {
-                // do nothing
+                Log.log(e);
             }
         }
         return null;
     }
-    
+
     @Override
     public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         PgDbParser parser = getParser();
         if (parser != null) {
             parser.removeListener(list);
+        }
+        if (errorTitleImage != null) {
+            errorTitleImage.dispose();
         }
         super.dispose();
     }
@@ -138,6 +141,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IResourceDelta child = delta.findMember(file.getFullPath());
             if (child != null && (child.getFlags() & IResourceDelta.MARKERS) != 0) {
                 Display.getDefault().syncExec(new Runnable() {
+                    @Override
                     public void run() {
                         firePropertyChange(IWorkbenchPart.PROP_TITLE);
                     }
@@ -148,17 +152,20 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public Image getTitleImage() {
-        final Image image = super.getTitleImage();
+        Image image = super.getTitleImage();
         try {
             IResource file = ResourceUtil.getResource(getEditorInput());
-            DecorationOverlayIcon icon = new DecorationOverlayIcon(image, ImageDescriptor.createFromURL(Activator
-                    .getContext().getBundle()
-                    .getResource(FILE.DECORATEWARNING)), IDecoration.BOTTOM_LEFT);
-            return (file.findMarkers(UIConsts.MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) ? icon
-                    .createImage() : image;
+            if (file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
+                if (errorTitleImage == null) {
+                    errorTitleImage = new DecorationOverlayIcon(image, ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(FILE.DECORATEERROR)),
+                            IDecoration.BOTTOM_LEFT).createImage();
+                }
+                return errorTitleImage;
+            }
         } catch (CoreException e) {
-            Log.log(Log.LOG_WARNING, e.getLocalizedMessage());
-            return image;
+            Log.log(e);
         }
+        return image;
     }
 }

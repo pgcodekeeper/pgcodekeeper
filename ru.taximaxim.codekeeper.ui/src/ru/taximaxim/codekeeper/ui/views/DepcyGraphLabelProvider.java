@@ -2,28 +2,42 @@ package ru.taximaxim.codekeeper.ui.views;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
-import org.eclipse.zest.core.viewers.IFigureProvider;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, IEntityStyleProvider{
+class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
 
-    private boolean isSource = true;
+    private final static RGB RGB_LBLUE = new RGB(216, 228, 248);
+    private final static RGB RGB_LGREEN = new RGB(204, 255, 204);
+    private final static RGB RGB_DBLUE = new RGB(1, 70, 122);
 
-    private Color colorLBlue = new Color(Display.getDefault(), 216, 228, 248);
-    private Color colorLGreen = new Color(Display.getDefault(), 204, 255, 204);
-    private Color colorDBlue = new Color(Display.getDefault(), 1, 70, 122);
+    private final Color colorHighlight;
+    private final Color colorLBlue;
+    private final Color colorLGreen;
+    private final Color colorDBlue;
 
-    private static final Color HIGHLIGHT_COLOR = ColorConstants.yellow;
+    private boolean isSource;
 
-    public DepcyGraphLabelProvider(boolean isSource) {
+
+    public DepcyGraphLabelProvider(boolean isSource, Control owner) {
+        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), owner);
+
+        colorHighlight = owner.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+        colorLBlue = lrm.createColor(RGB_LBLUE);
+        colorLGreen = lrm.createColor(RGB_LGREEN);
+        colorDBlue = lrm.createColor(RGB_DBLUE);
+
         this.isSource  = isSource;
     }
 
@@ -77,13 +91,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     }
 
     @Override
-    public IFigure getFigure(Object element) {
-        return null;
-    }
-
-    @Override
     public Color getNodeHighlightColor(Object entity) {
-        return HIGHLIGHT_COLOR;
+        return colorHighlight;
     }
 
     @Override
@@ -131,14 +140,5 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     @Override
     public boolean fisheyeNode(Object entity) {
         return false;
-    }
-
-    @Override
-    public void dispose() {
-        colorLBlue.dispose();
-        colorLGreen.dispose();
-        colorDBlue.dispose();
-
-        super.dispose();
     }
 }

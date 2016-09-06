@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
 public abstract class DbSource {
@@ -151,7 +152,7 @@ class DbSourceDirTree extends DbSource {
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
                 getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
-                monitor, 1, null);
+                monitor, null);
     }
 }
 
@@ -168,37 +169,18 @@ class DbSourceProject extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException, CoreException {
-        int filesCount = countFilesInDir(proj.getPathToProject());
+        String charset = proj.getProjectCharset();
         monitor.subTask(Messages.dbSource_loading_tree);
+        IProject project = proj.getProject();
+
+        int filesCount = PgUIDumpLoader.countFiles(project);
         monitor.setWorkRemaining(filesCount);
 
-        String charset;
-        try {
-            charset = proj.getProjectCharset();
-        } catch (CoreException e) {
-            throw new IOException(e.getLocalizedMessage(), e);
-        }
         IEclipsePreferences pref = proj.getPrefs();
-        return ru.taximaxim.codekeeper.ui.loader.PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                proj.getProject(),
+        return PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+                project.getProject(),
                 getPgDiffArgs(charset, ApgdiffConsts.UTC, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, 1, null);
-    }
-
-    private int countFilesInDir(Path path) {
-        int count = 0;
-        File[] filesList = path.toFile().listFiles();
-
-        if (filesList != null){
-            for (File file : filesList) {
-                if (!file.isDirectory()) {
-                    count++;
-                } else {
-                    count += countFilesInDir(file.toPath());
-                }
-            }
-        }
-        return count;
+                monitor, null);
     }
 }
 

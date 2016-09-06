@@ -19,9 +19,9 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
 
     ShowConsoleAction action;
     IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-    
+
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         return null;
     }
 
@@ -31,7 +31,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
             action = new ShowConsoleAction(prefs);
         }
         page.getSite().getActionBars().getToolBarManager()
-                .appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
+        .appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
         prefs.addPropertyChangeListener(action);
     }
 
@@ -47,15 +47,15 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     @Override
     public void deactivated() {
     }
-    
+
     private static class ShowConsoleAction extends Action implements IPropertyChangeListener {
-        
-        private IPreferenceStore prefs;
-        
+
+        private final IPreferenceStore prefs;
+
         ShowConsoleAction(IPreferenceStore prefs) {
             super(Messages.generalPrefPage_show_console_when_program_write_to_console);
             this.prefs = prefs;
-            
+
             setToolTipText(Messages.generalPrefPage_show_console_when_program_write_to_console);
             setImageDescriptor(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
@@ -66,7 +66,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(PREF.FORCE_SHOW_CONSOLE)
                     && !event.getOldValue().equals(event.getNewValue())) {
-                setChecked((boolean)event.getNewValue()); 
+                setChecked((boolean)event.getNewValue());
             }
         }
 

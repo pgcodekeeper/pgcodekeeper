@@ -357,6 +357,10 @@ public final class Messages extends NLS {
     public static String PgDbProject_error_creating_project;
     public static String PgDbProject_error_deleting_project;
     public static String PgDbProject_error_opening_project;
+    public static String PgNavigatorActionProvider_failed_to_open_editor;
+
+    public static String PgNavigatorActionProvider_open_with_sql_editor;
+
     public static String PreferenceInitializer_error_saving_prefs;
 
     public static String PrefListEditor_cannot_add;

@@ -15,9 +15,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -73,7 +73,7 @@ public class NormalizeProject extends AbstractHandler {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    Display.getDefault().asyncExec(new RunRefreshAfterNorm(proj, shell));
+                    PlatformUI.getWorkbench().getDisplay().asyncExec(new RunRefreshAfterNorm(proj, shell));
                 }
             }
         });

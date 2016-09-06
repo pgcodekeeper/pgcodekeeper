@@ -11,13 +11,13 @@ public class AntlrError {
     private final int start;
     private final int stop;
 
-    public AntlrError(Token tokenError, String msg) {
-        this.line = tokenError.getLine();
-        this.charPositionInLine = tokenError.getCharPositionInLine();
-        this.start = tokenError.getStartIndex();
-        this.stop = tokenError.getStopIndex();
+    public AntlrError(Token tokenError, int line, int charPositionInLine, String msg) {
+        this.line = line;
+        this.charPositionInLine = charPositionInLine;
         this.msg = msg;
-        this.text = tokenError.getText();
+        this.start = tokenError == null ? -1 : tokenError.getStartIndex();
+        this.stop = tokenError == null ? -1 : tokenError.getStopIndex();
+        this.text = tokenError == null ? null : tokenError.getText();
     }
 
     public int getLine() {

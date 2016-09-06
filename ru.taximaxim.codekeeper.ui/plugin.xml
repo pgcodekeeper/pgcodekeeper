@@ -537,38 +537,40 @@
             icon="icons/app_icon16.png"
             priority="normal">
             <triggerPoints>
-                <or>
-                    <and>
-                        <adapt type="org.eclipse.core.resources.IFile">
-                        </adapt>
-                        <test
-                            property="org.eclipse.core.resources.extension"
-                            value="sql">
-                        </test>
-                    </and>
-                </or>
+                <and>
+                    <adapt type="org.eclipse.core.resources.IFile">
+                    </adapt>
+                    <test
+                        property="org.eclipse.core.resources.extension"
+                        value="sql">
+                    </test>
+                    <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
+                </and>
             </triggerPoints>
+            <commonSorter
+                  class="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineSorter">
+            </commonSorter>
         </navigatorContent>
         <actionProvider
             class="ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider"
             id="ru.taximaxim.codekeeper.ui.views.navigator.pgNavigatorActionProvider">
             <enablement>
                 <and>
-                    <test
-                        property="org.eclipse.core.resources.extension"
-                        value="sql">
-                    </test>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent">
+                    </instanceof>
                 </and>
             </enablement>
         </actionProvider>
     </extension>
     <extension point="org.eclipse.ui.decorators">
         <decorator
-            adaptable="true"
             class="ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator"
-            icon="icons/warning.gif"
+            icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.decorator"
-            label="%marker.decorator.label"
+            label="%decorator.sql.error.label"
             lightweight="true"
             location="BOTTOM_LEFT"
             state="true">
@@ -582,20 +584,20 @@
             </enablement>
         </decorator>
     </extension>
-    <extension point="org.eclipse.ui.editors.annotationTypes">
+    <!--extension point="org.eclipse.ui.editors.annotationTypes">
         <type
-            markerSeverity="0"
-            super="org.eclipse.ui.workbench.texteditor.info"
-            name="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
+            markerSeverity="2"
+            super="org.eclipse.ui.workbench.texteditor.error"
+            name="ru.taximaxim.codekeeper.ui.sql.errorannotation"
             markerType="ru.taximaxim.codekeeper.ui.sql.errormarker" />
     </extension>
     <extension
         id="ru.taximaxim.ui.markerannotation"
-        name="%marker.annotation.name"
+        name="pgCodeKeeper Marker Annotation"
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-            annotationType="ru.taximaxim.codekeeper.ui.sql.errormarkertype"
-            includeOnPreferencePage="true"
+            annotationType="ru.taximaxim.codekeeper.ui.sql.errorannotation"
+            includeOnPreferencePage="false"
             overviewRulerPreferenceKey="clruler"
             overviewRulerPreferenceValue="true"
             colorPreferenceKey="clcolor"
@@ -607,7 +609,7 @@
             textStylePreferenceKey="clstyle"
             textStylePreferenceValue="BOX">
         </specification>
-    </extension>
+    </extension-->
     <extension point="org.eclipse.ui.editors.markerUpdaters">
         <updater
             id="ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"

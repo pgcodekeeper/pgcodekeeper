@@ -6,18 +6,18 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.ui.texteditor.IMarkerUpdater;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
 public class SQLMarkerUpdate implements IMarkerUpdater {
 
     @Override
     public String getMarkerType() {
-        return UIConsts.MARKER.ERROR;
+        return MARKER.ERROR;
     }
 
     @Override
     public String[] getAttribute() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -28,9 +28,9 @@ public class SQLMarkerUpdate implements IMarkerUpdater {
             int end = position.getOffset() + position.getLength();
             marker.setAttribute(IMarker.CHAR_START, start);
             marker.setAttribute(IMarker.CHAR_END, end);
-            return true;
         } catch (CoreException e) {
-            return false;
+            Log.log(e);
         }
+        return true;
     }
 }

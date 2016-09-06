@@ -34,7 +34,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.loader.PgUIDumpLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
@@ -50,7 +49,8 @@ public class PgDbParser implements IResourceChangeListener {
     private PgDbParser(IProject proj) {
         this.proj = proj;
         if (proj != null) {
-            ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
+                    IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
         }
     }
 
@@ -121,15 +121,10 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args,
-                monitor)) {
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args, monitor)) {
             PgDatabase db = loader.loadFile(true, new PgDatabase());
-            for (String key : db.getObjDefinitions().keySet()) {
-                objDefinitions.put(key, db.getObjDefinitions().get(key));
-            }
-            for (String key : db.getObjReferences().keySet()) {
-                objReferences.put(key, db.getObjReferences().get(key));
-            }
+            objDefinitions.putAll(db.getObjDefinitions());
+            objReferences.putAll(db.getObjReferences());
             fillFunctionBodies(objDefinitions, objReferences, loader.getFuncBodyReferences());
         }
     }
@@ -169,12 +164,8 @@ public class PgDbParser implements IResourceChangeListener {
                     getFullDBFromPgDbProject(pgProject, monitor);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
-                } catch (IOException | LicenseException ex) {
+                } catch (IOException | LicenseException | CoreException ex) {
                     return getLoadingErroStatus(ex);
-                } catch (CoreException e) {
-                    // TODO Auto-generated catch block
-                    //e.printStackTrace();
-                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }
@@ -197,17 +188,19 @@ public class PgDbParser implements IResourceChangeListener {
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                pgProject.getProject(),
-                args, monitor, 1, funcBodies);
-        objDefinitions = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjDefinitions());
-        objReferences = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjReferences());
+                pgProject.getProject(), args, monitor, funcBodies);
+        objDefinitions.clear();
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.clear();
+        objReferences.putAll(db.getObjReferences());
         fillFunctionBodies(objDefinitions, objReferences, funcBodies);
         notifyListeners();
     }
 
     public void removePathFromRefs(Path path) {
-        objReferences.remove(path);
-        objDefinitions.remove(path);
+        String p = path.toString();
+        objReferences.remove(p);
+        objDefinitions.remove(p);
     }
 
     private void fillRefsFromInputStream(InputStream input,
@@ -217,10 +210,14 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(scriptFileEncoding);
-        @SuppressWarnings("resource")
-        PgDatabase db = new PgDumpLoader(input, "bytestream:/", args, monitor).load(true); //$NON-NLS-1$
-        objDefinitions = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjDefinitions());
-        objReferences = new ConcurrentHashMap<String, List<PgObjLocation>>(db.getObjReferences());
+        PgDatabase db;
+        try (PgDumpLoader loader = new PgDumpLoader(input, "bytestream:/", args, monitor, 2)) { //$NON-NLS-1$
+            db = loader.load(true);
+        }
+        objDefinitions.clear();
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.clear();
+        objReferences.putAll(db.getObjReferences());
     }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
@@ -280,20 +277,6 @@ public class PgDbParser implements IResourceChangeListener {
             }
         }
         return false;
-    }
-
-    public List<PgObjLocation> getObjDefinitionsByPath(Path path) {
-        List<PgObjLocation> locations = new ArrayList<>();
-        List<PgObjLocation> defs = objDefinitions.get(path);
-        if (defs == null) {
-            return locations;
-        }
-        for (PgObjLocation obj : defs) {
-            if (obj.getFilePath().equals(path)) {
-                locations.add(obj);
-            }
-        }
-        return locations;
     }
 
     public void notifyListeners() {

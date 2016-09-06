@@ -161,8 +161,7 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     /**
-     * Loads database schema from a ModelExporter directory tree. The root
-     * directory must contain a listing.lst file for ordered list of files.
+     * Loads database schema from a ModelExporter directory tree.
      *
      * @param dirPath path to the directory tree root
      *
@@ -170,8 +169,7 @@ public class PgDumpLoader implements AutoCloseable {
      * @throws InterruptedException
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor, int monLvl,
-            List<FunctionBodyContainer> funcBodies)
+            PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
                     throws InterruptedException, IOException, LicenseException {
         PgDatabase db = new PgDatabase();
         db.setArguments(arguments);
@@ -179,27 +177,24 @@ public class PgDumpLoader implements AutoCloseable {
 
         // step 1
         // read files in schema folder, add schemas to db
-        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
-        String[] dirs = new String[dirEnums.length];
-        for (int i = 0; i < dirEnums.length; ++i) {
-            dirs[i] = dirEnums[i].toString();
+        for (ApgdiffConsts.WORK_DIR_NAMES dirEnum : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+            loadSubdir(dir, arguments, dirEnum.name(), db, monitor, funcBodies);
         }
-        loadSubdirs(dir, arguments, dirs, db, monitor, monLvl, funcBodies);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.exists()) {
+        if (!schemasCommonDir.isDirectory()) {
             return db;
         }
 
         // step 2
         // read out schemas names, and work in loop on each
         for (PgSchema schema : db.getSchemas()) {
-            File schemaFolder = new File(schemasCommonDir,
-                    ModelExporter.getExportedFilename(schema));
+            File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
             if (schemaFolder.isDirectory()) {
-                loadSubdirs(schemaFolder, arguments, DIR_LOAD_ORDER, db,
-                        monitor, monLvl, funcBodies);
+                for (String dirSub : DIR_LOAD_ORDER) {
+                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor, funcBodies);
+                }
             }
         }
 
@@ -207,23 +202,20 @@ public class PgDumpLoader implements AutoCloseable {
         return db;
     }
 
-    private static void loadSubdirs(File dir, PgDiffArguments arguments,
-            String[] subDirs, PgDatabase db, IProgressMonitor monitor, int monLvl,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException {
-        for (String sub : subDirs) {
-            File subDir = new File(dir, sub);
+    private static void loadSubdir(File dir, PgDiffArguments arguments,
+            String sub, PgDatabase db, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+                    throws InterruptedException, IOException {
+        File subDir = new File(dir, sub);
+        if (subDir.exists() && subDir.isDirectory()) {
+            File[] files = subDir.listFiles();
+            Arrays.sort(files);
 
-            if (subDir.exists() && subDir.isDirectory()) {
-                File[] files = subDir.listFiles();
-                Arrays.sort(files);
-
-                for (File f : files) {
-                    if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
-                        try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor, monLvl)) {
-                            loader.load(funcBodies != null, db);
-                            if (funcBodies != null) {
-                                funcBodies.addAll(loader.getFuncBodyReferences());
-                            }
+            for (File f : files) {
+                if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+                    try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                        loader.load(funcBodies != null, db);
+                        if (funcBodies != null) {
+                            funcBodies.addAll(loader.getFuncBodyReferences());
                         }
                     }
                 }

@@ -16,9 +16,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,8 +30,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -103,10 +101,11 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         this.proj = new PgDbProject(in.getProject());
         setPartName(in.getName());
         super.init(site, input);
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
+                IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
+                | IResourceChangeEvent.POST_CHANGE);
     }
-    
-    
 
     @Override
     protected void createPages() {
@@ -182,8 +181,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         case IResourceChangeEvent.POST_CHANGE:
             handleChangeProject(event);
             break;
-        default:
-            break;
         }
     }
 
@@ -205,16 +202,30 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private void handleChangeProject(IResourceChangeEvent event) {
         IResourceDelta rootDelta = event.getDelta();
-        IPath projPath = proj.getProject().getFullPath();
 
-        boolean schemaChanged = false;
-        for (ApgdiffConsts.WORK_DIR_NAMES dir : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-            if (rootDelta.findMember(projPath.append(dir.toString())) != null) {
-                schemaChanged = true;
-                break;
-            }
+        final boolean[] schemaChanged = new boolean[1];
+        try {
+            rootDelta.accept(new IResourceDeltaVisitor() {
+
+                @Override
+                public boolean visit(IResourceDelta delta) throws CoreException {
+                    if (schemaChanged[0]) {
+                        return false;
+                    }
+                    int flags = delta.getFlags();
+                    if (flags != 0 && flags != IResourceDelta.MARKERS) {
+                        // something other than just markers has changed
+                        schemaChanged[0] = true;
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        } catch (CoreException ex) {
+            Log.log(ex);
         }
-        if (schemaChanged) {
+
+        if (schemaChanged[0]) {
             Display.getDefault().asyncExec(new Runnable() {
 
                 @Override

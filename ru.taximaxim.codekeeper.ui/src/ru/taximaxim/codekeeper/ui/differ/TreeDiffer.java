@@ -90,7 +90,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject());
 
         PgDumpLoader.checkCancelled(pm);
-        pm.done();
+        monitor.done();
         finished = true;
     }
 
@@ -105,8 +105,8 @@ public class TreeDiffer implements IRunnableWithProgress {
 
         IStatus otherResult = otherJob.getResult();
         if (!exitResult.isOK() || !otherResult.isOK()) {
-            if (exitResult.getSeverity() != IStatus.ERROR &&
-                    otherResult.getSeverity() != IStatus.ERROR) {
+            if (exitResult.getSeverity() == IStatus.CANCEL &&
+                    otherResult.getSeverity() == IStatus.CANCEL) {
                 throw new InterruptedException();
             }
             Throwable t = otherResult.getException();
@@ -143,10 +143,8 @@ public class TreeDiffer implements IRunnableWithProgress {
                 s.get(SubMonitor.convert(mpm, Messages.TreeDiffer_loading_schema, 1));
             } catch (InterruptedException ex) {
                 return Status.CANCEL_STATUS;
-            } catch (IOException | LicenseException ex) {
+            } catch (IOException | LicenseException | CoreException ex) {
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.TreeDiffer_schema_load_error, ex);
-            } catch (CoreException e) {
-                return Status.CANCEL_STATUS;
             } finally {
                 mpm.done();
             }

@@ -110,7 +110,8 @@ class CustomSQLErrorListener extends BaseErrorListener {
                 + parsedObjectName + " line " + line + ':' + charPositionInLine
                 + ' ' + msg);
         if (errors != null) {
-            errors.add(new AntlrError((Token) offendingSymbol, msg));
+            Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
+            errors.add(new AntlrError(token, line, charPositionInLine, msg));
         }
     }
 }

@@ -18,13 +18,11 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
     @Override
     public void dispose() {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -34,14 +32,14 @@ public class NavigatorOutlineContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getChildren(Object parentElement) {
-        List<SegmentsWithParent> segments = new ArrayList<>();
-        List<PgObjLocation> refs = new ArrayList<>();
         if (!(parentElement instanceof IFile)) {
             return null;
         }
         IFile iFile = (IFile) parentElement;
         IProject iProject = iFile.getProject();
-        refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toFile().toPath());
+
+        List<SegmentsWithParent> segments = new ArrayList<>();
+        List<PgObjLocation> refs = PgDbParser.getParser(iProject).getObjsForPath(iFile.getLocation().toFile().toPath());
         for (PgObjLocation loc : refs) {
             if (loc.getAction() != StatementActions.NONE) {
                 segments.add(new SegmentsWithParent(loc, iFile));

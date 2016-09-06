@@ -55,7 +55,7 @@ public class FeedBackDialog extends Dialog {
             return CREDENTIALS;
         };
     };
-    private static final String MAIL_AUTH_PROP = "mail.smtp.auth";
+    private static final String MAIL_AUTH_PROP = "mail.smtp.auth"; //$NON-NLS-1$
 
     private Text userName;
     private Text emailFrom;

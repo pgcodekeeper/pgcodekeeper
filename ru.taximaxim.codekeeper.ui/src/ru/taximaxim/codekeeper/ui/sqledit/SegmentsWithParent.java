@@ -6,7 +6,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SegmentsWithParent extends Segments {
 
-    private IFile parentFile;
+    private final IFile parentFile;
 
     public SegmentsWithParent(PgObjLocation loc, IFile parentFile) {
         super(loc);
@@ -16,5 +16,4 @@ public class SegmentsWithParent extends Segments {
     public IFile getParentFile() {
         return parentFile;
     }
-
 }

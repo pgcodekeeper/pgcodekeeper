@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -175,7 +176,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
                         try {
-                            in.updateParser(monitor);
+                            in.updateParser(SubMonitor.convert(monitor));
+                            monitor.done();
                         } catch (CoreException | IOException | LicenseException ex) {
                             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
                         }

@@ -166,7 +166,7 @@ public final class LicensingInternal {
 
     public static void verifyDb(License license, PgDatabase db) throws LicenseException {
         try {
-            int i = 0;
+            long i = 0;
             final int maxObjects = Integer.valueOf(license.getFeature(MAX_SCHEMA_SIZE));
             for (PgSchema s : db.getSchemas()) {
                 i += s.getDomains().size();
