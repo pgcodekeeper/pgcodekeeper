@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -10,6 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -27,10 +29,10 @@ public class AntlrParser {
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
     public static SQLParser makeBasicParser(InputStream stream, String charset,
-            String parsedObjectName) throws IOException {
+            String parsedObjectName, List<AntlrError> errors) throws IOException {
         return makeBasicParser(
                 new ANTLRInputStream(new InputStreamReader(stream, charset)),
-                parsedObjectName);
+                parsedObjectName, errors);
     }
 
     /**
@@ -38,11 +40,12 @@ public class AntlrParser {
      * and {@link CustomSQLErrorListener} as parser and lexer error listener.
      */
     public static SQLParser makeBasicParser(String string, String parsedObjectName) {
-        return makeBasicParser(new ANTLRInputStream(string), parsedObjectName);
+        return makeBasicParser(new ANTLRInputStream(string), parsedObjectName, null);
     }
 
-    private static SQLParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName) {
-        CustomSQLErrorListener errListener = new CustomSQLErrorListener(parsedObjectName);
+    private static SQLParser makeBasicParser(ANTLRInputStream stream, String parsedObjectName,
+            List<AntlrError> errors) {
+        CustomSQLErrorListener errListener = new CustomSQLErrorListener(parsedObjectName, errors);
 
         SQLLexer lexer = new SQLLexer(stream);
         lexer.removeErrorListeners();
@@ -58,8 +61,8 @@ public class AntlrParser {
 
     public static void parseInputStream(InputStream inputStream, String charsetName,
             String parsedObjectName, SQLParserBaseListener listener,
-            IProgressMonitor mon, final int monitoringLevel) throws IOException {
-        SQLParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName);
+            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException {
+        SQLParser parser = makeBasicParser(inputStream, charsetName, parsedObjectName, errors);
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
         parser.addParseListener(new ParseTreeListener() {
@@ -92,9 +95,11 @@ public class AntlrParser {
 class CustomSQLErrorListener extends BaseErrorListener {
 
     private final String parsedObjectName;
+    private final List<AntlrError> errors;
 
-    public CustomSQLErrorListener(String parsedObjectName) {
+    public CustomSQLErrorListener(String parsedObjectName, List<AntlrError> errors) {
         this.parsedObjectName = parsedObjectName;
+        this.errors = errors;
     }
 
     @Override
@@ -103,6 +108,10 @@ class CustomSQLErrorListener extends BaseErrorListener {
             String msg, RecognitionException e) {
         Log.log(Log.LOG_WARNING, "ANTLR Error:\n"
                 + parsedObjectName + " line " + line + ':' + charPositionInLine
-                + ' ' + msg, e);
+                + ' ' + msg);
+        if (errors != null) {
+            Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
+            errors.add(new AntlrError(token, line, charPositionInLine, msg));
+        }
     }
 }

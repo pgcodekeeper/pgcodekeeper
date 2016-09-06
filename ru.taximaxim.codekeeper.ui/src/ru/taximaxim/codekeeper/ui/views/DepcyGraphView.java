@@ -53,7 +53,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         gv.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
         gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING), true);
 
-        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource));
+        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource, gv.getControl()));
         gv.setContentProvider(new DepcyGraphViewContentProvider());
 
         // listen to node/connection selection events

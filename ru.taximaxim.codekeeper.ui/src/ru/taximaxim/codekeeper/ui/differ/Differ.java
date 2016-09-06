@@ -163,7 +163,7 @@ public class Differ implements IRunnableWithProgress {
         }
 
         PgDumpLoader.checkCancelled(pm);
-        pm.done();
+        monitor.done();
         finished = true;
     }
 }

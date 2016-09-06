@@ -7,16 +7,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
 
 public class ProjectBuilder extends IncrementalProjectBuilder {
 
@@ -27,37 +31,29 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         if (!proj.hasNature(NATURE.ID)) {
             return null;
         }
-        PgDbParser parser = null;
+
         try {
-            parser = PgDbParser.getParserForBuilder(proj, monitor);
+            SubMonitor m = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
+            PgDbParser parser = PgDbParser.getParserForBuilder(proj, m);
+            if (parser != null) {
+                switch (kind) {
+                case IncrementalProjectBuilder.AUTO_BUILD:
+                case IncrementalProjectBuilder.INCREMENTAL_BUILD:
+                    buildIncrement(getDelta(getProject()), parser, m);
+                    break;
+
+                case IncrementalProjectBuilder.FULL_BUILD:
+                    parser.getObjFromProject(m);
+                    break;
+                }
+            }
         } catch (InterruptedException ex) {
-            // cancelled
+            throw new OperationCanceledException();
         } catch (IOException | LicenseException ex) {
             throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
-        }
-
-        // parser loaded from scratch or cancelled in the process
-        // no futher changes to load
-        if (parser == null) {
-            return new IProject[] { proj };
-        }
-
-        switch (kind) {
-        case IncrementalProjectBuilder.AUTO_BUILD:
-        case IncrementalProjectBuilder.INCREMENTAL_BUILD:
-            IResourceDelta delta = getDelta(getProject());
-            buildIncrement(delta, parser, monitor);
-            break;
-
-        case IncrementalProjectBuilder.FULL_BUILD:
-            try {
-                parser.getObjFromProject(monitor);
-            } catch (InterruptedException ex) {
-                // cancelled
-            } catch (IOException | LicenseException ex) {
-                throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
-            }
-            break;
+        } finally {
+            // update decorators if any kind of build was run
+            PgDecorator.update();
         }
         return new IProject[] { proj };
     }
@@ -69,7 +65,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
             @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
-                if (delta.getResource() instanceof IFile) {
+                if (delta.getResource().getType() == IResource.FILE) {
                     count.incrementAndGet();
                 }
                 return true;
@@ -84,7 +80,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 if (sub.isCanceled()) {
                     return false;
                 }
-                if (!(delta.getResource() instanceof IFile)) {
+                if (delta.getResource().getType() != IResource.FILE) {
                     return true;
                 }
                 sub.worked(1);
@@ -92,14 +88,13 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 switch (delta.getKind()) {
                 case IResourceDelta.REMOVED:
                 case IResourceDelta.REMOVED_PHANTOM:
+                    // TODO why does REPLACED follow REMOVED path?
                 case IResourceDelta.REPLACED:
                     parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
                     break;
-
                 default:
                     try {
-                        parser.getObjFromProjFile(
-                                delta.getResource().getLocationURI(), sub);
+                        parser.getObjFromProjFile((IFile) delta.getResource(), sub);
                     } catch (InterruptedException e) {
                         // cancelled
                         return false;

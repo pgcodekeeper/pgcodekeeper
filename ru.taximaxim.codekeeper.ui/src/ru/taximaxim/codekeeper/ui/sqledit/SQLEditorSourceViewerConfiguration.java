@@ -66,7 +66,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             @Override
             public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
                 IDocument document= sourceViewer.getDocument();
-
                 try {
                     IRegion info= document.getLineInformation(lineNumber);
                     return document.get(info.getOffset(), info.getLength());
@@ -118,6 +117,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+        @SuppressWarnings("unchecked")
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null); //$NON-NLS-1$
         return targets;

@@ -1,11 +1,11 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import java.text.MessageFormat;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.PlatformObject;
-import java.text.MessageFormat;
-
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IMemento;
@@ -21,38 +21,36 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     private final String projName;
     private PgCodekeeperUIException ex;
-    
+
     public ProjectEditorInput(String projectName) {
         projName = projectName;
     }
-    
+
     public IProject getProject() {
         return ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
     }
-    
+
     public PgCodekeeperUIException getError() {
         return ex;
     }
-    
+
     public void setError(PgCodekeeperUIException ex) {
         this.ex = ex;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
+        Object ad = null;
         if (adapter.isAssignableFrom(IProject.class)) {
-            return getProject();
-        }
-        
-        if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
-            return new IWorkbenchAdapter() {
-                
+            ad = getProject();
+        } else if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
+            ad = new IWorkbenchAdapter() {
+
                 @Override
                 public Object getParent(Object o) {
                     return getProject().getParent();
                 }
-                
+
                 @Override
                 public Object[] getChildren(Object o) {
                     IProject proj = getProject();
@@ -65,25 +63,24 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
                     }
                     return new Object[0];
                 }
-                
+
                 @Override
                 public String getLabel(Object o) {
                     return getProject().getName();
                 }
-                
+
                 @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
                     return ImageDescriptor.createFromURL(Activator.getContext()
                             .getBundle().getResource(FILE.ICONAPPSMALL));
                 }
             };
+        } else if (adapter.isAssignableFrom(IPersistableElement.class)){
+            ad = this;
+        } else {
+            return super.getAdapter(adapter);
         }
-        
-        if (adapter.isAssignableFrom(IPersistableElement.class)){
-            return this;
-        }
-        
-        return super.getAdapter(adapter);
+        return adapter.cast(ad);
     }
 
     @Override
@@ -112,7 +109,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
         return MessageFormat.format(
                 Messages.ProjectEditorInput_pgcodekeeper_project, projName);
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -120,7 +117,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
         result = prime * result + projName.hashCode();
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

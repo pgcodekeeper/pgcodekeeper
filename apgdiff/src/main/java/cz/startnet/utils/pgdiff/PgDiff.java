@@ -75,7 +75,7 @@ public final class PgDiff {
             }
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments, null, 1, null);
+                    arguments, null, null);
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }

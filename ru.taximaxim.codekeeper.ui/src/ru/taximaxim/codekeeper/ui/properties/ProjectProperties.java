@@ -49,7 +49,7 @@ IWorkbenchPropertyPage {
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
-        prefs = new ProjectScope((IProject) element.getAdapter(IProject.class))
+        prefs = new ProjectScope(element.getAdapter(IProject.class))
                 .getNode(UIConsts.PLUGIN_ID.THIS);
     }
 

@@ -54,6 +54,7 @@
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.AntlrError { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgRule$PgRuleEventType { *; }</option>

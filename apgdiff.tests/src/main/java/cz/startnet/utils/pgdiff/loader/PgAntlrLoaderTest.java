@@ -200,7 +200,7 @@ public class PgAntlrLoaderTest {
             args.setIgnoreSlonyTriggers(true);
             args.setOutputIgnoredStatements(true);
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), args, null, 1, null);
+                    exportDir.toString(), args, null, null);
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex +

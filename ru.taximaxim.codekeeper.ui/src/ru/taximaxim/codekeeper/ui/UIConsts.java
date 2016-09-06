@@ -14,6 +14,14 @@ public interface UIConsts {
         String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
+    interface MARKER {
+        String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
+    }
+
+    interface DECORATOR {
+        String DECORATOR = UIConsts.PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
+    }
+
     interface COMMAND {
         String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
         String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
@@ -144,6 +152,8 @@ public interface UIConsts {
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
         String ICONSAVECLIPBOARD = "/icons/save_clipboard.png"; //$NON-NLS-1$
+
+        String DECORATEERROR = "/icons/error_co.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

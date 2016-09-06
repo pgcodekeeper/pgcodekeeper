@@ -50,7 +50,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
             initRepoFromSource(pm);
 
-            pm.done();
+            monitor.done();
         } catch (IOException | CoreException | LicenseException ex) {
             throw new InvocationTargetException(ex, MessageFormat.format(
                     Messages.initProjectFromSource_ioexception_while_creating_project,

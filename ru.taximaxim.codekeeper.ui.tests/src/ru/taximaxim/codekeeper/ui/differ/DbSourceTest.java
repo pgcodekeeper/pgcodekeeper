@@ -68,7 +68,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testJdbc() throws IOException, LicenseException, InterruptedException {
+    public void testJdbc() throws IOException, LicenseException, InterruptedException, CoreException {
         performTest(DbSource.fromJdbc(TEST.REMOTE_HOST,
                 TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME,
@@ -79,7 +79,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testDirTree() throws IOException, LicenseException, InterruptedException {
+    public void testDirTree() throws IOException, LicenseException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
@@ -88,7 +88,8 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException {
+    public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException,
+            CoreException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
 
         performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
@@ -152,7 +153,7 @@ public class DbSourceTest {
     }
 
     private void performTest(DbSource source)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException, LicenseException, CoreException {
         assertFalse("DB source should not be loaded", source.isLoaded());
 
         try{
