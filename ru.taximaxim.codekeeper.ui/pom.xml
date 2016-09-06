@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.6.2-SNAPSHOT</version>
+    <version>1.7.0-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <profiles>
@@ -69,14 +69,21 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.properties.ProjectProperties { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.views.DepcyGraphView { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineContentProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineLabelProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineSorter { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.MainPerspective { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.builders.ProjectBuilder { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.builders.BuilderTester { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant { *; }</option>
                                 <option>-keep class ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.marker.SQLMarkerUpdate { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
                             </options>
                             <libs>
