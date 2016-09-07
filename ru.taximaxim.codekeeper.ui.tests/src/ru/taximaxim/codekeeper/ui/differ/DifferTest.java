@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.AfterClass;
@@ -100,7 +101,7 @@ public class DifferTest {
 
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
-        newDiffer.run(null);
+        newDiffer.run(new NullProgressMonitor());
 
         TreeElement root = newDiffer.getDiffTree();
 
@@ -141,11 +142,11 @@ abstract class DifferData{
     abstract void setUserSelection(TreeElement root);
 
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source){
-        return new ArrayList<Entry<PgStatement,PgStatement>>();
+        return new ArrayList<>();
     }
 
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target){
-        return new ArrayList<Entry<PgStatement,PgStatement>>();
+        return new ArrayList<>();
     }
 
     final void setCaseNumber(int caseNumber) {
