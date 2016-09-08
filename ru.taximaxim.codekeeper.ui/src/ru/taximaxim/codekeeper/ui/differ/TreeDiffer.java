@@ -105,8 +105,10 @@ public class TreeDiffer implements IRunnableWithProgress {
 
         IStatus otherResult = otherJob.getResult();
         if (!exitResult.isOK() || !otherResult.isOK()) {
-            if (exitResult.getSeverity() == IStatus.CANCEL &&
-                    otherResult.getSeverity() == IStatus.CANCEL) {
+            int exitSeverity = exitResult.getSeverity();
+            int otherSeverity = otherResult.getSeverity();
+            if ((exitSeverity == IStatus.CANCEL || exitSeverity == IStatus.OK)
+                    && (otherSeverity == IStatus.CANCEL || otherSeverity == IStatus.OK)) {
                 throw new InterruptedException();
             }
             Throwable t = otherResult.getException();

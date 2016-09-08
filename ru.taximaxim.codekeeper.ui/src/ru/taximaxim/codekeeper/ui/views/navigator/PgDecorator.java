@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -14,6 +15,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DECORATOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class PgDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
@@ -23,11 +25,15 @@ public class PgDecorator extends LabelProvider implements ILightweightLabelDecor
     @Override
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IResource) {
+            IResource res = (IResource) element;
+            IProject proj = res.getProject();
             try {
-                IMarker[] markers = ((IResource) element).findMarkers(
-                        MARKER.ERROR, false, IResource.DEPTH_INFINITE);
-                if (markers.length > 0) {
-                    decoration.addOverlay(ICON_ERROR);
+                if (proj != null && proj.isAccessible() && proj.hasNature(NATURE.ID)) {
+                    IMarker[] markers = res.findMarkers(
+                            MARKER.ERROR, false, IResource.DEPTH_INFINITE);
+                    if (markers.length > 0) {
+                        decoration.addOverlay(ICON_ERROR);
+                    }
                 }
             } catch (CoreException e) {
                 Log.log(e);

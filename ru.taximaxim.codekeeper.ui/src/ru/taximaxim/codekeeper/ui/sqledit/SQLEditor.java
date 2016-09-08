@@ -155,7 +155,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         Image image = super.getTitleImage();
         try {
             IResource file = ResourceUtil.getResource(getEditorInput());
-            if (file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
+            if (file != null && file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
                 if (errorTitleImage == null) {
                     errorTitleImage = new DecorationOverlayIcon(image, ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(FILE.DECORATEERROR)),
