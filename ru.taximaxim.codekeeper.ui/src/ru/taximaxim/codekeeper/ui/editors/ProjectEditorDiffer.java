@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -203,6 +204,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     private void handleChangeProject(IResourceChangeEvent event) {
         IResourceDelta rootDelta = event.getDelta();
 
+        ApgdiffConsts.WORK_DIR_NAMES[] dirs = ApgdiffConsts.WORK_DIR_NAMES.values();
+        final IPath[] projDirs = new IPath[dirs.length];
+        for (int i = 0; i < dirs.length; ++i) {
+            projDirs[i] = proj.getPathToProject().append(dirs[i].name());
+        }
+
         final boolean[] schemaChanged = new boolean[1];
         try {
             rootDelta.accept(new IResourceDeltaVisitor() {
@@ -215,8 +222,13 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                     int flags = delta.getFlags();
                     if (flags != 0 && flags != IResourceDelta.MARKERS) {
                         // something other than just markers has changed
-                        schemaChanged[0] = true;
-                        return false;
+                        for (IPath dir : projDirs) {
+                            // check that it's our resource
+                            if (dir.isPrefixOf(delta.getFullPath())) {
+                                schemaChanged[0] = true;
+                                return false;
+                            }
+                        }
                     }
                     return true;
                 }
