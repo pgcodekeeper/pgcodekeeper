@@ -105,8 +105,6 @@ public class DiffTableViewer extends Composite {
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
     private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}"; //$NON-NLS-1$
 
-    private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
-            DbObjType.values().length);
     private final Image iSideBoth;
     private final Image iSideLeft;
     private final Image iSideRight;
@@ -160,12 +158,6 @@ public class DiffTableViewer extends Composite {
         this.proj = proj;
 
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        for (DbObjType objType : DbObjType.values()) {
-            ImageDescriptor iObj = ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(
-                            FILE.ICONPGADMIN + objType.toString().toLowerCase() + ".png")); //$NON-NLS-1$
-            mapObjIcons.put(objType, lrm.createImage(iObj));
-        }
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONEDIT)));
         iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
@@ -588,7 +580,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public Image getImage(Object element) {
-                return mapObjIcons.get(((TreeElement) element).getType());
+                return Activator.getDbObjImage(((TreeElement) element).getType());
             }
         });
 

@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -12,9 +10,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -38,46 +33,29 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffTreeViewer extends Composite {
-    
-    private final Map<DbObjType, Image> mapObjIcons =
-            new HashMap<>(DbObjType.values().length);
-    
+
     private TreeElement tree;
     private final CheckedTreeViewer viewer;
-    
+
     private final Button btnDebugView;
-    
-    private LocalResourceManager lrm;
-    
+
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
 
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        for(DbObjType objType : DbObjType.values()) {
-            ImageDescriptor iObj = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONPGADMIN
-                            + objType.toString().toLowerCase()
-                            + ".png")); //$NON-NLS-1$
-            
-            mapObjIcons.put(objType, lrm.createImage(iObj));
-        }
-        
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
-        
+
         viewer = new CheckedTreeViewer(this);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         viewer.setContentProvider(new DiffTreeContentProvider());
         viewer.setLabelProvider(new StyledCellLabelProvider() {
-            
+
             @Override
             public void update(ViewerCell cell) {
                 provideTreeCellLabelDecorations(cell);
@@ -85,7 +63,7 @@ public class DiffTreeViewer extends Composite {
             }
         });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
-            
+
             @Override
             public void doubleClick(DoubleClickEvent event) {
                 TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
@@ -93,7 +71,7 @@ public class DiffTreeViewer extends Composite {
                 viewer.refresh();
             }
         });
-        
+
         MenuManager menuMgr = new MenuManager();
         menuMgr.add(new Action(Messages.diffTreeViewer_select_subtree) {
             @Override
@@ -127,7 +105,7 @@ public class DiffTreeViewer extends Composite {
             }
         });
         menuMgr.addMenuListener(new IMenuListener() {
-            
+
             @Override
             public void menuAboutToShow(IMenuManager manager) {
                 boolean enable = !viewer.getSelection().isEmpty();
@@ -138,15 +116,15 @@ public class DiffTreeViewer extends Composite {
                 }
             }
         });
-        
+
         viewer.getControl().setMenu(menuMgr.createContextMenu(viewer.getControl()));
-        
+
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         GridLayout contButtonsLayout = new GridLayout(5, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
-        
+
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
         btnSelectAll.setText(Messages.select_all);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
@@ -160,7 +138,7 @@ public class DiffTreeViewer extends Composite {
                 }
             }
         });
-        
+
         Button btnSelectNone = new Button(contButtons, SWT.PUSH);
         btnSelectNone.setText(Messages.select_none);
         btnSelectNone.addSelectionListener(new SelectionAdapter() {
@@ -174,7 +152,7 @@ public class DiffTreeViewer extends Composite {
                 }
             }
         });
-        
+
         Button btnExpandAll = new Button(contButtons, SWT.PUSH);
         btnExpandAll.setText(Messages.diffTreeViewer_expand_all);
         btnExpandAll.addSelectionListener(new SelectionAdapter() {
@@ -183,7 +161,7 @@ public class DiffTreeViewer extends Composite {
                 viewer.expandAll();
             }
         });
-        
+
         Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
         btnCollapseAll.setText(Messages.diffTreeViewer_collapse_all);
         btnCollapseAll.addSelectionListener(new SelectionAdapter() {
@@ -192,7 +170,7 @@ public class DiffTreeViewer extends Composite {
                 viewer.collapseAll();
             }
         });
-        
+
         btnDebugView = new Button(contButtons, SWT.CHECK);
         btnDebugView.setText(Messages.diffTreeViewer_debug_view);
         btnDebugView.setLayoutData(new GridData(
@@ -204,59 +182,59 @@ public class DiffTreeViewer extends Composite {
             }
         });
     }
-    
+
     private void provideTreeCellLabelDecorations(ViewerCell cell) {
         TreeElement el = (TreeElement) cell.getElement();
         List<StyleRange> styles = new ArrayList<>();
-        
-        Image icon = mapObjIcons.get(el.getType());
+
+        Image icon = Activator.getDbObjImage(el.getType());
         String name = el.getName();
-        
+
         if(btnDebugView.getSelection()) {
             cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
                     el.getType(), name, el.getSide()));
         } else {
             StringBuilder label = new StringBuilder(name);
-            
+
             if(el.getType() == DbObjType.DATABASE
                     || el.getType() == DbObjType.SCHEMA
                     || el.getType() == DbObjType.TABLE) {
                 label.append(" (") //$NON-NLS-1$
-                    .append(el.countChildren())
-                    .append(") [") //$NON-NLS-1$
-                    .append(el.countDescendants())
-                    .append(']');
-                
+                .append(el.countChildren())
+                .append(") [") //$NON-NLS-1$
+                .append(el.countDescendants())
+                .append(']');
+
                 TextStyle styleGray = new TextStyle();
                 styleGray.foreground = getDisplay().getSystemColor(
                         SWT.COLOR_GRAY);
-                
+
                 StyleRange styleCount = new StyleRange(styleGray);
                 styleCount.start = name.length();
                 styleCount.length = label.length() - name.length();
-                
+
                 styles.add(styleCount);
             }
-            
+
             cell.setText(label.toString());
         }
-        
+
         cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
         cell.setImage(icon);
     }
-    
+
     public void setTreeInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
     }
-    
+
     public TreeElement getTreeInput() {
         return tree;
     }
 }
 
 class DiffTreeContentProvider implements ITreeContentProvider {
-    
+
     @Override
     public boolean hasChildren(Object element) {
         return ((TreeElement) element).hasChildren();

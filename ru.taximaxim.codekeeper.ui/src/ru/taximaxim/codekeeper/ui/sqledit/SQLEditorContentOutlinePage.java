@@ -4,9 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -26,14 +23,13 @@ import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 // разобраться с вычислением частей документа и выводить части в аутлайн
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private IEditorInput fInput;
-    private AbstractDecoratedTextEditor fTextEditor;
-    private IDocumentProvider fDocumentProvider;
+    private final AbstractDecoratedTextEditor fTextEditor;
+    private final IDocumentProvider fDocumentProvider;
     private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
@@ -41,13 +37,13 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         fTextEditor = sqlEditor;
         this.fDocumentProvider = fDocumentProvider;
     }
-    
+
     public void externalRefresh() {
         if (viewer != null) {
             viewer.refresh();
         }
     }
-    
+
     public void setInput(IEditorInput input) {
         this.fInput = input;
     }
@@ -63,7 +59,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 if (newInput != null) {
                     IDocument document = fDocumentProvider.getDocument(newInput);
                     if (document != null) {
-                         //document.addPositionCategory("SEGMENTS");
+                        //document.addPositionCategory("SEGMENTS");
                         // document.addPositionUpdater(fPositionUpdater);
                         // parse(document);
                     }
@@ -72,7 +68,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
             @Override
             public void dispose() {
-                
+
             }
 
             @Override
@@ -81,7 +77,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 List<PgObjLocation> refs = new ArrayList<>();
                 PgDbParser parser = null;
                 if (fTextEditor instanceof SQLEditor) {
-                    parser  = ((SQLEditor)fTextEditor).getParser(); 
+                    parser  = ((SQLEditor)fTextEditor).getParser();
                 }
                 if (parser == null) {
                     return segments.toArray();
@@ -119,20 +115,12 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         });
 
         viewer.setLabelProvider(new LabelProvider() {
-            
-            private LocalResourceManager lrm = new LocalResourceManager(
-                    JFaceResources.getResources(), getControl());
-            
+
             @Override
             public Image getImage(Object element) {
                 if (element instanceof Segments) {
                     Segments seg = (Segments)element;
-                    ImageDescriptor iObj = ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONPGADMIN 
-                                    + seg.getType().toString().toLowerCase() 
-                                    + ".png")); //$NON-NLS-1$
-                    return lrm.createImage(iObj);
+                    return Activator.getDbObjImage(seg.getType());
                 }
                 return super.getImage(element);
             }
