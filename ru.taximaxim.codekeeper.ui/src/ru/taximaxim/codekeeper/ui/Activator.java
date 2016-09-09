@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -23,7 +25,16 @@ public class Activator extends AbstractUIPlugin {
     }
 
     /**
-     * @return Shared image. Do not dispose!
+     * Shortcut for {@link ISharedImages#getImage(String)}.
+     *
+     * @return Shared Eclipse image. Do not dispose!
+     */
+    public static Image getEclipseImage(String name) {
+        return PlatformUI.getWorkbench().getSharedImages().getImage(name);
+    }
+
+    /**
+     * @return Shared pgadmin image. Do not dispose!
      */
     public static Image getDbObjImage(DbObjType dbObjType) {
         Activator a = plugin;

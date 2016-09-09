@@ -9,7 +9,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
@@ -19,17 +18,17 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -157,8 +156,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IResource file = ResourceUtil.getResource(getEditorInput());
             if (file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
                 if (errorTitleImage == null) {
-                    errorTitleImage = new DecorationOverlayIcon(image, ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(FILE.DECORATEERROR)),
+                    errorTitleImage = new DecorationOverlayIcon(image,
+                            PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(
+                                    ISharedImages.IMG_DEC_FIELD_ERROR),
                             IDecoration.BOTTOM_LEFT).createImage();
                 }
                 return errorTitleImage;

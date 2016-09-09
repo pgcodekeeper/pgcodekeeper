@@ -365,7 +365,7 @@
             id="ru.taximaxim.codekeeper.ui.depcyview"
             name="%view.name.DepcyView"
             class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
-            icon="icons/add_obj.gif" />
+            icon="IMG_OBJ_ADD" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective

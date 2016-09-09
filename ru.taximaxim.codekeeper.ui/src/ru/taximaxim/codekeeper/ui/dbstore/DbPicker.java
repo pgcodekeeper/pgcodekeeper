@@ -1,9 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -18,9 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
@@ -30,7 +27,6 @@ public class DbPicker extends Group {
     private final Label lblFieldName;
     private final CLabel lblWarnDbPass;
 
-    private final LocalResourceManager lrm;
     private final DbStorePicker dbStorePicker;
 
     private final Text txtName, txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
@@ -74,7 +70,6 @@ public class DbPicker extends Group {
         setLayout(new GridLayout(2, false));
 
         this.allowShellResize = allowShellResize;
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
 
         lblFieldName = new Label(this, SWT.NONE);
         lblFieldName.setText(Messages.entry_name);
@@ -153,8 +148,7 @@ public class DbPicker extends Group {
         });
 
         lblWarnDbPass = new CLabel(this, SWT.NONE);
-        lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
+        lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarnDbPass.setText(
                 Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);

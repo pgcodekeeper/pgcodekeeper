@@ -131,29 +131,26 @@ public interface UIConsts {
     }
 
     interface FILE {
+        String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+
+        // external icons
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
-        String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
-        String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
-        String ICONUP = "/icons/up.png"; //$NON-NLS-1$
-        String ICONDOWN = "/icons/down.png"; //$NON-NLS-1$
-        String ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
-        String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
-        String ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$
-        String ICONDEFAULTSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
-        String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
-        String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
-        String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
-        String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
-        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
-        String ICONWRITEOUTCONSOLE = "/icons/writeout_co.gif"; //$NON-NLS-1$
-        String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
-        String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
-        String ICONSAVECLIPBOARD = "/icons/save_clipboard.png"; //$NON-NLS-1$
 
-        String DECORATEERROR = "/icons/error_co.png"; //$NON-NLS-1$
+        // copies of inaccessible Eclipse icons
+        String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
+        String ICONDOWN = "/icons/search_next.gif"; //$NON-NLS-1$
+        String ICONEDIT = "/icons/editor_area.png"; //$NON-NLS-1$
+        String ICONDEFAULTSORT = "/icons/alpha_mode.png"; //$NON-NLS-1$
+        String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
+        String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
+        String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
+        String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
+        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
+        String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{
