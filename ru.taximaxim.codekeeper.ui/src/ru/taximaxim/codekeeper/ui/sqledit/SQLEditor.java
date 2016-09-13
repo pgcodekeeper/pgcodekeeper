@@ -12,7 +12,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
@@ -31,6 +32,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -39,6 +41,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor"; //$NON-NLS-1$
     static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
 
+    private Composite parentComposite;
     private SQLEditorContentOutlinePage fOutlinePage;
     private IEditorInput input;
     private Image errorTitleImage;
@@ -47,32 +50,43 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         @Override
         public void handleEvent(Event event) {
-            getSite().getWorkbenchWindow().getWorkbench().getDisplay().asyncExec(new Runnable() {
+            UiSync.exec(parentComposite, new Runnable() {
 
                 @Override
                 public void run() {
                     if (fOutlinePage != null) {
-                        fOutlinePage.externalRefresh();
+                        Control c = fOutlinePage.getControl();
+                        if (c != null && !c.isDisposed()) {
+                            fOutlinePage.externalRefresh();
+                        }
                     }
                 }
             });
         }
     };
 
-    public SQLEditor() {
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
-                getSharedColors(), getPreferenceStore()));
-    }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (IContentOutlinePage.class.isAssignableFrom(adapter)) {
             if (fOutlinePage != null) {
-                return fOutlinePage;
+                return adapter.cast(fOutlinePage);
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    @Override
+    public void createPartControl(Composite parent) {
+        parentComposite = parent;
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+        PgDbParser parser = getParser();
+        if (parser != null) {
+            parser.addListener(list);
+            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this);
+            fOutlinePage.setInput(getEditorInput());
+        }
+        super.createPartControl(parent);
     }
 
     @Override
@@ -86,8 +100,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
+                getSharedColors(), getPreferenceStore()));
+
         this.input = input;
         if (input instanceof IFileEditorInput) {
             setDocumentProvider(new SQLEditorFileDocumentProvider());
@@ -95,12 +111,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             setDocumentProvider(new SQLEditorStorageDocumentProvider());
         }
         super.init(site, input);
-        PgDbParser parser = getParser();
-        if (parser != null) {
-            parser.addListener(list);
-            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this);
-            fOutlinePage.setInput(getEditorInput());
-        }
     }
 
     PgDbParser getParser() {
@@ -139,10 +149,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (delta != null && file != null) {
             IResourceDelta child = delta.findMember(file.getFullPath());
             if (child != null && (child.getFlags() & IResourceDelta.MARKERS) != 0) {
-                Display.getDefault().syncExec(new Runnable() {
+                UiSync.exec(parentComposite, new Runnable() {
                     @Override
                     public void run() {
-                        firePropertyChange(IWorkbenchPart.PROP_TITLE);
+                        if (!parentComposite.isDisposed()) {
+                            firePropertyChange(IWorkbenchPart.PROP_TITLE);
+                        }
                     }
                 });
             }
@@ -158,8 +170,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 if (errorTitleImage == null) {
                     errorTitleImage = new DecorationOverlayIcon(image,
                             PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(
-                                    ISharedImages.IMG_DEC_FIELD_ERROR),
-                            IDecoration.BOTTOM_LEFT).createImage();
+                                    ISharedImages.IMG_DEC_FIELD_ERROR), IDecoration.BOTTOM_LEFT)
+                            .createImage();
                 }
                 return errorTitleImage;
             }

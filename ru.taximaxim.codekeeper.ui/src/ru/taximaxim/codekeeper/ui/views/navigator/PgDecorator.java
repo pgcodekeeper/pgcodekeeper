@@ -12,6 +12,7 @@ import org.eclipse.ui.PlatformUI;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DECORATOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UiSync;
 
 public class PgDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
@@ -32,7 +33,7 @@ public class PgDecorator extends LabelProvider implements ILightweightLabelDecor
     }
 
     public static void update() {
-        PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+        UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
 
             @Override
             public void run() {

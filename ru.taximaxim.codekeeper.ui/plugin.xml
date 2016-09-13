@@ -227,7 +227,8 @@
             default="false"
             filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.SQLEditor"
-            name="%editor.name.sqlEditor">
+            name="%editor.name.sqlEditor"
+            icon="IMG_OBJ_FILE">
         </editor>
         <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"

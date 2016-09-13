@@ -21,16 +21,16 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
     private final IProject proj;
     private final SelectionChangedEvent defaultSelectionEvent;
     private ISelection currentSelection;
-    
-    private final ListenerList listeners = new ListenerList();
-    private final ListenerList postListeners = new ListenerList();
-    
+
+    private final ListenerList<ISelectionChangedListener> listeners = new ListenerList<>();
+    private final ListenerList<ISelectionChangedListener> postListeners = new ListenerList<>();
+
     public ProjectEditorSelectionProvider(IProject proj) {
         this.proj = proj;
         currentSelection = new StructuredSelection(proj);
         defaultSelectionEvent = new SelectionChangedEvent(this, currentSelection);
     }
-    
+
     @Override
     public ISelection getSelection() {
         // maybe refactor to call ProjectEditorDiffer.getActivePage.getViewer.getSelection() and modify the result
@@ -63,7 +63,7 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
     public void removePostSelectionChangedListener(ISelectionChangedListener listener) {
         postListeners.remove(listener);
     }
-    
+
     public void fireSelectionChanged(SelectionChangedEvent event) {
         modifyAndFireEvent(listeners, event);
     }
@@ -71,15 +71,15 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
     public void firePostSelectionChanged(SelectionChangedEvent event) {
         modifyAndFireEvent(postListeners, event);
     }
-    
-    private void modifyAndFireEvent(ListenerList listeners, SelectionChangedEvent event) {
+
+    private void modifyAndFireEvent(ListenerList<ISelectionChangedListener> listeners, SelectionChangedEvent event) {
         SelectionChangedEvent newEvent = modifyEvent(event);
-        for(Object l : listeners.getListeners()) {
-            ((ISelectionChangedListener) l).selectionChanged(newEvent);
+        for(ISelectionChangedListener l : listeners) {
+            l.selectionChanged(newEvent);
         }
         currentSelection = newEvent.getSelection();
     }
-    
+
     /**
      * Ensures that IProject is present as first element of the selection.
      * Special handling for {@link DepcyStructuredSelection}
@@ -94,10 +94,10 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
             // no way to deal with empty/other types of selections
             return defaultSelectionEvent;
         }
-        
+
         IStructuredSelection sel = (IStructuredSelection) selection;
         List<?> elements = sel.toList();
-        
+
         boolean isDepcySel = sel instanceof DepcyStructuredSelection;
         List<Object> newElements = new ArrayList<>(elements.size() + (isDepcySel ? 2 : 1));
         newElements.add(proj);
@@ -105,7 +105,7 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
             newElements.add(sel);
         }
         newElements.addAll(elements);
-        
+
         return new SelectionChangedEvent((ISelectionProvider) event.getSource(),
                 new StructuredSelection(newElements));
     }

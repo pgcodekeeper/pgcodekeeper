@@ -42,12 +42,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
@@ -72,6 +70,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -102,10 +101,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         this.proj = new PgDbProject(in.getProject());
         setPartName(in.getName());
         super.init(site, input);
-
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
-                IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
-                | IResourceChangeEvent.POST_CHANGE);
     }
 
     @Override
@@ -148,6 +143,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         commit.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
         commit.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
         getSite().setSelectionProvider(sp);
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
+                IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
+                | IResourceChangeEvent.POST_CHANGE);
     }
 
     @Override
@@ -186,19 +185,17 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     }
 
     private void handlerCloseProject(IResourceChangeEvent event) {
-        final IResource closingProject = event.getResource();
-        Display.getDefault().asyncExec(new Runnable(){
-            @Override
-            public void run() {
-                for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
-                    ProjectEditorInput editorInput =
-                            (ProjectEditorInput) ProjectEditorDiffer.this.getEditorInput();
-                    if (editorInput.getName().equals(closingProject.getName())) {
-                        page.closeEditor(page.findEditor(editorInput), true);
+        if (event.getResource().getName().equals(getEditorInput().getName())) {
+            UiSync.exec(getContainer(), new Runnable(){
+
+                @Override
+                public void run() {
+                    if (!getContainer().isDisposed()) {
+                        getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void handleChangeProject(IResourceChangeEvent event) {
@@ -238,14 +235,14 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         }
 
         if (schemaChanged[0]) {
-            Display.getDefault().asyncExec(new Runnable() {
+            UiSync.exec(getContainer(), new Runnable() {
 
                 @Override
                 public void run() {
-                    if (commit != null && !commit.isDisposed()) {
+                    if (!commit.isDisposed()) {
                         commit.reset();
                     }
-                    if (diff != null && !diff.isDisposed()) {
+                    if (!diff.isDisposed()) {
                         diff.reset();
                     }
                 }
@@ -352,11 +349,11 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        Display.getDefault().asyncExec(new Runnable() {
+                        UiSync.exec(CommitPage.this, new Runnable() {
 
                             @Override
                             public void run() {
-                                if (!isDisposed()) {
+                                if (!CommitPage.this.isDisposed()) {
                                     callEgitCommitCommand();
                                 }
                             }
@@ -545,7 +542,7 @@ class DiffPage extends DiffPresentationPane {
                 Log.log(Log.LOG_INFO, "Differ job finished with status " +  //$NON-NLS-1$
                         event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
-                    Display.getDefault().asyncExec(new Runnable() {
+                    UiSync.exec(DiffPage.this, new Runnable() {
 
                         @Override
                         public void run() {
