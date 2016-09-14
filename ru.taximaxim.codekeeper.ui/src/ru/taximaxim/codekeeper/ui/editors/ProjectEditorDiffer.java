@@ -204,7 +204,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         ApgdiffConsts.WORK_DIR_NAMES[] dirs = ApgdiffConsts.WORK_DIR_NAMES.values();
         final IPath[] projDirs = new IPath[dirs.length];
         for (int i = 0; i < dirs.length; ++i) {
-            projDirs[i] = proj.getPathToProject().append(dirs[i].name());
+            projDirs[i] = proj.getProject().getFullPath().append(dirs[i].name());
         }
 
         final boolean[] schemaChanged = new boolean[1];

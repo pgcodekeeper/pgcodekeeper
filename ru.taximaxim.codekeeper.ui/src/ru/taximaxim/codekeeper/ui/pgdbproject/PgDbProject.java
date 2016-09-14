@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 
@@ -10,7 +11,6 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -39,8 +39,8 @@ public class PgDbProject {
         return project.getDefaultCharset(true);
     }
 
-    public IPath getPathToProject() {
-        return project.getFullPath();
+    public Path getPathToProject() {
+        return Paths.get(project.getLocationURI());
     }
 
     /**
