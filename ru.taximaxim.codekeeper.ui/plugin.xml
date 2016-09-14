@@ -537,6 +537,8 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+G">
         </key>
+    </extension>
+    <extension
         id="ru.taximaxim.codekeeper.ui.sql.errormarker"
         name="%marker.sql.error.name"
         point="org.eclipse.core.resources.markers">
