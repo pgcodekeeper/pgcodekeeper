@@ -177,10 +177,12 @@ implements IExecutableExtension, INewWizard {
             OpenEditor.openEditor(PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
+
+
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
             return false;
-        }
+        } 
         return true;
     }
 

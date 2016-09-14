@@ -81,6 +81,19 @@ public class PgDbProject {
             desc.setLocationURI(location);
             try {
                 newProject.create(desc, null);
+                /*IPath location2 = ResourcesPlugin.getWorkspace().getRoot().getLocation().append("aakifiev.log");//newProject.getLocation().append("aakifiev.log");
+                try {
+                    location2.toFile().createNewFile();
+
+                    System.out.println(location2);
+                    newProject.open(null);
+                    IFile file = newProject.getFile("qwqwqw");
+                    file.create(new java.io.FileInputStream(location2.toOSString()),IResource.VIRTUAL, null);
+                    //                    newProject.close(null);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }*/
             } catch (CoreException e) {
                 throw new PgCodekeeperUIException(MessageFormat.format(
                         Messages.PgDbProject_error_creating_project,

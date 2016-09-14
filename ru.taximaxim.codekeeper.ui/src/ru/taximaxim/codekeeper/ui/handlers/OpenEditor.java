@@ -22,15 +22,15 @@ public class OpenEditor extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IProject proj = OpenProjectUtils.getProject(event).getProject();        
+    	IProject proj = OpenProjectUtils.getSelectedProject();
         if (proj != null) {
             try {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.notifyDefault(
-                    MessageFormat.format(
-                        Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
-            }
+                        MessageFormat.format(
+                                Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
+            } 
         }
         return null;
     }
@@ -39,7 +39,7 @@ public class OpenEditor extends AbstractHandler {
             throws PgCodekeeperUIException {
         Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
         if (OpenProjectUtils.checkVersionAndWarn(proj,
-                page.getWorkbenchWindow().getShell(), true)) { 
+                page.getWorkbenchWindow().getShell(), true)) {
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
             try {
                 page.openEditor(input, EDITOR.PROJECT);
