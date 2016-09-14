@@ -18,6 +18,7 @@ LEFT JOIN pg_catalog.pg_namespace nsp ON nsp.oid = cls.relnamespace
 LEFT JOIN pg_catalog.pg_description des ON ind.indexrelid = des.objoid
     AND des.objsubid = 0
 LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = ind.indexrelid
+    AND cons.contype IN ('p', 'u', 'x')
 WHERE cls.relkind = 'i'
     AND cls.relnamespace = ?
     AND ind.indisprimary = FALSE

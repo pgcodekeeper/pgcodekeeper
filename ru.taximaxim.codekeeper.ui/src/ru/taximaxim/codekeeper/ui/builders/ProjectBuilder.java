@@ -12,10 +12,12 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -73,6 +75,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         });
         final SubMonitor sub = SubMonitor.convert(monitor, count.get());
 
+        ApgdiffConsts.WORK_DIR_NAMES[] dirs = ApgdiffConsts.WORK_DIR_NAMES.values();
+        final IPath[] projDirs = new IPath[dirs.length];
+        for (int i = 0; i < dirs.length; ++i) {
+            projDirs[i] = getProject().getFullPath().append(dirs[i].name());
+        }
         delta.accept(new IResourceDeltaVisitor() {
 
             @Override
@@ -85,11 +92,21 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 }
                 sub.worked(1);
 
+                // check that it's our resource
+                boolean projResource = false;
+                for (IPath dir : projDirs) {
+                    if (dir.isPrefixOf(delta.getFullPath())) {
+                        projResource = true;
+                        break;
+                    }
+                }
+                if (!projResource) {
+                    return true;
+                }
+
                 switch (delta.getKind()) {
                 case IResourceDelta.REMOVED:
                 case IResourceDelta.REMOVED_PHANTOM:
-                    // TODO why does REPLACED follow REMOVED path?
-                case IResourceDelta.REPLACED:
                     parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
                     break;
                 default:

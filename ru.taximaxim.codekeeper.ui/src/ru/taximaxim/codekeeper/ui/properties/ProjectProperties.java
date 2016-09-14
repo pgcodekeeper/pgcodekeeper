@@ -9,9 +9,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
@@ -23,6 +20,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
@@ -30,7 +28,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -43,7 +40,6 @@ IWorkbenchPropertyPage {
     private Combo cmbTimezone;
     private CLabel lblWarn;
 
-    private LocalResourceManager lrm;
     private IEclipsePreferences prefs;
 
     @Override
@@ -60,8 +56,6 @@ IWorkbenchPropertyPage {
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         panel.setLayout(layout);
-
-        lrm = new LocalResourceManager(JFaceResources.getResources(), panel);
 
         btnForceUnixNewlines = new Button(panel, SWT.CHECK);
         btnForceUnixNewlines.setText(Messages.ProjectProperties_force_unix_newlines);
@@ -84,8 +78,7 @@ IWorkbenchPropertyPage {
         });
 
         lblWarn = new CLabel(panel, SWT.NONE);
-        lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
+        lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarn.setText(Messages.ProjectProperties_change_projprefs_warn);
         GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
         gd.exclude = true;

@@ -25,7 +25,7 @@
                     <plugin>
                         <groupId>com.github.wvengen</groupId>
                         <artifactId>proguard-maven-plugin</artifactId>
-                        <version>2.0.11</version>
+                        <version>2.0.13</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -40,6 +40,8 @@
                                 <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
                                 <option>-dontnote</option>
                                 <option>-allowaccessmodification</option>
+                                <option>-renamesourcefileattribute SourceFile</option>    
+                                <option>-keepattributes SourceFile,LineNumberTable</option>
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.Diff { *; }</option>

@@ -42,7 +42,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -70,6 +69,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -100,6 +100,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private Color colorPink;
+    private Composite parentComposite;
 
     private String dbHost;
     private String dbPort;
@@ -139,12 +140,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-
         return sw;
     }
 
     @Override
     public void createPartControl(Composite parent) {
+        parentComposite = parent;
         super.createPartControl(parent);
         try {
             if (checkDangerDdl()) {
@@ -159,9 +160,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     Messages.SqlScriptDialog_error_get_script, e);
         }
     }
+
     @Override
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         // открыть с помощью кодкипера на каком-то скрипте
         if (input instanceof DepcyFromPSQLOutput) {
             final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
@@ -410,7 +411,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     private int showDangerWarning() {
-        MessageBox mb = new MessageBox(this.getEditorSite().getShell(), SWT.ICON_WARNING
+        MessageBox mb = new MessageBox(parentComposite.getShell(), SWT.ICON_WARNING
                 | SWT.OK | SWT.CANCEL);
         mb.setText(Messages.sqlScriptDialog_warning);
         mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
@@ -438,17 +439,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     private void afterScriptFinished(final String scriptOutput) {
-        this.getEditorSite().getShell().getDisplay().syncExec(new Runnable() {
+        UiSync.exec(parentComposite, new Runnable() {
 
             @Override
             public void run() {
                 if (!runScriptBtn.isDisposed()) {
                     if (addDepcy != null) {
-                        if (mainPrefs
-                                .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                            new ScriptRunResultDialog(RollOnEditor.this
-                                    .getEditorSite().getShell(), scriptOutput)
-                            .open();
+                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                            new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
                         }
                         showAddDepcyDialog();
                     }
@@ -461,8 +459,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private void showAddDepcyDialog() {
         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY) && addDepcy != null && !addDepcy.isAddDepcyEmpty()) {
-            MessageBox mb = new MessageBox(this.getEditorSite().getShell(),
-                    SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
+            MessageBox mb = new MessageBox(parentComposite.getShell(), SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
             mb.setText(Messages.sqlScriptDialog_psql_dependencies);
             mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
                     addDepcy.depcyToString() + UIConsts._NL);
@@ -573,7 +570,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         @Override
         public void widgetSelected(SelectionEvent e) {
             String textRetrieved = RollOnEditor.this.getSourceViewer().getDocument().get();
-            FileDialog fd = new FileDialog(RollOnEditor.this.getEditorSite().getShell(), SWT.SAVE);
+            FileDialog fd = new FileDialog(parentComposite.getShell(), SWT.SAVE);
             fd.setText(Messages.sqlScriptDialog_save_as);
             fd.setOverwrite(true);
             fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
@@ -607,7 +604,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         @Override
         public void run() {
             final StdStreamRedirector sr = new StdStreamRedirector();
-            try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+            try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get();
                 try (PrintWriter writer =
                         new PrintWriter(outFile, scriptFileEncoding)) {
@@ -653,11 +650,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         @Override
         public void done(IJobChangeEvent event) {
             if (event.getResult().isOK()) {
-                Display.getDefault().asyncExec(new Runnable() {
+                UiSync.exec(parentComposite, new Runnable() {
 
                     @Override
                     public void run() {
-                        if (RollOnEditor.this.getEditorSite().getShell().isDisposed()) {
+                        if (parentComposite.isDisposed()) {
                             return;
                         }
                         checkAskDanger();

@@ -71,6 +71,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.ISharedImages;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -105,8 +106,6 @@ public class DiffTableViewer extends Composite {
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
     private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}"; //$NON-NLS-1$
 
-    private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
-            DbObjType.values().length);
     private final Image iSideBoth;
     private final Image iSideLeft;
     private final Image iSideRight;
@@ -160,18 +159,10 @@ public class DiffTableViewer extends Composite {
         this.proj = proj;
 
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        for (DbObjType objType : DbObjType.values()) {
-            ImageDescriptor iObj = ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(
-                            FILE.ICONPGADMIN + objType.toString().toLowerCase() + ".png")); //$NON-NLS-1$
-            mapObjIcons.put(objType, lrm.createImage(iObj));
-        }
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONEDIT)));
-        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONDEL)));
-        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONADD)));
+        iSideLeft = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
+        iSideRight = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -361,9 +352,7 @@ public class DiffTableViewer extends Composite {
             });
 
             Button saveChecked = new Button(contButtons, SWT.PUSH);
-            saveChecked.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONSAVE))));
+            saveChecked.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
             saveChecked.setToolTipText(Messages.diffTableViewer_save_checked);
 
             saveChecked.addSelectionListener(new SelectionAdapter() {
@@ -375,9 +364,7 @@ public class DiffTableViewer extends Composite {
             });
 
             Button deleteCheckSet = new Button(contButtons, SWT.PUSH);
-            deleteCheckSet.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONDEL))));
+            deleteCheckSet.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
             deleteCheckSet.setToolTipText(Messages.diffTableViewer_delete_checked_set);
 
             deleteCheckSet.addSelectionListener(new SelectionAdapter() {
@@ -389,9 +376,7 @@ public class DiffTableViewer extends Composite {
             });
 
             Button saveCheck2Clipboard = new Button(contButtons, SWT.PUSH);
-            saveCheck2Clipboard.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONSAVECLIPBOARD))));
+            saveCheck2Clipboard.setImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
             saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -588,7 +573,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public Image getImage(Object element) {
-                return mapObjIcons.get(((TreeElement) element).getType());
+                return Activator.getDbObjImage(((TreeElement) element).getType());
             }
         });
 

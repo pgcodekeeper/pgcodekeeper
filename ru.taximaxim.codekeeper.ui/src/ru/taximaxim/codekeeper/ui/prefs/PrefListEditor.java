@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -49,8 +50,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         btnAdd = new Button(this, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         btnAdd.setToolTipText(Messages.add);
-        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONADD))));
+        btnAdd.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
         btnAdd.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -120,8 +120,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         btnDelete = new Button(this, SWT.PUSH);
         btnDelete.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         btnDelete.setToolTipText(Messages.delete);
-        btnDelete.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONDEL))));
+        btnDelete.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
         btnDelete.addSelectionListener(new SelectionAdapter() {
 
             @Override

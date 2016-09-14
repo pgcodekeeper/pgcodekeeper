@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -24,6 +25,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
@@ -73,42 +75,39 @@ public class NormalizeProject extends AbstractHandler {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    PlatformUI.getWorkbench().getDisplay().asyncExec(new RunRefreshAfterNorm(proj, shell));
+                    try {
+                        proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                    } catch (CoreException ex) {
+                        ExceptionNotifier.notifyDefault(
+                                Messages.ProjectEditorDiffer_error_refreshing_project, ex);
+                        return;
+                    }
+                    UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Shell parent = shell;
+                            if (parent.isDisposed()) {
+                                IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                                if (w == null) {
+                                    return;
+                                }
+                                parent = w.getShell();
+                                if (parent == null || parent.isDisposed()) {
+                                    return;
+                                }
+                            }
+                            MessageBox mb = new MessageBox(parent, SWT.ICON_INFORMATION);
+                            mb.setMessage(Messages.NormalizeProject_project_normalized_success);
+                            mb.setText(Messages.NormalizeProject_project_normalized);
+                            mb.open();
+                        }
+                    });
                 }
             }
         });
         job.setUser(true);
         job.schedule();
         return null;
-    }
-
-    private static class RunRefreshAfterNorm implements Runnable {
-
-        private final PgDbProject proj;
-        private final Shell shell;
-
-        RunRefreshAfterNorm(PgDbProject proj, Shell shell) {
-            this.proj = proj;
-            this.shell = shell;
-        }
-
-        @Override
-        public void run() {
-            try {
-                proj.getProject().refreshLocal(
-                        IResource.DEPTH_INFINITE, null);
-            } catch (CoreException ex) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.ProjectEditorDiffer_error_refreshing_project, ex);
-            }
-
-            if (shell.isDisposed()) {
-                return;
-            }
-            MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-            mb.setMessage(Messages.NormalizeProject_project_normalized_success);
-            mb.setText(Messages.NormalizeProject_project_normalized);
-            mb.open();
-        }
     }
 }

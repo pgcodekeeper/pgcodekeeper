@@ -62,6 +62,9 @@ public final class LicensingInternal {
      * This method also accepts URLs to enable java-resource licenses in tests.
      */
     public static License loadLicense(String filename) throws IOException, LicenseException {
+        if (filename == null) {
+            throw new LicenseException("No program license is set! Aborting.");
+        }
         InputStream stream;
         try {
             stream = new URL(filename).openStream();
