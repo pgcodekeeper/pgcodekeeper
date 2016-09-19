@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -161,6 +160,7 @@ public class PgDbParser implements IResourceChangeListener {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
+                    // FIXME call build on project, use regular visible job (custom build job)
                     getFullDBFromPgDbProject(pgProject, monitor);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
@@ -197,7 +197,7 @@ public class PgDbParser implements IResourceChangeListener {
         notifyListeners();
     }
 
-    public void removePathFromRefs(Path path) {
+    public void removePathFromRefs(String path) {
         String p = path.toString();
         objReferences.remove(p);
         objDefinitions.remove(p);
@@ -230,9 +230,9 @@ public class PgDbParser implements IResourceChangeListener {
         return null;
     }
 
-    public List<PgObjLocation> getObjsForPath(Path pathToFile) {
+    public List<PgObjLocation> getObjsForPath(String pathToFile) {
         List<PgObjLocation> locations = new ArrayList<>();
-        List<PgObjLocation> refs = objReferences.get(pathToFile.toString());
+        List<PgObjLocation> refs = objReferences.get(pathToFile);
         if (refs == null) {
             return locations;
         }
@@ -263,8 +263,8 @@ public class PgDbParser implements IResourceChangeListener {
 
     public static List<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
         List<PgObjLocation> results = new ArrayList<>();
-        for (String key : refs.keySet()) {
-            results.addAll(refs.get(key));
+        for (List<PgObjLocation> list : refs.values()) {
+            results.addAll(list);
         }
         return results;
     }

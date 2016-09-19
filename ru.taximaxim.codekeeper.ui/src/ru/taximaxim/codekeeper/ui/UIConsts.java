@@ -151,8 +151,6 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-
-        String CODEKEEPEREDITOR = "codekeepereditor"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

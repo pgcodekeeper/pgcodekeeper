@@ -71,8 +71,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
                 @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
-                    return ImageDescriptor.createFromURL(Activator.getContext()
-                            .getBundle().getResource(FILE.ICONAPPSMALL));
+                    return Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL);
                 }
             };
         } else if (adapter.isAssignableFrom(IPersistableElement.class)){
@@ -90,8 +89,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return ImageDescriptor.createFromURL(Activator.getContext().getBundle()
-                .getResource(FILE.ICONAPPSMALL));
+        return Activator.getRegisteredDescriptor(FILE.ICONAPPSMALL);
     }
 
     @Override

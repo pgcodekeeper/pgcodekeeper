@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +21,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.PlatformUI;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -214,18 +214,15 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        // TODO Auto-generated method stub
         return null;
     }
     @Override
     public boolean exists() {
-        // TODO Auto-generated method stub
         return false;
     }
     @Override
     public ImageDescriptor getImageDescriptor() {
-        // FIXME null is illegal here
-        return null;
+        return PlatformUI.getWorkbench().getEditorRegistry().getImageDescriptor("<internal>.sql"); //$NON-NLS-1$
     }
     @Override
     public String getName() {
@@ -233,16 +230,17 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     @Override
     public IPersistableElement getPersistable() {
-        // TODO Auto-generated method stub
         return null;
     }
     @Override
     public String getToolTipText() {
         return Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database;
     }
+
     public Differ getDiffer() {
         return differ;
     }
+
     public IProject getProject() {
         return proj;
     }
@@ -265,10 +263,10 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
     private class StringStorage implements IEncodedStorage {
 
-        private final String str;
+        private final byte[] content;
 
         public StringStorage(String str) {
-            this.str = str;
+            this.content = str.getBytes(StandardCharsets.UTF_8);
         }
 
         @Override
@@ -278,12 +276,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
         @Override
         public InputStream getContents() throws CoreException {
-            try {
-                return new ByteArrayInputStream(str.getBytes(scriptFileEncoding));
-            } catch (UnsupportedEncodingException e) {
-                Log.log(Log.LOG_ERROR, "Invalid Charset", e); //$NON-NLS-1$
-                return new ByteArrayInputStream(str.getBytes());
-            }
+            return new ByteArrayInputStream(content);
         }
 
         @Override
@@ -303,7 +296,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
         @Override
         public String getCharset() throws CoreException {
-            return scriptFileEncoding;
+            return StandardCharsets.UTF_8.name();
         }
     }
 }

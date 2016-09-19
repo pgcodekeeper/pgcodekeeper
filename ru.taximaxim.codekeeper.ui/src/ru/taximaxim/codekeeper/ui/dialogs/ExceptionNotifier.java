@@ -15,10 +15,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 public final class ExceptionNotifier {
 
     public static void notifyDefault(String message, Throwable ex) {
-        Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                message, ex);
+        Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, message, ex);
         StatusManager.getManager().handle(status, StatusManager.SHOW | StatusManager.LOG);
     }
 
-    private ExceptionNotifier() {}
+    private ExceptionNotifier() {
+    }
 }

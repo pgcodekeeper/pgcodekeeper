@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.views.navigator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 
+@SuppressWarnings("deprecation")
 public class NavigatorOutlineSorter extends ViewerSorter {
 
     @Override

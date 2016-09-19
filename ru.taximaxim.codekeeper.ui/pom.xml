@@ -74,7 +74,11 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineContentProvider { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineLabelProvider { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineSorter { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineActionProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootContentProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootLabelProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootActionProvider { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.OpenProjectFromNavigator { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.MainPerspective { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.builders.ProjectBuilder { *; }</option>

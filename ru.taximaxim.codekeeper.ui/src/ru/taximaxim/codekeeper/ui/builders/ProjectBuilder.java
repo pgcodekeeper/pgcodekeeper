@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.builders;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -107,7 +106,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 switch (delta.getKind()) {
                 case IResourceDelta.REMOVED:
                 case IResourceDelta.REMOVED_PHANTOM:
-                    parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
+                    parser.removePathFromRefs(delta.getResource().getLocation().toOSString());
                     break;
                 default:
                     try {

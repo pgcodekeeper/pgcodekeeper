@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,9 +82,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                     return segments.toArray();
                 }
                 if (inputElement instanceof FileEditorInput) {
-                    Path inputPath = ((FileEditorInput)inputElement).
-                            getFile().getLocation().toFile().toPath();
-                    refs = parser.getObjsForPath(inputPath);
+                    refs = parser.getObjsForPath(((FileEditorInput)inputElement)
+                            .getFile().getLocation().toOSString());
                 }
                 if (inputElement instanceof DepcyFromPSQLOutput) {
                     refs = parser.getAllObjReferences();

@@ -61,7 +61,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         List<IHyperlink> hyperlinks = new ArrayList<>();
         List<PgObjLocation> refs = new ArrayList<>();
         if (file != null) {
-            refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
+            refs.addAll(parser.getObjsForPath(file.getLocation().toOSString()));
         } else {
             Map<String, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
             PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);

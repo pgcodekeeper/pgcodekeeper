@@ -161,7 +161,7 @@ class DbSourceProject extends DbSource {
     private final PgDbProject proj;
 
     DbSourceProject(PgDbProject proj) {
-        super(proj.getPathToProject().toString());
+        super(proj.getProjectName());
 
         this.proj = proj;
     }

@@ -217,7 +217,6 @@
         <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
-            filenames="codekeepereditor"
             icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
             name="%editor.name.keeperProjectEditor">
@@ -499,24 +498,22 @@
             <includes>
                 <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.codekeeperlinkHelper">
                 </contentExtension>
-                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.myResourceContent">
+                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.navigator\.codekeeperRoot">
                 </contentExtension>
-            </includes>
-        </viewerContentBinding>
-        <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-            <includes>
-                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.peOutline"></contentExtension>
+                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.codekeeperOutline">
+                </contentExtension>
             </includes>
         </viewerContentBinding>
         <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
             <includes>
-                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.pgNavigatorActionProvider"></actionExtension>
+                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.codekeeperOutlineActionProvider">
+                </actionExtension>
+                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.navigator\.codekeeperRootActionProvider">
+                </actionExtension>
             </includes>
         </viewerActionBinding>
         <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
             <includes>
-                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.myActionProvider">
-                </actionExtension>
             </includes>
         </viewerActionBinding>
     </extension>
@@ -530,14 +527,14 @@
             </enablement>
         </consolePageParticipant>
     </extension>
-    <extension point="org.eclipse.ui.bindings">
+    <!--extension point="org.eclipse.ui.bindings">
         <key
             commandId="ru.taximaxim.codekeeper.ui.openeditor"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+G">
         </key>
-    </extension>
+    </extension-->
     <extension
         id="ru.taximaxim.codekeeper.ui.sql.errormarker"
         name="%marker.sql.error.name"
@@ -553,7 +550,7 @@
         id="navigator-content"
         point="org.eclipse.ui.navigator.navigatorContent">
         <navigatorContent
-            id="ru.taximaxim.codekeeper.ui.views.navigator.peOutline"
+            id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperOutline"
             name="%navigator.outline.content"
             contentProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineContentProvider"
             labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineLabelProvider"
@@ -561,9 +558,7 @@
             icon="icons/app_icon16.png"
             priority="normal">
             <triggerPoints>
-                <and>
-                    <adapt type="org.eclipse.core.resources.IFile">
-                    </adapt>
+                <adapt type="org.eclipse.core.resources.IFile">
                     <test
                         property="org.eclipse.core.resources.extension"
                         value="sql">
@@ -572,54 +567,42 @@
                         property="org.eclipse.core.resources.projectNature"
                         value="ru.taximaxim.codekeeper.ui.nature">
                     </test>
-                </and>
+                </adapt>
             </triggerPoints>
             <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineSorter">
             </commonSorter>
         </navigatorContent>
         <actionProvider
-            class="ru.taximaxim.codekeeper.ui.views.navigator.PgNavigatorActionProvider"
-            id="ru.taximaxim.codekeeper.ui.views.navigator.pgNavigatorActionProvider">
+            class="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineActionProvider"
+            id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperOutlineActionProvider">
             <enablement>
-                <and>
-                    <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent">
-                    </instanceof>
-                </and>
+                <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent">
+                </instanceof>
             </enablement>
         </actionProvider>
         <navigatorContent
             activeByDefault="true"
-            contentProvider="ru.taximaxim.codekeeper.ui.editors.ProjectEditorContentProvider"
+            contentProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootContentProvider"
             icon="icons/app_icon16.png"
-            id="ru.taximaxim.codekeeper.ui.editors.myResourceContent"
-            labelProvider="ru.taximaxim.codekeeper.ui.editors.ProjectEditorLabelProvider"
-            name="Codekeeper editor navigator content"
-            priority="high">
+            id="ru.taximaxim.codekeeper.ui.navigator.codekeeperRoot"
+            labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootLabelProvider"
+            name="pgCodekeeper Project Root Content"
+            priority="highest">
             <triggerPoints>
-                <or>
-                    <and>
-                        <test
-                            property="org.eclipse.core.resources.projectNature"
-                            value="ru.taximaxim.codekeeper.ui.nature">
-                        </test>
-                        <adapt type="org.eclipse.core.resources.IProject">
-                        </adapt>
-                    </and>
-                </or>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
+                </adapt>
             </triggerPoints>
         </navigatorContent>
         <actionProvider
-            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorActionProvider"
-            id="ru.taximaxim.codekeeper.ui.editors.myActionProvider">
+            class="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootActionProvider"
+            id="ru.taximaxim.codekeeper.ui.navigator.codekeeperRootActionProvider">
             <enablement>
-                <or>
-                    <and>
-                        <test
-                            property="org.eclipse.core.resources.name"
-                            value="codekeepereditor">
-                        </test>
-                    </and>
-                </or>
+                <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.OpenProjectFromNavigator">
+                </instanceof>
             </enablement>
         </actionProvider>
     </extension>

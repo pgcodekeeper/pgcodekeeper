@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent;
 
-public class PgNavigatorActionProvider extends CommonActionProvider {
+public class NavigatorOutlineActionProvider extends CommonActionProvider {
 
     private ISelectionProvider provider;
     private OpenSegment openAction;
@@ -29,8 +29,7 @@ public class PgNavigatorActionProvider extends CommonActionProvider {
     @Override
     public void init(ICommonActionExtensionSite aSite) {
         provider = aSite.getViewSite().getSelectionProvider();
-        openAction = new OpenSegment();
-        openAction.setText(Messages.PgNavigatorActionProvider_open_with_sql_editor);
+        openAction = new OpenSegment(Messages.PgNavigatorActionProvider_open_with_sql_editor);
     }
 
     @Override
@@ -50,6 +49,10 @@ public class PgNavigatorActionProvider extends CommonActionProvider {
     private class OpenSegment extends Action {
 
         private SegmentsWithParent segment;
+
+        public OpenSegment(String text) {
+            super(text);
+        }
 
         @Override
         public boolean isEnabled() {

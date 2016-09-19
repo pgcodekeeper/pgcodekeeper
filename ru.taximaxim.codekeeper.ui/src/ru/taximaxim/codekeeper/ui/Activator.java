@@ -32,13 +32,26 @@ public class Activator extends AbstractUIPlugin {
     public static Image getEclipseImage(String name) {
         return PlatformUI.getWorkbench().getSharedImages().getImage(name);
     }
-
     /**
-     * @return Shared pgadmin image. Do not dispose!
+     * @return Shared pgadmin {@link Image}. Do not dispose!
      */
     public static Image getDbObjImage(DbObjType dbObjType) {
+        return getRegisteredImage(dbObjType.name());
+    }
+    /**
+     * @return Shared {@link Image}, registered with this plugin with the <code>name</code> key.
+     * Do not dispose!
+     */
+    public static Image getRegisteredImage(String name) {
         Activator a = plugin;
-        return a == null ? null : a.getImageRegistry().get(dbObjType.name());
+        return a == null ? null : a.getImageRegistry().get(name);
+    }
+    /**
+     * @return Shared {@link ImageDescriptor}, registered with this plugin with the <code>name</code> key.
+     */
+    public static ImageDescriptor getRegisteredDescriptor(String name) {
+        Activator a = plugin;
+        return a == null ? null : a.getImageRegistry().getDescriptor(name);
     }
 
     @Override
@@ -55,6 +68,9 @@ public class Activator extends AbstractUIPlugin {
 
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
+        reg.put(FILE.ICONAPPSMALL, ImageDescriptor.createFromURL(
+                context.getBundle().getResource(FILE.ICONAPPSMALL)));
+
         for (DbObjType dbObjType : DbObjType.values()) {
             reg.put(dbObjType.name(), ImageDescriptor.createFromURL(context.getBundle()
                     .getResource(FILE.ICONPGADMIN + dbObjType.name().toLowerCase() + ".png")));

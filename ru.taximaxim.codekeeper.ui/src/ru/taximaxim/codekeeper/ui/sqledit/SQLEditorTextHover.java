@@ -12,8 +12,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 //TODO использовать extension интерфейсы
 final class SQLEditorTextHover implements ITextHover {
 
@@ -35,7 +35,7 @@ final class SQLEditorTextHover implements ITextHover {
         }
         List<PgObjLocation> refs;
         if (file != null) {
-            refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
+            refs = parser.getObjsForPath(file.getLocation().toOSString());
         } else {
             refs = parser.getAllObjReferences();
         }
