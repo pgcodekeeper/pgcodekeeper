@@ -311,9 +311,12 @@ public final class Messages extends NLS {
     public static String LicensePrefs_open;
 
     public static String ManualDepciesDialog_set_add_depcies;
+    public static String NavigatorRootActionProvider_open_action;
+
+    public static String NavigatorRootLabelProvider_open_editor;
+
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
-    public static String NewProjWizard_error_creating_codekeepereditor_file;
     public static String NewProjWizard_error_saving_projprefs;
 
     public static String NewProjWizard_create_project;
@@ -453,7 +456,7 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_thank_you;
 
     // SONAR-ON
-    
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);

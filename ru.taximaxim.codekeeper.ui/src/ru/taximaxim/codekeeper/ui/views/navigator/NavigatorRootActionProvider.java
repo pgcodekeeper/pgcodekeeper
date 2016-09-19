@@ -28,7 +28,7 @@ public class NavigatorRootActionProvider extends CommonActionProvider {
     @Override
     public void init(ICommonActionExtensionSite aSite) {
         provider = aSite.getViewSite().getSelectionProvider();
-        openAction = new OpenProject("OPEN ACTION");
+        openAction = new OpenProject(Messages.NavigatorRootActionProvider_open_action);
     }
 
     @Override

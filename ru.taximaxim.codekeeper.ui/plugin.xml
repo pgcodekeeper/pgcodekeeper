@@ -586,7 +586,7 @@
             icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.navigator.codekeeperRoot"
             labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorRootLabelProvider"
-            name="pgCodekeeper Project Root Content"
+            name="%navigator.root.content"
             priority="highest">
             <triggerPoints>
                 <adapt type="org.eclipse.core.resources.IProject">

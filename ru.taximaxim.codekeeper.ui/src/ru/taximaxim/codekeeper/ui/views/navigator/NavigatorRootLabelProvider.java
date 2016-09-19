@@ -6,6 +6,7 @@ import org.eclipse.ui.navigator.IDescriptionProvider;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NavigatorRootLabelProvider extends LabelProvider implements IDescriptionProvider {
 
@@ -20,7 +21,7 @@ public class NavigatorRootLabelProvider extends LabelProvider implements IDescri
     @Override
     public String getText(Object element) {
         if (element instanceof OpenProjectFromNavigator) {
-            return "OPEN EDITOR";
+            return Messages.NavigatorRootLabelProvider_open_editor;
         }
         return null;
     }
