@@ -1,8 +1,11 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -13,6 +16,7 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -23,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
@@ -39,17 +44,26 @@ public class DbStorePicker extends Group {
     private List<DbInfo> store;
     private final ComboViewer cmbDbNames;
     private final LocalResourceManager lrm;
+    private final boolean isLoad;
+
+    private final List<Path> dumpFileHistory;
 
     private final DbStoreChangeListener dbStoreChangeListener = new DbStoreChangeListener();
 
     public DbStorePicker(Composite parent, int style, boolean allowShellResize,
-            IPreferenceStore prefStor) {
+            IPreferenceStore prefStor, boolean isLoad) {
         super(parent, style);
+
+        this.isLoad = isLoad;
+        dumpFileHistory = new LinkedList<>();
+
         setLayout(new GridLayout(2, false));
 
         this.allowShellResize = allowShellResize;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStor;
+
+        dumpFileHistory.addAll(DbInfo.getDumpFileHistory(this.prefStore.getString(PREF.DB_STORE_HISTORY)));
 
         prefStore.addPropertyChangeListener(dbStoreChangeListener);
 
@@ -62,11 +76,29 @@ public class DbStorePicker extends Group {
 
         cmbDbNames = new ComboViewer(container, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
-        cmbDbNames.setLabelProvider(new LabelProvider() {
+        cmbDbNames.setLabelProvider(new DbStoreLabelProvider());
+
+        cmbDbNames.addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
-            public String getText(Object element) {
-                return ((DbInfo) element).getName();
+            public void selectionChanged(SelectionChangedEvent event) {
+                Object selected = cmbDbNames.getStructuredSelection().getFirstElement();
+                if ((selected instanceof String) && "Загрузить из файла...".equals(selected)){
+                    FileDialog fDialog = new FileDialog(getShell());
+                    String pathToDump = fDialog.open();
+                    if (pathToDump != null){
+                        if (dumpFileHistory.size() == 3) {
+                            dumpFileHistory.remove(0);
+                        }
+                        Path p = new Path(pathToDump);
+                        dumpFileHistory.add(p);
+                        prefStore.setValue(PREF.DB_STORE_HISTORY, DbInfo.dump2String(dumpFileHistory));
+                        // FIXME refresh?
+                        cmbDbNames.setSelection(new StructuredSelection(p));
+                    } else {
+                        // FIXME !
+                    }
+                }
             }
         });
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -79,6 +111,7 @@ public class DbStorePicker extends Group {
                 prefStore.removePropertyChangeListener(dbStoreChangeListener);
             }
         });
+
         loadStore();
 
         Button btnEditStore = new Button(container, SWT.PUSH);
@@ -88,9 +121,11 @@ public class DbStorePicker extends Group {
         btnEditStore.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PreferencesUtil.createPreferenceDialogOn(
-                        getShell(), PREF_PAGE.DB_STORE, null, null).open();
-                loadStore();
+                PreferenceDialog prefDialog = PreferencesUtil.createPreferenceDialogOn(getShell(),
+                        PREF_PAGE.DB_STORE, null, null);
+                if (prefDialog != null && prefDialog.open() == prefDialog.OK){
+                    loadStore();
+                }
             }
         });
     }
@@ -99,19 +134,42 @@ public class DbStorePicker extends Group {
         Object selectedItem = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
 
         store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
-        cmbDbNames.setInput(store);
+        LinkedList<Object> list = new LinkedList<>();
+        list.addAll(store);
+        if (isLoad){
+            list.add("");
+            list.add("Загрузить из файла...");
+            list.addAll(dumpFileHistory);
+        }
+        // FIXME !
+        // XXX !
+        cmbDbNames.setInput(list);
         if (selectedItem != null && store.contains(selectedItem)) {
             cmbDbNames.setSelection(new StructuredSelection(selectedItem));
         }
     }
 
     public DbInfo getDbInfo() {
-        return (DbInfo) ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
+        Object obj = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
+        if (obj instanceof DbInfo){
+            return (DbInfo) obj;
+        } else {
+            return null;
+        }
     }
 
     public String getSelectedName() {
         Object selected = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
         return selected == null ? null : ((DbInfo) selected).getName();
+    }
+
+    public String getPathOfFile(){
+        Object path = cmbDbNames.getStructuredSelection().getFirstElement();
+        if (path instanceof Path){
+            return ((Path)path).toOSString();
+        } else {
+            return null;
+        }
     }
 
     public void clearSelection(){
@@ -142,10 +200,24 @@ public class DbStorePicker extends Group {
 
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().equals(PREF.DB_STORE)
+            if ((event.getProperty().equals(PREF.DB_STORE) || event.getProperty().equals(PREF.DB_STORE_HISTORY))
                     && !event.getNewValue().equals(event.getOldValue())) {
                 loadStore();
             }
+        }
+    }
+
+    private class DbStoreLabelProvider extends LabelProvider{
+        @Override
+        public String getText(Object element) {
+            if (element instanceof DbInfo){
+                return ((DbInfo)element).getName();
+            }
+
+            if (element instanceof Path){
+                return ((Path)element).lastSegment();
+            }
+            return super.getText(element);
         }
     }
 }

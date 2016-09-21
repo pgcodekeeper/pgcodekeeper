@@ -9,23 +9,15 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
@@ -42,8 +34,9 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -182,7 +175,7 @@ implements IExecutableExtension, INewWizard {
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
             return false;
-        } 
+        }
         return true;
     }
 
@@ -246,54 +239,51 @@ class PageRepo extends WizardNewProjectCreationPage {
     }
 }
 
-class PageDb extends WizardPage implements Listener {
+class PageDb extends WizardPage {
 
     private final IPreferenceStore mainPrefs;
 
     private Composite container;
-    private Button radioDb, radioJdbc, radioDump;
-    private DbPicker grpDb;
-    private Group grpDump;
-    private Text txtDumpPath;
+    private DbStorePicker storePicker;
 
     public boolean isSourceDb() {
-        return radioDb.getSelection();
+        return (storePicker.getDbInfo() != null && mainPrefs.getBoolean(PREF.PGDUMP_SWITCH)) ? true : false;
     }
 
     public boolean isSourceDump() {
-        return radioDump.getSelection();
+        return (storePicker.getPathOfFile() != null && !storePicker.getPathOfFile().isEmpty()) ? true : false;
     }
 
     public boolean isSourceJdbc() {
-        return radioJdbc.getSelection();
-    }
-
-    public String getDbName() {
-        return grpDb.getTxtDbName().getText();
-    }
-
-    public String getDbUser() {
-        return grpDb.getTxtDbUser().getText();
-    }
-
-    public String getDbPass() {
-        return grpDb.getTxtDbPass().getText();
-    }
-
-    public String getDbHost() {
-        return grpDb.getTxtDbHost().getText();
-    }
-
-    public int getDbPort() {
-        try {
-            return Integer.parseInt(grpDb.getTxtDbPort().getText());
-        } catch (NumberFormatException ex) {
-            return 0;
+        if (storePicker.getDbInfo() != null && !mainPrefs.getBoolean(PREF.PGDUMP_SWITCH)){
+            return true;
+        } else{
+            return false;
         }
     }
 
+    public String getDbName() {
+        return storePicker.getDbInfo().getDbName();
+    }
+
+    public String getDbUser() {
+        return storePicker.getDbInfo().getDbUser();
+    }
+
+    public String getDbPass() {
+        return storePicker.getDbInfo().getDbPass();
+    }
+
+    public String getDbHost() {
+        return storePicker.getDbInfo().getDbHost();
+    }
+
+    public int getDbPort() {
+        return storePicker.getDbInfo().getDbPort();
+    }
+
     public String getDumpPath() {
-        return txtDumpPath.getText();
+        return storePicker.getPathOfFile();
     }
 
     PageDb(String pageName, IPreferenceStore mainPrefs) {
@@ -307,106 +297,15 @@ class PageDb extends WizardPage implements Listener {
     @Override
     public void createControl(final Composite parent) {
         container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
+        container.setLayout(new FillLayout(SWT.HORIZONTAL));
 
-        Group radioGrp = new Group(container, SWT.NONE);
-        radioGrp.setText(Messages.newProjWizard_schema_source);
-        radioGrp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
-                2, 1));
-        radioGrp.setLayout(new GridLayout(3, false));
+        storePicker = new DbStorePicker(container, SWT.NONE, false, mainPrefs, true);
+        storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
-        radioJdbc = new Button(radioGrp, SWT.RADIO);
-        radioJdbc.setText(Messages.jdbc);
-        radioJdbc.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                grpDb.setVisible(true);
-                grpDump.setVisible(false);
-
-                ((GridData) grpDb.getLayoutData()).exclude = false;
-                ((GridData) grpDump.getLayoutData()).exclude = true;
-
-                container.layout(false);
-            }
-        });
-        radioJdbc.addListener(SWT.Selection, this);
-        radioJdbc.setSelection(true);
-
-        radioDb = new Button(radioGrp, SWT.RADIO);
-        radioDb.setText(Messages.db);
-
-        radioDb.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (radioDb.getSelection()) {
-                    grpDump.setVisible(false);
-                    grpDb.setVisible(true);
-
-                    ((GridData) grpDump.getLayoutData()).exclude = true;
-                    ((GridData) grpDb.getLayoutData()).exclude = false;
-
-                    container.layout(false);
-                }
-            }
-        });
-        radioDb.addListener(SWT.Selection, this);
-
-        radioDump = new Button(radioGrp, SWT.RADIO);
-        radioDump.setText(Messages.dump_file);
-
-        radioDump.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (radioDump.getSelection()) {
-                    grpDb.setVisible(false);
-                    grpDump.setVisible(true);
-
-                    ((GridData) grpDb.getLayoutData()).exclude = true;
-                    ((GridData) grpDump.getLayoutData()).exclude = false;
-
-                    container.layout(false);
-                }
-            }
-        });
-        radioDb.addListener(SWT.Selection, this);
-
-        grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
-        grpDb.setText(Messages.newProjWizard_db_source_settings);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-        gd.exclude = false;
-        gd.verticalIndent = 12;
-        grpDb.setLayoutData(gd);
-        grpDb.setVisible(true);
-
-        grpDump = new Group(container, SWT.NONE);
-        grpDump.setText(Messages.newProjWizard_dump_file_source_settings);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-        gd.exclude = true;
-        gd.verticalIndent = 12;
-        grpDump.setLayoutData(gd);
-        grpDump.setLayout(new GridLayout(2, false));
-        grpDump.setVisible(false);
-
-        Label l = new Label(grpDump, SWT.NONE);
-        l.setText(Messages.path_to_db_schema_dump);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        l.setLayoutData(gd);
-
-        txtDumpPath = new Text(grpDump, SWT.BORDER);
-        txtDumpPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtDumpPath.addListener(SWT.Modify, this);
-
-        Button btnBrowseDump = new Button(grpDump, SWT.PUSH);
-        btnBrowseDump.setText(Messages.browse);
-        btnBrowseDump.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(container.getShell());
-                String filename = dialog.open();
-                if (filename != null) {
-                    txtDumpPath.setText(filename);
-                }
+            public void selectionChanged(SelectionChangedEvent event) {
+                getWizard().getContainer().updateButtons();
+                getWizard().getContainer().updateMessage();
             }
         });
 
@@ -415,20 +314,12 @@ class PageDb extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        String errMsg = null;
-        if (radioDump.getSelection()
-                && (txtDumpPath.getText().isEmpty()
-                        || !new File(txtDumpPath.getText()).isFile())) {
-            errMsg = Messages.select_readable_db_dump_file;
+        if (storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null){
+            setErrorMessage(null);
+            return true;
+        } else {
+            setErrorMessage("Select a db store or dump file!");
+            return false;
         }
-
-        setErrorMessage(errMsg);
-        return errMsg == null;
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        getWizard().getContainer().updateButtons();
-        getWizard().getContainer().updateMessage();
     }
 }

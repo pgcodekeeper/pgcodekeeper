@@ -72,7 +72,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
-import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -111,8 +112,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private Text txtCommand;
     private Combo cmbScript;
     private Button btnJdbcToggle;
-    private Button btnHidePicker;
-    private DbPicker picker;
+    private DbStorePicker storePicker;
 
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -261,39 +261,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         buttons.setLayout(gl);
 
         btnJdbcToggle = new Button(buttons, SWT.CHECK);
-        btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
+        btnJdbcToggle.setText(Messages.sqlScriptDialog_use_command_for_ddl_update);
         btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
                 .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
 
-        btnHidePicker = new Button(buttons, SWT.CHECK);
-        btnHidePicker.setText(Messages.sqlScriptDialog_hide_picker);
-        btnHidePicker.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                picker.setVisible(!btnHidePicker.getSelection());
-                ((GridData)picker.getLayoutData()).exclude = btnHidePicker.getSelection();
-                PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(),
-                        PREF.IS_DDL_UPDATE_OVER_JDBC_INFO, String.valueOf(btnHidePicker.getSelection()));
-                parent.layout();
-            }
-        });
-        btnHidePicker.setSelection(Activator.getDefault().getPreferenceStore()
-                .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC_INFO));
-
-        // picker
-        picker = new DbPicker(parent, SWT.BORDER, mainPrefs, false);
-        picker.setText(Messages.SqlScriptDialog_jdbc_connection_details);
-
-        picker.getTxtDbName().setText(dbName == null ? "" : dbName); //$NON-NLS-1$
-        picker.getTxtDbUser().setText(dbUser == null ? "" : dbUser); //$NON-NLS-1$
-        picker.getTxtDbHost().setText(dbHost == null ? "" : dbHost); //$NON-NLS-1$
-        picker.getTxtDbPort().setText(dbPort == null || dbPort.isEmpty() ? "0" : dbPort); //$NON-NLS-1$
-
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.heightHint = 230;
-        gd.minimumHeight = 230;
-        picker.setLayoutData(gd);
+        storePicker = new DbStorePicker(parent, SWT.NONE, false, mainPrefs, false);
+        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
+                false, 2, 1));
 
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -366,17 +340,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean isJdbc = btnJdbcToggle.getSelection();
-                notJdbc.setVisible(!isJdbc);
-                ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
+                notJdbc.setVisible(isJdbc);
+                ((GridData)notJdbc.getLayoutData()).exclude = !isJdbc;
 
-                picker.setVisible(isJdbc && !btnHidePicker.getSelection());
-                ((GridData)picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
-
-                btnHidePicker.setVisible(isJdbc);
-                GridData gd = (GridData)btnHidePicker.getLayoutData();
-                if (gd != null) {
-                    gd.exclude = !isJdbc;
-                }
+                storePicker.setVisible(!isJdbc);
+                ((GridData)storePicker.getLayoutData()).exclude = isJdbc;
 
                 parent.layout();
 
@@ -390,10 +358,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
         createButtonsForButtonBar(parent);
         btnJdbcToggle.notifyListeners(SWT.Selection, new Event());
-        if (btnHidePicker.isVisible()) {
-            btnHidePicker.notifyListeners(SWT.Selection, new Event());
-        }
-        //        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG);
+
         return parent;
     }
 
@@ -502,14 +467,16 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 // new runnable to unlock the UI thread
                 Runnable launcher;
 
-                if (btnJdbcToggle.getSelection()){
+                if (!btnJdbcToggle.getSelection()){
                     Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-                    final String jdbcHost = picker.getTxtDbHost().getText();
-                    final int jdbcPort = Integer.valueOf(picker.getTxtDbPort().getText());
-                    final String jdbcUser = picker.getTxtDbUser().getText();
-                    final String jdbcPass = picker.getTxtDbPass().getText();
-                    final String jdbcDbName = picker.getTxtDbName().getText();
+                    DbInfo dbInfo = storePicker.getDbInfo();
+
+                    final String jdbcHost = dbInfo.getDbHost();
+                    final int jdbcPort = dbInfo.getDbPort();
+                    final String jdbcUser = dbInfo.getDbUser();
+                    final String jdbcPass = dbInfo.getDbPass();
+                    final String jdbcDbName = dbInfo.getDbName();
 
                     launcher = new Runnable() {
 
@@ -533,7 +500,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         }
                     };
                 }else{
-                    Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
+                    Log.log(Log.LOG_INFO, Messages.Running_DDL_update_using_external_command);
                     final List<String> command = new ArrayList<>(Arrays.asList(
                             getReplacedString().split(" "))); //$NON-NLS-1$
 
@@ -556,7 +523,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 // case Stop script
             } else {
                 ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-                Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
+                Log.log(Log.LOG_INFO, Messages.Script_execution_interrupted_by_user);
 
                 scriptThread.interrupt();
                 runScriptBtn.setText(RUN_SCRIPT_LABEL);

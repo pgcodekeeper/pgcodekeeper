@@ -94,7 +94,7 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
-    public static String sqlScriptDialog_use_jdbc_for_ddl_update;
+    public static String sqlScriptDialog_use_command_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -432,6 +432,11 @@ public final class Messages extends NLS {
     public static String e_mail;
     public static String feedback_message;
     public static String add_log;
+    
+    // Roll on editor
+    public static String Running_DDL_update_using_external_command;
+    
+    public static String Script_execution_interrupted_by_user;
 
     public static String FeedBackDialog_could_not_send;
 

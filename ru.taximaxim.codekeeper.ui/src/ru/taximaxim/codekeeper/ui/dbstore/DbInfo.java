@@ -3,6 +3,9 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import org.eclipse.core.runtime.Path;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -19,15 +22,35 @@ public class DbInfo {
      */
     private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
 
-    final String name;
-    final String dbname;
-    final String dbuser;
-    final String dbpass;
-    final String dbhost;
-    final int dbport;
+    private final String name;
+    private final String dbname;
+    private final String dbuser;
+    private final String dbpass;
+    private final String dbhost;
+    private final int dbport;
 
     public String getName() {
         return name;
+    }
+
+    public String getDbName() {
+        return dbname;
+    }
+
+    public String getDbUser() {
+        return dbuser;
+    }
+
+    public String getDbPass() {
+        return dbpass;
+    }
+
+    public String getDbHost() {
+        return dbhost;
+    }
+
+    public int getDbPort() {
+        return dbport;
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
@@ -130,6 +153,26 @@ public class DbInfo {
             sb.append(entry).append(DELIM_ENTRY);
         }
         sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public static List<Path> getDumpFileHistory(String prefs){
+        String[] coordStrings = prefs.split(
+                Pattern.quote(String.valueOf(DELIM_ENTRY)));
+        List<Path> paths = new LinkedList<>();
+        for (String path : coordStrings){
+            paths.add(new Path(path));
+        }
+        return paths;
+    }
+
+    public static String dump2String(List<Path> dumps){
+        StringBuffer sb = new StringBuffer();
+        for (Path path : dumps){
+            sb.append(path.toOSString());
+            sb.append(DELIM_ENTRY);
+        }
+        sb.delete(sb.length()-1, sb.length());
         return sb.toString();
     }
 }

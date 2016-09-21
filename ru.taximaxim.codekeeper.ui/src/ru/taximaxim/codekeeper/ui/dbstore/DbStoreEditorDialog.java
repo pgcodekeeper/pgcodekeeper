@@ -67,12 +67,12 @@ public class DbStoreEditorDialog extends TrayDialog {
         grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
 
         if (dbInitial != null){
-            grpDbData.getTxtName().setText(this.dbInitial.name);
-            grpDbData.getTxtDbName().setText(this.dbInitial.dbname);
-            grpDbData.getTxtDbUser().setText(this.dbInitial.dbuser);
-            grpDbData.getTxtDbPass().setText(this.dbInitial.dbpass);
-            grpDbData.getTxtDbHost().setText(this.dbInitial.dbhost);
-            grpDbData.getTxtDbPort().setText("" + this.dbInitial.dbport); //$NON-NLS-1$
+            grpDbData.getTxtName().setText(dbInitial.getName());
+            grpDbData.getTxtDbName().setText(dbInitial.getDbName());
+            grpDbData.getTxtDbUser().setText(dbInitial.getDbUser());
+            grpDbData.getTxtDbPass().setText(dbInitial.getDbPass());
+            grpDbData.getTxtDbHost().setText(dbInitial.getDbHost());
+            grpDbData.getTxtDbPort().setText("" + dbInitial.getDbPort()); //$NON-NLS-1$
         }
 
         return area;

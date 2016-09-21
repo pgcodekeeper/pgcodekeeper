@@ -570,9 +570,6 @@ class DiffPage extends DiffPresentationPane {
         List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 list);
-        input.setDbParams(dbSrc.getTxtDbHost().getText(),
-                dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),
-                dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         .openEditor(input, EDITOR.ROLLON);
     }

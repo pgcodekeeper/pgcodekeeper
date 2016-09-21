@@ -43,6 +43,7 @@ public interface UIConsts {
         String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
+        String DB_STORE_HISTORY = "prefDbStoreHistory"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
 
@@ -151,6 +152,9 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+
+        String ICONSORTUP = "/icons/arrow_sort_up_%d.png"; //$NON-NLS-1$
+        String ICONSORTDOWN = "/icons/arrow_sort_down_%d.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

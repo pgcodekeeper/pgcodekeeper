@@ -85,7 +85,7 @@ public class DbPicker extends Group {
         txtName.setVisible(false);
 
         if (prefStore != null) {
-            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
+            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore, false);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
             dbStorePicker.addListenerToCombo(new ISelectionChangedListener() {
 
@@ -104,11 +104,12 @@ public class DbPicker extends Group {
             @Override
             public void modifyText(ModifyEvent e) {
                 DbInfo dbInfo = dbStorePicker.getDbInfo();
-                if (dbInfo != null && (!txtDbName.getText().equals(dbInfo.dbname) ||
-                        !txtDbUser.getText().equals(dbInfo.dbuser) ||
-                        !txtDbPass.getText().equals(dbInfo.dbpass) ||
-                        !txtDbHost.getText().equals(dbInfo.dbhost) ||
-                        !txtDbPort.getText().equals(String.valueOf(dbInfo.dbport)))) {
+                if (dbInfo != null &&
+                        (!txtDbName.getText().equals(dbInfo.getDbName()) ||
+                                !txtDbUser.getText().equals(dbInfo.getDbUser()) ||
+                                !txtDbPass.getText().equals(dbInfo.getDbPass()) ||
+                                !txtDbHost.getText().equals(dbInfo.getDbHost()) ||
+                                !txtDbPort.getText().equals(String.valueOf(dbInfo.getDbPort())))) {
 
                     dbStorePicker.clearSelection();
                 }
@@ -203,11 +204,11 @@ public class DbPicker extends Group {
             txtDbHost.removeModifyListener(ml);
             txtDbPort.removeModifyListener(ml);
 
-            txtDbName.setText(dbInfo.dbname);
-            txtDbUser.setText(dbInfo.dbuser);
-            txtDbPass.setText(dbInfo.dbpass);
-            txtDbHost.setText(dbInfo.dbhost);
-            txtDbPort.setText(String.valueOf(dbInfo.dbport));
+            txtDbName.setText(dbInfo.getDbName());
+            txtDbUser.setText(dbInfo.getDbUser());
+            txtDbPass.setText(dbInfo.getDbPass());
+            txtDbHost.setText(dbInfo.getDbHost());
+            txtDbPort.setText(String.valueOf(dbInfo.getDbPort()));
 
             txtDbName.addModifyListener(ml);
             txtDbUser.addModifyListener(ml);
