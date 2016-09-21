@@ -619,6 +619,7 @@ public class DiffTableViewer extends Composite {
                     setColumnHeaders();
                 }
                 sortViewer(column, index);
+                updateSortIndexes();
             }
         };
         return selectionAdapter;
@@ -626,6 +627,11 @@ public class DiffTableViewer extends Composite {
 
     private void sortViewer(final TableColumn column, final Columns index) {
         comparator.addSort(index);
+        updateSortIndexes();
+        viewer.refresh();
+    }
+    
+    private void updateSortIndexes(){
         List<ru.taximaxim.codekeeper.ui.differ.DiffTableViewer.TableViewerComparator.SortingColumn> sorts = 
                 comparator.getSortOrder();
         for (int i=0; i<sorts.size(); i++){
@@ -651,7 +657,6 @@ public class DiffTableViewer extends Composite {
                 break;
             }
         }
-        viewer.refresh();
     }
 
     /**
