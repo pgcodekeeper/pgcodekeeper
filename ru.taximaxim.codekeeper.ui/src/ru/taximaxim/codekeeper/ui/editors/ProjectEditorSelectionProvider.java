@@ -74,8 +74,8 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
 
     private void modifyAndFireEvent(ListenerList<ISelectionChangedListener> listeners, SelectionChangedEvent event) {
         SelectionChangedEvent newEvent = modifyEvent(event);
-        for(ISelectionChangedListener l : listeners) {
-            l.selectionChanged(newEvent);
+        for(Object l : listeners.getListeners()) {
+            ((ISelectionChangedListener) l).selectionChanged(newEvent);
         }
         currentSelection = newEvent.getSelection();
     }
