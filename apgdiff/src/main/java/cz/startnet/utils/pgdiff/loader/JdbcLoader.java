@@ -1436,8 +1436,13 @@ public class JdbcLoader implements PgCatalogStrings {
         } else if (st instanceof PgSchema) {
             stType = "SCHEMA";
             order = "CU";
+        } else if (st instanceof PgType) {
+            stType = "TYPE";
+            order = "U";
+        } else if (st instanceof PgDomain) {
+            stType = "DOMAIN";
+            order = "U";
         } else {
-            // FIXME type & domain
             throw new IllegalStateException("Not supported PgStatement class");
         }
         int possiblePrivilegeCount = order.length();
