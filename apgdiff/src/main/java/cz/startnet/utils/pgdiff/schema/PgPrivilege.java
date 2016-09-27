@@ -98,4 +98,9 @@ public class PgPrivilege extends PgStatement {
         result = prime * result + (revoke ? itrue : ifalse);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return getCreationSQL();
+    }
 }

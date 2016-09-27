@@ -1402,8 +1402,8 @@ public class JdbcLoader implements PgCatalogStrings {
      * Parses <code>aclItemsArrayAsString</code> and adds parsed privileges to
      * <code>PgStatement</code> object. Owner privileges go first.
      * <br>
-     * Currently supports only adding privileges to PgFunction, PgSequence,
-     * PgTable, PgView, PgSchema
+     * Currently supports privileges only on PgSequence, PgTable, PgView, PgColumn,
+     * PgFunction, PgSchema, PgType, PgDomain
      *
      * @param st    PgStatement object where privileges to be added
      * @param stSignature   PgStatement signature (differs in different PgStatement instances)
@@ -1413,42 +1413,62 @@ public class JdbcLoader implements PgCatalogStrings {
      * @param column    column name, if this aclItemsArrayAsString is column
      *                      privilege string; otherwise null
      */
+    /*
+     * See parseAclItem() in dumputils.c
+     * For privilege characters see JdbcAclParser.PrivilegeTypes
+     * Order of all characters (for all types of objects combined)
+     * is given by order variable initialization
+     */
     private void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnName) {
         if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
-        String stType;
-        String order = "arwdDxtXUCTc";
-        if (st instanceof PgSequence) {
-            stType = "SEQUENCE";
+        String stType = null;
+        String order = "raxdtDXCcTUw";
+        switch (st.getStatementType()) {
+        case SEQUENCE:
             order = "rUw";
-        } else if (st instanceof PgFunction) {
-            stType = "FUNCTION";
-            order = "X";
-        } else if (st instanceof PgTable || st instanceof PgView || st instanceof PgColumn) {
+            break;
+
+        case TABLE:
+        case VIEW:
+        case COLUMN:
             stType = "TABLE";
-            if (columnName != null) {
-                order = "raxw";
-            } else {
+            if (columnName == null) {
                 order = "raxdtDw";
+            } else {
+                order = "raxw";
             }
-        } else if (st instanceof PgSchema) {
-            stType = "SCHEMA";
+            break;
+
+        case FUNCTION:
+            order = "X";
+            break;
+
+        case SCHEMA:
             order = "CU";
-        } else {
-            // FIXME type & domain
-            throw new IllegalStateException("Not supported PgStatement class");
+            break;
+
+        case TYPE:
+        case DOMAIN:
+            stType = "TYPE";
+            order = "U";
+            break;
+
+        default:
+            throw new IllegalStateException(st.getStatementType() + " doesn't support privileges!");
         }
         int possiblePrivilegeCount = order.length();
+        if (stType == null) {
+            stType = st.getStatementType().name();
+        }
 
         String column = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
         String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " +
-                PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
 
-        List<Privilege> grants = new JdbcAclParser().parse(
+        List<Privilege> grants = JdbcAclParser.parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
 
         boolean metDefaultOwnersGrants = false;
@@ -1459,6 +1479,8 @@ public class JdbcLoader implements PgCatalogStrings {
         }
 
         if (!metDefaultOwnersGrants) {
+            String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " +
+                    PgDiffUtils.getQuotedName(owner);
             st.addPrivilege(new PgPrivilege(true, revokeOwner, "REVOKE " + revokeOwner));
         }
 

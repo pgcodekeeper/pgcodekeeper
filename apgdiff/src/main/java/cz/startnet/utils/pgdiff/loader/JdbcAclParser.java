@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @author ryabinin_av
  */
-public class JdbcAclParser {
+public final class JdbcAclParser {
 
     public enum PrivilegeTypes {
         // SONAR-OFF
@@ -40,7 +40,7 @@ public class JdbcAclParser {
      * @param owner     Owner name (owner's privileges go first)
      * @return
      */
-    public List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
+    public static List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
         List<Privilege> privileges = new ArrayList<>();
 
         // skip "empty" acl strings, such as "{}"
@@ -118,6 +118,9 @@ public class JdbcAclParser {
             }
         }
         return privileges;
+    }
+
+    private JdbcAclParser() {
     }
 }
 
