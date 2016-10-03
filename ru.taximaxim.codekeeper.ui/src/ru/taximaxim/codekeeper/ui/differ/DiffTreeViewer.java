@@ -173,8 +173,7 @@ public class DiffTreeViewer extends Composite {
 
         btnDebugView = new Button(contButtons, SWT.CHECK);
         btnDebugView.setText(Messages.diffTreeViewer_debug_view);
-        btnDebugView.setLayoutData(new GridData(
-                GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
+        btnDebugView.setLayoutData(new GridData(SWT.END, SWT.DEFAULT, false, false));
         btnDebugView.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

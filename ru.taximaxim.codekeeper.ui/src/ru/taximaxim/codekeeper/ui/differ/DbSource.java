@@ -18,13 +18,13 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -91,13 +91,24 @@ public abstract class DbSource {
         return new DbSourceProject(proj);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, String filename, String encoding) {
+    public static DbSource fromFile(boolean forceUnixNewlines, File filename, String encoding) {
         return new DbSourceFile(forceUnixNewlines, filename, encoding);
     }
 
-    public static DbSource fromDb(String exePgdump, String customParams,
-            PgDbProject proj, String password) throws CoreException {
-        return new DbSourceDb(exePgdump, customParams, proj, password);
+    public static DbSource fromDbInfo(DbInfo dbinfo, IPreferenceStore prefs,
+            boolean forceUnixNewlines, String charset, String timezone) {
+        if (prefs.getBoolean(PREF.PGDUMP_SWITCH)) {
+            return DbSource.fromDb(forceUnixNewlines,
+                    prefs.getString(PREF.PGDUMP_EXE_PATH),
+                    prefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
+                    dbinfo.getDbHost(), dbinfo.getDbPort(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                    charset, timezone);
+        } else {
+            return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                    charset, timezone, forceUnixNewlines);
+        }
     }
 
     public static DbSource fromDb(boolean forceUnixNewlines,
@@ -106,18 +117,6 @@ public abstract class DbSource {
             String encoding, String timezone) {
         return new DbSourceDb(forceUnixNewlines, exePgdump, customParams,
                 host, port, user, pass, dbname, encoding, timezone);
-    }
-
-    public static DbSource fromJdbc(PgDbProject proj, String password) throws CoreException{
-        IEclipsePreferences pref = proj.getPrefs();
-        return fromJdbc(pref.get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
-                pref.getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
-                pref.get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
-                password,
-                pref.get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
-                proj.getProjectCharset(),
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
     }
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
@@ -194,11 +193,11 @@ class DbSourceFile extends DbSource {
     private static final int AVERAGE_STATEMENT_LENGTH = 5;
 
     private final boolean forceUnixNewlines;
-    private final String filename;
+    private final File filename;
     private final String encoding;
 
-    DbSourceFile(boolean forceUnixNewlines, String filename, String encoding) {
-        super(filename);
+    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding) {
+        super(filename.getAbsolutePath());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
@@ -219,14 +218,14 @@ class DbSourceFile extends DbSource {
             monitor.setWorkRemaining(1000);
         }
 
-        try (PgDumpLoader loader = new PgDumpLoader(new File(filename),
+        try (PgDumpLoader loader = new PgDumpLoader(filename,
                 getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
                 monitor, 2)) {
             return loader.load();
         }
     }
 
-    private int countLines(String filename) throws IOException {
+    private int countLines(File filename) throws IOException {
         try (FileInputStream fis = new FileInputStream(filename);
                 InputStream is = new BufferedInputStream(fis)){
             byte[] c = new byte[1024];
@@ -255,25 +254,11 @@ class DbSourceDb extends DbSource {
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
-    DbSourceDb(String exePgdump, String customParams,
-            PgDbProject proj, String password) throws CoreException {
-        this(proj.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                exePgdump, customParams,
-                proj.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
-                proj.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
-                proj.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
-                password,
-                proj.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
-                proj.getProjectCharset(),
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-    }
-
     DbSourceDb(boolean forceUnixNewlines,
             String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding, String timezone) {
-        super((dbname.isEmpty() ? Messages.unknown_db : dbname) + '@'
-                + (host.isEmpty() ? Messages.unknown_host : host));
+        super(dbname);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.exePgdump = exePgdump;

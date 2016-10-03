@@ -16,9 +16,9 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public final class ApgdiffTestUtils {
 
@@ -51,7 +51,7 @@ public final class ApgdiffTestUtils {
             String scr = MessageFormat.format(script.toString(), dbName, TEST.REMOTE_DB);
             String res = new JdbcRunner(connector).runScript(scr);
             Assert.assertEquals("Create DB over JDBC exited with an error: "
-                    + res, Messages.Dll_script_execute_succesfull, res);
+                    + res, JDBC_CONSTS.JDBC_SUCCESS, res);
         }
     }
 
@@ -78,7 +78,7 @@ public final class ApgdiffTestUtils {
 
             String res = new JdbcRunner(connector).runScript(script.toString());
             Assert.assertEquals("DDL update over JDBC exited with an error: "
-                    + res, Messages.Dll_script_execute_succesfull, res);
+                    + res, JDBC_CONSTS.JDBC_SUCCESS, res);
         }
     }
 
@@ -99,7 +99,7 @@ public final class ApgdiffTestUtils {
             String scr = MessageFormat.format(script.toString(), dbName);
             String res = new JdbcRunner(connector).runScript(scr);
             Assert.assertEquals("DB cleanup script returned an error: " + res,
-                    Messages.Dll_script_execute_succesfull, res);
+                    JDBC_CONSTS.JDBC_SUCCESS, res);
         }
     }
 

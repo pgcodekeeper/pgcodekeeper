@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class CommitDialog extends TrayDialog {
 
@@ -116,8 +115,6 @@ public class CommitDialog extends TrayDialog {
 
             dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
             warningLbl = new Label(gBottom, SWT.NONE);
-            gd = new GridData(GridData.FILL_BOTH);
-            warningLbl.setLayoutData(gd);
             warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
             warningLbl.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
             warningLbl.setVisible(false);
@@ -130,8 +127,7 @@ public class CommitDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PreferenceInitializer.savePreference(prefs,
-                        PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, String.valueOf(btnAutocommit.getSelection()));
+                prefs.setValue(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, btnAutocommit.getSelection());
             }
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
@@ -169,27 +165,30 @@ public class CommitDialog extends TrayDialog {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             boolean showWarning = false;
-            for (TreeElement el : depcyElementsSet) {
-                if (!el.isSelected()) {
-                    switch (el.getSide()) {
-                    // удаляется
-                    case LEFT:
-                        TreeElement parent = el.getParent();
-                        while (parent != null) {
-                            if (parent.isSelected()) {
-                                showWarning = true;
-                                break;
-                            }
-                            parent = parent.getParent();
+            elements: for (TreeElement el : depcyElementsSet) {
+                if (el.isSelected()) {
+                    continue;
+                }
+                switch (el.getSide()) {
+                // удаляется
+                case LEFT:
+                    TreeElement parent = el.getParent();
+                    while (parent != null) {
+                        if (parent.isSelected()) {
+                            showWarning = true;
+                            break elements;
                         }
-                        break;
-                        // создается
-                    case RIGHT:
-                        showWarning = el.isSubTreeSelected();
-                        break;
-                    default:
-                        break;
+                        parent = parent.getParent();
                     }
+                    break;
+                    // создается
+                case RIGHT:
+                    showWarning = el.isSubTreeSelected();
+                    if (showWarning) {
+                        break elements;
+                    }
+                    break;
+                case BOTH:
                 }
             }
             warningLbl.setVisible(showWarning);

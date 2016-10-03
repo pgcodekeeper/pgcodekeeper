@@ -72,6 +72,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -140,9 +141,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 sp.firePostSelectionChanged(event);
             }
         };
-        diff.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        // bind both to postselection for performance
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionListener);
         diff.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
-        commit.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionListener);
         commit.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
         getSite().setSelectionProvider(sp);
 
@@ -200,6 +202,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         }
     }
 
+    // FIXME deletions are ignored!
     private void handleChangeProject(IResourceChangeEvent event) {
         IResourceDelta rootDelta = event.getDelta();
 
@@ -243,9 +246,11 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 public void run() {
                     if (!commit.isDisposed()) {
                         commit.reset();
+                        commit.showNotificationArea(true);
                     }
                     if (!diff.isDisposed()) {
                         diff.reset();
+                        diff.showNotificationArea(true);
                     }
                 }
             });
@@ -568,8 +573,12 @@ class DiffPage extends DiffPresentationPane {
 
     private void showEditor(Differ differ) throws PartInitException {
         List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                list);
+        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj, list);
+        DbInfo dbinfo = storePicker.getDbInfo();
+        if (dbinfo != null) {
+            input.setDbParams(dbinfo.getDbHost(), "" + dbinfo.getDbPort(),
+                    dbinfo.getDbName(), dbinfo.getDbUser(), dbinfo.getDbPass());
+        }
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         .openEditor(input, EDITOR.ROLLON);
     }

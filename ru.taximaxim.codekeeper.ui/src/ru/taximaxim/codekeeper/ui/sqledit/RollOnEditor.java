@@ -33,7 +33,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
@@ -59,6 +58,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -79,7 +79,6 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
@@ -265,9 +264,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
                 .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
 
-        storePicker = new DbStorePicker(parent, SWT.NONE, false, mainPrefs, false);
-        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-                false, 2, 1));
+        storePicker = new DbStorePicker(parent, SWT.NONE, mainPrefs, false);
+        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -335,25 +333,21 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         colorPink = new Color(parent.getShell().getDisplay(), new RGB(0xff, 0xe1, 0xff));
 
-        btnJdbcToggle.addSelectionListener(new SelectionListener() {
+        btnJdbcToggle.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean isJdbc = btnJdbcToggle.getSelection();
-                notJdbc.setVisible(isJdbc);
-                ((GridData)notJdbc.getLayoutData()).exclude = !isJdbc;
+                boolean isCmd = btnJdbcToggle.getSelection();
+                notJdbc.setVisible(isCmd);
+                ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
 
-                storePicker.setVisible(!isJdbc);
-                ((GridData)storePicker.getLayoutData()).exclude = isJdbc;
+                storePicker.setVisible(!isCmd);
+                ((GridData)storePicker.getLayoutData()).exclude = isCmd;
 
                 parent.layout();
 
-                PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(),
-                        PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(isJdbc));
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+                Activator.getDefault().getPreferenceStore().setValue(
+                        PREF.IS_DDL_UPDATE_OVER_JDBC, isCmd);
             }
         });
         createButtonsForButtonBar(parent);
@@ -488,7 +482,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                                         jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
                                         scriptFileEncoding, connectionTimezone);
                                 output = new JdbcRunner(connector).runScript(textRetrieved);
-                                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                                if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
+                                    output = "The database was successfully updated jdbc means";
+                                } else if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                     addDepcy.getDependenciesFromOutput(output);
                                 }
                             } catch (IOException e) {
@@ -500,7 +496,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         }
                     };
                 }else{
-                    Log.log(Log.LOG_INFO, Messages.Running_DDL_update_using_external_command);
+                    Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                     final List<String> command = new ArrayList<>(Arrays.asList(
                             getReplacedString().split(" "))); //$NON-NLS-1$
 
@@ -523,7 +519,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 // case Stop script
             } else {
                 ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-                Log.log(Log.LOG_INFO, Messages.Script_execution_interrupted_by_user);
+                Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
 
                 scriptThread.interrupt();
                 runScriptBtn.setText(RUN_SCRIPT_LABEL);

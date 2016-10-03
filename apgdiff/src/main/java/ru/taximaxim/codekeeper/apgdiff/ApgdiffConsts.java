@@ -33,6 +33,7 @@ public interface ApgdiffConsts {
     interface JDBC_CONSTS{
         String JDBC_DRIVER = "org.postgresql.Driver";
         int JDBC_DEFAULT_PORT = 5432;
+        String JDBC_SUCCESS = "success";
     }
 
     @Deprecated

@@ -58,7 +58,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -268,7 +267,7 @@ class PageDiff extends WizardPage implements Listener {
 
         case DUMP:
             dbs = DbSource.fromFile(pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                    getDumpPath(), getTargetEncoding());
+                    new File(getDumpPath()), getTargetEncoding());
             break;
 
         case PROJ:
@@ -399,12 +398,16 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(container.getShell());
-                dialog.setFilterPath(mainPrefs.getString(PREF.LAST_OPENED_LOCATION));
+                String lastLoc = mainPrefs.getString(PREF.LAST_OPENED_LOCATION);
+                if (!lastLoc.isEmpty()) {
+                    dialog.setFilterPath(lastLoc);
+                }
                 String path = dialog.open();
                 if (path != null) {
                     txtProjPath.setText(path);
-                    PreferenceInitializer.savePreference(mainPrefs,
-                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
+                    File f = new File(path);
+                    String parent = f.getParent();
+                    mainPrefs.setValue(PREF.LAST_OPENED_LOCATION, parent == null ? f.getPath() : parent);
                 }
             }
         });
@@ -653,7 +656,7 @@ class PageResult extends WizardPage {
 
         Button btnSave = new Button(container, SWT.PUSH);
         btnSave.setText(Messages.diffWizard_save);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd = new GridData(SWT.END, SWT.DEFAULT, false, false);
         gd.verticalIndent = 12;
         btnSave.setLayoutData(gd);
         btnSave.addSelectionListener(new SelectionAdapter() {
@@ -689,8 +692,7 @@ class PageResult extends WizardPage {
         try (PrintWriter encodedWriter = new UnixPrintWriter(
                 // TODO save to proj encoding can be incorrect.
                 // Consider saving to unicode if proj and PageDiff encodings differ
-                new OutputStreamWriter(new FileOutputStream(saveTo),
-                        charset))) {
+                new OutputStreamWriter(new FileOutputStream(saveTo), charset))) {
             Text txtDiff = (Text) tabs.getSelection()[0].getControl();
             encodedWriter.println(txtDiff.getText());
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {

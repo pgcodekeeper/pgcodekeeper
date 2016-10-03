@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
@@ -85,7 +86,7 @@ public class DbPicker extends Group {
         txtName.setVisible(false);
 
         if (prefStore != null) {
-            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore, false);
+            dbStorePicker = new DbStorePicker(this, SWT.NONE, prefStore, false);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
             dbStorePicker.addListenerToCombo(new ISelectionChangedListener() {
 
@@ -110,8 +111,7 @@ public class DbPicker extends Group {
                                 !txtDbPass.getText().equals(dbInfo.getDbPass()) ||
                                 !txtDbHost.getText().equals(dbInfo.getDbHost()) ||
                                 !txtDbPort.getText().equals(String.valueOf(dbInfo.getDbPort())))) {
-
-                    dbStorePicker.clearSelection();
+                    dbStorePicker.setSelection(StructuredSelection.EMPTY);
                 }
                 notifyListeners(SWT.Modify, null);
                 layout();
@@ -189,10 +189,6 @@ public class DbPicker extends Group {
             txtDbPort.addModifyListener(ml);
             fillDbFieldsFromDbInfo();
         }
-    }
-
-    public String getSelectedDbPresetName(){
-        return dbStorePicker.getSelectedName();
     }
 
     private void fillDbFieldsFromDbInfo() {

@@ -21,10 +21,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
 
 public class AddBuilder extends AbstractHandler implements IHandler {
 
-    public AddBuilder() {
-        // TODO Auto-generated constructor stub
-    }
-
     @Override
     public Object execute(final ExecutionEvent event) {
         final IProject project = getProject(event);
@@ -52,8 +48,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
             commands.addAll(Arrays.asList(description.getBuildSpec()));
             commands.add(buildCommand);
 
-            description.setBuildSpec(commands.toArray(new ICommand[commands
-                    .size()]));
+            description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
             Log.log(Log.LOG_ERROR, "Cannot add builder", e); //$NON-NLS-1$
@@ -66,7 +61,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
             final Object element = ((IStructuredSelection) selection)
                     .getFirstElement();
 
-            return (IProject) Platform.getAdapterManager().getAdapter(element,
+            return Platform.getAdapterManager().getAdapter(element,
                     IProject.class);
         }
 

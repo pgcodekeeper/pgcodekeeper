@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
-
-import org.eclipse.core.runtime.Path;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -137,7 +135,9 @@ public class DbInfo {
         String[] coordStrings = preference.split(DELIM_ENTRY);
         for(String coords : coordStrings) {
             try {
-                store.add(new DbInfo(coords));
+                if (!coords.isEmpty()) {
+                    store.add(new DbInfo(coords));
+                }
             } catch(IllegalArgumentException ex) {
                 // just ignore broken entries
                 // the store won't have them in and they will be consequently deleted from preferences
@@ -156,23 +156,25 @@ public class DbInfo {
         return sb.toString();
     }
 
-    public static List<Path> getDumpFileHistory(String prefs){
-        String[] coordStrings = prefs.split(
-                Pattern.quote(String.valueOf(DELIM_ENTRY)));
-        List<Path> paths = new LinkedList<>();
+    public static LinkedList<File> stringToDumpFileHistory(String preference) {
+        String[] coordStrings = preference.split(DELIM_ENTRY);
+        LinkedList<File> paths = new LinkedList<>();
         for (String path : coordStrings){
-            paths.add(new Path(path));
+            File f = new File(path);
+            if (f.isFile() && !paths.contains(f)) {
+                paths.add(f);
+            }
         }
         return paths;
     }
 
-    public static String dump2String(List<Path> dumps){
-        StringBuffer sb = new StringBuffer();
-        for (Path path : dumps){
-            sb.append(path.toOSString());
+    public static String dumpFileHistoryToPreference(List<File> dumps) {
+        StringBuilder sb = new StringBuilder();
+        for (File path : dumps){
+            sb.append(path.getAbsolutePath());
             sb.append(DELIM_ENTRY);
         }
-        sb.delete(sb.length()-1, sb.length());
+        sb.setLength(sb.length() - 1);
         return sb.toString();
     }
 }

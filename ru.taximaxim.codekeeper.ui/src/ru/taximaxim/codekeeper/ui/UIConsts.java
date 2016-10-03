@@ -19,7 +19,7 @@ public interface UIConsts {
     }
 
     interface DECORATOR {
-        String DECORATOR = UIConsts.PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
+        String DECORATOR = PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
     }
 
     interface COMMAND {
@@ -43,14 +43,14 @@ public interface UIConsts {
         String PGDUMP_SWITCH = "prefPgDumpSwitch"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
-        String DB_STORE_HISTORY = "prefDbStoreHistory"; //$NON-NLS-1$
+        String DB_STORE_FILES = "prefDbStoreHistory"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
 
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-        String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
+        //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
+        //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
@@ -107,11 +107,14 @@ public interface UIConsts {
     interface PROJ_PREF {
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
+        String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        /*
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
         String DB_USER = "prefDbUser"; //$NON-NLS-1$
+         */
     }
 
     interface NATURE {
@@ -145,16 +148,12 @@ public interface UIConsts {
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
         String ICONDOWN = "/icons/search_next.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor_area.png"; //$NON-NLS-1$
-        String ICONDEFAULTSORT = "/icons/alpha_mode.png"; //$NON-NLS-1$
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-
-        String ICONSORTUP = "/icons/arrow_sort_up_%d.png"; //$NON-NLS-1$
-        String ICONSORTDOWN = "/icons/arrow_sort_down_%d.png"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

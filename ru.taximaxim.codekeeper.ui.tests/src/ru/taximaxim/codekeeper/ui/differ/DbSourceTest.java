@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -89,10 +88,10 @@ public class DbSourceTest {
 
     @Test
     public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException,
-            CoreException {
+    CoreException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
 
-        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
+        performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8));
     }
 
     @Test
@@ -132,15 +131,12 @@ public class DbSourceTest {
             PgDbProject proj = new PgDbProject(project);
             proj.openProject();
 
-            proj.getPrefs().put(PROJ_PREF.DB_NAME, dbName);
-            proj.getPrefs().put(PROJ_PREF.DB_USER, TEST.REMOTE_USERNAME);
-            proj.getPrefs().put(PROJ_PREF.DB_HOST, TEST.REMOTE_HOST);
-            proj.getPrefs().putInt(PROJ_PREF.DB_PORT, TEST.REMOTE_PORT);
-
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
 
             // testing itself
-            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD));
+            performTest(DbSource.fromJdbc(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
+                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD,
+                    dbName, ApgdiffConsts.UTF_8, ApgdiffConsts.UTC, true));
 
             proj.deleteFromWorkspace();
         }

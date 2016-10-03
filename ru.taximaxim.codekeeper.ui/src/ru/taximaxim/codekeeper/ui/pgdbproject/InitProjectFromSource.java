@@ -8,35 +8,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
 
-    private final String exePgdump;
-    private final String pgdumpCustom;
-    private final String password;
-
+    private final DbSource src;
     private final PgDbProject proj;
 
-    private final String dumpPath;
-
-    public InitProjectFromSource(IPreferenceStore mainPrefs, PgDbProject proj,
-            String dumpPath, String password) {
-        this.exePgdump = mainPrefs.getString(PREF.PGDUMP_EXE_PATH);
-        this.pgdumpCustom = mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS);
+    public InitProjectFromSource(PgDbProject proj, DbSource src) {
         this.proj = proj;
-        this.dumpPath = dumpPath;
-        this.password = password;
+        this.src = src;
     }
 
     @Override
@@ -61,33 +48,12 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     /**
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
-     * @throws CoreException
-     * @throws InterruptedException
      */
-    private void initRepoFromSource(SubMonitor pm)
-            throws InvocationTargetException, InterruptedException, CoreException,
-            IOException, LicenseException {
+    private void initRepoFromSource(SubMonitor pm)throws InvocationTargetException,
+    InterruptedException, CoreException, IOException, LicenseException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
-        PgDatabase db;
-        switch (DBSources.getEnum(proj.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
-        case SOURCE_TYPE_DB:
-            db = DbSource.fromDb(exePgdump, pgdumpCustom, proj, password).get(taskpm);
-            break;
-
-        case SOURCE_TYPE_DUMP:
-            db = DbSource.fromFile(proj.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                    dumpPath, proj.getProjectCharset()).get(taskpm);
-            break;
-
-        case SOURCE_TYPE_JDBC:
-            db = DbSource.fromJdbc(proj, password).get(taskpm);
-            break;
-
-        default:
-            throw new InvocationTargetException(new IllegalStateException(
-                    Messages.initProjectFromSource_init_request_but_no_schema_source));
-        }
+        PgDatabase db = src.get(taskpm);
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new ProjectUpdater(db, null, null, proj).updateFull();
     }

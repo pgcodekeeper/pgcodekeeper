@@ -18,10 +18,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
 
 public class RemoveBuilder extends AbstractHandler implements IHandler {
 
-    public RemoveBuilder() {
-        // TODO Auto-generated constructor stub
-    }
-
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         final IProject project = AddBuilder.getProject(event);
@@ -47,8 +43,7 @@ public class RemoveBuilder extends AbstractHandler implements IHandler {
                 }
             }
 
-            description.setBuildSpec(commands.toArray(new ICommand[commands
-                    .size()]));
+            description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
             Log.log(Log.LOG_ERROR, "Cannot remove builder", e); //$NON-NLS-1$

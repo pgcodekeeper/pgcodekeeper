@@ -1,9 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.io.IOException;
-
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
 
@@ -12,8 +9,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
@@ -122,18 +117,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 break;
             }
             syntax.setDefault();
-        }
-    }
-
-    public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){
-        mainPrefs.setValue(preference, value);
-
-        if(mainPrefs.needsSaving() && mainPrefs instanceof IPersistentPreferenceStore) {
-            try {
-                ((IPersistentPreferenceStore) mainPrefs).save();
-            } catch (IOException ex) {
-                ExceptionNotifier.notifyDefault(Messages.PreferenceInitializer_error_saving_prefs, ex);
-            }
         }
     }
 }

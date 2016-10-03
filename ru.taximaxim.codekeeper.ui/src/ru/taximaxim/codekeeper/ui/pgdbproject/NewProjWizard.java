@@ -2,12 +2,10 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -30,14 +28,13 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -98,15 +95,8 @@ implements IExecutableExtension, INewWizard {
      * @return существует ли маркер
      */
     private boolean checkMarkerExist() {
-        URI loc = pageRepo.getLocationURI();
-        if (loc == null || (loc != null && !loc.isAbsolute())) {
-            return false;
-        }
-        File sub = new File(loc);
-        if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()) {
-            return false;
-        }
-        return true;
+        return new File(pageRepo.getLocationPath().toFile(), ApgdiffConsts.FILENAME_WORKING_DIR_MARKER)
+                .exists();
     }
 
     @Override
@@ -123,25 +113,22 @@ implements IExecutableExtension, INewWizard {
             props = PgDbProject.getProjectFromIProjectHandle(
                     pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
-
-            Log.log(Log.LOG_INFO, "Creating new project properties"); //$NON-NLS-1$
-
-            fillProjProps();
-
             if (!checkMarkerExist()) {
+                boolean initSuccess = false;
                 try {
-                    getContainer().run(true, true,
-                            new InitProjectFromSource(mainPrefStore, props,
-                                    pageDb.getDumpPath(), pageDb.getDbPass()));
+                    getContainer().run(true, true, new InitProjectFromSource(props, getDbSource()));
+                    initSuccess = true;
                 } catch (InvocationTargetException ex) {
-                    props.deleteFromWorkspace();
                     ExceptionNotifier.notifyDefault(
                             Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
                     return false;
                 } catch (InterruptedException ex) {
                     // cancelled
-                    props.deleteFromWorkspace();
                     return false;
+                } finally {
+                    if (!initSuccess) {
+                        props.deleteFromWorkspace();
+                    }
                 }
             }
 
@@ -164,14 +151,11 @@ implements IExecutableExtension, INewWizard {
             }
 
             IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
-            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(),
-                    workingSets);
+            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
 
-            OpenEditor.openEditor(PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage(),
+            OpenEditor.openEditor(
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
-
-
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
             return false;
@@ -179,29 +163,28 @@ implements IExecutableExtension, INewWizard {
         return true;
     }
 
-    private void fillProjProps() {
-        IEclipsePreferences newPrefs = props.getPrefs();
-        setDbSource(newPrefs);
-        newPrefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
-        newPrefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        newPrefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        newPrefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
-    }
+    private DbSource getDbSource() throws PgCodekeeperUIException {
+        DbSource src;
+        DbInfo dbinfo = pageDb.getDbInfo();
+        File dump;
 
-    private void setDbSource(IEclipsePreferences newPrefs) {
-        DBSources src;
-        if (pageDb.isSourceDb()) {
-            src = DBSources.SOURCE_TYPE_DB;
-        } else if (pageDb.isSourceDump()) {
-            src = DBSources.SOURCE_TYPE_DUMP;
-        } else if (pageDb.isSourceJdbc()) {
-            src = DBSources.SOURCE_TYPE_JDBC;
-        } else {
-            ExceptionNotifier.notifyDefault(
-                    Messages.newProjWizard_no_schema_source_selected, null);
-            return;
+        boolean forceUnixNewlines = props.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+        String charset;
+        try {
+            charset = props.getProjectCharset();
+        } catch (CoreException ex) {
+            throw new PgCodekeeperUIException(ex.getLocalizedMessage(), ex);
         }
-        newPrefs.put(PROJ_PREF.SOURCE, src.toString());
+        if (dbinfo != null) {
+            String tz = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+            src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, tz);
+        } else if ((dump = pageDb.getDumpPath()) != null) {
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset);
+        } else {
+            throw new PgCodekeeperUIException(Messages.initProjectFromSource_init_request_but_no_schema_source);
+        }
+
+        return src;
     }
 
     @Override
@@ -243,46 +226,13 @@ class PageDb extends WizardPage {
 
     private final IPreferenceStore mainPrefs;
 
-    private Composite container;
     private DbStorePicker storePicker;
 
-    public boolean isSourceDb() {
-        return (storePicker.getDbInfo() != null && mainPrefs.getBoolean(PREF.PGDUMP_SWITCH)) ? true : false;
+    public DbInfo getDbInfo() {
+        return storePicker.getDbInfo();
     }
 
-    public boolean isSourceDump() {
-        return (storePicker.getPathOfFile() != null && !storePicker.getPathOfFile().isEmpty()) ? true : false;
-    }
-
-    public boolean isSourceJdbc() {
-        if (storePicker.getDbInfo() != null && !mainPrefs.getBoolean(PREF.PGDUMP_SWITCH)){
-            return true;
-        } else{
-            return false;
-        }
-    }
-
-    public String getDbName() {
-        return storePicker.getDbInfo().getDbName();
-    }
-
-    public String getDbUser() {
-        return storePicker.getDbInfo().getDbUser();
-    }
-
-    public String getDbPass() {
-        return storePicker.getDbInfo().getDbPass();
-    }
-
-    public String getDbHost() {
-        return storePicker.getDbInfo().getDbHost();
-    }
-
-    public int getDbPort() {
-        return storePicker.getDbInfo().getDbPort();
-    }
-
-    public String getDumpPath() {
+    public File getDumpPath() {
         return storePicker.getPathOfFile();
     }
 
@@ -296,10 +246,10 @@ class PageDb extends WizardPage {
 
     @Override
     public void createControl(final Composite parent) {
-        container = new Composite(parent, SWT.NONE);
-        container.setLayout(new FillLayout(SWT.HORIZONTAL));
+        Composite container = new Composite(parent, SWT.NONE);
+        container.setLayout(new FillLayout());
 
-        storePicker = new DbStorePicker(container, SWT.NONE, false, mainPrefs, true);
+        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true);
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
             @Override
@@ -314,12 +264,6 @@ class PageDb extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        if (storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null){
-            setErrorMessage(null);
-            return true;
-        } else {
-            setErrorMessage("Select a db store or dump file!");
-            return false;
-        }
+        return storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null;
     }
 }
