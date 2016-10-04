@@ -72,7 +72,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -574,11 +573,7 @@ class DiffPage extends DiffPresentationPane {
     private void showEditor(Differ differ) throws PartInitException {
         List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj, list);
-        DbInfo dbinfo = storePicker.getDbInfo();
-        if (dbinfo != null) {
-            input.setDbParams(dbinfo.getDbHost(), "" + dbinfo.getDbPort(), //$NON-NLS-1$
-                    dbinfo.getDbName(), dbinfo.getDbUser(), dbinfo.getDbPass());
-        }
+        input.setDbinfo(storePicker.getDbInfo());
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         .openEditor(input, EDITOR.ROLLON);
     }

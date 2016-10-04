@@ -22,12 +22,14 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -102,11 +104,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private Color colorPink;
     private Composite parentComposite;
 
-    private String dbHost;
-    private String dbPort;
-    private String dbName;
-    private String dbUser;
-    private String dbPass;
+    private DbInfo externalDbInfo;
 
     private Text txtCommand;
     private Combo cmbScript;
@@ -235,16 +233,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
         this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         this.scriptFileEncoding = addDepcy.getScriptFileEncoding();
-        setDbParams(addDepcy.dbHost, addDepcy.dbPort, addDepcy.dbName,
-                addDepcy.dbUser, addDepcy.dbPass);
-    }
-    public void setDbParams(String dbHost, String dbPort, String dbName,
-            String dbUser, String dbPass) {
-        this.dbHost = dbHost;
-        this.dbName = dbName;
-        this.dbUser = dbUser;
-        this.dbPass = dbPass;
-        this.dbPort = dbPort;
+        this.externalDbInfo = addDepcy.dbinfo;
     }
 
     protected Control createDialogArea(final Composite parent) {
@@ -266,6 +255,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         storePicker = new DbStorePicker(parent, SWT.NONE, mainPrefs, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        if (externalDbInfo != null) {
+            storePicker.setSelection(new StructuredSelection(externalDbInfo));
+        }
 
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -287,11 +279,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + UIConsts._NL +
-                DB_HOST_PLACEHOLDER + '=' + dbHost + UIConsts._NL +
-                DB_PORT_PLACEHOLDER + '=' + dbPort + UIConsts._NL +
-                DB_USER_PLACEHOLDER + '=' + dbUser + UIConsts._NL +
-                DB_PASS_PLACEHOLDER + '=' + dbPass);
+        cmbScript.setToolTipText(
+                DB_NAME_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
+                DB_HOST_PLACEHOLDER + '=' + getReplacedString(DB_HOST_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
+                DB_PORT_PLACEHOLDER + '=' + getReplacedString(DB_PORT_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
+                DB_USER_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
+                DB_PASS_PLACEHOLDER + '=' + getReplacedString(DB_USER_PLACEHOLDER, externalDbInfo));
 
         List<String> prev = null;
         try {
@@ -378,21 +371,28 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     private String getReplacedString() {
-        String s = cmbScript.getText();
-        if (dbHost != null) {
-            s = s.replace(DB_HOST_PLACEHOLDER, dbHost);
-        }
-        if (dbName != null) {
-            s = s.replace(DB_NAME_PLACEHOLDER, dbName);
-        }
-        if (dbUser != null) {
-            s = s.replace(DB_USER_PLACEHOLDER, dbUser);
-        }
-        if (dbPass != null) {
-            s = s.replace(DB_PASS_PLACEHOLDER, dbPass);
-        }
-        if (dbPort != null) {
-            s = s.replace(DB_PORT_PLACEHOLDER, dbPort);
+        return getReplacedString(cmbScript.getText(), externalDbInfo);
+    }
+
+    private static String getReplacedString(String s, DbInfo externalDbInfo) {
+        if (externalDbInfo != null) {
+            if (externalDbInfo.getDbHost() != null) {
+                s = s.replace(DB_HOST_PLACEHOLDER, externalDbInfo.getDbHost());
+            }
+            if (externalDbInfo.getDbName() != null) {
+                s = s.replace(DB_NAME_PLACEHOLDER, externalDbInfo.getDbName());
+            }
+            if (externalDbInfo.getDbUser() != null) {
+                s = s.replace(DB_USER_PLACEHOLDER, externalDbInfo.getDbUser());
+            }
+            if (externalDbInfo.getDbPass() != null) {
+                s = s.replace(DB_PASS_PLACEHOLDER, externalDbInfo.getDbPass());
+            }
+            int port = externalDbInfo.getDbPort();
+            if (port == 0) {
+                port = JDBC_CONSTS.JDBC_DEFAULT_PORT;
+            }
+            s = s.replace(DB_PORT_PLACEHOLDER, "" + port); //$NON-NLS-1$
         }
         return s;
     }
@@ -674,16 +674,17 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             filed.setBackground(getShell().getDisplay().getSystemColor(
                     SWT.COLOR_LIST_BACKGROUND));
             filed.setFont(JFaceResources.getTextFont());
+            PixelConverter pc = new PixelConverter(filed);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 1024;
+            gd.widthHint = pc.convertWidthInCharsToPixels(80);
+            gd.heightHint = pc.convertHeightInCharsToPixels(30);
             filed.setLayoutData(gd);
             return comp;
         }
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
-                    true);
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
     }
 

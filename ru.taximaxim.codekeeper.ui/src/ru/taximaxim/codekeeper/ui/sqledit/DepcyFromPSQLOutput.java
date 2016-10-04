@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -55,12 +56,12 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
     private String script;
 
-    String dbHost;
-    String dbPort;
-    String dbName;
-    String dbUser;
-    String dbPass;
+    DbInfo dbinfo;
     private String scriptFileEncoding = ApgdiffConsts.UTF_8;
+
+    public void setDbinfo(DbInfo dbinfo) {
+        this.dbinfo = dbinfo;
+    }
 
     public String getScriptFileEncoding() {
         return scriptFileEncoding;
@@ -201,15 +202,6 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             sb.append(UIConsts._NL);
         }
         return sb.toString();
-    }
-
-    public void setDbParams(String dbHost, String dbPort, String dbName,
-            String dbUser, String dbPass) {
-        this.dbHost = dbHost;
-        this.dbName = dbName;
-        this.dbUser = dbUser;
-        this.dbPass = dbPass;
-        this.dbPort = dbPort;
     }
 
     @Override
