@@ -65,7 +65,7 @@ public class DbStorePicker extends Composite {
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText("DB Schema Source:");
+        new Label(this, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -120,7 +120,7 @@ public class DbStorePicker extends Composite {
         List<Object> input = new ArrayList<>(store.size() + files.size() + 2);
         input.addAll(store);
         if (useFileSources) {
-            input.add("");
+            input.add(""); //$NON-NLS-1$
             input.add(LOAD_FILE);
             input.addAll(files);
         }
@@ -241,7 +241,7 @@ public class DbStorePicker extends Composite {
 
         @Override
         public String toString() {
-            return "Загрузить из файла...";
+            return Messages.DbStorePicker_load_from_file;
         }
     }
 }

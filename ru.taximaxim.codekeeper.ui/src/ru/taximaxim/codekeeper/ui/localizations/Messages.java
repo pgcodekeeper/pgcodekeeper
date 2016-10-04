@@ -21,27 +21,19 @@ public final class Messages extends NLS {
     public static String select_none;
     public static String choose_dump_file_with_changes;
     public static String db;
-    public static String db_source;
     public static String dump;
     public static String empty_selection;
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
     public static String jdbc;
-    public static String pg_dump;
-    public static String source;
     public static String please_check_at_least_one_row;
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
-    public static String undefined_source_for_db_changes;
     public static String browse;
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
-    public static String dump_file;
-    public static String unknown_db;
-    public static String unknown_host;
-    public static String connection_details;
     public static String add;
     public static String delete;
     public static String error_creating_dependency_graph;
@@ -82,8 +74,6 @@ public final class Messages extends NLS {
 
     public static String SQLEditorSytaxColoring_underline;
 
-    public static String SqlScriptDialog_jdbc_connection_details;
-    public static String sqlScriptDialog_hide_picker;
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
@@ -122,7 +112,6 @@ public final class Messages extends NLS {
     public static String differ_get_differ;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
-    public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
     public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
@@ -162,11 +151,9 @@ public final class Messages extends NLS {
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
-    public static String commitPartDescr_get_changes_from;
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
-    public static String commitPartDescr_used_connection_template;
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
@@ -175,7 +162,6 @@ public final class Messages extends NLS {
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
-    public static String diffPartDescr_get_changes_for;
     public static String diffPartDescr_get_latest;
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
     public static String diffPresentationPane_getting_changes_for_diff;
@@ -215,12 +201,8 @@ public final class Messages extends NLS {
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
     public static String initProjectFromSource_ioexception_while_creating_project;
-    public static String newProjWizard_db_source_settings;
-    public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_new_pg_db_project;
-    public static String newProjWizard_no_schema_source_selected;
-    public static String newProjWizard_schema_source;
 
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
@@ -238,6 +220,10 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStorePicker_db_schema_source;
+
+    public static String DbStorePicker_load_from_file;
+
     public static String DbStorePrefPage_already_present;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
@@ -247,7 +233,6 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_attention;
 
-    public static String DiffPresentationPane_bad_dump_file;
 
     public static String DiffPresentationPane_cannot_get_changes;
 
@@ -258,12 +243,18 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_project_modified;
 
+    public static String DiffPresentationPane_select_db_source;
+
     public static String DiffPresentationPane_sql_file_filter;
+
+    public static String DiffTableViewer_copy_as_regex;
 
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;
     public static String DiffTableViewer_error_save_checked_set;
     public static String DiffTableViewer_error_setting_input;
+
+    public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
     public static String DiffWizard_bad_target_db;
 
@@ -365,8 +356,6 @@ public final class Messages extends NLS {
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
 
-    public static String PreferenceInitializer_error_saving_prefs;
-
     public static String PrefListEditor_cannot_add;
 
     public static String PrefListEditor_cannot_edit;
@@ -388,6 +377,8 @@ public final class Messages extends NLS {
     public static String ProjectUpdater_error_update;
 
     public static String ProjectUpdater_old_db_null;
+
+    public static String RollOnEditor_jdbc_success;
 
     public static String RollOnEditor_parsing_cancelled;
     public static String SqlScriptDialog_add_it_to_script;
@@ -432,11 +423,6 @@ public final class Messages extends NLS {
     public static String e_mail;
     public static String feedback_message;
     public static String add_log;
-    
-    // Roll on editor
-    public static String Running_DDL_update_using_external_command;
-    
-    public static String Script_execution_interrupted_by_user;
 
     public static String FeedBackDialog_could_not_send;
 

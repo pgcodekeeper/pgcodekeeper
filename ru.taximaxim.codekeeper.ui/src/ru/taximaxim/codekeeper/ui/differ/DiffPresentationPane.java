@@ -185,7 +185,7 @@ public abstract class DiffPresentationPane extends Composite {
         storePicker = new DbStorePicker(containerUpper, SWT.NONE, mainPrefs, true);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
         storePicker.setSelection(new StructuredSelection(
-                DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, ""))));
+                DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")))); //$NON-NLS-1$
 
         Button btnGetChanges = new Button(containerUpper, SWT.PUSH);
         btnGetChanges.setText(Messages.get_changes);
@@ -374,7 +374,7 @@ public abstract class DiffPresentationPane extends Composite {
         } else {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
             mb.setText(Messages.DiffPresentationPane_cannot_get_changes);
-            mb.setMessage("Please, select a database source to get changes from.");
+            mb.setMessage(Messages.DiffPresentationPane_select_db_source);
             mb.open();
             return false;
         }

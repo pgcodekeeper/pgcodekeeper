@@ -281,7 +281,7 @@ public class DiffTableViewer extends Composite {
 
             Button saveCheck2Clipboard = new Button(upperComp, SWT.PUSH);
             saveCheck2Clipboard.setImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-            saveCheck2Clipboard.setToolTipText("Copy Checked Elements as Filter Regex");
+            saveCheck2Clipboard.setToolTipText(Messages.DiffTableViewer_copy_as_regex);
             saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
 
                 @Override
@@ -504,11 +504,11 @@ public class DiffTableViewer extends Composite {
 
         setColumnHeaders();
 
-        columnCheck.getColumn().setToolTipText("Ctrl+click to reset sorting");
-        columnName.getColumn().setToolTipText("Ctrl+click to reset sorting");
-        columnType.getColumn().setToolTipText("Ctrl+click to reset sorting");
-        columnChange.getColumn().setToolTipText("Ctrl+click to reset sorting");
-        columnLocation.getColumn().setToolTipText("Ctrl+click to reset sorting");
+        columnCheck.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnName.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnType.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+        columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
         columnName.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnName.getColumn(), Columns.NAME));

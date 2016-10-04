@@ -483,7 +483,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                                         scriptFileEncoding, connectionTimezone);
                                 output = new JdbcRunner(connector).runScript(textRetrieved);
                                 if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
-                                    output = "The database was successfully updated jdbc means";
+                                    output = Messages.RollOnEditor_jdbc_success;
                                 } else if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                     addDepcy.getDependenciesFromOutput(output);
                                 }

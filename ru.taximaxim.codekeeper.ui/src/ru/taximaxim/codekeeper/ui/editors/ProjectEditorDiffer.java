@@ -576,7 +576,7 @@ class DiffPage extends DiffPresentationPane {
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj, list);
         DbInfo dbinfo = storePicker.getDbInfo();
         if (dbinfo != null) {
-            input.setDbParams(dbinfo.getDbHost(), "" + dbinfo.getDbPort(),
+            input.setDbParams(dbinfo.getDbHost(), "" + dbinfo.getDbPort(), //$NON-NLS-1$
                     dbinfo.getDbName(), dbinfo.getDbUser(), dbinfo.getDbPass());
         }
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
