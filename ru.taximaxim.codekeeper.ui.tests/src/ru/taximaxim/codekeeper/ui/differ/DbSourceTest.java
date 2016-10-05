@@ -27,6 +27,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
+import cz.startnet.utils.pgdiff.loader.JdbcTestUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
@@ -50,7 +51,7 @@ public class DbSourceTest {
 
     @BeforeClass
     public static void initDb() throws IOException, InterruptedException, LicenseException {
-        ApgdiffTestUtils.createDB(dbName);
+        JdbcTestUtils.createDb(dbName);
         ApgdiffTestUtils.fillDB(dbName);
 
         PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
