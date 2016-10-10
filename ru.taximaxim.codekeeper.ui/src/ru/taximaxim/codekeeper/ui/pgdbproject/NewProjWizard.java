@@ -101,8 +101,10 @@ implements IExecutableExtension, INewWizard {
 
     @Override
     public boolean canFinish() {
-        if (getContainer().getCurrentPage() == pageRepo && !checkMarkerExist()) {
-            return false;
+        if (getContainer().getCurrentPage() == pageRepo) {
+            if (checkMarkerExist()) {
+                return true;
+            }
         }
         return super.canFinish();
     }
