@@ -111,7 +111,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
-                        DbSource.fromProject(proj), pageDiff.getTargetDbSource(proj));
+                        DbSource.fromProject(proj), pageDiff.getTargetDbSource(proj), false);
 
                 try {
                     getContainer().run(true, true, treediffer);

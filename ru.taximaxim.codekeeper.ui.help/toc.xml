@@ -22,6 +22,10 @@
       </topic>
       <topic href="html/tasks/feedback.html" label="Обратная связь">
       </topic>
+      <topic href="html/tasks/sorting.html" label="Сортировка списка изменений">
+      </topic>
+      <topic href="html/tasks/select_source_db.html" label="Выбор источника базы данных">
+      </topic>
    </topic>
    <topic href="html/preferences/licensing.html" label="Лицензирование">
    </topic>

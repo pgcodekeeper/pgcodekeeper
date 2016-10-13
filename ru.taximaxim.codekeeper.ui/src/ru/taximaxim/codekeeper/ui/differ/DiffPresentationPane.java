@@ -1,23 +1,10 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -40,31 +27,24 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -76,6 +56,7 @@ public abstract class DiffPresentationPane extends Composite {
     private final Composite containerUpper;
     private final Composite contNotifications;
     private final Button btnDismissRefresh;
+    private final Button btnGetChanges;
     protected final DiffTableViewer diffTable;
     private final DiffPaneViewer diffPane;
     protected DbStorePicker storePicker;
@@ -88,30 +69,6 @@ public abstract class DiffPresentationPane extends Composite {
     protected final PgDbProject proj;
 
     protected final LocalResourceManager lrm;
-
-    private void setDbSource(DbSource dbSource) {
-        this.dbSource = dbSource;
-        setDiffPaneDb(isProjSrc, dbSource);
-    }
-
-    private void setDbTarget(DbSource dbTarget) {
-        this.dbTarget = dbTarget;
-        setDiffPaneDb(!isProjSrc, dbTarget);
-    }
-
-    private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
-        if (diffPane != null) {
-            if (isDbSrc) {
-                diffPane.setDbSource(db);
-            } else {
-                diffPane.setDbTarget(db);
-            }
-        }
-    }
-
-    public DiffTableViewer getDiffTable() {
-        return diffTable;
-    }
 
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
@@ -184,53 +141,12 @@ public abstract class DiffPresentationPane extends Composite {
         // upper right part
         storePicker = new DbStorePicker(containerUpper, SWT.NONE, mainPrefs, true);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
-        storePicker.setSelection(new StructuredSelection(
-                DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")))); //$NON-NLS-1$
+        storePicker.setSelection(new StructuredSelection(DbInfo.preferenceToStore(
+                proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")))); //$NON-NLS-1$
 
-        Button btnGetChanges = new Button(containerUpper, SWT.PUSH);
+        btnGetChanges = new Button(containerUpper, SWT.PUSH);
         btnGetChanges.setText(Messages.get_changes);
         btnGetChanges.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-        btnGetChanges.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    IRunnableWithProgress runRefresh = new IRunnableWithProgress() {
-
-                        @Override
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                        InterruptedException {
-                            try {
-                                proj.getProject().refreshLocal(IResource.DEPTH_INFINITE,
-                                        SubMonitor.convert(monitor));
-                                monitor.done();
-                            } catch (CoreException ex) {
-                                throw new InvocationTargetException(ex, ex.getLocalizedMessage());
-                            }
-                        }
-                    };
-                    try {
-                        new ProgressMonitorDialog(getShell()).run(true, true, runRefresh);
-                    } catch (InterruptedException ex) {
-                        // cancelled
-                        return;
-                    }
-
-                    if (fillDbSources(proj)) {
-                        showNotificationArea(false);
-                        reset();
-                        loadChanges();
-                        saveDBPrefs(proj.getPrefs());
-                    }
-                } catch (PgCodekeeperUIException | CoreException | InvocationTargetException e1) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.DiffPresentationPane_error_loading_changes, e1);
-                } catch (BackingStoreException e1) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.DiffPresentationPane_cannotSaveDbPropToProjProps, e1);
-                }
-            }
-        });
         // end upper container
 
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
@@ -264,6 +180,14 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource: dbTarget,
                 isProjSrc ? dbTarget : dbSource, !isProjSrc);
+    }
+
+    public DbStorePicker getDbStorePicker(){
+        return storePicker;
+    }
+
+    public Button getButton(){
+        return btnGetChanges;
     }
 
     public void setTitleColor(RGB color){
@@ -347,88 +271,6 @@ public abstract class DiffPresentationPane extends Composite {
         }
     }
 
-    private void saveDBPrefs(IEclipsePreferences projProps) throws BackingStoreException {
-        DbInfo storeDB = storePicker.getDbInfo();
-        if (storeDB != null) {
-            projProps.put(PROJ_PREF.LAST_DB_STORE, storeDB.toString());
-            projProps.flush();
-        }
-    }
-
-    private boolean fillDbSources(PgDbProject proj) throws PgCodekeeperUIException, CoreException {
-        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
-            return false;
-        }
-
-        IEclipsePreferences projProps = proj.getPrefs();
-        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-        DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(proj);
-        DbInfo storeDB = storePicker.getDbInfo();
-        File dumpfile;
-        if (storeDB != null) {
-            dbsRemote = DbSource.fromDbInfo(storeDB, mainPrefs, forceUnixNewlines,
-                    proj.getProjectCharset(), projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-        } else if ((dumpfile = storePicker.getPathOfFile()) != null) {
-            dbsRemote = DbSource.fromFile(forceUnixNewlines, dumpfile, proj.getProjectCharset());
-        } else {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.DiffPresentationPane_cannot_get_changes);
-            mb.setMessage(Messages.DiffPresentationPane_select_db_source);
-            mb.open();
-            return false;
-        }
-
-        setDbSource(isProjSrc ? dbsProj : dbsRemote);
-        setDbTarget(isProjSrc ? dbsRemote : dbsProj);
-
-        return true;
-    }
-
-    private void loadChanges() {
-        Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
-
-        Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    newDiffer.run(monitor);
-                } catch (InvocationTargetException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
-                            Messages.error_in_differ_thread, e);
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.addJobChangeListener(new JobChangeAdapter() {
-
-            @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
-                    UiSync.exec(DiffPresentationPane.this, new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (DiffPresentationPane.this.isDisposed()) {
-                                return;
-                            }
-                            treeDiffer = newDiffer;
-                            diffTable.setInput(newDiffer, !isProjSrc);
-                            diffPane.setInput(null);
-                            diffLoaded();
-                        }
-                    });
-                }
-            }
-        });
-        job.setUser(true);
-        job.schedule();
-    }
-
     /**
      * @param container
      *            has {@link GridLayout} with 0 margins set by default
@@ -437,10 +279,37 @@ public abstract class DiffPresentationPane extends Composite {
      */
     protected abstract void createUpperContainer(Composite container, GridLayout gl);
 
+    public void setDbSource(DbSource dbSource) {
+        this.dbSource = dbSource;
+        setDiffPaneDb(isProjSrc, dbSource);
+    }
+
+    public void setDbTarget(DbSource dbTarget) {
+        this.dbTarget = dbTarget;
+        setDiffPaneDb(!isProjSrc, dbTarget);
+    }
+
+    public void setTreeDiffer(TreeDiffer treeDiffer){
+        this.treeDiffer = treeDiffer;
+    }
+
+    private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
+        if (diffPane != null) {
+            if (isDbSrc) {
+                diffPane.setDbSource(db);
+            } else {
+                diffPane.setDbTarget(db);
+            }
+        }
+    }
+
+    public DiffTableViewer getDiffTable() {
+        return diffTable;
+    }
     /**
      * Allows clients to make actions after a diff has been loaded.
      */
-    protected void diffLoaded() {
+    public void diffLoaded() {
     }
 
     public void reset() {
