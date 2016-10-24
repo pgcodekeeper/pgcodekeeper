@@ -40,6 +40,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
 
@@ -53,9 +54,9 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private ISelection lastSelection;
 
     public DepcyGraphView() {
-        projectAction = new ProjectAction("Project", ImageDescriptor.createFromURL(
+        projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONBALLBLUE)));
-        remoteAction = new ToggleAction("Remote", ImageDescriptor.createFromURL(
+        remoteAction = new ToggleAction(Messages.DepcyGraphView_remote, ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONBALLGREEN)));
     }
 

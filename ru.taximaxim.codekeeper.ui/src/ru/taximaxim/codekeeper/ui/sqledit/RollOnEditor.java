@@ -369,7 +369,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         runScriptBtn = new Button(comp, SWT.PUSH);
         runScriptBtn.setText(RUN_SCRIPT_LABEL);
-        runScriptBtn.setToolTipText("Run selected code (Ctrl-F5)");
+        runScriptBtn.setToolTipText(Messages.RollOnEditor_tooltip_run_selected);
         runScriptBtn.addSelectionListener(new RunButtonHandler());
 
         saveAsBtn = new Button(comp, SWT.PUSH);
@@ -424,7 +424,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         }
                         showAddDepcyDialog();
                     }
-                    runScriptBtn.setText(RUN_SCRIPT_LABEL);
+                    setRunButtonText(RUN_SCRIPT_LABEL);
                 }
                 isRunning = false;
             }
@@ -478,7 +478,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     textRetrieved = document.get(point.x, point.y);
                 } catch (BadLocationException ble){
                     Log.log(Log.LOG_WARNING, ble.getMessage());
-                    ExceptionNotifier.notifyDefault("Error getting text selection!", ble);
+                    ExceptionNotifier.notifyDefault(Messages.RollOnEditor_selected_text_error, ble);
                     return;
                 }
             }
@@ -539,16 +539,21 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             scriptThread.start();
 
             isRunning = true;
-            runScriptBtn.setText(STOP_SCRIPT_LABEL);
+            setRunButtonText(STOP_SCRIPT_LABEL);
             // case Stop script
         } else {
             ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
             Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
 
             scriptThread.interrupt();
-            runScriptBtn.setText(RUN_SCRIPT_LABEL);
+            setRunButtonText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
+    }
+
+    private void setRunButtonText(String text) {
+        runScriptBtn.setText(text);
+        runScriptBtn.getParent().layout();
     }
 
     private class RunButtonHandler extends SelectionAdapter {

@@ -455,7 +455,7 @@ class CommitPage extends DiffPresentationPane {
             projEditor.getSite().getService(IHandlerService.class).executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
             Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e); //$NON-NLS-1$
-            ExceptionNotifier.notifyDefault("Could not execute EGit commit for applied changes", e);
+            ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_failed_egit_commit, e);
         }
     }
 

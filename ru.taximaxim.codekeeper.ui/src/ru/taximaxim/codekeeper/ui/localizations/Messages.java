@@ -228,6 +228,10 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
+    public static String DepcyGraphView_project;
+
+    public static String DepcyGraphView_remote;
+
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_any_file_filter;
 
@@ -366,6 +370,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_opening_script_editor;
 
     public static String ProjectEditorDiffer_error_refreshing_project;
+
+    public static String ProjectEditorDiffer_failed_egit_commit;
     public static String ProjectEditorDiffer_page_text_commit;
     public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
@@ -381,6 +387,10 @@ public final class Messages extends NLS {
     public static String RollOnEditor_jdbc_success;
 
     public static String RollOnEditor_parsing_cancelled;
+
+    public static String RollOnEditor_selected_text_error;
+
+    public static String RollOnEditor_tooltip_run_selected;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
@@ -407,6 +417,8 @@ public final class Messages extends NLS {
     public static String TreeDiffer_loading_schema;
 
     public static String TreeDiffer_loading_schema_from;
+
+    public static String TreeDiffer_reverting_tree;
 
     public static String TreeDiffer_schema_load_error;
     public static String XmlHistory_read_error;

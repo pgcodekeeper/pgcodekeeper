@@ -104,8 +104,8 @@ public class ManualDepciesGroup extends Group{
             public void widgetSelected(SelectionEvent e) {
                 depcies.add(getSelectionDepcy());
                 listDepcies.refresh();
-                txtDependents.setText("");
-                txtDependencies.setText("");
+                txtDependents.setText(""); //$NON-NLS-1$
+                txtDependencies.setText(""); //$NON-NLS-1$
             }
         });
 

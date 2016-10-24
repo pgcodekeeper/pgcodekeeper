@@ -98,7 +98,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbTarget.getOrigin() //$NON-NLS-1$
             + " tgt: " + dbSource.getOrigin()); //$NON-NLS-1$
 
-            pm.newChild(3).subTask("Reverting diff tree..."); // 98
+            pm.newChild(3).subTask(Messages.TreeDiffer_reverting_tree); // 98
             diffTreeRevert = diffTree.getRevertedCopy();
         }
 

@@ -40,7 +40,7 @@ class PgStatementAutoCompleteField {
 
 class PgStatementProposalProvider implements IContentProposalProvider {
 
-    private static final Pattern PATTERN_QUOTE = Pattern.compile("\"", Pattern.LITERAL);
+    private static final Pattern PATTERN_QUOTE = Pattern.compile("\"", Pattern.LITERAL); //$NON-NLS-1$
 
     private final List<IContentProposal> proposals;
 
