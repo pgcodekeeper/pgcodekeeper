@@ -77,10 +77,10 @@ import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
@@ -113,7 +113,7 @@ public class DiffTableViewer extends Composite {
     private final Image iSideRight;
 
     private final boolean viewOnly;
-    private boolean reverseDiffSide;
+    private final DiffSide projSide;
 
     private TreeElement treeRoot;
     private final PgDbProject proj;
@@ -136,8 +136,8 @@ public class DiffTableViewer extends Composite {
     private final TableViewerFilter viewerFilter = new TableViewerFilter();
     private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
 
-    private DbSource dbSource;
-    private DbSource dbTarget;
+    private DbSource dbProject;
+    private DbSource dbRemote;
 
     private Map<String, List<String>> prevChecked;
     private XmlHistory prevCheckedHistory;
@@ -151,15 +151,16 @@ public class DiffTableViewer extends Composite {
         LOCATION
     }
 
-    public CheckboxTableViewer getViewer() {
+    CheckboxTableViewer getViewer() {
         return viewer;
     }
 
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs,
-            PgDbProject proj, boolean viewOnly) {
+            PgDbProject proj, boolean viewOnly, DiffSide projSide) {
         super(parent, style);
         this.viewOnly = viewOnly;
         this.proj = proj;
+        this.projSide = projSide;
 
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -334,7 +335,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public ISelection getSelection() {
-                return new DepcyStructuredSelection(dbSource, dbTarget,
+                return new DepcyStructuredSelection(dbProject, dbRemote, DiffTableViewer.this.projSide,
                         (IStructuredSelection) super.getSelection());
             }
         };
@@ -447,10 +448,7 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                DiffPaneDialog dpd = new DiffPaneDialog(
-                        DiffTableViewer.this.getShell(), dbSource, dbTarget, reverseDiffSide);
-                dpd.setInput(el);
-                dpd.open();
+                new DiffPaneDialog(getShell(), el, dbProject, dbRemote, projSide).open();
             }
         });
 
@@ -753,8 +751,10 @@ public class DiffTableViewer extends Composite {
      * @param treediffer содержит дерево + базы
      * @param reverseSide содержит сторону
      */
-    public void setInput(TreeDiffer treediffer, boolean reverseSide) {
-        setDiffer(treediffer, reverseSide);
+    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
+        this.treeRoot = diffTree;
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
 
         elements = new HashSet<>();
         if (treeRoot != null) {
@@ -770,30 +770,15 @@ public class DiffTableViewer extends Composite {
      * @param reverseDiffSide сторона
      */
     public void setInputCollection(Collection<TreeElement> showOnlyElements,
-            TreeDiffer rootDiffer, boolean reverseDiffSide) {
-        setDiffer(rootDiffer, reverseDiffSide);
+            DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
+        this.treeRoot = diffTree;
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
 
         elements = new HashSet<>();
         elements.addAll(showOnlyElements);
 
         initializeViewer();
-    }
-
-    private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
-        this.reverseDiffSide = reverseDiffSide;
-        try {
-            this.treeRoot = (differ == null) ? null : 
-                reverseDiffSide ? differ.getDiffTree() : differ.getDiffTreeRevert();
-            this.dbSource = (differ == null) ? null :
-                reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-                this.dbTarget = (differ == null) ? null :
-                    reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
-        } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_setting_input, e);
-            this.treeRoot = null;
-            this.dbSource = null;
-            this.dbTarget = null;
-        }
     }
 
     private void initializeViewer() {
@@ -853,7 +838,7 @@ public class DiffTableViewer extends Composite {
         };
 
         // заполняем сет элементов
-        tree.flattenAlteredElements(elements, dbSource.getDbObject(), dbTarget.getDbObject(), false, predicate);
+        tree.flattenAlteredElements(elements, dbProject.getDbObject(), dbRemote.getDbObject(), false, predicate);
     }
 
     private void viewerRefresh() {

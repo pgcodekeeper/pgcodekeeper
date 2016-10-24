@@ -23,10 +23,6 @@ public interface UIConsts {
     }
 
     interface COMMAND {
-        String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
-        String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
-        String DEPCY_TGT = PLUGIN_ID.THIS + ".toggleDepcyTgt"; //$NON-NLS-1$
-        String DEPCY_TGT_STATE = DEPCY_TGT + "state"; //$NON-NLS-1$
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
@@ -142,6 +138,7 @@ public interface UIConsts {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
+        String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons

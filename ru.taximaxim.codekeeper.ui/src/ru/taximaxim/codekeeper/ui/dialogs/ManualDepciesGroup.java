@@ -1,20 +1,22 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jface.fieldassist.ContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -34,13 +36,12 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class ManualDepciesGroup extends Group{
 
     private final List<Entry<PgStatement, PgStatement>> depcies;
-
-    //private final ComboViewer cmbDependants, cmbDependencies;
-    private final Text txtDependents, txtDependencies;
-    private final Button btnAdd;
-    private final ListViewer listDepcies;
-    private final Button btnRemove;
     private final Map<String, PgStatement> objects;
+
+    private final Text txtDependents, txtDependencies;
+    private final ListViewer listDepcies;
+    private final Button btnAdd;
+    private final Button btnRemove;
 
     public List<Entry<PgStatement, PgStatement>> getDepciesList() {
         return depcies;
@@ -53,6 +54,14 @@ public class ManualDepciesGroup extends Group{
 
         this.depcies = new LinkedList<>(dependencies);
         this.objects = objects;
+
+        int i = 0;
+        IContentProposal[] prop = new IContentProposal[objects.size()];
+        for (String name : objects.keySet()) {
+            prop[i++] = new ContentProposal(name);
+        }
+        Arrays.sort(prop, PgStatementProposalComparator.INSTANCE);
+        List<IContentProposal> proposals = Arrays.asList(prop);
 
         setLayout(new GridLayout(2, true));
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -75,7 +84,7 @@ public class ManualDepciesGroup extends Group{
         txtDependents = new Text(grpSelectors, SWT.BORDER);
         txtDependents.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDependents.addModifyListener(new TextModifyListener());
-        new PgStatementAutoCompleteField(txtDependents, new TextContentAdapter(), new LinkedList<>(objects.values()));
+        new PgStatementAutoCompleteField(txtDependents, new TextContentAdapter(), proposals);
 
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
 
@@ -83,7 +92,7 @@ public class ManualDepciesGroup extends Group{
         txtDependencies.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDependencies.addModifyListener(new TextModifyListener());
 
-        new PgStatementAutoCompleteField(txtDependencies, new TextContentAdapter(), new LinkedList<>(objects.values()));
+        new PgStatementAutoCompleteField(txtDependencies, new TextContentAdapter(), proposals);
 
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -94,8 +103,9 @@ public class ManualDepciesGroup extends Group{
             @Override
             public void widgetSelected(SelectionEvent e) {
                 depcies.add(getSelectionDepcy());
-                setInput();
-                btnAdd.setEnabled(false);
+                listDepcies.refresh();
+                txtDependents.setText("");
+                txtDependencies.setText("");
             }
         });
 
@@ -112,21 +122,7 @@ public class ManualDepciesGroup extends Group{
         gd.heightHint = 100;
         listDepcies.getList().setLayoutData(gd);
 
-        listDepcies.setContentProvider(new IStructuredContentProvider() {
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-
-            @Override
-            public void dispose() {
-            }
-
-            @Override
-            public Object[] getElements(Object input) {
-                return depcies.toArray();
-            }
-        });
+        listDepcies.setContentProvider(ArrayContentProvider.getInstance());
         listDepcies.setLabelProvider(new LabelProvider() {
 
             @Override
@@ -162,19 +158,15 @@ public class ManualDepciesGroup extends Group{
                     removedStuff |= removeDepcy(toRemove, depcies.iterator());
                 }
                 if (removedStuff) {
-                    setInput();
+                    listDepcies.refresh();
                 }
             }
         });
-        setInput();
-    }
-
-    private void setInput() {
         listDepcies.setInput(depcies);
     }
 
     private Entry<PgStatement, PgStatement> getSelectionDepcy() {
-        return new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
+        return new AbstractMap.SimpleEntry<>(
                 objects.get(txtDependents.getText()),
                 objects.get(txtDependencies.getText()));
     }
@@ -202,8 +194,7 @@ public class ManualDepciesGroup extends Group{
 
         @Override
         public void modifyText(ModifyEvent e) {
-            Entry<PgStatement, PgStatement> selection =
-                    ManualDepciesGroup.this.getSelectionDepcy();
+            Entry<PgStatement, PgStatement> selection = getSelectionDepcy();
             btnAdd.setEnabled(
                     selection.getKey() != null
                     && selection.getValue() != null

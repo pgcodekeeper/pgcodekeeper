@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.commands.IStateListener;
-import org.eclipse.core.commands.State;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -14,8 +16,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
 import org.eclipse.zest.core.viewers.GraphViewer;
@@ -34,18 +37,41 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
-public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
+public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
+
+    private final Action projectAction, remoteAction;
+    private GraphViewer gv;
+    private DepcyGraphLabelProvider labelProvider;
 
     private PgDatabase currentDb;
-    private GraphViewer gv;
-    private boolean isSource = true;
     private DepcyResolver depRes;
-    private boolean isDBSource;
+    private IWorkbenchPart lastSelectionPart;
+    private ISelection lastSelection;
+
+    public DepcyGraphView() {
+        projectAction = new ProjectAction("Project", ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONBALLBLUE)));
+        remoteAction = new ToggleAction("Remote", ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONBALLGREEN)));
+    }
+
+    @Override
+    public void init(IViewSite site) throws PartInitException {
+        super.init(site);
+
+        IToolBarManager toolman = site.getActionBars().getToolBarManager();
+        ActionContributionItem ac = new ActionContributionItem(projectAction);
+        ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        toolman.add(ac);
+
+        ac = new ActionContributionItem(remoteAction);
+        ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        toolman.add(ac);
+    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -53,7 +79,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         gv.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
         gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING), true);
 
-        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource, gv.getControl()));
+        labelProvider = new DepcyGraphLabelProvider(gv.getControl());
+        gv.setLabelProvider(labelProvider);
         gv.setContentProvider(new DepcyGraphViewContentProvider());
 
         // listen to node/connection selection events
@@ -62,23 +89,17 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         // register listener to pages post selection
         getSite().getPage().addPostSelectionListener(this);
-
-        // register this as listener to command state
-        ICommandService service = getSite().getService(ICommandService.class);
-        service.getCommand(COMMAND.DEPCY_SRC).getState(COMMAND.DEPCY_SRC_STATE).addListener(this);
     }
 
     @Override
     public void setFocus() {
+        gv.getControl().setFocus();
     }
 
     @Override
     public void dispose() {
-        super.dispose();
-        if (gv != null){
-            gv.getControl().dispose();
-        }
         getSite().getPage().removePostSelectionListener(this);
+        super.dispose();
     }
 
     @Override
@@ -87,9 +108,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     }
 
     @Override
-    public void selectionChanged(final IWorkbenchPart part, final ISelection selection) {
-        if (!(part instanceof ProjectEditorDiffer)
-                || !(selection instanceof IStructuredSelection)) {
+    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+        if (!(selection instanceof IStructuredSelection)) {
             return;
         }
 
@@ -100,24 +120,24 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             for (Object selected : ((IStructuredSelection) selection).toList()) {
                 if (selected instanceof DepcyStructuredSelection) {
                     dss = (DepcyStructuredSelection) selected;
+                    break;
                 }
             }
         }
         if (dss == null) {
             return;
         }
+        lastSelectionPart = part;
+        lastSelection = selection;
 
-        boolean isCommit = ((ProjectEditorDiffer) part).getActivePage() == 0;
-        isDBSource = isSource == isCommit;
-        DbSource newDbSource = isDBSource ? dss.getSource() : dss.getTarget();
-        DbSource newDbTarget = isDBSource ? dss.getTarget() : dss.getSource();
-        PgDatabase newDb = newDbSource.getDbObject();
-
+        boolean showProject = projectAction.isChecked();
+        PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
+            depRes = null;
             try {
-                depRes = new DepcyResolver(newDbSource.getDbObject(),
-                        newDbTarget.getDbObject());
+                depRes = new DepcyResolver(currentDb,
+                        showProject ? dss.dbRemote.getDbObject() : dss.dbProject.getDbObject());
             } catch (PgCodekeeperException e) {
                 Log.log(Log.LOG_WARNING, "Error creating dependency graph", e); //$NON-NLS-1$
             }
@@ -129,34 +149,31 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         Set<PgStatement> newInput = new HashSet<>();
-        for (Object selected : dss.toArray()) {
+        for (Object selected : dss.toList()) {
             if (!(selected instanceof TreeElement)) {
                 continue;
             }
-            TreeElement el = (TreeElement) selected;
-            if (el.getSide() == DiffSide.RIGHT && isSource
-                    || el.getSide() == DiffSide.LEFT && !isSource) {
-                continue;
-            }
 
-            for (PgStatement dependant : depRes
-                    .getDropDepcies(el.getPgStatement(currentDb))) {
-                if (!(dependant instanceof PgColumn)) {
-                    newInput.add(dependant);
+            TreeElement el = (TreeElement) selected;
+            // does el exist in the chosen graph (or DB)
+            boolean elIsProject = el.getSide() == dss.projSide;
+            if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
+                for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
+                    if (!(dependant instanceof PgColumn)) {
+                        newInput.add(dependant);
+                    }
                 }
             }
         }
         gv.setInput(newInput);
     }
 
-    @Override
-    public void handleStateChange(State state, Object oldValue) {
-        this.isSource = (boolean) state.getValue();
-        ((DepcyGraphLabelProvider) gv.getLabelProvider()).setIsSource(isSource);
-    }
+    private class DepcyGraphViewContentProvider implements IGraphEntityContentProvider {
 
-    private class DepcyGraphViewContentProvider extends ArrayContentProvider
-    implements IGraphEntityContentProvider {
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return ArrayContentProvider.getInstance().getElements(inputElement);
+        }
 
         @Override
         public Object[] getConnectedTo(Object entity) {
@@ -174,6 +191,28 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 }
             }
             return null;
+        }
+    }
+
+    private static class ToggleAction extends Action {
+
+        public ToggleAction(String text, ImageDescriptor imgDesc) {
+            super(text, AS_RADIO_BUTTON);
+            setImageDescriptor(imgDesc);
+        }
+    }
+
+    private class ProjectAction extends ToggleAction {
+
+        public ProjectAction(String text, ImageDescriptor imgDesc) {
+            super(text, imgDesc);
+            setChecked(true);
+        }
+
+        @Override
+        public void run() {
+            labelProvider.setIsSource(isChecked());
+            selectionChanged(lastSelectionPart, lastSelection);
         }
     }
 }

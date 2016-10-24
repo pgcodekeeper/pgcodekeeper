@@ -21,24 +21,18 @@ import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 public class DiffPaneViewer extends Composite {
 
     private final TextMergeViewer diffPane;
-    private DbSource dbSource;
-    private DbSource dbTarget;
-    private final boolean reverseSide;
+    private DbSource dbProject;
+    private DbSource dbRemote;
+    private final DiffSide projSide;
 
-    public void setDbSource(DbSource dbSource) {
-        this.dbSource = dbSource;
+    public void setDbSources(DbSource dbProject, DbSource dbRemote) {
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
     }
 
-    public void setDbTarget(DbSource dbTarget) {
-        this.dbTarget = dbTarget;
-    }
-
-    public DiffPaneViewer(Composite parent, int style, DbSource dbSource,
-            DbSource dbTarget, boolean reverseSide) {
+    public DiffPaneViewer(Composite parent, int style, DiffSide projSide) {
         super(parent, style);
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
-        this.reverseSide = reverseSide;
+        this.projSide = projSide;
 
         CompareConfiguration conf = new CompareConfiguration();
         conf.setLeftEditable(false);
@@ -66,12 +60,12 @@ public class DiffPaneViewer extends Composite {
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    public void setInput(Object value) {
+    public void setInput(TreeElement value) {
         diffPane.setInput(value);
     }
-    
+
     private class DiffPaneContentProvider implements IMergeViewerContentProvider {
-        
+
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
@@ -105,7 +99,7 @@ public class DiffPaneViewer extends Composite {
 
         @Override
         public String getRightLabel(Object input) {
-            return (reverseSide ? Messages.diffPartDescr_from : Messages.to)
+            return (projSide == DiffSide.LEFT ? Messages.to : Messages.diffPartDescr_from)
                     + Messages.DiffPaneViewer_project;
         }
 
@@ -117,10 +111,8 @@ public class DiffPaneViewer extends Composite {
         @Override
         public Object getRightContent(Object input) {
             TreeElement el = (TreeElement) input;
-            if (el != null
-                    && (el.getSide() == (reverseSide ? DiffSide.RIGHT : DiffSide.LEFT)
-                    || el.getSide() == DiffSide.BOTH)) {
-                return new Document(el.getPgStatement(dbSource.getDbObject()).getFullSQL());
+            if (el != null && (el.getSide() == projSide || el.getSide() == DiffSide.BOTH)) {
+                return new Document(el.getPgStatement(dbProject.getDbObject()).getFullSQL());
             } else {
                 return new Document();
             }
@@ -128,7 +120,7 @@ public class DiffPaneViewer extends Composite {
 
         @Override
         public String getLeftLabel(Object input) {
-            return (reverseSide ? Messages.to : Messages.diffPartDescr_from)
+            return (projSide == DiffSide.LEFT ? Messages.diffPartDescr_from : Messages.to)
                     + Messages.database;
         }
 
@@ -140,10 +132,8 @@ public class DiffPaneViewer extends Composite {
         @Override
         public Object getLeftContent(Object input) {
             TreeElement el = (TreeElement) input;
-            if (el != null
-                    && (el.getSide() == (reverseSide ? DiffSide.LEFT: DiffSide.RIGHT)
-                    || el.getSide() == DiffSide.BOTH)) {
-                return new Document(el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
+            if (el != null && (el.getSide() != projSide || el.getSide() == DiffSide.BOTH)) {
+                return new Document(el.getPgStatement(dbRemote.getDbObject()).getFullSQL());
             } else {
                 return new Document();
             }

@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -47,6 +49,10 @@ public class DbStorePicker extends Composite {
 
     private final static LoadFileElement LOAD_FILE = new LoadFileElement();
     private final static int MAX_FILES_HISTORY = 3;
+
+    private static boolean inSync;
+    private final Set<DbStorePicker> syncedPickers = Collections.newSetFromMap(
+            new WeakHashMap<DbStorePicker, Boolean>());
 
     private final boolean useFileSources;
     private final IPreferenceStore prefStore;
@@ -150,6 +156,33 @@ public class DbStorePicker extends Composite {
         cmbDbNames.addSelectionChangedListener(listener);
     }
 
+    public void addSyncedPicker(DbStorePicker picker) {
+        syncedPickers.add(picker);
+    }
+
+    private void syncPickers(IStructuredSelection newSelection) {
+        if (inSync) {
+            return;
+        }
+        try {
+            inSync = true;
+            boolean isFile = newSelection.getFirstElement() instanceof File;
+            for (DbStorePicker picker : syncedPickers) {
+                if (!picker.cmbDbNames.getControl().isDisposed()) {
+                    if (isFile) {
+                        // updates to the file list do not auto propagate
+                        // force a reload
+                        picker.loadStore(newSelection);
+                    } else {
+                        picker.setSelection(newSelection);
+                    }
+                }
+            }
+        } finally {
+            inSync = false;
+        }
+    }
+
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;
@@ -166,6 +199,7 @@ public class DbStorePicker extends Composite {
             if (selected instanceof DbInfo || selected instanceof File) {
                 previous = sel;
                 revertSelection = false;
+                syncPickers(sel);
             } else if (selected == LOAD_FILE) {
                 FileDialog dialog = new FileDialog(getShell());
                 dialog.setText(Messages.choose_dump_file_with_changes);

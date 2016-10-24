@@ -334,6 +334,8 @@ create_type_statement
                 | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name))*
             RIGHT_PAREN)
     | LEFT_PAREN
+            // pg_dump prints internallength first
+            (INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE) COMMA)?
             INPUT EQUAL input_function=schema_qualified_name COMMA
             OUTPUT EQUAL output_function=schema_qualified_name
             (COMMA (RECEIVE EQUAL receive_function=schema_qualified_name

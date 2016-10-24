@@ -171,6 +171,11 @@ public class PgFunction extends PgStatementWithSearchPath {
         return getSignature();
     }
 
+    @Override
+    public String getQualifiedName() {
+        return getParent().getQualifiedName() + '.' + getName();
+    }
+
     /**
      * Getter for {@link #arguments}. List cannot be modified.
      *

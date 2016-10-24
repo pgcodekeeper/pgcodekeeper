@@ -140,16 +140,16 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         createDialogArea(parent);
 
         SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
+        sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         sw.appendVerifyKeyListener(new VerifyKeyListener() {
 
             @Override
             public void verifyKey(VerifyEvent event) {
-                if (((event.stateMask & SWT.CTRL) != 0) && (event.keyCode == 114)){
+                if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == SWT.F5) {
                     runButtonMethod();
                 }
             }
         });
-        sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
         return sw;
     }
@@ -364,14 +364,15 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     protected void createButtonsForButtonBar(Composite parent) {
-        Composite comp = new Composite(parent, SWT.None);
+        Composite comp = new Composite(parent, SWT.NONE);
         comp.setLayout(new GridLayout(3, true));
 
-        runScriptBtn = new Button(comp, SWT.NONE);
+        runScriptBtn = new Button(comp, SWT.PUSH);
         runScriptBtn.setText(RUN_SCRIPT_LABEL);
+        runScriptBtn.setToolTipText("Run selected code (Ctrl-F5)");
         runScriptBtn.addSelectionListener(new RunButtonHandler());
 
-        saveAsBtn = new Button(comp, SWT.NONE);
+        saveAsBtn = new Button(comp, SWT.PUSH);
         saveAsBtn.setText(Messages.sqlScriptDialog_save_as);
         saveAsBtn.addSelectionListener(new SaveButtonHandler());
     }
@@ -465,11 +466,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT));
     }
 
-    private void runButtonMethod(){
+    private void runButtonMethod() {
         if (!isRunning) {
             final String textRetrieved;
-            Point point = RollOnEditor.this.getSourceViewer().getSelectedRange();
-            IDocument document = RollOnEditor.this.getSourceViewer().getDocument();
+            Point point = getSourceViewer().getSelectedRange();
+            IDocument document = getSourceViewer().getDocument();
             if (point.y == 0){
                 textRetrieved = document.get();
             } else {
@@ -477,9 +478,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     textRetrieved = document.get(point.x, point.y);
                 } catch (BadLocationException ble){
                     Log.log(Log.LOG_WARNING, ble.getMessage());
-                    new ScriptRunResultDialog(RollOnEditor.this
-                            .getEditorSite().getShell(), ble.getMessage())
-                    .open();
+                    ExceptionNotifier.notifyDefault("Error getting text selection!", ble);
                     return;
                 }
             }

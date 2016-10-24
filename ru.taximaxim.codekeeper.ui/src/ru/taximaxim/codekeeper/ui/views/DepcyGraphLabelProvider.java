@@ -27,18 +27,15 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
     private final Color colorLGreen;
     private final Color colorDBlue;
 
-    private boolean isSource;
+    private boolean isSource = true;
 
-
-    public DepcyGraphLabelProvider(boolean isSource, Control owner) {
+    public DepcyGraphLabelProvider(Control owner) {
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), owner);
 
         colorHighlight = owner.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
         colorLBlue = lrm.createColor(RGB_LBLUE);
         colorLGreen = lrm.createColor(RGB_LGREEN);
         colorDBlue = lrm.createColor(RGB_DBLUE);
-
-        this.isSource  = isSource;
     }
 
     public void setIsSource(boolean isSource) {

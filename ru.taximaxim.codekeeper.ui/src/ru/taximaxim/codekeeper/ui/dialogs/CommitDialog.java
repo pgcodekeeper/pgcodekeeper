@@ -22,12 +22,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
-import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class CommitDialog extends TrayDialog {
@@ -35,22 +34,25 @@ public class CommitDialog extends TrayDialog {
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
 
-    private final TreeDiffer treeDiffer;
+    private final DbSource dbProject, dbRemote;
+    private final TreeElement diffTree;
     private final Set<TreeElement> depcyElementsSet;
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
     private Label warningLbl;
 
-    public CommitDialog(Shell parentShell,
-            Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
-            TreeDiffer treeDiffer, boolean egitCommitAvailable) {
+    public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
+            DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
+            IPreferenceStore mainPrefs, boolean egitCommitAvailable) {
         super(parentShell);
 
+        this.depcyElementsSet = depcyElementsSet;
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
+        this.diffTree = diffTree;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
-        this.treeDiffer = treeDiffer;
-        this.depcyElementsSet = depcyElementsSet;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -80,18 +82,15 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, null, true);
+        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, null, true, DiffSide.LEFT);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
+
         List<TreeElement> result = new ArrayList<>();
-        try {
-            TreeElement.getSelected(treeDiffer.getDiffTree(), result);
-        } catch (PgCodekeeperUIException e1) {
-            Log.log(Log.LOG_ERROR, "Error while trying to get DiffTree", e1); //$NON-NLS-1$
-        }
-        dtvTop.setInputCollection(result, treeDiffer, false);
+        TreeElement.getSelected(diffTree, result);
+        dtvTop.setInputCollection(result, dbProject, dbRemote, diffTree);
 
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -101,7 +100,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, null, false);
+            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, null, false, DiffSide.LEFT);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
@@ -110,7 +109,7 @@ public class CommitDialog extends TrayDialog {
             for (TreeElement el : depcyElementsSet) {
                 el.setSelected(true);
             }
-            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
+            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote, diffTree);
             dtvBottom.redraw();
 
             dtvBottom.addCheckStateListener(new ValidationCheckStateListener());

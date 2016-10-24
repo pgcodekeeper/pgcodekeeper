@@ -46,7 +46,6 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.Diff { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>

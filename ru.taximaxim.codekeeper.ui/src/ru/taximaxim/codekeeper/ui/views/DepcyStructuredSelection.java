@@ -3,26 +3,21 @@ package ru.taximaxim.codekeeper.ui.views;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 
 public class DepcyStructuredSelection extends StructuredSelection {
-    
-    private final DbSource dbSource;
-    private final DbSource dbTarget;
-    
-    public DepcyStructuredSelection(DbSource dbSource, DbSource dbTarget,
+
+    final DbSource dbProject;
+    final DbSource dbRemote;
+    final DiffSide projSide;
+
+    public DepcyStructuredSelection(DbSource dbProject, DbSource dbRemote, DiffSide projSide,
             IStructuredSelection sel) {
         super(sel.toList());
-        
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
-    }
-    
-    public DbSource getSource(){
-        return dbSource;
-    }
-    
-    public DbSource getTarget(){
-        return dbTarget;
+
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
+        this.projSide = projSide;
     }
 }

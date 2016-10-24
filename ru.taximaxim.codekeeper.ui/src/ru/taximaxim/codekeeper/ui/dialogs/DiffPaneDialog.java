@@ -9,27 +9,30 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffPaneDialog extends Dialog {
 
-    private final DbSource dbSource;
-    private final DbSource dbTarget;
-    private DiffPaneViewer diffPane;
-    private Object input;
-    private final boolean reverseSide;
+    private final TreeElement input;
+    private final DbSource dbProject;
+    private final DbSource dbRemote;
+    private final DiffSide projSide;
 
-    public DiffPaneDialog(Shell parentShell, DbSource dbSource,
-            DbSource dbTarget, boolean reverseSide) {
+    private DiffPaneViewer diffPane;
+
+    public DiffPaneDialog(Shell parentShell, TreeElement el, DbSource dbProject,
+            DbSource dbRemote, DiffSide projSide) {
         super(parentShell);
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
-        this.reverseSide = reverseSide;
-        
-        setShellStyle(SWT.RESIZE | SWT.CLOSE | SWT.MODELESS
-                | SWT.BORDER | SWT.TITLE);
+        this.input = el;
+        this.dbProject = dbProject;
+        this.dbRemote = dbRemote;
+        this.projSide = projSide;
+
+        setShellStyle(SWT.RESIZE | SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE);
         setBlockOnOpen(false);
     }
 
@@ -52,24 +55,20 @@ public class DiffPaneDialog extends Dialog {
         gd.minimumWidth = 1024;
         container.setLayoutData(gd);
 
-        diffPane = new DiffPaneViewer(container, SWT.NONE, dbSource, dbTarget, reverseSide);
+        diffPane = new DiffPaneViewer(container, SWT.NONE, projSide);
+        diffPane.setDbSources(dbProject, dbRemote);
         diffPane.setInput(input);
 
         return area;
     }
-    
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
-                true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
-    
+
     @Override
     protected boolean isResizable() {
         return true;
-    }
-
-    public void setInput(Object input) {
-        this.input = input;
     }
 }

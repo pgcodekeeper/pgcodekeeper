@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -331,46 +330,57 @@ public class PgDatabase extends PgStatement {
     }
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
-        Map<String, PgStatement> statements = new LinkedHashMap<String, PgStatement>();
-        
-        for (PgSchema schema : db.getSchemas()){
-            for (PgTable table : schema.getTables()){
-                statements.put(table.getQualifiedName().toLowerCase(), table);
-                for (PgRule rule : table.getRules()){
-                    statements.put(rule.getQualifiedName(), rule);
+        Map<String, PgStatement> statements = new HashMap<>();
+
+        for (PgSchema schema : db.getSchemas()) {
+            mapQname(statements, schema);
+            for (PgType ty : schema.getTypes()) {
+                mapQname(statements, ty);
+            }
+            for (PgDomain domain : schema.getDomains()) {
+                mapQname(statements, domain);
+            }
+            for (PgSequence sequence : schema.getSequences()) {
+                mapQname(statements, sequence);
+            }
+            for (PgFunction function : schema.getFunctions()) {
+                mapQname(statements, function);
+            }
+            for (PgTable table : schema.getTables()) {
+                mapQname(statements, table);
+                for (PgColumn column : table.getColumns()) {
+                    mapQname(statements, column);
                 }
-                for (PgTrigger trigger : table.getTriggers()){
-                    statements.put(trigger.getQualifiedName(), trigger);
+                for (PgConstraint constraint : table.getConstraints()) {
+                    mapQname(statements, constraint);
                 }
-                for (PgIndex index : table.getIndexes()){
-                    statements.put(index.getQualifiedName(), index);
+                for (PgIndex index : table.getIndexes() ){
+                    mapQname(statements, index);
                 }
-                for (PgColumn column : table.getColumns()){
-                    statements.put(column.getQualifiedName(), column);
+                for (PgTrigger trigger : table.getTriggers()) {
+                    mapQname(statements, trigger);
                 }
-                for (PgConstraint constraint : table.getConstraints()){
-                    statements.put(constraint.getQualifiedName(), constraint);
+                for (PgRule rule : table.getRules()) {
+                    mapQname(statements, rule);
                 }
             }
-            for (PgView view : schema.getViews()){
-                statements.put(view.getQualifiedName().toLowerCase(), view);
-                for (PgRule rule : view.getRules()){
-                    statements.put(rule.getQualifiedName(), rule);
+            for (PgView view : schema.getViews()) {
+                mapQname(statements, view);
+                for (PgTrigger trigger : view.getTriggers()) {
+                    mapQname(statements, trigger);
                 }
-                for (PgTrigger trigger : view.getTriggers()){
-                    statements.put(trigger.getQualifiedName(), trigger);
+                for (PgRule rule : view.getRules()) {
+                    mapQname(statements, rule);
                 }
-            }
-            for (PgFunction function : schema.getFunctions()){
-                statements.put(function.getQualifiedName().toLowerCase(), function);
-            }
-            for (PgDomain domain :schema.getDomains()){
-                statements.put(domain.getQualifiedName().toLowerCase(), domain);
-            }
-            for (PgSequence sequence :schema.getSequences()){
-                statements.put(sequence.getQualifiedName().toLowerCase(), sequence);
             }
         }
+        for (PgExtension ext : db.getExtensions()) {
+            mapQname(statements, ext);
+        }
         return statements;
+    }
+
+    private static void mapQname(Map<String, PgStatement> map, PgStatement st) {
+        map.put(st.getQualifiedName(), st);
     }
 }

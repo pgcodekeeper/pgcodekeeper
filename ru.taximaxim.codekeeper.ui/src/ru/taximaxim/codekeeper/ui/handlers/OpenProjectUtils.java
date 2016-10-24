@@ -47,9 +47,9 @@ public final class OpenProjectUtils {
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
             boolean warnNonBlockers) {
         StringBuilder err = new StringBuilder();
-        boolean canContinue = checkVersion(proj, err);
-        boolean isError = !canContinue;
-        if (err.length() != 0 && isError | warnNonBlockers) {
+        final boolean canContinue = checkVersion(proj, err);
+        final boolean isError = !canContinue;
+        if (err.length() != 0 && (isError || warnNonBlockers)) {
             warnVersion(parent, err.toString(), isError);
         }
         return canContinue;

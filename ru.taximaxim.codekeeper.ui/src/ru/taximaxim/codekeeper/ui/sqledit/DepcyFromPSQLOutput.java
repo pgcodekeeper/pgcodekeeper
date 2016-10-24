@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$",  //$NON-NLS-1$
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-    private final List<PgStatement> objList;
+    private final Map<String, PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private final Differ differ;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
@@ -67,7 +68,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return scriptFileEncoding;
     }
 
-    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, List<PgStatement> list) {
+    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list) {
         this.differ = differ;
         this.proj = proj2.getProject();
         this.objList = list;
@@ -103,23 +104,14 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames() {
         List<Entry<PgStatement, PgStatement>> result = new ArrayList<>();
         for (Entry<String, String> entry : addDepcy) {
-            PgStatement depcy1 = getPgObjByName(entry.getKey());
-            PgStatement depcy2 = getPgObjByName(entry.getValue());
+            PgStatement depcy1 = objList.get(entry.getKey());
+            PgStatement depcy2 = objList.get(entry.getValue());
             if (depcy1 != null && depcy2 != null) {
                 result.add(new AbstractMap.SimpleEntry<>(
                         depcy1, depcy2));
             }
         }
         return result;
-    }
-
-    public PgStatement getPgObjByName(String objName) {
-        for (PgStatement obj : objList) {
-            if (obj.getName().equals(objName)) {
-                return obj;
-            }
-        }
-        return null;
     }
 
     public boolean isAddDepcyEmpty() {
