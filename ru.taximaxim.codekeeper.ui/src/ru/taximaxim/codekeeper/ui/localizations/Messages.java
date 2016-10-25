@@ -220,6 +220,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStorePicker_db_connection;
+
     public static String DbStorePicker_db_schema_source;
 
     public static String DbStorePicker_load_from_file;

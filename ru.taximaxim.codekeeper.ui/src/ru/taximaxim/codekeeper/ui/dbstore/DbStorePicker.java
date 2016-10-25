@@ -71,7 +71,8 @@ public class DbStorePicker extends Composite {
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText(Messages.DbStorePicker_db_schema_source);
+        new Label(this, SWT.NONE).setText(useFileSources ?
+                Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
