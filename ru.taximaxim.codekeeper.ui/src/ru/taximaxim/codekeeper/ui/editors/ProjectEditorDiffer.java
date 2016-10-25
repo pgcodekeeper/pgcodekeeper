@@ -214,7 +214,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         }
     }
 
-    // FIXME deletions and additions are ignored!
     private void handleChangeProject(IResourceChangeEvent event) {
         IResourceDelta rootDelta = event.getDelta();
 
@@ -233,8 +232,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                     if (schemaChanged[0]) {
                         return false;
                     }
-                    int flags = delta.getFlags();
-                    if (flags != 0 && flags != IResourceDelta.MARKERS) {
+                    if (delta.getFlags() != IResourceDelta.MARKERS &&
+                            delta.getResource().getType() == IResource.FILE) {
                         // something other than just markers has changed
                         for (IPath dir : projDirs) {
                             // check that it's our resource
