@@ -10,24 +10,30 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectEditorInputFactory implements IElementFactory {
-    
+
     private static final String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
-    private static final String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
-    
+    private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
+    private static final String TAG_EDITOR_TAB = "editorTabDiff";
+
     @Override
     public IAdaptable createElement(IMemento memento) {
-        String projName = memento.getString(PROJECT_EDITOR_FACTORY_TAG_PROJECT);
+        String projName = memento.getString(TAG_PROJECT);
         ProjectEditorInput input = new ProjectEditorInput(projName);
-        
-        IProject project = 
+
+        IProject project =
                 (projName == null) ? null : ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
         if (project == null || !project.exists() || !project.isOpen()) {
             input.setError(new PgCodekeeperUIException(Messages.project_either_closed_or_deleted + projName));
         }
-        
+
+        Boolean switchToDiffTab = memento.getBoolean(TAG_EDITOR_TAB);
+        if (switchToDiffTab != null) {
+            input.setSwitchToDiffTab(switchToDiffTab);
+        }
+
         return input;
     }
-    
+
     /**
      * Returns the element factory id for this class.
      */
@@ -36,7 +42,7 @@ public class ProjectEditorInputFactory implements IElementFactory {
     }
 
     static void saveState(IMemento memento, ProjectEditorInput input) {
-        String projName = input.getName();
-        memento.putString(PROJECT_EDITOR_FACTORY_TAG_PROJECT, projName);
+        memento.putString(TAG_PROJECT, input.getName());
+        memento.putBoolean(TAG_EDITOR_TAB, input.getSwitchToDiffTab());
     }
 }

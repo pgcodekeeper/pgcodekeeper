@@ -30,6 +30,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -91,6 +93,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
+    private ProjectEditorInput input;
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private DiffPresentationPane commit, diff;
@@ -105,15 +108,24 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         if (!(input instanceof ProjectEditorInput)) {
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
-        ProjectEditorInput in = (ProjectEditorInput) input;
-        Exception ex = in.getError();
+        this.input = (ProjectEditorInput) input;
+        Exception ex = this.input.getError();
         if (ex != null) {
-            throw new PartInitException(in.getError().getLocalizedMessage(), ex);
+            throw new PartInitException(this.input.getError().getLocalizedMessage(), ex);
         }
 
-        proj = new PgDbProject(in.getProject());
+        proj = new PgDbProject(this.input.getProject());
         sp = new ProjectEditorSelectionProvider(proj.getProject());
-        setPartName(in.getName());
+        setPartName(this.input.getName());
+
+        addPageChangedListener(new IPageChangedListener() {
+
+            @Override
+            public void pageChanged(PageChangedEvent event) {
+                ProjectEditorDiffer.this.input.setSwitchToDiffTab(event.getSelectedPage() == diff);
+            }
+        });
+
         super.init(site, input);
     }
 
@@ -134,6 +146,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         i = addPage(diff);
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
         setPageImage(i, iDiff);
+
+        if (input.getSwitchToDiffTab()) {
+            setActivePage(1);
+        }
 
         commit.addSyncedPane(diff);
         diff.addSyncedPane(commit);
