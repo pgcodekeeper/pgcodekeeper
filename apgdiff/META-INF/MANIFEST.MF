@@ -21,13 +21,13 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.codekeeper.apgdiff.model.graph
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Bundle-ClassPath: lib/postgresql-9.4.1208.jar,
- lib/jgrapht-core-0.9.0.jar,
+Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  .,
  lib/antlr-4.5-complete.jar,
  lib/license3j/bcpg-jdk15on-1.52.jar,
  lib/license3j/bcprov-jdk15on-1.52.jar,
- lib/license3j/license3j-1.0.7.jar
+ lib/license3j/license3j-1.0.7.jar,
+ lib/postgresql-9.4.1211.jre7.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.equinox.log;version="[1.0.0,2.0.0)",
