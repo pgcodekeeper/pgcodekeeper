@@ -100,6 +100,8 @@ public class JdbcLoader implements PgCatalogStrings {
     private GenericColumn currentObject;
     private String currentOperation;
 
+    private final Map<Long, String> schemaIds = new HashMap<>();
+
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
@@ -123,7 +125,8 @@ public class JdbcLoader implements PgCatalogStrings {
             connection.setReadOnly(true);
             setTimeZone(connector.getTimezone());
 
-            prepareStatements();
+            int TOTAL_MASK = checkExistingPerformanceFunctions(connection);
+            prepareStatements(TOTAL_MASK);
             prepareData();
 
             // query total objects count
@@ -154,6 +157,16 @@ public class JdbcLoader implements PgCatalogStrings {
                     }
                 }
             }
+
+            //TODO
+            addAllTables(isPerformance(DbObjType.TABLE, TOTAL_MASK), d);
+            addAllViews(isPerformance(DbObjType.VIEW, TOTAL_MASK), d);
+            addAllTriggers(isPerformance(DbObjType.TRIGGER, TOTAL_MASK), d);
+            addAllRules(isPerformance(DbObjType.RULE, TOTAL_MASK), d);
+            addAllFunctions(isPerformance(DbObjType.FUNCTION, TOTAL_MASK), d);
+            addAllIndeces(isPerformance(DbObjType.INDEX, TOTAL_MASK), d);
+            addAllSequences(isPerformance(DbObjType.SEQUENCE, TOTAL_MASK), d);
+            addAllConstraints(isPerformance(DbObjType.CONSTRAINT, TOTAL_MASK), d);
 
             Log.log(Log.LOG_INFO, "Querying extensions");
             setCurrentOperation("extensions query");
@@ -227,18 +240,26 @@ public class JdbcLoader implements PgCatalogStrings {
         }
     }
 
-    private void prepareStatements() throws SQLException {
+    private void prepareStatements(int TOTAL_MASK) throws SQLException {
         setCurrentOperation("prepared statements");
-        prepStatTables = connection.prepareStatement(JdbcQueries.QUERY_TABLES_PER_SCHEMA);
-        prepStatViews = connection.prepareStatement(JdbcQueries.QUERY_VIEWS_PER_SCHEMA);
-        prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA);
-        prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
-        prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
-        prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA);
-        prepStatIndices = connection.prepareStatement(JdbcQueries.QUERY_INDICES_PER_SCHEMA);
+        prepStatTables = connection.prepareStatement(!isPerformance(DbObjType.TABLE, TOTAL_MASK)
+                ? JdbcQueries.QUERY_TABLES_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_TABLE);
+        prepStatViews = connection.prepareStatement(!isPerformance(DbObjType.VIEW, TOTAL_MASK)
+                ? JdbcQueries.QUERY_VIEWS_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_VIEW);
+        prepStatTriggers = connection.prepareStatement(!isPerformance(DbObjType.TRIGGER, TOTAL_MASK)
+                ? JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_TRIGGER);
+        prepStatFunctions = connection.prepareStatement(!isPerformance(DbObjType.FUNCTION, TOTAL_MASK)
+                ? JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_FUNCTION);
+        prepStatSequences = connection.prepareStatement(!isPerformance(DbObjType.SEQUENCE, TOTAL_MASK)
+                ? JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_SEQUENCE);
+        prepStatConstraints = connection.prepareStatement(!isPerformance(DbObjType.CONSTRAINT, TOTAL_MASK)
+                ? JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_CONSTRAINT);
+        prepStatIndices = connection.prepareStatement(!isPerformance(DbObjType.INDEX, TOTAL_MASK)
+                ? JdbcQueries.QUERY_INDICES_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_INDEX);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
         prepStatTypes = connection.prepareStatement(JdbcQueries.QUERY_TYPES_PER_SCHEMA);
-        prepStatRules = connection.prepareStatement(JdbcQueries.QUERY_RULES_PER_SCHEMA);
+        prepStatRules = connection.prepareStatement(!isPerformance(DbObjType.VIEW, TOTAL_MASK)
+                ? JdbcQueries.QUERY_RULES_PER_SCHEMA : JdbcQueries.QUERY_GET_ALL_RULE);
     }
 
     private void closeResources(AutoCloseable... resources) {
@@ -258,6 +279,7 @@ public class JdbcLoader implements PgCatalogStrings {
         String schemaName = res.getString(NAMESPACE_NSPNAME);
         currentObject = new GenericColumn(schemaName, DbObjType.SCHEMA);
         long schemaOid = res.getLong(OID);
+        schemaIds.put(schemaOid, schemaName);
         PgSchema s = new PgSchema(schemaName, "");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)) {
@@ -294,127 +316,6 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
         }
-
-        // TABLES
-        setCurrentOperation("tables query");
-        prepStatTables.setLong(1, schemaOid);
-        try (ResultSet resTables = prepStatTables.executeQuery()) {
-            while (resTables.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgTable table = getTable(resTables, schemaName);
-                monitor.worked(1);
-                if (table != null) {
-                    s.addTable(table);
-                }
-            }
-        }
-
-        // CONSTRAINTS
-        setCurrentOperation("constraints query");
-        prepStatConstraints.setLong(1, schemaOid);
-        try (ResultSet resConstraints = prepStatConstraints.executeQuery()) {
-            while (resConstraints.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgTable table = s.getTable(resConstraints.getString(CLASS_RELNAME));
-                if (table != null) {
-                    PgConstraint constraint = getConstraint(resConstraints, schemaName, table.getName());
-                    if (constraint != null) {
-                        table.addConstraint(constraint);
-                    }
-                }
-            }
-        }
-
-        // VIEWS
-        setCurrentOperation("views query");
-        prepStatViews.setLong(1, schemaOid);
-        try (ResultSet resViews = prepStatViews.executeQuery()) {
-            while (resViews.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgView view = getView(resViews, schemaName);
-                monitor.worked(1);
-                if (view != null) {
-                    s.addView(view);
-                }
-            }
-        }
-
-        // INDECIES
-        prepStatIndices.setLong(1, schemaOid);
-        try (ResultSet resIndecies = prepStatIndices.executeQuery()) {
-            while (resIndecies.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgTable table = s.getTable(resIndecies.getString("table_name"));
-                if (table != null) {
-                    PgIndex index = getIndex(resIndecies, schemaName, table.getName());
-                    monitor.worked(1);
-                    if (index != null) {
-                        table.addIndex(index);
-                    }
-                }
-            }
-        }
-
-        // TRIGGERS
-        setCurrentOperation("triggers query");
-        prepStatTriggers.setLong(1, schemaOid);
-        try (ResultSet resTriggers = prepStatTriggers.executeQuery()) {
-            while (resTriggers.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgTriggerContainer c = s.getTriggerContainer(resTriggers.getString(CLASS_RELNAME));
-                if (c != null) {
-                    PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                    if (trigger != null) {
-                        c.addTrigger(trigger);
-                    }
-                }
-            }
-        }
-
-        // FUNCTIONS
-        setCurrentOperation("functions query");
-        prepStatFunctions.setLong(1, schemaOid);
-        try (ResultSet resFuncs = prepStatFunctions.executeQuery()) {
-            while (resFuncs.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgFunction function = getFunction(resFuncs, schemaName);
-                if (function != null) {
-                    s.addFunction(function);
-                }
-            }
-        }
-
-        // SEQUENCES
-        setCurrentOperation("sequences query");
-        prepStatSequences.setLong(1, schemaOid);
-        try (ResultSet resSeq = prepStatSequences.executeQuery()) {
-            while (resSeq.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgSequence sequence = getSequence(resSeq, schemaName);
-                monitor.worked(1);
-                if (sequence != null) {
-                    s.addSequence(sequence);
-                }
-            }
-        }
-
-        // RULES
-        setCurrentOperation("rules query");
-        prepStatRules.setLong(1, schemaOid);
-        try (ResultSet resRule = prepStatRules.executeQuery()) {
-            while (resRule.next()) {
-                PgDumpLoader.checkCancelled(monitor);
-                PgRuleContainer c = s.getRuleContainer(resRule.getString(CLASS_RELNAME));
-                if (c != null) {
-                    PgRule rule = getRule(resRule, schemaName);
-                    if (rule != null) {
-                        c.addRule(rule);
-                    }
-                }
-            }
-        }
-
-        setSequencesCacheValue(s);
         return s;
     }
 
@@ -678,7 +579,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
         for (int i = 0; i < seqs.size(); i++) {
             PgSequence seq = seqs.get(i);
-            unionSeqCache.append(prefix).append(PgDiffUtils.getQuotedName(seq.getName())).append(postfix);
+            unionSeqCache.append(prefix).append(PgDiffUtils.getQuotedName(s.getName())).append('.').append(PgDiffUtils.getQuotedName(seq.getName())).append(postfix);
             if (i < (seqs.size() - 1)) {
                 unionSeqCache.append(union);
             }
@@ -1026,7 +927,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgTrigger getTrigger(ResultSet res, String schemaName)
             throws SQLException, UnsupportedEncodingException {
         String triggerName = res.getString("tgname");
-        String tableName = res.getString("tgrelid");
+        String tableName = res.getString(CLASS_RELNAME);
         currentObject = new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER);
         PgTrigger t = new PgTrigger(triggerName, "");
 
@@ -1368,7 +1269,7 @@ public class JdbcLoader implements PgCatalogStrings {
         return quote.concat("$");
     }
 
-    private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
+    private PgSequence getSequence(ResultSet res, String schemaName, boolean isPerformance) throws SQLException {
         String sequenceName = res.getString(CLASS_RELNAME);
         currentObject = new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE);
         PgSequence s = new PgSequence(sequenceName, "");
@@ -1379,7 +1280,7 @@ public class JdbcLoader implements PgCatalogStrings {
         s.setMaxValue(ParserAbstract.getMaxValue(increment, res.getString("maximum_value")));
         s.setMinValue(ParserAbstract.getMinValue(increment, res.getString("minimum_value")));
         s.setStartWith(res.getString("start_value"));
-        s.setCache(String.valueOf(1));
+        s.setCache(isPerformance ? res.getString("cache_value") : "1");
 
         int referencedColumn = res.getInt("referenced_column");
         if (referencedColumn != 0) {
@@ -1510,7 +1411,7 @@ public class JdbcLoader implements PgCatalogStrings {
         setCurrentOperation("schema columns cache query");
         prepStatColumnsOfSchema.setLong(1, schemaOid);
         try (ResultSet res = prepStatColumnsOfSchema.executeQuery();) {
-            cachedColumnNamesByTableOid.clear();
+            //cachedColumnNamesByTableOid.clear();
             long previousTableOid = 0L;
             Map<Integer, String> previousMap = null;
             while (res.next()) {
@@ -1589,6 +1490,317 @@ public class JdbcLoader implements PgCatalogStrings {
     private void setCurrentOperation(String operation) {
         currentObject = null;
         currentOperation = operation;
+    }
+
+    private int checkExistingPerformanceFunctions(Connection conn) throws SQLException {
+        int TOTAL_MASK = 0;
+        ResultSet rs = conn.createStatement().executeQuery(
+                "SELECT oid FROM pg_namespace WHERE nspname = 'pgcodekeeperhelper'");
+        if (!rs.next()) {
+            return 0;
+        }
+        Long schemaOid = rs.getLong("oid");
+        if (schemaOid == 0) {
+            return 0;
+        }
+        try (ResultSet resFuncs = conn.createStatement().executeQuery("SELECT proname FROM pg_proc WHERE pronamespace="
+                + schemaOid)) {
+            while (resFuncs.next()) {
+                String funcName = resFuncs.getString("proname");
+                try {
+                    TOTAL_MASK |= DbObjType.valueOf(funcName.substring(funcName.lastIndexOf('_') + 1).toUpperCase())
+                            .getMask();
+                } catch (NullPointerException | IllegalArgumentException ex) {
+                    continue;
+                }
+            }
+        }
+        return TOTAL_MASK;
+    }
+
+    private boolean isPerformance(DbObjType objType, int totalMask) {
+        return (totalMask & objType.getMask()) == objType.getMask() ? true : false;
+    }
+
+    private void addAllTables(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("tables query");
+        if (isPerformance) {
+            try (ResultSet tables = prepStatTables.executeQuery()) {
+                while (tables.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(tables.getString(NAMESPACE_NSPNAME));
+                    PgTable table = getTable(tables, schema.getName());
+                    if (table != null) {
+                        schema.addTable(table);
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatTables.setLong(1, oid);
+                try (ResultSet resTables = prepStatTables.executeQuery()) {
+                    while (resTables.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgTable table = getTable(resTables, schemaIds.get(oid));
+                        monitor.worked(1);
+                        if (table != null) {
+                            db.getSchema(schemaIds.get(oid)).addTable(table);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllViews(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("views query");
+        if (isPerformance) {
+            try (ResultSet views = prepStatViews.executeQuery()) {
+                while (views.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(views.getString(NAMESPACE_NSPNAME));
+                    PgView view = getView(views, schema.getName());
+                    if (view != null) {
+                        schema.addView(view);
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                //                prepStatViews.setString(1, schemaIds.get(oid));
+                connection.setSchema(schemaIds.get(oid));
+                prepStatViews.setLong(1, oid);
+                try (ResultSet resViews = prepStatViews.executeQuery()) {
+                    while (resViews.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgView view = getView(resViews, schemaIds.get(oid));
+                        monitor.worked(1);
+                        if (view != null) {
+                            db.getSchema(schemaIds.get(oid)).addView(view);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllFunctions(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("finctions query");
+        if (isPerformance) {
+            try (ResultSet functions = prepStatFunctions.executeQuery()) {
+                while (functions.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(functions.getString(NAMESPACE_NSPNAME));
+                    PgFunction function = getFunction(functions, schema.getName());
+                    if (function != null) {
+                        schema.addFunction(function);
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatFunctions.setLong(1, oid);
+                try (ResultSet resFunctions = prepStatFunctions.executeQuery()) {
+                    while (resFunctions.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgFunction function = getFunction(resFunctions, schemaIds.get(oid));
+                        monitor.worked(1);
+                        if (function != null) {
+                            db.getSchema(schemaIds.get(oid)).addFunction(function);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllIndeces(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("indexes query");
+        if (isPerformance) {
+            try (ResultSet indices = prepStatIndices.executeQuery()) {
+                while (indices.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(indices.getString(NAMESPACE_NSPNAME));
+                    PgTable table = schema.getTable(indices.getString("table_name"));
+                    PgIndex index = getIndex(indices, schema.getName(), table.getName());
+                    if (index != null) {
+                        table.addIndex(index);
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatIndices.setLong(1, oid);
+                try (ResultSet indices = prepStatIndices.executeQuery()) {
+                    while (indices.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgSchema schema = db.getSchema(schemaIds.get(oid));
+                        PgTable table = schema.getTable(indices.getString("table_name"));
+                        if (table != null) {
+                            PgIndex index = getIndex(indices, schema.getName(), table.getName());
+                            monitor.worked(1);
+                            if (index != null) {
+                                table.addIndex(index);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllConstraints(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("constraints query");
+        if (isPerformance) {
+            try (ResultSet constraints = prepStatConstraints.executeQuery()) {
+                while (constraints.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(constraints.getString(NAMESPACE_NSPNAME));
+                    PgTable table = schema.getTable(constraints.getString(CLASS_RELNAME));
+                    if (table != null) {
+                        PgConstraint constraint = getConstraint(constraints, schema.getName(), table.getName());
+                        if (constraint != null) {
+                            table.addConstraint(constraint);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatConstraints.setLong(1, oid);
+                try (ResultSet constraints = prepStatConstraints.executeQuery()) {
+                    while (constraints.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgSchema schema = db.getSchema(schemaIds.get(oid));
+                        PgTable table = schema.getTable(constraints.getString(CLASS_RELNAME));
+                        if (table != null) {
+                            PgConstraint constraint = getConstraint(constraints, schema.getName(), table.getName());
+                            monitor.worked(1);
+                            if (constraint != null) {
+                                table.addConstraint(constraint);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllSequences(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException {
+        setCurrentOperation("sequences query");
+        if (isPerformance) {
+            try (ResultSet sequences = prepStatSequences.executeQuery()) {
+                while (sequences.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(sequences.getString(NAMESPACE_NSPNAME));
+                    PgSequence sequence = getSequence(sequences, schema.getName(), isPerformance);
+                    if (sequence != null) {
+                        schema.addSequence(sequence);
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                PgSchema schema = db.getSchema(schemaIds.get(oid));
+                connection.setSchema(schemaIds.get(oid));
+                prepStatSequences.setLong(1, oid);
+                try (ResultSet sequences = prepStatSequences.executeQuery()) {
+                    while (sequences.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        if (schema != null) {
+                            PgSequence sequence = getSequence(sequences, schema.getName(), isPerformance);
+                            monitor.worked(1);
+                            if (sequence != null) {
+                                schema.addSequence(sequence);
+                            }
+                        }
+                    }
+                }
+                setSequencesCacheValue(schema);
+            }
+        }
+    }
+
+    private void addAllTriggers(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException,
+    UnsupportedEncodingException {
+        setCurrentOperation("triggers query");
+        PgTable table;
+        PgView view;
+        if (isPerformance) {
+            try (ResultSet triggers = prepStatTriggers.executeQuery()) {
+                while (triggers.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(triggers.getString(NAMESPACE_NSPNAME_TV));
+                    PgTriggerContainer c = schema.getTriggerContainer(triggers.getString(CLASS_RELNAME));
+                    if (c != null) {
+                        PgTrigger trigger = getTrigger(triggers, schema.getName());
+                        if (trigger != null){
+                            c.addTrigger(trigger);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatTriggers.setLong(1, oid);
+                PgSchema schema = db.getSchema(schemaIds.get(oid));
+                try (ResultSet triggers = prepStatTriggers.executeQuery()) {
+                    while (triggers.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgTriggerContainer c = schema.getTriggerContainer(triggers.getString(CLASS_RELNAME));
+                        if (c != null) {
+                            PgTrigger trigger = getTrigger(triggers, schema.getName());
+                            if (trigger != null){
+                                c.addTrigger(trigger);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addAllRules(boolean isPerformance, PgDatabase db) throws SQLException, InterruptedException,
+    UnsupportedEncodingException {
+        setCurrentOperation("rules query");
+        if (isPerformance) {
+            try (ResultSet triggers = prepStatRules.executeQuery()) {
+                while (triggers.next()) {
+                    PgDumpLoader.checkCancelled(monitor);
+                    PgSchema schema = db.getSchema(triggers.getString(NAMESPACE_NSPNAME));
+                    PgRuleContainer c = schema.getRuleContainer(triggers.getString(CLASS_RELNAME));
+                    if (c != null) {
+                        PgRule rule = getRule(triggers, schema.getName());
+                        if (rule != null) {
+                            c.addRule(rule);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (Long oid : schemaIds.keySet()) {
+                connection.setSchema(schemaIds.get(oid));
+                prepStatRules.setLong(1, oid);
+                PgSchema schema = db.getSchema(schemaIds.get(oid));
+                try (ResultSet triggers = prepStatRules.executeQuery()) {
+                    while (triggers.next()) {
+                        PgDumpLoader.checkCancelled(monitor);
+                        PgRuleContainer c = schema.getRuleContainer(triggers.getString(CLASS_RELNAME));
+                        if (c != null) {
+                            PgRule rule = getRule(triggers, schema.getName());
+                            if (rule != null) {
+                                c.addRule(rule);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

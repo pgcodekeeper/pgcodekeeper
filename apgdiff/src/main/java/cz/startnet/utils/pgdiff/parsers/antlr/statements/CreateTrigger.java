@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
     private final Create_trigger_statementContext ctx;
+
     public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -42,7 +43,7 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setForEachRow(false);
         }
         trigger.setOnDelete(ctx.delete_true != null);
-        trigger.setOnInsert(ctx.insert_true!= null);
+        trigger.setOnInsert(ctx.insert_true != null);
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
         trigger.setFunction(getFullCtxText(ctx.func_name));
@@ -52,7 +53,7 @@ public class CreateTrigger extends ParserAbstract {
                 QNameParser.getFirstName(funcIds) + "()", DbObjType.FUNCTION));
 
         for (Names_referencesContext column : ctx.names_references()) {
-            for (Schema_qualified_nameContext nameCol : column.name){
+            for (Schema_qualified_nameContext nameCol : column.name) {
                 String col = QNameParser.getFirstName(nameCol.identifier());
                 trigger.addUpdateColumn(col);
                 trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
@@ -85,10 +86,12 @@ public class CreateTrigger extends ParserAbstract {
 
     public static class WhenListener extends SQLParserBaseListener {
         private String when;
+
         @Override
         public void exitWhen_trigger(When_triggerContext ctx) {
             when = getFullCtxText(ctx.when_expr);
         }
+
         public String getWhen() {
             return when;
         }

@@ -56,6 +56,12 @@
             id="ru.taximaxim.codekeeper.ui.feedBack"
             name="%command.name.feedback">
         </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader"
+            id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+            name="%command.name.improvePerformanceJdbc">
+      </command>
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution
@@ -155,6 +161,11 @@
                         </and>
                     </visibleWhen>
                 </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+                  label="%command.label.improvePerformanceJdbc"
+                  style="push">
+            </command>
             </menu>
         </menuContribution>
         <menuContribution

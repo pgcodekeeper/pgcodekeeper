@@ -23,7 +23,12 @@ public class TreeElement {
 
     public abstract static class ListGeneratorPredicate {
 
-        public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
+        public enum ADD_STATUS {
+            ADD, ADD_SUBTREE, SKIP_THIS, SKIP_SUBTREE
+        }
+
+        public ADD_STATUS parentStatus = ADD_STATUS.ADD;
+        public TreeElement parentElement = null;
 
         public abstract ADD_STATUS shouldAddToList(TreeElement el);
     }
@@ -96,7 +101,6 @@ public class TreeElement {
         this.type = statement.getStatementType();
     }
 
-
     public boolean hasChildren() {
         return !children.isEmpty();
     }
@@ -166,6 +170,7 @@ public class TreeElement {
         case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
@@ -191,6 +196,7 @@ public class TreeElement {
         TreeElement parent = findElement(st.getParent());
         return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
     }
+
     /**
      * создает коллекцию с измененными элементами
      */
@@ -205,8 +211,17 @@ public class TreeElement {
             return result;
         }
 
+        if (addStatus == ADD_STATUS.ADD_SUBTREE) {
+            predicate.parentStatus = ADD_STATUS.ADD_SUBTREE;
+            predicate.parentElement = this;
+        }
+
         for (TreeElement child : getChildren()) {
             child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
+        }
+
+        if (predicate != null && predicate.parentElement == this) {
+            predicate.parentStatus = ADD_STATUS.ADD;
         }
 
         boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
@@ -220,6 +235,7 @@ public class TreeElement {
         result.add(this);
         return result;
     }
+
     /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
      * left -> right, right -> left, both->both
@@ -276,6 +292,7 @@ public class TreeElement {
             child.setAllChecked();
         }
     }
+
     /**
      * @return признак наличия выбранных элементов в поддереве начиная с текущего узла
      */

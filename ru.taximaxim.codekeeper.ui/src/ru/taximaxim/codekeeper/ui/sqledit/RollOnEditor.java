@@ -130,6 +130,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
+
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
             IVerticalRuler ruler, int styles) {
@@ -224,6 +225,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         }
     }
+
     @Override
     public void dispose() {
         getEditorSite().getWorkbenchWindow().getPartService().removePartListener(this);
@@ -508,7 +510,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
-                            } else if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                            } else if (addDepcy != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 addDepcy.getDependenciesFromOutput(output);
                             }
                         } catch (IOException e) {
@@ -537,7 +539,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 }
             });
             scriptThread.start();
-
             isRunning = true;
             setRunButtonText(STOP_SCRIPT_LABEL);
             // case Stop script
@@ -727,9 +728,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     public void partActivated(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partBroughtToTop(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
         if (addDepcy != null) {
@@ -750,18 +753,23 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         }
     }
+
     @Override
     public void partDeactivated(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partOpened(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partHidden(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partVisible(IWorkbenchPartReference partRef) {
     }
+
     @Override
     public void partInputChanged(IWorkbenchPartReference partRef) {
     }

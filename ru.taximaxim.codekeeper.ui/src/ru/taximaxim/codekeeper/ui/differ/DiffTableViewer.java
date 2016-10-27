@@ -1,8 +1,9 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,12 +88,15 @@ import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
+import ru.taximaxim.codekeeper.ui.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.ui.antlr.IgnoreObjectContainer;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreBaseListener;
+import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParserMainListener;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObject;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.StringEditor;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 /*
@@ -144,11 +148,7 @@ public class DiffTableViewer extends Composite {
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHECK,
-        NAME,
-        TYPE,
-        CHANGE,
-        LOCATION
+        CHECK, NAME, TYPE, CHANGE, LOCATION
     }
 
     CheckboxTableViewer getViewer() {
@@ -763,6 +763,7 @@ public class DiffTableViewer extends Composite {
 
         initializeViewer();
     }
+
     /**
      * Используется в коммит диалоге для установки элементов
      * @param showOnlyElements элементы для показа
@@ -808,30 +809,51 @@ public class DiffTableViewer extends Composite {
     private void generateElementsList(TreeElement tree) {
         // догружаем игноры из файла в проекте
         final List<IgnoredObject> ignores = new ArrayList<>(ignoredElements);
+        final IgnoreObjectContainer ignObjCont = new IgnoreObjectContainer();
         if (proj != null) {
-            StringEditor se = new StringEditor(Paths.get(proj.getProject()
-                    .getLocation().toOSString(), FILE.IGNORED_OBJECTS));
             try {
-                ignores.addAll(se.loadSettings());
+                File ignoreFile = new File(proj.getProject()
+                        .getLocation().toOSString() + File.separator + FILE.IGNORED_OBJECTS);
+                if (ignoreFile.exists()) {
+
+                    SQLIgnoreBaseListener listener = new SQLIgnoreParserMainListener(ignObjCont);
+                    AntlrParser.parseInputStream(new FileInputStream(ignoreFile),
+                            "UTF-8", "", listener);
+                    ignores.addAll(ignObjCont.getIgnoredObjects());
+                }
             } catch (IOException e1) {
                 Log.log(Log.LOG_WARNING,
                         "Some problems occured while reading ignore settings from file", e1); //$NON-NLS-1$
             }
         }
+        final boolean show_all = ignObjCont.isBlack();
 
         // коллбэк указывающий на необходимость игнора элемента(ов)
         ListGeneratorPredicate predicate = new ListGeneratorPredicate() {
 
             @Override
             public ADD_STATUS shouldAddToList(TreeElement el) {
+                if (!show_all && parentStatus == ADD_STATUS.ADD_SUBTREE) {
+                    return ADD_STATUS.ADD;
+                }
                 for (IgnoredObject ign : ignores) {
                     if (ign.match(el.getName())) {
+                        if (!show_all) {
+                            if (ign.isIgnoreContent()) {
+                                return ADD_STATUS.ADD_SUBTREE;
+                            } else {
+                                return ADD_STATUS.ADD;
+                            }
+                        }
                         if (ign.isIgnoreContent()) {
                             return ADD_STATUS.SKIP_SUBTREE;
                         } else {
                             return ADD_STATUS.SKIP_THIS;
                         }
                     }
+                }
+                if (!show_all) {
+                    return ADD_STATUS.SKIP_THIS;
                 }
                 return ADD_STATUS.ADD;
             }

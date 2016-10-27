@@ -1,0 +1,1 @@
+SELECT * FROM pgcodekeeperhelper.get_all_view();

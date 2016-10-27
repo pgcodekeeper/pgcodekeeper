@@ -13,6 +13,10 @@
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
     <version>1.7.7-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
+    
+    <properties>
+        <sonar.exclusions>**/ru/taximaxim/codekeeper/ui/antlr/SQL*.java</sonar.exclusions>
+    </properties>
 
     <profiles>
         <profile>
@@ -124,4 +128,27 @@
             <!-- no obfuscation -->
         </profile>
     </profiles>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.5</version>
+                <configuration>
+                    <visitor>true</visitor>
+                    <sourceDirectory>${project.basedir}/antlr-src</sourceDirectory>
+                    <outputDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

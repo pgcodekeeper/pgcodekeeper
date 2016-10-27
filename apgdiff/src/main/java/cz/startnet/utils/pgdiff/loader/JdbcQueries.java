@@ -35,6 +35,16 @@ public final class JdbcQueries {
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_TYPES_PER_SCHEMA;
     public static String QUERY_RULES_PER_SCHEMA;
+
+    public static String QUERY_GET_ALL_TABLE;
+    public static String QUERY_GET_ALL_VIEW;
+    public static String QUERY_GET_ALL_TRIGGER;
+    public static String QUERY_GET_ALL_INDEX;
+    public static String QUERY_GET_ALL_RULE;
+    public static String QUERY_GET_ALL_FUNCTION;
+    public static String QUERY_GET_ALL_CONSTRAINT;
+    public static String QUERY_GET_ALL_SEQUENCE;
+
     // SONAR-ON
 
     static {
