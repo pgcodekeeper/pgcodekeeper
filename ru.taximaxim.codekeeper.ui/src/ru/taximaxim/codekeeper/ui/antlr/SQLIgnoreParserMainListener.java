@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObject;
 
 public class SQLIgnoreParserMainListener extends SQLIgnoreBaseListener {
 
-    private IgnoreObjectContainer ioc;
+    private final IgnoreObjectContainer ioc;
 
     public SQLIgnoreParserMainListener(IgnoreObjectContainer ioc) {
         this.ioc = ioc;
@@ -32,12 +32,8 @@ public class SQLIgnoreParserMainListener extends SQLIgnoreBaseListener {
 
     @Override
     public void exitHide_rule(Hide_ruleContext ctx) {
-
-        //QNameParser.getf 
-        //ctx.identifier().getText();
-
         boolean isRegular = false, ignoreContent = false;
-        for (FlagContext flag : ctx.flags().flag()) {
+        for (FlagContext flag : ctx.rule_rest().flags().flag()) {
             if (flag.CONTENT() != null) {
                 ignoreContent = true;
             }
@@ -45,14 +41,14 @@ public class SQLIgnoreParserMainListener extends SQLIgnoreBaseListener {
                 isRegular = true;
             }
         }
-        IgnoredObject ignoredObject = new IgnoredObject(ctx.identifier().getText(), isRegular, ignoreContent);
+        IgnoredObject ignoredObject = new IgnoredObject(ctx.rule_rest().obj.getText(), isRegular, ignoreContent);
         ioc.addIgnoredObject(ignoredObject);
     }
 
     @Override
     public void exitShow_rule(Show_ruleContext ctx) {
         boolean isRegular = false, ignoreContent = false;
-        for (FlagContext flag : ctx.flags().flag()) {
+        for (FlagContext flag : ctx.rule_rest().flags().flag()) {
             if (flag.CONTENT() != null) {
                 ignoreContent = true;
             }
@@ -60,8 +56,7 @@ public class SQLIgnoreParserMainListener extends SQLIgnoreBaseListener {
                 isRegular = true;
             }
         }
-        IgnoredObject ignoredObject = new IgnoredObject(ctx.identifier().getText(), isRegular, ignoreContent);
+        IgnoredObject ignoredObject = new IgnoredObject(ctx.rule_rest().obj.getText(), isRegular, ignoreContent);
         ioc.addIgnoredObject(ignoredObject);
     }
-
 }
