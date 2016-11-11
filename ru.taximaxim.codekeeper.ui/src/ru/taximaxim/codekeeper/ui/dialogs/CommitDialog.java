@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +22,7 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -88,8 +88,7 @@ public class CommitDialog extends TrayDialog {
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
 
-        List<TreeElement> result = new ArrayList<>();
-        TreeElement.getSelected(diffTree, result);
+        List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote, diffTree);
 
         if (depcyElementsSet != null){

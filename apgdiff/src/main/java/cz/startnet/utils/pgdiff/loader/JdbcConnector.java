@@ -119,9 +119,8 @@ public class JdbcConnector {
                 sc.nextLine();
             }
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException(MessageFormat.format(
-                    Messages.jdbcConnector_error_reading_pgpass_file,
-                    e.getLocalizedMessage()), e);
+            Log.log(e);
+            return "";
         }
         Log.log(Log.LOG_INFO, "Using empty password, because no password has been found " //$NON-NLS-1$
                 + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$

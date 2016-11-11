@@ -727,7 +727,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
-        SQLParser parser = AntlrParser.makeBasicParser(statement + ';', getCurrentLocation());
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, statement + ';', getCurrentLocation());
         UtilExpr.analyze(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 
@@ -875,7 +875,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     // TODO отрефакторить в вычитку всех зависимостей из экспрешшена
     private GenericColumn parseFunctionCall(String def, String defSchema) {
-        SQLParser parser = AntlrParser.makeBasicParser(def, getCurrentLocation());
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, def, getCurrentLocation());
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, parser.vex());
         if (fs.getName() == null) {
@@ -1002,7 +1002,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private String parseWhen(String string) {
-        SQLParser parser = AntlrParser.makeBasicParser(string, getCurrentLocation());
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, string, getCurrentLocation());
         WhenListener whenListener = new WhenListener();
         ParseTreeWalker.DEFAULT.walk(whenListener, parser.sql());
         return whenListener.getWhen();
@@ -1037,7 +1037,7 @@ public class JdbcLoader implements PgCatalogStrings {
             r.setInstead(true);
         }
 
-        SQLParser parser = AntlrParser.makeBasicParser(command, getCurrentLocation());
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, command, getCurrentLocation());
         Create_rewrite_statementContext ruleCtx = parser.sql().statement(0).schema_statement()
                 .schema_create().create_rewrite_statement();
         r.setCondition(CreateRewrite.getCondition(ruleCtx));
@@ -1161,7 +1161,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void parseArguments(String args, PgFunction f, String schemaName) {
-        SQLParser parser = AntlrParser.makeBasicParser(args, getCurrentLocation());
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, args, getCurrentLocation());
         ParserAbstract.fillArguments(parser.function_args_parser().function_args(),
                 f, schemaName);
     }

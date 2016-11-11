@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -13,25 +12,12 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
  * и новой БД
  */
 public class TreeElement {
-
-    public abstract static class ListGeneratorPredicate {
-
-        public enum ADD_STATUS {
-            ADD, ADD_SUBTREE, SKIP_THIS, SKIP_SUBTREE
-        }
-
-        public ADD_STATUS parentStatus = ADD_STATUS.ADD;
-        public TreeElement parentElement = null;
-
-        public abstract ADD_STATUS shouldAddToList(TreeElement el);
-    }
 
     public enum DiffSide {
         LEFT("delete"), RIGHT("new"), BOTH("edit");
@@ -149,10 +135,7 @@ public class TreeElement {
     }
 
     /**
-     * Gets corresponding {@link PgStatement} from Database model.
-     *
-     * @param db
-     * @return
+     * Gets corresponding {@link PgStatement} from {@link PgDatabase}.
      */
     public PgStatement getPgStatement(PgDatabase db) {
         switch(type) {
@@ -182,8 +165,6 @@ public class TreeElement {
 
     /**
      * Ищет элемент в дереве
-     * @param st
-     * @return
      */
     public TreeElement findElement(PgStatement st) {
         if (st.getStatementType() == DbObjType.DATABASE) {
@@ -198,47 +179,8 @@ public class TreeElement {
     }
 
     /**
-     * создает коллекцию с измененными элементами
-     */
-    public Collection<TreeElement> flattenAlteredElements(Collection<TreeElement> result,
-            PgDatabase dbSource, PgDatabase dbTarget, boolean onlySelected,
-            ListGeneratorPredicate predicate) {
-        ADD_STATUS addStatus = ADD_STATUS.ADD;
-        if (predicate != null) {
-            addStatus = predicate.shouldAddToList(this);
-        }
-        if (addStatus == ADD_STATUS.SKIP_SUBTREE) {
-            return result;
-        }
-
-        if (addStatus == ADD_STATUS.ADD_SUBTREE) {
-            predicate.parentStatus = ADD_STATUS.ADD_SUBTREE;
-            predicate.parentElement = this;
-        }
-
-        for (TreeElement child : getChildren()) {
-            child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
-        }
-
-        if (predicate != null && predicate.parentElement == this) {
-            predicate.parentStatus = ADD_STATUS.ADD;
-        }
-
-        boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
-        if ((onlySelected && !selected)
-                || type == DbObjType.DATABASE
-                || addStatus == ADD_STATUS.SKIP_THIS
-                || canCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
-            return result;
-        }
-
-        result.add(this);
-        return result;
-    }
-
-    /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
-     * left -> right, right -> left, both->both
+     * left -> right, right -> left, both -> both
      */
     public TreeElement getRevertedCopy() {
         TreeElement copy = getRevertedElement();
@@ -267,20 +209,6 @@ public class TreeElement {
         TreeElement copy = new TreeElement(name, type, newSide);
         copy.setSelected(selected);
         return copy;
-    }
-
-    /**
-     * Принимает дерево и выбирает из него все выбранные элементы
-     * @param root дерево
-     * @param result список с выбранными элементами
-     */
-    public static void getSelected(TreeElement root, List<TreeElement> result){
-        if (root.isSelected()) {
-            result.add(root);
-        }
-        for (TreeElement child : root.getChildren()) {
-            getSelected(child, result);
-        }
     }
 
     /**

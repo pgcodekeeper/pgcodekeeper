@@ -8,6 +8,9 @@ package cz.startnet.utils.pgdiff;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.SortedMap;
 
 import org.osgi.framework.BundleContext;
@@ -30,7 +33,7 @@ public class PgDiffArguments {
     private String oldSrc;
     private String newSrcFormat = DEFAULT_FORMAT;
     private String oldSrcFormat = DEFAULT_FORMAT;
-    private  String diffOutfile;
+    private String diffOutfile;
     private String parseSrc;
     private String parseSrcFormat = DEFAULT_FORMAT;
     private String parserOutdir;
@@ -56,6 +59,7 @@ public class PgDiffArguments {
     private boolean forceUnixNewlines = true;
     private String licensePath;
     private License license;
+    private final List<String> ignoreLists = new ArrayList<>();
 
     public void setModeDiff(final boolean modeDiff) {
         this.modeDiff = modeDiff;
@@ -221,6 +225,10 @@ public class PgDiffArguments {
         this.license = license;
     }
 
+    public List<String> getIgnoreLists() {
+        return Collections.unmodifiableList(ignoreLists);
+    }
+
     /**
      * Parses command line arguments or outputs instructions.
      *
@@ -320,6 +328,8 @@ public class PgDiffArguments {
                 setOutputIgnoredStatements(true);
             } else if("--license".equals(args[i])) { //$NON-NLS-1$
                 setLicensePath(args[++i]);
+            } else if ("--ignore-list".equals(args[i])) {
+                ignoreLists.add(args[++i]);
             } else if ("--version".equals(args[i])) { //$NON-NLS-1$
                 setVersion(true);
             } else if ("--help".equals(args[i])) { //$NON-NLS-1$

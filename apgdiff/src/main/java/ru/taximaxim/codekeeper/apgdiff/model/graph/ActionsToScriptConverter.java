@@ -19,10 +19,10 @@ public class ActionsToScriptConverter {
 
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
-    
+
     private final Set<ActionContainer> actions;
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
-    
+
     public ActionsToScriptConverter(Set<ActionContainer> actions) {
         this.actions = actions;
     }
@@ -36,7 +36,7 @@ public class ActionsToScriptConverter {
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
         for (ActionContainer action : actions) {
             processSequence(action);
-            
+
             PgStatement oldObj = action.getOldObj();
             String depcy = null;
             PgStatement objStarter = action.getStarter();
@@ -51,8 +51,8 @@ public class ActionsToScriptConverter {
                 depcy = MessageFormat.format(
                         action.getAction() == StatementActions.CREATE ?
                                 CREATE_COMMENT : DROP_COMMENT,
-                        oldObj.getStatementType(),
-                        objStarter.getStatementType(), objName);
+                                oldObj.getStatementType(),
+                                objStarter.getStatementType(), objName);
             }
             switch (action.getAction()) {
             case CREATE:
@@ -118,7 +118,7 @@ public class ActionsToScriptConverter {
         }
         return currentSearchPath;
     }
-    
+
     private void processSequence(ActionContainer action) {
         if (action.getOldObj().getStatementType() == DbObjType.SEQUENCE) {
             PgSequence oldSeq = (PgSequence) action.getOldObj();
@@ -126,8 +126,8 @@ public class ActionsToScriptConverter {
             if (newSeq.getOwnedBy() != null
                     && !newSeq.getOwnedBy().isEmpty()
                     && action.getAction() == StatementActions.CREATE
-                    || (action.getAction() == StatementActions.ALTER && 
-                            !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {
+                    || (action.getAction() == StatementActions.ALTER &&
+                    !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {
                 sequencesOwnedBy.add(newSeq);
             }
         }

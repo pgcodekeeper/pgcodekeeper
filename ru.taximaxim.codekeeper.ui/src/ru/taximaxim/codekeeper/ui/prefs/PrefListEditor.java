@@ -24,6 +24,9 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
+/**
+ * @param <T> needs to have its own equals for proper duplicate detection
+ */
 public abstract class PrefListEditor<T, V extends StructuredViewer> extends Composite {
 
     private List<T> objsList = new LinkedList<>();

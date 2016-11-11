@@ -314,7 +314,7 @@ public class PgDiffTest {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db);
+        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
@@ -334,7 +334,7 @@ public class PgDiffTest {
 
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew);
+        PgDiff.diffDatabaseSchemas(writer, args, dbOld, dbNew, null);
         writer.flush();
 
         StringBuilder sbExpDiff;

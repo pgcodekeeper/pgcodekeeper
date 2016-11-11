@@ -30,7 +30,6 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -38,7 +37,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -135,13 +133,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
         if (currentDb != newDb) {
             currentDb = newDb;
-            depRes = null;
-            try {
-                depRes = new DepcyResolver(currentDb,
-                        showProject ? dss.dbRemote.getDbObject() : dss.dbProject.getDbObject());
-            } catch (PgCodekeeperException e) {
-                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e); //$NON-NLS-1$
-            }
+            depRes = new DepcyResolver(currentDb,
+                    showProject ? dss.dbRemote.getDbObject() : dss.dbProject.getDbObject());
         }
 
         if (currentDb == null || depRes == null) {

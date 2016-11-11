@@ -21,7 +21,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.PGDUMP_EXE_PATH, "pg_dump"); //$NON-NLS-1$
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
-        store.setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
         store.setDefault(PREF.LICENSE_PATH, LicensePrefs.getInternalLicenseUrl().toString());
 

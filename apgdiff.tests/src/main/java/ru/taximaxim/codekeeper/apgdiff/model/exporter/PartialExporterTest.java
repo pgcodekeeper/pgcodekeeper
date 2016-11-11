@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -29,6 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 
 /**
  * Test for partial export
@@ -178,8 +178,10 @@ public class PartialExporterTest {
 
             // get new db with selected changes
             preset.setUserSelection();
-            Collection<TreeElement> list = preset.getDiffTree().flattenAlteredElements(
-                    new ArrayList<TreeElement>(), dbSource, dbTarget, true, null);
+            Collection<TreeElement> list = new TreeFlattener()
+                    .onlySelected()
+                    .onlyEdits(dbSource, dbTarget)
+                    .flatten(preset.getDiffTree());
             // накатываем на полную базу частичные изменения
             new ModelExporter(exportDirPartial.toFile(), dbTarget, dbSource,
                     list, UTF_8).exportPartial();

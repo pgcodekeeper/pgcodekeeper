@@ -40,8 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -155,16 +153,6 @@ public class PgAntlrLoaderTest {
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
-
-        PgDatabase empty = new PgDatabase();
-
-        // check filtering mechanism
-        // applying full unchanged diff tree created against an empty DB
-        // should result in a fully copied or empty (depending on filter side) DB object
-        TreeElement dbTree = DiffTree.create(d, empty);
-        dbTree.setAllChecked();
-
-        Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);
 
         // test deepCopy mechanism
         Assert.assertEquals("PgStatement deep copy altered", d, d.deepCopy());

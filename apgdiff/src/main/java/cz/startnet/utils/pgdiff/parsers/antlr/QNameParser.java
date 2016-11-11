@@ -31,7 +31,7 @@ public final class QNameParser {
 
     public QNameParser(String schemaQualifiedName) {
         this.parts = AntlrParser
-                .makeBasicParser(schemaQualifiedName, "qname: " + schemaQualifiedName)
+                .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName)
                 .qname_parser()
                 .schema_qualified_name()
                 .identifier();

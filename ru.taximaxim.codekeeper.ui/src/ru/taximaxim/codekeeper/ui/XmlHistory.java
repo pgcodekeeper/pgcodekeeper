@@ -101,7 +101,7 @@ public final class XmlHistory {
         try {
             fileHistory = new File(URIUtil.toURI(Platform.getInstanceLocation().getURL()));
         } catch (URISyntaxException ex) {
-            throw new IOException(ex);
+            throw new IOException(ex.getLocalizedMessage(), ex);
         }
         fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$

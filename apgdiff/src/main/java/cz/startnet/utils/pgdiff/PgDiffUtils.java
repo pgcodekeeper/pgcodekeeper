@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Random;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * Utilities for creation of diffs.
@@ -19,6 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  * @author fordfrog
  */
 public final class PgDiffUtils {
+
     public static final int ERROR_SUBSTRING_LENGTH = 20;
 
     /**
@@ -485,41 +486,35 @@ public final class PgDiffUtils {
             "ZONE"
     };
 
-    private static String getQuotedName(String name, boolean excludeKeywords) {
-        if (name.isEmpty()) {
-            return name;
+    public static boolean isValidId(String id, boolean allowKeywords, boolean allowCaps) {
+        if (id.isEmpty()) {
+            return true;
         }
 
-        char c = name.charAt(0);
-        if ((c < 'a' || c > 'z') && c != '_') {
-            return quoteName(name);
+        char c = id.charAt(0);
+        if ((c < 'a' || c > 'z') && (!allowCaps || c < 'A' || c > 'Z') && c != '_') {
+            return false;
         }
 
-        for (int i = 1; i < name.length(); i++) {
-            c = name.charAt(i);
-
-            if ((c < 'a' || c > 'z') && (c < '0' || c > '9') && c != '_') {
-                return quoteName(name);
+        for (int i = 1; i < id.length(); i++) {
+            c = id.charAt(i);
+            if ((c < 'a' || c > 'z') && (!allowCaps || c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_') {
+                return false;
             }
         }
 
-        if (excludeKeywords) {
-            return name;
+        if (allowKeywords) {
+            return true;
         }
 
-        final String upperName = name.toUpperCase(Locale.ENGLISH);
-
+        final String upperName = id.toUpperCase(Locale.ENGLISH);
         for (final String keyword : KEYWORDS) {
             if (keyword.equals(upperName)) {
-                return quoteName(name);
+                return false;
             }
         }
 
-        return name;
-    }
-
-    private static String quoteName(String name) {
-        return '"' + name.replace("\"", "\"\"") + '"';
+        return true;
     }
 
     /**
@@ -532,7 +527,11 @@ public final class PgDiffUtils {
      * @return quoted string if needed, otherwise not quoted string
      */
     public static String getQuotedName(final String name) {
-        return getQuotedName(name, false);
+        return isValidId(name, false, false) ? name : quoteName(name);
+    }
+
+    public static String quoteName(String name) {
+        return '"' + name.replace("\"", "\"\"") + '"';
     }
 
     public static String quoteString(String s) {
@@ -608,22 +607,16 @@ public final class PgDiffUtils {
      */
     public static String md5(String s) {
         try {
-            byte[] bytesOfMessage = s.getBytes(ApgdiffConsts.UTF_8);
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(bytesOfMessage);
+            byte[] hash = MessageDigest.getInstance("MD5")
+                    .digest(s.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * hash.length);
             for (byte b : hash) {
                 sb.append(String.format("%02x", b & 0xff));
             }
             return sb.toString();
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "UnsupportedEncodingException thrown while getting hash: {0}",
-                    e.getLocalizedMessage()), e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "NoSuchAlgorithmException thrown while getting hash: {0}",
-                    e.getLocalizedMessage()),e);
+        } catch (NoSuchAlgorithmException ex) {
+            Log.log(ex);
+            return "MD5_ERROR_" + new Random().nextInt();
         }
     }
 

@@ -1,21 +1,15 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,8 +27,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -58,8 +50,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -74,29 +64,21 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
-import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
-import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
-import ru.taximaxim.codekeeper.ui.XmlStringList;
-import ru.taximaxim.codekeeper.ui.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.ui.antlr.IgnoreObjectContainer;
-import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreBaseListener;
-import ru.taximaxim.codekeeper.ui.antlr.SQLIgnoreParserMainListener;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObject;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 /*
@@ -121,11 +103,9 @@ public class DiffTableViewer extends Composite {
 
     private TreeElement treeRoot;
     private final PgDbProject proj;
-    private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
-    private List<IgnoredObject> ignoredElements;
 
     // values are checkedSet states of the elements
-    private Set<TreeElement> elements = new HashSet<>();
+    private List<TreeElement> elements = new ArrayList<>();
     private final CheckStateListener checkListener = new CheckStateListener();
     private final TableViewerComparator comparator = new TableViewerComparator();
 
@@ -369,23 +349,6 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().pack();
         initColumns();
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-
-        mainPrefs.addPropertyChangeListener(ignoresListener);
-        viewer.getTable().addDisposeListener(new DisposeListener() {
-
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                mainPrefs.removePropertyChangeListener(ignoresListener);
-            }
-        });
-
-        String ignoredObjectsPref = mainPrefs.getString(PREF.IGNORE_OBJECTS);
-        if (!ignoredObjectsPref.isEmpty()) {
-            ignoresListener.propertyChange(new PropertyChangeEvent(
-                    mainPrefs, PREF.IGNORE_OBJECTS, null, ignoredObjectsPref));
-        } else {
-            ignoredElements = new LinkedList<>();
-        }
     }
 
     private MenuManager getViewerMenu() {
@@ -756,7 +719,7 @@ public class DiffTableViewer extends Composite {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
-        elements = new HashSet<>();
+        elements.clear();
         if (treeRoot != null) {
             generateElementsList(treeRoot);
         }
@@ -776,7 +739,7 @@ public class DiffTableViewer extends Composite {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
-        elements = new HashSet<>();
+        elements.clear();
         elements.addAll(showOnlyElements);
 
         initializeViewer();
@@ -807,60 +770,15 @@ public class DiffTableViewer extends Composite {
     }
 
     private void generateElementsList(TreeElement tree) {
-        // догружаем игноры из файла в проекте
-        final List<IgnoredObject> ignores = new ArrayList<>(ignoredElements);
-        final IgnoreObjectContainer ignObjCont = new IgnoreObjectContainer();
+        IgnoreList ignores = InternalIgnoreList.readInternalList();
         if (proj != null) {
-            try {
-                File ignoreFile = new File(proj.getProject()
-                        .getLocation().toOSString() + File.separator + FILE.IGNORED_OBJECTS);
-                if (ignoreFile.exists()) {
-
-                    SQLIgnoreBaseListener listener = new SQLIgnoreParserMainListener(ignObjCont);
-                    AntlrParser.parseInputStream(new FileInputStream(ignoreFile),
-                            "UTF-8", "", listener);
-                    ignores.addAll(ignObjCont.getIgnoredObjects());
-                }
-            } catch (IOException e1) {
-                Log.log(Log.LOG_WARNING,
-                        "Some problems occured while reading ignore settings from file", e1); //$NON-NLS-1$
-            }
+            InternalIgnoreList.readAppendList(
+                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignores);
         }
-        final boolean show_all = ignObjCont.isBlack();
-
-        // коллбэк указывающий на необходимость игнора элемента(ов)
-        ListGeneratorPredicate predicate = new ListGeneratorPredicate() {
-
-            @Override
-            public ADD_STATUS shouldAddToList(TreeElement el) {
-                if (!show_all && parentStatus == ADD_STATUS.ADD_SUBTREE) {
-                    return ADD_STATUS.ADD;
-                }
-                for (IgnoredObject ign : ignores) {
-                    if (ign.match(el.getName())) {
-                        if (!show_all) {
-                            if (ign.isIgnoreContent()) {
-                                return ADD_STATUS.ADD_SUBTREE;
-                            } else {
-                                return ADD_STATUS.ADD;
-                            }
-                        }
-                        if (ign.isIgnoreContent()) {
-                            return ADD_STATUS.SKIP_SUBTREE;
-                        } else {
-                            return ADD_STATUS.SKIP_THIS;
-                        }
-                    }
-                }
-                if (!show_all) {
-                    return ADD_STATUS.SKIP_THIS;
-                }
-                return ADD_STATUS.ADD;
-            }
-        };
-
-        // заполняем сет элементов
-        tree.flattenAlteredElements(elements, dbProject.getDbObject(), dbRemote.getDbObject(), false, predicate);
+        elements = new TreeFlattener()
+                .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+                .useIgnoreList(ignores)
+                .flatten(tree);
     }
 
     private void viewerRefresh() {
@@ -872,15 +790,12 @@ public class DiffTableViewer extends Composite {
     }
 
     private void updateObjectsLabel() {
-        lblObjectCount.setText(MessageFormat.format(
-                Messages.diffTableViewer_objects, elements.size()));
+        lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, elements.size()));
         lblObjectCount.getParent().layout();
     }
 
     private void updateCheckedLabel() {
-        lblCheckedCount.setText(MessageFormat.format(
-                Messages.DiffTableViewer_selected,
-                getCheckedElementsCount()));
+        lblCheckedCount.setText(MessageFormat.format(Messages.DiffTableViewer_selected, getCheckedElementsCount()));
         lblCheckedCount.getParent().layout();
     }
 
@@ -904,35 +819,6 @@ public class DiffTableViewer extends Composite {
 
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
-        }
-    }
-
-    private class IgnoresChangeListener implements IPropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-            if (PREF.IGNORE_OBJECTS.equals(event.getProperty())
-                    && !Objects.equals(event.getNewValue(), event.getOldValue())) {
-                XmlStringList xml = new XmlStringList(
-                        XML_TAGS.IGNORED_OBJS_ROOT,
-                        XML_TAGS.IGNORED_OBJS_ELEMENT);
-                try {
-                    ignoredElements = IgnoredObject.parsePrefs(xml.deserializeList(
-                            new StringReader((String) event.getNewValue())));
-                } catch (IOException | SAXException ex) {
-                    ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
-                    return;
-                }
-                UiSync.exec(DiffTableViewer.this, new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (!isDisposed()) {
-                            viewerRefresh();
-                        }
-                    }
-                });
-            }
         }
     }
 

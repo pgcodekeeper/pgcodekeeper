@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -25,18 +26,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.YesNoEditingSupport.YesNo
 public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, TableViewer> {
 
     enum BooleanChangeValues {
-        REGULAR(1<<0),
-        IGNORE_CONTENT(1<<1);
-
-        private final int statusFlagValue;
-
-        BooleanChangeValues(int statusFlagValue) {
-            this.statusFlagValue = statusFlagValue;
-        }
-
-        public int getStatusFlagValue(){
-            return statusFlagValue;
-        }
+        REGULAR, IGNORE_CONTENT;
     }
 
     public IgnoredObjectPrefListEditor(Composite parent, boolean doSorting, boolean noMargins) {

@@ -514,7 +514,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                                 addDepcy.getDependenciesFromOutput(output);
                             }
                         } catch (IOException e) {
-                            throw new IllegalStateException(e);
+                            throw new IllegalStateException(e.getLocalizedMessage(), e);
                         } finally {
                             // request UI change: button label changed
                             afterScriptFinished(output);
@@ -630,7 +630,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         return;
                     }
                 }
-                throw new IllegalStateException(ex);
+                throw new IllegalStateException(ex.getLocalizedMessage(), ex);
             } finally {
                 // request UI change: button label changed
                 afterScriptFinished(sr.getStorage());

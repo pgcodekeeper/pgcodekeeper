@@ -1,12 +1,12 @@
-grammar SQLIgnore;
+grammar IgnoreList;
 
 options {
     language=Java;
 }
-@header {package ru.taximaxim.codekeeper.ui.antlr;}
+@header {package cz.startnet.utils.pgdiff.parsers.antlr;}
 
-compileUnit: NewLine* expr NewLine* EOF;
-expr: white | black;
+compileUnit: NewLine* rule_list NewLine* EOF;
+rule_list: white | black;
 
 white: HIDE ALL (NewLine+ show_rule)*;
 black: SHOW ALL (NewLine+ hide_rule)*;
