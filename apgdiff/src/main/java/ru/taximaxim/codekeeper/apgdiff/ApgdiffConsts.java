@@ -12,6 +12,9 @@ import java.util.HashSet;
  */
 public interface ApgdiffConsts {
 
+    /**
+     * Prefer using StandardCharsets instead of this String representation.
+     */
     String UTF_8 = "UTF-8";
     String UTC = "UTC";
     String PUBLIC = "public";

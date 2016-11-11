@@ -606,8 +606,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get();
-                try (PrintWriter writer =
-                        new PrintWriter(outFile, scriptFileEncoding)) {
+                try (PrintWriter writer = new PrintWriter(outFile, scriptFileEncoding)) {
                     writer.write(textRetrieved);
                 }
 

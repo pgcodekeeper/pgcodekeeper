@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -135,14 +136,14 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, ApgdiffConsts.UTF_8), true);
+                    new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
                     DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString(ApgdiffConsts.UTF_8).trim();
+            diffDirect = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
@@ -156,7 +157,7 @@ public class Differ implements IRunnableWithProgress {
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
                 writer.flush();
-                diffReverse = diffOut.toString(ApgdiffConsts.UTF_8).trim();
+                diffReverse = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
             }
         } catch (IOException | LicenseException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());

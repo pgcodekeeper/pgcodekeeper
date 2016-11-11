@@ -1,10 +1,9 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -17,8 +16,6 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  * @author levsha_aa
  */
 public final class JdbcQueries {
-
-    private final static String RES_ENCODING = ApgdiffConsts.UTF_8;
 
     // SONAR-OFF
     public static String QUERY_TABLES_PER_SCHEMA;
@@ -56,7 +53,7 @@ public final class JdbcQueries {
             try {
                 String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                         JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                        Charset.forName(RES_ENCODING));
+                        StandardCharsets.UTF_8);
                 f.set(null, query);
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,
