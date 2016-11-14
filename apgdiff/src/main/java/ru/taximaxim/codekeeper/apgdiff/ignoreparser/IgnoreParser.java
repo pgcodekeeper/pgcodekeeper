@@ -69,6 +69,8 @@ public class IgnoreParser {
                 isRegular = true;
             }
         }
-        list.add(new IgnoredObject(ruleRest.obj.getText(), isShow, isRegular, ignoreContent));
+        String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
+        list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
+                isShow, isRegular, ignoreContent));
     }
 }

@@ -13,22 +13,25 @@ public class IgnoredObject {
 
     private final String name;
     private final Pattern regex;
+    private final String dbRegexStr;
+    private final Pattern dbRegex;
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
-    // TODO db
 
     public IgnoredObject(String name, boolean isRegular, boolean ignoreContent) {
-        this(name, false, isRegular, ignoreContent);
+        this(name, null, false, isRegular, ignoreContent);
     }
 
-    public IgnoredObject(String name, boolean isShow, boolean isRegular, boolean ignoreContent) {
+    public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
+            boolean ignoreContent) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
-        this.regex = isRegular ? Pattern.compile(
-                name, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : null;
+        this.regex = isRegular ? Pattern.compile(name) : null;
+        this.dbRegexStr = dbRegex;
+        this.dbRegex = dbRegex == null ? null : Pattern.compile(dbRegex);
     }
 
     public String getName() {
@@ -60,11 +63,35 @@ public class IgnoredObject {
     }
 
     public boolean match(String objName) {
+        return match(objName, (String[]) null);
+    }
+
+    public boolean match(String objName, String... dbNames) {
+        boolean matches;
         if (isRegular) {
-            return regex.matcher(objName).find();
+            matches = regex.matcher(objName).find();
         } else {
-            return name.equals(objName);
+            matches = name.equals(objName);
         }
+        if (matches && dbRegex != null) {
+            if (dbNames != null && dbNames.length != 0) {
+                boolean foundDbMatch = false;
+                for (String dbName : dbNames) {
+                    if (dbName != null && dbRegex.matcher(dbName).find()) {
+                        foundDbMatch = true;
+                        break;
+                    }
+                }
+                matches &= foundDbMatch;
+            } else {
+                matches = false;
+            }
+        }
+        return matches;
+    }
+
+    boolean hasSameMatchingCondition(IgnoredObject rule) {
+        return Objects.equals(name, rule.name) && Objects.equals(dbRegexStr, rule.dbRegexStr);
     }
 
     public AddStatus getAddStatus() {
@@ -83,7 +110,9 @@ public class IgnoredObject {
         int result = 1;
         result = prime * result + (ignoreContent ? itrue : ifalse);
         result = prime * result + (isRegular ? itrue : ifalse);
+        result = prime * result + (isShow ? itrue : ifalse);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((dbRegexStr == null) ? 0 : dbRegexStr.hashCode());
         return result;
     }
 
@@ -94,7 +123,9 @@ public class IgnoredObject {
             IgnoredObject other = (IgnoredObject) obj;
             eq = ignoreContent == other.ignoreContent
                     && isRegular == other.isRegular
-                    && Objects.equals(name, other.name);
+                    && isShow == other.isShow
+                    && Objects.equals(name, other.name)
+                    && Objects.equals(dbRegexStr, other.dbRegexStr);
         }
         return eq;
     }
@@ -122,10 +153,19 @@ public class IgnoredObject {
         }
         sb.append(' ');
 
-        if (PgDiffUtils.isValidId(name, true, true)) {
-            sb.append(name);
+        appendId(name, sb);
+        if (dbRegex != null) {
+            sb.append(" db=");
+            appendId(dbRegexStr, sb);
+        }
+        return sb;
+    }
+
+    private static StringBuilder appendId(String id, StringBuilder sb) {
+        if (PgDiffUtils.isValidId(id, true, true)) {
+            sb.append(id);
         } else {
-            sb.append(quoteWithDq(name) ? PgDiffUtils.quoteName(name) : PgDiffUtils.quoteString(name));
+            sb.append(quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id));
         }
         return sb;
     }

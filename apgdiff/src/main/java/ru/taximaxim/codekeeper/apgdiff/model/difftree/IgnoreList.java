@@ -5,18 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject.AddStatus;
 
 public class IgnoreList {
 
-    private final Map<String, IgnoredObject> literalRules = new LinkedHashMap<>();
-    private final List<IgnoredObject> regexRules = new ArrayList<>();
+    private final List<IgnoredObject> rules = new ArrayList<>();
 
     // black list (show all, hide some) by default
     private boolean isShow = true;
@@ -27,6 +24,10 @@ public class IgnoreList {
 
     public void setShow(boolean isShow) {
         this.isShow = isShow;
+    }
+
+    public List<IgnoredObject> getList() {
+        return Collections.unmodifiableList(rules);
     }
 
     public void add(IgnoredObject rule) {
@@ -44,25 +45,17 @@ public class IgnoreList {
             }
         } else {
             // add new
-            if (rule.isRegular()) {
-                regexRules.add(rule);
-            } else {
-                literalRules.put(rule.getName(), rule);
-            }
+            rules.add(rule);
         }
     }
 
     private IgnoredObject findSameMatchingRule(IgnoredObject rule) {
-        if (rule.isRegular()) {
-            for (IgnoredObject regex : regexRules) {
-                if (regex.getName().equals(rule.getName())) {
-                    return regex;
-                }
+        for (IgnoredObject match : rules) {
+            if (match.hasSameMatchingCondition(rule)) {
+                return match;
             }
-            return null;
-        } else {
-            return literalRules.get(rule.getName());
         }
+        return null;
     }
 
     public void addAll(Collection<IgnoredObject> collection) {
@@ -72,14 +65,14 @@ public class IgnoreList {
     }
 
     public AddStatus getNameStatus(String name, boolean inAddSubtree) {
+        return getNameStatus(name, inAddSubtree, (String[]) null);
+    }
+
+    public AddStatus getNameStatus(String name, boolean inAddSubtree, String... dbNames) {
         AddStatus status = null;
-        IgnoredObject rule = literalRules.get(name);
-        if (rule != null) {
-            status = rule.getAddStatus();
-        }
-        for (IgnoredObject regexRule : regexRules) {
-            if (regexRule.match(name)) {
-                AddStatus newStatus = regexRule.getAddStatus();
+        for (IgnoredObject rule : rules) {
+            if (rule.match(name, dbNames)) {
+                AddStatus newStatus = rule.getAddStatus();
                 if (status == null) {
                     status = newStatus;
                 } else if ((status == AddStatus.ADD || status == AddStatus.SKIP) &&
@@ -99,20 +92,10 @@ public class IgnoreList {
     public String getListCode() {
         StringBuilder sb = new StringBuilder();
         sb.append(isShow ? "SHOW ALL\n" : "HIDE ALL\n");
-        for (IgnoredObject rule : literalRules.values()) {
-            rule.appendRuleCode(sb).append('\n');
-        }
-        for (IgnoredObject rule : regexRules) {
+        for (IgnoredObject rule : rules) {
             rule.appendRuleCode(sb).append('\n');
         }
         return sb.toString();
-    }
-
-    public LinkedList<IgnoredObject> copyToList() {
-        LinkedList<IgnoredObject> list = new LinkedList<>();
-        list.addAll(literalRules.values());
-        list.addAll(regexRules);
-        return list;
     }
 
     public void addAllFromPath(Path listFile) throws IOException {

@@ -45,7 +45,7 @@ implements IWorkbenchPreferencePage {
 
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
         listEditor = new IgnoredObjectPrefListEditor(parent, true, true);
-        listEditor.setInputList(InternalIgnoreList.readInternalList().copyToList());
+        listEditor.setInputList(new LinkedList<>(InternalIgnoreList.readInternalList().getList()));
         return parent;
     }
 

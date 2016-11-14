@@ -15,6 +15,7 @@ public class TreeFlattener {
     private boolean onlyEdits;
     private PgDatabase dbSource, dbTarget;
     private IgnoreList ignoreList;
+    private String[] dbNames;
 
     private final List<TreeElement> result = new ArrayList<>();
     private final Deque<TreeElement> addSubtreeRoots = new ArrayDeque<>();
@@ -40,7 +41,12 @@ public class TreeFlattener {
     }
 
     public TreeFlattener useIgnoreList(IgnoreList ignoreList) {
+        return useIgnoreList(ignoreList, (String[]) null);
+    }
+
+    public TreeFlattener useIgnoreList(IgnoreList ignoreList, String... dbNames) {
         this.ignoreList = ignoreList;
+        this.dbNames = dbNames;
         return this;
     }
 
@@ -52,8 +58,12 @@ public class TreeFlattener {
     }
 
     private void recurse(TreeElement el) {
-        AddStatus status = ignoreList == null ? AddStatus.ADD
-                : ignoreList.getNameStatus(el.getName(), !addSubtreeRoots.isEmpty());
+        AddStatus status;
+        if (ignoreList == null) {
+            status = AddStatus.ADD;
+        } else {
+            status = ignoreList.getNameStatus(el.getName(), !addSubtreeRoots.isEmpty(), dbNames);
+        }
         if (status == AddStatus.SKIP_SUBTREE) {
             return;
         }

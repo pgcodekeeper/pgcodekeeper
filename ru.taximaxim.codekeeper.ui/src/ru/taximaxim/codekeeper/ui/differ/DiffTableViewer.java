@@ -77,8 +77,6 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 /*
@@ -100,10 +98,7 @@ public class DiffTableViewer extends Composite {
 
     private final boolean viewOnly;
     private final DiffSide projSide;
-
     private TreeElement treeRoot;
-    private final PgDbProject proj;
-
     // values are checkedSet states of the elements
     private List<TreeElement> elements = new ArrayList<>();
     private final CheckStateListener checkListener = new CheckStateListener();
@@ -136,10 +131,9 @@ public class DiffTableViewer extends Composite {
     }
 
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs,
-            PgDbProject proj, boolean viewOnly, DiffSide projSide) {
+            boolean viewOnly, DiffSide projSide) {
         super(parent, style);
         this.viewOnly = viewOnly;
-        this.proj = proj;
         this.projSide = projSide;
 
         PixelConverter pc = new PixelConverter(this);
@@ -714,14 +708,19 @@ public class DiffTableViewer extends Composite {
      * @param treediffer содержит дерево + базы
      * @param reverseSide содержит сторону
      */
-    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
+    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
+            IgnoreList ignoreList) {
         this.treeRoot = diffTree;
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
-        elements.clear();
         if (treeRoot != null) {
-            generateElementsList(treeRoot);
+            elements = new TreeFlattener()
+                    .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+                    .useIgnoreList(ignoreList, dbRemote.getDbName())
+                    .flatten(diffTree);
+        } else {
+            elements.clear();
         }
 
         initializeViewer();
@@ -767,18 +766,6 @@ public class DiffTableViewer extends Composite {
         sortViewer(columnType.getColumn(), Columns.TYPE);
         sortViewer(columnLocation.getColumn(), Columns.LOCATION);
         viewer.refresh();
-    }
-
-    private void generateElementsList(TreeElement tree) {
-        IgnoreList ignores = InternalIgnoreList.readInternalList();
-        if (proj != null) {
-            InternalIgnoreList.readAppendList(
-                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignores);
-        }
-        elements = new TreeFlattener()
-                .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-                .useIgnoreList(ignores)
-                .flatten(tree);
     }
 
     private void viewerRefresh() {
