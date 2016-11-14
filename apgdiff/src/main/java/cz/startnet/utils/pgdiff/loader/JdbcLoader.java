@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ import java.util.regex.Matcher;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.SubMonitor;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -386,6 +389,8 @@ public class JdbcLoader implements PgCatalogStrings {
 
         // SEQUENCES
         setCurrentOperation("sequences query");
+        // TODO temp solution
+        Savepoint save = connection.setSavepoint();
         prepStatSequences.setLong(1, schemaOid);
         try (ResultSet resSeq = prepStatSequences.executeQuery()) {
             while (resSeq.next()) {
@@ -395,6 +400,22 @@ public class JdbcLoader implements PgCatalogStrings {
                 if (sequence != null) {
                     s.addSequence(sequence);
                 }
+            }
+        } catch (PSQLException ex) {
+            // FIXME temp solution to sequence access rights problem
+            final String insufficient_privilege = "42501";
+            ServerErrorMessage err = ex.getServerErrorMessage();
+            if (err != null && insufficient_privilege.equals(err.getSQLState())) {
+                Log.log(Log.LOG_WARNING, "Sequence permissions failure, rolling back and continuing", ex);
+                connection.rollback(save);
+            } else {
+                throw ex;
+            }
+        } finally {
+            try {
+                connection.releaseSavepoint(save);
+            } catch (Exception ex) {
+                Log.log(Log.LOG_ERROR, "Error while trying to release a temp sequence Savepoint!", ex);
             }
         }
 
