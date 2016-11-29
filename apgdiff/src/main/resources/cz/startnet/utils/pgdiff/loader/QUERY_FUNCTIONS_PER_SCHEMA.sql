@@ -5,29 +5,28 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT proname,
-        proowner,
+SELECT p.proname,
+        p.proowner,
         l.lanname AS lang_name,
-        prosrc,
-        proiswindow,
-        provolatile,
-        proleakproof,
-        proisstrict,
-        prosecdef,
-        procost::real,
-        prorows::real,
-        proconfig,
-        probin,
-        prorettype::bigint,
-        proallargtypes::bigint[],
-        proargmodes,
-        proargnames,
+        p.prosrc,
+        p.proiswindow,
+        p.provolatile,
+        p.proleakproof,
+        p.proisstrict,
+        p.prosecdef,
+        p.procost::real,
+        p.prorows::real,
+        p.proconfig,
+        p.probin,
+        p.prorettype::bigint,
+        p.proallargtypes::bigint[],
+        p.proargmodes,
+        p.proargnames,
         pg_get_function_arguments(p.oid) AS proarguments,
         pg_get_function_identity_arguments(p.oid) AS proarguments_without_default,
-        proargdefaults,
         proacl AS aclArray,
         d.description AS comment,
-        proretset
+        p.proretset
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang

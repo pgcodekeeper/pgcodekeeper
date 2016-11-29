@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -21,6 +22,8 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public final class PgDiffUtils {
 
     public static final int ERROR_SUBSTRING_LENGTH = 20;
+    private static final Pattern PATTERN_SQ = Pattern.compile("'", Pattern.LITERAL);
+    private static final Pattern PATTERN_DQ = Pattern.compile("\"", Pattern.LITERAL);
 
     /**
      * Array of reserved keywords. Non-reserved keywords are excluded. Source
@@ -531,11 +534,21 @@ public final class PgDiffUtils {
     }
 
     public static String quoteName(String name) {
-        return '"' + name.replace("\"", "\"\"") + '"';
+        return new StringBuilder(name.length() + 2)
+                .append('"')
+                .append(name.indexOf('"') != -1 ? PATTERN_DQ.matcher(name).replaceAll("\"\"") : name)
+                .append('"')
+                .toString();
     }
 
     public static String quoteString(String s) {
-        return "'" + s.replace("'", "''") + "'";
+        return appendQuotedString(new StringBuilder(s.length() + 2), s).toString();
+    }
+
+    public static StringBuilder appendQuotedString(StringBuilder sb, String s) {
+        return sb.append('\'')
+                .append(s.indexOf('\'') != -1 ? PATTERN_SQ.matcher(s).replaceAll("''") : s)
+                .append('\'');
     }
 
     public static String unquoteQuotedName(String name) {

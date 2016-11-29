@@ -1,0 +1,83 @@
+package cz.startnet.utils.pgdiff.loader.jdbc;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader.SequencesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader.TriggersReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader.TypesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader.ViewsReaderFactory;
+
+public abstract class JdbcReaderFactory {
+
+    /**
+     * Bit mask that if set signifies that {@link #helperFunction} is available in the database.
+     */
+    protected final long hasHelperMask;
+    protected final String helperFunction;
+    protected final String helperQuery;
+    protected final String fallbackQuery;
+
+    public JdbcReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
+        this.hasHelperMask = hasHelperMask;
+        this.helperFunction = helperFunction;
+        this.helperQuery = "SELECT * FROM " + HELPER_SCHEMA + '.' + helperFunction + "(?,?)";
+        this.fallbackQuery = fallbackQuery;
+    }
+
+    public abstract JdbcReader getReader(JdbcLoaderBase loader);
+
+    /*
+     * Static part.
+     */
+
+    private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
+    public static final List<? extends JdbcReaderFactory> FACTORIES = Arrays.asList(
+            // SONAR-OFF
+            new TypesReaderFactory(      1 << 0, "get_all_types",       JdbcQueries.QUERY_TYPES_PER_SCHEMA),
+            new SequencesReaderFactory(  1 << 1, "get_all_sequences",   JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA),
+            new FunctionsReaderFactory(  1 << 2, "get_all_functions",   JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA),
+            new TablesReaderFactory(     1 << 3, "get_all_tables",      JdbcQueries.QUERY_TABLES_PER_SCHEMA),
+            new ConstraintsReaderFactory(1 << 4, "get_all_constraints", JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA),
+            new IndicesReaderFactory(    1 << 5, "get_all_indices",     JdbcQueries.QUERY_INDICES_PER_SCHEMA),
+            new ViewsReaderFactory(      1 << 6, "get_all_views",       JdbcQueries.QUERY_VIEWS_PER_SCHEMA),
+            new TriggersReaderFactory(   1 << 7, "get_all_triggers",    JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA),
+            new RulesReaderFactory(      1 << 8, "get_all_rules",       JdbcQueries.QUERY_RULES_PER_SCHEMA)
+            // SONAR-ON
+            );
+
+    /**
+     * @return helper functions that are available in the database
+     *          in the form of bit field of combined {@link #hasHelperMask}s.
+     */
+    public static long getAvailableHelpersBits(JdbcLoaderBase loader) throws SQLException {
+        loader.setCurrentOperation("available helpers query");
+        long bits = 0;
+        try (PreparedStatement st = loader.connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {
+            st.setString(1, HELPER_SCHEMA);
+            try (ResultSet res = st.executeQuery()) {
+                Set<String> funcs = new HashSet<>();
+                while (res.next()) {
+                    funcs.add(res.getString("proname"));
+                }
+                for (JdbcReaderFactory factory : FACTORIES) {
+                    if (funcs.contains(factory.helperFunction)) {
+                        bits |= factory.hasHelperMask;
+                    }
+                }
+            }
+        }
+        return bits;
+    }
+}

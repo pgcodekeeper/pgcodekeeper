@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,6 +27,7 @@ public class JdbcConnector {
     private final String dbName;
     private final String encoding;
     private final String timezone;
+    private Charset charset;
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding, String timezone){
         this.host = host;
@@ -45,6 +47,7 @@ public class JdbcConnector {
      * @throws IOException  If driver not found or a database access error occurs
      */
     Connection getConnection() throws IOException{
+        this.charset = Charset.forName(encoding);
         try{
             return establishConnection();
         } catch (ClassNotFoundException e) {
@@ -76,8 +79,16 @@ public class JdbcConnector {
         return connection;
     }
 
-    String getEncoding(){
+    public String getEncoding() {
         return encoding;
+    }
+
+    /**
+     * @return {@link Charset} for {@link #encoding}, or null, if {@link #getConnection()}
+     *          wasn't called yet.
+     */
+    public Charset getCharset() {
+        return charset;
     }
 
     String getTimezone(){

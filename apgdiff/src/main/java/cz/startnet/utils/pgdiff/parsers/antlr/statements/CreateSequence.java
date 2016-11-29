@@ -23,22 +23,20 @@ public class CreateSequence extends ParserAbstract {
         String name = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()));
-        long inc = 0;
-        String maxValue = null;
-        String minValue = null;
+        long inc = 1;
+        Long maxValue = null, minValue = null;
         for (Sequence_bodyContext body : ctx.sequence_body()) {
             if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             }
             if (body.incr!=null) {
-                sequence.setIncrement(body.incr.getText());
                 inc = Long.parseLong(body.incr.getText());
             }
             if (body.maxval!=null) {
-                maxValue = body.maxval.getText();
+                maxValue = Long.parseLong(body.maxval.getText());
             }
             if (body.minval!=null) {
-                minValue = body.minval.getText();
+                minValue = Long.parseLong(body.minval.getText());
             }
             if (body.start_val!=null) {
                 sequence.setStartWith(body.start_val.getText());
@@ -47,11 +45,12 @@ public class CreateSequence extends ParserAbstract {
                 sequence.setCycle(body.cycle_true==null);
             }
             if (body.col_name!=null) {
+                // TODO incorrect qualified name work
+                // also broken in altersequence
                 sequence.setOwnedBy(body.col_name.getText());
             }
         }
-        sequence.setMaxValue(getMaxValue(inc, maxValue));
-        sequence.setMinValue(getMinValue(inc, minValue));
+        sequence.setMinMaxInc(inc, maxValue, minValue);
 
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "SEQUENCE", name);
