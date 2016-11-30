@@ -33,7 +33,6 @@ public class ConstraintsReader extends JdbcReader {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             PgConstraint constraint = getConstraint(result, schema.getName(), table.getName());
-            loader.monitor.worked(1);
             if (constraint != null) {
                 table.addConstraint(constraint);
             }

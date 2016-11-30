@@ -230,7 +230,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    // TODO counted objects
     protected void setupMonitorWork() throws SQLException {
         setCurrentOperation("object count query");
         try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {

@@ -38,7 +38,6 @@ public class FunctionsReader extends JdbcReader {
     @Override
     protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
         PgFunction function = getFunction(result, schema.getName());
-        loader.monitor.worked(1);
         if (function != null) {
             schema.addFunction(function);
         }

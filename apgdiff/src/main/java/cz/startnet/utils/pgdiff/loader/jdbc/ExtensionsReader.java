@@ -27,7 +27,6 @@ public class ExtensionsReader implements PgCatalogStrings {
             while (res.next()) {
                 PgDumpLoader.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);
-                loader.monitor.worked(1);
                 if (extension != null) {
                     db.addExtension(extension);
                 }
