@@ -19,6 +19,8 @@ public final class JdbcQueries {
 
     // SONAR-OFF
 
+    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
+
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_HELPER_FUNCTIONS;

@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,13 +59,19 @@ public abstract class JdbcReaderFactory {
             );
 
     /**
+     * @param loader loader connection must have been established
+     *
      * @return helper functions that are available in the database
      *          in the form of bit field of combined {@link #hasHelperMask}s.
      */
     public static long getAvailableHelpersBits(JdbcLoaderBase loader) throws SQLException {
         loader.setCurrentOperation("available helpers query");
+        return getAvailableHelperBits(loader.connection);
+    }
+
+    public static long getAvailableHelperBits(Connection connection) throws SQLException {
         long bits = 0;
-        try (PreparedStatement st = loader.connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {
+        try (PreparedStatement st = connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {
             st.setString(1, HELPER_SCHEMA);
             try (ResultSet res = st.executeQuery()) {
                 Set<String> funcs = new HashSet<>();
@@ -77,6 +84,14 @@ public abstract class JdbcReaderFactory {
                     }
                 }
             }
+        }
+        return bits;
+    }
+
+    public static long getAllHelperBits() {
+        long bits = 0;
+        for (JdbcReaderFactory f : FACTORIES) {
+            bits |= f.hasHelperMask;
         }
         return bits;
     }

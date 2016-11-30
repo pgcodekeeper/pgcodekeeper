@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.ExtensionsReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -21,6 +23,8 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
+    private boolean useServerHelpers = true;
+
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
@@ -28,6 +32,10 @@ public class JdbcLoader extends JdbcLoaderBase {
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
             SubMonitor monitor) {
         super(connector, monitor, pgDiffArguments);
+    }
+
+    public void setUseServerHelpers(boolean useServerHelpers) {
+        this.useServerHelpers = useServerHelpers;
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
@@ -50,14 +58,15 @@ public class JdbcLoader extends JdbcLoaderBase {
             setupMonitorWork();
 
             schemas = new SchemasReader(this, d).read();
-            availableHelpersBits = JdbcReaderFactory.getAvailableHelpersBits(this);
-            for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
-                f.getReader(this).read();
+            try (SchemasContainer schemas = this.schemas) {
+                availableHelpersBits = useServerHelpers ? JdbcReaderFactory.getAvailableHelpersBits(this) : 0;
+                for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
+                    f.getReader(this).read();
+                }
+                new ExtensionsReader(this, d).read();
+
+                SequencesReader.querySequencesData(d, this);
             }
-            new ExtensionsReader(this, d).read();
-
-            SequencesReader.querySequencesData(d, this);
-
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (Exception e) {
@@ -78,5 +87,15 @@ public class JdbcLoader extends JdbcLoaderBase {
         }
         args.getLicense().verifyDb(d);
         return d;
+    }
+
+    public boolean hasAllHelpers() throws IOException {
+        // just makes new connection for now
+        // smarter solution would be to make the class AutoCloseable
+        try (Connection c = connector.getConnection()) {
+            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
+        } catch (SQLException ex) {
+            throw new IOException(ex.getLocalizedMessage(), ex);
+        }
     }
 }

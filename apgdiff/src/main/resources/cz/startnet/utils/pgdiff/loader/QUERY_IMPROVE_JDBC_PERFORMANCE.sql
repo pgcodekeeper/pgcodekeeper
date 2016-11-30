@@ -1,9 +1,8 @@
-CREATE SCHEMA pgcodekeeperhelper;
+CREATE SCHEMA IF NOT EXISTS pgcodekeeperhelper;
 
 CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[], schema_names text[])
   RETURNS TABLE(
        schema_oid bigint,
-       oid bigint,
        relname name,
        relowner bigint,
        aclArray text,
@@ -11,7 +10,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_names name[],
        col_defaults text[],
        col_comments text[],
-       col_type_ids bigint[],
+       col_type_ids oid[],
        col_type_name text[],
        col_notnull boolean[],
        col_collation oid[],
@@ -20,6 +19,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_typcollation oid[],
        col_collationname name[],
        col_collationnspname name[],
+       col_attseq text[],
        col_acl text[],
        table_comment text,
        table_space name,
@@ -758,7 +758,7 @@ SELECT schema_oid,
     t.typstorage, -- convert into plain/external(e)/extended(x)/main
     t.typcategory, -- don't output if == 'U'
     t.typispreferred,
-    pg_catalog.pg_get_expr(typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
+    pg_catalog.pg_get_expr(t.typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
     t.typdefault, -- if using this, single-quote and escape it
     t.typelem,
     t.typdelim, -- don't output if == ','

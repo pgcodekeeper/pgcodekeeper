@@ -125,7 +125,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(t.getColumn(colNames[i]), PgDiffUtils.getQuotedName(tableName),
+                loader.setPrivileges(column, PgDiffUtils.getQuotedName(tableName),
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 

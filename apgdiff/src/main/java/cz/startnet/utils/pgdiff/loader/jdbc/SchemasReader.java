@@ -36,6 +36,7 @@ public class SchemasReader implements PgCatalogStrings {
                 } else {
                     db.addSchema(schema);
                 }
+                schemas.put(result.getLong(OID), schema);
             }
         }
         return new SchemasContainer(schemas, loader.connection);

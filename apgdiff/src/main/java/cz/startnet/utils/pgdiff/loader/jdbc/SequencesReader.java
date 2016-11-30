@@ -110,7 +110,7 @@ public class SequencesReader extends JdbcReader {
             while (res.next()) {
                 PgSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
-                seq.setMinMaxInc(res.getLong("increment"), res.getLong("max_value"), res.getLong("min_value"));
+                seq.setMinMaxInc(res.getLong("increment_by"), res.getLong("max_value"), res.getLong("min_value"));
                 seq.setCache(res.getString("cache_value"));
                 seq.setCycle(res.getBoolean("is_cycled"));
             }

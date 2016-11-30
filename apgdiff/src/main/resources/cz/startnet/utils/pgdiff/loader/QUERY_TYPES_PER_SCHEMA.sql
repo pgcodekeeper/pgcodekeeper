@@ -44,7 +44,7 @@ SELECT  -- GENERAL
     t.typstorage, -- convert into plain/external(e)/extended(x)/main
     t.typcategory, -- don't output if == 'U'
     t.typispreferred,
-    pg_catalog.pg_get_expr(typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
+    pg_catalog.pg_get_expr(t.typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
     t.typdefault, -- if using this, single-quote and escape it
     t.typelem,
     t.typdelim, -- don't output if == ','

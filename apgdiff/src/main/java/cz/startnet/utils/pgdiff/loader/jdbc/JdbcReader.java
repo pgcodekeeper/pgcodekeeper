@@ -20,30 +20,42 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException {
-        boolean helperAvailable = (loader.availableHelpersBits & factory.hasHelperMask) != 0;
-        try (PreparedStatement st = loader.connection.prepareStatement(
-                helperAvailable ? factory.helperQuery : factory.fallbackQuery)) {
-            for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
-                if (helperAvailable) {
-                    st.setArray(1, loader.schemas.oids);
-                    st.setArray(2, loader.schemas.names);
-                } else {
-                    loader.setCurrentOperation("set search_path query");
-                    loader.statement.executeQuery("SET search_path TO " +
-                            PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
-                    st.setLong(1, schema.getKey());
-                }
+        if ((loader.availableHelpersBits & factory.hasHelperMask) != 0) {
+            readAllUsingHelper();
+        } else {
+            readSchemasSeparately();
+        }
+    }
 
+    private void readAllUsingHelper() throws SQLException, InterruptedException {
+        try (PreparedStatement st = loader.connection.prepareStatement(factory.helperQuery)) {
+            loader.setCurrentOperation(factory.helperFunction + " query");
+
+            st.setArray(1, loader.schemas.oids);
+            st.setArray(2, loader.schemas.names);
+            try (ResultSet result = st.executeQuery()) {
+                while (result.next()) {
+                    PgDumpLoader.checkCancelled(loader.monitor);
+                    processResult(result, loader.schemas.map.get(result.getLong("schema_oid")));
+                }
+            }
+        }
+    }
+
+    private void readSchemasSeparately() throws SQLException, InterruptedException {
+        try (PreparedStatement st = loader.connection.prepareStatement(factory.fallbackQuery)) {
+            for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
+                loader.setCurrentOperation("set search_path query");
+                loader.statement.execute("SET search_path TO " +
+                        PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
+
+                loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
+                st.setLong(1, schema.getKey());
                 try (ResultSet result = st.executeQuery()) {
                     while (result.next()) {
                         PgDumpLoader.checkCancelled(loader.monitor);
-                        processResult(result, helperAvailable ?
-                                loader.schemas.map.get(result.getLong("schema_oid")) : schema.getValue());
+                        processResult(result, schema.getValue());
                     }
-                }
-                if (helperAvailable) {
-                    // all schemas were processed using a single query, no for-loop needed
-                    break;
                 }
             }
         }

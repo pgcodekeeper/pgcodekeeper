@@ -1,4 +1,5 @@
-SELECT n.nspname,
+SELECT n.oid,
+       n.nspname,
        n.nspacl,
        n.nspowner,
        d.description AS comment

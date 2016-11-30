@@ -72,7 +72,7 @@ public class ConstraintsReader extends JdbcReader {
                 c.setUnique(true);
             }
 
-            String[] concols = (String[]) res.getArray("table_cols").getArray();
+            String[] concols = (String[]) res.getArray("cols").getArray();
             for (String name : concols) {
                 c.addColumn(name);
             }
