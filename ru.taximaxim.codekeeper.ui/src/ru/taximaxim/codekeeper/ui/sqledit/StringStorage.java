@@ -10,11 +10,11 @@ import org.eclipse.core.runtime.IPath;
 
 public class StringStorage implements IEncodedStorage {
 
-    private final ByteArrayInputStream stream;
+    private final byte[] content;
     private final String name;
 
     public StringStorage(String str, String name) {
-        this.stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
+        this.content = str.getBytes(StandardCharsets.UTF_8);
         this.name = name;
     }
 
@@ -25,7 +25,8 @@ public class StringStorage implements IEncodedStorage {
 
     @Override
     public InputStream getContents() throws CoreException {
-        return stream;
+        // return a fresh stream of the same content for repeated reads
+        return new ByteArrayInputStream(content);
     }
 
     @Override

@@ -420,10 +420,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             @Override
             public void run() {
                 if (!runScriptBtn.isDisposed()) {
+                    if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                        new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
+                    }
                     if (addDepcy != null) {
-                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                            new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
-                        }
                         showAddDepcyDialog();
                     }
                     setRunButtonText(RUN_SCRIPT_LABEL);

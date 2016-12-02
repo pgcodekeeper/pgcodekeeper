@@ -82,7 +82,7 @@ implements IWorkbenchPreferencePage {
         } catch (FileAlreadyExistsException ex) {
             // no action
         }
-        Files.write(listFile, out, StandardOpenOption.CREATE);
+        Files.write(listFile, out, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
         InternalIgnoreList.notifyListeners(list);
     }
