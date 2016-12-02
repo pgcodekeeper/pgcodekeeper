@@ -3,10 +3,5 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/apgdiff/lib/antlr-4.5-complete.jar" sourcepath="/apgdiff/lib/antlr-4.5-runtime-src.zip">
-		<accessrules>
-			<accessrule kind="accessible" pattern="*"/>
-		</accessrules>
-	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
