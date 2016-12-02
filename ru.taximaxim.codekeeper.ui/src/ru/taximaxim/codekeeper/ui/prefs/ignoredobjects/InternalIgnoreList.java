@@ -80,10 +80,10 @@ public final class InternalIgnoreList {
     static Path getInternalIgnoreFile() {
         try {
             return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                    .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS)
+                    .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
                     .resolve(FILE.IGNORED_OBJECTS);
         } catch (URISyntaxException ex) {
-            ExceptionNotifier.notifyDefault("Couldn't get path to the workspace!", ex);
+            ExceptionNotifier.notifyDefault(Messages.InternalIgnoreList_error_workspace_path, ex);
             return null;
         }
     }

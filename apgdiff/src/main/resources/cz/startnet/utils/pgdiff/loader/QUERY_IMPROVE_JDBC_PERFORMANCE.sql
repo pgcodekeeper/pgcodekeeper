@@ -1,5 +1,15 @@
 CREATE SCHEMA IF NOT EXISTS pgcodekeeperhelper;
 
+-- these functions only read pg_catalog metadata, so it's safe to expose them to PUBLIC
+-- you may alter access rights as you need
+GRANT USAGE ON SCHEMA pgcodekeeperhelpers to PUBLIC;
+
+-- you may remove functions from this schema 
+-- doing so will impose performance penalty on reading corresponding object types
+
+-- DO NOT ALTER the functions themselves or their signatures
+-- doing so will most likely result in failures to read the DB schema using JDBC
+
 CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[], schema_names text[])
   RETURNS TABLE(
        schema_oid bigint,

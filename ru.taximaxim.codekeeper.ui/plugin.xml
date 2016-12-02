@@ -161,11 +161,6 @@
                         </and>
                     </visibleWhen>
                 </command>
-            <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-                  label="%command.label.improvePerformanceJdbc"
-                  style="push">
-            </command>
             </menu>
         </menuContribution>
         <menuContribution
@@ -180,6 +175,12 @@
                     label="%command.label.feedback"
                     mnemonic="%command.mnemonic.feedback"
                     style="push">
+                </command>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+                      label="%command.label.improvePerformanceJdbc"
+                      mnemonic="%command.mnemonic.improvePerformanceJdbc"
+                      style="push">
                 </command>
                 <visibleWhen checkEnabled="false">
                     <with variable="activeWorkbenchWindow.activePerspective">

@@ -13,7 +13,7 @@ public class ProjectEditorInputFactory implements IElementFactory {
 
     private static final String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
     private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
-    private static final String TAG_EDITOR_TAB = "editorTabDiff";
+    private static final String TAG_EDITOR_TAB = "editorTabDiff"; //$NON-NLS-1$
 
     @Override
     public IAdaptable createElement(IMemento memento) {

@@ -8,6 +8,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.StringEditorInput;
 
 public class ImprovePerformanceJdbcLoader extends AbstractHandler {
@@ -17,7 +18,7 @@ public class ImprovePerformanceJdbcLoader extends AbstractHandler {
         try {
             HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().openEditor(
                     new StringEditorInput(JdbcQueries.QUERY_IMPROVE_JDBC_PERFORMANCE,
-                            "pgCodeKeeper Performance Helpers"), EDITOR.ROLLON);
+                            Messages.ImprovePerformanceJdbcLoader_performance_helpers), EDITOR.ROLLON);
         } catch (PartInitException e) {
             throw new ExecutionException(e.getLocalizedMessage(), e);
         }

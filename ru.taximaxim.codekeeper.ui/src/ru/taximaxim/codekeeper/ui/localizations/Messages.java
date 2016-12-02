@@ -163,7 +163,6 @@ public final class Messages extends NLS {
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
-    public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -256,7 +255,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_copy_as_regex;
 
     public static String DiffTableViewer_error_load_checked_set;
-    public static String DiffTableViewer_error_reading_ignored_objects;
     public static String DiffTableViewer_error_save_checked_set;
     public static String DiffTableViewer_error_setting_input;
 
@@ -294,7 +292,13 @@ public final class Messages extends NLS {
 
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
+
+    public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
+
+    public static String ImprovePerformanceJdbcLoader_performance_helpers;
+
+    public static String InternalIgnoreList_error_workspace_path;
     public static String LicensePrefs_browse;
 
     public static String LicensePrefs_descr;

@@ -63,7 +63,7 @@ implements IWorkbenchPreferencePage {
             ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
             return false;
         } catch (URISyntaxException ex) {
-            ExceptionNotifier.notifyDefault("Couldn't get path to the workspace!", ex);
+            ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_workspace_path, ex);
         }
         return true;
     }

@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Show_ruleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
@@ -32,7 +33,14 @@ public class IgnoreParser {
     }
 
     public IgnoreParser parse(InputStream stream, String parsedObjectName) throws IOException {
-        parse(AntlrParser.makeBasicParser(IgnoreListParser.class, stream, "UTF-8", parsedObjectName));
+        IgnoreListParser parser = AntlrParser.makeBasicParser(
+                IgnoreListParser.class, stream, "UTF-8", parsedObjectName);
+        try {
+            parse(parser);
+        } catch (Exception ex) {
+            Log.log(Log.LOG_ERROR, "Error while analyzing parser tree for IgnoreList file: "
+                    + parsedObjectName, ex);
+        }
         return this;
     }
 
