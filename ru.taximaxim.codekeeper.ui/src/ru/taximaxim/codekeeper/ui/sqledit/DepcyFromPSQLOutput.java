@@ -1,9 +1,8 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,18 +10,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.IStorageEditorInput;
-import org.eclipse.ui.PlatformUI;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -36,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
+public class DepcyFromPSQLOutput extends StringEditorInput {
 
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
@@ -51,14 +43,13 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     private final IProject proj;
     private PgDbParser parser;
     private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+    DbInfo dbinfo;
+    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
+    private StringStorage updatedScript;
+
     public List<FunctionBodyContainer> getFuncBodies() {
         return funcBodies;
     }
-
-    private String script;
-
-    DbInfo dbinfo;
-    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
 
     public void setDbinfo(DbInfo dbinfo) {
         this.dbinfo = dbinfo;
@@ -69,6 +60,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
 
     public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list) {
+        super(getDiff(differ), Messages.diffPartDescr_diff_script);
         this.differ = differ;
         this.proj = proj2.getProject();
         this.objList = list;
@@ -196,31 +188,6 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return sb.toString();
     }
 
-    @Override
-    public <T> T getAdapter(Class<T> adapter) {
-        return null;
-    }
-    @Override
-    public boolean exists() {
-        return false;
-    }
-    @Override
-    public ImageDescriptor getImageDescriptor() {
-        return PlatformUI.getWorkbench().getEditorRegistry().getImageDescriptor("<internal>.sql"); //$NON-NLS-1$
-    }
-    @Override
-    public String getName() {
-        return Messages.diffPartDescr_diff_script;
-    }
-    @Override
-    public IPersistableElement getPersistable() {
-        return null;
-    }
-    @Override
-    public String getToolTipText() {
-        return Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database;
-    }
-
     public Differ getDiffer() {
         return differ;
     }
@@ -230,57 +197,21 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
 
     public void updateScript(String newScript) {
-        script = newScript;
+        updatedScript = new StringStorage(newScript, getName());
     }
 
     @Override
     public IStorage getStorage() {
-        try {
-            if (script == null) {
-                script = differ.getDiffDirect();
-            }
-            return new StringStorage(script);
-        } catch (PgCodekeeperUIException e) {
-            return new StringStorage(""); //$NON-NLS-1$
-        }
+        return updatedScript == null ? super.getStorage() : updatedScript;
     }
 
-    private class StringStorage implements IEncodedStorage {
-
-        private final byte[] content;
-
-        public StringStorage(String str) {
-            this.content = str.getBytes(StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public <T> T getAdapter(Class<T> adapter) {
-            return null;
-        }
-
-        @Override
-        public InputStream getContents() throws CoreException {
-            return new ByteArrayInputStream(content);
-        }
-
-        @Override
-        public IPath getFullPath() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-        }
-
-        @Override
-        public String getCharset() throws CoreException {
-            return StandardCharsets.UTF_8.name();
+    private static String getDiff(Differ differ) {
+        try {
+            return differ.getDiffDirect();
+        } catch (PgCodekeeperUIException ex) {
+            StringWriter sw = new StringWriter();
+            ex.printStackTrace(new PrintWriter(sw));
+            return sw.toString();
         }
     }
 }

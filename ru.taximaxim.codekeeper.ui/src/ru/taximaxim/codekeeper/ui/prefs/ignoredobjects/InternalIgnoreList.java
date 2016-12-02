@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -61,7 +62,7 @@ public final class InternalIgnoreList {
     public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo) {
         try {
             appendTo.addAllFromPath(listFile);
-        } catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException | NoSuchFileException ex) {
             // no action
         } catch (IOException ex) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
