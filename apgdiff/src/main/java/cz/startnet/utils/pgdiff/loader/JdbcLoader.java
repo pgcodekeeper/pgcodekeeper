@@ -70,19 +70,11 @@ public class JdbcLoader extends JdbcLoaderBase {
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (Exception e) {
-            try {
-                if (connection != null) {
-                    connection.rollback();
-                }
-            } catch (Exception ex) {
-                e.addSuppressed(ex);
-                Log.log(Log.LOG_ERROR, "Cannot rollback JdbcLoader transaction", ex);
-            }
+            // connection is closed at this point, trust Postgres to rollback it; we're a read-only xact anyway
             if (e instanceof InterruptedException) {
                 throw (InterruptedException) e;
             }
-            throw new IOException(MessageFormat.format(
-                    Messages.Connection_DatabaseJdbcAccessError,
+            throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
         args.getLicense().verifyDb(d);
