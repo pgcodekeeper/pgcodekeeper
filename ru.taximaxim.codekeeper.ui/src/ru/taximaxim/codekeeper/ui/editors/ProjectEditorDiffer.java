@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +60,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -507,9 +507,10 @@ class CommitPage extends DiffPresentationPane {
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
 
             try {
-                Collection<TreeElement> checked = tree.flattenAlteredElements(
-                        new ArrayList<TreeElement>(),
-                        dbProject.getDbObject(), dbRemote.getDbObject(), true, null);
+                Collection<TreeElement> checked = new TreeFlattener()
+                        .onlySelected()
+                        .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+                        .flatten(tree);
                 new ProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
                         checked, proj).updatePartial();
                 monitor.done();

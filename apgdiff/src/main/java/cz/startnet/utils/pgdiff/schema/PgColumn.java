@@ -8,7 +8,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -21,11 +20,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgColumn extends PgStatementWithSearchPath {
 
-    // TODO unsupported quotes in quoted ids, move to QNameParser
-    public static final Pattern PATTERN_SEQUENCE = Pattern.compile(
-            "^(?:nextval|setval)\\('(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
-                    + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",
-                    Pattern.CASE_INSENSITIVE);
     private static final String ALTER_TABLE = "ALTER TABLE ";
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
 

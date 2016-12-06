@@ -20,7 +20,7 @@ public enum DbObjType {
     COLUMN,
     CONSTRAINT,
     INDEX,
-    TRIGGER,
     VIEW,
+    TRIGGER,
     RULE
 }

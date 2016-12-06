@@ -20,8 +20,8 @@ COMMENT ON CONSTRAINT text_check ON test IS NULL;
 
 COMMENT ON CONSTRAINT test_pkey ON test IS NULL;
 
-COMMENT ON TRIGGER test_trigger ON test IS NULL;
-
 COMMENT ON VIEW test_view IS NULL;
 
 COMMENT ON COLUMN test_view.id IS NULL;
+
+COMMENT ON TRIGGER test_trigger ON test IS NULL;

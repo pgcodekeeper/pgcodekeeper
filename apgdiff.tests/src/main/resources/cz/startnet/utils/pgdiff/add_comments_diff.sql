@@ -22,10 +22,10 @@ COMMENT ON CONSTRAINT text_check ON test IS 'text check';
 
 COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key';
 
-COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
-
 COMMENT ON VIEW test_view IS 'test view';
 
 COMMENT ON COLUMN test_view.id IS 'view id col';
+
+COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';
 
 COMMENT ON RULE test_rule ON test IS 'test rule';

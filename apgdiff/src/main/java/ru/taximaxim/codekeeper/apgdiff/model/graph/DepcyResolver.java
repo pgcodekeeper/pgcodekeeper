@@ -16,7 +16,6 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -85,8 +84,7 @@ public class DepcyResolver {
         actions.clear();
     }
 
-    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase)
-            throws PgCodekeeperException {
+    public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);

@@ -1,10 +1,9 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -18,23 +17,30 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  */
 public final class JdbcQueries {
 
-    private final static String RES_ENCODING = ApgdiffConsts.UTF_8;
-
     // SONAR-OFF
+
+    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
+
+    public static String QUERY_TOTAL_OBJECTS_COUNT;
+    public static String QUERY_TYPES_FOR_CACHE_ALL;
+    public static String QUERY_HELPER_FUNCTIONS;
+
+    public static String QUERY_EXTENSIONS;
+    public static String QUERY_SCHEMAS;
+
     public static String QUERY_TABLES_PER_SCHEMA;
     public static String QUERY_FUNCTIONS_PER_SCHEMA;
     public static String QUERY_SEQUENCES_PER_SCHEMA;
     public static String QUERY_INDICES_PER_SCHEMA;
     public static String QUERY_CONSTRAINTS_PER_SCHEMA;
-    public static String QUERY_COLUMNS_PER_SCHEMA;
-    public static String QUERY_EXTENSIONS;
-    public static String QUERY_SCHEMAS;
     public static String QUERY_TRIGGERS_PER_SCHEMA;
     public static String QUERY_VIEWS_PER_SCHEMA;
-    public static String QUERY_TOTAL_OBJECTS_COUNT;
-    public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_TYPES_PER_SCHEMA;
     public static String QUERY_RULES_PER_SCHEMA;
+
+    public static String QUERY_SEQUENCES_ACCESS;
+    public static String QUERY_SEQUENCES_DATA;
+
     // SONAR-ON
 
     static {
@@ -46,7 +52,7 @@ public final class JdbcQueries {
             try {
                 String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                         JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                        Charset.forName(RES_ENCODING));
+                        StandardCharsets.UTF_8);
                 f.set(null, query);
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,

@@ -1,0 +1,142 @@
+package cz.startnet.utils.pgdiff.loader.jdbc;
+
+import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+
+public class TriggersReader extends JdbcReader {
+
+    public static class TriggersReaderFactory extends JdbcReaderFactory {
+
+        public TriggersReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
+            super(hasHelperMask, helperFunction, fallbackQuery);
+        }
+
+        @Override
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new TriggersReader(this, loader);
+        }
+    }
+
+    // SONAR-OFF
+    // pg_trigger.h
+    private static final int TRIGGER_TYPE_ROW       = 1 << 0;
+    private static final int TRIGGER_TYPE_BEFORE    = 1 << 1;
+    private static final int TRIGGER_TYPE_INSERT    = 1 << 2;
+    private static final int TRIGGER_TYPE_DELETE    = 1 << 3;
+    private static final int TRIGGER_TYPE_UPDATE    = 1 << 4;
+    private static final int TRIGGER_TYPE_TRUNCATE  = 1 << 5;
+    private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
+    // SONAR-ON
+
+    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
+    }
+
+    @Override
+    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+        String contName = result.getString(CLASS_RELNAME);
+        PgTriggerContainer c = schema.getTriggerContainer(contName);
+        if (c != null) {
+            PgTrigger trigger = getTrigger(result, schema.getName(), contName);
+            if (trigger != null) {
+                c.addTrigger(trigger);
+            }
+        }
+    }
+
+    private PgTrigger getTrigger(ResultSet res, String schemaName, String tableName) throws SQLException {
+        String triggerName = res.getString("tgname");
+        loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
+        PgTrigger t = new PgTrigger(triggerName, "");
+
+        int firingConditions = res.getInt("tgtype");
+        if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {
+            t.setOnDelete(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_INSERT) != 0) {
+            t.setOnInsert(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_UPDATE) != 0) {
+            t.setOnUpdate(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_TRUNCATE) != 0) {
+            t.setOnTruncate(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_ROW) != 0) {
+            t.setForEachRow(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_BEFORE) != 0) {
+            t.setBefore(true);
+        } else {
+            t.setBefore(false);
+        }
+
+        t.setTableName(tableName);
+
+        String funcName = res.getString("proname");
+        String funcSchema = res.getString(NAMESPACE_NSPNAME);
+
+        StringBuilder functionCall = new StringBuilder(funcName.length() + 2);
+        if (!funcSchema.equals(schemaName)) {
+            functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.');
+        }
+        functionCall.append(PgDiffUtils.getQuotedName(funcName)).append('(');
+
+        byte[] args = res.getBytes("tgargs");
+        if (args.length > 0) {
+            functionCall.append('\'');
+            int start = 0;
+            for (int i = 0; i < args.length; ++i) {
+                if (args[i] != 0) {
+                    continue;
+                }
+
+                functionCall.append(new String(args, start, i - start, loader.connector.getCharset()));
+                if (i != args.length - 1) {
+                    functionCall.append("', '");
+                }
+                start = i + 1;
+            }
+            functionCall.append('\'');
+        }
+        functionCall.append(')');
+        t.setFunction(functionCall.toString());
+
+        t.addDep(new GenericColumn(funcSchema, funcName + "()", DbObjType.FUNCTION));
+
+        Array arrCols = res.getArray("cols");
+        if (arrCols != null) {
+            for (String col_name : (String[]) arrCols.getArray()) {
+                t.addUpdateColumn(col_name);
+                t.addDep(new GenericColumn(schemaName, tableName, col_name, DbObjType.COLUMN));
+            }
+        }
+        t.setWhen(parseWhen(res.getString("definition")));
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()) {
+            t.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
+        return t;
+    }
+
+    private String parseWhen(String string) {
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, string, loader.getCurrentLocation());
+        WhenListener whenListener = new WhenListener();
+        ParseTreeWalker.DEFAULT.walk(whenListener, parser.sql());
+        return whenListener.getWhen();
+    }
+}

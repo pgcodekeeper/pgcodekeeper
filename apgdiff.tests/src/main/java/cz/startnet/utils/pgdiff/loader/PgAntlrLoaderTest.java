@@ -40,8 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -155,16 +153,6 @@ public class PgAntlrLoaderTest {
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
-
-        PgDatabase empty = new PgDatabase();
-
-        // check filtering mechanism
-        // applying full unchanged diff tree created against an empty DB
-        // should result in a fully copied or empty (depending on filter side) DB object
-        TreeElement dbTree = DiffTree.create(d, empty);
-        dbTree.setAllChecked();
-
-        Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);
 
         // test deepCopy mechanism
         Assert.assertEquals("PgStatement deep copy altered", d, d.deepCopy());
@@ -380,8 +368,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
 
         PgSequence seq = new PgSequence("admins_aid_seq", "");
         seq.setStartWith("1");
-        seq.setIncrement("1");
-        seq.setMaxValue("1000000000");
+        seq.setMinMaxInc(1L, 1000000000L, null);
         seq.setCache("1");
         schema.addSequence(seq);
 
@@ -719,7 +706,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         table.addRule(rule);
 
         PgSequence seq = new PgSequence("user_id_seq", "");
-        seq.setIncrement("1");
+        seq.setMinMaxInc(1L, null, null);
         seq.setCache("1");
         seq.setOwnedBy("user_data.id");
         schema.addSequence(seq);
@@ -977,7 +964,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         PgSequence seq = new PgSequence("test_id_seq", "");
         seq.setStartWith("1");
-        seq.setIncrement("1");
+        seq.setMinMaxInc(1L, null, null);
         seq.setCache("1");
         schema.addSequence(seq);
 

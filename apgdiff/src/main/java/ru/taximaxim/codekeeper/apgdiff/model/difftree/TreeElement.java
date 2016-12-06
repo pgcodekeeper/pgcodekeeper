@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -13,20 +12,12 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
  * и новой БД
  */
 public class TreeElement {
-
-    public abstract static class ListGeneratorPredicate {
-
-        public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
-
-        public abstract ADD_STATUS shouldAddToList(TreeElement el);
-    }
 
     public enum DiffSide {
         LEFT("delete"), RIGHT("new"), BOTH("edit");
@@ -96,7 +87,6 @@ public class TreeElement {
         this.type = statement.getStatementType();
     }
 
-
     public boolean hasChildren() {
         return !children.isEmpty();
     }
@@ -145,10 +135,7 @@ public class TreeElement {
     }
 
     /**
-     * Gets corresponding {@link PgStatement} from Database model.
-     *
-     * @param db
-     * @return
+     * Gets corresponding {@link PgStatement} from {@link PgDatabase}.
      */
     public PgStatement getPgStatement(PgDatabase db) {
         switch(type) {
@@ -166,6 +153,7 @@ public class TreeElement {
         case DOMAIN:     return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTriggerContainer) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
@@ -177,8 +165,6 @@ public class TreeElement {
 
     /**
      * Ищет элемент в дереве
-     * @param st
-     * @return
      */
     public TreeElement findElement(PgStatement st) {
         if (st.getStatementType() == DbObjType.DATABASE) {
@@ -191,38 +177,10 @@ public class TreeElement {
         TreeElement parent = findElement(st.getParent());
         return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
     }
-    /**
-     * создает коллекцию с измененными элементами
-     */
-    public Collection<TreeElement> flattenAlteredElements(Collection<TreeElement> result,
-            PgDatabase dbSource, PgDatabase dbTarget, boolean onlySelected,
-            ListGeneratorPredicate predicate) {
-        ADD_STATUS addStatus = ADD_STATUS.ADD;
-        if (predicate != null) {
-            addStatus = predicate.shouldAddToList(this);
-        }
-        if (addStatus == ADD_STATUS.SKIP_SUBTREE) {
-            return result;
-        }
 
-        for (TreeElement child : getChildren()) {
-            child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
-        }
-
-        boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
-        if ((onlySelected && !selected)
-                || type == DbObjType.DATABASE
-                || addStatus == ADD_STATUS.SKIP_THIS
-                || canCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
-            return result;
-        }
-
-        result.add(this);
-        return result;
-    }
     /**
      * Создает копию элементов начиная с текущего, у которых стороны перевернуты:
-     * left -> right, right -> left, both->both
+     * left -> right, right -> left, both -> both
      */
     public TreeElement getRevertedCopy() {
         TreeElement copy = getRevertedElement();
@@ -254,20 +212,6 @@ public class TreeElement {
     }
 
     /**
-     * Принимает дерево и выбирает из него все выбранные элементы
-     * @param root дерево
-     * @param result список с выбранными элементами
-     */
-    public static void getSelected(TreeElement root, List<TreeElement> result){
-        if (root.isSelected()) {
-            result.add(root);
-        }
-        for (TreeElement child : root.getChildren()) {
-            getSelected(child, result);
-        }
-    }
-
-    /**
      * начиная от текущего отмечает все элементы
      */
     public void setAllChecked() {
@@ -276,6 +220,7 @@ public class TreeElement {
             child.setAllChecked();
         }
     }
+
     /**
      * @return признак наличия выбранных элементов в поддереве начиная с текущего узла
      */

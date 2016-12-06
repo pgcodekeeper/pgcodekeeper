@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,14 +21,15 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 
@@ -52,7 +54,13 @@ public final class PgDiff {
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
-        return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
+
+        IgnoreList ignoreList = new IgnoreList();
+        for (String listFilename : arguments.getIgnoreLists()) {
+            ignoreList.addAllFromPath(Paths.get(listFilename));
+        }
+
+        return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, ignoreList);
     }
 
     /**
@@ -99,11 +107,12 @@ public final class PgDiff {
      * @param newDatabase new database schema
      */
     public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
-            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull) {
+            PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull,
+            IgnoreList ignoreList) {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
-                root, oldDbFull, newDbFull, null, null);
+                root, oldDbFull, newDbFull, null, null, ignoreList);
     }
 
     /**
@@ -115,11 +124,21 @@ public final class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
+        return diffDatabaseSchemasAdditionalDepcies(writer, arguments, root,
+                oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
+    }
+
+    private static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+            PgDiffArguments arguments, TreeElement root,
+            PgDatabase oldDbFull, PgDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
+            IgnoreList ignoreList) {
         PgDiffScript script = new PgDiffScript();
 
         if (arguments.getTimeZone() != null) {
-            script.addStatement(MessageFormat.format(
-                    ApgdiffConsts.SET_TIMEZONE, arguments.getTimeZone()));
+            script.addStatement("SET TIMEZONE TO "
+                    + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
         }
 
         if (!arguments.isCheckFunctionBodies()) {
@@ -130,16 +149,7 @@ public final class PgDiff {
             script.addStatement("START TRANSACTION;");
         }
 
-        DepcyResolver depRes;
-        try {
-            depRes = new DepcyResolver(oldDbFull, newDbFull);
-        } catch (PgCodekeeperException e) {
-            // TODO remove unchecked wrapping?
-            throw new IllegalStateException(MessageFormat.format(
-                    "Error creating dependency graph: {0}",
-                    e.getLocalizedMessage()), e);
-        }
-
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         if (additionalDepciesSource != null) {
             depRes.addCustomDepciesToOld(additionalDepciesSource);
         }
@@ -147,9 +157,11 @@ public final class PgDiff {
             depRes.addCustomDepciesToNew(additionalDepciesTarget);
         }
 
-        List<TreeElement> selected = new ArrayList<>(2 * root.countDescendants());
-        TreeElement.getSelected(root, selected);
-
+        // TODO when live DB connection is impelemted, pass the DB names to IgnoreList
+        List<TreeElement> selected = new TreeFlattener()
+                .onlySelected()
+                .useIgnoreList(ignoreList)
+                .flatten(root);
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);
         // ---КОСТЫЛЬ-----------

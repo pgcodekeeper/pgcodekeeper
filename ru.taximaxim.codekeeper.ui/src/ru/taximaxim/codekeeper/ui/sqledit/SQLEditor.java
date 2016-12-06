@@ -20,6 +20,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -107,7 +108,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         this.input = input;
         if (input instanceof IFileEditorInput) {
             setDocumentProvider(new SQLEditorFileDocumentProvider());
-        } else {
+        } else if (input instanceof IStorageEditorInput) {
             setDocumentProvider(new SQLEditorStorageDocumentProvider());
         }
         super.init(site, input);

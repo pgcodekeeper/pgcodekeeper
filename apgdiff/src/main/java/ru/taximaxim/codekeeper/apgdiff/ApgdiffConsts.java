@@ -12,6 +12,9 @@ import java.util.HashSet;
  */
 public interface ApgdiffConsts {
 
+    /**
+     * Prefer using StandardCharsets instead of this String representation.
+     */
     String UTF_8 = "UTF-8";
     String UTC = "UTC";
     String PUBLIC = "public";
@@ -23,7 +26,6 @@ public interface ApgdiffConsts {
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.5.0";
     String EXPORT_MIN_VERSION = "0.2.9";
-    String SET_TIMEZONE = "SET TIMEZONE TO ''{0}'';";
 
     enum WORK_DIR_NAMES {
         SCHEMA,

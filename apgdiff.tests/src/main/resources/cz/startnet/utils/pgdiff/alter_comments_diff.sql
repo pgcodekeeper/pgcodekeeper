@@ -20,8 +20,8 @@ COMMENT ON CONSTRAINT text_check ON test IS 'text check 2';
 
 COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key 2';
 
-COMMENT ON TRIGGER test_trigger ON test IS 'test trigger 2';
-
 COMMENT ON VIEW test_view IS 'test view 2';
 
 COMMENT ON COLUMN test_view.id IS 'view id col 2';
+
+COMMENT ON TRIGGER test_trigger ON test IS 'test trigger 2';

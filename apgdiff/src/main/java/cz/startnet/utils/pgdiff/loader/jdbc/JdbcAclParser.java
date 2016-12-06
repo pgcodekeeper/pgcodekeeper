@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.loader;
+package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @author ryabinin_av
  */
-public final class JdbcAclParser {
+final class JdbcAclParser {
 
     public enum PrivilegeTypes {
         // SONAR-OFF

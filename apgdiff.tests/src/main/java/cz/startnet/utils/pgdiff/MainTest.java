@@ -15,6 +15,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class MainTest {
             {new ArgumentsProvider_DangerSequenceRestartWithok()},
             {new ArgumentsProvider_16()},
             {new ArgumentsProvider_17()},
+            {new ArgumentsProvider_IgnoreLists()},
         });
     }
 
@@ -81,7 +83,11 @@ public class MainTest {
 
             assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
             assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
-            assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
+            if (!filesEqualIgnoreNewLines(predefined, resFile)) {
+                assertEquals("Predefined and resulting script differ",
+                        new String(Files.readAllBytes(predefined.toPath()), StandardCharsets.UTF_8),
+                        new String(Files.readAllBytes(resFile.toPath()), StandardCharsets.UTF_8));
+            }
             break;
         case TEST_PARSE:
             Main.main(args.args());
@@ -747,5 +753,39 @@ class ArgumentsProvider_17 extends ArgumentsProvider{
         }
 
         return resDir;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for IgnoreList test
+ */
+class ArgumentsProvider_IgnoreLists extends ArgumentsProvider {
+
+    {
+        this.resName = "maintest/ignore";
+        this.testType = TestType.TEST_DIFF;
+        this.needLicense = true;
+    }
+
+
+    @Override
+    protected String[] arguments() throws URISyntaxException, IOException {
+        File black = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("maintest/black.ignore"));
+        File white = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("maintest/white.ignore"));
+        File old = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("maintest/ignore_old.sql"));
+        File new_ = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("maintest/ignore_new.sql"));
+
+        return new String[] {"--diff", "--ignore-list", black.getAbsolutePath(),
+                "--ignore-list", white.getAbsolutePath(), old.getAbsolutePath(),
+                new_.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+
+        return resFile;
     }
 }

@@ -131,7 +131,7 @@ public class PgDiffDepciesTest {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db);
+        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
         writer.flush();
 
         Assert.assertEquals("File name template: " + dbTemplate,

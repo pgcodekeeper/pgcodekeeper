@@ -12,43 +12,43 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 
 /**
  * По выбранным элементам в дереве, находит зависимые элементы в дереве,
  * используя мех-м поиска зависимостей
- * 
+ *
  * @author botov_av
  *
  */
 public class DepcyTreeExtender {
-    
+
     private final PgDatabase dbSource;
     private final PgDatabase dbTarget;
     private final DepcyResolver depRes;
     private final TreeElement root;
     /**
-     * Элементы выбранные пользователем для наката на Проект 
+     * Элементы выбранные пользователем для наката на Проект
      */
-    private List<TreeElement> userSelection = new ArrayList<>();
+    private final List<TreeElement> userSelection;
     /**
      * Зависимые элементы от создаваемых(содержат выбор пользователя)
      */
-    private List<TreeElement> treeDepcyNewEdit = new ArrayList<>();
+    private final List<TreeElement> treeDepcyNewEdit = new ArrayList<>();
     /**
      * Зависимые элементы от удаляемых(содержат выбор пользователя)
      */
-    private List<TreeElement> treeDepcyDelete = new ArrayList<>();
+    private final List<TreeElement> treeDepcyDelete = new ArrayList<>();
 
-    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget,
-            TreeElement root) 
+    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root)
             throws PgCodekeeperException {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;
-        TreeElement.getSelected(root, userSelection);
+        userSelection = new TreeFlattener().onlySelected().flatten(root);
         depRes = new DepcyResolver(dbSource, dbTarget);
     }
-    
+
     /**
      * При редактированном состоянии или создаваемом объекте тянет зависимости
      * сверху, для создания,изменения объекта
@@ -64,7 +64,7 @@ public class DepcyTreeExtender {
         }
         fillTreeDepcies(treeDepcyNewEdit , newEditDepcy);
     }
-    
+
     /**
      * При удалении объекта тянет зависимости снизу
      */
@@ -80,7 +80,7 @@ public class DepcyTreeExtender {
         }
         fillTreeDepcies(treeDepcyDelete, deleteDepcy);
     }
-    
+
     /**
      * вытаскивает из дерева объект для зависимости
      * @param treeDepcy

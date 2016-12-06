@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -23,7 +24,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 import org.xml.sax.SAXException;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -69,7 +69,7 @@ public final class XmlHistory {
     public Map<String, List<String>> getMapHistory() throws IOException {
         Map<String, List<String>> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
+                getHistoryXmlFile()), StandardCharsets.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
@@ -84,7 +84,7 @@ public final class XmlHistory {
     public LinkedList<String> getHistory() throws IOException {
         LinkedList<String> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
-                getHistoryXmlFile()), ApgdiffConsts.UTF_8)) {
+                getHistoryXmlFile()), StandardCharsets.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {
@@ -101,7 +101,7 @@ public final class XmlHistory {
         try {
             fileHistory = new File(URIUtil.toURI(Platform.getInstanceLocation().getURL()));
         } catch (URISyntaxException ex) {
-            throw new IOException(ex);
+            throw new IOException(ex.getLocalizedMessage(), ex);
         }
         fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$
@@ -138,7 +138,7 @@ public final class XmlHistory {
             histFile.getParentFile().mkdirs();
             histFile.createNewFile();
 
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), ApgdiffConsts.UTF_8)) {
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), StandardCharsets.UTF_8)) {
                 XmlStringList xml = new XmlStringList(rootTag, elementTag);
                 xml.serializeList(listToDump, false, xmlWriter);
             }
@@ -185,7 +185,7 @@ public final class XmlHistory {
         try {
             historyFile.getParentFile().mkdirs();
             historyFile.createNewFile();
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), ApgdiffConsts.UTF_8)) {
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), StandardCharsets.UTF_8)) {
                 XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }

@@ -435,8 +435,7 @@ class PageDiff extends WizardPage implements Listener {
         } catch (CoreException e1) {
             setErrorMessage(Messages.DiffWizard_project_charset_error);
             Log.log(Log.LOG_ERROR, "Cannot get project charset", e1); //$NON-NLS-1$
-            cmbEncoding.select(
-                    cmbEncoding.indexOf(ApgdiffConsts.UTF_8));
+            cmbEncoding.select(cmbEncoding.indexOf(ApgdiffConsts.UTF_8));
         }
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);

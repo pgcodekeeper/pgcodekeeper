@@ -35,11 +35,17 @@ import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 public abstract class DbSource {
 
     private final String origin;
-
     private PgDatabase dbObject;
 
     public String getOrigin() {
         return origin;
+    }
+
+    /**
+     * @return DB name this source uses or null if not applicable
+     */
+    public String getDbName() {
+        return null;
     }
 
     public PgDatabase getDbObject() {
@@ -254,6 +260,11 @@ class DbSourceDb extends DbSource {
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
+    @Override
+    public String getDbName() {
+        return dbname;
+    }
+
     DbSourceDb(boolean forceUnixNewlines,
             String exePgdump, String customParams,
             String host, int port, String user, String pass,
@@ -300,12 +311,18 @@ class DbSourceDb extends DbSource {
 class DbSourceJdbc extends DbSource {
 
     private final JdbcConnector jdbcConnector;
-    private final String encoding, timezone;
+    private final String dbName, encoding, timezone;
     private final boolean forceUnixNewlines;
+
+    @Override
+    public String getDbName() {
+        return dbName;
+    }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             String encoding, String timezone, boolean forceUnixNewlines) {
         super(dbName);
+        this.dbName = dbName;
         this.encoding = encoding;
         this.timezone = timezone;
         this.forceUnixNewlines = forceUnixNewlines;

@@ -7,3 +7,11 @@
 /SqlParserMain.java
 /SQLParserVisitor.java
 /SQLParserBaseVisitor.java
+/IgnoreList.tokens
+/IgnoreListBaseListener.java
+/IgnoreListBaseVisitor.java
+/IgnoreListLexer.java
+/IgnoreListLexer.tokens
+/IgnoreListListener.java
+/IgnoreListParser.java
+/IgnoreListVisitor.java

@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.loader;
+package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +91,7 @@ public class JdbcType{
     }
 
     public void addTypeDepcy(PgStatement st) {
-        if (!JdbcLoader.isBuiltin(oid)) {
+        if (!JdbcLoaderBase.isBuiltin(oid)) {
             st.addDep(new GenericColumn(parentSchema, typeName, DbObjType.TYPE));
         }
     }

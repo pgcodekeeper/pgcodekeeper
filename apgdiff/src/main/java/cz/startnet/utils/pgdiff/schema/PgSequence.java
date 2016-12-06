@@ -225,27 +225,26 @@ public class PgSequence extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
-    public void setIncrement(final String increment) {
-        this.increment = increment;
-        resetHash();
+    public void setMinMaxInc(long inc, Long max, Long min) {
+        this.increment = "" + inc;
+        if (max == null || (inc > 0 && max == Long.MAX_VALUE) || (inc < 0 && max == -1)) {
+            this.maxValue = null;
+        } else {
+            this.maxValue = "" + max;
+        }
+        if (min == null || (inc > 0 && min == 1) || (inc < 0 && min == -Long.MAX_VALUE)) {
+            this.minValue = null;
+        } else {
+            this.minValue = "" + min;
+        }
     }
 
     public String getIncrement() {
         return increment;
     }
 
-    public void setMaxValue(final String maxValue) {
-        this.maxValue = maxValue;
-        resetHash();
-    }
-
     public String getMaxValue() {
         return maxValue;
-    }
-
-    public void setMinValue(final String minValue) {
-        this.minValue = minValue;
-        resetHash();
     }
 
     public String getMinValue() {
@@ -321,9 +320,9 @@ public class PgSequence extends PgStatementWithSearchPath {
         PgSequence sequenceDst = new PgSequence(getName(), getRawStatement());
         sequenceDst.setCache(getCache());
         sequenceDst.setCycle(isCycle());
-        sequenceDst.setIncrement(getIncrement());
-        sequenceDst.setMaxValue(getMaxValue());
-        sequenceDst.setMinValue(getMinValue());
+        sequenceDst.increment = getIncrement();
+        sequenceDst.maxValue = getMaxValue();
+        sequenceDst.minValue = getMinValue();
         sequenceDst.setOwnedBy(getOwnedBy());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());

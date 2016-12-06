@@ -1,0 +1,7 @@
+# comment
+
+SHOW ALL
+
+HIDE NONE t1
+
+HIDE REGEX 't2_\w+'

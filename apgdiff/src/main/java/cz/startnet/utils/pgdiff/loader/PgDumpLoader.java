@@ -139,7 +139,7 @@ public class PgDumpLoader implements AutoCloseable {
         SQLParserBaseListener listener = (loadReferences ?
                 new ReferenceListener(intoDb, inputObjectName)
                 : new CustomSQLParserListener(intoDb, inputObjectName));
-        AntlrParser.parseInputStream(input, args.getInCharsetName(), inputObjectName,
+        AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName,
                 listener, monitor, monitoringLevel, errors);
 
         if (loadReferences) {

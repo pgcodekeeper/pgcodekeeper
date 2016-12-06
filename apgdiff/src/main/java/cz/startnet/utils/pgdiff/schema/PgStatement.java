@@ -102,35 +102,31 @@ public abstract class PgStatement {
     protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON ");
         DbObjType type = getStatementType();
-        if (type == null) {
-            throw new IllegalStateException("Object type is null!");
-        } else {
-            sb.append(type).append(' ');
-            switch (type) {
-            case COLUMN:
-                sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
-                .append('.')
-                .append(PgDiffUtils.getQuotedName(getName()));
-                break;
-            case FUNCTION:
-                ((PgFunction) this).appendFunctionSignature(sb, false, true);
-                break;
+        sb.append(type).append(' ');
+        switch (type) {
+        case COLUMN:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getName()));
+            break;
+        case FUNCTION:
+            ((PgFunction) this).appendFunctionSignature(sb, false, true);
+            break;
 
-            case CONSTRAINT:
-            case TRIGGER:
-            case RULE:
-                sb.append(PgDiffUtils.getQuotedName(getName()))
-                .append(" ON ")
-                .append(PgDiffUtils.getQuotedName(getParent().getName()));
-                break;
+        case CONSTRAINT:
+        case TRIGGER:
+        case RULE:
+            sb.append(PgDiffUtils.getQuotedName(getName()))
+            .append(" ON ")
+            .append(PgDiffUtils.getQuotedName(getParent().getName()));
+            break;
 
-            case DATABASE:
-                sb.append("current_database()");
-                break;
+        case DATABASE:
+            sb.append("current_database()");
+            break;
 
-            default:
-                sb.append(PgDiffUtils.getQuotedName(getName()));
-            }
+        default:
+            sb.append(PgDiffUtils.getQuotedName(getName()));
         }
 
         return sb.append(" IS ")
@@ -165,24 +161,8 @@ public abstract class PgStatement {
             return sb;
         }
 
-        // TODO is this check needed at all? we already have isEmpty() above
-        DbObjType type = getStatementType();
-        switch (type) {
-        case SCHEMA:
-        case SEQUENCE:
-        case TABLE:
-        case VIEW:
-        case FUNCTION:
-        case DOMAIN:
-        case TYPE:
-        case COLUMN:
-            break;
-        default:
-            throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, COLUMN, VIEW, FUNCTION, TYPE, DOMAIN objects.");
-        }
         sb.append("\n\n-- ")
-        .append(type)
+        .append(getStatementType())
         .append(' ')
         .append(getName())
         .append(' ')
@@ -235,23 +215,10 @@ public abstract class PgStatement {
         }
 
         DbObjType type = getStatementType();
-        switch (type) {
-        case SCHEMA:
-        case SEQUENCE:
-        case TABLE:
-        case VIEW:
-        case FUNCTION:
-        case TYPE:
-        case DOMAIN:
-            break;
-        default:
-            throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
-        }
         sb.append("\n\nALTER ")
         .append(type)
         .append(' ');
-        if (this instanceof PgFunction) {
+        if (type == DbObjType.FUNCTION) {
             ((PgFunction) this).appendFunctionSignature(sb, false, true);
         } else {
             sb.append(PgDiffUtils.getQuotedName(getName()));

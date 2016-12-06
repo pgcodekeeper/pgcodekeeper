@@ -235,7 +235,6 @@ public class ReferenceListener extends SQLParserBaseListener {
                 .getStartIndex(), 0, ctx.name.getStart().getLine());
     }
 
-
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
@@ -680,6 +679,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
     }
+
     private void setTableType(PgObjLocation obj) {
         List<PgObjLocation> defs = new ArrayList<>();
         for (String key : definitions.keySet()) {
@@ -691,6 +691,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
     }
+
     private void getConstraint(Table_column_defContext colCtx) {
         if (colCtx.tabl_constraint != null) {
             getTableConstraint(colCtx.tabl_constraint);
@@ -729,6 +730,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
     }
+
     private void getSequence(VexContext default_expr) {
         SeqName name = new SeqName();
         new ParseTreeWalker().walk(name, default_expr);

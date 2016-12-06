@@ -38,6 +38,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -52,6 +53,7 @@ import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorSelectionProvider;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 // TODO this class is very tightly bound with ProjectEdittorDiffer
 // refactor and put into separate package
@@ -167,7 +169,7 @@ public abstract class DiffPresentationPane extends Composite {
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, SWT.NONE, mainPrefs, proj, false, projSide);
+        diffTable = new DiffTableViewer(sashOuter, SWT.NONE, mainPrefs, false, projSide);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -331,7 +333,14 @@ public abstract class DiffPresentationPane extends Composite {
         this.diffTree = diffTree;
         diffPane.setDbSources(dbProject, dbRemote);
         diffPane.setInput(null);
-        diffTable.setInput(dbProject, dbRemote, diffTree);
+
+        IgnoreList ignoreList = null;
+        if (diffTree != null) {
+            ignoreList = InternalIgnoreList.readInternalList();
+            InternalIgnoreList.readAppendList(
+                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+        }
+        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
     }
 
     public void reset() {

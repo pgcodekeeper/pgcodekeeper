@@ -271,35 +271,6 @@ public abstract class ParserAbstract {
         }
         return null;
     }
-    /**
-     * Извлекает правильное значение для максимального значения сиквенса
-     */
-    public static String getMaxValue(long inc, String maxValue) {
-        if (maxValue == null) {
-            return null;
-        }
-        long max = Long.parseLong(maxValue);
-        if ((inc > 0 && max == Long.MAX_VALUE)
-                || (inc < 0 && max == -1)) {
-            return null;
-        }
-        return maxValue;
-    }
-
-    /**
-     * Извлекает правильное значение для минимального значения сиквенса
-     */
-    public static String getMinValue(long inc, String minValue) {
-        if (minValue == null) {
-            return null;
-        }
-        long min = Long.parseLong(minValue);
-        if ((inc > 0 && min == 1)
-                || (inc < 0 && min == -Long.MAX_VALUE)) {
-            return null;
-        }
-        return minValue;
-    }
 
     /**
      * Заполняет владельца
