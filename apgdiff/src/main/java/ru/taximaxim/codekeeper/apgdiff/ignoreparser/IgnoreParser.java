@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.apgdiff.ignoreparser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser;
@@ -30,6 +32,10 @@ public class IgnoreParser {
 
     public IgnoreParser(IgnoreList list) {
         this.list = list;
+    }
+
+    public IgnoreParser parse(Path listFile) throws IOException {
+        return parse(Files.newInputStream(listFile), listFile.toString());
     }
 
     public IgnoreParser parse(InputStream stream, String parsedObjectName) throws IOException {

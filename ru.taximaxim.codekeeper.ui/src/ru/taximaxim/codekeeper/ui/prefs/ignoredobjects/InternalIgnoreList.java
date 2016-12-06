@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 
+import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -61,7 +62,7 @@ public final class InternalIgnoreList {
      */
     public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo) {
         try {
-            appendTo.addAllFromPath(listFile);
+            new IgnoreParser(appendTo).parse(listFile);
         } catch (FileNotFoundException | NoSuchFileException ex) {
             // no action
         } catch (IOException ex) {

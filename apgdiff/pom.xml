@@ -46,41 +46,53 @@
                                 <option>-allowaccessmodification</option>
                                 <option>-renamesourcefileattribute SourceFile</option>    
                                 <option>-keepattributes SourceFile,LineNumberTable</option>
+                                
+                                <!-- Please keep this list maintained and organized -->
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgObjLocation { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgStatement { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.AntlrError { *; }</option>
+                                
+                                <option>-keep public class cz.startnet.utils.pgdiff.Main { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgRule$PgRuleEventType { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcConnector { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.loader.JdbcRunner { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.StatementActions { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.schema.GenericColumn { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiff { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$DiffSide { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
+                                
+                                <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
+                                
+                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.AntlrError { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
+                                
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgObjLocation { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgRule$PgRuleEventType { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.PgStatement { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.StatementActions { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts$WORK_DIR_NAMES { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$ListGeneratorPredicate$ADD_STATUS { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser { *; }</option>
+                                
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.License { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException { *; }</option>
-                                <option>-keep public class cz.startnet.utils.pgdiff.Main { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement$DiffSide { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender { *; }</option>
                             </options>
                             <libs>
                                 <lib>${java.home}/lib/rt.jar</lib>

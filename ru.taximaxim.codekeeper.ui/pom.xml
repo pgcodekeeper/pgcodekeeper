@@ -50,6 +50,7 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.AddBuilder { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.FeedBack { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>

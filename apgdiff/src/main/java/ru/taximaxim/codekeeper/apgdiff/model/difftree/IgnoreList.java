@@ -1,14 +1,10 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject.AddStatus;
 
 public class IgnoreList {
@@ -96,9 +92,5 @@ public class IgnoreList {
             rule.appendRuleCode(sb).append('\n');
         }
         return sb.toString();
-    }
-
-    public void addAllFromPath(Path listFile) throws IOException {
-        new IgnoreParser(this).parse(Files.newInputStream(listFile), listFile.toString());
     }
 }
