@@ -61,6 +61,7 @@
                                 <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.AntlrError { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
                                 
+                                <option>-keep public class cz.startnet.utils.pgdiff.schema.GenericColumn { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgDatabase { *; }</option>

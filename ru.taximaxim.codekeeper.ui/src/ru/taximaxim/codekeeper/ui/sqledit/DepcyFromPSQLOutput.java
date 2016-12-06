@@ -210,7 +210,9 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
             return differ.getDiffDirect();
         } catch (PgCodekeeperUIException ex) {
             StringWriter sw = new StringWriter();
+            // SONAR-OFF
             ex.printStackTrace(new PrintWriter(sw));
+            // SONAR-ON
             return sw.toString();
         }
     }
