@@ -42,7 +42,10 @@
                                 <option>-allowaccessmodification</option>
                                 <option>-renamesourcefileattribute SourceFile</option>    
                                 <option>-keepattributes SourceFile,LineNumberTable</option>
+                                
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
+                                <option>-keep public class * extends java.lang.Enum { *; }</option>
+                                
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.Diff { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
