@@ -48,14 +48,16 @@ public class UnixPrintWriter extends PrintWriter {
         super(fileName, csn);
     }
 
-    public UnixPrintWriter(File file, String csn) throws FileNotFoundException,
-    UnsupportedEncodingException {
+    public UnixPrintWriter(File file, String csn) throws FileNotFoundException, UnsupportedEncodingException {
         super(file, csn);
     }
 
+    public UnixPrintWriter(OutputStream out, String csn) throws FileNotFoundException, UnsupportedEncodingException {
+        this(new BufferedWriter(new OutputStreamWriter(out, csn)), false);
+    }
+
     public UnixPrintWriter(String fileName, Charset csn) throws FileNotFoundException {
-        this(new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(new File(fileName)), csn)), false);
+        this(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(fileName)), csn)), false);
     }
 
     public UnixPrintWriter(File file, Charset csn) throws FileNotFoundException {

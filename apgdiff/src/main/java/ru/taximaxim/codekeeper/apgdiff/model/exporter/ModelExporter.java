@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -130,7 +130,10 @@ public class ModelExporter {
                 deleteRecursive(sub);
             }
         }
-        Files.getFileAttributeView(f.toPath(), DosFileAttributeView.class).setReadOnly(false);
+        DosFileAttributeView att = Files.getFileAttributeView(f.toPath(), DosFileAttributeView.class);
+        if (att != null) {
+            att.setReadOnly(false);
+        }
         Files.deleteIfExists(f.toPath());
     }
 
@@ -827,17 +830,10 @@ public class ModelExporter {
     }
 
     private void dumpSQL(CharSequence sql, File file) throws IOException {
-        if(file.exists()) {
-            throw new FileAlreadyExistsException(file.getAbsolutePath());
-        }
-
-        if(!file.createNewFile()) {
-            throw new FileException(MessageFormat.format(
-                    "Cannot create sql output file: {0}",
-                    file.getAbsolutePath()));
-        }
-
-        try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
+        // TODO debug logging for Mac
+        Log.log(Log.LOG_DEBUG, "Dumping file: " + file);
+        try(PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
+                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), sqlEncoding)) {
             outFile.println(sql);
         }
     }

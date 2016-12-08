@@ -6,11 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributeView;
 
 public final class ReadOnlyFileRemover {
-    
+
     public static void remove(Path path) throws IOException {
-        Files.getFileAttributeView(path, DosFileAttributeView.class).setReadOnly(false);
+        DosFileAttributeView att = Files.getFileAttributeView(path, DosFileAttributeView.class);
+        if (att != null) {
+            att.setReadOnly(false);
+        }
         Files.delete(path);
     }
-    
+
     private ReadOnlyFileRemover() {}
 }
