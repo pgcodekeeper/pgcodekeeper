@@ -41,7 +41,18 @@ public class CreateType extends ParserAbstract {
         } else if (ctx.INPUT() != null) {
             form = PgTypeForm.BASE;
         }
-        PgType type = new PgType(name, form, getFullCtxText(ctx.getParent()));
+        PgType type = null, newType = null;
+        if (form == PgTypeForm.BASE) {
+            type = db.getSchema(schemaName).getType(name);
+            if (type != null && type.getForm() != PgTypeForm.SHELL) {
+                throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
+            }
+        }
+        if (type == null) {
+            type = new PgType(name, form, getFullCtxText(ctx.getParent()));
+            newType = type;
+        }
+
         for (Table_column_definitionContext attr : ctx.attrs) {
             type.addAttr(getColumn(attr, new ArrayList<String>(), new HashMap<String, GenericColumn>(), getDefSchemaName()));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
@@ -127,7 +138,10 @@ public class CreateType extends ParserAbstract {
             logSkipedObject(schemaName, "TYPE", name);
             return null;
         }
-        db.getSchema(schemaName).addType(type);
+        if (newType != null) {
+            // add only newly created type, not a filled SHELL that was added before
+            db.getSchema(schemaName).addType(type);
+        }
         return type;
     }
 
