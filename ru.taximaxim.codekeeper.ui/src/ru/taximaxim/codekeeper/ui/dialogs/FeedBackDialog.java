@@ -46,16 +46,13 @@ public class FeedBackDialog extends Dialog {
     private static final String EMAIL_TO = "codekeeper@chelny.taximaxim.ru"; //$NON-NLS-1$
     private static final String LOG_FILE_NAME = "codekeeper.log"; //$NON-NLS-1$
     private static final String MAIL_HOST = "mail.chelny.taximaxim.ru"; //$NON-NLS-1$
+    private static final String MAIL_PORT = "587"; //$NON-NLS-1$
     private static final String MAIL_HOST_PROP = "mail.smtp.host"; //$NON-NLS-1$
-    private static final PasswordAuthentication CREDENTIALS = new PasswordAuthentication(
-            "pgcodekeeper-feedback@chelny.taximaxim.ru", "***REMOVED***"); //$NON-NLS-1$ //$NON-NLS-2$
-    private static final Authenticator AUTH = new Authenticator() {
-        @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
-            return CREDENTIALS;
-        };
-    };
+    private static final String MAIL_PORT_PROP = "mail.smtp.port"; //$NON-NLS-1$
     private static final String MAIL_AUTH_PROP = "mail.smtp.auth"; //$NON-NLS-1$
+    private static final String MAIL_TLS_PROP = "mail.smtp.starttls.enable"; //$NON-NLS-1$
+    private static final String MAIL_USER = "pgcodekeeper-feedback@chelny.taximaxim.ru"; //$NON-NLS-1$
+    private static final String MAIL_PASS = "***REMOVED***"; //$NON-NLS-1$
 
     private Text userName;
     private Text emailFrom;
@@ -128,49 +125,8 @@ public class FeedBackDialog extends Dialog {
         }
 
         try {
-            Properties properties = new Properties();
-            properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
-            properties.setProperty(MAIL_AUTH_PROP, Boolean.TRUE.toString());
-            Session session = Session.getInstance(properties, AUTH);
-
-            MimeMessage message = new MimeMessage(session);
-
-            InternetAddress internetAddress = new InternetAddress(emailFrom.getText());
-            internetAddress.validate();
-            message.setFrom(internetAddress);
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(EMAIL_TO));
-            message.setSubject(Messages.FeedBackDialog_feedback_subject);
-
-            Multipart multipart = new MimeMultipart();
-            BodyPart messageBodyPart = new MimeBodyPart();
-
-            StringBuilder sbText = new StringBuilder();
-            sbText.append(txtMessage.getText());
-            String user = userName.getText();
-            if (!user.isEmpty()) {
-                sbText.append("\n\nBest Regards,\n").append(user); //$NON-NLS-1$
-            }
-
-            sbText.append("\n\n------pgCodeKeeper configuration--------\n"); //$NON-NLS-1$
-            appendCodeKeeperPluginsInformation(sbText);
-
-            messageBodyPart.setText(sbText.toString());
-            multipart.addBodyPart(messageBodyPart);
-
-            if (btnCheckLog.getSelection()) {
-                // TODO check file size
-                BodyPart fileAttachBodyPart = new MimeBodyPart();
-                String filename = Platform.getLogFileLocation().toOSString();
-                DataSource source = new FileDataSource(filename);
-                fileAttachBodyPart.setDataHandler(new DataHandler(source));
-                fileAttachBodyPart.setFileName(LOG_FILE_NAME);
-
-                multipart.addBodyPart(fileAttachBodyPart);
-            }
-
-            message.setContent(multipart);
-            Transport.send(message);
-
+            sendMail(emailFrom.getText(), txtMessage.getText(), userName.getText(),
+                    btnCheckLog.getSelection(), false);
             super.okPressed();
 
             MessageBox mb = new MessageBox(getParentShell(), SWT.ICON_INFORMATION);
@@ -191,7 +147,65 @@ public class FeedBackDialog extends Dialog {
         }
     }
 
-    private StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {
+    static void sendMail(String emailFrom, String txtMessage, String user, boolean appendLog, boolean mailDebug)
+            throws MessagingException {
+        Properties properties = new Properties();
+        properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
+        properties.setProperty(MAIL_PORT_PROP, MAIL_PORT);
+        properties.setProperty(MAIL_AUTH_PROP, Boolean.TRUE.toString());
+        properties.setProperty(MAIL_TLS_PROP, Boolean.TRUE.toString());
+        Session session = Session.getInstance(properties, new Authenticator() {
+
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(MAIL_USER, MAIL_PASS);
+            }
+        });
+
+        if (mailDebug) {
+            session.setDebug(true);
+        }
+
+        MimeMessage message = new MimeMessage(session);
+
+        InternetAddress internetAddress = new InternetAddress(emailFrom);
+        internetAddress.validate();
+        message.setFrom(internetAddress);
+        message.addRecipient(Message.RecipientType.TO, new InternetAddress(EMAIL_TO));
+        message.setSubject(Messages.FeedBackDialog_feedback_subject);
+
+        Multipart multipart = new MimeMultipart();
+        BodyPart messageBodyPart = new MimeBodyPart();
+
+        StringBuilder sbText = new StringBuilder();
+        sbText.append(txtMessage);
+        if (!user.isEmpty()) {
+            sbText.append(Messages.FeedBackDialog_best_regards).append(user);
+        }
+
+        sbText.append("\n\n------pgCodeKeeper configuration--------\n"); //$NON-NLS-1$
+        appendCodeKeeperPluginsInformation(sbText);
+
+        messageBodyPart.setText(sbText.toString());
+        multipart.addBodyPart(messageBodyPart);
+
+        if (appendLog) {
+            // TODO check file size
+            // see ByteArrayDataSource
+            BodyPart fileAttachBodyPart = new MimeBodyPart();
+            String filename = Platform.getLogFileLocation().toOSString();
+            DataSource source = new FileDataSource(filename);
+            fileAttachBodyPart.setDataHandler(new DataHandler(source));
+            fileAttachBodyPart.setFileName(LOG_FILE_NAME);
+
+            multipart.addBodyPart(fileAttachBodyPart);
+        }
+
+        message.setContent(multipart);
+        Transport.send(message);
+    }
+
+    private static StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {
         Bundle codeKeeperBundle = Activator.getContext().getBundle();
         sb.append(codeKeeperBundle.getSymbolicName()).append(' ').append(codeKeeperBundle.getVersion()).append('\n');
 

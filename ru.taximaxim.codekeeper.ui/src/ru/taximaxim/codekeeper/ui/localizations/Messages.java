@@ -442,6 +442,8 @@ public final class Messages extends NLS {
     public static String feedback_message;
     public static String add_log;
 
+    public static String FeedBackDialog_best_regards;
+
     public static String FeedBackDialog_could_not_send;
 
     public static String FeedBackDialog_emty_msg;
