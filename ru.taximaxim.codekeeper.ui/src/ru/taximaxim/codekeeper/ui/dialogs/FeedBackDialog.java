@@ -1,11 +1,12 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.text.MessageFormat;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -19,6 +20,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
@@ -138,7 +140,7 @@ public class FeedBackDialog extends Dialog {
             mb.setText(Messages.FeedBackDialog_invalid_address);
             mb.setMessage(Messages.FeedBackDialog_enter_email);
             mb.open();
-        } catch (MessagingException mex) {
+        } catch (MessagingException | IOException mex) {
             Log.log(mex);
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.FeedBackDialog_could_not_send);
@@ -148,7 +150,7 @@ public class FeedBackDialog extends Dialog {
     }
 
     static void sendMail(String emailFrom, String txtMessage, String user, boolean appendLog, boolean mailDebug)
-            throws MessagingException {
+            throws MessagingException, IOException {
         Properties properties = new Properties();
         properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
         properties.setProperty(MAIL_PORT_PROP, MAIL_PORT);
@@ -191,13 +193,16 @@ public class FeedBackDialog extends Dialog {
 
         if (appendLog) {
             // TODO check file size
-            // see ByteArrayDataSource
-            BodyPart fileAttachBodyPart = new MimeBodyPart();
-            String filename = Platform.getLogFileLocation().toOSString();
-            DataSource source = new FileDataSource(filename);
-            fileAttachBodyPart.setDataHandler(new DataHandler(source));
-            fileAttachBodyPart.setFileName(LOG_FILE_NAME);
+            byte[] logBytes;
+            try {
+                logBytes = Files.readAllBytes(Platform.getLogFileLocation().toFile().toPath());
+            } catch (NoSuchFileException ex) {
+                logBytes = ex.toString().getBytes(); // ok since toString uses localized message
+            }
 
+            BodyPart fileAttachBodyPart = new MimeBodyPart();
+            fileAttachBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(logBytes, "text/plain")));
+            fileAttachBodyPart.setFileName(LOG_FILE_NAME);
             multipart.addBodyPart(fileAttachBodyPart);
         }
 

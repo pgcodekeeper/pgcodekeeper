@@ -25,6 +25,7 @@ Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.mail;version="[1.4.0,2.0.0)",
  javax.mail.internet;version="[1.4.0,2.0.0)",
+ javax.mail.util;version="[1.4.0,2.0.0)",
  org.jgrapht,
  org.osgi.framework;version="[1.6.0,2.0.0)"
 Bundle-ActivationPolicy: lazy
