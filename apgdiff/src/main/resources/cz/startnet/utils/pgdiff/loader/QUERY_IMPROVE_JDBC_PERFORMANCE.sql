@@ -518,10 +518,11 @@ SELECT schema_oid,
        a.attname AS ref_col_name,
        c.relacl AS aclArray
 FROM pg_catalog.pg_class c
-LEFT JOIN pg_catalog.pg_depend d ON d.objid = c.oid
-    AND d.refobjsubid != 0
 LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid
     AND descr.objsubid = 0
+LEFT JOIN pg_catalog.pg_depend d ON d.objid = c.oid
+    AND d.refobjsubid != 0
+    AND d.deptype = 'a'
 LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
     AND a.attnum = d.refobjsubid
     AND a.attisdropped IS FALSE
