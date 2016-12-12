@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.8.2.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.8.3.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
