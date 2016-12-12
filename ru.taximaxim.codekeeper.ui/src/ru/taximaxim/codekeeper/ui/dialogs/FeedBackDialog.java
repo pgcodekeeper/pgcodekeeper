@@ -55,6 +55,7 @@ public class FeedBackDialog extends Dialog {
     private static final String MAIL_TLS_PROP = "mail.smtp.starttls.enable"; //$NON-NLS-1$
     private static final String MAIL_USER = "pgcodekeeper-feedback@chelny.taximaxim.ru"; //$NON-NLS-1$
     private static final String MAIL_PASS = "***REMOVED***"; //$NON-NLS-1$
+    private static final String MIME_TEXT = "text/plain"; //$NON-NLS-1$
 
     private Text userName;
     private Text emailFrom;
@@ -127,7 +128,8 @@ public class FeedBackDialog extends Dialog {
         }
 
         try {
-            sendMail(emailFrom.getText(), txtMessage.getText(), userName.getText(),
+            sendMail(emailFrom.getText(), Messages.FeedBackDialog_feedback_subject,
+                    txtMessage.getText(), userName.getText(),
                     btnCheckLog.getSelection(), false);
             super.okPressed();
 
@@ -149,8 +151,8 @@ public class FeedBackDialog extends Dialog {
         }
     }
 
-    static void sendMail(String emailFrom, String txtMessage, String user, boolean appendLog, boolean mailDebug)
-            throws MessagingException, IOException {
+    static void sendMail(String emailFrom, String subject, String txtMessage, String user,
+            boolean appendLog, boolean mailDebug) throws MessagingException, IOException {
         Properties properties = new Properties();
         properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
         properties.setProperty(MAIL_PORT_PROP, MAIL_PORT);
@@ -174,7 +176,7 @@ public class FeedBackDialog extends Dialog {
         internetAddress.validate();
         message.setFrom(internetAddress);
         message.addRecipient(Message.RecipientType.TO, new InternetAddress(EMAIL_TO));
-        message.setSubject(Messages.FeedBackDialog_feedback_subject);
+        message.setSubject(subject);
 
         Multipart multipart = new MimeMultipart();
         BodyPart messageBodyPart = new MimeBodyPart();
@@ -201,7 +203,7 @@ public class FeedBackDialog extends Dialog {
             }
 
             BodyPart fileAttachBodyPart = new MimeBodyPart();
-            fileAttachBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(logBytes, "text/plain")));
+            fileAttachBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(logBytes, MIME_TEXT)));
             fileAttachBodyPart.setFileName(LOG_FILE_NAME);
             multipart.addBodyPart(fileAttachBodyPart);
         }

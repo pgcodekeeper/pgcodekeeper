@@ -26,7 +26,8 @@ public class MailSenderTest {
 
         th.setContextClassLoader(Transport.class.getClassLoader());
         try {
-            FeedBackDialog.sendMail("unittest@example.com", "Testing mail sender", "Unit McTester", true, true);
+            FeedBackDialog.sendMail("unittest@example.com", "Unit Test Mail",
+                    "Testing mail sender", "Unit McTester", true, true);
         } finally {
             th.setContextClassLoader(cl);
         }
