@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,7 +18,7 @@
     <packaging>eclipse-plugin</packaging>
 
     <properties>
-        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java</sonar.exclusions>
+        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Ignore*.java</sonar.exclusions>
     </properties>
 
     <profiles>
@@ -44,24 +47,24 @@
                                 <!-- TODO: disable library processing so no "duplicate definition of library class" messages come up -->
                                 <option>-dontnote</option>
                                 <option>-allowaccessmodification</option>
-                                <option>-renamesourcefileattribute SourceFile</option>    
+                                <option>-renamesourcefileattribute SourceFile</option>
                                 <option>-keepattributes SourceFile,LineNumberTable</option>
                                 
                                 <!-- Please keep this list maintained and organized -->
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
                                 <option>-keep public class * extends java.lang.Enum { *; }</option>
-                                
+
                                 <option>-keep public class cz.startnet.utils.pgdiff.Main { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiff { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
-                                
+
                                 <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
-                                
+
                                 <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.AntlrError { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer { *; }</option>
-                                
+
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.GenericColumn { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgColumn { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgConstraint { *; }</option>
@@ -69,26 +72,26 @@
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgObjLocation { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgSchema { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.schema.PgStatement { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.License { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter { *; }</option>
-                                
+
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender { *; }</option>
                             </options>
@@ -97,7 +100,7 @@
                             </libs>
                         </configuration>
                     </plugin>
-                    
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
