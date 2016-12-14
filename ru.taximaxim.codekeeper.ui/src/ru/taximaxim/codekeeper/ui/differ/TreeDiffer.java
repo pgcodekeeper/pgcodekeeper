@@ -13,7 +13,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -92,7 +92,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject());
+        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
 
         if (needTwoWay){
             Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbTarget.getOrigin() //$NON-NLS-1$
@@ -102,7 +102,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             diffTreeRevert = diffTree.getRevertedCopy();
         }
 
-        PgDumpLoader.checkCancelled(pm);
+        PgDiffUtils.checkCancelled(pm);
         monitor.done();
         finished = true;
     }

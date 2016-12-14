@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -48,9 +51,10 @@ public final class PgDiff {
      * @param arguments object containing arguments settings
      * @throws IOException
      * @throws InterruptedException
+     * @throws URISyntaxException
      */
     public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException {
+            throws InterruptedException, IOException, LicenseException, URISyntaxException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase newDatabase = loadDatabaseSchema(
@@ -75,9 +79,10 @@ public final class PgDiff {
      * @return the loaded database
      * @throws IOException
      * @throws InterruptedException
+     * @throws URISyntaxException
      */
     static PgDatabase loadDatabaseSchema(String format, String srcPath,
-            PgDiffArguments arguments) throws InterruptedException, IOException, LicenseException {
+            PgDiffArguments arguments) throws InterruptedException, IOException, LicenseException, URISyntaxException {
         if(format.equals("dump")) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
@@ -86,7 +91,8 @@ public final class PgDiff {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments, null, null);
         } else if(format.equals("db")) {
-            throw new UnsupportedOperationException("DB connection is not yet implemented!");
+            JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
+            return loader.getDbFromJdbc();
         }
 
         throw new UnsupportedOperationException(
@@ -106,11 +112,12 @@ public final class PgDiff {
      * @param arguments   object containing arguments settings
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
+     * @throws InterruptedException
      */
     public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDbFull, PgDatabase newDbFull,
-            IgnoreList ignoreList) {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
+            IgnoreList ignoreList) throws InterruptedException {
+        TreeElement root = DiffTree.create(oldDbFull, newDbFull, null);
         root.setAllChecked();
         return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 root, oldDbFull, newDbFull, null, null, ignoreList);

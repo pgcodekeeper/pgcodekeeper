@@ -182,6 +182,12 @@
                       mnemonic="%command.mnemonic.improvePerformanceJdbc"
                       style="push">
                 </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                  label="diff databases"
+                  mnemonic="F"
+                  style="push">
+            </command>
                 <visibleWhen checkEnabled="false">
                     <with variable="activeWorkbenchWindow.activePerspective">
                         <equals value="ru.taximaxim.codekeeper.ui.mainperspective">

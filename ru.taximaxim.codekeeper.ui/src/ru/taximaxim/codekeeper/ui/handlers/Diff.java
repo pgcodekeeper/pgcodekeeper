@@ -19,14 +19,12 @@ public class Diff extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         PgDbProject proj = OpenProjectUtils.getProject(event);
         Shell shell = HandlerUtil.getActiveShell(event);
-        IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();  
-        if(proj != null) {
-            Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
+        IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
+        Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
             
-            WizardDialog dialog = new WizardDialog(
-                    shell, new DiffWizard(proj, prefStore));
-            dialog.open();
-        }
+        WizardDialog dialog = new WizardDialog(
+                shell, new DiffWizard(proj, prefStore));
+        dialog.open();
         return null;
     }
 }

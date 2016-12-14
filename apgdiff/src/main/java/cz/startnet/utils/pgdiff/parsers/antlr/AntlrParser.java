@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -79,10 +80,20 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, SQLParserBaseListener listener,
-            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException {
+            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException, InterruptedException {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
+        
+        final class MonitorCancelledRuntimeException extends RuntimeException{
+
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 8530137642762407646L;
+            
+        }
+        
         parser.addParseListener(new ParseTreeListener() {
 
             @Override
@@ -97,6 +108,11 @@ public class AntlrParser {
             public void exitEveryRule(ParserRuleContext ctx) {
                 if (ctx.depth() <= monitoringLevel) {
                     monitor.worked(1);
+                    try {
+                        PgDiffUtils.checkCancelled(monitor);
+                    } catch (InterruptedException e) {
+                        throw new MonitorCancelledRuntimeException();
+                    }
                 }
             }
 
@@ -104,9 +120,12 @@ public class AntlrParser {
             public void enterEveryRule(ParserRuleContext ctx) {
             }
         });
-
-        SqlContext ctx = parser.sql();
-        ParseTreeWalker.DEFAULT.walk(listener, ctx);
+        try {
+            SqlContext ctx = parser.sql();
+            ParseTreeWalker.DEFAULT.walk(listener, ctx);
+        } catch (MonitorCancelledRuntimeException mcre){
+            throw new InterruptedException();
+        }
     }
 }
 

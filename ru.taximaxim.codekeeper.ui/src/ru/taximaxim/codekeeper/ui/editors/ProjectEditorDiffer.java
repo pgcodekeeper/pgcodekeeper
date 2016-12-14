@@ -54,7 +54,7 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -127,6 +127,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         });
 
         super.init(site, input);
+    }
+
+    public final PgDbProject getProj() {
+        return proj;
     }
 
     @Override
@@ -304,7 +308,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
 
-                    PgDumpLoader.checkCancelled(monitor);
+                    PgDiffUtils.checkCancelled(monitor);
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
                     newDiffer.run(sub.newChild(90));
                     monitor.done();
@@ -644,7 +648,7 @@ class DiffPage extends DiffPresentationPane {
 
     private void showEditor(Differ differ) throws PartInitException {
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                PgDatabase.listPgObjects(dbRemote.getDbObject()));
+                PgDatabase.listPgObjects(dbRemote.getDbObject()), false); // FIXME
         input.setDbinfo(storePicker.getDbInfo());
         projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }

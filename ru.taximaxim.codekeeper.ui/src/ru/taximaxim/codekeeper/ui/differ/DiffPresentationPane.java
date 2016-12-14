@@ -295,12 +295,13 @@ public abstract class DiffPresentationPane extends Composite {
         IEclipsePreferences projProps = proj.getPrefs();
         boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         DbInfo storeDB = storePicker.getDbInfo();
+        String timezone = projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         File dumpfile;
         if (storeDB != null) {
             dbRemote = DbSource.fromDbInfo(storeDB, mainPrefs, forceUnixNewlines,
-                    proj.getProjectCharset(), projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+                    proj.getProjectCharset(), timezone);
         } else if ((dumpfile = storePicker.getPathOfFile()) != null) {
-            dbRemote = DbSource.fromFile(forceUnixNewlines, dumpfile, proj.getProjectCharset());
+            dbRemote = DbSource.fromFile(forceUnixNewlines, dumpfile, proj.getProjectCharset(), timezone);
         } else {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
             mb.setText(Messages.DiffPresentationPane_cannot_get_changes);

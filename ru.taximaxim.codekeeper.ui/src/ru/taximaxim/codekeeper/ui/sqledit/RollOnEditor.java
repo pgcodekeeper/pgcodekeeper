@@ -40,6 +40,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
@@ -50,6 +51,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.MessageBox;
@@ -147,7 +149,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             @Override
             public void verifyKey(VerifyEvent event) {
                 if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == SWT.F5) {
+                    Cursor cursor = event.display.getActiveShell().getCursor();
+                    event.display.getActiveShell().setCursor(new Cursor(event.display, SWT.CURSOR_WAIT));
+                    try{
                     runButtonMethod();
+                    } finally {
+                        event.display.getActiveShell().setCursor(cursor);
+                    }
                 }
             }
         });
@@ -240,6 +248,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         this.differ = addDepcy.getDiffer();
 
         this.oldDepcy = differ.getAdditionalDepciesSource();
+        if (oldDepcy != null)
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         IEclipsePreferences projPrefs = new ProjectScope(addDepcy.getProject())
                 .getNode(UIConsts.PLUGIN_ID.THIS);
@@ -247,7 +256,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
-        this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        this.connectionTimezone = differ.getTimezone();
         this.scriptFileEncoding = addDepcy.getScriptFileEncoding();
         this.externalDbInfo = addDepcy.dbinfo;
     }
@@ -260,7 +269,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         buttons.setLayoutData(gd);
 
-        GridLayout gl = new GridLayout(2, false);
+        GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = gl.marginWidth = 0;
         buttons.setLayout(gl);
 
@@ -491,6 +500,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
                 DbInfo dbInfo = storePicker.getDbInfo();
+                if (dbInfo == null){
+                    ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
+                    return;
+                }
 
                 final String jdbcHost = dbInfo.getDbHost();
                 final int jdbcPort = dbInfo.getDbPort();
@@ -561,7 +574,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
+            Shell shell = e.display.getActiveShell();
+            Cursor cursor = shell.getCursor();
+            shell.setCursor(new Cursor(e.display, SWT.CURSOR_WAIT));
+            try{
             runButtonMethod();
+            } finally {
+                shell.setCursor(cursor);
+            }
         }
     }
 
@@ -746,8 +766,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     history.addHistoryEntry(cmbScript.getText());
                 } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
-                            Messages.SqlScriptDialog_error_adding_command_history,
-                            e);
+                            Messages.SqlScriptDialog_error_adding_command_history, e);
                 }
             }
         }

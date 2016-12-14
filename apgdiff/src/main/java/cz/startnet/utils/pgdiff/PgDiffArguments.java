@@ -342,11 +342,6 @@ public class PgDiffArguments {
             }
         }
 
-        if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat()) //$NON-NLS-1$ //$NON-NLS-2$
-                || "db".equals(getParseSrcFormat())) { //$NON-NLS-1$
-            throw new UnsupportedOperationException(Messages.PgDiffArguments_db_conn_not_impl);
-        }
-
         if (args.length == 1 && isVersion()) {
             printVersion(writer);
             return false;

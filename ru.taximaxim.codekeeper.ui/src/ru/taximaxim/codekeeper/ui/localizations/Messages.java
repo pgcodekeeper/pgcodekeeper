@@ -406,6 +406,7 @@ public final class Messages extends NLS {
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
     public static String sqlScriptDialog_script_has_not_been_run_yet;
+    public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
     public static String StdStreamRedirector_process_returned_with_error;
@@ -434,6 +435,10 @@ public final class Messages extends NLS {
     public static String yesNoEditingSupport_no;
 
     public static String yesNoEditingSupport_yes;
+
+    public static String load_from_file;
+    public static String load_from_directory;
+    
 
     //feedback_dialog
 
@@ -465,6 +470,13 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_send;
 
     public static String FeedBackDialog_thank_you;
+
+    // diff wizard
+    public static String diffwizard_diffpage_source_warning;
+    public static String diffwizard_diffpage_target_warning;
+    public static String diffwizard_diffpage_select;
+    public static String diffwizard_pageresult_description;
+    public static String diffwizard_pagepartial_description;
 
     // SONAR-ON
 

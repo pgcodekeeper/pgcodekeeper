@@ -26,9 +26,13 @@
       </topic>
       <topic href="html/tasks/select_source_db.html" label="Выбор источника базы данных">
       </topic>
+      <topic href="html/tasks/diff_wizard.html" label="Сравнение схем БД">
+      </topic>
    </topic>
    <topic href="html/preferences/licensing.html" label="Лицензирование">
    </topic>
    <topic href="html/about.html" label="О программе">
+   </topic>
+   <topic href="html/main/others.html" label="Дополнительные возможности">
    </topic>
 </toc>

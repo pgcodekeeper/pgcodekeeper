@@ -18,7 +18,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -118,6 +118,10 @@ public class Differ implements IRunnableWithProgress {
         return script;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     private void checkFinished() throws PgCodekeeperUIException {
         if(!finished) {
             throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
@@ -138,7 +142,7 @@ public class Differ implements IRunnableWithProgress {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, sourceDbFull.getArguments().getTimeZone(), forceUnixNewlines),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -152,7 +156,7 @@ public class Differ implements IRunnableWithProgress {
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, targetDbFull.getArguments().getTimeZone(), forceUnixNewlines),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
@@ -163,7 +167,7 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 
-        PgDumpLoader.checkCancelled(pm);
+        PgDiffUtils.checkCancelled(pm);
         monitor.done();
         finished = true;
     }

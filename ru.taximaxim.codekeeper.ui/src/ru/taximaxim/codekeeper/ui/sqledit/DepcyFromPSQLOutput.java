@@ -39,6 +39,7 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
     private final Map<String, PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private final Differ differ;
+    private final boolean isSrc2Trg;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private final IProject proj;
     private PgDbParser parser;
@@ -59,11 +60,12 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
         return scriptFileEncoding;
     }
 
-    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list) {
+    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list, boolean isSrc2Trg) {
         super(getDiff(differ), Messages.diffPartDescr_diff_script);
         this.differ = differ;
         this.proj = proj2.getProject();
         this.objList = list;
+        this.isSrc2Trg = isSrc2Trg;
         try {
             this.scriptFileEncoding = proj2.getProjectCharset();
         } catch (CoreException e) {

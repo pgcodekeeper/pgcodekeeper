@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.properties;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.TimeZone;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -134,7 +133,8 @@ IWorkbenchPropertyPage {
 
     private static String[] getSortedTimezones(){
         if (availableTimezones == null){
-            availableTimezones = TimeZone.getAvailableIDs();
+            //availableTimezones = TimeZone.getAvailableIDs();
+            availableTimezones = ApgdiffConsts.TIME_ZONES;
             Arrays.sort(availableTimezones);
         }
         return availableTimezones;
