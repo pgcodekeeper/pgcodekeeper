@@ -4,7 +4,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Дополнительные возможности</title>
-	<link type="text/css" rel="stylesheet" href="book.css"/>
+	<link type="text/css" rel="stylesheet" href="../book.css"/>
 </head>
 
 <body>
@@ -29,9 +29,18 @@
 <p>
 	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --apgdiff --help</b>
 </p>
+<h3>Пример</h3>
 <p>
-	<b>Например: pgcodekeeper-cli --apgdiff --diff --license /home/codekeeper/licenseFile --dbOld-format parsed --dbNew-format db /home/codekeeper/projects/test1/ jdbc:postgresql://localhost:5432/testdb1?user=user&password=password /home/codekeeper/projects/diff.sql</b>
-	Файл diff.sql содержит сгенерируемый скрипт наката для обновления базы данных
+<pre>pgcodekeeper-cli --apgdiff --diff --license /home/codekeeper/licenseFile \
+--dbOld-format db --dbNew-format parsed \
+jdbc:postgresql://localhost:5432/testdb1?user=user&password=password \
+/home/codekeeper/projects/test1/ \
+/home/codekeeper/projects/diff.sql</pre>
+
+	После выполнения этой команды в файл <span class="inline-code">diff.sql</span>
+	будет записан скрипт миграции различий из проекта в директории
+	<span class="inline-code">test1</span> в базу данных <span class="inline-code">testdb1</span>
+	на сервере <span class="inline-code">localhost:5432</span>.  
 </p>
 </body>
 </html>

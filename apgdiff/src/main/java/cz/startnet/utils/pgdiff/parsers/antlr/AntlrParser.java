@@ -84,16 +84,7 @@ public class AntlrParser {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
-        
-        final class MonitorCancelledRuntimeException extends RuntimeException{
 
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 8530137642762407646L;
-            
-        }
-        
         parser.addParseListener(new ParseTreeListener() {
 
             @Override
@@ -120,8 +111,9 @@ public class AntlrParser {
             public void enterEveryRule(ParserRuleContext ctx) {
             }
         });
+
+        SqlContext ctx = parser.sql();
         try {
-            SqlContext ctx = parser.sql();
             ParseTreeWalker.DEFAULT.walk(listener, ctx);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
@@ -150,5 +142,26 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, line, charPositionInLine, msg));
         }
+    }
+}
+
+final class MonitorCancelledRuntimeException extends RuntimeException {
+
+    private static final long serialVersionUID = 8530137642762407646L;
+
+    public MonitorCancelledRuntimeException() {
+        super();
+    }
+
+    public MonitorCancelledRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public MonitorCancelledRuntimeException(String message) {
+        super(message);
+    }
+
+    public MonitorCancelledRuntimeException(Throwable cause) {
+        super(cause);
     }
 }
