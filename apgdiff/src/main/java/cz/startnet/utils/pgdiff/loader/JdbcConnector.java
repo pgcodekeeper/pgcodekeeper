@@ -41,7 +41,7 @@ public class JdbcConnector {
         this.dbName = dbName;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
-        this.url = "jdbc:postgres://" + host + ":" + this.port + "/" + dbName;
+        this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
 
         this.encoding = encoding;
         this.timezone = timezone;
