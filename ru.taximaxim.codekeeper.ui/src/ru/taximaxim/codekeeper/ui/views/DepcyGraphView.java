@@ -52,7 +52,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -263,7 +262,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         gv.setInput(newInput);
         currentPath = part;
         currentSelection = selection;
-        currentProject = ((ProjectEditorDiffer) part).getProj();
+        //currentProject = ((ProjectEditorDiffer) part).getProj();
+        // FIXME use proj from selection
     }
 
     private class DepcyGraphViewContentProvider implements IGraphEntityContentProvider {

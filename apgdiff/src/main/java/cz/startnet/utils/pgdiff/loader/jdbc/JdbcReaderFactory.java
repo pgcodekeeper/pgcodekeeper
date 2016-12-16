@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,7 @@ public abstract class JdbcReaderFactory {
      */
 
     private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
-    public static final List<? extends JdbcReaderFactory> FACTORIES = Arrays.asList(
+    public static final List<? extends JdbcReaderFactory> FACTORIES = Collections.unmodifiableList(Arrays.asList(
             // SONAR-OFF
             new TypesReaderFactory(      1 << 0, "get_all_types",       JdbcQueries.QUERY_TYPES_PER_SCHEMA),
             new SequencesReaderFactory(  1 << 1, "get_all_sequences",   JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA),
@@ -56,7 +57,7 @@ public abstract class JdbcReaderFactory {
             new TriggersReaderFactory(   1 << 7, "get_all_triggers",    JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA),
             new RulesReaderFactory(      1 << 8, "get_all_rules",       JdbcQueries.QUERY_RULES_PER_SCHEMA)
             // SONAR-ON
-            );
+            ));
 
     /**
      * @param loader loader connection must have been established

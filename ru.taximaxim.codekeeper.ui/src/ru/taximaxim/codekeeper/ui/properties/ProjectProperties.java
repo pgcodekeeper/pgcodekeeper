@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.properties;
 
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -30,10 +29,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ProjectProperties extends PropertyPage implements
-IWorkbenchPropertyPage {
-
-    private static String[] availableTimezones;
+public class ProjectProperties extends PropertyPage implements IWorkbenchPropertyPage {
 
     private Button btnForceUnixNewlines;
     private Combo cmbTimezone;
@@ -64,10 +60,16 @@ IWorkbenchPropertyPage {
         Label label = new Label(panel, SWT.NONE);
         label.setText(Messages.projectProperties_timezone_for_all_db_connections);
 
-        cmbTimezone = new Combo(panel, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbTimezone.setItems(getSortedTimezones());
-        cmbTimezone.select(cmbTimezone.indexOf(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC)));
+        cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
+        String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
+        int pos = cmbTimezone.indexOf(tz);
+        if (pos != -1) {
+            cmbTimezone.select(pos);
+        } else {
+            cmbTimezone.setText(tz);
+        }
         cmbTimezone.addModifyListener(new ModifyListener() {
 
             @Override
@@ -129,14 +131,5 @@ IWorkbenchPropertyPage {
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
-    }
-
-    private static String[] getSortedTimezones(){
-        if (availableTimezones == null){
-            //availableTimezones = TimeZone.getAvailableIDs();
-            availableTimezones = ApgdiffConsts.TIME_ZONES;
-            Arrays.sort(availableTimezones);
-        }
-        return availableTimezones;
     }
 }

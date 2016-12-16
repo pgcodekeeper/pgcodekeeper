@@ -171,10 +171,10 @@
                 label="%menu.label.pgcodekeeper.main"
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                    label="%command.label.feedback"
-                    mnemonic="%command.mnemonic.feedback"
-                    style="push">
+                      commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                      label="Diff Wizard"
+                      mnemonic="D"
+                      style="push">
                 </command>
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
@@ -182,12 +182,15 @@
                       mnemonic="%command.mnemonic.improvePerformanceJdbc"
                       style="push">
                 </command>
-            <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="diff databases"
-                  mnemonic="F"
-                  style="push">
-            </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1">
+                </separator>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                      label="%command.label.feedback"
+                      mnemonic="%command.mnemonic.feedback"
+                      style="push">
+                </command>
                 <visibleWhen checkEnabled="false">
                     <with variable="activeWorkbenchWindow.activePerspective">
                         <equals value="ru.taximaxim.codekeeper.ui.mainperspective">

@@ -142,7 +142,7 @@ public class Differ implements IRunnableWithProgress {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, sourceDbFull.getArguments().getTimeZone(), forceUnixNewlines),
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -156,7 +156,7 @@ public class Differ implements IRunnableWithProgress {
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, targetDbFull.getArguments().getTimeZone(), forceUnixNewlines),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);

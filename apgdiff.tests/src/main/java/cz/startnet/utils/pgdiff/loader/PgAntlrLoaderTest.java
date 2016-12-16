@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -65,7 +66,7 @@ abstract class PgDatabaseObjectCreator {
 public class PgAntlrLoaderTest {
 
     private final String encoding = ApgdiffConsts.UTF_8;
-    private final List<Integer> skipForExport = Arrays.asList(8);
+    private final List<Integer> skipForExport = Collections.unmodifiableList(Arrays.asList(8));
     /**
      * Provides parameters for running the tests.
      *

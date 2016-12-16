@@ -89,16 +89,16 @@ public abstract class DbSource {
         return args;
     }
 
-    public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath, String encoding, String timezone) {
-        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding, timezone);
+    public static DbSource fromDirTree(boolean forceUnixNewlines,String dirTreePath, String encoding) {
+        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding);
     }
 
     public static DbSource fromProject(PgDbProject proj) {
         return new DbSourceProject(proj);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, File filename, String encoding, String timezone) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding, timezone);
+    public static DbSource fromFile(boolean forceUnixNewlines, File filename, String encoding) {
+        return new DbSourceFile(forceUnixNewlines, filename, encoding);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, IPreferenceStore prefs,
@@ -141,15 +141,13 @@ class DbSourceDirTree extends DbSource {
     private final boolean forceUnixNewlines;
     private final String dirTreePath;
     private final String encoding;
-    private final String timezone;
 
-    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding, String timezone) {
+    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding) {
         super(dirTreePath);
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
-        this.timezone = timezone;
     }
 
     @Override
@@ -158,7 +156,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, timezone, forceUnixNewlines),
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
                 monitor, null);
     }
 }
@@ -203,15 +201,13 @@ class DbSourceFile extends DbSource {
     private final boolean forceUnixNewlines;
     private final File filename;
     private final String encoding;
-    private final String timezone;
 
-    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding, String timezone) {
+    DbSourceFile(boolean forceUnixNewlines, File filename, String encoding) {
         super(filename.getAbsolutePath());
 
         this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
         this.encoding = encoding;
-        this.timezone = timezone;
     }
 
     @Override
@@ -229,7 +225,7 @@ class DbSourceFile extends DbSource {
         }
 
         try (PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, timezone, forceUnixNewlines),
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
                 monitor, 2)) {
             return loader.load();
         }

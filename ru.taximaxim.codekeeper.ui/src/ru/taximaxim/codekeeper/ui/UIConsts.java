@@ -1,5 +1,9 @@
 package ru.taximaxim.codekeeper.ui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public interface UIConsts {
 
     String _NL = System.lineSeparator();
@@ -164,4 +168,42 @@ public interface UIConsts {
     }
 
     String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
+
+    List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
+            "UTC-12:00", //$NON-NLS-1$
+            "UTC-11:00", //$NON-NLS-1$
+            "UTC-10:00", //$NON-NLS-1$
+            "UTC-09:00", //$NON-NLS-1$
+            "UTC-08:00", //$NON-NLS-1$
+            "UTC-07:00", //$NON-NLS-1$
+            "UTC-06:00", //$NON-NLS-1$
+            "UTC-05:00", //$NON-NLS-1$
+            "UTC-04:00", //$NON-NLS-1$
+            "UTC-03:00", //$NON-NLS-1$
+            "UTC-02:00", //$NON-NLS-1$
+            "UTC-01:00", //$NON-NLS-1$
+            "UTC", //$NON-NLS-1$
+            "UTC+01:00", //$NON-NLS-1$
+            "UTC+02:00", //$NON-NLS-1$
+            "UTC+03:00", //$NON-NLS-1$
+            "UTC+04:00", //$NON-NLS-1$
+            "UTC+05:00", //$NON-NLS-1$
+            "UTC+06:00", //$NON-NLS-1$
+            "UTC+07:00", //$NON-NLS-1$
+            "UTC+08:00", //$NON-NLS-1$
+            "UTC+09:00", //$NON-NLS-1$
+            "UTC+10:00", //$NON-NLS-1$
+            "UTC+11:00", //$NON-NLS-1$
+            "UTC+12:00" //$NON-NLS-1$
+            ));
+    List<String> ENCODINGS = Collections.unmodifiableList(Arrays.asList(
+            "UTF-8", //$NON-NLS-1$
+            "UTF-16", //$NON-NLS-1$
+            "UTF-16BE", //$NON-NLS-1$
+            "UTF-16LE", //$NON-NLS-1$
+            "US-ASCII", //$NON-NLS-1$
+            "KOI8-R", //$NON-NLS-1$
+            "windows-1251", //$NON-NLS-1$
+            "windows-1252" //$NON-NLS-1$
+            ));
 }

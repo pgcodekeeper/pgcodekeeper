@@ -129,10 +129,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         super.init(site, input);
     }
 
-    public final PgDbProject getProj() {
-        return proj;
-    }
-
     @Override
     protected void createPages() {
         int i;
@@ -648,7 +644,7 @@ class DiffPage extends DiffPresentationPane {
 
     private void showEditor(Differ differ) throws PartInitException {
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                PgDatabase.listPgObjects(dbRemote.getDbObject()), false); // FIXME
+                PgDatabase.listPgObjects(dbRemote.getDbObject()));
         input.setDbinfo(storePicker.getDbInfo());
         projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }

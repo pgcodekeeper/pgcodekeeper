@@ -39,13 +39,12 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
     private final Map<String, PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private final Differ differ;
-    private final boolean isSrc2Trg;
-    List<Entry<PgStatement, PgStatement>> depcyToAdd;
+    private List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private final IProject proj;
     private PgDbParser parser;
     private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     DbInfo dbinfo;
-    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
+    private final String scriptFileEncoding;
     private StringStorage updatedScript;
 
     public List<FunctionBodyContainer> getFuncBodies() {
@@ -60,17 +59,18 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
         return scriptFileEncoding;
     }
 
-    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list, boolean isSrc2Trg) {
+    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, Map<String, PgStatement> list) {
         super(getDiff(differ), Messages.diffPartDescr_diff_script);
         this.differ = differ;
         this.proj = proj2.getProject();
         this.objList = list;
-        this.isSrc2Trg = isSrc2Trg;
+        String scriptFileEncoding;
         try {
-            this.scriptFileEncoding = proj2.getProjectCharset();
+            scriptFileEncoding = proj2.getProjectCharset();
         } catch (CoreException e) {
-            // Use UTF-8
+            scriptFileEncoding = ApgdiffConsts.UTF_8;
         }
+        this.scriptFileEncoding = scriptFileEncoding;
     }
 
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {

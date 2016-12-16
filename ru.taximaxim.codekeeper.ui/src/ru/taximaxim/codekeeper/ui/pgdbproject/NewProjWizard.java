@@ -177,11 +177,11 @@ implements IExecutableExtension, INewWizard {
         } catch (CoreException ex) {
             throw new PgCodekeeperUIException(ex.getLocalizedMessage(), ex);
         }
-        String tz = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         if (dbinfo != null) {
+            String tz = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
             src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, tz);
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset, tz);
+            src = DbSource.fromFile(forceUnixNewlines, dump, charset);
         } else {
             throw new PgCodekeeperUIException(Messages.initProjectFromSource_init_request_but_no_schema_source);
         }
@@ -266,6 +266,6 @@ class PageDb extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null; // FIXME || storePicker.getPathOfProject() != null;
+        return storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null;
     }
 }

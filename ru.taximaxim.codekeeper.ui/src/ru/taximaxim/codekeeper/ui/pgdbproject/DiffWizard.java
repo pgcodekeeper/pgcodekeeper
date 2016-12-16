@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.Arrays;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -50,6 +49,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -186,7 +186,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         boolean isSrc2Trg = pageResult.isSrc2Trg();
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, null,
-                PgDatabase.listPgObjects(dbSource.getDbObject()), isSrc2Trg);
+                PgDatabase.listPgObjects(dbSource.getDbObject()));
         try {
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
             .openEditor(input, EDITOR.ROLLON);
@@ -257,8 +257,7 @@ class PageDiff extends WizardPage implements Listener {
         DbSource dbs = null;
         switch (getTargetType(storePicker)) {
         case DUMP:
-            dbs = DbSource.fromFile(true,
-                    storePicker.getPathOfFile(), encoding, timezone);
+            dbs = DbSource.fromFile(true, storePicker.getPathOfFile(), encoding);
             break;
 
         case JDBC:
@@ -339,8 +338,7 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncodingSource = new Combo(grpEncodingSource,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         //Set<String> charsets = Charset.availableCharsets().keySet();
         //cmbEncodingSource.setItems(charsets.toArray(new String[charsets.size()]));
-        String[] charsets = ApgdiffConsts.ENCODINGS;
-        Arrays.sort(charsets);
+        String[] charsets = UIConsts.ENCODINGS.toArray(new String[UIConsts.ENCODINGS.size()]);
         cmbEncodingSource.setItems(charsets);
         try {
             cmbEncodingSource.select(
@@ -361,8 +359,7 @@ class PageDiff extends WizardPage implements Listener {
          * Eclipse 4.5.2
          */
         //String[] availableTimezones = TimeZone.getAvailableIDs();
-        String[] availableTimezones = ApgdiffConsts.TIME_ZONES;
-        Arrays.sort(availableTimezones);
+        String[] availableTimezones = UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]);
         cmbTimezoneSource = new Combo(grpEncodingSource, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbTimezoneSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezoneSource.setItems(availableTimezones);
