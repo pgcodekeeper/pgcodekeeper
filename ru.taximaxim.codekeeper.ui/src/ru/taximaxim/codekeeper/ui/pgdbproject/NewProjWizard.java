@@ -251,7 +251,7 @@ class PageDb extends WizardPage {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new FillLayout());
 
-        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true);
+        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true, false);
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
             @Override

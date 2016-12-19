@@ -86,7 +86,7 @@ public class DbPicker extends Group {
         txtName.setVisible(false);
 
         if (prefStore != null) {
-            dbStorePicker = new DbStorePicker(this, SWT.NONE, prefStore, false);
+            dbStorePicker = new DbStorePicker(this, SWT.NONE, prefStore, false, false);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
             dbStorePicker.addListenerToCombo(new ISelectionChangedListener() {
 

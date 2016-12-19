@@ -149,7 +149,7 @@ public abstract class DiffPresentationPane extends Composite {
         createUpperContainer(contUpperLeft, gl);
 
         // upper right part
-        storePicker = new DbStorePicker(containerUpper, SWT.NONE, mainPrefs, true);
+        storePicker = new DbStorePicker(containerUpper, SWT.NONE, mainPrefs, true, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
         storePicker.setSelection(new StructuredSelection(DbInfo.preferenceToStore(
                 proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")))); //$NON-NLS-1$

@@ -258,7 +258,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
                 .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
 
-        storePicker = new DbStorePicker(parent, SWT.NONE, mainPrefs, false);
+        storePicker = new DbStorePicker(parent, SWT.NONE, mainPrefs, false, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         if (externalDbInfo != null) {
             storePicker.setSelection(new StructuredSelection(externalDbInfo));

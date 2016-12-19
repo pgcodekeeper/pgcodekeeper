@@ -309,7 +309,7 @@ class PageDiff extends WizardPage implements Listener {
         sourceComp.setLayout(gLayout);
         sourceComp.setText(Messages.diffWizard_source);
 
-        storePickerSource = new DbStorePicker(sourceComp, SWT.NONE, mainPrefs, true);
+        storePickerSource = new DbStorePicker(sourceComp, SWT.NONE, mainPrefs, true, true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
@@ -372,7 +372,7 @@ class PageDiff extends WizardPage implements Listener {
         targetComp.setLayout(gLayout);
         targetComp.setText(Messages.diffWizard_target);
 
-        storePickerTarget = new DbStorePicker(targetComp, SWT.NONE, mainPrefs, true);
+        storePickerTarget = new DbStorePicker(targetComp, SWT.NONE, mainPrefs, true, true);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         storePickerTarget.setLayoutData(gd);
