@@ -17,8 +17,6 @@ public final class Messages extends NLS {
     public static String Connection_DatabaseJdbcAccessError;
     public static String Connection_JdbcDriverClassNotFound;
 
-    public static String jdbcConnector_error_reading_pgpass_file;
-
     // pgdiff
     public static String Argument_ErrorUnknownOption;
     public static String Database_NewDatabaseIgnoredStatements;
@@ -59,8 +57,6 @@ public final class Messages extends NLS {
     public static String Main_license_error;
 
     public static String PgDiffArguments_bad_danger_ddl;
-
-    public static String PgDiffArguments_db_conn_not_impl;
 
     public static String PgDiffArguments_no_license_set;
 

@@ -295,7 +295,7 @@ public class DbStorePicker extends Composite {
 
         private String getDirPath() {
             DirectoryDialog dialog = new DirectoryDialog(getShell());
-            dialog.setText("Choose exported DB or project directory...");
+            dialog.setText(Messages.DbStorePicker_choose_dir);
             dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
             return dialog.open();
         }
@@ -345,7 +345,7 @@ public class DbStorePicker extends Composite {
 
         @Override
         public String toString() {
-            return loadDir ? "Load from Directory..." : Messages.DbStorePicker_load_from_file;
+            return loadDir ? Messages.DbStorePicker_load_from_dir : Messages.DbStorePicker_load_from_file;
         }
     }
 

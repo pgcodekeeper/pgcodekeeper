@@ -125,7 +125,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             getContainer().run(true, true, differ);
 
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new StringEditorInput(differ.getDiffDirect(), "Diff Wizard Result"),
+            .openEditor(new StringEditorInput(differ.getDiffDirect(), Messages.DiffWizard_diff_wizard_result),
                     EDITOR.ROLLON);
             return true;
         } catch (InvocationTargetException ex) {
@@ -176,10 +176,10 @@ class PageDiff extends WizardPage implements Listener {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, true));
 
-        dbSource = new DbSourcePicker(container, "Source", mainPrefs, this);
+        dbSource = new DbSourcePicker(container, Messages.DiffWizard_source, mainPrefs, this);
         dbSource.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        dbTarget = new DbSourcePicker(container, "Target", mainPrefs, this);
+        dbTarget = new DbSourcePicker(container, Messages.DiffWizard_target, mainPrefs, this);
         dbTarget.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite compTz = new Composite(container, SWT.NONE);
@@ -187,7 +187,7 @@ class PageDiff extends WizardPage implements Listener {
         gl.marginWidth = gl.marginHeight = 0;
         compTz.setLayout(gl);
 
-        new Label(compTz, SWT.NONE).setText("DB timezone:");
+        new Label(compTz, SWT.NONE).setText(Messages.DiffWizard_db_tz);
 
         cmbTimezone = new ComboViewer(compTz, SWT.DROP_DOWN | SWT.BORDER);
         cmbTimezone.setContentProvider(ArrayContentProvider.getInstance());
@@ -211,7 +211,7 @@ class PageDiff extends WizardPage implements Listener {
         } else if (getDbTarget() == null) {
             err = Messages.diffwizard_diffpage_target_warning;
         } else if (getTimezone().isEmpty()) {
-            err = "Please select DB timezone";
+            err = Messages.DiffWizard_select_db_tz;
         }
 
         setErrorMessage(err);
