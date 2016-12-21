@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
-import java.text.MessageFormat;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -32,18 +30,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -224,67 +220,14 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void openElementInEditor(TreeElement el) {
         if (el != null && (el.getSide() == projSide || el.getSide() == DiffSide.BOTH)) {
-            PgDatabase projectDb = dbProject.getDbObject();
-            File projectDir = proj.getPathToProject().toFile();
-            File file = new File(projectDir, "SCHEMA"); //$NON-NLS-1$
-
-            TreeElement parentEl = el.getParent();
-            String parentExportedFileName = parentEl == null ?
-                    null : ModelExporter.getExportedFilename(parentEl.getPgStatement(projectDb));
-
-            switch(el.getType()){
-            case EXTENSION:
-                file = new File(projectDir, "EXTENSION"); //$NON-NLS-1$
-                break;
-            case SEQUENCE:
-                file = new File(new File(file, parentExportedFileName), "SEQUENCE"); //$NON-NLS-1$
-                break;
-            case VIEW:
-                file = new File(new File(file, parentExportedFileName), "VIEW"); //$NON-NLS-1$
-                break;
-            case TABLE:
-                file = new File(new File(file, parentExportedFileName), "TABLE"); //$NON-NLS-1$
-                break;
-            case FUNCTION:
-                file = new File(new File(file, parentExportedFileName), "FUNCTION"); //$NON-NLS-1$
-                break;
-            case CONSTRAINT:
-            case INDEX:
-            case TRIGGER:
-                el = parentEl;
-                String schemaName = ModelExporter.getExportedFilename(
-                        parentEl.getParent().getPgStatement(projectDb));
-                file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
-                break;
-            case RULE:
-                String schemaName4Rule = ModelExporter.getExportedFilename(
-                        parentEl.getParent().getPgStatement(projectDb));
-                if (parentEl.getType() == DbObjType.TABLE){
-                    file = new File(new File(file, schemaName4Rule), "TABLE");//$NON-NLS-1$
-                } else if (parentEl.getType() == DbObjType.VIEW){
-                    file = new File(new File(file, schemaName4Rule), "VIEW");//$NON-NLS-1$
-                } else {
-                    Log.log(Log.LOG_ERROR, "Rule out of table or view: " + el.getName());//$NON-NLS-1$
-                }
-                el = parentEl;
-                break;
-            default:
-            }
-
-            file = new File(file, ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql"); //$NON-NLS-1$
-            if (file.exists() && file.isFile()) {
-                Log.log(Log.LOG_INFO, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
-                IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
-                try {
-                    IDE.openEditorOnFileStore(projEditor.getSite().getPage(), fileStore);
-                } catch (PartInitException e) {
-                    ExceptionNotifier.notifyDefault(
-                            MessageFormat.format(Messages.could_not_open_editor_for_file,
-                                    file.getAbsolutePath()), e);
-                }
-            } else {
-                Log.log(Log.LOG_WARNING, "Editor will not be opened for file " +  //$NON-NLS-1$
-                        file.getAbsolutePath() + " because it is either nonexistent or not a file."); //$NON-NLS-1$
+            try {
+                projEditor.getSite().getPage().openEditor(
+                        new FileEditorInput(proj.getProject().getFile(
+                                Path.fromOSString(ModelExporter.getRelativeFilePath(
+                                        el.getPgStatement(dbProject.getDbObject()), true)))),
+                        EDITOR.SQL);
+            } catch (PartInitException e) {
+                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
             }
         }
     }

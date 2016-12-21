@@ -64,12 +64,7 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
         String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
-        int pos = cmbTimezone.indexOf(tz);
-        if (pos != -1) {
-            cmbTimezone.select(pos);
-        } else {
-            cmbTimezone.setText(tz);
-        }
+        cmbTimezone.setText(tz);
         cmbTimezone.addModifyListener(new ModifyListener() {
 
             @Override
@@ -90,8 +85,8 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
     }
 
     private void checkSwitchWarnLbl() {
-        boolean show =
-                !cmbTimezone.getText().equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+        boolean show = !cmbTimezone.getText()
+                .equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         ((GridData) lblWarn.getLayoutData()).exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
@@ -100,7 +95,7 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
     @Override
     protected void performDefaults() {
         btnForceUnixNewlines.setSelection(true);
-        cmbTimezone.select(cmbTimezone.indexOf(ApgdiffConsts.UTC));
+        cmbTimezone.setText(ApgdiffConsts.UTC);
         try {
             fillPrefs();
         } catch (BackingStoreException e) {

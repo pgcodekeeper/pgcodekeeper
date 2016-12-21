@@ -1,14 +1,12 @@
 package ru.taximaxim.codekeeper.ui.views;
 
-import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
@@ -23,17 +21,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
 import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.IGraphEntityContentProvider;
 import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
-import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
@@ -43,17 +38,15 @@ import org.jgrapht.graph.DefaultEdge;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
 
@@ -62,14 +55,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private DepcyGraphLabelProvider labelProvider;
 
     private PgDatabase currentDb;
-    private final boolean isSource = true;
     private DepcyResolver depRes;
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
-
-    private IWorkbenchPart currentPath;
-    private ISelection currentSelection;
-    private PgDbProject currentProject;
+    private IProject currentProject;
 
     public DepcyGraphView() {
         projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
@@ -113,80 +102,25 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                List<?> nodes = gv.getGraphControl().getSelection();
-                if (nodes != null && !nodes.isEmpty()) {
-                    PgStatement node = (PgStatement) ((GraphNode) nodes.get(0)).getData();
-                    openElementInEditor(node);
+                ISelection selection = gv.getSelection();
+                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                    PgStatement st = (PgStatement) ((IStructuredSelection) selection).getFirstElement();
+                    openElementInEditor(st);
                 }
             }
         });
     }
 
-    private void openElementInEditor(PgStatement pgState) {
-        File projectDir = currentProject.getPathToProject().toFile();
-        File file = new File(projectDir, "SCHEMA"); //$NON-NLS-1$
-
-        PgStatement pgParent = pgState.getParent();
-        String parentExportedFileName = pgParent == null ? null : ModelExporter.getExportedFilename(pgParent);
-
-        switch (pgState.getStatementType()) {
-        case EXTENSION:
-            file = new File(projectDir, "EXTENSION"); //$NON-NLS-1$
-            break;
-        case SEQUENCE:
-            file = new File(new File(file, parentExportedFileName), "SEQUENCE"); //$NON-NLS-1$
-            break;
-        case VIEW:
-            file = new File(new File(file, parentExportedFileName), "VIEW"); //$NON-NLS-1$
-            break;
-        case TABLE:
-            file = new File(new File(file, parentExportedFileName), "TABLE"); //$NON-NLS-1$
-            break;
-        case FUNCTION:
-            file = new File(new File(file, parentExportedFileName), "FUNCTION"); //$NON-NLS-1$
-            break;
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-            pgState = pgParent;
-            String schemaName = ModelExporter.getExportedFilename(pgParent.getParent());
-            file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
-            break;
-        case RULE:
-            String schemaName4Rule = ModelExporter.getExportedFilename(pgParent.getParent());
-            if (pgParent.getStatementType() == DbObjType.TABLE) {
-                file = new File(new File(file, schemaName4Rule), "TABLE");//$NON-NLS-1$
-            } else {
-                if (pgParent.getStatementType() == DbObjType.VIEW) {
-                    file = new File(new File(file, schemaName4Rule), "VIEW");//$NON-NLS-1$
-                } else {
-                    Log.log(Log.LOG_ERROR,
-                            DepcyGraphView.class + ": " + pgState.getName() + "rule out of table or view");
-                }
-            }
-            pgState = pgState.getParent();
-            break;
-        default:
-            break;
+    private void openElementInEditor(PgStatement st) {
+        if (currentProject == null) {
+            return;
         }
-
-        file = new File(file, ModelExporter.getExportedFilename(pgState) + ".sql"); //$NON-NLS-1$
-
-        if (file.exists() && file.isFile()) {
-            Log.log(Log.LOG_INFO, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
-
-            IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
-            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
-            try {
-                IDE.openEditorOnFileStore(page, fileStore);
-            } catch (PartInitException e) {
-                ExceptionNotifier.notifyDefault(
-                        MessageFormat.format(Messages.could_not_open_editor_for_file, file.getAbsolutePath()), e);
-            }
-        } else {
-            Log.log(Log.LOG_WARNING, "Editor will not be opened for file " + //$NON-NLS-1$
-                    file.getAbsolutePath() + " because it is either nonexistent or not a file."); //$NON-NLS-1$
+        try {
+            getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
+                    Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
+                    EDITOR.SQL);
+        } catch (PartInitException e) {
+            ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
         }
     }
 
@@ -212,6 +146,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             return;
         }
 
+        IProject selectedProj = null;
         DepcyStructuredSelection dss = null;
         if (selection instanceof DepcyStructuredSelection) {
             dss = (DepcyStructuredSelection) selection;
@@ -219,7 +154,9 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             for (Object selected : ((IStructuredSelection) selection).toList()) {
                 if (selected instanceof DepcyStructuredSelection) {
                     dss = (DepcyStructuredSelection) selected;
-                    break;
+                }
+                if (selected instanceof IProject) {
+                    selectedProj = (IProject) selected;
                 }
             }
         }
@@ -228,6 +165,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         lastSelectionPart = part;
         lastSelection = selection;
+        currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
@@ -260,10 +198,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             }
         }
         gv.setInput(newInput);
-        currentPath = part;
-        currentSelection = selection;
-        //currentProject = ((ProjectEditorDiffer) part).getProj();
-        // FIXME use proj from selection
     }
 
     private class DepcyGraphViewContentProvider implements IGraphEntityContentProvider {
@@ -276,13 +210,12 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         @Override
         public Object[] getConnectedTo(Object entity) {
             if (entity instanceof PgStatement){
-                Set<?> input = (Set<?>) gv.getInput();
                 DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
                 if (currentGraph != null){
                     List<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
                         PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
-                        if (!(connectedVertex instanceof PgColumn) && input.contains(connectedVertex)) {
+                        if (!(connectedVertex instanceof PgColumn)) {
                             connected.add(connectedVertex);
                         }
                     }
