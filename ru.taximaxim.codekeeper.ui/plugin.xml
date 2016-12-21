@@ -172,8 +172,8 @@
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                      label="Diff Wizard"
-                      mnemonic="D"
+                      label="%command.label.diffWizard"
+                      mnemonic="%command.mnemonic.diffWizard"
                       style="push">
                 </command>
                 <command
