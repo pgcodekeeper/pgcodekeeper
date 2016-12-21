@@ -130,9 +130,9 @@ public class DiffTableViewer extends Composite {
         return viewer;
     }
 
-    public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs,
+    public DiffTableViewer(Composite parent, final IPreferenceStore mainPrefs,
             boolean viewOnly, DiffSide projSide) {
-        super(parent, style);
+        super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.projSide = projSide;
 

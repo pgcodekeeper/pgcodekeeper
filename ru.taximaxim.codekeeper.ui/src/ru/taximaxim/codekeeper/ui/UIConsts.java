@@ -34,7 +34,7 @@ public interface UIConsts {
 
     interface PREF_PAGE {
         int WIDTH_HINT_PX = 240;
-        String DB_STORE = PLUGIN_ID.THIS +  ".dbstore"; //$NON-NLS-1$
+        String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
     }
 
     interface PREF {
@@ -140,6 +140,7 @@ public interface UIConsts {
 
         // external icons
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
+        String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$

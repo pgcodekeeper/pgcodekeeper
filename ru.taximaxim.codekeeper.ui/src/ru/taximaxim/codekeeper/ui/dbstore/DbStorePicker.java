@@ -184,6 +184,10 @@ public class DbStorePicker extends Composite {
         return getPath(false);
     }
 
+    public File getPathOfDir() {
+        return getPath(true);
+    }
+
     public File getPath(boolean getDirectory) {
         Object selected = ((IStructuredSelection) cmbDbNames.getSelection()).getFirstElement();
         if (selected instanceof File) {

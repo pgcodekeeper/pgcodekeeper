@@ -64,7 +64,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -329,12 +328,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                             if (commit.isDisposed() || diff.isDisposed()) {
                                 return;
                             }
-                            try {
-                                commit.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
-                                diff.setInput(dbProject, dbRemote, newDiffer.getDiffTreeRevert());
-                            } catch (PgCodekeeperUIException ex) {
-                                ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_setting_input, ex);
-                            }
+                            commit.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
+                            diff.setInput(dbProject, dbRemote, newDiffer.getDiffTreeRevert());
                         }
                     });
                 }
@@ -385,7 +380,7 @@ class CommitPage extends DiffPresentationPane {
             public void widgetSelected(SelectionEvent e) {
                 try {
                     commit();
-                } catch (PgCodekeeperException | PgCodekeeperUIException ex) {
+                } catch (PgCodekeeperException ex) {
                     ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
                 }
             }
@@ -398,7 +393,7 @@ class CommitPage extends DiffPresentationPane {
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
     }
 
-    private void commit() throws PgCodekeeperException, PgCodekeeperUIException {
+    private void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
@@ -568,11 +563,7 @@ class DiffPage extends DiffPresentationPane {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    diff();
-                } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_diff_error, e1);
-                }
+                diff();
             }
         });
 
@@ -597,7 +588,7 @@ class DiffPage extends DiffPresentationPane {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
 
-    private void diff() throws PgCodekeeperUIException {
+    private void diff() {
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
@@ -607,8 +598,7 @@ class DiffPage extends DiffPresentationPane {
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree, false,
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 

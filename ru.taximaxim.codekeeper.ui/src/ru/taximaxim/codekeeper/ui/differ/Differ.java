@@ -26,7 +26,6 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -39,9 +38,7 @@ public class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
-    private final boolean forceUnixNewlines;
 
-    private boolean finished;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
 
@@ -72,13 +69,12 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(PgDatabase sourceDbFull, PgDatabase targetDbFull,
-            TreeElement root, boolean needTwoWay, String timezone, boolean forceUnixNewlines) {
+            TreeElement root, boolean needTwoWay, String timezone) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
-        this.forceUnixNewlines = forceUnixNewlines;
     }
 
     public Job getDifferJob() {
@@ -99,33 +95,29 @@ public class Differ implements IRunnableWithProgress {
         };
     }
 
-    public String getDiffDirect() throws PgCodekeeperUIException {
-        checkFinished();
+    public String getDiffDirect() {
+        if (diffDirect == null) {
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
+        }
         return diffDirect;
     }
 
-    public String getDiffReverse() throws PgCodekeeperUIException {
-        checkFinished();
+    public String getDiffReverse() {
+        if (diffReverse == null) {
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
+        }
         return diffReverse;
     }
 
-    /**
-     * @return the script
-     * @throws PgCodekeeperUIException
-     */
-    public PgDiffScript getScript() throws PgCodekeeperUIException {
-        checkFinished();
+    public PgDiffScript getScript() {
+        if (script == null) {
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
+        }
         return script;
     }
 
     public String getTimezone() {
         return timezone;
-    }
-
-    private void checkFinished() throws PgCodekeeperUIException {
-        if(!finished) {
-            throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
-        }
     }
 
     @Override
@@ -142,7 +134,8 @@ public class Differ implements IRunnableWithProgress {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
+                    // forceUnixNewLines has no effect on diff operaiton, just pass true
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true),
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget);
@@ -156,7 +149,7 @@ public class Differ implements IRunnableWithProgress {
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
                 PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
-                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, forceUnixNewlines),
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone, true),
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource);
@@ -169,6 +162,5 @@ public class Differ implements IRunnableWithProgress {
 
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
-        finished = true;
     }
 }

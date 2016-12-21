@@ -75,6 +75,10 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException, CoreException;
 
+    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines)
+            throws LicenseException, IOException {
+        return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines);
+    }
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines) throws LicenseException, IOException {
         PgDiffArguments args = new PgDiffArguments();
@@ -156,7 +160,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
+                getPgDiffArgs(encoding, forceUnixNewlines),
                 monitor, null);
     }
 }
@@ -184,7 +188,7 @@ class DbSourceProject extends DbSource {
         IEclipsePreferences pref = proj.getPrefs();
         return PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
-                getPgDiffArgs(charset, ApgdiffConsts.UTC, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
+                getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, null);
     }
 }
@@ -225,7 +229,7 @@ class DbSourceFile extends DbSource {
         }
 
         try (PgDumpLoader loader = new PgDumpLoader(filename,
-                getPgDiffArgs(encoding, ApgdiffConsts.UTC, forceUnixNewlines),
+                getPgDiffArgs(encoding, forceUnixNewlines),
                 monitor, 2)) {
             return loader.load();
         }
@@ -300,7 +304,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             try (PgDumpLoader loader = new PgDumpLoader(dump,
-                    getPgDiffArgs(encoding, timezone, forceUnixNewlines),
+                    getPgDiffArgs(encoding, forceUnixNewlines),
                     monitor)) {
                 return loader.load();
             }
@@ -333,7 +337,7 @@ class DbSourceJdbc extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(encoding, timezone, forceUnixNewlines);
+        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines);
         return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
     }
 }

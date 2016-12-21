@@ -67,7 +67,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -156,17 +155,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
-        try {
-            if (checkDangerDdl()) {
-                if (showDangerWarning() == SWT.OK) {
-                    getSourceViewer().getTextWidget().setBackground(colorPink);
-                } else {
-                    close(false);
-                }
+        if (checkDangerDdl()) {
+            if (showDangerWarning() == SWT.OK) {
+                getSourceViewer().getTextWidget().setBackground(colorPink);
+            } else {
+                close(false);
             }
-        } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.SqlScriptDialog_error_get_script, e);
         }
     }
 
@@ -454,7 +448,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         }
     }
 
-    private boolean checkDangerDdl() throws PgCodekeeperUIException {
+    private boolean checkDangerDdl() {
         if (differ == null) {
             return false;
         }
@@ -657,25 +651,19 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         }
 
         private void checkAskDanger() {
-            try {
-                if (checkDangerDdl()) {
-                    if (showDangerWarning() != SWT.OK) {
-                        differ.setAdditionalDepciesSource(saveToRestore);
-                        return;
-                    } else {
-                        RollOnEditor.this.getSourceViewer().getTextWidget().setBackground(colorPink);
-                    }
+            if (checkDangerDdl()) {
+                if (showDangerWarning() != SWT.OK) {
+                    differ.setAdditionalDepciesSource(saveToRestore);
+                    return;
+                } else {
+                    RollOnEditor.this.getSourceViewer().getTextWidget().setBackground(colorPink);
                 }
-                IEditorInput input = RollOnEditor.this.getEditorInput();
-                if (input instanceof DepcyFromPSQLOutput) {
-                    ((DepcyFromPSQLOutput)input).updateScript(differ.getDiffDirect());
-                }
-                RollOnEditor.this.setInput(input);
-
-            } catch (PgCodekeeperUIException e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.SqlScriptDialog_error_add_depcies, e);
             }
+            IEditorInput input = RollOnEditor.this.getEditorInput();
+            if (input instanceof DepcyFromPSQLOutput) {
+                ((DepcyFromPSQLOutput)input).updateScript(differ.getDiffDirect());
+            }
+            RollOnEditor.this.setInput(input);
         }
     }
 
