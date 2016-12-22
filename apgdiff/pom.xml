@@ -59,6 +59,7 @@
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiff { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiffArguments { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgDiffScript { *; }</option>
+                                <option>-keep public class cz.startnet.utils.pgdiff.PgDiffUtils { *; }</option>
 
                                 <option>-keep public class cz.startnet.utils.pgdiff.loader.* { *; }</option>
 

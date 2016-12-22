@@ -56,12 +56,12 @@
             id="ru.taximaxim.codekeeper.ui.feedBack"
             name="%command.name.feedback">
         </command>
-      <command
+        <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader"
             id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
             name="%command.name.improvePerformanceJdbc">
-      </command>
+        </command>
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution
@@ -171,26 +171,26 @@
                 label="%menu.label.pgcodekeeper.main"
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
                 <command
-                      commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                      label="%command.label.diffWizard"
-                      mnemonic="%command.mnemonic.diffWizard"
-                      style="push">
+                    commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                    label="%command.label.diffWizard"
+                    mnemonic="%command.mnemonic.diffWizard"
+                    style="push">
                 </command>
                 <command
-                      commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-                      label="%command.label.improvePerformanceJdbc"
-                      mnemonic="%command.mnemonic.improvePerformanceJdbc"
-                      style="push">
+                    commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
+                    label="%command.label.improvePerformanceJdbc"
+                    mnemonic="%command.mnemonic.improvePerformanceJdbc"
+                    style="push">
                 </command>
                 <separator
-                      name="ru.taximaxim.codekeeper.ui.separator1"
-                      visible="true">
+                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    visible="true">
                 </separator>
                 <command
-                      commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                      label="%command.label.feedback"
-                      mnemonic="%command.mnemonic.feedback"
-                      style="push">
+                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                    label="%command.label.feedback"
+                    mnemonic="%command.mnemonic.feedback"
+                    style="push">
                 </command>
                 <visibleWhen checkEnabled="false">
                     <with variable="activeWorkbenchWindow.activePerspective">
