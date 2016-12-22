@@ -96,6 +96,12 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void setPrivileges(PgStatement st, String stSignature,
+            String aclItemsArrayAsString, long ownerOid) {
+        if (!args.isIgnorePrivileges()) {
+            setPrivileges(st, stSignature, aclItemsArrayAsString, getRoleByOid(ownerOid), null);
+        }
+    }
     /**
      * Parses <code>aclItemsArrayAsString</code> and adds parsed privileges to
      * <code>PgStatement</code> object. Owner privileges go first.
