@@ -163,8 +163,6 @@ public final class Messages extends NLS {
     public static String diffWizard_Diff;
     public static String diffWizard_diff_parameters;
     public static String diffWizard_diff_tree;
-    public static String diffWizard_source;
-    public static String diffWizard_target;
     public static String diffWizard_target_encoding;
     public static String ignoredObjectPrefListEditor_ignore_contents;
 

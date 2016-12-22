@@ -103,25 +103,19 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 ISelection selection = gv.getSelection();
-                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                if (currentProject != null && !selection.isEmpty()
+                        && selection instanceof IStructuredSelection) {
                     PgStatement st = (PgStatement) ((IStructuredSelection) selection).getFirstElement();
-                    openElementInEditor(st);
+                    try {
+                        getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
+                                Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
+                                EDITOR.SQL);
+                    } catch (PartInitException ex) {
+                        ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
+                    }
                 }
             }
         });
-    }
-
-    private void openElementInEditor(PgStatement st) {
-        if (currentProject == null) {
-            return;
-        }
-        try {
-            getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
-                    Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
-                    EDITOR.SQL);
-        } catch (PartInitException e) {
-            ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
-        }
     }
 
     @Override

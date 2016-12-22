@@ -14,8 +14,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -69,17 +67,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void createPageControls(Composite pageContainer) {
         super.createPageControls(pageContainer);
-
-        getShell().addShellListener(new ShellAdapter() {
-
-            @Override
-            public void shellActivated(ShellEvent e) {
-                getShell().removeShellListener(this);
-
-                getShell().pack();
-            }
-        });
-
         ((WizardDialog) getContainer()).addPageChangingListener(this);
     }
 
@@ -103,7 +90,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
 
             pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(), treediffer);
-            getShell().pack();
+            getShell().layout(true, true);
         }
     }
 
@@ -177,10 +164,10 @@ class PageDiff extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, true));
 
         dbSource = new DbSourcePicker(container, Messages.DiffWizard_source, mainPrefs, this);
-        dbSource.setLayoutData(new GridData(GridData.FILL_BOTH));
+        dbSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         dbTarget = new DbSourcePicker(container, Messages.DiffWizard_target, mainPrefs, this);
-        dbTarget.setLayoutData(new GridData(GridData.FILL_BOTH));
+        dbTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite compTz = new Composite(container, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
@@ -254,15 +241,15 @@ class PagePartial extends WizardPage {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, true));
 
-        new Label(container, SWT.NONE).setText(Messages.diffWizard_source);
-        new Label(container, SWT.NONE).setText(Messages.diffWizard_target);
+        new Label(container, SWT.NONE).setText(Messages.DiffWizard_source + ':');
+        new Label(container, SWT.NONE).setText(Messages.DiffWizard_target + ':');
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
         diffTable = new DiffTableViewer(container, mainPrefs, false, DiffSide.LEFT);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-        gd.widthHint = 400;
-        gd.heightHint = 240;
+        gd.widthHint = 480;
+        gd.heightHint = 360;
         diffTable.setLayoutData(gd);
 
         setControl(container);

@@ -183,7 +183,8 @@
                       style="push">
                 </command>
                 <separator
-                      name="ru.taximaxim.codekeeper.ui.separator1">
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
                 </separator>
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.feedBack"
