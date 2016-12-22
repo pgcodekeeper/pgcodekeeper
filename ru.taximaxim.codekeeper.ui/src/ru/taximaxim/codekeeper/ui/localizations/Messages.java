@@ -20,20 +20,14 @@ public final class Messages extends NLS {
     public static String select_all;
     public static String select_none;
     public static String choose_dump_file_with_changes;
-    public static String db;
-    public static String dump;
     public static String empty_selection;
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
-    public static String jdbc;
     public static String please_check_at_least_one_row;
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
-    public static String browse;
-    public static String path_to_db_schema_dump;
-    public static String select_readable_db_dump_file;
     public static String add;
     public static String delete;
     public static String error_creating_dependency_graph;
@@ -137,7 +131,6 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
-    public static String could_not_open_editor_for_file;
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
@@ -167,29 +160,10 @@ public final class Messages extends NLS {
     public static String project_either_closed_or_deleted;
 
     // ui.pgdbproject
-    public static String diffWizard_db_taget;
     public static String diffWizard_Diff;
     public static String diffWizard_diff_parameters;
-    public static String diffWizard_diff_result;
-    public static String diffWizard_diff_target;
     public static String diffWizard_diff_tree;
-    public static String diffWizard_dump_taget;
-    public static String diffWizard_encoding;
-    public static String diffWizard_no_target_type_selection_found;
-    public static String diffWizard_path_to_target_project;
-    public static String diffWizard_project;
-    public static String diffWizard_project_target;
-    public static String diffWizard_save;
-    public static String diffWizard_save__;
-    public static String diffWizard_select_valid_project_file;
-    public static String diffWizard_source;
-    public static String diffWizard_source_target;
-    public static String diffWizard_target;
     public static String diffWizard_target_encoding;
-    public static String diffWizard_target_timezone;
-    public static String diffWizard_target_source;
-    public static String diffWizard_unexpected_error_while_saving_diff;
-    public static String diffWizard_unexpected_target_type_value;
     public static String ignoredObjectPrefListEditor_ignore_contents;
 
     public static String ignoredObjectPrefListEditor_name;
@@ -219,9 +193,13 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStorePicker_choose_dir;
+
     public static String DbStorePicker_db_connection;
 
     public static String DbStorePicker_db_schema_source;
+
+    public static String DbStorePicker_load_from_dir;
 
     public static String DbStorePicker_load_from_file;
 
@@ -256,14 +234,20 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_save_checked_set;
-    public static String DiffTableViewer_error_setting_input;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
-    public static String DiffWizard_bad_target_db;
 
-    public static String DiffWizard_project_charset_error;
-    public static String DiffWizard_unexpected_error;
+    public static String DiffWizard_db_tz;
+
+    public static String DiffWizard_diff_wizard_result;
+
+    public static String DiffWizard_select_db_tz;
+
+    public static String DiffWizard_source;
+
+    public static String DiffWizard_target;
+
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
 
     public static String ProjectProperties_force_unix_newlines;
@@ -370,7 +354,6 @@ public final class Messages extends NLS {
 
     public static String PrefListEditor_cannot_edit;
     public static String ProjectEditorDiffer_commit_error;
-    public static String ProjectEditorDiffer_diff_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
     public static String ProjectEditorDiffer_error_opening_script_editor;
@@ -400,12 +383,11 @@ public final class Messages extends NLS {
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
-    public static String SqlScriptDialog_error_add_depcies;
     public static String SqlScriptDialog_error_adding_command_history;
-    public static String SqlScriptDialog_error_get_script;
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
     public static String sqlScriptDialog_script_has_not_been_run_yet;
+    public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
     public static String StdStreamRedirector_process_returned_with_error;
@@ -465,6 +447,12 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_send;
 
     public static String FeedBackDialog_thank_you;
+
+    // diff wizard
+    public static String diffwizard_diffpage_source_warning;
+    public static String diffwizard_diffpage_target_warning;
+    public static String diffwizard_diffpage_select;
+    public static String diffwizard_pagepartial_description;
 
     // SONAR-ON
 

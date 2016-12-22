@@ -13,12 +13,11 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -32,7 +31,6 @@ public class TreeDiffer implements IRunnableWithProgress {
     private final DbSource dbSource, dbTarget;
     private final boolean needTwoWay;
 
-    private boolean finished;
     private TreeElement diffTree, diffTreeRevert;
 
     public DbSource getDbSource() {
@@ -43,13 +41,17 @@ public class TreeDiffer implements IRunnableWithProgress {
         return dbTarget;
     }
 
-    public TreeElement getDiffTree() throws PgCodekeeperUIException {
-        checkFinished();
+    public TreeElement getDiffTree() {
+        if (diffTree == null) {
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
+        }
         return diffTree;
     }
 
-    public TreeElement getDiffTreeRevert() throws PgCodekeeperUIException {
-        checkFinished();
+    public TreeElement getDiffTreeRevert() {
+        if (diffTreeRevert == null) {
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
+        }
         return diffTreeRevert;
     }
 
@@ -57,12 +59,6 @@ public class TreeDiffer implements IRunnableWithProgress {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.needTwoWay = needTwoWay;
-    }
-
-    private void checkFinished() throws PgCodekeeperUIException {
-        if(!finished) {
-            throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
-        }
     }
 
     @Override
@@ -92,7 +88,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject());
+        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
 
         if (needTwoWay){
             Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbTarget.getOrigin() //$NON-NLS-1$
@@ -102,9 +98,8 @@ public class TreeDiffer implements IRunnableWithProgress {
             diffTreeRevert = diffTree.getRevertedCopy();
         }
 
-        PgDumpLoader.checkCancelled(pm);
+        PgDiffUtils.checkCancelled(pm);
         monitor.done();
-        finished = true;
     }
 
     private void finishJobs(DbSourceJob exitedJob, DbSourceJob otherJob)

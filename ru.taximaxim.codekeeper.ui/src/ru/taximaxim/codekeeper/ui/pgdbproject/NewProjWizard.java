@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -29,6 +30,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -52,9 +54,12 @@ implements IExecutableExtension, INewWizard {
     private IStructuredSelection selection;
 
     public NewProjWizard() {
-        setWindowTitle(Messages.newProjWizard_new_pg_db_project);
-        setNeedsProgressMonitor(true);
         this.mainPrefStore = Activator.getDefault().getPreferenceStore();
+
+        setWindowTitle(Messages.newProjWizard_new_pg_db_project);
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
+                Activator.getDefault().getBundle().getResource(FILE.ICONAPPWIZ)));
+        setNeedsProgressMonitor(true);
     }
 
     public PgDbProject getProject() {
@@ -251,7 +256,7 @@ class PageDb extends WizardPage {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new FillLayout());
 
-        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true);
+        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true, false);
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
             @Override

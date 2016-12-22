@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 public abstract class JdbcReader implements PgCatalogStrings {
@@ -35,7 +34,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             st.setArray(2, loader.schemas.names);
             try (ResultSet result = st.executeQuery()) {
                 while (result.next()) {
-                    PgDumpLoader.checkCancelled(loader.monitor);
+                    PgDiffUtils.checkCancelled(loader.monitor);
                     processResult(result, loader.schemas.map.get(result.getLong("schema_oid")));
                 }
             }
@@ -53,7 +52,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 st.setLong(1, schema.getKey());
                 try (ResultSet result = st.executeQuery()) {
                     while (result.next()) {
-                        PgDumpLoader.checkCancelled(loader.monitor);
+                        PgDiffUtils.checkCancelled(loader.monitor);
                         processResult(result, schema.getValue());
                     }
                 }

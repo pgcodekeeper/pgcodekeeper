@@ -830,8 +830,6 @@ public class ModelExporter {
     }
 
     private void dumpSQL(CharSequence sql, File file) throws IOException {
-        // TODO debug logging for Mac
-        Log.log(Log.LOG_DEBUG, "Dumping file: " + file);
         try(PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), sqlEncoding)) {
             outFile.println(sql);
@@ -877,7 +875,7 @@ public class ModelExporter {
         }
     }
 
-    private String getRelativeFilePath(PgStatement st, boolean addExtension){
+    public static String getRelativeFilePath(PgStatement st, boolean addExtension){
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ?
                 null : ModelExporter.getExportedFilename(parentSt);
@@ -902,26 +900,15 @@ public class ModelExporter {
 
         case CONSTRAINT:
         case INDEX:
-            st = parentSt;
-            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
-            file = new File(new File(file, schemaName), "TABLE");
-            break;
-
         case RULE:
         case TRIGGER:
-            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
-            if (parentSt.getStatementType() == DbObjType.TABLE){
-                file = new File(new File(file, schemaName), "TABLE");
-            } else if (parentSt.getStatementType() == DbObjType.VIEW){
-                file = new File(new File(file, schemaName), "VIEW");
-            } else {
-                Log.log(Log.LOG_ERROR, type + " out of table or view: " + st.getName());
-            }
+        case COLUMN:
             st = parentSt;
+            schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
+            file = new File(new File(file, schemaName), parentSt.getStatementType().name());
             break;
 
         case DATABASE:
-        case COLUMN:
         }
 
         return new File(file, addExtension ?

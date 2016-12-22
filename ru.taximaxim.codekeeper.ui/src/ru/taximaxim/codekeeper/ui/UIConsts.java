@@ -1,5 +1,9 @@
 package ru.taximaxim.codekeeper.ui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public interface UIConsts {
 
     String _NL = System.lineSeparator();
@@ -11,6 +15,7 @@ public interface UIConsts {
 
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
+        String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
         String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
@@ -30,7 +35,7 @@ public interface UIConsts {
 
     interface PREF_PAGE {
         int WIDTH_HINT_PX = 240;
-        String DB_STORE = PLUGIN_ID.THIS +  ".dbstore"; //$NON-NLS-1$
+        String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
     }
 
     interface PREF {
@@ -136,6 +141,8 @@ public interface UIConsts {
 
         // external icons
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
+        String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
+        String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
@@ -163,4 +170,42 @@ public interface UIConsts {
     }
 
     String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
+
+    List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
+            "UTC-12:00", //$NON-NLS-1$
+            "UTC-11:00", //$NON-NLS-1$
+            "UTC-10:00", //$NON-NLS-1$
+            "UTC-09:00", //$NON-NLS-1$
+            "UTC-08:00", //$NON-NLS-1$
+            "UTC-07:00", //$NON-NLS-1$
+            "UTC-06:00", //$NON-NLS-1$
+            "UTC-05:00", //$NON-NLS-1$
+            "UTC-04:00", //$NON-NLS-1$
+            "UTC-03:00", //$NON-NLS-1$
+            "UTC-02:00", //$NON-NLS-1$
+            "UTC-01:00", //$NON-NLS-1$
+            "UTC", //$NON-NLS-1$
+            "UTC+01:00", //$NON-NLS-1$
+            "UTC+02:00", //$NON-NLS-1$
+            "UTC+03:00", //$NON-NLS-1$
+            "UTC+04:00", //$NON-NLS-1$
+            "UTC+05:00", //$NON-NLS-1$
+            "UTC+06:00", //$NON-NLS-1$
+            "UTC+07:00", //$NON-NLS-1$
+            "UTC+08:00", //$NON-NLS-1$
+            "UTC+09:00", //$NON-NLS-1$
+            "UTC+10:00", //$NON-NLS-1$
+            "UTC+11:00", //$NON-NLS-1$
+            "UTC+12:00" //$NON-NLS-1$
+            ));
+    List<String> ENCODINGS = Collections.unmodifiableList(Arrays.asList(
+            "UTF-8", //$NON-NLS-1$
+            "UTF-16", //$NON-NLS-1$
+            "UTF-16BE", //$NON-NLS-1$
+            "UTF-16LE", //$NON-NLS-1$
+            "US-ASCII", //$NON-NLS-1$
+            "KOI8-R", //$NON-NLS-1$
+            "windows-1251", //$NON-NLS-1$
+            "windows-1252" //$NON-NLS-1$
+            ));
 }

@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -25,7 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
  */
 public final class Main {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
         PrintWriter writer = new PrintWriter(System.out, true);
         PgDiffArguments arguments = new PgDiffArguments();
 
@@ -47,7 +48,7 @@ public final class Main {
     }
 
     private static void diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException {
+            throws InterruptedException, IOException, LicenseException, URISyntaxException {
         PgDiffScript script;
         try(PrintWriter encodedWriter = new UnixPrintWriter(
                 arguments.getDiffOutfile(), arguments.getOutCharsetName())) {
@@ -66,7 +67,7 @@ public final class Main {
     }
 
     private static void parse(PgDiffArguments arguments)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException, LicenseException, URISyntaxException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
                 arguments.getParseSrcFormat(), arguments.getParseSrc(), arguments);
         new ModelExporter(new File(arguments.getParserOutdir()),

@@ -5,7 +5,6 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -25,7 +24,7 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentOperation("extensions query");
         try (ResultSet res = loader.statement.executeQuery(JdbcQueries.QUERY_EXTENSIONS)) {
             while (res.next()) {
-                PgDumpLoader.checkCancelled(loader.monitor);
+                PgDiffUtils.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);
                 if (extension != null) {
                     db.addExtension(extension);

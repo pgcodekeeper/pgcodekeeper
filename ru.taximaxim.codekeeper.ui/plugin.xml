@@ -171,15 +171,25 @@
                 label="%menu.label.pgcodekeeper.main"
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.feedBack"
-                    label="%command.label.feedback"
-                    mnemonic="%command.mnemonic.feedback"
-                    style="push">
+                      commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                      label="%command.label.diffWizard"
+                      mnemonic="%command.mnemonic.diffWizard"
+                      style="push">
                 </command>
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
                       label="%command.label.improvePerformanceJdbc"
                       mnemonic="%command.mnemonic.improvePerformanceJdbc"
+                      style="push">
+                </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
+                </separator>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.feedBack"
+                      label="%command.label.feedback"
+                      mnemonic="%command.mnemonic.feedback"
                       style="push">
                 </command>
                 <visibleWhen checkEnabled="false">

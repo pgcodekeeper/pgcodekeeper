@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +17,7 @@ public class DbInfo {
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
+    static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
 
     private final String name;
     private final String dbname;
@@ -151,28 +150,6 @@ public class DbInfo {
         StringBuilder sb = new StringBuilder();
         for (DbInfo entry : store) {
             sb.append(entry).append(DELIM_ENTRY);
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    public static LinkedList<File> stringToDumpFileHistory(String preference) {
-        String[] coordStrings = preference.split(DELIM_ENTRY);
-        LinkedList<File> paths = new LinkedList<>();
-        for (String path : coordStrings){
-            File f = new File(path);
-            if (f.isFile() && !paths.contains(f)) {
-                paths.add(f);
-            }
-        }
-        return paths;
-    }
-
-    public static String dumpFileHistoryToPreference(List<File> dumps) {
-        StringBuilder sb = new StringBuilder();
-        for (File path : dumps){
-            sb.append(path.getAbsolutePath());
-            sb.append(DELIM_ENTRY);
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

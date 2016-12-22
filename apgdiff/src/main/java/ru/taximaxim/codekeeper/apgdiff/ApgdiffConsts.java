@@ -40,7 +40,7 @@ public interface ApgdiffConsts {
 
     @Deprecated
     // improve builtins detection using tokens and jdbc ways
-    Collection<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+    Collection<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$
@@ -126,5 +126,5 @@ public interface ApgdiffConsts {
             "void", //$NON-NLS-1$
             "xid", //$NON-NLS-1$
             "xml" //$NON-NLS-1$
-    })));
+            )));
 }

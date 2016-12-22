@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
@@ -135,7 +136,7 @@ public class PgDumpLoader implements AutoCloseable {
 
     protected PgDatabase load(boolean loadReferences, PgDatabase intoDb)
             throws IOException, InterruptedException {
-        checkCancelled(monitor);
+        PgDiffUtils.checkCancelled(monitor);
         SQLParserBaseListener listener = (loadReferences ?
                 new ReferenceListener(intoDb, inputObjectName)
                 : new CustomSQLParserListener(intoDb, inputObjectName));
@@ -151,13 +152,6 @@ public class PgDumpLoader implements AutoCloseable {
     @Override
     public void close() throws IOException {
         input.close();
-    }
-
-    public static void checkCancelled(IProgressMonitor monitor)
-            throws InterruptedException {
-        if (monitor != null && monitor.isCanceled()) {
-            throw new InterruptedException();
-        }
     }
 
     /**

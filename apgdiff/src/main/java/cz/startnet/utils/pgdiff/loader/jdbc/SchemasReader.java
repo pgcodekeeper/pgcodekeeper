@@ -7,7 +7,6 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -29,7 +28,7 @@ public class SchemasReader implements PgCatalogStrings {
         Map<Long, PgSchema> schemas = new HashMap<>();
         try (ResultSet result = loader.statement.executeQuery(JdbcQueries.QUERY_SCHEMAS)) {
             while (result.next()) {
-                PgDumpLoader.checkCancelled(loader.monitor);
+                PgDiffUtils.checkCancelled(loader.monitor);
                 PgSchema schema = getSchema(result);
                 if (ApgdiffConsts.PUBLIC.equals(schema.getName())) {
                     db.replaceSchema(db.getSchema(ApgdiffConsts.PUBLIC), schema);

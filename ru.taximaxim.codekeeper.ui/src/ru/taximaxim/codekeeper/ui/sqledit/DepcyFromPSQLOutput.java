@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -39,12 +36,12 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
     private final Map<String, PgStatement> objList;
     private List<Entry<String, String>> addDepcy = new ArrayList<>();
     private final Differ differ;
-    List<Entry<PgStatement, PgStatement>> depcyToAdd;
+    private List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private final IProject proj;
     private PgDbParser parser;
     private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     DbInfo dbinfo;
-    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
+    private final String scriptFileEncoding;
     private StringStorage updatedScript;
 
     public List<FunctionBodyContainer> getFuncBodies() {
@@ -64,11 +61,13 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
         this.differ = differ;
         this.proj = proj2.getProject();
         this.objList = list;
+        String scriptFileEncoding;
         try {
-            this.scriptFileEncoding = proj2.getProjectCharset();
+            scriptFileEncoding = proj2.getProjectCharset();
         } catch (CoreException e) {
-            // Use UTF-8
+            scriptFileEncoding = ApgdiffConsts.UTF_8;
         }
+        this.scriptFileEncoding = scriptFileEncoding;
     }
 
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {
@@ -206,14 +205,6 @@ public class DepcyFromPSQLOutput extends StringEditorInput {
     }
 
     private static String getDiff(Differ differ) {
-        try {
-            return differ.getDiffDirect();
-        } catch (PgCodekeeperUIException ex) {
-            StringWriter sw = new StringWriter();
-            // SONAR-OFF
-            ex.printStackTrace(new PrintWriter(sw));
-            // SONAR-ON
-            return sw.toString();
-        }
+        return differ.getDiffDirect();
     }
 }

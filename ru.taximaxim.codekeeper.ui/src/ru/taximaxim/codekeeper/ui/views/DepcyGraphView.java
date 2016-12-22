@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IToolBarManager;
@@ -13,12 +15,15 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
 import org.eclipse.zest.core.viewers.GraphViewer;
@@ -35,9 +40,12 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
@@ -50,6 +58,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private DepcyResolver depRes;
     private IWorkbenchPart lastSelectionPart;
     private ISelection lastSelection;
+    private IProject currentProject;
 
     public DepcyGraphView() {
         projectAction = new ProjectAction(Messages.DepcyGraphView_project, ImageDescriptor.createFromURL(
@@ -88,6 +97,25 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         // register listener to pages post selection
         getSite().getPage().addPostSelectionListener(this);
+
+        gv.getGraphControl().addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                ISelection selection = gv.getSelection();
+                if (currentProject != null && !selection.isEmpty()
+                        && selection instanceof IStructuredSelection) {
+                    PgStatement st = (PgStatement) ((IStructuredSelection) selection).getFirstElement();
+                    try {
+                        getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
+                                Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
+                                EDITOR.SQL);
+                    } catch (PartInitException ex) {
+                        ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -112,6 +140,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             return;
         }
 
+        IProject selectedProj = null;
         DepcyStructuredSelection dss = null;
         if (selection instanceof DepcyStructuredSelection) {
             dss = (DepcyStructuredSelection) selection;
@@ -119,7 +148,9 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             for (Object selected : ((IStructuredSelection) selection).toList()) {
                 if (selected instanceof DepcyStructuredSelection) {
                     dss = (DepcyStructuredSelection) selected;
-                    break;
+                }
+                if (selected instanceof IProject) {
+                    selectedProj = (IProject) selected;
                 }
             }
         }
@@ -128,6 +159,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         lastSelectionPart = part;
         lastSelection = selection;
+        currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
         PgDatabase newDb = showProject ? dss.dbProject.getDbObject() : dss.dbRemote.getDbObject();
@@ -177,7 +209,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     List<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
                         PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
-                        if (!(connectedVertex instanceof PgColumn)){
+                        if (!(connectedVertex instanceof PgColumn)) {
                             connected.add(connectedVertex);
                         }
                     }

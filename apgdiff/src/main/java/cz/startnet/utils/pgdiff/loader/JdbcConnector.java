@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,23 +22,79 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcConnector {
+
     private final String host;
     private final int port;
     private final String user;
     private final String pass;
     private final String dbName;
+    private final String url;
+
     private final String encoding;
     private final String timezone;
     private Charset charset;
 
-    public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding, String timezone){
+    public JdbcConnector(String host, int port, String user, String pass, String dbName,
+            String encoding, String timezone) {
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
-        this.user = user.isEmpty() ? System.getProperty("user.name") : user; //$NON-NLS-1$
         this.dbName = dbName;
+        this.user = user.isEmpty() ? System.getProperty("user.name") : user;
+        this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
+        this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
+
         this.encoding = encoding;
         this.timezone = timezone;
-        this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
+    }
+
+    public JdbcConnector(String url) throws URISyntaxException {
+        this.url = url;
+        this.encoding = ApgdiffConsts.UTF_8;
+        this.timezone = ApgdiffConsts.UTC;
+
+        String host = null, user = null, pass = null, dbName = null;
+        int port = -1;
+        if (url.startsWith("jdbc:postgresql:")) {
+            // strip jdbc:, URI doesn't understand schemas with colons
+            URI uri = new URI(url.substring(5));
+
+            if (uri.isOpaque()) {
+                // special case for jdbc:postgres:database_name
+                dbName = uri.getSchemeSpecificPart();
+            } else {
+                host = uri.getHost();
+                port = uri.getPort();
+                dbName = uri.getPath();
+                if (dbName != null && !dbName.isEmpty()) {
+                    // strip leading /
+                    dbName = dbName.substring(1);
+                }
+
+                String query = uri.getQuery();
+                if (query != null) {
+                    for (String param : query.split("&")) {
+                        int eq = param.indexOf('=');
+                        if (eq != -1) {
+                            String key = param.substring(0, eq);
+                            String val = param.substring(eq + 1);
+                            switch (key) {
+                            case "user":
+                                user = val;
+                                break;
+                            case "password":
+                                pass = val;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        this.host = host == null ? "" : host;
+        this.port = port < 1 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
+        this.dbName = dbName == null ? "" : dbName;
+        this.user = user == null || user.isEmpty() ? System.getProperty("user.name") : user;
+        this.pass = pass == null || pass.isEmpty() ? getPgPassPassword() : pass;
     }
 
     /**
@@ -62,21 +120,19 @@ public class JdbcConnector {
 
     private Connection establishConnection() throws SQLException, ClassNotFoundException {
         Properties props = new Properties();
-        props.setProperty("user", user); //$NON-NLS-1$
-        props.setProperty("password", pass); //$NON-NLS-1$
-        String apgdiffVer = "unknown"; //$NON-NLS-1$
+        props.setProperty("user", user);
+        props.setProperty("password", pass);
+        String apgdiffVer = "unknown";
         BundleContext bctx = Activator.getContext();
         if (bctx != null) {
             apgdiffVer = bctx.getBundle().getVersion().toString();
         }
-        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer); //$NON-NLS-1$ //$NON-NLS-2$
+        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
 
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
-        Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +  //$NON-NLS-1$
-                host + ":" + port + ", db name " + dbName + ", username " + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        Connection connection = DriverManager.getConnection(
-                "jdbc:postgresql://" + host + ":" + port + "/" + dbName, props); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        return connection;
+        Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
+                host + ":" + port + ", db name " + dbName + ", username " + user);
+        return DriverManager.getConnection(url, props);
     }
 
     public String getEncoding() {

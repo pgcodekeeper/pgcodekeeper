@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +62,7 @@ public class ManualDepciesGroup extends Group{
             prop[i++] = new ContentProposal(name);
         }
         Arrays.sort(prop, PgStatementProposalComparator.INSTANCE);
-        List<IContentProposal> proposals = Arrays.asList(prop);
+        List<IContentProposal> proposals = Collections.unmodifiableList(Arrays.asList(prop));
 
         setLayout(new GridLayout(2, true));
         GridData gd = new GridData(GridData.FILL_BOTH);

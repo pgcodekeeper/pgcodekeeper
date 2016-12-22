@@ -12,6 +12,8 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
@@ -642,6 +644,13 @@ public final class PgDiffUtils {
             return "";
         }
         return pos + len < s.length() ? s.substring(pos, pos + len) : s.substring(pos);
+    }
+
+    public static void checkCancelled(IProgressMonitor monitor)
+            throws InterruptedException {
+        if (monitor != null && monitor.isCanceled()) {
+            throw new InterruptedException();
+        }
     }
 
     private PgDiffUtils() {

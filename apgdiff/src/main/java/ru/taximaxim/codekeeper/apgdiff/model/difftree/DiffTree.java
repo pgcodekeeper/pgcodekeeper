@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.runtime.SubMonitor;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -13,7 +16,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
 
-    public static TreeElement create(PgDatabase left, PgDatabase right) {
+    public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
+        PgDiffUtils.checkCancelled(sMonitor);
+
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
         for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions())) {
@@ -21,6 +26,8 @@ public final class DiffTree {
         }
 
         for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
+            PgDiffUtils.checkCancelled(sMonitor);
+
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
             db.addChild(elSchema);
 
@@ -129,6 +136,8 @@ public final class DiffTree {
             }
 
             for(CompareResult resSub : compareLists(leftSub, rightSub)) {
+                PgDiffUtils.checkCancelled(sMonitor);
+
                 TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
                 elSchema.addChild(tbl);
 

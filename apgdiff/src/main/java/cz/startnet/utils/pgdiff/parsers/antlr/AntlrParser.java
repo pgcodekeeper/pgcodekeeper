@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -79,10 +80,11 @@ public class AntlrParser {
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
             String parsedObjectName, SQLParserBaseListener listener,
-            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException {
+            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException, InterruptedException {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
+
         parser.addParseListener(new ParseTreeListener() {
 
             @Override
@@ -97,6 +99,11 @@ public class AntlrParser {
             public void exitEveryRule(ParserRuleContext ctx) {
                 if (ctx.depth() <= monitoringLevel) {
                     monitor.worked(1);
+                    try {
+                        PgDiffUtils.checkCancelled(monitor);
+                    } catch (InterruptedException e) {
+                        throw new MonitorCancelledRuntimeException();
+                    }
                 }
             }
 
@@ -105,8 +112,13 @@ public class AntlrParser {
             }
         });
 
-        SqlContext ctx = parser.sql();
-        ParseTreeWalker.DEFAULT.walk(listener, ctx);
+        try {
+            SqlContext ctx = parser.sql();
+            // TODO no cancel checks in listener while walking the tree
+            ParseTreeWalker.DEFAULT.walk(listener, ctx);
+        } catch (MonitorCancelledRuntimeException mcre){
+            throw new InterruptedException();
+        }
     }
 }
 
@@ -131,5 +143,26 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, line, charPositionInLine, msg));
         }
+    }
+}
+
+final class MonitorCancelledRuntimeException extends RuntimeException {
+
+    private static final long serialVersionUID = 8530137642762407646L;
+
+    public MonitorCancelledRuntimeException() {
+        super();
+    }
+
+    public MonitorCancelledRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public MonitorCancelledRuntimeException(String message) {
+        super(message);
+    }
+
+    public MonitorCancelledRuntimeException(Throwable cause) {
+        super(cause);
     }
 }

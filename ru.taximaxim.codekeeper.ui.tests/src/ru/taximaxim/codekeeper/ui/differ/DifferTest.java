@@ -39,7 +39,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
@@ -86,7 +85,7 @@ public class DifferTest {
     }
 
     @Test
-    public void testDiffer() throws PgCodekeeperUIException, URISyntaxException,
+    public void testDiffer() throws URISyntaxException,
     IOException, InvocationTargetException, InterruptedException{
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
@@ -107,14 +106,14 @@ public class DifferTest {
         differData.setUserSelection(root);
 
         Differ differ = new Differ(dbSource.getDbObject(), dbTarget.getDbObject(),
-                root, true, ApgdiffConsts.UTC, true);
+                root, true, ApgdiffConsts.UTC);
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
 
         try{
             differ.getScript();
             Assert.fail("Expected to throw an exception");
-        }catch(PgCodekeeperUIException e){
+        }catch(IllegalStateException e){
             // expected behavior
         }
         Job job = differ.getDifferJob();
@@ -122,15 +121,11 @@ public class DifferTest {
         job.schedule();
         job.join();
 
-        try {
-            differ.getScript();
-            assertEquals("Direct script differs",
-                    differData.getPredefinedDirectDiff(), differ.getDiffDirect());
-            assertEquals("Reverse script differs",
-                    differData.getPredefinedReverseDiff(), differ.getDiffReverse());
-        } catch (PgCodekeeperUIException | IOException e) {
-            Assert.fail(e.getMessage());
-        }
+        differ.getScript();
+        assertEquals("Direct script differs",
+                differData.getPredefinedDirectDiff(), differ.getDiffDirect());
+        assertEquals("Reverse script differs",
+                differData.getPredefinedReverseDiff(), differ.getDiffReverse());
     }
 }
 
