@@ -86,7 +86,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected String getRoleByOid(long oid) {
+    private String getRoleByOid(long oid) {
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
     }
 

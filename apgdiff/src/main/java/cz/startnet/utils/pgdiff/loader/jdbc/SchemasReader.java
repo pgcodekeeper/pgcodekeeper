@@ -46,15 +46,11 @@ public class SchemasReader implements PgCatalogStrings {
         loader.setCurrentObject(new GenericColumn(schemaName, DbObjType.SCHEMA));
         PgSchema s = new PgSchema(schemaName, "");
 
-        String owner = loader.getRoleByOid(res.getLong("nspowner"));
+        loader.setOwner(s, res.getLong("nspowner"));
         loader.setPrivileges(s, PgDiffUtils.getQuotedName(schemaName),
-                res.getString("nspacl"), owner, null);
+                res.getString("nspacl"), s.getOwner(), null);
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)) {
-            if (!loader.args.isIgnorePrivileges()) {
-                s.setOwner(owner);
-            }
-
             String comment = res.getString("comment");
             if (comment != null && !comment.isEmpty()) {
                 s.setComment(loader.args, PgDiffUtils.quoteString(comment));
