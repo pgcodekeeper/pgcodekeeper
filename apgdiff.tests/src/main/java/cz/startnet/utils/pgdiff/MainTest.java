@@ -59,9 +59,10 @@ public class MainTest {
             {new ArgumentsProvider_DangerAlterColOk()},
             {new ArgumentsProvider_DangerSequenceRestartWith()},
             {new ArgumentsProvider_DangerSequenceRestartWithok()},
-            {new ArgumentsProvider_16()},
-            {new ArgumentsProvider_17()},
+            {new ArgumentsProvider_18()},
+            {new ArgumentsProvider_19()},
             {new ArgumentsProvider_IgnoreLists()},
+            {new ArgumentsProvider_ConnectionString()},
         });
     }
 
@@ -91,6 +92,9 @@ public class MainTest {
             break;
         case TEST_PARSE:
             Main.main(args.args());
+            assertTrue(".pgcodekeeper doesn't exist", new File(args.getParseResultDir(), ".pgcodekeeper").isFile());
+            assertTrue("SCHEMA doesn't exist", new File(args.getParseResultDir(), "SCHEMA").isDirectory());
+            assertTrue("EXTENSION doesn't exist", new File(args.getParseResultDir(), "EXTENSION").isDirectory());
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
@@ -692,7 +696,7 @@ class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
 /**
  * {@link ArgumentsProvider} implementation testing all other flags
  */
-class ArgumentsProvider_16 extends ArgumentsProvider{
+class ArgumentsProvider_18 extends ArgumentsProvider{
 
     {
         super.resName = "modify_column_type";
@@ -731,7 +735,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
 /**
  * {@link ArgumentsProvider} implementation testing parsing option
  */
-class ArgumentsProvider_17 extends ArgumentsProvider{
+class ArgumentsProvider_19 extends ArgumentsProvider{
 
     {
         super.resName = "loader/remote/testing_dump.sql";
@@ -767,7 +771,6 @@ class ArgumentsProvider_IgnoreLists extends ArgumentsProvider {
         this.needLicense = true;
     }
 
-
     @Override
     protected String[] arguments() throws URISyntaxException, IOException {
         File black = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("maintest/black.ignore"));
@@ -787,5 +790,32 @@ class ArgumentsProvider_IgnoreLists extends ArgumentsProvider {
         }
 
         return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for CLI JDBC connection
+ */
+class ArgumentsProvider_ConnectionString extends ArgumentsProvider {
+
+    {
+        this.testType = TestType.TEST_PARSE;
+        this.needLicense = true;
+    }
+
+    @Override
+    protected String[] arguments() throws URISyntaxException, IOException {
+        return new String[] {"--parse", "--db-format", "db", "jdbc:postgresql://"
+                + TEST.REMOTE_HOST + "/maindb_dev2" + "?user=" + TEST.REMOTE_USERNAME
+                + "&password=" + TEST.REMOTE_PASSWORD, getParseResultDir().getAbsolutePath()};
+    }
+
+    @Override
+    public File getParseResultDir() throws IOException {
+        if (resDir == null){
+            resDir = Files.createTempDirectory("pgcodekeeper_standalone_").toFile();
+        }
+
+        return resDir;
     }
 }
