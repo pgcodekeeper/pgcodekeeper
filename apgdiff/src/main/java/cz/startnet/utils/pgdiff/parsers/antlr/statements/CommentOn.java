@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -66,12 +65,7 @@ public class CommentOn extends ParserAbstract {
             String tableName = QNameParser.getFirstName(ctx.table_name.identifier());
             PgTable table = schema.getTable(tableName);
             if (table == null) {
-                PgDomain dom = schema.getDomain(tableName);
-                PgConstraint c = dom.getConstraint(name);
-                if (c == null) {
-                    c = dom.getConstraintNotValid(name);
-                }
-                c.setComment(db.getArguments(), comment);
+                schema.getDomain(tableName).getConstraint(name).setComment(db.getArguments(), comment);
             } else {
                 table.getConstraint(name).setComment(db.getArguments(), comment);
             }

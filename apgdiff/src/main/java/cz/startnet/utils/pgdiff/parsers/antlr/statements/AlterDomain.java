@@ -30,14 +30,12 @@ public class AlterDomain extends ParserAbstract {
         }
         fillOwnerTo(ctx.owner_to(), domain);
         if (ctx.dom_constraint != null) {
-            PgConstraint contraint = parseDomainConstraint(ctx.dom_constraint);
-            if (contraint != null) {
+            PgConstraint constraint = parseDomainConstraint(ctx.dom_constraint);
+            if (constraint != null) {
                 if (ctx.not_valid != null) {
-                    contraint.setDefinition(contraint.getDefinition()+ " NOT VALID");
-                    domain.addConstrNotValid(contraint);
-                } else {
-                    domain.addConstraint(contraint);
+                    constraint.setNotValid(true);
                 }
+                domain.addConstraint(constraint);
             }
         }
         return domain;

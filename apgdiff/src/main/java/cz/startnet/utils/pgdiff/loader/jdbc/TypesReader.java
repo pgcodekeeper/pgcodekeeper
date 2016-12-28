@@ -97,12 +97,13 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                c.setDefinition(condefs[i]);
-                if (convalids[i]) {
-                    d.addConstraint(c);
-                } else {
-                    d.addConstrNotValid(c);
+                String definition = condefs[i];
+                if (!convalids[i]) {
+                    definition = definition.substring(0, definition.length() - ConstraintsReader.NOT_VALID_SUFFIX.length());
+                    c.setNotValid(true);
                 }
+                c.setDefinition(definition);
+                d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
                     c.setComment(loader.args, PgDiffUtils.quoteString(concomments[i]));
                 }

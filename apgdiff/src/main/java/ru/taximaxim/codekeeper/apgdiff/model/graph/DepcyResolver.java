@@ -298,7 +298,7 @@ public class DepcyResolver {
             break;
         case CONSTRAINT:
             PgConstraint constr = (PgConstraint) statement;
-            PgTable tableConstr = oldSchema.getTable(constr.getTableName());
+            PgTable tableConstr = oldSchema.getTable(constr.getParent().getName());
             if (tableConstr != null) {
                 return tableConstr.getConstraint(constr.getName());
             }

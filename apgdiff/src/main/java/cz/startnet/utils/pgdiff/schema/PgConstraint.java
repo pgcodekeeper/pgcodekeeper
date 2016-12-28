@@ -22,12 +22,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgConstraint extends PgStatementWithSearchPath {
 
     private String definition;
-    private String tableName;
     private boolean unique;
     private boolean isPrimaryKey;
     private final List<String> columns = new ArrayList<>();
     private GenericColumn refTable;
     private final List<String> refs = new ArrayList<>();
+    private boolean notValid;
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
@@ -78,11 +78,19 @@ public class PgConstraint extends PgStatementWithSearchPath {
         this.unique = unique;
     }
 
+    public boolean isNotValid() {
+        return notValid;
+    }
+
+    public void setNotValid(boolean notValid) {
+        resetHash();
+        this.notValid = notValid;
+    }
+
     @Override
     public DbObjType getStatementType() {
         return DbObjType.CONSTRAINT;
     }
-
 
     public PgConstraint(String name, String rawStatement) {
         super(name, rawStatement);
@@ -91,12 +99,15 @@ public class PgConstraint extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sbSQL.append(getParent().getName());
         sbSQL.append("\n\tADD CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
+        if (isNotValid()) {
+            sbSQL.append(" NOT VALID");
+        }
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
@@ -119,8 +130,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("ALTER TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+        sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sbSQL.append(getParent().getName());
         sbSQL.append("\n\tDROP CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(';');
@@ -138,26 +149,24 @@ public class PgConstraint extends PgStatementWithSearchPath {
         } else {
             return false;
         }
-        // TODO alterable state resulting in VALIDATE CONSTRAINT
+
         PgConstraint oldConstr = this;
         if (!oldConstr.compareWithoutComments(newConstr)) {
             isNeedDepcies.set(true);
             return true;
+        }
+        if (oldConstr.isNotValid() && !newConstr.isNotValid()) {
+            sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
+            .append(getParent().getName())
+            .append("\n\tVALIDATE CONSTRAINT ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
         }
         if (!Objects.equals(oldConstr.getComment(), newConstr.getComment())) {
             sb.append("\n\n");
             newConstr.appendCommentSql(sb);
         }
         return sb.length() > startLength;
-    }
-
-    public void setTableName(final String tableName) {
-        this.tableName = tableName;
-        resetHash();
-    }
-
-    public String getTableName() {
-        return tableName;
     }
 
     @Override
@@ -169,17 +178,17 @@ public class PgConstraint extends PgStatementWithSearchPath {
         } else if (obj instanceof PgConstraint) {
             PgConstraint constraint = (PgConstraint) obj;
             eq = compareWithoutComments(constraint)
+                    && notValid == constraint.isNotValid()
                     && Objects.equals(comment, constraint.getComment());
         }
 
         return eq;
     }
 
-    public boolean compareWithoutComments(PgConstraint constraint) {
+    private boolean compareWithoutComments(PgConstraint constraint) {
         boolean eq;
         eq = Objects.equals(definition, constraint.getDefinition())
-                && Objects.equals(name, constraint.getName())
-                && Objects.equals(tableName, constraint.getTableName());
+                && Objects.equals(name, constraint.getName());
         return eq;
     }
 
@@ -189,7 +198,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
+        result = prime * result + (notValid ? 1231 : 1237);
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
@@ -198,7 +207,6 @@ public class PgConstraint extends PgStatementWithSearchPath {
     public PgConstraint shallowCopy() {
         PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement());
         constraintDst.setDefinition(getDefinition());
-        constraintDst.setTableName(getTableName());
         constraintDst.setComment(getComment());
         constraintDst.setPrimaryKey(isPrimaryKey());
         constraintDst.setUnique(isUnique());
@@ -206,6 +214,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setForeignTable(getForeignTable());
         constraintDst.refs.addAll(refs);
         constraintDst.deps.addAll(deps);
+        constraintDst.setNotValid(isNotValid());
         return constraintDst;
     }
 

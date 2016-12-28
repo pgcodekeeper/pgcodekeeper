@@ -267,7 +267,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return eq;
     }
 
-    public boolean compareWithoutComments(PgTrigger trigger) {
+    private boolean compareWithoutComments(PgTrigger trigger) {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
                 && Objects.equals(function, trigger.getFunction())

@@ -306,6 +306,7 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase shallowCopy() {
         PgDatabase dbDst = new PgDatabase();
+        dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
         return dbDst;
     }

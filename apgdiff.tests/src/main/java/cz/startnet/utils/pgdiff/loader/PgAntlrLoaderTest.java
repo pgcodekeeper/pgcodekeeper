@@ -239,7 +239,6 @@ class PgDB1 extends PgDatabaseObjectCreator {
 
         PgConstraint constraint = new PgConstraint("fax_boxes_pkey", "");
         table.addConstraint(constraint);
-        constraint.setTableName("fax_boxes");
         constraint.setDefinition("PRIMARY KEY (fax_box_id)");
 
         table.setOwner("postgres");
@@ -291,12 +290,10 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         constraint = new PgConstraint("faxes_pkey", "");
-        constraint.setTableName("faxes");
         constraint.setDefinition("PRIMARY KEY (fax_id)");
         table.addConstraint(constraint);
 
         constraint = new PgConstraint("faxes_fax_box_id_fkey", "");
-        constraint.setTableName("faxes");
         constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
         table.addConstraint(constraint);
 
@@ -310,7 +307,6 @@ class PgDB1 extends PgDatabaseObjectCreator {
 
         constraint = new PgConstraint("extensions_fax_box_id_fkey", "");
         constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
-        constraint.setTableName("extensions");
         table.addConstraint(constraint);
 
         return d;
@@ -449,7 +445,6 @@ class PgDB3 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgConstraint constraint = new PgConstraint("admins_pkey", "");
-        constraint.setTableName("admins");
         constraint.setDefinition("Primary Key (\"aid\")");
         table.addConstraint(constraint);
 
@@ -775,7 +770,6 @@ class PgDB10 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgConstraint constraint = new PgConstraint("acl_role_pkey", "");
-        constraint.setTableName("acl_role");
         constraint.setDefinition("PRIMARY KEY (id)");
         table.addConstraint(constraint);
 
@@ -839,7 +833,6 @@ class PgDB10 extends PgDatabaseObjectCreator {
         table.addIndex(idx);
 
         constraint = new PgConstraint("user_role_id_fkey", "");
-        constraint.setTableName("user");
         constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES acl_role(id)");
         table.addConstraint(constraint);
 
@@ -947,7 +940,6 @@ class PgDB14 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         PgConstraint constraint = new PgConstraint("text_check", "");
-        constraint.setTableName("test");
         constraint.setDefinition("CHECK ((length((text)::text) > 0))");
         constraint.setComment("'text check'");
         table.addConstraint(constraint);
@@ -955,7 +947,6 @@ class PgDB14 extends PgDatabaseObjectCreator {
         table.setComment("'test table'");
 
         constraint = new PgConstraint("test_pkey", "");
-        constraint.setTableName("test");
         constraint.setDefinition("PRIMARY KEY (id)");
         table.addConstraint(constraint);
 

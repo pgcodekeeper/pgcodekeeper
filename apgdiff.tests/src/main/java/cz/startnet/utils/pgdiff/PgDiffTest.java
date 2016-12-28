@@ -293,7 +293,8 @@ public class PgDiffTest {
                     {"multiply_view_1"},
                     {"multiply_view_dif_schema"},
                     {"add_rule"},
-                    {"drop_rule"}
+                    {"drop_rule"},
+                    {"modify_constraint_validate"},
                 });
     }
 

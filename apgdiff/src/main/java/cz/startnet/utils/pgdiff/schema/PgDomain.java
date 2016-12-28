@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,7 +17,6 @@ public class PgDomain extends PgStatementWithSearchPath {
     private String defaultValue;
     private boolean notNull;
     private final List<PgConstraint> constraints = new ArrayList<>();
-    private final List<PgConstraint> constrsNotValid = new ArrayList<>();
 
     public String getDataType() {
         return dataType;
@@ -73,25 +73,6 @@ public class PgDomain extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public List<PgConstraint> getConstrsNotValid() {
-        return Collections.unmodifiableList(constrsNotValid);
-    }
-
-    public PgConstraint getConstraintNotValid(String name) {
-        for (PgConstraint c : constrsNotValid) {
-            if (c.getName().equals(name)) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    public void addConstrNotValid(PgConstraint constraint) {
-        constrsNotValid.add(constraint);
-        constraint.setParent(this);
-        resetHash();
-    }
-
     public PgDomain(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -115,16 +96,20 @@ public class PgDomain extends PgStatementWithSearchPath {
         if (defaultValue != null && !defaultValue.isEmpty()) {
             sb.append(" DEFAULT ").append(defaultValue);
         }
+
+        List<PgConstraint> notValids = new ArrayList<>();
         for (PgConstraint constr : constraints) {
-            sb.append("\n\tCONSTRAINT ").append(PgDiffUtils.getQuotedName(constr.getName()))
-            .append(' ').append(constr.getDefinition());
+            if (constr.isNotValid()) {
+                notValids.add(constr);
+            } else {
+                sb.append("\n\tCONSTRAINT ").append(PgDiffUtils.getQuotedName(constr.getName()))
+                .append(' ').append(constr.getDefinition());
+            }
         }
         sb.append(';');
 
-        for (PgConstraint constr : constrsNotValid) {
-            sb.append("\n\nALTER DOMAIN ").append(PgDiffUtils.getQuotedName(getName()))
-            .append("\n\tADD CONSTRAINT ").append(PgDiffUtils.getQuotedName(constr.getName()))
-            .append(' ').append(constr.getDefinition()).append(';');
+        for (PgConstraint notValid : notValids) {
+            sb.append("\n\n").append(notValid.getCreationSQL());
         }
 
         appendOwnerSQL(sb);
@@ -135,12 +120,6 @@ public class PgDomain extends PgStatementWithSearchPath {
             appendCommentSql(sb);
         }
         for (PgConstraint c : constraints) {
-            if (c.getComment() != null && !c.getComment().isEmpty()) {
-                sb.append("\n\n");
-                c.appendCommentSql(sb);
-            }
-        }
-        for (PgConstraint c : constrsNotValid) {
             if (c.getComment() != null && !c.getComment().isEmpty()) {
                 sb.append("\n\n");
                 c.appendCommentSql(sb);
@@ -192,10 +171,20 @@ public class PgDomain extends PgStatementWithSearchPath {
             sb.append(';');
         }
 
-        PgDomain.compareConstraints(newDomain.getName(), oldDomain.getConstraints(),
-                newDomain.getConstraints(), sb);
-        PgDomain.compareConstraints(newDomain.getName(), oldDomain.getConstrsNotValid(),
-                newDomain.getConstrsNotValid(), sb);
+        AtomicBoolean needDepcyConstr = new AtomicBoolean();
+        for (PgConstraint oldConstr : oldDomain.getConstraints()) {
+            PgConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
+            if (newConstr == null) {
+                sb.append("\n\n").append(oldConstr.getDropSQL());
+            } else {
+                oldConstr.appendAlterSQL(newConstr, sb, needDepcyConstr);
+            }
+        }
+        for (PgConstraint newConstr : newDomain.getConstraints()) {
+            if (oldDomain.getConstraint(newConstr.getName()) == null) {
+                sb.append("\n\n").append(newConstr.getCreationSQL());
+            }
+        }
 
         if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
             newDomain.appendOwnerSQL(sb);
@@ -219,9 +208,6 @@ public class PgDomain extends PgStatementWithSearchPath {
         copy.setComment(getComment());
         for (PgConstraint constr : constraints) {
             copy.addConstraint(constr.deepCopy());
-        }
-        for (PgConstraint constr : constrsNotValid) {
-            copy.addConstrNotValid(constr.deepCopy());
         }
         for (PgPrivilege priv : grants) {
             copy.addPrivilege(priv.deepCopy());
@@ -252,8 +238,7 @@ public class PgDomain extends PgStatementWithSearchPath {
                 && Objects.equals(collation, dom.getCollation())
                 && Objects.equals(defaultValue, dom.getDefaultValue())
                 && notNull == dom.isNotNull()
-                && constraints.equals(dom.constraints)
-                && constrsNotValid.equals(dom.constrsNotValid)
+                && new HashSet<>(constraints).equals(new HashSet<>(dom.constraints))
                 && Objects.equals(owner, dom.getOwner())
                 && grants.equals(dom.grants)
                 && revokes.equals(dom.revokes)
@@ -271,8 +256,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         result = prime * result + ((collation == null) ? 0 : collation.hashCode());
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + (notNull ? itrue : ifalse);
-        result = prime * result + ((constraints == null) ? 0 : constraints.hashCode());
-        result = prime * result + ((constrsNotValid == null) ? 0 : constrsNotValid.hashCode());
+        result = prime * result + ((constraints == null) ? 0 : new HashSet<>(constraints).hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
@@ -283,25 +267,5 @@ public class PgDomain extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema) this.getParent();
-    }
-
-    public static void compareConstraints(String domainName, List<PgConstraint> oldDomain,
-            List<PgConstraint> newDomain, StringBuilder sb) {
-        for (PgConstraint oldConstr : oldDomain) {
-            if (!newDomain.contains(oldConstr)) {
-                sb.append("\n\nALTER DOMAIN ").append(domainName)
-                .append("\n\tDROP CONSTRAINT ")
-                .append(oldConstr.getName()).append(';');
-            }
-        }
-
-        for (PgConstraint newConstr : newDomain) {
-            if (!oldDomain.contains(newConstr)) {
-                sb.append("\n\nALTER DOMAIN ").append(domainName)
-                .append("\n\tADD CONSTRAINT ")
-                .append(newConstr.getName()).append(" ")
-                .append(newConstr.getDefinition()).append(';');
-            }
-        }
     }
 }

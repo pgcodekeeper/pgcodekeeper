@@ -69,9 +69,10 @@ public class AlterTable extends ParserAbstract {
                 }
             }
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(
-                        tablAction.tabl_constraint, schemaName, name);
-                constr.setTableName(name);
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schemaName, name);
+                if (tablAction.not_valid != null) {
+                    constr.setNotValid(true);
+                }
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {

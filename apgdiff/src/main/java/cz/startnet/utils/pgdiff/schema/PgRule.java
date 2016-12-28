@@ -190,7 +190,7 @@ public class PgRule extends PgStatementWithSearchPath{
         return eq;
     }
 
-    public boolean compareWithoutComments(PgRule rule) {
+    private boolean compareWithoutComments(PgRule rule) {
         return event == rule.event
                 && Objects.equals(targetName, rule.getTargetName())
                 && Objects.equals(condition, rule.getCondition())

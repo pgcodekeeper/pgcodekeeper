@@ -150,7 +150,7 @@ table_action
         | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
-    | ADD tabl_constraint=constraint_common (NOT VALID)?
+    | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?

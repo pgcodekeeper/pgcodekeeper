@@ -24,6 +24,8 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
+    static final String NOT_VALID_SUFFIX = " NOT VALID";
+
     private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
     }
@@ -78,8 +80,13 @@ public class ConstraintsReader extends JdbcReader {
             break;
         }
 
-        c.setDefinition(res.getString("definition"));
-        c.setTableName(tableName);
+        // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
+        String definition = res.getString("definition");
+        if (definition.endsWith(NOT_VALID_SUFFIX)) {
+            definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
+            c.setNotValid(true);
+        }
+        c.setDefinition(definition);
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {
