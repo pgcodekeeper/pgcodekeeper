@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -278,7 +277,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && (onTruncate == trigger.isOnTruncate())
                 && Objects.equals(tableName, trigger.getTableName())
                 && Objects.equals(when, trigger.getWhen())
-                && new HashSet<>(updateColumns).equals(new HashSet<>(trigger.updateColumns));
+                && PgDiffUtils.setlikeEquals(updateColumns, trigger.updateColumns);
     }
 
     @Override
@@ -297,7 +296,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + (onUpdate ? itrue : ifalse);
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         result = prime * result + (when == null ? 0 : when.hashCode());
-        result = prime * result + new HashSet<>(updateColumns).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(updateColumns);
         result = prime * result + (comment == null ? 0 : comment.hashCode());
         return result;
     }

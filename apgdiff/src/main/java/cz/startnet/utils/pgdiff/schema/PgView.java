@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -355,7 +354,7 @@ implements PgRuleContainer, PgTriggerContainer {
             eq = Objects.equals(name, view.getName())
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && columnNames.equals(view.columnNames)
-                    && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
+                    && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
                     && defaultValues.equals(view.defaultValues)
                     && grants.equals(view.grants)
                     && revokes.equals(view.revokes)
@@ -378,8 +377,8 @@ implements PgRuleContainer, PgTriggerContainer {
 
             eq = super.equals(obj)
 
-                    && new HashSet<>(rules).equals(new HashSet<>(view.rules))
-                    && new HashSet<>(triggers).equals(new HashSet<>(view.triggers));
+                    && PgDiffUtils.setlikeEquals(rules, view.rules)
+                    && PgDiffUtils.setlikeEquals(triggers, view.triggers);
         }
 
         return eq;
@@ -397,14 +396,14 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
-        result = prime * result + new HashSet<>(defaultValues).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(defaultValues);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((normalizedQuery == null) ? 0 : normalizedQuery.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
-        result = prime * result + new HashSet<>(rules).hashCode();
-        result = prime * result + new HashSet<>(triggers).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(rules);
+        result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
         return result;
     }
 

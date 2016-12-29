@@ -8,8 +8,11 @@ package cz.startnet.utils.pgdiff;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -651,6 +654,31 @@ public final class PgDiffUtils {
         if (monitor != null && monitor.isCanceled()) {
             throw new InterruptedException();
         }
+    }
+
+    /**
+     * Compares 2 collections for equality unorderedly as if they're {@link Set}s.<br>
+     * Creates new temporary {@link HashSet} on which it calls {@link HashSet#containsAll(Collection)}
+     * if both collections are of the same size. Assumes size() to take constant time.<br><br>
+     *
+     * Performance: best case O(1), worst case O(N) + new {@link HashSet} (in case N1 == N2).<br><br>
+     *
+     * Note: doesn't eliminate duplicate collection elements.<br>
+     * (a,a,b) != (a,b,b), unlike how it happens when using 2 pure temp {@link HashSet}s for comparison.
+     */
+    public static boolean setlikeEquals(Collection<?> c1, Collection<?> c2) {
+        return c1.size() == c2.size() && new HashSet<>(c1).containsAll(c2);
+    }
+
+    /**
+     * Complementary hashCode for {@link #setlikeEquals(Collection, Collection)} equals.
+     */
+    public static int setlikeHashcode(Collection<?> c) {
+        int h = 0;
+        for (Object el : c) {
+            h += el.hashCode();
+        }
+        return h;
     }
 
     private PgDiffUtils() {
