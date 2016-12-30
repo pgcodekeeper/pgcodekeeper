@@ -9,8 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -657,17 +658,47 @@ public final class PgDiffUtils {
     }
 
     /**
-     * Compares 2 collections for equality unorderedly as if they're {@link Set}s.<br>
-     * Creates new temporary {@link HashSet} on which it calls {@link HashSet#containsAll(Collection)}
-     * if both collections are of the same size. Assumes size() to take constant time.<br><br>
+     * Compares 2 collections for equality unorderedly as if they were {@link Set}s.<br>
+     * Does not eliminate duplicate elements as sets do and counts them instead.
+     * Thus it achieves complementarity with {@link #setlikeHashcode}
+     * while not requiring it to eliminate duplicates, nor does it require
+     * a <code>List.containsAll()</code> O(N^2) call here.
+     * In general, duplicate elimination is an undesired side-effect of comparison using {@link Set}s,
+     * so this solution is overall better and only *slightly* slower.<br><br>
      *
-     * Performance: best case O(1), worst case O(N) + new {@link HashSet} (in case N1 == N2).<br><br>
-     *
-     * Note: doesn't eliminate duplicate collection elements.<br>
-     * (a,a,b) != (a,b,b), unlike how it happens when using 2 pure temp {@link HashSet}s for comparison.
+     * Performance: best case O(1), worst case O(N) + new {@link HashMap} (in case N1 == N2),
+     * assuming size() takes constant time.
      */
     public static boolean setlikeEquals(Collection<?> c1, Collection<?> c2) {
-        return c1.size() == c2.size() && new HashSet<>(c1).containsAll(c2);
+        final int s1 = c1.size();
+        if (s1 != c2.size()) {
+            return false;
+        }
+        // mimic HashSet(Collection) constructor
+        final float loadFactor = 0.75f;
+        final Map<Object, Integer> map =
+                new HashMap<>(Math.max((int) (s1/loadFactor) + 1, 16), loadFactor);
+        for (Object el1 : c1) {
+            Integer i = map.get(el1);
+            map.put(el1, i == null ? 1 : (i + 1));
+        }
+        for (Object el2 : c2) {
+            Integer i = map.get(el2);
+            if (i == null) {
+                // c1.count(el2) < c2.count(el2)
+                return false;
+            }
+            if (i == 1) {
+                // the last or the only instance of el2 in c1
+                map.remove(el2);
+            } else {
+                // counted one duplicate
+                map.put(el2, i - 1);
+            }
+        }
+        // if the map is not empty at the end it means that
+        // not all duplicates in c1 were matched by those in c2
+        return map.isEmpty();
     }
 
     /**
