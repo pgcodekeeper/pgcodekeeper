@@ -51,7 +51,6 @@ public class RulesReader extends JdbcReader {
 
         String command = res.getString("rule_string");
         PgRule r = new PgRule(ruleName, command);
-        r.setTargetName(tableName);
 
         switch (res.getString("ev_type")) {
         case "1":
@@ -70,6 +69,17 @@ public class RulesReader extends JdbcReader {
 
         if (res.getBoolean("is_instead")) {
             r.setInstead(true);
+        }
+
+        switch (res.getString("ev_enabled")) {
+        case "A":
+            r.setEnabledState("ENABLE ALWAYS");
+            break;
+        case "R":
+            r.setEnabledState("ENABLE REPLICA");
+            break;
+        case "D":
+            r.setEnabledState("DISABLE");
         }
 
         SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, command, loader.getCurrentLocation());

@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -100,6 +101,20 @@ public class AlterTable extends ParserAbstract {
                     // совместимость с текущей версией экспорта
                     if (tabl.getInherits().isEmpty()) {
                         fillDefColumn(tabl, tablAction);
+                    }
+                }
+            }
+            if (tablAction.RULE() != null) {
+                PgRule rule = tabl.getRule(tablAction.rewrite_rule_name.getText());
+                if (rule != null) {
+                    if (tablAction.DISABLE() != null) {
+                        rule.setEnabledState("DISABLE");
+                    } else if (tablAction.ENABLE() != null) {
+                        if (tablAction.REPLICA() != null) {
+                            rule.setEnabledState("ENABLE REPLICA");
+                        } else if (tablAction.ALWAYS() != null) {
+                            rule.setEnabledState("ENABLE ALWAYS");
+                        }
                     }
                 }
             }

@@ -604,6 +604,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_rules(schema_oids bigint[]
 		rulename name,
 		ev_type "char",
 		is_instead boolean,
+        ev_enabled "char",
 		rule_string text,
 		comment text) AS
 $BODY$
@@ -626,6 +627,7 @@ SELECT schema_oid,
         r.rulename, 
         r.ev_type, 
         r.is_instead, 
+        r.ev_enabled,
         pg_get_ruledef(r.oid) AS rule_string,
         d.description as comment
 FROM pg_catalog.pg_rewrite r
