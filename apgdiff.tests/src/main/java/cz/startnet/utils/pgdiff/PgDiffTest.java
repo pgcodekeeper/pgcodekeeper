@@ -295,6 +295,7 @@ public class PgDiffTest {
                     {"add_rule"},
                     {"drop_rule"},
                     {"modify_constraint_validate"},
+                    {"modify_rule_enable"},
                 });
     }
 
