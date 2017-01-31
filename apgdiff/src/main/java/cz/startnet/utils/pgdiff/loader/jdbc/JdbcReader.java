@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
@@ -19,9 +20,17 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     public void read() throws SQLException, InterruptedException {
+        boolean helperSuccess = false;
         if ((loader.availableHelpersBits & factory.hasHelperMask) != 0) {
-            readAllUsingHelper();
-        } else {
+            try {
+                readAllUsingHelper();
+                helperSuccess = true;
+            } catch (SQLException ex) {
+                Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
+                        + "falling back to old queries: " + factory.helperFunction, ex);
+            }
+        }
+        if (!helperSuccess) {
             readSchemasSeparately();
         }
     }
