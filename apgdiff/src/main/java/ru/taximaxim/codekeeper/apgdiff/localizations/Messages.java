@@ -56,6 +56,8 @@ public final class Messages extends NLS {
 
     public static String Main_license_error;
 
+    public static String PgDiffArguments_bad_allowed_objects;
+
     public static String PgDiffArguments_bad_danger_ddl;
 
     public static String PgDiffArguments_no_license_set;
