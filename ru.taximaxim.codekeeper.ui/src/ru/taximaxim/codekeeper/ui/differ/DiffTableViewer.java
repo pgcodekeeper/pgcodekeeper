@@ -191,6 +191,7 @@ public class DiffTableViewer extends Composite {
                 public void widgetSelected(SelectionEvent e) {
                     checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), false);
                     viewerRefresh();
+
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
@@ -213,11 +214,44 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
+            lblObjectCount = new Label(upperComp, SWT.NONE);
+            lblCheckedCount = new Label(upperComp, SWT.NONE);
+        }
+
+        //accessible filter for viewOnly
+        txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
+        gd.widthHint = pc.convertWidthInCharsToPixels(60);
+        txtFilterName.setLayoutData(gd);
+        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
+        txtFilterName.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                viewerFilter.setFilter(txtFilterName.getText());
+                viewerRefresh();
+            }
+        });
+
+        useRegEx = new Button(upperComp, SWT.CHECK);
+        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
+        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        useRegEx.setLayoutData(new GridData(SWT.NONE, SWT.CENTER, false, false));
+        useRegEx.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                viewerFilter.setUseRegEx(useRegEx.getSelection());
+                viewerRefresh();
+            }
+        });
+
+        if (!viewOnly) {
             new Label(upperComp, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
 
             cmbPrevChecked = new ComboViewer(upperComp, SWT.DROP_DOWN);
-            GridData gd = new GridData();
-            gd.widthHint = pc.convertWidthInCharsToPixels(30);
+            gd = new GridData(SWT.END, SWT.CENTER, true, false);
+            gd.widthHint = pc.convertWidthInCharsToPixels(60);
             cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.getCombo().setToolTipText(
                     Messages.diffTableViewer_Input_name_for_save_checked_elements);
@@ -264,38 +298,11 @@ public class DiffTableViewer extends Composite {
                     saveCheckedElements2ClipboardAsExpession();
                 }
             });
-
-            lblCheckedCount = new Label(upperComp, SWT.NONE);
+            //set labels visible, when program is start
+            updateObjectsLabel();
+            updateCheckedLabel();
         }
 
-        lblObjectCount = new Label(upperComp, SWT.NONE);
-
-        txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(60);
-        txtFilterName.setLayoutData(gd);
-        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
-        txtFilterName.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                viewerFilter.setFilter(txtFilterName.getText());
-                viewerRefresh();
-            }
-        });
-
-        useRegEx = new Button(upperComp, SWT.CHECK);
-        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
-        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        useRegEx.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-        useRegEx.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                viewerFilter.setUseRegEx(useRegEx.getSelection());
-                viewerRefresh();
-            }
-        });
         // end upper composite
 
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
