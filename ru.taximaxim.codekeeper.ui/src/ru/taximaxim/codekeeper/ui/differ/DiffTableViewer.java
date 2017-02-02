@@ -103,6 +103,8 @@ public class DiffTableViewer extends Composite {
     private List<TreeElement> elements = new ArrayList<>();
     private final CheckStateListener checkListener = new CheckStateListener();
     private final TableViewerComparator comparator = new TableViewerComparator();
+    private IStructuredSelection newSelection;
+    private IStructuredSelection oldSelection;
 
     private final LocalResourceManager lrm;
     private Text txtFilterName;
@@ -320,6 +322,15 @@ public class DiffTableViewer extends Composite {
                         (IStructuredSelection) super.getSelection());
             }
         };
+
+        //КОСТЫЛЬ, дополнительные переменные
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(final SelectionChangedEvent event) {
+                oldSelection=newSelection;
+                newSelection = (IStructuredSelection)event.getSelection();
+            }
+        });
 
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);
@@ -820,8 +831,13 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            ((TreeElement)event.getElement()).setSelected(event.getChecked());
-            updateCheckedLabel();
+            if(oldSelection!=null && (oldSelection.toList()).contains(event.getElement())){
+                viewer.setSelection(oldSelection);
+                checkListener.setElementsChecked(Arrays.asList(viewer.getSelection()), event.getChecked());
+                viewerRefresh();
+            } else {
+                updateCheckedLabel();
+            }
         }
 
         public void setElementsChecked(List<?> elements, boolean state) {
