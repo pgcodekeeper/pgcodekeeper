@@ -29,7 +29,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -48,6 +50,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -130,6 +133,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     @Override
     protected void createPages() {
+        // message box
+        if(!PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
+                getPerspective().getLabel().equals("pgCodeKeeper")){ //$NON-NLS-1$
+            showMessage(getContainer().getShell());
+        }
+
         int i;
 
         iCommit = ImageDescriptor.createFromURL(Activator.getContext().
@@ -337,6 +346,32 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         });
         job.setUser(true);
         job.schedule();
+    }
+
+    private void showMessage(Composite parent) {
+        String mode = mainPrefs.getString(PREF.PERSPECTIVE_CHANGING_STATUS);
+        // if select "YES" with toggle
+        if (mode.equals(PREF.PERSPECTIVE_CHANGING_STATUS_ALWAYS)){
+            changePerspective();
+            // if not select "NO" with toggle, show choice message dialog
+        }else if (!mode.equals(PREF.PERSPECTIVE_CHANGING_STATUS_NEVER)){
+            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(parent.getShell(),
+                    Messages.change_perspective_title, Messages.change_perspective_message,
+                    Messages.remember_choice_toggle,false, mainPrefs, PREF.PERSPECTIVE_CHANGING_STATUS);
+            if(dialog.getReturnCode() == IDialogConstants.YES_ID){
+                changePerspective();
+            }
+        }
+    }
+
+    private void changePerspective() {
+        //change perspective to pgCodeKeeper
+        try {
+            PlatformUI.getWorkbench().showPerspective("ru.taximaxim.codekeeper.ui.mainperspective", //$NON-NLS-1$
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        } catch (WorkbenchException e) {
+            Log.log(Log.LOG_WARNING, "Can't change perspective", e); //$NON-NLS-1$
+        }
     }
 }
 

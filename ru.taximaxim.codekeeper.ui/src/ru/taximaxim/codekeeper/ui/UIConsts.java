@@ -56,6 +56,11 @@ public interface UIConsts {
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
         String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
+
+        String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS_ALWAYS = "always"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS_NEVER = "never"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS_ASK = "ask"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
