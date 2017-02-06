@@ -13,6 +13,10 @@ public interface UIConsts {
         String HELP = THIS + ".help"; //$NON-NLS-1$
     }
 
+    interface PERSPECTIVE {
+        String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -56,11 +60,6 @@ public interface UIConsts {
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
         String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
-
-        String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
-        String PERSPECTIVE_CHANGING_STATUS_ALWAYS = "always"; //$NON-NLS-1$
-        String PERSPECTIVE_CHANGING_STATUS_NEVER = "never"; //$NON-NLS-1$
-        String PERSPECTIVE_CHANGING_STATUS_ASK = "ask"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -83,6 +82,7 @@ public interface UIConsts {
         String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
         String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
     }
 
     public enum DBSources {

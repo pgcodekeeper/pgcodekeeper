@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -54,11 +53,5 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
-        addField( new ComboFieldEditor(PREF.PERSPECTIVE_CHANGING_STATUS,
-                Messages.generalPrefPage_perspective_changing_status, new String[][] {
-            {Messages.prespective_change_status_always,PREF.PERSPECTIVE_CHANGING_STATUS_ALWAYS},
-            {Messages.prespective_change_status_never,PREF.PERSPECTIVE_CHANGING_STATUS_NEVER},
-            {Messages.prespective_change_status_ask,PREF.PERSPECTIVE_CHANGING_STATUS_ASK}},
-                getFieldEditorParent()));
     }
 }

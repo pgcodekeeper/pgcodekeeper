@@ -72,6 +72,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
+import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -128,16 +129,16 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             }
         });
 
+        // message box
+        if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
+            askPerspectiveChange(site);
+        }
+
         super.init(site, input);
     }
 
     @Override
     protected void createPages() {
-        // message box
-        if(!PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-                getPerspective().getLabel().equals("pgCodeKeeper")){ //$NON-NLS-1$
-            showMessage(getContainer().getShell());
-        }
 
         int i;
 
@@ -348,29 +349,29 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         job.schedule();
     }
 
-    private void showMessage(Composite parent) {
-        String mode = mainPrefs.getString(PREF.PERSPECTIVE_CHANGING_STATUS);
+    private void askPerspectiveChange(IEditorSite site) {
+        String mode = mainPrefs.getString(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
         // if select "YES" with toggle
-        if (mode.equals(PREF.PERSPECTIVE_CHANGING_STATUS_ALWAYS)){
-            changePerspective();
+        if (mode.equals(MessageDialogWithToggle.ALWAYS)){
+            changePerspective(site);
             // if not select "NO" with toggle, show choice message dialog
-        }else if (!mode.equals(PREF.PERSPECTIVE_CHANGING_STATUS_NEVER)){
-            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(parent.getShell(),
+        } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
+            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(site.getShell(),
                     Messages.change_perspective_title, Messages.change_perspective_message,
-                    Messages.remember_choice_toggle,false, mainPrefs, PREF.PERSPECTIVE_CHANGING_STATUS);
+                    Messages.remember_choice_toggle,false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
             if(dialog.getReturnCode() == IDialogConstants.YES_ID){
-                changePerspective();
+                changePerspective(site);
             }
         }
     }
 
-    private void changePerspective() {
+    private void changePerspective(IEditorSite site) {
         //change perspective to pgCodeKeeper
         try {
-            PlatformUI.getWorkbench().showPerspective("ru.taximaxim.codekeeper.ui.mainperspective", //$NON-NLS-1$
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+            site.getWorkbenchWindow().getWorkbench().showPerspective(PERSPECTIVE.MAIN,
+                    site.getWorkbenchWindow());
         } catch (WorkbenchException e) {
-            Log.log(Log.LOG_WARNING, "Can't change perspective", e); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, "Can't change perspective", e); //$NON-NLS-1$
         }
     }
 }
