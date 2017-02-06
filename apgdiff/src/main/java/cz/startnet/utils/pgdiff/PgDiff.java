@@ -190,8 +190,7 @@ public final class PgDiff {
             }
         }
         depRes.recreateDrops();
-
-        new ActionsToScriptConverter(depRes.getActions()).fillScript(script);
+        new ActionsToScriptConverter(depRes.getActions(), arguments).fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");
         }

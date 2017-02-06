@@ -10,10 +10,10 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
  * (CREATE ALTER DROP) Также хранит объект, инициировавший действие
  */
 class ActionContainer {
-    private PgStatement oldObj;
-    private PgStatement newObj;
-    private StatementActions action;
-    private PgStatement starter;
+    private final PgStatement oldObj;
+    private final PgStatement newObj;
+    private final StatementActions action;
+    private final PgStatement starter;
 
     public ActionContainer(PgStatement oldObj, PgStatement newObj,
             StatementActions action, PgStatement starter) {
