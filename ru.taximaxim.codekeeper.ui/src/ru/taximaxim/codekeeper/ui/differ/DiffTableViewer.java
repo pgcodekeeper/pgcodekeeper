@@ -152,7 +152,7 @@ public class DiffTableViewer extends Composite {
         // upper composite
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        gl = new GridLayout(viewOnly ? 4 : 14, false);
+        gl = new GridLayout(viewOnly ? 4 : 13, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
@@ -219,7 +219,7 @@ public class DiffTableViewer extends Composite {
 
         //accessible filter for viewOnly
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        GridData gd = new GridData();
+        GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
         gd.widthHint = pc.convertWidthInCharsToPixels(30);
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.diffTableViewer_object_name);
@@ -235,7 +235,7 @@ public class DiffTableViewer extends Composite {
         useRegEx = new Button(upperComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
         useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        useRegEx.setLayoutData(new GridData(SWT.NONE, SWT.CENTER, false, false));
+        useRegEx.setLayoutData(new GridData(SWT.DEFAULT, SWT.CENTER, false, false));
         useRegEx.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -246,16 +246,19 @@ public class DiffTableViewer extends Composite {
         });
 
         new Label(upperComp, SWT.NONE).setText(" | ");
+        if (!viewOnly) {
+            lblCheckedCount = new Label(upperComp, SWT.NONE);
+        }
         lblObjectCount = new Label(upperComp, SWT.NONE);
 
         if (!viewOnly) {
-            lblCheckedCount = new Label(upperComp, SWT.NONE);
-            new Label(upperComp, SWT.NONE).setText(" | ");
-            new Label(upperComp, SWT.END).setText(Messages.diffTableViewer_stored_selections);
+            Label l = new Label(upperComp, SWT.NONE);
+            l.setText(Messages.diffTableViewer_stored_selections);
+            l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
             cmbPrevChecked = new ComboViewer(upperComp, SWT.DROP_DOWN);
-            gd = new GridData(SWT.END, SWT.CENTER, true, false);
-            gd.widthHint = pc.convertWidthInCharsToPixels(150);
+            gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
+            gd.widthHint = pc.convertWidthInCharsToPixels(30);
             cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.getCombo().setToolTipText(
                     Messages.diffTableViewer_Input_name_for_save_checked_elements);
@@ -328,7 +331,7 @@ public class DiffTableViewer extends Composite {
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(final SelectionChangedEvent event) {
-                oldSelection=newSelection;
+                oldSelection = newSelection;
                 newSelection = (IStructuredSelection)event.getSelection();
             }
         });
