@@ -38,7 +38,6 @@ public class CreateRewrite extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
-        rule.setTargetName(ctx.table_name.getText());
         rule.setCondition(getCondition(ctx));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
@@ -46,12 +45,13 @@ public class CreateRewrite extends ParserAbstract {
         setCommands(ctx, rule, db.getArguments(), schemaName);
 
         PgSchema schema = db.getSchema(schemaName);
-        PgRuleContainer c = schema.getRuleContainer(rule.getTargetName());
+        String targetName = ctx.table_name.getText();
+        PgRuleContainer c = schema.getRuleContainer(targetName);
         if (c != null){
             c.addRule(rule);
         } else {
             Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
-                    " is missing its container " + rule.getTargetName() +
+                    " is missing its container " + targetName +
                     " in schema " + schemaName);
         }
         return rule;

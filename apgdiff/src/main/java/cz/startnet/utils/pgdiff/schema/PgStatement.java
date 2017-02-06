@@ -33,8 +33,8 @@ public abstract class PgStatement {
     private PgStatement parent;
     protected final List<GenericColumn> deps = new ArrayList<>();
 
-    private volatile int hash;
-    private volatile boolean hashComputed;
+    // 0 means not calculated yet and/or hash has been reset
+    private int hash;
 
     public PgStatement(String name, String rawStatement) {
         this.name = name;
@@ -338,25 +338,30 @@ public abstract class PgStatement {
      */
     @Override
     public int hashCode() {
-        if (!hashComputed){
-            hash = computeHash();
+        int h = hash;
+        if (h == 0) {
+            h = computeHash();
 
             final int prime = 31;
             PgStatement p = parent;
             while (p != null) {
                 String pName = p.getName();
-                hash = prime * hash + ((pName == null) ? 0 : pName.hashCode());
+                h = prime * h + ((pName == null) ? 0 : pName.hashCode());
                 p = p.getParent();
             }
-            hashComputed = true;
+
+            if (h == 0) {
+                h = Integer.MAX_VALUE;
+            }
+            hash = h;
         }
-        return hash;
+        return h;
     }
 
     protected void resetHash(){
         PgStatement st = this;
         while (st != null){
-            st.hashComputed = false;
+            st.hash = 0;
             st = st.getParent();
         }
     }
@@ -364,7 +369,7 @@ public abstract class PgStatement {
     /**
      * @see #hashCode()
      */
-    protected abstract int computeHash();
+    public abstract int computeHash();
 
     /**
      * @return fully qualified (up to schema) dot-delimited object name.

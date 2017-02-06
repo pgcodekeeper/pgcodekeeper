@@ -8,13 +8,13 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -281,9 +281,8 @@ public class PgDatabase extends PgStatement {
             PgDatabase db = (PgDatabase) obj;
 
             eq = // super.equals(obj) && // redundant here
-                    new HashSet<>(extensions).equals(new HashSet<>(db.extensions))
-                    //      && schemas.equals(db.schemas);
-                    && new HashSet<>(schemas).equals(new HashSet<>(db.schemas));
+                    PgDiffUtils.setlikeEquals(extensions, db.extensions)
+                    && PgDiffUtils.setlikeEquals(schemas, db.schemas);
         }
 
         return eq;
@@ -298,8 +297,8 @@ public class PgDatabase extends PgStatement {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + new HashSet<>(extensions).hashCode();
-        result = prime * result + new HashSet<>(schemas).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(extensions);
+        result = prime * result + PgDiffUtils.setlikeHashcode(schemas);
         return result;
     }
 

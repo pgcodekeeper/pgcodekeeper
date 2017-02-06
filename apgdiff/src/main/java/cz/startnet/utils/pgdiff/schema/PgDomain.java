@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -238,7 +237,7 @@ public class PgDomain extends PgStatementWithSearchPath {
                 && Objects.equals(collation, dom.getCollation())
                 && Objects.equals(defaultValue, dom.getDefaultValue())
                 && notNull == dom.isNotNull()
-                && new HashSet<>(constraints).equals(new HashSet<>(dom.constraints))
+                && PgDiffUtils.setlikeEquals(constraints, dom.constraints)
                 && Objects.equals(owner, dom.getOwner())
                 && grants.equals(dom.grants)
                 && revokes.equals(dom.revokes)
@@ -246,7 +245,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     @Override
-    protected int computeHash() {
+    public int computeHash() {
         final int prime = 31;
         final int itrue = 1231;
         final int ifalse = 1237;
@@ -256,7 +255,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         result = prime * result + ((collation == null) ? 0 : collation.hashCode());
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + (notNull ? itrue : ifalse);
-        result = prime * result + ((constraints == null) ? 0 : new HashSet<>(constraints).hashCode());
+        result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());

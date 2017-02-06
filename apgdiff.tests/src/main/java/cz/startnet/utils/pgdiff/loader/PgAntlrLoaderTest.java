@@ -696,7 +696,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
 
         PgRule rule = new PgRule("on_select", "");
         rule.setEvent(PgRuleEventType.SELECT);
-        rule.setTargetName("user_data");
         rule.setCondition("(1=1)");
         rule.setInstead(true);
         table.addRule(rule);
@@ -724,13 +723,11 @@ class PgDB9 extends PgDatabaseObjectCreator {
 
         rule = new PgRule("on_delete", "");
         rule.setEvent(PgRuleEventType.DELETE);
-        rule.setTargetName("user");
         rule.addCommand("DELETE FROM user_data WHERE (user_data.id = old.id)");
         view.addRule(rule);
 
         rule = new PgRule("on_insert", "");
         rule.setEvent(PgRuleEventType.INSERT);
-        rule.setTargetName("user");
         rule.setInstead(true);
         rule.addCommand("INSERT INTO user_data (id, email, created) VALUES (new.id, new.email, new.created)");
         rule.addCommand("INSERT INTO t1(c1) DEFAULT VALUES");
@@ -738,7 +735,6 @@ class PgDB9 extends PgDatabaseObjectCreator {
 
         rule = new PgRule("on_update", "");
         rule.setEvent(PgRuleEventType.UPDATE);
-        rule.setTargetName("user");
         rule.setInstead(true);
         rule.addCommand("UPDATE user_data SET id = new.id, email = new.email, created = new.created WHERE (user_data.id = old.id)");
         view.addRule(rule);

@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,34 +11,36 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class JdbcType{
 
-    private static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    private static final Map<String, String> DATA_TYPE_ALIASES;
     static {
-        DATA_TYPE_ALIASES.put("int8","bigint");
-        DATA_TYPE_ALIASES.put("serial8","bigserial");
-        DATA_TYPE_ALIASES.put("varbit","bit varying");
-        DATA_TYPE_ALIASES.put("bool","boolean");
-        DATA_TYPE_ALIASES.put("char","character");
-        DATA_TYPE_ALIASES.put("varchar","character varying");
-        DATA_TYPE_ALIASES.put("float8","double precision");
-        DATA_TYPE_ALIASES.put("int","integer");
-        DATA_TYPE_ALIASES.put("int4","integer");
-        DATA_TYPE_ALIASES.put("float4","real");
-        DATA_TYPE_ALIASES.put("int2","smallint");
-        DATA_TYPE_ALIASES.put("serial2","smallserial");
-        DATA_TYPE_ALIASES.put("serial4","serial");
-        DATA_TYPE_ALIASES.put("bigserial","bigint");
-        DATA_TYPE_ALIASES.put("serial","integer");
-        DATA_TYPE_ALIASES.put("timetz","time with time zone");
-        DATA_TYPE_ALIASES.put("time","time without time zone");
-        DATA_TYPE_ALIASES.put("timestamptz","timestamp with time zone");
-        DATA_TYPE_ALIASES.put("timestamp","timestamp without time zone");
-        DATA_TYPE_ALIASES.put("bpchar","character");
+        Map<String, String> aliases = new HashMap<>();
+
+        // format_type.c, format_type_internal function
+        aliases.put("bit","bit");
+        aliases.put("bool","boolean");
+        aliases.put("bpchar","character");
+        aliases.put("float4","real");
+        aliases.put("float8","double precision");
+        aliases.put("int2","smallint");
+        aliases.put("int4","integer");
+        aliases.put("int8","bigint");
+        aliases.put("numeric","numeric");
+        aliases.put("interval","interval");
+        aliases.put("time","time without time zone");
+        aliases.put("timetz","time with time zone");
+        aliases.put("timestamp","timestamp without time zone");
+        aliases.put("timestamptz","timestamp with time zone");
+        aliases.put("varbit","bit varying");
+        aliases.put("varchar","character varying");
+
+        DATA_TYPE_ALIASES = Collections.unmodifiableMap(aliases);
     }
 
     private final long oid;
     private final String typeName;
     private final String parentSchema;
     private final boolean isArrayType;
+    private final boolean isPgCatalog;
 
     /**
      * There are types, which names begin from underscore: they are simple
@@ -51,33 +54,21 @@ public class JdbcType{
         this.oid = oid;
         this.parentSchema = parentSchema;
         this.isArrayType = typarray == 0L && typelem != 0L;
-
-        String mainTypeName = typeName;
-        if (isArrayType){
-            mainTypeName = elemname;
-        }
-        String typeNameAlias = DATA_TYPE_ALIASES.get(mainTypeName);
-        this.typeName = typeNameAlias == null ? mainTypeName : typeNameAlias;
-    }
-
-    public String getTypeName() {
-        return typeName;
-    }
-
-    public String getParentSchema() {
-        return parentSchema;
+        this.typeName = isArrayType ? elemname : typeName;
+        this.isPgCatalog = "pg_catalog".equals(parentSchema);
     }
 
     public String getSchemaQualifiedName(String targetSchemaName) {
-        if ("pg_catalog".equals(parentSchema)) {
-            return typeName;
-        } else {
-            String qname = PgDiffUtils.getQuotedName(typeName);
-            if (!targetSchemaName.equals(parentSchema)) {
-                qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
-            }
-            return qname;
+        if (isPgCatalog) {
+            String dealias = DATA_TYPE_ALIASES.get(typeName);
+            return dealias == null ? PgDiffUtils.getQuotedName(typeName) : dealias;
         }
+
+        String qname = PgDiffUtils.getQuotedName(typeName);
+        if (!targetSchemaName.equals(parentSchema)) {
+            qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
+        }
+        return qname;
     }
 
     /**

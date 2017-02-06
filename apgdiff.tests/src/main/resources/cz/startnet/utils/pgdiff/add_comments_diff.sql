@@ -1,6 +1,6 @@
 COMMENT ON DATABASE current_database() IS 'comments database';
 
-COMMENT ON COLUMN typ_composite."key" IS 'Type composite key comment';
+COMMENT ON COLUMN typ_composite.key IS 'Type composite key comment';
 
 COMMENT ON COLUMN typ_composite.val IS 'Type composite val comment';
 

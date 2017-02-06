@@ -1,6 +1,6 @@
 COMMENT ON DATABASE current_database() IS NULL;
 
-COMMENT ON COLUMN typ_composite."key" IS NULL;
+COMMENT ON COLUMN typ_composite.key IS NULL;
 
 COMMENT ON TYPE typ_composite IS NULL;
 

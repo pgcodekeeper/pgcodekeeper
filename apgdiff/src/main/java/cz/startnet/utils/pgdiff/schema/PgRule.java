@@ -23,10 +23,13 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     private PgRuleEventType event;
-    private String targetName;
     private String condition;
     private boolean instead;
     private final List<String> commands = new ArrayList<>();
+    /**
+     * null is default (ENABLED), otherwise contains "{ENABLE|DISABLE} [ALWAYS|REPLICA]" string
+     */
+    private String enabledState;
 
     @Override
     public DbObjType getStatementType() {
@@ -39,15 +42,6 @@ public class PgRule extends PgStatementWithSearchPath{
 
     public void setEvent(PgRuleEventType event) {
         this.event = event;
-        resetHash();
-    }
-
-    public String getTargetName() {
-        return targetName;
-    }
-
-    public void setTargetName(String targetName) {
-        this.targetName = targetName;
         resetHash();
     }
 
@@ -78,6 +72,15 @@ public class PgRule extends PgStatementWithSearchPath{
         resetHash();
     }
 
+    public String getEnabledState() {
+        return enabledState;
+    }
+
+    public void setEnabledState(String enabledState) {
+        this.enabledState = enabledState;
+        resetHash();
+    }
+
     /**
      * Adds {@link #command} to {@link #commands} with newlines as requested in arguments.
      */
@@ -95,7 +98,7 @@ public class PgRule extends PgStatementWithSearchPath{
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
-        sbSQL.append(" TO ").append(PgDiffUtils.getQuotedName(getTargetName()));
+        sbSQL.append(" TO ").append(PgDiffUtils.getQuotedName(getParent().getName()));
         if (getCondition() != null && !getCondition().isEmpty()){
             sbSQL.append("\n  WHERE ").append(getCondition());
         }
@@ -120,6 +123,16 @@ public class PgRule extends PgStatementWithSearchPath{
         }
         sbSQL.append(';');
 
+        if (enabledState != null) {
+            sbSQL.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append(' ')
+            .append(enabledState)
+            .append(" RULE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
+        }
+
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
@@ -131,7 +144,7 @@ public class PgRule extends PgStatementWithSearchPath{
     public String getDropSQL() {
         StringBuilder sbSQL = new StringBuilder("DROP RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(getTargetName())).append(';');
+        sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(getParent().getName())).append(';');
         return sbSQL.toString();
     }
 
@@ -150,6 +163,19 @@ public class PgRule extends PgStatementWithSearchPath{
             isNeedDepcies.set(true);
             return true;
         }
+        String newEnabledState = newRule.getEnabledState();
+        if (!Objects.equals(oldRule.getEnabledState(), newEnabledState)) {
+            if (newEnabledState == null) {
+                newEnabledState = "ENABLE";
+            }
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(newRule.getParent().getName()))
+            .append(' ')
+            .append(newEnabledState)
+            .append(" RULE ")
+            .append(PgDiffUtils.getQuotedName(newRule.getName()))
+            .append(';');
+        }
         if (!Objects.equals(oldRule.getComment(), newRule.getComment())) {
             sb.append("\n\n");
             newRule.appendCommentSql(sb);
@@ -161,11 +187,11 @@ public class PgRule extends PgStatementWithSearchPath{
     public PgRule shallowCopy() {
         PgRule ruleDst = new PgRule(getName(), getRawStatement());
         ruleDst.setEvent(getEvent());
-        ruleDst.setTargetName(getTargetName());
         ruleDst.setCondition(getCondition());
         ruleDst.setInstead(isInstead());
         ruleDst.setComment(getComment());
         ruleDst.commands.addAll(commands);
+        ruleDst.setEnabledState(getEnabledState());
         ruleDst.deps.addAll(deps);
         return ruleDst;
     }
@@ -184,6 +210,7 @@ public class PgRule extends PgStatementWithSearchPath{
         } else if (obj instanceof PgRule) {
             PgRule rule = (PgRule) obj;
             eq = compareWithoutComments(rule)
+                    && Objects.equals(enabledState, rule.getEnabledState())
                     && Objects.equals(comment, rule.getComment());
         }
 
@@ -192,21 +219,20 @@ public class PgRule extends PgStatementWithSearchPath{
 
     private boolean compareWithoutComments(PgRule rule) {
         return event == rule.event
-                && Objects.equals(targetName, rule.getTargetName())
                 && Objects.equals(condition, rule.getCondition())
                 && instead == rule.isInstead()
                 && commands.equals(rule.commands);
     }
 
     @Override
-    protected int computeHash() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((event == null) ? 0 : event.hashCode());
-        result = prime * result + ((targetName == null) ? 0 : targetName.hashCode());
         result = prime * result + ((condition == null) ? 0 : condition.hashCode());
         result = prime * result + (instead ? 1231 : 1237);
         result = prime * result + ((commands == null) ? 0 : commands.hashCode());
+        result = prime * result + ((enabledState == null) ? 0 : enabledState.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
