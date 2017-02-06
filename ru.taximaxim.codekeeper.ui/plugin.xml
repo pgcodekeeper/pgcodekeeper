@@ -287,6 +287,19 @@
             name="%page.name.pgProjectEditor">
         </page>
     </extension>
+    <extension point="org.eclipse.ui.importWizards">
+       <category
+             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+             name="pgCodeKeeper">
+       </category>
+       <wizard
+             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+             class="ru.taximaxim.codekeeper.ui.pgdbproject.ImportProjWizard"
+             icon="icons/app_icon16.png"
+             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+             name="%wizard.name.keeperNewWizard">
+       </wizard>
+    </extension>
     <extension point="org.eclipse.ui.newWizards">
         <wizard
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
