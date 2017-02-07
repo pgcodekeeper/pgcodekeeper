@@ -76,7 +76,7 @@ public interface UIConsts {
     interface IMPORT_PREF {
         String RESOURCE_WORKING_SET = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
         String JAVA_WORKING_SET = "org.eclipse.jdt.ui.JavaWorkingSetPage"; //$NON-NLS-1$
-        String ECLIPSE_IDE = "org.eclipse.ui.ide"; //$NON-NLS-1$
+        String PLUGIN_ID = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
     }
 
     interface PG_EDIT_PREF {

@@ -386,7 +386,7 @@ public final class Messages extends NLS {
 
     public static String PgImportWizardImportPage_select_root_for_import;
 
-    public static String PgImportWizardImportPage_some_problem;
+    public static String PgImportWizardImportPage_all_ok;
 
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 

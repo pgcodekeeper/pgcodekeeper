@@ -32,7 +32,6 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -81,13 +80,11 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     private Button browseDirectoriesButton;
     private String lastPath;
     private WorkingSetGroup workingSetGroup;
-    private final IStructuredSelection currentSelection;
     private Button hideConflictingProjects;
     private final ConflictingProjectFilter conflictingProjectsFilter = new ConflictingProjectFilter();
 
     public PgImportWizardImportPage(String pageName) {
         super(pageName);
-        this.currentSelection = null;
         setPageComplete(false);
         setTitle(Messages.PgImportWizardImportPage_project);
         setDescription(Messages.PgImportWizardImportPage_select_project);
@@ -114,7 +111,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
 
     private void createWorkingSetGroup(Composite workArea) {
         String[] workingSetIds = new String[] { IMPORT_PREF.RESOURCE_WORKING_SET, IMPORT_PREF.JAVA_WORKING_SET };
-        workingSetGroup = new WorkingSetGroup(workArea, currentSelection, workingSetIds);
+        workingSetGroup = new WorkingSetGroup(workArea, null, workingSetIds);
     }
 
     @Override
@@ -331,7 +328,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     private void updateProjectsList(final String path, boolean forceUpdate) {
         // on an empty path empty selectedProjects
         if (path == null || path.length() == 0) {
-            setMessage(Messages.PgImportWizardImportPage_description);
+            setMessage(Messages.PgImportWizardImportPage_select_project);
             selectedProjects = new ProjectRecord[0];
             projectsList.refresh(true);
             projectsList.setCheckedElements(selectedProjects);
@@ -412,7 +409,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         } else if (displayInvalidWarning) {
             setMessage(Messages.PgImportWizardImportPage_description_is_corrupted, WARNING);
         } else {
-            setMessage(Messages.PgImportWizardImportPage_some_problem);
+            setMessage(Messages.PgImportWizardImportPage_all_ok);
         }
         setPageComplete(projectsList.getCheckedElements().length > 0);
         if (selectedProjects.length == 0) {
@@ -439,7 +436,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                 directoriesVisited.add(directory.getCanonicalPath());
             } catch (IOException e) {
                 StatusManager.getManager().
-                handle(new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, "Error: " + e, e)); //$NON-NLS-1$
+                handle(new Status(IStatus.ERROR, IMPORT_PREF.PLUGIN_ID, 1, "Error: " + e, e)); //$NON-NLS-1$
             }
         }
 
@@ -462,7 +459,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                         }
                     } catch (IOException e) {
                         StatusManager.getManager().
-                        handle(new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, "Error: " + e, e)); //$NON-NLS-1$
+                        handle(new Status(IStatus.ERROR, IMPORT_PREF.PLUGIN_ID, 1, "Error: " + e, e)); //$NON-NLS-1$
                     }
                     collectProjectFilesFromDirectory(files, contents[i], directoriesVisited, monitor);
                 }
@@ -514,7 +511,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                     }
                     // Import as many projects as we can; accumulate errors to
                     // report to the user
-                    MultiStatus status = new MultiStatus(IMPORT_PREF.ECLIPSE_IDE, 1,
+                    MultiStatus status = new MultiStatus(IMPORT_PREF.PLUGIN_ID, 1,
                             Messages.PgImportWizardImportPage_exist_or_corrupted, null);
                     for (Object element : selected) {
                         status.add(createExistingProject((ProjectRecord) element, SubMonitor.convert(monitor,1)));
@@ -538,7 +535,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
             if (t instanceof CoreException) {
                 status = ((CoreException) t).getStatus();
             } else {
-                status = new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, message, t);
+                status = new Status(IStatus.ERROR, IMPORT_PREF.PLUGIN_ID, 1, message, t);
             }
             updateProjectsStatus();
             ErrorDialog.openError(getShell(), message, null, status);
