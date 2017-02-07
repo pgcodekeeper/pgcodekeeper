@@ -13,6 +13,10 @@ public interface UIConsts {
         String HELP = THIS + ".help"; //$NON-NLS-1$
     }
 
+    interface PERSPECTIVE {
+        String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -78,6 +82,7 @@ public interface UIConsts {
         String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
         String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
     }
 
     public enum DBSources {

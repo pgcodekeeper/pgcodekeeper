@@ -25,6 +25,7 @@ public final class Messages extends NLS {
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
     public static String please_check_at_least_one_row;
+
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
@@ -131,6 +132,14 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
+
+    //change perspective
+    public static String remember_choice_toggle;
+    public static String change_perspective_message;
+    public static String change_perspective_title;
+    public static String prespective_change_status_always;
+    public static String prespective_change_status_ask;
+    public static String prespective_change_status_never;
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
@@ -366,6 +375,10 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorInput_pgcodekeeper_project;
 
+    public static String ProjectEditorPrefPage_database_color;
+
+    public static String ProjectEditorPrefPage_project_color;
+
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
@@ -453,6 +466,8 @@ public final class Messages extends NLS {
     public static String diffwizard_diffpage_target_warning;
     public static String diffwizard_diffpage_select;
     public static String diffwizard_pagepartial_description;
+
+    public static String generalPrefPage_perspective_changing_status;
 
     // SONAR-ON
 

@@ -52,5 +52,6 @@ implements IWorkbenchPreferencePage  {
         addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
+
     }
 }
