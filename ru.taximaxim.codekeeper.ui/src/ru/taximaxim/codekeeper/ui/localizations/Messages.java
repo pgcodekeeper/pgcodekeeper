@@ -346,6 +346,48 @@ public final class Messages extends NLS {
     public static String PgDbProject_error_creating_project;
     public static String PgDbProject_error_deleting_project;
     public static String PgDbProject_error_opening_project;
+    public static String PgImportWizardImportPage_already_exist;
+
+    public static String PgImportWizardImportPage_browse;
+
+    public static String PgImportWizardImportPage_cheching;
+
+    public static String PgImportWizardImportPage_creation_problem;
+
+    public static String PgImportWizardImportPage_description;
+
+    public static String PgImportWizardImportPage_description_is_corrupted;
+
+    public static String PgImportWizardImportPage_deselect_all;
+
+    public static String PgImportWizardImportPage_exist_or_corrupted;
+
+    public static String PgImportWizardImportPage_hide_project;
+
+    public static String PgImportWizardImportPage_nested_search;
+
+    public static String PgImportWizardImportPage_no_project;
+
+    public static String PgImportWizardImportPage_progressing_result;
+
+    public static String PgImportWizardImportPage_project;
+
+    public static String PgImportWizardImportPage_projects;
+
+    public static String PgImportWizardImportPage_refresh;
+
+    public static String PgImportWizardImportPage_searching_for_project;
+
+    public static String PgImportWizardImportPage_select_all;
+
+    public static String PgImportWizardImportPage_select_project;
+
+    public static String PgImportWizardImportPage_select_root_directory;
+
+    public static String PgImportWizardImportPage_select_root_for_import;
+
+    public static String PgImportWizardImportPage_some_problem;
+
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;

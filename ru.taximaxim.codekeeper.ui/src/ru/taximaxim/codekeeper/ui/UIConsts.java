@@ -73,6 +73,12 @@ public interface UIConsts {
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
     }
 
+    interface IMPORT_PREF {
+        String RESOURCE_WORKING_SET = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
+        String JAVA_WORKING_SET = "org.eclipse.jdt.ui.JavaWorkingSetPage"; //$NON-NLS-1$
+        String ECLIPSE_IDE = "org.eclipse.ui.ide"; //$NON-NLS-1$
+    }
+
     interface PG_EDIT_PREF {
         String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$

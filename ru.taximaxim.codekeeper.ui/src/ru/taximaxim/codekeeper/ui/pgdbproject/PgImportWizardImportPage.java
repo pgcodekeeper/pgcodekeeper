@@ -46,7 +46,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -65,6 +64,8 @@ import org.eclipse.ui.dialogs.WorkingSetGroup;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.IMPORT_PREF;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgImportWizardImportPage extends WizardDataTransferPage {
 
@@ -79,7 +80,6 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     private static String previouslyBrowsedDirectory = ""; //$NON-NLS-1$
     private Button browseDirectoriesButton;
     private String lastPath;
-    private final String initialPath;
     private WorkingSetGroup workingSetGroup;
     private final IStructuredSelection currentSelection;
     private Button hideConflictingProjects;
@@ -87,11 +87,10 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
 
     public PgImportWizardImportPage(String pageName) {
         super(pageName);
-        this.initialPath = null;
         this.currentSelection = null;
         setPageComplete(false);
-        setTitle("pgCodeKeeper project");
-        setDescription("Select pgCodeKeeper projects");
+        setTitle(Messages.PgImportWizardImportPage_project);
+        setDescription(Messages.PgImportWizardImportPage_select_project);
     }
 
     @Override
@@ -114,15 +113,14 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     }
 
     private void createWorkingSetGroup(Composite workArea) {
-        String[] workingSetIds = new String[] { "org.eclipse.ui.resourceWorkingSetPage", //$NON-NLS-1$
-        "org.eclipse.jdt.ui.JavaWorkingSetPage" }; //$NON-NLS-1$
+        String[] workingSetIds = new String[] { IMPORT_PREF.RESOURCE_WORKING_SET, IMPORT_PREF.JAVA_WORKING_SET };
         workingSetGroup = new WorkingSetGroup(workArea, currentSelection, workingSetIds);
     }
 
     @Override
     protected void createOptionsGroupButtons(Group optionsGroup) {
         nestedProjectsCheckbox = new Button(optionsGroup, SWT.CHECK);
-        nestedProjectsCheckbox.setText("Search for nested project");
+        nestedProjectsCheckbox.setText(Messages.PgImportWizardImportPage_nested_search);
         nestedProjectsCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         nestedProjectsCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -133,7 +131,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         });
 
         hideConflictingProjects = new Button(optionsGroup, SWT.CHECK);
-        hideConflictingProjects.setText("Hide project that already exist in the workspace");
+        hideConflictingProjects.setText(Messages.PgImportWizardImportPage_hide_project);
         hideConflictingProjects.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hideConflictingProjects.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -150,7 +148,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     private void createProjectsList(Composite workArea) {
 
         Label title = new Label(workArea, SWT.NONE);
-        title.setText("Projects:");
+        title.setText(Messages.PgImportWizardImportPage_projects);
 
         Composite listComposite = new Composite(workArea, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -196,6 +194,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
 
             @Override
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+
             }
 
         });
@@ -228,7 +227,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         buttonsComposite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         Button selectAll = new Button(buttonsComposite, SWT.PUSH);
-        selectAll.setText("Select All");
+        selectAll.setText(Messages.PgImportWizardImportPage_select_all);
         selectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -246,7 +245,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         setButtonLayoutData(selectAll);
 
         Button deselectAll = new Button(buttonsComposite, SWT.PUSH);
-        deselectAll.setText("Deselect All");
+        deselectAll.setText(Messages.PgImportWizardImportPage_deselect_all);
         deselectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -259,7 +258,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         setButtonLayoutData(deselectAll);
 
         Button refresh = new Button(buttonsComposite, SWT.PUSH);
-        refresh.setText("Refresh");
+        refresh.setText(Messages.PgImportWizardImportPage_refresh);
         refresh.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -280,7 +279,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(projectGroup, SWT.NONE).setText("Select root directory:");
+        new Label(projectGroup, SWT.NONE).setText(Messages.PgImportWizardImportPage_select_root_directory);
 
         // project location entry combo
         this.directoryPathField = new Combo(projectGroup, SWT.BORDER);
@@ -291,7 +290,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
 
         // browse button
         browseDirectoriesButton = new Button(projectGroup, SWT.PUSH);
-        browseDirectoriesButton.setText("Browse...");
+        browseDirectoriesButton.setText(Messages.PgImportWizardImportPage_browse);
         setButtonLayoutData(browseDirectoriesButton);
 
         browseDirectoriesButton.addSelectionListener(new SelectionAdapter() {
@@ -307,7 +306,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
             public void keyTraversed(TraverseEvent e) {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
                     e.doit = false;
-                    updateProjectsList(directoryPathField.getText().trim());
+                    updateProjectsList(directoryPathField.getText().trim(), false);
                 }
             }
 
@@ -316,7 +315,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         directoryPathField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(org.eclipse.swt.events.FocusEvent e) {
-                updateProjectsList(directoryPathField.getText().trim());
+                updateProjectsList(directoryPathField.getText().trim(), false);
             }
 
         });
@@ -324,19 +323,15 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         directoryPathField.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateProjectsList(directoryPathField.getText().trim());
+                updateProjectsList(directoryPathField.getText().trim(), false);
             }
         });
-    }
-
-    private void updateProjectsList(final String path) {
-        updateProjectsList(path, false);
     }
 
     private void updateProjectsList(final String path, boolean forceUpdate) {
         // on an empty path empty selectedProjects
         if (path == null || path.length() == 0) {
-            setMessage("Desription");
+            setMessage(Messages.PgImportWizardImportPage_description);
             selectedProjects = new ProjectRecord[0];
             projectsList.refresh(true);
             projectsList.setCheckedElements(selectedProjects);
@@ -354,7 +349,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                 @Override
                 public void run(IProgressMonitor monitor) {
 
-                    monitor.beginTask("Searching for projects", 100);
+                    monitor.beginTask(Messages.PgImportWizardImportPage_searching_for_project, 100);
                     selectedProjects = new ProjectRecord[0];
                     Collection <File> files = new ArrayList <>();
                     monitor.worked(10);
@@ -368,10 +363,11 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                         selectedProjects = new ProjectRecord[files.size()];
                         int index = 0;
                         monitor.worked(50);
-                        monitor.subTask("Processing results");
+                        monitor.subTask(Messages.PgImportWizardImportPage_progressing_result);
                         while (filesIterator.hasNext()) {
                             File file = new File(filesIterator.next().getAbsolutePath().
-                                    replace(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER, IProjectDescription.DESCRIPTION_FILE_NAME));
+                                    replace(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER,
+                                            IProjectDescription.DESCRIPTION_FILE_NAME));
                             selectedProjects[index] = new ProjectRecord(file);
                             index++;
                         }
@@ -410,17 +406,17 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         }
 
         if (displayConflictWarning && displayInvalidWarning) {
-            setMessage("Some projects cannot be imported because they already exist in the workspace or their project description file is corrupted", WARNING);
+            setMessage(Messages.PgImportWizardImportPage_exist_or_corrupted, WARNING);
         } else if (displayConflictWarning) {
-            setMessage("Some projects cannot be imported because they already exist in the workspace", WARNING);
+            setMessage(Messages.PgImportWizardImportPage_already_exist, WARNING);
         } else if (displayInvalidWarning) {
-            setMessage("Some projects cannot be imported because their project description file is corrupted", WARNING);
+            setMessage(Messages.PgImportWizardImportPage_description_is_corrupted, WARNING);
         } else {
-            setMessage("Some Problem");
+            setMessage(Messages.PgImportWizardImportPage_some_problem);
         }
         setPageComplete(projectsList.getCheckedElements().length > 0);
         if (selectedProjects.length == 0) {
-            setMessage("No projects are found to import", WARNING);
+            setMessage(Messages.PgImportWizardImportPage_no_project, WARNING);
         }
     }
 
@@ -430,7 +426,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         if (monitor.isCanceled()) {
             return false;
         }
-        monitor.subTask(NLS.bind("Checking: {0}", directory.getPath()));
+        monitor.subTask(NLS.bind(Messages.PgImportWizardImportPage_cheching, directory.getPath()));
         File[] contents = directory.listFiles();
         if (contents == null) {
             return false;
@@ -441,9 +437,9 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
             directoriesVisited = new HashSet<>();
             try {
                 directoriesVisited.add(directory.getCanonicalPath());
-            } catch (IOException exception) {
+            } catch (IOException e) {
                 StatusManager.getManager().
-                handle(new Status(IStatus.ERROR, exception.getLocalizedMessage(), "Error: "+exception, exception));
+                handle(new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, "Error: " + e, e)); //$NON-NLS-1$
             }
         }
 
@@ -464,9 +460,9 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                         if (!directoriesVisited.add(canonicalPath)) {
                             continue;
                         }
-                    } catch (IOException exception) {
+                    } catch (IOException e) {
                         StatusManager.getManager().
-                        handle(new Status(IStatus.ERROR, exception.getLocalizedMessage(), "Error: "+exception, exception));
+                        handle(new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, "Error: " + e, e)); //$NON-NLS-1$
                     }
                     collectProjectFilesFromDirectory(files, contents[i], directoriesVisited, monitor);
                 }
@@ -478,7 +474,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
     protected void handleLocationDirectoryButtonPressed() {
 
         DirectoryDialog dialog = new DirectoryDialog(directoryPathField.getShell(), SWT.SHEET);
-        dialog.setMessage("Select root directory of the projects to import");
+        dialog.setMessage(Messages.PgImportWizardImportPage_select_root_for_import);
 
         String dirName = directoryPathField.getText().trim();
         if (dirName.length() == 0) {
@@ -498,7 +494,7 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
         if (selectedDirectory != null) {
             previouslyBrowsedDirectory = selectedDirectory;
             directoryPathField.setText(previouslyBrowsedDirectory);
-            updateProjectsList(selectedDirectory);
+            updateProjectsList(selectedDirectory, false);
         }
 
     }
@@ -518,8 +514,8 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
                     }
                     // Import as many projects as we can; accumulate errors to
                     // report to the user
-                    MultiStatus status = new MultiStatus("org.eclipse.ui.ide", 1,
-                            "Some projects cannot be imported because they already exist in the workspace or their project description file is corrupted", null);
+                    MultiStatus status = new MultiStatus(IMPORT_PREF.ECLIPSE_IDE, 1,
+                            Messages.PgImportWizardImportPage_exist_or_corrupted, null);
                     for (Object element : selected) {
                         status.add(createExistingProject((ProjectRecord) element, SubMonitor.convert(monitor,1)));
                     }
@@ -537,12 +533,12 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
             return false;
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
-            String message = "Creation Problems";
+            String message = Messages.PgImportWizardImportPage_creation_problem;
             IStatus status;
             if (t instanceof CoreException) {
                 status = ((CoreException) t).getStatus();
             } else {
-                status = new Status(IStatus.ERROR, "org.eclipse.ui.ide", 1, message, t);
+                status = new Status(IStatus.ERROR, IMPORT_PREF.ECLIPSE_IDE, 1, message, t);
             }
             updateProjectsStatus();
             ErrorDialog.openError(getShell(), message, null, status);
@@ -634,11 +630,8 @@ public class PgImportWizardImportPage extends WizardDataTransferPage {
             nestedProjectsCheckbox.setSelection(nestedProjects);
         }
 
-        if (initialPath == null && settings != null) {
-            updateProjectsList(directoryPathField.getText());
-        } else if (initialPath != null) {
-            directoryPathField.setText(initialPath);
-            directoryPathField.setSelection(new Point(initialPath.length(), initialPath.length()));
+        if (settings != null) {
+            updateProjectsList(directoryPathField.getText(), false);
         }
     }
 
