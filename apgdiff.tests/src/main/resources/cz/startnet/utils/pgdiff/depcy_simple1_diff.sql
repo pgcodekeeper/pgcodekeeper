@@ -15,7 +15,7 @@ SET search_path = public, pg_catalog;
 DROP VIEW v2;
 
 ALTER TABLE t1
-	ALTER COLUMN id TYPE bigint; /* TYPE change - table: t1 original: integer new: bigint */
+	ALTER COLUMN id TYPE bigint USING id::bigint; /* TYPE change - table: t1 original: integer new: bigint */
 
 SET search_path = s, pg_catalog;
 
