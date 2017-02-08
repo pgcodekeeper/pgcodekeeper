@@ -49,8 +49,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             this.connection = connection;
             this.statement = statement;
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            connection.setReadOnly(true);
+            statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryTypesForCache();
@@ -69,11 +68,10 @@ public class JdbcLoader extends JdbcLoaderBase {
             }
             connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
+        } catch (InterruptedException ex) {
+            throw ex;
         } catch (Exception e) {
             // connection is closed at this point, trust Postgres to rollback it; we're a read-only xact anyway
-            if (e instanceof InterruptedException) {
-                throw (InterruptedException) e;
-            }
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
