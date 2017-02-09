@@ -84,6 +84,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     @Override
     public void createPartControl(Composite parent) {
         gv = new GraphViewer(parent, SWT.NONE);
+        gv.setNodeStyle(ZestStyles.NODES_NO_ANIMATION);
         gv.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
         gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING), true);
 
