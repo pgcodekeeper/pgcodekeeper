@@ -350,35 +350,15 @@ public final class Messages extends NLS {
 
     public static String PgImportWizardImportPage_browse;
 
-    public static String PgImportWizardImportPage_cheching;
+    public static String PgImportWizardImportPage_empty_project;
 
-    public static String PgImportWizardImportPage_creation_problem;
-
-    public static String PgImportWizardImportPage_description;
-
-    public static String PgImportWizardImportPage_description_is_corrupted;
-
-    public static String PgImportWizardImportPage_deselect_all;
-
-    public static String PgImportWizardImportPage_exist_or_corrupted;
-
-    public static String PgImportWizardImportPage_hide_project;
-
-    public static String PgImportWizardImportPage_nested_search;
+    public static String PgImportWizardImportPage_name;
 
     public static String PgImportWizardImportPage_no_project;
-
-    public static String PgImportWizardImportPage_progressing_result;
 
     public static String PgImportWizardImportPage_project;
 
     public static String PgImportWizardImportPage_projects;
-
-    public static String PgImportWizardImportPage_refresh;
-
-    public static String PgImportWizardImportPage_searching_for_project;
-
-    public static String PgImportWizardImportPage_select_all;
 
     public static String PgImportWizardImportPage_select_project;
 

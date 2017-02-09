@@ -18,6 +18,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkingSet;
+import org.eclipse.ui.IWorkingSetManager;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.IMPORT_PREF;
@@ -25,8 +28,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgImport extends WizardPage {
     Text path;
-    IProjectDescription description;
     Text name;
+    IProjectDescription description;
+    WorkingSetGroup workingSetGroup;
 
     protected PgImport(String pageName) {
         super(pageName);
@@ -69,7 +73,7 @@ public class PgImport extends WizardPage {
             }
         });
 
-        new Label(area, SWT.NONE).setText("Project name:");
+        new Label(area, SWT.NONE).setText(Messages.PgImportWizardImportPage_name);
 
         name = new Text(area, SWT.NONE);
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
@@ -80,8 +84,8 @@ public class PgImport extends WizardPage {
         Composite workingSet = new Composite(parent, SWT.NONE);
         workingSet.setLayout(new GridLayout());
         workingSet.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        String[] workingSetIds = new String[] { IMPORT_PREF.RESOURCE_WORKING_SET, IMPORT_PREF.JAVA_WORKING_SET };
-        new WorkingSetGroup(workingSet, null, workingSetIds);
+        new WorkingSetGroup(workingSet, null,
+                new String[] { IMPORT_PREF.RESOURCE_WORKING_SET, IMPORT_PREF.JAVA_WORKING_SET });
     }
 
     private void find() {
@@ -93,7 +97,7 @@ public class PgImport extends WizardPage {
             path.setText(selectedDirectory);
             try {
                 description = ResourcesPlugin.getWorkspace().
-                        loadProjectDescription(new Path(path.getText()+"/.project"));
+                        loadProjectDescription(new Path(path.getText()+"/.project")); //$NON-NLS-1$
                 name.setText(description.getName());
                 setMessage(Messages.PgImportWizardImportPage_all_ok);
             } catch (CoreException e) {
@@ -104,25 +108,35 @@ public class PgImport extends WizardPage {
 
     public boolean createProject () {
         try {
-            if (!new File(path.getText()+"/.pgcodekeeper").exists()){
-                setMessage("Not pgCodeKeeper project",WARNING);
+            if (!new File(path.getText()+"/.pgcodekeeper").exists()){ //$NON-NLS-1$
+                setMessage(Messages.PgImportWizardImportPage_no_project, WARNING);
                 return false;
             }
             if (name.getText().length()==0){
-                setMessage("Project name can not be empty",WARNING);
+                setMessage(Messages.PgImportWizardImportPage_empty_project, WARNING);
                 return false;
             }
             description = ResourcesPlugin.getWorkspace().
-                    loadProjectDescription(new Path(path.getText()+"/.project"));
+                    loadProjectDescription(new Path(path.getText()+"/.project")); //$NON-NLS-1$
 
             IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name.getText());
             project.create(description,null);
             project.open(null);
+            addToWorkingSet(project);
         }
         catch (CoreException e) {
-            setMessage(Messages.PgImportWizardImportPage_exist_or_corrupted, WARNING);
+            setMessage(Messages.PgImportWizardImportPage_already_exist, WARNING);
             return false;
         }
         return true;
+    }
+
+    private void addToWorkingSet(IProject project) {
+        IWorkingSet[] selectedWorkingSets = workingSetGroup.getSelectedWorkingSets();
+        if (selectedWorkingSets == null || selectedWorkingSets.length == 0) {
+            return; // no Working set is selected
+        }
+        IWorkingSetManager workingSetManager = PlatformUI.getWorkbench().getWorkingSetManager();
+        workingSetManager.addToWorkingSets(project, selectedWorkingSets);
     }
 }
