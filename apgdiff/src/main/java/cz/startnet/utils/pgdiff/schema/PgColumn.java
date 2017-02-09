@@ -241,8 +241,9 @@ public class PgColumn extends PgStatementWithSearchPath {
             //
             PgDiffArguments arg = ((PgDatabase) newCondition.getParent().getParent().getParent()).getArguments();
 
-            if (!(arg != null && !arg.isUsingOnOff())){
-                sb.append(" USING ").append(newColumn.getName()).append("::").append(newColumn.getType());
+            if ((arg == null || arg.isUsingOnOff())){
+                sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
+                .append("::").append(newColumn.getType());
             }
             sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
                     newColumn.getParent().getName(),
