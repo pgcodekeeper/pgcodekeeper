@@ -646,4 +646,10 @@
             markerType="ru.taximaxim.codekeeper.ui.sql.errormarker">
         </updater>
     </extension>
+    <extension point="org.eclipse.ui.intro.configExtension">
+		<configExtension
+			configId="org.eclipse.ui.intro.universalConfig"
+			content="intro/pgcodekeeper_intro.xml">
+		</configExtension>
+	</extension>
 </plugin>
