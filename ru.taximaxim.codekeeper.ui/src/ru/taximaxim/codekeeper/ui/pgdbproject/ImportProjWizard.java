@@ -7,7 +7,7 @@ import org.eclipse.ui.IWorkbench;
 
 public class ImportProjWizard extends Wizard implements IImportWizard {
 
-    private PgImportWizardImportPage pageOne;
+    private PgImport pageOne;
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -16,12 +16,12 @@ public class ImportProjWizard extends Wizard implements IImportWizard {
 
     @Override
     public boolean performFinish() {
-        return pageOne.createProjects();
+        return pageOne.createProject();
     }
 
     @Override
     public void addPages() {
-        pageOne = new PgImportWizardImportPage("import page");
+        pageOne = new PgImport("import page");
         addPage(pageOne);
     }
 }
