@@ -647,9 +647,9 @@
         </updater>
     </extension>
     <extension point="org.eclipse.ui.intro.configExtension">
-		<configExtension
-			configId="org.eclipse.ui.intro.universalConfig"
-			content="intro/pgcodekeeper_intro.xml">
+		<configExtension 
+			configId="org.eclipse.ui.intro.universalConfig" 
+			content="$nl$/intro/pgcodekeeper_intro.xml">
 		</configExtension>
 	</extension>
 </plugin>

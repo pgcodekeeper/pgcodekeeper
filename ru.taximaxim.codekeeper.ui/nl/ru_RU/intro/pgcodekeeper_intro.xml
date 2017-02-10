@@ -2,32 +2,32 @@
 <introContent>  
   <extensionContent id="ru.taximaxim.codekeeper.overview" name="CodeKeeper overview" path="overview/@" style="pgcodekeeper_intro.css">
     <group style-id="content-group" id="content-group" >
-        <link style-id="content-link" label="pgCodeKeeper plug-in" 
+        <link style-id="content-link" label="Плагин pgCodeKeeper " 
         url="http://pgcodekeeper.ru/index.html#about" id="codekeeper-overview">
-            <text>View summary information about the plugin</text>
+            <text>Просмотр общей информации о плагине</text>
         </link>
     </group>
     
     <group style-id="content-group" id="content-group">
-        <link style-id="content-link" label="Create pgCodeKeeper project" 
+        <link style-id="content-link" label="Создать проект pgCodeKeeper" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewProjWizardAction" 
         id="codekeeper-newproject">
-            <text>Create a new pgCodeKeeper project</text>
+            <text>Создать новый проект pgCodeKeeper</text>
         </link>
     </group>
     
     <group style-id="content-group" id="content-group">
-        <link style-id="content-link" label="Find difference" 
+        <link style-id="content-link" label="Сравнить БД" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewDiffProjectAction" 
         id="codekeeper-compare">
-            <text>Find difference between two database without creating a project</text>
+            <text>Найти разлиция между двумя базами данных без создания проекта</text>
         </link>
     </group>
 
     <group style-id="content-group" id="content-group">
-        <link label="pgCodeKeeper news" 
+        <link label="Новости pgCodeKeeper" 
         url="http://pgcodekeeper.ru/#information" id="codekeeper-whatsnew" style-id="content-link">        
-            <text>Learn about the new features in the new version</text>
+            <text>Узнайте о новых возможностях в новой версии плагина</text>
         </link>
     </group>
   </extensionContent>
