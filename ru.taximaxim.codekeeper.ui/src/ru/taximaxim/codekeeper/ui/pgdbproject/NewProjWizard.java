@@ -15,8 +15,15 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
@@ -27,9 +34,12 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -47,11 +57,12 @@ implements IExecutableExtension, INewWizard {
     private PageDb pageDb;
 
     private final IPreferenceStore mainPrefStore;
-
     private PgDbProject props;
     private IConfigurationElement config;
     private IWorkbench workbench;
     private IStructuredSelection selection;
+    private String charset;
+    private String timezone;
 
     public NewProjWizard() {
         this.mainPrefStore = Activator.getDefault().getPreferenceStore();
@@ -106,10 +117,8 @@ implements IExecutableExtension, INewWizard {
 
     @Override
     public boolean canFinish() {
-        if (getContainer().getCurrentPage() == pageRepo) {
-            if (checkMarkerExist()) {
-                return true;
-            }
+        if (getContainer().getCurrentPage() == pageRepo && checkMarkerExist()) {
+            return true;
         }
         return super.canFinish();
     }
@@ -117,9 +126,10 @@ implements IExecutableExtension, INewWizard {
     @Override
     public boolean performFinish() {
         try {
-            props = PgDbProject.getProjectFromIProjectHandle(
-                    pageRepo.getProjectHandle(),
+            props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
+            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
+            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
             if (!checkMarkerExist()) {
                 boolean initSuccess = false;
                 try {
@@ -145,20 +155,14 @@ implements IExecutableExtension, INewWizard {
 
             props.openProject();
             try {
-                PgDbProject.addNatureToProject(props.getProject());
+                props.setProjectCharset(charset);
+                props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                 props.getPrefs().flush();
             } catch (BackingStoreException e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.NewProjWizard_error_saving_projprefs, e);
-                return false;
-            } catch (CoreException e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.NewProjWizard_error_adding_nature, e);
-                return false;
+                Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+            } catch (CoreException ex) {
+                throw new PgCodekeeperUIException(ex.getLocalizedMessage(), ex);
             }
-
-            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
-            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
 
             OpenEditor.openEditor(
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
@@ -176,15 +180,13 @@ implements IExecutableExtension, INewWizard {
         File dump;
 
         boolean forceUnixNewlines = props.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-        String charset;
-        try {
-            charset = props.getProjectCharset();
-        } catch (CoreException ex) {
-            throw new PgCodekeeperUIException(ex.getLocalizedMessage(), ex);
-        }
-        if (dbinfo != null) {
-            String tz = props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
-            src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, tz);
+        charset = pageDb.getCharset();
+        timezone = pageDb.getTimeZone();
+
+        if(!pageDb.getInitial()){
+            src = DbSource.fromDbObject(new PgDatabase(), ""); //$NON-NLS-1$
+        } else if (dbinfo != null) {
+            src = DbSource.fromDbInfo(dbinfo, mainPrefStore, forceUnixNewlines, charset, timezone);
         } else if ((dump = pageDb.getDumpPath()) != null) {
             src = DbSource.fromFile(forceUnixNewlines, dump, charset);
         } else {
@@ -232,11 +234,24 @@ class PageRepo extends WizardNewProjectCreationPage {
 class PageDb extends WizardPage {
 
     private final IPreferenceStore mainPrefs;
-
+    private Button initial;
     private DbStorePicker storePicker;
+    private Combo timezoneCombo, charsetCombo;
 
     public DbInfo getDbInfo() {
         return storePicker.getDbInfo();
+    }
+
+    public String getCharset(){
+        return charsetCombo.getText();
+    }
+
+    public Boolean getInitial(){
+        return initial.getSelection();
+    }
+
+    public String getTimeZone(){
+        return timezoneCombo.getText();
     }
 
     public File getDumpPath() {
@@ -254,23 +269,62 @@ class PageDb extends WizardPage {
     @Override
     public void createControl(final Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new FillLayout());
+        container.setLayout(new GridLayout(2,false));
 
-        storePicker = new DbStorePicker(container, SWT.NONE, mainPrefs, true, false);
+        //char sets
+        new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_charset);
+
+        charsetCombo = new Combo(container, SWT.DROP_DOWN );
+        charsetCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+        charsetCombo.setItems((String[]) UIConsts.ENCODINGS.toArray());
+        //set default encoding UTF-8
+        charsetCombo.select(0);
+
+        //time zones
+        new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_time_zone);
+
+        timezoneCombo = new Combo(container, SWT.NONE);
+        timezoneCombo.setItems((String[]) UIConsts.TIME_ZONES.toArray());
+        timezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+        //set default time zone UTC
+        timezoneCombo.select(12);
+
+        //initial block
+        Group group = new Group(container, SWT.NONE);
+        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
+        data.horizontalSpan = 2;
+        group.setLayoutData(data);
+        group.setLayout(new GridLayout());
+        group.setText(Messages.NewProjWizard_initializing_title);
+
+        initial = new Button(group, SWT.CHECK);
+        initial.setSelection(true);
+        initial.setText(Messages.NewProjWizard_initializing_check);
+        initial.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                storePicker.initial(initial.getSelection());
+                getWizard().getContainer().updateButtons();
+            }
+        });
+        initial.pack();
+
+        storePicker = new DbStorePicker(group, SWT.NONE, mainPrefs, true, false);
+        storePicker.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
-
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 getWizard().getContainer().updateButtons();
                 getWizard().getContainer().updateMessage();
             }
         });
+        storePicker.pack();
 
         setControl(container);
     }
 
     @Override
     public boolean isPageComplete() {
-        return storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null;
+        return !initial.getSelection() || storePicker.getDbInfo() != null || storePicker.getPathOfFile() != null ;
     }
 }

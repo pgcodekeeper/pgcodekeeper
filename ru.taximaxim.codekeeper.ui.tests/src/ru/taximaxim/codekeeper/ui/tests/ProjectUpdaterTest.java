@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +58,9 @@ public class ProjectUpdaterTest {
 
     @Test
     public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException{
-        PgDbProject proj = PgDbProject.getProjFromFile(workingDir.get().getAbsolutePath());
+        File dir = workingDir.get();
+        PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
+                .getRoot().getProject(dir.getName()), dir.toURI());
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
         new ProjectUpdater(dbNew, null, null, proj).updateFull();

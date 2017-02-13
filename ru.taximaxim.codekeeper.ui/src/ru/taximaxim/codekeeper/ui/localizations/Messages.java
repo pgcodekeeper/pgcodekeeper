@@ -315,9 +315,17 @@ public final class Messages extends NLS {
 
     public static String NewProjWizard_create_project;
 
+    public static String NewProjWizard_initializing_check;
+
+    public static String NewProjWizard_initializing_title;
+
     public static String NewProjWizard_proj_init;
 
     public static String NewProjWizard_proj_init_src;
+
+    public static String NewProjWizard_select_charset;
+
+    public static String NewProjWizard_select_time_zone;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
