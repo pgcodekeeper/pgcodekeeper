@@ -34,6 +34,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.loader.JdbcTimezone;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -269,13 +270,15 @@ class PageDb extends WizardPage {
     @Override
     public void createControl(final Composite parent) {
         Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2,false));
+        container.setLayout(new GridLayout(3,false));
 
         //char sets
         new Label(container, SWT.NONE).setText(Messages.NewProjWizard_select_charset);
 
+        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
+        data.horizontalSpan = 2;
         charsetCombo = new Combo(container, SWT.DROP_DOWN );
-        charsetCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+        charsetCombo.setLayoutData(data);
         charsetCombo.setItems((String[]) UIConsts.ENCODINGS.toArray());
         //set default encoding UTF-8
         charsetCombo.select(0);
@@ -289,10 +292,33 @@ class PageDb extends WizardPage {
         //set default time zone UTC
         timezoneCombo.select(12);
 
+        Button time = new Button(container,SWT.PUSH);
+        time.setText(Messages.NewProjWizard_get_from_db);
+        time.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try{
+                    String timezone = new JdbcTimezone().getTimeZone( getDbInfo().getDbHost(),
+                            getDbInfo().getDbPort(), getDbInfo().getDbUser(),
+                            getDbInfo().getDbPass(), getDbInfo().getDbName(),
+                            ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                    if (timezone!=null){
+                        timezoneCombo.setText(timezone);
+                        setMessage(null);
+                    } else {
+                        setMessage(Messages.NewProjWizard_cannot_read_timezone, WARNING);
+                    }
+                }
+                catch (NullPointerException npe) {
+                    setMessage(Messages.NewProjWizard_incorrect_data_source, WARNING);
+                }
+            }
+        });
+
         //initial block
         Group group = new Group(container, SWT.NONE);
-        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
-        data.horizontalSpan = 2;
+        data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
+        data.horizontalSpan = 3;
         group.setLayoutData(data);
         group.setLayout(new GridLayout());
         group.setText(Messages.NewProjWizard_initializing_title);

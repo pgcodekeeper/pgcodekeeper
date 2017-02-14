@@ -313,7 +313,11 @@ public final class Messages extends NLS {
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_saving_projprefs;
 
+    public static String NewProjWizard_cannot_read_timezone;
+
     public static String NewProjWizard_create_project;
+
+    public static String NewProjWizard_incorrect_data_source;
 
     public static String NewProjWizard_initializing_check;
 
@@ -326,6 +330,8 @@ public final class Messages extends NLS {
     public static String NewProjWizard_select_charset;
 
     public static String NewProjWizard_select_time_zone;
+
+    public static String NewProjWizard_get_from_db;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
