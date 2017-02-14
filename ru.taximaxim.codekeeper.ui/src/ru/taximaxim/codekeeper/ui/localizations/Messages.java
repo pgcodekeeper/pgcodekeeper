@@ -195,6 +195,7 @@ public final class Messages extends NLS {
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
     public static String dbUpdatePrefPage_check_function_bodies;
+    public static String dbUpdatePrefPage_switch_on_off_using;
 
     public static String dbUpdatePrefPage_script_add_transaction;
 

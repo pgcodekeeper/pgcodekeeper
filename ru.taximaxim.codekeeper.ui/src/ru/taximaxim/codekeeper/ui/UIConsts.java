@@ -75,6 +75,7 @@ public interface UIConsts {
         String RESTART_WITH_STATEMENT = "prefRestartWithStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
+        String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

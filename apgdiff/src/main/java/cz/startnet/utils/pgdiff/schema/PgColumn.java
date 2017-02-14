@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -235,6 +236,14 @@ public class PgColumn extends PgStatementWithSearchPath {
             if (newColumn.getCollation() != null) {
                 sb.append(" COLLATE ")
                 .append(newColumn.getCollation());
+            }
+
+            //
+            PgDiffArguments arg = ((PgDatabase) newCondition.getParent().getParent().getParent()).getArguments();
+
+            if (arg == null || arg.isUsingOnOff()) {
+                sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
+                .append("::").append(newColumn.getType());
             }
             sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
                     newColumn.getParent().getName(),

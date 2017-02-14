@@ -52,6 +52,7 @@ public class PgDiffArguments {
     private boolean outputIgnoredStatements;
     private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
+    private boolean usingOnOff = true;
     private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
@@ -342,6 +343,8 @@ public class PgDiffArguments {
                 setForceUnixNewlines(false);
             } else if ("--output-ignored-statements".equals(args[i])) { //$NON-NLS-1$
                 setOutputIgnoredStatements(true);
+            } else if ("--using-off".equals(args[i])) { //$NON-NLS-1$
+                setUsingOnOff(false);
             } else if("--license".equals(args[i])) { //$NON-NLS-1$
                 setLicensePath(args[++i]);
             } else if ("--ignore-list".equals(args[i])) { //$NON-NLS-1$
@@ -482,5 +485,13 @@ public class PgDiffArguments {
 
     public Set<DbObjType> getAllowedTypes() {
         return Collections.unmodifiableSet(allowedTypes);
+    }
+
+    public boolean isUsingOnOff() {
+        return usingOnOff;
+    }
+
+    public void setUsingOnOff(boolean usingOnOff) {
+        this.usingOnOff = usingOnOff;
     }
 }
