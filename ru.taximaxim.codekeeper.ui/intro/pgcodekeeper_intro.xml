@@ -1,33 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <introContent>  
   <extensionContent id="ru.taximaxim.codekeeper.overview" name="CodeKeeper overview" path="overview/@" style="pgcodekeeper_intro.css">
-    <group style-id="content-group" id="content-group" >
+    <group style-id="content-group" id="content-group" label="pgCodeKeeper">
+        <text>PostgreSQL database schema management tool.</text>
         <link style-id="content-link" label="pgCodeKeeper plug-in" 
         url="http://pgcodekeeper.ru/index.html#about" id="codekeeper-overview">
-            <text>View summary information about the plugin</text>
+            <text>General info about the plug-in</text>
         </link>
-    </group>
-    
-    <group style-id="content-group" id="content-group">
         <link style-id="content-link" label="Create pgCodeKeeper project" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewProjWizardAction" 
         id="codekeeper-newproject">
             <text>Create a new pgCodeKeeper project</text>
         </link>
-    </group>
-    
-    <group style-id="content-group" id="content-group">
-        <link style-id="content-link" label="Find difference" 
+        <link style-id="content-link" label="Diff databases" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewDiffProjectAction" 
         id="codekeeper-compare">
-            <text>Find difference between two database without creating a project</text>
+            <text>Compare two databases without creating a project</text>
         </link>
-    </group>
-
-    <group style-id="content-group" id="content-group">
         <link label="pgCodeKeeper news" 
         url="http://pgcodekeeper.ru/#information" id="codekeeper-whatsnew" style-id="content-link">        
-            <text>Learn about the new features in the new version</text>
+            <text>Learn about the features in the new version</text>
         </link>
     </group>
   </extensionContent>

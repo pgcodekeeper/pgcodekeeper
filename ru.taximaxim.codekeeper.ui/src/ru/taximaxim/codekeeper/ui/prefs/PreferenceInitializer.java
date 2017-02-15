@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
@@ -36,8 +35,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);
         store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT, "158,182,211"); //$NON-NLS-1$
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "255,146,129"); //$NON-NLS-1$
-
-        store.setDefault(IWorkbenchPreferenceConstants.SHOW_INTRO, true);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
         setSQLSyntaxColorDefaults(store);

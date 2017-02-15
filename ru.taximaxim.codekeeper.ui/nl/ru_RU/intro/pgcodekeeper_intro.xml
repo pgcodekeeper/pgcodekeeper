@@ -1,33 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <introContent>  
   <extensionContent id="ru.taximaxim.codekeeper.overview" name="CodeKeeper overview" path="overview/@" style="pgcodekeeper_intro.css">
-    <group style-id="content-group" id="content-group" >
+    <group style-id="content-group" id="content-group" label="pgCodeKeeper">
+        <text>Инструмент управления схемой БД PostgreSQL.</text>
         <link style-id="content-link" label="Плагин pgCodeKeeper " 
         url="http://pgcodekeeper.ru/index.html#about" id="codekeeper-overview">
-            <text>Просмотр общей информации о плагине</text>
+            <text>Общая информация о плагине</text>
         </link>
-    </group>
-    
-    <group style-id="content-group" id="content-group">
         <link style-id="content-link" label="Создать проект pgCodeKeeper" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewProjWizardAction" 
         id="codekeeper-newproject">
             <text>Создать новый проект pgCodeKeeper</text>
         </link>
-    </group>
-    
-    <group style-id="content-group" id="content-group">
-        <link style-id="content-link" label="Сравнить БД" 
+        <link style-id="content-link" label="Сравнить базы данных" 
         url="http://org.eclipse.ui.intro/runAction?pluginId=ru.taximaxim.codekeeper.ui&amp;class=ru.taximaxim.codekeeper.ui.intro.actions.NewDiffProjectAction" 
         id="codekeeper-compare">
-            <text>Найти разлиция между двумя базами данных без создания проекта</text>
+            <text>Сравнить две базы данных не создавая проект</text>
         </link>
-    </group>
-
-    <group style-id="content-group" id="content-group">
         <link label="Новости pgCodeKeeper" 
         url="http://pgcodekeeper.ru/#information" id="codekeeper-whatsnew" style-id="content-link">        
-            <text>Узнайте о новых возможностях в новой версии плагина</text>
+            <text>Узнать о возможностях в новой версии плагина</text>
         </link>
     </group>
   </extensionContent>
