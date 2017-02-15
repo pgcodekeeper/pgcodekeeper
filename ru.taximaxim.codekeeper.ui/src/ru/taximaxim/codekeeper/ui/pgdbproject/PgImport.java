@@ -1,14 +1,15 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -23,14 +24,14 @@ import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.IMPORT_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgImport extends WizardPage {
-    Text path;
-    Text name;
-    IProjectDescription description;
-    WorkingSetGroup workingSetGroup;
+    private Text path, name;
+    private WorkingSetGroup workingSetGroup;
+    private IWorkingSet[] selectedWorkingSets;
 
     protected PgImport(String pageName) {
         super(pageName);
@@ -63,6 +64,12 @@ public class PgImport extends WizardPage {
 
         path = new Text(area, SWT.NONE);
         path.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+        path.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                getWizard().getContainer().updateButtons();
+            }
+        });
 
         Button browse = new Button(area, SWT.PUSH);
         browse.setText(Messages.PgImportWizardImportPage_browse);
@@ -79,12 +86,17 @@ public class PgImport extends WizardPage {
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
         data.horizontalSpan = 2;
         name.setLayoutData(data);
-
+        name.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                getWizard().getContainer().updateButtons();
+            }
+        });
 
         Composite workingSet = new Composite(parent, SWT.NONE);
         workingSet.setLayout(new GridLayout());
         workingSet.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        new WorkingSetGroup(workingSet, null,
+        workingSetGroup = new WorkingSetGroup(workingSet, null,
                 new String[] { IMPORT_PREF.RESOURCE_WORKING_SET, IMPORT_PREF.JAVA_WORKING_SET });
     }
 
@@ -95,48 +107,49 @@ public class PgImport extends WizardPage {
         String selectedDirectory = dialog.open();
         if(selectedDirectory!=null){
             path.setText(selectedDirectory);
-            try {
-                description = ResourcesPlugin.getWorkspace().
-                        loadProjectDescription(new Path(path.getText()+"/.project")); //$NON-NLS-1$
-                name.setText(description.getName());
-                setMessage(Messages.PgImportWizardImportPage_all_ok);
-            } catch (CoreException e) {
-                setMessage(Messages.PgImportWizardImportPage_no_project, WARNING);
-            }
+            name.setText(Paths.get(path.getText()).getFileName().toString());
+            setMessage(Messages.PgImportWizardImportPage_all_ok);
         }
     }
 
     public boolean createProject () {
         try {
-            if (!new File(path.getText()+"/.pgcodekeeper").exists()){ //$NON-NLS-1$
+            //if don't have .pgCodekeeper
+            if (Files.notExists(Paths.get(path.getText()+"/.pgcodekeeper"))){
                 setMessage(Messages.PgImportWizardImportPage_no_project, WARNING);
                 return false;
             }
-            if (name.getText().length()==0){
-                setMessage(Messages.PgImportWizardImportPage_empty_project, WARNING);
+            //if have .project
+            if (Files.exists(Paths.get(path.getText()+"/.project"))){
+                setMessage(Messages.PgImportWizardImportPage_already_exist, WARNING);
                 return false;
             }
-            description = ResourcesPlugin.getWorkspace().
-                    loadProjectDescription(new Path(path.getText()+"/.project")); //$NON-NLS-1$
-
-            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name.getText());
-            project.create(description,null);
-            project.open(null);
+            //set default name, if project in root of workspace
+            if(Files.exists(Paths.get(path.getText()).getParent().resolve(".metadata"))){ //$NON-NLS-1$
+                name.setText(Paths.get(path.getText()).getFileName().toString());
+            }
+            IProject project = PgDbProject.getProjFromFile(name.getText(), path.getText()).getProject();
+            project.getProject().open(null);
+            PgDbProject.addNatureToProject(project);
             addToWorkingSet(project);
         }
-        catch (CoreException e) {
-            setMessage(Messages.PgImportWizardImportPage_already_exist, WARNING);
+        catch (CoreException | PgCodekeeperUIException e) {
             return false;
         }
         return true;
     }
 
     private void addToWorkingSet(IProject project) {
-        IWorkingSet[] selectedWorkingSets = workingSetGroup.getSelectedWorkingSets();
+        selectedWorkingSets = workingSetGroup.getSelectedWorkingSets();
         if (selectedWorkingSets == null || selectedWorkingSets.length == 0) {
             return; // no Working set is selected
         }
         IWorkingSetManager workingSetManager = PlatformUI.getWorkbench().getWorkingSetManager();
         workingSetManager.addToWorkingSets(project, selectedWorkingSets);
+    }
+
+    @Override
+    public boolean isPageComplete(){
+        return path.getText().length()>0 && name.getText().length()>0;
     }
 }
