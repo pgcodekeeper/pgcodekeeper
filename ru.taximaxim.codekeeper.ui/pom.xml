@@ -67,6 +67,9 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
                                 
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.intro.actions.NewDiffProjectAction { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.intro.actions.NewProjWizardAction { *; }</option>
+                                
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.natures.ProjectNature { *; }</option>
