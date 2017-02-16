@@ -16,7 +16,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -32,7 +31,7 @@ public class OpenEditor extends AbstractHandler {
         if (isEnabled() && proj != null) {
             try {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
-            } catch (PgCodekeeperUIException e) {
+            } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(MessageFormat.format(
                         Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
             }
@@ -64,17 +63,11 @@ public class OpenEditor extends AbstractHandler {
         return null;
     }
 
-    public static void openEditor(IWorkbenchPage page, IProject proj) throws PgCodekeeperUIException {
+    public static void openEditor(IWorkbenchPage page, IProject proj) throws PartInitException {
         Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
         if (OpenProjectUtils.checkVersionAndWarn(proj, page.getWorkbenchWindow().getShell(), true)) {
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
-            try {
-                page.openEditor(input, EDITOR.PROJECT);
-            } catch (PartInitException e) {
-                throw new PgCodekeeperUIException(MessageFormat.format(
-                        Messages.OpenEditor_error_open_project,
-                        e.getLocalizedMessage()), e);
-            }
+            page.openEditor(input, EDITOR.PROJECT);
         }
     }
 }

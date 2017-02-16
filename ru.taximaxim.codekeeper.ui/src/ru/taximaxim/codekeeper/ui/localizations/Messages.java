@@ -309,15 +309,13 @@ public final class Messages extends NLS {
 
     public static String NavigatorRootLabelProvider_open_editor;
 
-    public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
-    public static String NewProjWizard_error_saving_projprefs;
 
-    public static String NewProjWizard_cannot_read_timezone;
+    public static String NewProjWizard_error_tz_query;
+
+    public static String NewProjWizard_cannot_delete_project;
 
     public static String NewProjWizard_create_project;
-
-    public static String NewProjWizard_incorrect_data_source;
 
     public static String NewProjWizard_initializing_check;
 
@@ -346,7 +344,6 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_project_normalized_success;
 
-    public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
@@ -366,9 +363,6 @@ public final class Messages extends NLS {
 
     public static String PgDbParser_error_loading_db;
 
-    public static String PgDbProject_error_creating_project;
-    public static String PgDbProject_error_deleting_project;
-    public static String PgDbProject_error_opening_project;
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
