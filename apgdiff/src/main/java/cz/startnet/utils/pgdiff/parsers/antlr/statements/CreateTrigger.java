@@ -5,6 +5,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
@@ -16,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -35,7 +37,13 @@ public class CreateTrigger extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()));
         trigger.setTableName(ctx.tabl_name.getText());
-        trigger.setBefore(ctx.before_true != null);
+        if(ctx.getToken(SQLParser.AFTER, 0) != null){
+            trigger.setType(TgTypes.AFTER);
+        } else if (ctx.getToken(SQLParser.BEFORE, 0) != null){
+            trigger.setType(TgTypes.BEFORE);
+        } else {
+            trigger.setType(TgTypes.INSTEAD_OF);
+        }
         if (ctx.ROW() != null) {
             trigger.setForEachRow(true);
         }
