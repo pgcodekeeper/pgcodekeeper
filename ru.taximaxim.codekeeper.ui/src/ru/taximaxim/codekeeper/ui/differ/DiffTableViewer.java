@@ -245,7 +245,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        new Label(upperComp, SWT.NONE).setText(" | ");
+        new Label(upperComp, SWT.NONE).setText(" | "); //$NON-NLS-1$
         if (!viewOnly) {
             lblCheckedCount = new Label(upperComp, SWT.NONE);
         }

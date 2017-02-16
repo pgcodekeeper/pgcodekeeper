@@ -9,13 +9,13 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionConstants;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonMenuConstants;
 
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -73,7 +73,7 @@ public class NavigatorRootActionProvider extends CommonActionProvider {
                     OpenEditor.openEditor(
                             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
                             proj);
-                } catch (PgCodekeeperUIException e) {
+                } catch (PartInitException e) {
                     ExceptionNotifier.notifyDefault(MessageFormat.format(
                             Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
                 }

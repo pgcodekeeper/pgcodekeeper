@@ -310,15 +310,27 @@ public final class Messages extends NLS {
 
     public static String NavigatorRootLabelProvider_open_editor;
 
-    public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
-    public static String NewProjWizard_error_saving_projprefs;
+
+    public static String NewProjWizard_error_tz_query;
+
+    public static String NewProjWizard_cannot_delete_project;
 
     public static String NewProjWizard_create_project;
+
+    public static String NewProjWizard_initializing_check;
+
+    public static String NewProjWizard_initializing_title;
 
     public static String NewProjWizard_proj_init;
 
     public static String NewProjWizard_proj_init_src;
+
+    public static String NewProjWizard_select_charset;
+
+    public static String NewProjWizard_select_time_zone;
+
+    public static String NewProjWizard_get_from_db;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
@@ -333,7 +345,6 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_project_normalized_success;
 
-    public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
@@ -353,9 +364,6 @@ public final class Messages extends NLS {
 
     public static String PgDbParser_error_loading_db;
 
-    public static String PgDbProject_error_creating_project;
-    public static String PgDbProject_error_deleting_project;
-    public static String PgDbProject_error_opening_project;
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
