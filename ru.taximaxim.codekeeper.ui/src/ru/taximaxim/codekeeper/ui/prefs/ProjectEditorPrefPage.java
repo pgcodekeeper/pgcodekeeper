@@ -1,7 +1,9 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -34,7 +36,7 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
         addField(prjUpdateIsBackLight);
 
         prjUpdateBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT,
-                "", getFieldEditorParent()); //$NON-NLS-1$
+                Messages.ProjectEditorPrefPage_project_color, getFieldEditorParent());
         addField(prjUpdateBackLightColor);
 
         dbUpdateIsBackLight =
@@ -42,7 +44,15 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
                         Messages.pgProjectEditor_is_db_update_backlight, getFieldEditorParent());
         addField(dbUpdateIsBackLight);
 
-        prjDbBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "", getFieldEditorParent()); //$NON-NLS-1$
+        prjDbBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT,
+                Messages.ProjectEditorPrefPage_database_color, getFieldEditorParent());
         addField(prjDbBackLightColor);
+
+        addField( new ComboFieldEditor(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS,
+                Messages.generalPrefPage_perspective_changing_status, new String[][] {
+            {Messages.prespective_change_status_always,MessageDialogWithToggle.ALWAYS},
+            {Messages.prespective_change_status_never,MessageDialogWithToggle.NEVER},
+            {Messages.prespective_change_status_ask,MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
     }
 }

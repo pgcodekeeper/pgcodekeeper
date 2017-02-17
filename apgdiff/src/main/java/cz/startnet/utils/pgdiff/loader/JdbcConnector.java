@@ -104,7 +104,7 @@ public class JdbcConnector {
      * @return new connection
      * @throws IOException  If driver not found or a database access error occurs
      */
-    Connection getConnection() throws IOException{
+    public Connection getConnection() throws IOException{
         this.charset = Charset.forName(encoding);
         try{
             return establishConnection();

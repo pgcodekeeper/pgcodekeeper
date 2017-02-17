@@ -1,4 +1,4 @@
-DROP FUNCTION power_number("input" integer);
+DROP FUNCTION power_number(input integer);
 
 CREATE OR REPLACE FUNCTION power_number(number integer) RETURNS integer
     AS $$

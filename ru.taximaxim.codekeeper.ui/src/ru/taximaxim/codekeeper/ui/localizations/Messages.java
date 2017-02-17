@@ -25,6 +25,7 @@ public final class Messages extends NLS {
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
     public static String please_check_at_least_one_row;
+
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
@@ -132,6 +133,14 @@ public final class Messages extends NLS {
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
 
+    //change perspective
+    public static String remember_choice_toggle;
+    public static String change_perspective_message;
+    public static String change_perspective_title;
+    public static String prespective_change_status_always;
+    public static String prespective_change_status_ask;
+    public static String prespective_change_status_never;
+
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
 
@@ -186,6 +195,7 @@ public final class Messages extends NLS {
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
     public static String dbUpdatePrefPage_check_function_bodies;
+    public static String dbUpdatePrefPage_switch_on_off_using;
 
     public static String dbUpdatePrefPage_script_add_transaction;
 
@@ -300,15 +310,27 @@ public final class Messages extends NLS {
 
     public static String NavigatorRootLabelProvider_open_editor;
 
-    public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
-    public static String NewProjWizard_error_saving_projprefs;
+
+    public static String NewProjWizard_error_tz_query;
+
+    public static String NewProjWizard_cannot_delete_project;
 
     public static String NewProjWizard_create_project;
+
+    public static String NewProjWizard_initializing_check;
+
+    public static String NewProjWizard_initializing_title;
 
     public static String NewProjWizard_proj_init;
 
     public static String NewProjWizard_proj_init_src;
+
+    public static String NewProjWizard_select_charset;
+
+    public static String NewProjWizard_select_time_zone;
+
+    public static String NewProjWizard_get_from_db;
     public static String NormalizeProject_are_you_sure;
 
     public static String NormalizeProject_error_while_updating_project;
@@ -323,7 +345,6 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_project_normalized_success;
 
-    public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
@@ -343,9 +364,6 @@ public final class Messages extends NLS {
 
     public static String PgDbParser_error_loading_db;
 
-    public static String PgDbProject_error_creating_project;
-    public static String PgDbProject_error_deleting_project;
-    public static String PgDbProject_error_opening_project;
     public static String PgImportWizardImportPage_already_exist;
 
     public static String PgImportWizardImportPage_browse;
@@ -387,6 +405,10 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorInput_pgcodekeeper_project;
+
+    public static String ProjectEditorPrefPage_database_color;
+
+    public static String ProjectEditorPrefPage_project_color;
 
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
@@ -475,6 +497,8 @@ public final class Messages extends NLS {
     public static String diffwizard_diffpage_target_warning;
     public static String diffwizard_diffpage_select;
     public static String diffwizard_pagepartial_description;
+
+    public static String generalPrefPage_perspective_changing_status;
 
     // SONAR-ON
 

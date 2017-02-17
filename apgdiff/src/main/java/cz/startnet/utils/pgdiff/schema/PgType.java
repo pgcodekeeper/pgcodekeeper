@@ -644,7 +644,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    protected int computeHash() {
+    public int computeHash() {
         final int prime = 31;
         final int itrue = 1231;
         final int ifalse = 1237;

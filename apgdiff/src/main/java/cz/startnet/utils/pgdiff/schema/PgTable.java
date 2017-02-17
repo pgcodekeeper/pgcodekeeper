@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -505,10 +504,10 @@ implements PgRuleContainer, PgTriggerContainer {
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
             eq = super.equals(obj)
-                    && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
-                    && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
-                    && new HashSet<>(triggers).equals(new HashSet<>(table.triggers))
-                    && new HashSet<>(rules).equals(new HashSet<>(table.rules));
+                    && PgDiffUtils.setlikeEquals(constraints, table.constraints)
+                    && PgDiffUtils.setlikeEquals(indexes, table.indexes)
+                    && PgDiffUtils.setlikeEquals(triggers, table.triggers)
+                    && PgDiffUtils.setlikeEquals(rules, table.rules);
         }
         return eq;
     }
@@ -525,16 +524,16 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
-        result = prime * result + new HashSet<>(constraints).hashCode();
-        result = prime * result + new HashSet<>(indexes).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
+        result = prime * result + PgDiffUtils.setlikeHashcode(indexes);
         result = prime * result + ((inherits == null) ? 0 : inherits.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
-        result = prime * result + new HashSet<>(triggers).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + new HashSet<>(rules).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         return result;
     }
 

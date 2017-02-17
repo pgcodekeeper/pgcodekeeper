@@ -1,13 +1,14 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+// TODO Use Keyword class in apgdiff
 public class SqlPostgresSyntax {
-    
+
     private static final String EMPTY[] = {};
-    
+
     private final String[] comment = {
             "--" //$NON-NLS-1$
     };
-    
+
     private final String[] reserved = {
             "all", //$NON-NLS-1$
             "analyse", //$NON-NLS-1$
@@ -110,7 +111,7 @@ public class SqlPostgresSyntax {
             "window", //$NON-NLS-1$
             "with" //$NON-NLS-1$
     };
-    
+
     private final String[] unreserved = {
             "abort", //$NON-NLS-1$
             "absolute", //$NON-NLS-1$
@@ -414,7 +415,7 @@ public class SqlPostgresSyntax {
             "yes", //$NON-NLS-1$
             "zone" //$NON-NLS-1$
     };
-    
+
     private final String[] types = {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
@@ -499,7 +500,7 @@ public class SqlPostgresSyntax {
             "xid", //$NON-NLS-1$
             "xml" //$NON-NLS-1$
     };
-    
+
     private final String[] functions = {
             "RI_FKey_cascade_del", //$NON-NLS-1$
             "RI_FKey_cascade_upd", //$NON-NLS-1$

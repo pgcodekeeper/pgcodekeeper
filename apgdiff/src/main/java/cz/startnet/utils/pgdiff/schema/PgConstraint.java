@@ -100,7 +100,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(getParent().getName());
+        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
         sbSQL.append("\n\tADD CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(' ');
@@ -131,7 +131,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
-        sbSQL.append(getParent().getName());
+        sbSQL.append(PgDiffUtils.getQuotedName(getParent().getName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(';');
@@ -157,7 +157,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         }
         if (oldConstr.isNotValid() && !newConstr.isNotValid()) {
             sb.append("\n\nALTER ").append(getParent().getStatementType().name()).append(' ')
-            .append(getParent().getName())
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append("\n\tVALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');

@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.7.11-SNAPSHOT</version>
+    <version>1.7.12-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <profiles>
@@ -66,6 +66,9 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.NormalizeProject { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.OpenEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder { *; }</option>
+                                
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.intro.actions.NewDiffProjectAction { *; }</option>
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.intro.actions.NewProjWizardAction { *; }</option>
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.localizations.Messages { *; }</option>
                                 

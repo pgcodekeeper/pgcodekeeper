@@ -606,6 +606,16 @@
                 </instanceof>
             </enablement>
         </actionProvider>
+        <commonWizard
+            type="new"
+            wizardId="ru.taximaxim.codekeeper.ui.newprojwizard">
+            <enablement>
+                <with variable="activeWorkbenchWindow.activePerspective">
+                    <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                    </equals>
+                </with>
+            </enablement>
+        </commonWizard>
     </extension>
     <extension point="org.eclipse.ui.decorators">
         <decorator
@@ -659,4 +669,10 @@
             markerType="ru.taximaxim.codekeeper.ui.sql.errormarker">
         </updater>
     </extension>
+    <extension point="org.eclipse.ui.intro.configExtension">
+		<configExtension 
+			configId="org.eclipse.ui.intro.universalConfig" 
+			content="$nl$/intro/pgcodekeeper_intro.xml">
+		</configExtension>
+	</extension>
 </plugin>

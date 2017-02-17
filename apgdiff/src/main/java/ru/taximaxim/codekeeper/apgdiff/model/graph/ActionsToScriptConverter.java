@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -19,12 +20,15 @@ public class ActionsToScriptConverter {
 
     private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
     private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
+    private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1}";
 
     private final Set<ActionContainer> actions;
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
+    private final PgDiffArguments arguments;
 
-    public ActionsToScriptConverter(Set<ActionContainer> actions) {
+    public ActionsToScriptConverter(Set<ActionContainer> actions, PgDiffArguments arguments) {
         this.actions = actions;
+        this.arguments = arguments;
     }
 
     /**
@@ -34,58 +38,68 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
+        Set<DbObjType> ignoredTypes= arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
-            processSequence(action);
-
-            PgStatement oldObj = action.getOldObj();
-            String depcy = null;
-            PgStatement objStarter = action.getStarter();
-            if (objStarter != null && objStarter != oldObj
-                    && objStarter != action.getNewObj()) {
-                String objName = "";
-                if (objStarter.getStatementType() == DbObjType.COLUMN) {
-                    objName = ((PgColumn) objStarter).getParent().getName()
-                            + '.';
-                }
-                objName += objStarter.getName();
-                depcy = MessageFormat.format(
-                        action.getAction() == StatementActions.CREATE ?
-                                CREATE_COMMENT : DROP_COMMENT,
-                                oldObj.getStatementType(),
-                                objStarter.getStatementType(), objName);
+            DbObjType type = action.getOldObj().getStatementType();
+            if(type == DbObjType.COLUMN){
+                type = DbObjType.TABLE;
             }
-            switch (action.getAction()) {
-            case CREATE:
-                currentSearchPath = setSearchPath(currentSearchPath, oldObj,
-                        script);
-                if (depcy != null) {
-                    script.addStatement(depcy);
+            if (ignoredTypes.isEmpty() || ignoredTypes.contains(type)){
+                processSequence(action);
+                PgStatement oldObj = action.getOldObj();
+                String depcy = null;
+                PgStatement objStarter = action.getStarter();
+                if (objStarter != null && objStarter != oldObj
+                        && objStarter != action.getNewObj()) {
+                    String objName = "";
+                    if (objStarter.getStatementType() == DbObjType.COLUMN) {
+                        objName = ((PgColumn) objStarter).getParent().getName()
+                                + '.';
+                    }
+                    objName += objStarter.getName();
+                    depcy = MessageFormat.format(
+                            action.getAction() == StatementActions.CREATE ?
+                                    CREATE_COMMENT : DROP_COMMENT,
+                                    oldObj.getStatementType(),
+                                    objStarter.getStatementType(), objName);
                 }
-                script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
-                break;
-            case DROP:
-                currentSearchPath = setSearchPath(currentSearchPath, oldObj,
-                        script);
-                if (depcy != null) {
-                    script.addStatement(depcy);
-                }
-                script.addDrop(oldObj, null, oldObj.getDropSQL());
-                break;
-            case ALTER:
-                StringBuilder sb = new StringBuilder();
-                oldObj.appendAlterSQL(action.getNewObj(), sb,
-                        new AtomicBoolean());
-                if (sb.length() > 0) {
-                    currentSearchPath = setSearchPath(currentSearchPath,
-                            oldObj, script);
+                switch (action.getAction()) {
+                case CREATE:
+                    currentSearchPath = setSearchPath(currentSearchPath, oldObj,
+                            script);
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-                    script.addStatement(sb.toString());
+                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
+                    break;
+                case DROP:
+                    currentSearchPath = setSearchPath(currentSearchPath, oldObj,
+                            script);
+                    if (depcy != null) {
+                        script.addStatement(depcy);
+                    }
+                    script.addDrop(oldObj, null, oldObj.getDropSQL());
+                    break;
+                case ALTER:
+                    StringBuilder sb = new StringBuilder();
+                    oldObj.appendAlterSQL(action.getNewObj(), sb,
+                            new AtomicBoolean());
+                    if (sb.length() > 0) {
+                        currentSearchPath = setSearchPath(currentSearchPath,
+                                oldObj, script);
+                        if (depcy != null) {
+                            script.addStatement(depcy);
+                        }
+                        script.addStatement(sb.toString());
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException("Not implemented action");
                 }
-                break;
-            default:
-                throw new IllegalStateException("Not implemented action");
+            }else{
+                script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
+                        action.getOldObj().getQualifiedName(),
+                        action.getOldObj().getStatementType()));
             }
         }
 

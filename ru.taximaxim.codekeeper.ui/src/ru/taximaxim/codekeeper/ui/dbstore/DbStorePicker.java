@@ -55,9 +55,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStorePicker extends Composite {
 
-    private final static LoadFileElement LOAD_FILE = new LoadFileElement(false);
-    private final static LoadFileElement LOAD_DIR = new LoadFileElement(true);
-    private final static int MAX_FILES_HISTORY = 10;
+    private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
+    private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
+    private static final int MAX_FILES_HISTORY = 10;
 
     private static boolean inSync;
     private final Set<DbStorePicker> syncedPickers = Collections.newSetFromMap(
@@ -137,6 +137,10 @@ public class DbStorePicker extends Composite {
 
     private void loadStore() {
         loadStore(null);
+    }
+
+    public void setComboEnabled(boolean enabled) {
+        cmbDbNames.getControl().setEnabled(enabled);
     }
 
     private void loadStore(ISelection newSelection) {

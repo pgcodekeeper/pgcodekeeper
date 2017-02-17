@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
-import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.IMPORT_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -128,12 +127,12 @@ public class PgImport extends WizardPage {
             if(Files.exists(Paths.get(path.getText()).getParent().resolve(".metadata"))){ //$NON-NLS-1$
                 name.setText(Paths.get(path.getText()).getFileName().toString());
             }
-            IProject project = PgDbProject.getProjFromFile(name.getText(), path.getText()).getProject();
+            IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name.getText());
+            PgDbProject.createPgDbProject(project, Paths.get(path.getText()).toUri());
             project.getProject().open(null);
-            PgDbProject.addNatureToProject(project);
             addToWorkingSet(project);
         }
-        catch (CoreException | PgCodekeeperUIException e) {
+        catch (CoreException e) {
             return false;
         }
         return true;

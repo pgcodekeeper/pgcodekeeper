@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -375,12 +374,12 @@ public class PgSchema extends PgStatement {
 
             eq = super.equals(obj)
 
-                    && new HashSet<>(domains).equals(new HashSet<>(schema.domains))
-                    && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
-                    && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
-                    && new HashSet<>(views).equals(new HashSet<>(schema.views))
-                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables))
-                    && new HashSet<>(types).equals(new HashSet<>(schema.types));
+                    && PgDiffUtils.setlikeEquals(domains, schema.domains)
+                    && PgDiffUtils.setlikeEquals(sequences, schema.sequences)
+                    && PgDiffUtils.setlikeEquals(functions, schema.functions)
+                    && PgDiffUtils.setlikeEquals(views, schema.views)
+                    && PgDiffUtils.setlikeEquals(tables, schema.tables)
+                    && PgDiffUtils.setlikeEquals(types, schema.types);
         }
 
         return eq;
@@ -399,13 +398,13 @@ public class PgSchema extends PgStatement {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + new HashSet<>(domains).hashCode();
-        result = prime * result + new HashSet<>(functions).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(domains);
+        result = prime * result + PgDiffUtils.setlikeHashcode(functions);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + new HashSet<>(sequences).hashCode();
-        result = prime * result + new HashSet<>(tables).hashCode();
-        result = prime * result + new HashSet<>(views).hashCode();
-        result = prime * result + new HashSet<>(types).hashCode();
+        result = prime * result + PgDiffUtils.setlikeHashcode(sequences);
+        result = prime * result + PgDiffUtils.setlikeHashcode(tables);
+        result = prime * result + PgDiffUtils.setlikeHashcode(views);
+        result = prime * result + PgDiffUtils.setlikeHashcode(types);
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }

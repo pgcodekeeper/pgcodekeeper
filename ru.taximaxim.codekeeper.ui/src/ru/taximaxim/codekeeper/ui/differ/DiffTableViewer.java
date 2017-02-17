@@ -103,6 +103,8 @@ public class DiffTableViewer extends Composite {
     private List<TreeElement> elements = new ArrayList<>();
     private final CheckStateListener checkListener = new CheckStateListener();
     private final TableViewerComparator comparator = new TableViewerComparator();
+    private IStructuredSelection newSelection;
+    private IStructuredSelection oldSelection;
 
     private final LocalResourceManager lrm;
     private Text txtFilterName;
@@ -150,7 +152,7 @@ public class DiffTableViewer extends Composite {
         // upper composite
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        gl = new GridLayout(viewOnly ? 3 : 12, false);
+        gl = new GridLayout(viewOnly ? 4 : 13, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
@@ -191,6 +193,7 @@ public class DiffTableViewer extends Composite {
                 public void widgetSelected(SelectionEvent e) {
                     checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), false);
                     viewerRefresh();
+
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
@@ -212,11 +215,49 @@ public class DiffTableViewer extends Composite {
                     viewerRefresh();
                 }
             });
+        }
 
-            new Label(upperComp, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
+        //accessible filter for viewOnly
+        txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        gd.widthHint = pc.convertWidthInCharsToPixels(30);
+        txtFilterName.setLayoutData(gd);
+        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
+        txtFilterName.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                viewerFilter.setFilter(txtFilterName.getText());
+                viewerRefresh();
+            }
+        });
+
+        useRegEx = new Button(upperComp, SWT.CHECK);
+        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
+        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        useRegEx.setLayoutData(new GridData(SWT.DEFAULT, SWT.CENTER, false, false));
+        useRegEx.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                viewerFilter.setUseRegEx(useRegEx.getSelection());
+                viewerRefresh();
+            }
+        });
+
+        new Label(upperComp, SWT.NONE).setText(" | "); //$NON-NLS-1$
+        if (!viewOnly) {
+            lblCheckedCount = new Label(upperComp, SWT.NONE);
+        }
+        lblObjectCount = new Label(upperComp, SWT.NONE);
+
+        if (!viewOnly) {
+            Label l = new Label(upperComp, SWT.NONE);
+            l.setText(Messages.diffTableViewer_stored_selections);
+            l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
             cmbPrevChecked = new ComboViewer(upperComp, SWT.DROP_DOWN);
-            GridData gd = new GridData();
+            gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
             gd.widthHint = pc.convertWidthInCharsToPixels(30);
             cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.getCombo().setToolTipText(
@@ -264,38 +305,10 @@ public class DiffTableViewer extends Composite {
                     saveCheckedElements2ClipboardAsExpession();
                 }
             });
-
-            lblCheckedCount = new Label(upperComp, SWT.NONE);
+            //set labels visible, when program is start
+            updateCheckedLabel();
         }
-
-        lblObjectCount = new Label(upperComp, SWT.NONE);
-
-        txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        GridData gd = new GridData(SWT.END, SWT.CENTER, true, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(60);
-        txtFilterName.setLayoutData(gd);
-        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
-        txtFilterName.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                viewerFilter.setFilter(txtFilterName.getText());
-                viewerRefresh();
-            }
-        });
-
-        useRegEx = new Button(upperComp, SWT.CHECK);
-        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
-        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        useRegEx.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-        useRegEx.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                viewerFilter.setUseRegEx(useRegEx.getSelection());
-                viewerRefresh();
-            }
-        });
+        updateObjectsLabel();
         // end upper composite
 
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
@@ -313,6 +326,15 @@ public class DiffTableViewer extends Composite {
                         (IStructuredSelection) super.getSelection());
             }
         };
+
+        //КОСТЫЛЬ, дополнительные переменные
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(final SelectionChangedEvent event) {
+                oldSelection = newSelection;
+                newSelection = (IStructuredSelection)event.getSelection();
+            }
+        });
 
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);
@@ -813,7 +835,13 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            ((TreeElement)event.getElement()).setSelected(event.getChecked());
+            if(oldSelection != null && oldSelection.toList().contains(event.getElement())){
+                setElementsChecked(oldSelection.toList(), event.getChecked());
+                viewer.setSelection(oldSelection);
+            } else {
+                ((TreeElement)event.getElement()).setSelected(event.getChecked());
+            }
+            viewerRefresh();
             updateCheckedLabel();
         }
 

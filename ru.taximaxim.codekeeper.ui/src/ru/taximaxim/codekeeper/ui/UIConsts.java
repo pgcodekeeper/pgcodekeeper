@@ -13,6 +13,10 @@ public interface UIConsts {
         String HELP = THIS + ".help"; //$NON-NLS-1$
     }
 
+    interface PERSPECTIVE {
+        String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -71,6 +75,7 @@ public interface UIConsts {
         String RESTART_WITH_STATEMENT = "prefRestartWithStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
+        String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
     }
 
     interface IMPORT_PREF {
@@ -84,6 +89,7 @@ public interface UIConsts {
         String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
         String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
+        String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
     }
 
     public enum DBSources {

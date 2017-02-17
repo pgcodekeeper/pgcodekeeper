@@ -10,7 +10,9 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.osgi.framework.BundleContext;
@@ -21,6 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgDiffArguments {
     // SONAR-OFF
@@ -49,6 +52,8 @@ public class PgDiffArguments {
     private boolean outputIgnoredStatements;
     private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
+    private boolean usingOnOff = true;
+    private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
      * TODO придумать проверить из командной строки параметр
@@ -303,6 +308,18 @@ public class PgDiffArguments {
                     writer.println(Messages.PgDiffArguments_unsupported_db_format);
                     success = false;
                 }
+            } else if ("--allowed-objects".equals(args[i])) { //$NON-NLS-1$
+                String[] types = args[++i].split(","); //$NON-NLS-1$
+                for (String type : types) {
+                    try {
+                        allowedTypes.add(DbObjType.valueOf(type));
+                    } catch (IllegalArgumentException ex) {
+                        // illegal ignore type
+                        writer.println(Messages.PgDiffArguments_bad_allowed_objects);
+                        success = false;
+                        break;
+                    }
+                }
             } else if ("--add-transaction".equals(args[i])) { //$NON-NLS-1$
                 setAddTransaction(true);
             } else if ("--no-check-function-bodies".equals(args[i])) { //$NON-NLS-1$
@@ -326,9 +343,11 @@ public class PgDiffArguments {
                 setForceUnixNewlines(false);
             } else if ("--output-ignored-statements".equals(args[i])) { //$NON-NLS-1$
                 setOutputIgnoredStatements(true);
+            } else if ("--using-off".equals(args[i])) { //$NON-NLS-1$
+                setUsingOnOff(false);
             } else if("--license".equals(args[i])) { //$NON-NLS-1$
                 setLicensePath(args[++i]);
-            } else if ("--ignore-list".equals(args[i])) {
+            } else if ("--ignore-list".equals(args[i])) { //$NON-NLS-1$
                 ignoreLists.add(args[++i]);
             } else if ("--version".equals(args[i])) { //$NON-NLS-1$
                 setVersion(true);
@@ -462,5 +481,17 @@ public class PgDiffArguments {
 
     public boolean isForceUnixNewlines() {
         return forceUnixNewlines;
+    }
+
+    public Set<DbObjType> getAllowedTypes() {
+        return Collections.unmodifiableSet(allowedTypes);
+    }
+
+    public boolean isUsingOnOff() {
+        return usingOnOff;
+    }
+
+    public void setUsingOnOff(boolean usingOnOff) {
+        this.usingOnOff = usingOnOff;
     }
 }

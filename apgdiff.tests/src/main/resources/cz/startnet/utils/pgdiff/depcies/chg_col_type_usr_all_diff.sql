@@ -8,7 +8,7 @@ ALTER DOMAIN dom2 OWNER TO botov_av;
 DROP VIEW v1;
 
 ALTER TABLE t1
-	ALTER COLUMN c1 TYPE dom2; /* TYPE change - table: t1 original: integer new: dom2 */
+	ALTER COLUMN c1 TYPE dom2 USING c1::dom2; /* TYPE change - table: t1 original: integer new: dom2 */
 
 CREATE VIEW v1 AS
 	SELECT t1.c1

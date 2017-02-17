@@ -3,10 +3,10 @@
 DROP VIEW v1;
 
 ALTER TABLE t1
-	ALTER COLUMN c1 TYPE text; /* TYPE change - table: t1 original: integer new: text */
+	ALTER COLUMN c1 TYPE text USING c1::text; /* TYPE change - table: t1 original: integer new: text */
 
 ALTER TABLE t2
-	ALTER COLUMN c2 TYPE text; /* TYPE change - table: t2 original: integer new: text */
+	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: t2 original: integer new: text */
 
 CREATE VIEW v1 AS
 	SELECT t1.c1,
