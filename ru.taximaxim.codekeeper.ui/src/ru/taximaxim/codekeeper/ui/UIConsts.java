@@ -78,12 +78,6 @@ public interface UIConsts {
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
     }
 
-    interface IMPORT_PREF {
-        String RESOURCE_WORKING_SET = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
-        String JAVA_WORKING_SET = "org.eclipse.jdt.ui.JavaWorkingSetPage"; //$NON-NLS-1$
-        String PLUGIN_ID = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
-    }
-
     interface PG_EDIT_PREF {
         String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
@@ -170,6 +164,10 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+    }
+
+    interface WORKING_SET {
+        String RESOURCE_WORKING_SET = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
     }
 
     interface XML_TAGS{

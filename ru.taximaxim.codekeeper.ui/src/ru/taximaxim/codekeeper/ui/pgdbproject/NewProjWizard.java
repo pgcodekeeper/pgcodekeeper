@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -219,8 +220,6 @@ implements IExecutableExtension, INewWizard {
 
 class PageRepo extends WizardNewProjectCreationPage {
 
-    private static final String WORKING_SET_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
-
     private final IStructuredSelection selection;
 
     PageRepo(String pageName, IStructuredSelection selection) {
@@ -235,7 +234,7 @@ class PageRepo extends WizardNewProjectCreationPage {
     public void createControl(final Composite parent) {
         super.createControl(parent);
         createWorkingSetGroup((Composite) getControl(), selection,
-                new String[] { WORKING_SET_ID });
+                new String[] { WORKING_SET.RESOURCE_WORKING_SET });
     }
 }
 

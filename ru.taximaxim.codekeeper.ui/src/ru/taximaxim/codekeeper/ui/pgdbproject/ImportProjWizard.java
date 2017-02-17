@@ -8,10 +8,11 @@ import org.eclipse.ui.IWorkbench;
 public class ImportProjWizard extends Wizard implements IImportWizard {
 
     private PgImport pageOne;
+    private IStructuredSelection selection;
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        //nothing to initialize
+        this.selection = selection;
     }
 
     @Override
@@ -21,7 +22,7 @@ public class ImportProjWizard extends Wizard implements IImportWizard {
 
     @Override
     public void addPages() {
-        pageOne = new PgImport("import page");
+        pageOne = new PgImport("import page", selection); //$NON-NLS-1$
         addPage(pageOne);
     }
 }

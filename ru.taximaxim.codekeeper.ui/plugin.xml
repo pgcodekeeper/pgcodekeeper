@@ -290,14 +290,14 @@
     <extension point="org.eclipse.ui.importWizards">
        <category
              id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-             name="pgCodeKeeper">
+             name="%category.name.keeperImportWizard">
        </category>
        <wizard
              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
              class="ru.taximaxim.codekeeper.ui.pgdbproject.ImportProjWizard"
              icon="icons/app_icon16.png"
-             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-             name="%wizard.name.keeperNewWizard">
+             id="ru.taximaxim.codekeeper.ui.importprojwizard"
+             name="%wizard.name.keeperImportWizard">
        </wizard>
     </extension>
     <extension point="org.eclipse.ui.newWizards">
