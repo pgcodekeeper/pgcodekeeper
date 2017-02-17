@@ -5,7 +5,6 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
@@ -37,11 +36,11 @@ public class CreateTrigger extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()));
         trigger.setTableName(ctx.tabl_name.getText());
-        if(ctx.getToken(SQLParser.AFTER, 0) != null){
+        if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
-        } else if (ctx.getToken(SQLParser.BEFORE, 0) != null){
+        } else if (ctx.BEFORE() != null) {
             trigger.setType(TgTypes.BEFORE);
-        } else {
+        } else if (ctx.INSTEAD() != null) {
             trigger.setType(TgTypes.INSTEAD_OF);
         }
         if (ctx.ROW() != null) {

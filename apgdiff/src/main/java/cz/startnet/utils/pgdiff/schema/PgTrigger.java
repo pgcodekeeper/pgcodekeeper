@@ -290,7 +290,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
-        result = prime * result + (getType() == null ? 0 : getType().hashCode());
+        result = prime * result + (tgType == null ? 0 : tgType.hashCode());
         result = prime * result + (forEachRow ? itrue : ifalse);
         result = prime * result + (function == null ? 0 : function.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
