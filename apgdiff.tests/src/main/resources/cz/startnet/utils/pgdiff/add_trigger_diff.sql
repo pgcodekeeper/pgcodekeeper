@@ -10,7 +10,7 @@ $$
 ALTER FUNCTION test_table_trigger() OWNER TO fordfrog;
 
 CREATE TRIGGER test_view_trigger1
-	AFTER INSERT OR UPDATE ON test_view
+	INSTEAD OF INSERT OR UPDATE ON test_view
 	FOR EACH ROW
 	EXECUTE PROCEDURE test_table_trigger();
 

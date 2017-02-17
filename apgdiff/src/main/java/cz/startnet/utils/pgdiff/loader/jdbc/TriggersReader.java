@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListe
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -79,9 +80,11 @@ public class TriggersReader extends JdbcReader {
             t.setForEachRow(true);
         }
         if ((firingConditions & TRIGGER_TYPE_BEFORE) != 0) {
-            t.setBefore(true);
+            t.setType(TgTypes.BEFORE);
+        } else if ((firingConditions & TRIGGER_TYPE_INSTEAD) != 0){
+            t.setType(TgTypes.INSTEAD_OF);
         } else {
-            t.setBefore(false);
+            t.setType(TgTypes.AFTER);
         }
 
         t.setTableName(tableName);

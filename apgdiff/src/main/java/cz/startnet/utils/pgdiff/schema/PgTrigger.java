@@ -21,13 +21,17 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class PgTrigger extends PgStatementWithSearchPath {
 
+    public enum TgTypes {
+        BEFORE, AFTER, INSTEAD_OF
+    }
+
     private String function;
     private String tableName;
     /**
-     * Whether the trigger should be fired BEFORE or AFTER action. Default is
+     * Whether the trigger should be fired BEFORE, AFTER or INSTEAD_OF action. Default is
      * before.
      */
-    private boolean before = true;
+    private TgTypes tgType = TgTypes.BEFORE;
     /**
      * Whether the trigger should be fired FOR EACH ROW or FOR EACH STATEMENT.
      * Default is FOR EACH STATEMENT.
@@ -52,13 +56,13 @@ public class PgTrigger extends PgStatementWithSearchPath {
         super(name, rawStatement);
     }
 
-    public void setBefore(final boolean before) {
-        this.before = before;
+    public void setType(final TgTypes tgType) {
+        this.tgType = tgType;
         resetHash();
     }
 
-    public boolean isBefore() {
-        return before;
+    public TgTypes getType() {
+        return tgType;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         sbSQL.append("CREATE TRIGGER ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append("\n\t");
-        sbSQL.append(isBefore() ? "BEFORE" : "AFTER");
+        sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
 
         boolean firstEvent = true;
 
@@ -267,7 +271,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     }
 
     private boolean compareWithoutComments(PgTrigger trigger) {
-        return (before == trigger.isBefore())
+        return  tgType == trigger.getType()
                 && (forEachRow == trigger.isForEachRow())
                 && Objects.equals(function, trigger.getFunction())
                 && Objects.equals(name, trigger.getName())
@@ -286,7 +290,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
-        result = prime * result + (before ? itrue : ifalse);
+        result = prime * result + (tgType == null ? 0 : tgType.hashCode());
         result = prime * result + (forEachRow ? itrue : ifalse);
         result = prime * result + (function == null ? 0 : function.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -305,7 +309,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst =
                 new PgTrigger(getName(), getRawStatement());
-        triggerDst.setBefore(isBefore());
+        triggerDst.setType(getType());
         triggerDst.setForEachRow(isForEachRow());
         triggerDst.setFunction(getFunction());
         triggerDst.setOnDelete(isOnDelete());

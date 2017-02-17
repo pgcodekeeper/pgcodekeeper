@@ -35,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -972,7 +973,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         view.setOwner("fordfrog");
 
         PgTrigger trigger = new PgTrigger("test_trigger", "");
-        trigger.setBefore(true);
+        trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
         trigger.setTableName("test");
         trigger.setForEachRow(false);
