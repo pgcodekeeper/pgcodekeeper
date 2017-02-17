@@ -86,6 +86,23 @@ public class ViewsReader extends JdbcReader {
         // Query view privileges
         loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
 
+        // STORAGE PARAMETRS
+        StringBuilder storageParameters = new StringBuilder();
+        Array arr = res.getArray("reloptions");
+        if (arr != null) {
+            fillStorageParams(storageParameters, arr);
+        }
+
+        if (storageParameters.length() > 0) {
+            // убираем лишние запятую-пробел
+            storageParameters.setLength(storageParameters.length() - 2);
+            if (storageParameters.toString().contains("local")) {
+                v.setWithOptionIsLocal(true);
+            } else if (storageParameters.toString().contains("cascaded")) {
+                v.setWithOptionIsLocal(false);
+            }
+        }
+
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
@@ -98,5 +115,26 @@ public class ViewsReader extends JdbcReader {
     private void parseAntlrSelect(String schemaName, String statement, PgView v) {
         SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, statement + ';', loader.getCurrentLocation());
         UtilExpr.analyze(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
+    }
+
+    private void fillStorageParams(StringBuilder storageParameters,
+            Array arr) throws SQLException {
+        String[] options = (String[]) arr.getArray();
+        for (String pair : options) {
+            int sep = pair.indexOf('=');
+            String option, value;
+            if (sep == -1) {
+                option = pair;
+                value = "";
+            } else {
+                option = pair.substring(0, sep);
+                value = pair.substring(sep + 1);
+            }
+            if (!value.equals(PgDiffUtils.getQuotedName(value))) {
+                // only quote non-ids; pg_dump behavior
+                value = PgDiffUtils.quoteString(value);
+            }
+            storageParameters.append(option).append('=').append(value).append(", ");
+        }
     }
 }

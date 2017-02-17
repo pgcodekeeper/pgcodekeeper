@@ -25,6 +25,7 @@ implements PgRuleContainer, PgTriggerContainer {
 
     private String query;
     private String normalizedQuery;
+    private Boolean withOptionIsLocal = null;
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
@@ -140,6 +141,9 @@ implements PgRuleContainer, PgTriggerContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
+        if (withOptionIsLocal != null){
+            sbSQL.append("\nWITH ").append( withOptionIsLocal ? "LOCAL" : "CASCADED").append(" CHECK OPTION");
+        }
         sbSQL.append(';');
 
         appendOwnerSQL(sbSQL);
@@ -266,6 +270,21 @@ implements PgRuleContainer, PgTriggerContainer {
                                 .getColumnName()) + " IS NULL;");
             }
         }
+
+        if (oldView.withOptionIsLocal != null || newView.withOptionIsLocal != null){
+            if (newView.getWithOptionIsLocal() == null) {
+                sb.append("\n\nALTER VIEW ")
+                .append(getName())
+                .append(" RESET (check_option);");
+            } else {
+                sb.append("\n\nALTER VIEW ")
+                .append(getName())
+                .append(" SET check_option=")
+                .append(newView.getWithOptionIsLocal() == true ? "LOCAL" : "CASCADED")
+                .append(";");
+            }
+        }
+
         return sb.length() > startLength;
     }
 
@@ -360,7 +379,8 @@ implements PgRuleContainer, PgTriggerContainer {
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
-                    && Objects.equals(columnComments, view.getColumnComments());
+                    && Objects.equals(columnComments, view.getColumnComments())
+                    && Objects.equals(withOptionIsLocal, view.getWithOptionIsLocal());
         }
 
         return eq;
@@ -404,6 +424,7 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
+        result = prime * result + ((withOptionIsLocal == null) ? 0 : withOptionIsLocal.hashCode());
         return result;
     }
 
@@ -423,6 +444,7 @@ implements PgRuleContainer, PgTriggerContainer {
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
+        viewDst.setWithOptionIsLocal(getWithOptionIsLocal());
         return viewDst;
     }
 
@@ -627,5 +649,13 @@ implements PgRuleContainer, PgTriggerContainer {
                     + newValue.getDefaultValue()
                     + ';');
         }
+    }
+
+    public Boolean getWithOptionIsLocal() {
+        return withOptionIsLocal;
+    }
+
+    public void setWithOptionIsLocal(Boolean withOptionIsLocal) {
+        this.withOptionIsLocal = withOptionIsLocal;
     }
 }

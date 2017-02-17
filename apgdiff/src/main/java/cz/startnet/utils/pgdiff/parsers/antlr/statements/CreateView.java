@@ -36,6 +36,14 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(ParserAbstract.getFullCtxText(column));
             }
         }
+
+        if (ctx.with_check_option() != null){
+            if (ctx.with_check_option().CASCADED() != null){
+                view.setWithOptionIsLocal(false);
+            } else {
+                view.setWithOptionIsLocal(true);
+            }
+        }
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "VIEW", name);
             return null;

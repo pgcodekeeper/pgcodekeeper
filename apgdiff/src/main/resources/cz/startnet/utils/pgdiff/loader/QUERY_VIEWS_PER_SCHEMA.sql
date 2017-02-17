@@ -13,7 +13,8 @@ SELECT c.relname,
        subselect.column_names,
        subselect.column_comments,
        subselect.column_defaults,
-       subselect.column_acl
+       subselect.column_acl,
+       reloptions
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
