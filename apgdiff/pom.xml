@@ -14,7 +14,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff</artifactId>
-    <version>4.2.5-SNAPSHOT</version>
+    <version>4.2.6-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <properties>

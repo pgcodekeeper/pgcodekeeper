@@ -11,7 +11,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-    <version>1.7.12-SNAPSHOT</version>
+    <version>1.7.13-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <profiles>
@@ -74,6 +74,7 @@
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.natures.ProjectNature { *; }</option>
                                 
+                                <option>-keep public class ru.taximaxim.codekeeper.ui.pgdbproject.ImportProjWizard { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard { *; }</option>
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.CommitPrefPage { *; }</option>
