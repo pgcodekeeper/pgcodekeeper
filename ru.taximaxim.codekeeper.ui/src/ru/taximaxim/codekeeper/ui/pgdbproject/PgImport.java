@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IProject;
@@ -26,11 +27,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class PgImport extends WizardPage {
+
+    private static final String FILE_METADATA = ".metadata"; //$NON-NLS-1$
+    private static final String FILE_PROJECT = ".project"; //$NON-NLS-1$
 
     private final IStructuredSelection selection;
     private Text txtPath, txtName;
@@ -58,6 +63,12 @@ class PgImport extends WizardPage {
 
             @Override
             public void modifyText(ModifyEvent e) {
+                //set project name if not given, or if project is in root of workspace
+                Path pathDir = Paths.get(txtPath.getText());
+                if (txtName.getText().isEmpty() || isInWorkspaceRoot(pathDir)) {
+                    txtName.setText(pathDir.getFileName().toString());
+                }
+
                 getWizard().getContainer().updateButtons();
             }
         });
@@ -102,29 +113,23 @@ class PgImport extends WizardPage {
         String selectedDirectory = dialog.open();
         if (selectedDirectory != null) {
             txtPath.setText(selectedDirectory);
-            //change project name if in root of workspace
-            if (Paths.get(txtPath.getText()).getParent() != null
-                    && Files.exists(Paths.get(txtPath.getText()).getParent().resolve(".metadata"))){ //$NON-NLS-1$
-                txtName.setText(Paths.get(txtPath.getText()).getFileName().toString());
-            }
         }
     }
 
     public boolean createProject () {
-        IProject project;
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(txtName.getText());
         try {
-            project = ResourcesPlugin.getWorkspace().getRoot().getProject(txtName.getText());
-            addToWorkingSet(project);
             PgDbProject.createPgDbProject(project, Paths.get(txtPath.getText()).toUri());
-
+            addToWorkingSet(project);
         } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault("Невозможно импортировать проект", e);
+            ExceptionNotifier.notifyDefault(Messages.PgImport_import_error, e);
             return false;
         }
         try {
-            project.getProject().open(null);
+            project.open(null);
         } catch (CoreException e) {
-            //nothing to do if cannot open the project
+            // created project but couldn't open, proceed on
+            Log.log(e);
         }
         return true;
     }
@@ -139,35 +144,37 @@ class PgImport extends WizardPage {
 
     @Override
     public boolean isPageComplete(){
-        //clear old errors
-        setMessage(null);
-        //empty path or project name
-        if (txtPath.getText().length() == 0 || txtName.getText().length() == 0){
+        //empty path: show default message
+        if (txtPath.getText().isEmpty()) {
+            setErrorMessage(null);
             return false;
         }
-        //if don't have .pgCodekeeper
-        if (Files.notExists(Paths.get(txtPath.getText()).resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))){
-            setMessage(Messages.PgImportWizardImportPage_no_project, ERROR);
-            return false;
+
+        String err = null;
+        String name = txtName.getText();
+        if (name.isEmpty()) {
+            err = Messages.PgImport_error_no_name;
         }
-        //if have .project
-        if (Files.exists(Paths.get(txtPath.getText()).resolve(".project"))){ //$NON-NLS-1$
-            setMessage(Messages.PgImportWizardImportPage_already_exist, ERROR);
-            return false;
+        Path path = Paths.get(txtPath.getText());
+        if (Files.exists(path.resolve(FILE_PROJECT))) {
+            //if has .project
+            err = Messages.PgImportWizardImportPage_already_exist;
+        } else if (Files.exists(path.resolve(FILE_METADATA))) {
+            //if has .metadata
+            err = Messages.PgImport_error_metadata;
+        } else if (Files.notExists(path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+            //if don't have .pgCodekeeper
+            err = Messages.PgImportWizardImportPage_no_project;
+        } else if (isInWorkspaceRoot(path) && !path.getFileName().toString().equals(name)) {
+            //if project in root of workspace, it must have default name
+            err = Messages.PgImport_error_default_name;
         }
-        //if have .metadata
-        if (Files.exists(Paths.get(txtPath.getText()).resolve("/.metadata"))) { //$NON-NLS-1$
-            setMessage("Невозможно импортировать проект, содержащий папку .metadata ", ERROR);
-            return false;
-        }
-        //if project in root of workspace, it must have default name
-        if(Paths.get(txtPath.getText()).getParent()!=null
-                && Files.exists(Paths.get(txtPath.getText()).getParent().resolve(".metadata")) //$NON-NLS-1$
-                && !Paths.get(txtPath.getText()).getFileName().toString().equals(txtName.getText())
-                ){
-            setMessage("Невозможно изменить имя проекта, находящегося в корне рабочей области", ERROR);
-            return false;
-        }
-        return true;
+        setErrorMessage(err);
+        return err == null;
+    }
+
+    private boolean isInWorkspaceRoot(Path path) {
+        Path parent = path.getParent();
+        return parent != null && Files.exists(parent.resolve(FILE_METADATA));
     }
 }
