@@ -364,6 +364,30 @@ public final class Messages extends NLS {
 
     public static String PgDbParser_error_loading_db;
 
+    public static String PgImport_error_default_name;
+
+    public static String PgImport_error_metadata;
+
+    public static String PgImport_error_no_name;
+
+    public static String PgImport_import_error;
+
+    public static String PgImportWizardImportPage_already_exist;
+
+    public static String PgImportWizardImportPage_browse;
+
+    public static String PgImportWizardImportPage_name;
+
+    public static String PgImportWizardImportPage_no_project;
+
+    public static String PgImportWizardImportPage_project;
+
+    public static String PgImportWizardImportPage_select_project;
+
+    public static String PgImportWizardImportPage_select_root_directory;
+
+    public static String PgImportWizardImportPage_select_root_for_import;
+
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
