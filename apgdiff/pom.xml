@@ -135,7 +135,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.5</version>
+                <version>4.6</version>
                 <configuration>
                     <visitor>true</visitor>
                     <sourceDirectory>${project.basedir}/antlr-src</sourceDirectory>
