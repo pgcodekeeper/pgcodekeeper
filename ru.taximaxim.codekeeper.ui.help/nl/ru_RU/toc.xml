@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Руководство pgCodeKepeer" topic="html/toc.html">
+	<topic href="$nl$/html/toc.html" label="Введение">	
+	</topic>
+   <topic label="Начало работы">
+      <anchor id="gettingstarted"/>
+   </topic>
+   <topic label="Задачи">
+      <topic href="$nl$/html/tasks/new_wizard.html" label="Создание нового проекта">
+      </topic>
+      <topic href="$nl$/html/tasks/update_pgcodekeeper_project.html" label="Обновление проекта">
+      </topic>
+      <topic href="$nl$/html/tasks/update_remote_db.html" label="Обновление БД">
+      </topic>
+      <topic href="$nl$/html/tasks/list_obj.html" label="Наборы объектов">
+      </topic>
+      <topic href="$nl$/html/tasks/search_obj.html" label="Поиск объекта">
+      </topic>
+      <topic href="$nl$/html/tasks/edit_pgcodekeeper_project.html" label="Редактирование проекта">
+      </topic>
+      <topic href="$nl$/html/tasks/feedback.html" label="Обратная связь">
+      </topic>
+      <topic href="$nl$/html/tasks/sorting.html" label="Сортировка списка изменений">
+      </topic>
+      <topic href="$nl$/html/tasks/select_source_db.html" label="Выбор источника базы данных">
+      </topic>
+      <topic href="$nl$/html/tasks/diff_wizard.html" label="Сравнение схем БД">
+      </topic>
+   </topic>
+   <topic href="$nl$/html/preferences/licensing.html" label="Лицензирование">
+   </topic>
+   <topic href="$nl$/html/about.html" label="О программе">
+   </topic>
+   <topic href="$nl$/html/main/others.html" label="Дополнительные возможности">
+   </topic>
+</toc>

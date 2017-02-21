@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Редактор pgCodeKeeper</title>
+    <link type="text/css" rel="stylesheet" href="../book.css"/>
+</head>
+
+<body>
+<h2>Редактор проекта pgCodeKeeper</h2>
+<p>Редактор проекта &ndash; основной способ работы с pgCodeKeeper.<br>
+Две вкладки, расположенные у нижнего края редактора, позволяют переключаться между режимом
+внесения изменений в проект и режимом генерации скрипта наката изменений на БД.<br>
+Вкладки имеют схожий интерфейс, состоящий из четырех основных частей:</p>
+<ol>
+    <li>Панель задач</li>
+    <li>Панель инструментов</li>
+    <li>Таблица различий</li>
+    <li>Панель сравнения</li>
+</ol>
+<img alt="Редактор проекта" src="../images/pgcodekeeper_project_view.png" class='scale'>
+<p>
+	<b>Панель задач</b> содержит набор действий для сравнения и обновления баз данных:
+	<li>Получить изменения</li>
+    <li>Сгенерировать скрипт</li>
+    <li>Добавить зависимости</li>
+    <li>Применить выбранные изменения...</li>
+</p>
+
+<p>
+	<b>Панель инструментов</b> предназначена для работы со списком объектов. Они имеют следующее предназначение:
+	<ul>
+    <!--li><img border="0" src="../images/pgcodekeeper_project_view/alpha_mode.gif"> &ndash; сбросить сортировку</li-->
+    <li><img border="0" src="../images/pgcodekeeper_project_view/check_all.gif"> &ndash; выбрать все элементы</li>
+    <li><img border="0" src="../images/pgcodekeeper_project_view/uncheck_all.gif"> &ndash; снять выбор со всех элементов</li>
+    <li><img border="0" src="../images/pgcodekeeper_project_view/loop_obj.gif"> &ndash; инвертировать выбор элементов</li>
+    <li>Выпадающий список с сохраненными наборами объектов. Позволяет восстановить выбор объектов согласно сохраненному набору.</li>
+    <li><img border="0" src="../images/pgcodekeeper_project_view/save_edit.gif"> &ndash; сохранить набор выбранных элементов</li>
+    <li><img border="0" src="../images/pgcodekeeper_project_view/delete_obj.gif"> &ndash; удалить текущий сохраненный набор выбранных элементов</li>
+    <li><img border="0" src="../images/pgcodekeeper_project_view/copy_edit.png"> &ndash; копировать набор выбранных элементов в буфер обмена как регулярное выражение</li>
+	<li>Фильтр списка объектов по имени или регулярному выражению.</li>
+    </ul>
+</p>
+<p><b>Таблица различий</b> отображает список объектов, которые различаются в сравниваемых схемах БД. 
+Различие может быть одного из трех видов: удаление, создание или изменение объекта.
+В зависимости от типа различия, объекты в списке изменений помечаются как delete, new и edit соответственно.</p>
+<p><b>Панель сравнения</b> показывает изменения, произошедшие в SQL представлении объекта.</p>
+</body>
+</html>
