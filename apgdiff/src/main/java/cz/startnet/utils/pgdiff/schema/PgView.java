@@ -7,7 +7,9 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,12 +27,13 @@ implements PgRuleContainer, PgTriggerContainer {
 
     private String query;
     private String normalizedQuery;
-    private Boolean withOptionIsLocal = null;
+    private Map<String, String> options = new LinkedHashMap<>();
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
+
 
     @Override
     public DbObjType getStatementType() {
@@ -126,6 +129,17 @@ implements PgRuleContainer, PgTriggerContainer {
         sbSQL.append("CREATE VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        for (Map.Entry<String, String> entry : options.entrySet()){
+            if (!"check_option".equals(entry.getKey())){
+                sbSQL.append(" WITH (")
+                .append(entry.getKey());
+                if (!"".equals(entry.getValue())){
+                    sbSQL.append("=").append(entry.getValue());
+                }
+                sbSQL.append(")");
+            }
+        }
+
         if (columnNames != null && !columnNames.isEmpty()) {
             sbSQL.append(" (");
 
@@ -141,8 +155,8 @@ implements PgRuleContainer, PgTriggerContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
-        if (withOptionIsLocal != null){
-            sbSQL.append("\nWITH ").append( withOptionIsLocal ? "LOCAL" : "CASCADED").append(" CHECK OPTION");
+        if (options.get("check_option") != null){
+            sbSQL.append("\nWITH ").append( options.get("check_option")).append(" CHECK OPTION");
         }
         sbSQL.append(';');
 
@@ -270,22 +284,41 @@ implements PgRuleContainer, PgTriggerContainer {
                                 .getColumnName()) + " IS NULL;");
             }
         }
-
-        if (oldView.withOptionIsLocal != null || newView.withOptionIsLocal != null){
-            if (newView.getWithOptionIsLocal() == null) {
-                sb.append("\n\nALTER VIEW ")
-                .append(getName())
-                .append(" RESET (check_option);");
-            } else {
-                sb.append("\n\nALTER VIEW ")
-                .append(getName())
-                .append(" SET check_option=")
-                .append(newView.getWithOptionIsLocal() == true ? "LOCAL" : "CASCADED")
-                .append(";");
+        Map<String, String> oldOptions = oldView.getOptions();
+        Map<String, String> newOptions = newView.getOptions();
+        if (!oldOptions.isEmpty() || !newOptions.isEmpty()) {
+            for (Map.Entry<String, String> entry : oldOptions.entrySet()){
+                String key = entry.getKey();
+                if (newOptions.containsKey(key)){
+                    compareValue(entry.getValue(), newOptions.get(key).toString(), sb, key);
+                } else {
+                    sb.append("\n\nALTER VIEW ")
+                    .append(getName())
+                    .append(" RESET (")
+                    .append(key)
+                    .append(");");
+                }
+            }
+            for (Map.Entry<String, String> entry : newOptions.entrySet()){
+                String key = entry.getKey();
+                if (!oldOptions.containsKey(key)){
+                    compareValue("", newOptions.get(key).toString(), sb, key);
+                }
             }
         }
-
         return sb.length() > startLength;
+    }
+
+    private void compareValue(String oldValue, String newValue, StringBuilder sb, String key) {
+        if (!oldValue.equals(newValue)){
+            sb.append("\n\nALTER VIEW ")
+            .append(getName())
+            .append(" SET ")
+            .append(key)
+            .append(" = ")
+            .append(newValue)
+            .append(";");
+        }
     }
 
     public void setQuery(final String query) {
@@ -380,7 +413,7 @@ implements PgRuleContainer, PgTriggerContainer {
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
                     && Objects.equals(columnComments, view.getColumnComments())
-                    && Objects.equals(withOptionIsLocal, view.getWithOptionIsLocal());
+                    && Objects.equals(options, view.getOptions());
         }
 
         return eq;
@@ -424,7 +457,7 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
-        result = prime * result + ((withOptionIsLocal == null) ? 0 : withOptionIsLocal.hashCode());
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
         return result;
     }
 
@@ -444,7 +477,7 @@ implements PgRuleContainer, PgTriggerContainer {
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
-        viewDst.setWithOptionIsLocal(getWithOptionIsLocal());
+        viewDst.setOptions(getOptions());
         return viewDst;
     }
 
@@ -651,11 +684,37 @@ implements PgRuleContainer, PgTriggerContainer {
         }
     }
 
-    public Boolean getWithOptionIsLocal() {
-        return withOptionIsLocal;
+    public Map <String, String> getOptions() {
+        return options;
     }
 
-    public void setWithOptionIsLocal(Boolean withOptionIsLocal) {
-        this.withOptionIsLocal = withOptionIsLocal;
+    public void setOptions(Map<String, String> options){
+        this.options = options;
+    }
+
+    public void addOption(String option) {
+        int sep = option.indexOf('=');
+        String key, value;
+        if (sep == -1) {
+            key = option;
+            value = "";
+        } else {
+            key = option.substring(0, sep);
+            value = option.substring(sep + 1);
+        }
+        //        if (!value.equals(PgDiffUtils.getQuotedName(value))) {
+        //            // only quote non-ids; pg_dump behavior
+        //            value = PgDiffUtils.quoteString(value);
+        //        }
+        System.out.println(key +" / "+ value);
+        options.put(key, value);
+    }
+
+    public void addOption(String option, String value) {
+        //        if (!value.equals(PgDiffUtils.getQuotedName(value))) {
+        //            // only quote non-ids; pg_dump behavior
+        //            value = PgDiffUtils.quoteString(value);
+        //        }
+        options.put(option, value);
     }
 }

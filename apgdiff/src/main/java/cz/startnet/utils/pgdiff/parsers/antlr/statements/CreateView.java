@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -37,13 +38,20 @@ public class CreateView extends ParserAbstract {
             }
         }
 
-        if (ctx.with_check_option() != null){
-            if (ctx.with_check_option().CASCADED() != null){
-                view.setWithOptionIsLocal(false);
-            } else {
-                view.setWithOptionIsLocal(true);
+        if (ctx.create_view_options() != null){
+            for (Create_view_optionsContext option: ctx.create_view_options()){
+                view.addOption(getFullCtxText(option));
             }
         }
+
+        if (ctx.with_check_option() != null){
+            if (ctx.with_check_option().CASCADED() != null){
+                view.addOption("check_option","cascaded");
+            } else {
+                view.addOption("check_option","local");
+            }
+        }
+
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "VIEW", name);
             return null;
