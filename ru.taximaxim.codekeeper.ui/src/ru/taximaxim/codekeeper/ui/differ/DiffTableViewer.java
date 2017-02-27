@@ -61,7 +61,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
@@ -451,8 +450,7 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setResizable(true);
         columnCheck.getColumn().setMoveable(true);
 
-        columnCheck.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnCheck.getColumn(), Columns.CHECK));
+        columnCheck.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHECK));
 
         columnCheck.setLabelProvider(new ColumnLabelProvider() {
 
@@ -487,14 +485,10 @@ public class DiffTableViewer extends Composite {
         columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
-        columnName.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnName.getColumn(), Columns.NAME));
-        columnType.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnType.getColumn(), Columns.TYPE));
-        columnChange.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnChange.getColumn(), Columns.CHANGE));
-        columnLocation.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
+        columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
+        columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
+        columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
+        columnLocation.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.LOCATION));
 
         updateColumnsWidth();
 
@@ -506,7 +500,7 @@ public class DiffTableViewer extends Composite {
                 cell.setText(name);
 
                 Region loc = viewerFilter.getMatchingLocation(name, viewerFilter.filterName,
-                        (viewerFilter.useRegEx) ? viewerFilter.regExPattern : null);
+                        viewerFilter.useRegEx ? viewerFilter.regExPattern : null);
                 if (loc != null) {
                     StyleRange highlightMatch = new StyleRange(loc.getOffset(),
                             loc.getLength(), null,
@@ -544,8 +538,8 @@ public class DiffTableViewer extends Composite {
                 case BOTH: return iSideBoth;
                 case LEFT: return iSideLeft;
                 case RIGHT: return iSideRight;
+                default: return null;
                 }
-                return null;
             }
         });
 
@@ -581,9 +575,8 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().pack();
     }
 
-    private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,
-            final Columns index) {
-        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+    private SelectionAdapter getHeaderSelectionAdapter(final Columns index) {
+        return new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -591,14 +584,13 @@ public class DiffTableViewer extends Composite {
                     comparator.clearSortList();
                     setColumnHeaders();
                 }
-                sortViewer(column, index);
+                sortViewer(index);
                 updateSortIndexes();
             }
         };
-        return selectionAdapter;
     }
 
-    private void sortViewer(final TableColumn column, final Columns index) {
+    private void sortViewer(Columns index) {
         comparator.addSort(index);
         updateSortIndexes();
         viewer.refresh();
@@ -610,7 +602,7 @@ public class DiffTableViewer extends Composite {
         for (ru.taximaxim.codekeeper.ui.differ.DiffTableViewer.TableViewerComparator.SortingColumn col : comparator.sortOrder) {
             sb.setLength(0);
             sb.append(comparator.sortOrder.size() - i++)
-            .append(col.desc == false ? '\u25BF' : '\u25B5')
+            .append(!col.desc ? '\u25BF' : '\u25B5')
             .append('\t');
 
             switch (col.col) {
@@ -645,33 +637,31 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setCheckedFromPrevCheckedCombo() {
-        String comboText = cmbPrevChecked.getCombo().getText();
-        if (comboText != null && !comboText.isEmpty()) {
-            List<String> elementsToCheck = prevChecked.get(comboText);
-            if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
-                List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
-                for (String elementString : elementsToCheck){
-                    int comma = elementString.lastIndexOf(',');
-                    String elName;
-                    DbObjType elType;
-                    try {
-                        elName = elementString.substring(0, comma);
-                        elType = DbObjType.valueOf(elementString.substring(comma + 1));
-                    } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
-                        Log.log(Log.LOG_WARNING,
-                                "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
-                        continue;
-                    }
-                    for (TreeElement el : elements) {
-                        if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
-                            prevCheckedList.add(el);
-                        }
-                    }
+        List<String> elementsToCheck = prevChecked.get(cmbPrevChecked.getCombo().getText());
+        if (elementsToCheck == null || elementsToCheck.isEmpty()) {
+            return;
+        }
+        List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
+        for (String elementString : elementsToCheck){
+            int comma = elementString.lastIndexOf(',');
+            String elName;
+            DbObjType elType;
+            try {
+                elName = elementString.substring(0, comma);
+                elType = DbObjType.valueOf(elementString.substring(comma + 1));
+            } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
+                Log.log(Log.LOG_WARNING,
+                        "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
+                continue;
+            }
+            for (TreeElement el : elements) {
+                if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
+                    prevCheckedList.add(el);
                 }
-                checkListener.setElementsChecked(prevCheckedList, true);
-                viewerRefresh();
             }
         }
+        checkListener.setElementsChecked(prevCheckedList, true);
+        viewerRefresh();
     }
 
     private void saveCheckedElements2ClipboardAsExpession(){
@@ -783,10 +773,10 @@ public class DiffTableViewer extends Composite {
 
     private void initialSorting() {
         comparator.clearSortList();
-        sortViewer(columnName.getColumn(), Columns.NAME);
-        sortViewer(columnChange.getColumn(), Columns.CHANGE);
-        sortViewer(columnType.getColumn(), Columns.TYPE);
-        sortViewer(columnLocation.getColumn(), Columns.LOCATION);
+        sortViewer(Columns.NAME);
+        sortViewer(Columns.CHANGE);
+        sortViewer(Columns.TYPE);
+        sortViewer(Columns.LOCATION);
         viewer.refresh();
     }
 
@@ -986,20 +976,18 @@ public class DiffTableViewer extends Composite {
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
-            if (filter != null
-                    && !filter.isEmpty()
-                    && text != null) {
-                text = text.toLowerCase();
+            if (filter != null && !filter.isEmpty() && text != null) {
+                String textLc = text.toLowerCase();
                 int offset = -1;
                 int length = 0;
                 if (regExPattern != null) {
-                    Matcher matcher = regExPattern.matcher(text);
+                    Matcher matcher = regExPattern.matcher(textLc);
                     if (matcher.find()) {
                         offset = matcher.start();
                         length = matcher.end() - offset;
                     }
                 } else {
-                    offset = text.indexOf(filter);
+                    offset = textLc.indexOf(filter);
                     length = filter.length();
                 }
                 if (offset >= 0) {
