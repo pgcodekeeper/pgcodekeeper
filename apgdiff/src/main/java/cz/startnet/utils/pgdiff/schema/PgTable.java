@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -158,12 +159,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         StringBuilder sb = new StringBuilder();
 
-        for (Map.Entry<String, String> entry : options.entrySet()){
+        for (Entry <String, String> entry : options.entrySet()){
             String key = entry.getKey();
             String value = entry.getValue();
             sb.append(key);
             if (!value.isEmpty()){
-                sb.append(" = ").append(value).append(", ");
+                sb.append("=").append(value).append(", ");
             }
         }
 
