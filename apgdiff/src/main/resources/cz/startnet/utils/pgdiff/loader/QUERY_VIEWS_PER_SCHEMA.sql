@@ -14,7 +14,7 @@ SELECT c.relname,
        subselect.column_comments,
        subselect.column_defaults,
        subselect.column_acl,
-       reloptions
+       c.reloptions
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,

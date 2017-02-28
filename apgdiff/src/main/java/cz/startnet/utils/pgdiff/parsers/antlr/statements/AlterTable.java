@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends ParserAbstract {
@@ -87,9 +88,9 @@ public class AlterTable extends ParserAbstract {
             }
 
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
-                tabl.setWith("OIDS=false");
+                tabl.setHasOids(false);
             } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
-                tabl.setWith("OIDS=true");
+                tabl.setHasOids(true);
             }
             if (tablAction.column != null) {
                 if (tablAction.STATISTICS() != null) {

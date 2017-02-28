@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract.FunctionSearcher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -145,26 +146,20 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        StringBuilder storageParameters = new StringBuilder();
         Array arr = res.getArray("reloptions");
         if (arr != null) {
-            fillStorageParams(storageParameters, arr, false);
+            String[] options = (String[]) arr.getArray();
+            ParserAbstract.fillStorageParams(options, t, false);
         }
 
         arr = res.getArray("toast_reloptions");
         if (arr != null) {
-            fillStorageParams(storageParameters, arr, true);
+            String[] options = (String[]) arr.getArray();
+            ParserAbstract.fillStorageParams(options, t, true);
         }
 
-        boolean hasOids = res.getBoolean("has_oids");
-        if (storageParameters.length() > 0 && hasOids) {
-            t.setWith(storageParameters.insert(0, '(').append("OIDS=true)").toString());
-        } else if (storageParameters.length() > 0) {
-            // убираем лишние запятую-пробел
-            storageParameters.setLength(storageParameters.length() - 2);
-            t.setWith(storageParameters.insert(0, '(').append(')').toString());
-        } else if (hasOids) {
-            t.setWith("OIDS=true");
+        if (res.getBoolean("has_oids")){
+            t.setHasOids(true);
         }
 
         // Table COMMENTS
@@ -192,30 +187,5 @@ public class TablesReader extends JdbcReader {
         List<IdentifierContext> ids = fs.getName().identifier();
         return new GenericColumn(QNameParser.getSchemaName(ids, defSchema),
                 QNameParser.getFirstName(ids), DbObjType.FUNCTION);
-    }
-
-    private void fillStorageParams(StringBuilder storageParameters,
-            Array arr, boolean isToast) throws SQLException {
-        String[] options = (String[]) arr.getArray();
-        for (String pair : options) {
-            int sep = pair.indexOf('=');
-            String option, value;
-            if (sep == -1) {
-                option = pair;
-                value = "";
-            } else {
-                option = pair.substring(0, sep);
-                value = pair.substring(sep + 1);
-            }
-            if (!value.equals(PgDiffUtils.getQuotedName(value))) {
-                // only quote non-ids; pg_dump behavior
-                value = PgDiffUtils.quoteString(value);
-            }
-
-            if (isToast) {
-                storageParameters.append("toast.");
-            }
-            storageParameters.append(option).append('=').append(value).append(", ");
-        }
     }
 }

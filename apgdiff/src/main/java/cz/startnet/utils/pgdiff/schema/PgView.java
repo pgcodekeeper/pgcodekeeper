@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -23,11 +24,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgView extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     private String query;
     private String normalizedQuery;
-    private Map<String, String> options = new LinkedHashMap<>();
+    private final Map<String, String> options = new LinkedHashMap<>();
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
@@ -130,11 +131,11 @@ implements PgRuleContainer, PgTriggerContainer {
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         for (Map.Entry<String, String> entry : options.entrySet()){
-            if (!"check_option".equals(entry.getKey())){
+            if (!ApgdiffConsts.CHECK_OPTION.equals(entry.getKey())){
                 sbSQL.append(" WITH (")
                 .append(entry.getKey());
-                if (!"".equals(entry.getValue())){
-                    sbSQL.append("=").append(entry.getValue());
+                if (!entry.getValue().isEmpty()){
+                    sbSQL.append(" = ").append(entry.getValue());
                 }
                 sbSQL.append(")");
             }
@@ -155,8 +156,13 @@ implements PgRuleContainer, PgTriggerContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
-        if (options.get("check_option") != null){
-            sbSQL.append("\nWITH ").append( options.get("check_option")).append(" CHECK OPTION");
+        if (options.containsKey(ApgdiffConsts.CHECK_OPTION)){
+            String chekOption = options.get(ApgdiffConsts.CHECK_OPTION);
+            sbSQL.append("\nWITH ");
+            if (chekOption != null){
+                sbSQL.append(chekOption.toUpperCase());
+            }
+            sbSQL.append(" CHECK OPTION");
         }
         sbSQL.append(';');
 
@@ -284,41 +290,10 @@ implements PgRuleContainer, PgTriggerContainer {
                                 .getColumnName()) + " IS NULL;");
             }
         }
-        Map<String, String> oldOptions = oldView.getOptions();
-        Map<String, String> newOptions = newView.getOptions();
-        if (!oldOptions.isEmpty() || !newOptions.isEmpty()) {
-            for (Map.Entry<String, String> entry : oldOptions.entrySet()){
-                String key = entry.getKey();
-                if (newOptions.containsKey(key)){
-                    compareValue(entry.getValue(), newOptions.get(key).toString(), sb, key);
-                } else {
-                    sb.append("\n\nALTER VIEW ")
-                    .append(getName())
-                    .append(" RESET (")
-                    .append(key)
-                    .append(");");
-                }
-            }
-            for (Map.Entry<String, String> entry : newOptions.entrySet()){
-                String key = entry.getKey();
-                if (!oldOptions.containsKey(key)){
-                    compareValue("", newOptions.get(key).toString(), sb, key);
-                }
-            }
-        }
-        return sb.length() > startLength;
-    }
 
-    private void compareValue(String oldValue, String newValue, StringBuilder sb, String key) {
-        if (!oldValue.equals(newValue)){
-            sb.append("\n\nALTER VIEW ")
-            .append(getName())
-            .append(" SET ")
-            .append(key)
-            .append(" = ")
-            .append(newValue)
-            .append(";");
-        }
+        PgTable.compareOptions(oldView.getOptions(), newView.getOptions(), sb, getName(), DbObjType.VIEW);
+
+        return sb.length() > startLength;
     }
 
     public void setQuery(final String query) {
@@ -477,7 +452,7 @@ implements PgRuleContainer, PgTriggerContainer {
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
-        viewDst.setOptions(getOptions());
+        viewDst.options.putAll(options);
         return viewDst;
     }
 
@@ -684,37 +659,13 @@ implements PgRuleContainer, PgTriggerContainer {
         }
     }
 
+    @Override
     public Map <String, String> getOptions() {
-        return options;
+        return Collections.unmodifiableMap(options);
     }
 
-    public void setOptions(Map<String, String> options){
-        this.options = options;
-    }
-
-    public void addOption(String option) {
-        int sep = option.indexOf('=');
-        String key, value;
-        if (sep == -1) {
-            key = option;
-            value = "";
-        } else {
-            key = option.substring(0, sep);
-            value = option.substring(sep + 1);
-        }
-        //        if (!value.equals(PgDiffUtils.getQuotedName(value))) {
-        //            // only quote non-ids; pg_dump behavior
-        //            value = PgDiffUtils.quoteString(value);
-        //        }
-        System.out.println(key +" / "+ value);
-        options.put(key, value);
-    }
-
+    @Override
     public void addOption(String option, String value) {
-        //        if (!value.equals(PgDiffUtils.getQuotedName(value))) {
-        //            // only quote non-ids; pg_dump behavior
-        //            value = PgDiffUtils.quoteString(value);
-        //        }
         options.put(option, value);
     }
 }

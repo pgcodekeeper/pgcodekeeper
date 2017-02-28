@@ -19,6 +19,8 @@ public interface ApgdiffConsts {
     String UTC = "UTC";
     String PUBLIC = "public";
     String SEARCH_PATH_PATTERN = "SET search_path = {0}, pg_catalog;";
+    String CHECK_OPTION = "check_option";
+    String OIDS = "OIDS";
 
     String APGDIFF_PLUGIN_ID = "apgdiff";
 

@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateView extends ParserAbstract {
 
@@ -39,16 +40,21 @@ public class CreateView extends ParserAbstract {
         }
 
         if (ctx.create_view_options() != null){
-            for (Create_view_optionsContext option: ctx.create_view_options()){
-                view.addOption(getFullCtxText(option));
+            List <Create_view_optionsContext> options = ctx.create_view_options();
+            for (Create_view_optionsContext option: options){
+                if (option.identifier_value() != null) {
+                    ParserAbstract.fillStorageParams(option.identifier_value().identifier().getText(), option.identifier.getText(), false, view);
+                } else {
+                    ParserAbstract.fillStorageParams("", option.identifier.getText(), false, view);
+                }
             }
         }
 
         if (ctx.with_check_option() != null){
-            if (ctx.with_check_option().CASCADED() != null){
-                view.addOption("check_option","cascaded");
+            if (ctx.with_check_option().LOCAL() != null){
+                view.addOption(ApgdiffConsts.CHECK_OPTION, "local");
             } else {
-                view.addOption("check_option","local");
+                view.addOption(ApgdiffConsts.CHECK_OPTION, "cascaded");
             }
         }
 

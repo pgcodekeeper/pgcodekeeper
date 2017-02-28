@@ -619,11 +619,16 @@ create_view_statement
     ;
 
 create_view_options
-    : view_option_name+=identifier (EQUAL view_option_value+=identifier)?
+    : view_option_name+=identifier (EQUAL view_option_value+=identifier_value)?
     ;
     
+identifier_value
+    :identifier 
+    ;
+
+    
 with_check_option
-    : WITH (CASCADED|LOCAL) CHECK OPTION
+    : WITH (CASCADED|LOCAL)? CHECK OPTION
     ;
 
 create_table_statement
@@ -708,9 +713,13 @@ check_boolean_expression
 
 storage_parameter
     : LEFT_PAREN
-        storage_param=schema_qualified_name (EQUAL value=vex)?
-        (COMMA storage_param=schema_qualified_name (EQUAL value=vex)?)*
+        storage_parameter_option?
+        (COMMA storage_parameter_option?)*
       RIGHT_PAREN
+    ;
+    
+storage_parameter_option
+    :  storage_param=schema_qualified_name (EQUAL value=vex)
     ;
 
 with_storage_parameter
