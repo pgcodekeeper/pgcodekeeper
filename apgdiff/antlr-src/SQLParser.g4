@@ -613,17 +613,9 @@ schema_definition
 
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name column_name=column_references?
-        (WITH LEFT_PAREN
-            create_view_option  
-            (COMMA create_view_option)*
-          RIGHT_PAREN
-        )?
+        (WITH storage_parameter)?
         AS v_query=select_stmt
         with_check_option?
-    ;
-
-create_view_option
-    : view_option_name+=identifier (EQUAL view_option_value+=identifier)?
     ;
         
 with_check_option

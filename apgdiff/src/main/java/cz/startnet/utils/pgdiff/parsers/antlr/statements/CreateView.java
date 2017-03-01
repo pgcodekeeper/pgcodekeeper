@@ -3,10 +3,12 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -38,14 +40,14 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(ParserAbstract.getFullCtxText(column));
             }
         }
-
-        if (ctx.create_view_option() != null){
-            List <Create_view_optionContext> options = ctx.create_view_option();
-            for (Create_view_optionContext option: options){
-                List <IdentifierContext> value = option.view_option_value;
-                String key = QNameParser.getFirstName(option.view_option_name);
-                if (!value.isEmpty()) {
-                    ParserAbstract.fillStorageParams(QNameParser.getFirstName(value), key , false, view);
+        Storage_parameterContext storage = ctx.storage_parameter();
+        if (storage != null){
+            List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
+            for (Storage_parameter_optionContext option: options){
+                String key = option.schema_qualified_name().getText();
+                VexContext value = option.vex();
+                if (value != null) {
+                    ParserAbstract.fillStorageParams(value.getText(), key , false, view);
                 } else {
                     ParserAbstract.fillStorageParams("", key, false, view);
                 }
