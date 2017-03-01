@@ -313,15 +313,13 @@ public abstract class ParserAbstract {
                 // only quote non-ids; pg_dump behavior
                 value = PgDiffUtils.quoteString(value);
             }
-
-            option = PgDiffUtils.getQuotedName(option);
-
             fillStorageParams (value, option, isToast, optionContainer);
         }
     }
 
     public static void fillStorageParams (String value, String option, boolean isToast,
             PgOptionContainer  optionContainer){
+        option = PgDiffUtils.getQuotedName(option);
         if (isToast) {
             option = "toast."+ option;
         }

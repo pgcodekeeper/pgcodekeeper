@@ -135,7 +135,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             if (!CHECK_OPTION.equals(entry.getKey())){
                 sb.append(entry.getKey());
                 if (!entry.getValue().isEmpty()){
-                    sb.append(" = ").append(entry.getValue());
+                    sb.append("=").append(entry.getValue());
                 }
                 sb.append(", ");
             }
