@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -12,10 +12,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateView extends ParserAbstract {
 
+    private static final String CHECK_OPTION = "check_option";
     private final Create_view_statementContext ctx;
 
     public CreateView(Create_view_statementContext ctx, PgDatabase db) {
@@ -39,22 +39,23 @@ public class CreateView extends ParserAbstract {
             }
         }
 
-        if (ctx.create_view_options() != null){
-            List <Create_view_optionsContext> options = ctx.create_view_options();
-            for (Create_view_optionsContext option: options){
-                if (option.identifier_value() != null) {
-                    ParserAbstract.fillStorageParams(option.identifier_value().identifier().getText(), option.identifier.getText(), false, view);
+        if (ctx.create_view_option() != null){
+            List <Create_view_optionContext> options = ctx.create_view_option();
+            for (Create_view_optionContext option: options){
+                List <IdentifierContext> value = option.view_option_value;
+                String key = QNameParser.getFirstName(option.view_option_name);
+                if (!value.isEmpty()) {
+                    ParserAbstract.fillStorageParams(QNameParser.getFirstName(value), key , false, view);
                 } else {
-                    ParserAbstract.fillStorageParams("", option.identifier.getText(), false, view);
+                    ParserAbstract.fillStorageParams("", key, false, view);
                 }
             }
         }
-
         if (ctx.with_check_option() != null){
             if (ctx.with_check_option().LOCAL() != null){
-                view.addOption(ApgdiffConsts.CHECK_OPTION, "local");
+                view.addOption(CHECK_OPTION, "local");
             } else {
-                view.addOption(ApgdiffConsts.CHECK_OPTION, "cascaded");
+                view.addOption(CHECK_OPTION, "cascaded");
             }
         }
 

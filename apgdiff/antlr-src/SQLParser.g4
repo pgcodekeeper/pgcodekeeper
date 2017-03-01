@@ -613,20 +613,19 @@ schema_definition
 
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name column_name=column_references?
-        (WITH LEFT_PAREN create_view_options + RIGHT_PAREN)?
+        (WITH LEFT_PAREN
+            create_view_option  
+            (COMMA create_view_option)*
+          RIGHT_PAREN
+        )?
         AS v_query=select_stmt
         with_check_option?
     ;
 
-create_view_options
-    : view_option_name+=identifier (EQUAL view_option_value+=identifier_value)?
+create_view_option
+    : view_option_name+=identifier (EQUAL view_option_value+=identifier)?
     ;
-    
-identifier_value
-    :identifier 
-    ;
-
-    
+        
 with_check_option
     : WITH (CASCADED|LOCAL)? CHECK OPTION
     ;
@@ -713,13 +712,13 @@ check_boolean_expression
 
 storage_parameter
     : LEFT_PAREN
-        storage_parameter_option?
-        (COMMA storage_parameter_option?)*
+        storage_parameter_option
+        (COMMA storage_parameter_option)*
       RIGHT_PAREN
     ;
     
 storage_parameter_option
-    :  storage_param=schema_qualified_name (EQUAL value=vex)
+    :  storage_param=schema_qualified_name (EQUAL value=vex)?
     ;
 
 with_storage_parameter

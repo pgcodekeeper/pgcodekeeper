@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -26,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgView extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
+    private static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -131,7 +131,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         for (Map.Entry<String, String> entry : options.entrySet()){
-            if (!ApgdiffConsts.CHECK_OPTION.equals(entry.getKey())){
+            if (!CHECK_OPTION.equals(entry.getKey())){
                 sbSQL.append(" WITH (")
                 .append(entry.getKey());
                 if (!entry.getValue().isEmpty()){
@@ -156,8 +156,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
-        if (options.containsKey(ApgdiffConsts.CHECK_OPTION)){
-            String chekOption = options.get(ApgdiffConsts.CHECK_OPTION);
+        if (options.containsKey(CHECK_OPTION)){
+            String chekOption = options.get(CHECK_OPTION);
             sbSQL.append("\nWITH ");
             if (chekOption != null){
                 sbSQL.append(chekOption.toUpperCase());
