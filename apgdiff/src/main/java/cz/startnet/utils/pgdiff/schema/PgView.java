@@ -130,15 +130,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         sbSQL.append("CREATE VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : options.entrySet()){
             if (!CHECK_OPTION.equals(entry.getKey())){
-                sbSQL.append(" WITH (")
-                .append(entry.getKey());
+                sb.append(entry.getKey());
                 if (!entry.getValue().isEmpty()){
-                    sbSQL.append(" = ").append(entry.getValue());
+                    sb.append(" = ").append(entry.getValue());
                 }
-                sbSQL.append(")");
+                sb.append(", ");
             }
+        }
+
+        if (sb.length() > 0){
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
         if (columnNames != null && !columnNames.isEmpty()) {

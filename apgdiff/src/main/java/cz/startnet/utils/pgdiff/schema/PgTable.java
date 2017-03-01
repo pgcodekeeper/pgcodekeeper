@@ -159,8 +159,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             String key = entry.getKey();
             String value = entry.getValue();
 
-            key = PgDiffUtils.getQuotedName(key);
-
             sb.append(key);
             if (!value.isEmpty()){
                 sb.append("=").append(value);
@@ -603,7 +601,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             for (Map.Entry<String, String> entry : oldOptions.entrySet()){
                 String key = entry.getKey();
                 if (newOptions.containsKey(key)){
-                    compareValue(entry.getValue(), newOptions.get(key).toString(), setOptions, key);
+                    compareValue(entry.getValue(), newOptions.get(key), setOptions, key);
                 } else {
                     resetOptions.append(key)
                     .append(", ");
@@ -613,30 +611,32 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             for (Map.Entry<String, String> entry : newOptions.entrySet()){
                 String key = entry.getKey();
                 if (!oldOptions.containsKey(key)){
-                    compareValue(null, newOptions.get(key).toString(), setOptions, key);
+                    compareValue(null, newOptions.get(key), setOptions, key);
                 }
             }
         }
 
         if(setOptions.length() > 0){
             setOptions.setLength(setOptions.length()-2);
-            sb.append("\n\nALTER ").append(container.toString()).append(" ").append(name)
+            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
             .append(" SET (").append(setOptions).append(");");
         }
 
         if(resetOptions.length() > 0){
             resetOptions.setLength(resetOptions.length()-2);
-            sb.append("\n\nALTER ").append(container.toString()).append(" ").append(name)
+            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
             .append(" RESET (").append(resetOptions).append(");");
         }
     }
 
     private static void compareValue(String oldValue, String newValue, StringBuilder setOptions, String key) {
         if (!Objects.equals(oldValue, newValue)){
-            setOptions.append(key)
-            .append(" = ")
-            .append(newValue)
-            .append(", ");
+            setOptions.append(key);
+            if (!newValue.isEmpty()){
+                setOptions.append(" = ");
+                setOptions.append(newValue);
+            }
+            setOptions.append(", ");
         }
     }
 
