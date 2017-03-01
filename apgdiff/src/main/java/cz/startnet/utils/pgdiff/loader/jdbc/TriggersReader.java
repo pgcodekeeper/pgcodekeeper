@@ -120,6 +120,12 @@ public class TriggersReader extends JdbcReader {
 
         t.addDep(new GenericColumn(funcSchema, funcName + "()", DbObjType.FUNCTION));
 
+        if (res.getInt("tgconstraint") != 0) {
+            t.setConstraint(true);
+        } else {
+            t.setConstraint(false);
+        }
+
         Array arrCols = res.getArray("cols");
         if (arrCols != null) {
             for (String col_name : (String[]) arrCols.getArray()) {

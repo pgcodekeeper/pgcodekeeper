@@ -6,6 +6,7 @@ SELECT ccc.relname,
        t.tgname,
        t.tgtype,
        t.tgargs,
+       t.tgconstraint,
        (SELECT array_agg(attname ORDER BY attnum) 
         FROM pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,

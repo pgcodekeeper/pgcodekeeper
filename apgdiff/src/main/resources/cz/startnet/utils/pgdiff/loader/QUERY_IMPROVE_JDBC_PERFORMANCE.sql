@@ -548,6 +548,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_triggers(schema_oids bigin
        tgname name,
        tgtype smallint,
        tgargs bytea,
+       tgconstraint oid,
        cols name[],
        definition text,
        comment text) AS
@@ -573,6 +574,7 @@ SELECT schema_oid,
        t.tgname,
        t.tgtype,
        t.tgargs,
+       t.tgconstraint,
        (SELECT array_agg(attname ORDER BY attnum) 
         FROM pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,

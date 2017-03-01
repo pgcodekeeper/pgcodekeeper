@@ -397,7 +397,7 @@ rewrite_command
     ;
 
 create_trigger_statement
-    : CONSTRAINT? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
+    : constaint_option? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
     ON tabl_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
@@ -405,6 +405,10 @@ create_trigger_statement
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE PROCEDURE func_name=function_call
+    ;
+    
+constaint_option
+    : CONSTRAINT
     ;
 
 when_trigger

@@ -41,6 +41,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private boolean onInsert;
     private boolean onUpdate;
     private boolean onTruncate;
+    private boolean constraint;
     /**
      * Optional list of columns for UPDATE event.
      */
@@ -68,7 +69,9 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE TRIGGER ");
+        sbSQL.append("CREATE");
+        sbSQL.append(constraint ? " CONSTRAINT ":" ");
+        sbSQL.append("TRIGGER ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append("\n\t");
         sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
@@ -279,6 +282,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && (onInsert == trigger.isOnInsert())
                 && (onUpdate == trigger.isOnUpdate())
                 && (onTruncate == trigger.isOnTruncate())
+                && (constraint == trigger.isConstraint())
                 && Objects.equals(tableName, trigger.getTableName())
                 && Objects.equals(when, trigger.getWhen())
                 && PgDiffUtils.setlikeEquals(updateColumns, trigger.updateColumns);
@@ -302,6 +306,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + (when == null ? 0 : when.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(updateColumns);
         result = prime * result + (comment == null ? 0 : comment.hashCode());
+        result = prime * result + (constraint ? itrue : ifalse);
         return result;
     }
 
@@ -316,6 +321,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         triggerDst.setOnInsert(isOnInsert());
         triggerDst.setOnTruncate(isOnTruncate());
         triggerDst.setOnUpdate(isOnUpdate());
+        triggerDst.setConstraint(isConstraint());
         triggerDst.setTableName(getTableName());
         triggerDst.setWhen(getWhen());
         triggerDst.setComment(getComment());
@@ -332,5 +338,14 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();
+    }
+
+    public boolean isConstraint() {
+        return constraint;
+    }
+
+    public void setConstraint(boolean constraint) {
+        this.constraint = constraint;
+        resetHash();
     }
 }
