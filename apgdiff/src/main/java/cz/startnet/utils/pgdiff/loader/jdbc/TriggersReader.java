@@ -122,8 +122,6 @@ public class TriggersReader extends JdbcReader {
 
         if (res.getInt("tgconstraint") != 0) {
             t.setConstraint(true);
-        } else {
-            t.setConstraint(false);
         }
 
         Array arrCols = res.getArray("cols");

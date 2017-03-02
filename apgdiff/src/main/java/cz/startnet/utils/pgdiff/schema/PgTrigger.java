@@ -41,7 +41,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private boolean onInsert;
     private boolean onUpdate;
     private boolean onTruncate;
-    private boolean constraint;
+    private boolean constraint = false;
     /**
      * Optional list of columns for UPDATE event.
      */
@@ -258,6 +258,15 @@ public class PgTrigger extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public boolean isConstraint() {
+        return constraint;
+    }
+
+    public void setConstraint(final boolean constraint) {
+        this.constraint = constraint;
+        resetHash();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -312,9 +321,9 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     @Override
     public PgTrigger shallowCopy() {
-        PgTrigger triggerDst =
-                new PgTrigger(getName(), getRawStatement());
+        PgTrigger triggerDst = new PgTrigger(getName(), getRawStatement());
         triggerDst.setType(getType());
+        triggerDst.setConstraint(isConstraint());
         triggerDst.setForEachRow(isForEachRow());
         triggerDst.setFunction(getFunction());
         triggerDst.setOnDelete(isOnDelete());
@@ -338,14 +347,5 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent().getParent();
-    }
-
-    public boolean isConstraint() {
-        return constraint;
-    }
-
-    public void setConstraint(boolean constraint) {
-        this.constraint = constraint;
-        resetHash();
     }
 }

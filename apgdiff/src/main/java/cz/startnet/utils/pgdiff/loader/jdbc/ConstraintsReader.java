@@ -43,56 +43,70 @@ public class ConstraintsReader extends JdbcReader {
 
     private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName)
             throws SQLException {
-        String constraintName = res.getString("conname");
-        loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
-        PgConstraint c = new PgConstraint(constraintName, "");
-
         String contype = res.getString("contype");
-        switch (contype) {
-        case "f":
-            String fschema = res.getString("foreign_schema_name");
-            String ftable = res.getString("foreign_table_name");
-            GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
-            c.setForeignTable(ftableRef);
-            c.addDep(ftableRef);
 
-            String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
-            for (String colName : referencedColumnNames) {
-                if (colName != null) {
-                    c.addForeignColumn(colName);
-                    c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
-                }
+        // don't show trigger constraints
+        if ("t".equals(contype)){
+            return null;
+        } else {
+            String constraintName = res.getString("conname");
+            loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
+            PgConstraint c = new PgConstraint(constraintName, "");
+
+            switch (contype) {
+            case "f":
+                createFKeyCon(res, c);
+                break; // end foreign key
+            case "p":
+            case "u":
+                createUniqueCon(contype, res, c);
+                break;
+            default:
+                break;
             }
 
-            break; // end foreign key
-        case "p":
-        case "u":
-            if ("p".equals(contype)) {
-                c.setPrimaryKey(true);
-            } else {
-                c.setUnique(true);
+            // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
+            String definition = res.getString("definition");
+            if (definition.endsWith(NOT_VALID_SUFFIX)) {
+                definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
+                c.setNotValid(true);
             }
+            c.setDefinition(definition);
 
-            String[] concols = (String[]) res.getArray("cols").getArray();
-            for (String name : concols) {
-                c.addColumn(name);
+            String comment = res.getString("description");
+            if (comment != null && !comment.isEmpty()) {
+                c.setComment(loader.args, PgDiffUtils.quoteString(comment));
             }
-            break;
+            return c;
+        }
+    }
+
+    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
+        String fschema = res.getString("foreign_schema_name");
+        String ftable = res.getString("foreign_table_name");
+        GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
+        c.setForeignTable(ftableRef);
+        c.addDep(ftableRef);
+
+        String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
+        for (String colName : referencedColumnNames) {
+            if (colName != null) {
+                c.addForeignColumn(colName);
+                c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
+            }
+        }
+    }
+    
+    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
+        if ("p".equals(contype)) {
+            c.setPrimaryKey(true);
+        } else {
+            c.setUnique(true);
         }
 
-        // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
-        String definition = res.getString("definition");
-        if (definition.endsWith(NOT_VALID_SUFFIX)) {
-            definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
-            c.setNotValid(true);
+        String[] concols = (String[]) res.getArray("cols").getArray();
+        for (String name : concols) {
+            c.addColumn(name);
         }
-        c.setDefinition(definition);
-
-        String comment = res.getString("description");
-        if (comment != null && !comment.isEmpty()) {
-            c.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
-        return c;
     }
 }

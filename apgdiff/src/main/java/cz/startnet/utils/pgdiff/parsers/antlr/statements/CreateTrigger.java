@@ -91,8 +91,6 @@ public class CreateTrigger extends ParserAbstract {
 
         if (ctx.constaint_option() != null ) {
             trigger.setConstraint(true);
-        } else {
-            trigger.setConstraint(false);
         }
 
         return trigger;
