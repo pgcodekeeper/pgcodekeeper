@@ -122,6 +122,10 @@ public class TriggersReader extends JdbcReader {
 
         if (res.getInt("tgconstraint") != 0) {
             t.setConstraint(true);
+            t.setRefTableName(res.getString("conname"));
+            if (res.getBoolean("tginitdeferred")){
+                t.setImmediate(res.getBoolean("tgdeferrable"));
+            }
         }
 
         Array arrCols = res.getArray("cols");

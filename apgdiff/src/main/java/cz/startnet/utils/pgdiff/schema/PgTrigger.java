@@ -27,6 +27,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     private String function;
     private String tableName;
+    private String refTableName;
     /**
      * Whether the trigger should be fired BEFORE, AFTER or INSTEAD_OF action. Default is
      * before.
@@ -42,6 +43,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private boolean onUpdate;
     private boolean onTruncate;
     private boolean constraint = false;
+    private Boolean isImmediate = null;
     /**
      * Optional list of columns for UPDATE event.
      */
@@ -128,6 +130,17 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
+
+        if (constraint){
+            if (refTableName != null){
+                sbSQL.append("\n\tFROM ").append(PgDiffUtils.getQuotedName(refTableName));
+            }
+            if (isImmediate != null){
+                sbSQL.append("\n\tDEFERRABLE INITIALLY ")
+                .append(isImmediate ? "IMMEDIATE" : "DEFERRED");
+            }
+        }
+
         sbSQL.append("\n\tFOR EACH ");
         sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
 
@@ -258,12 +271,30 @@ public class PgTrigger extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public Boolean isImmediate() {
+        return isImmediate;
+    }
+
+    public void setImmediate(final Boolean isImmediate) {
+        this.isImmediate = isImmediate;
+        resetHash();
+    }
+
     public boolean isConstraint() {
         return constraint;
     }
 
     public void setConstraint(final boolean constraint) {
         this.constraint = constraint;
+        resetHash();
+    }
+
+    public String getRefTableName() {
+        return refTableName;
+    }
+
+    public void setRefTableName(final String refTableName) {
+        this.refTableName = refTableName;
         resetHash();
     }
 
@@ -291,6 +322,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && (onInsert == trigger.isOnInsert())
                 && (onUpdate == trigger.isOnUpdate())
                 && (onTruncate == trigger.isOnTruncate())
+                && Objects.equals(isImmediate, trigger.isImmediate())
+                && Objects.equals(refTableName, trigger.getRefTableName())
                 && (constraint == trigger.isConstraint())
                 && Objects.equals(tableName, trigger.getTableName())
                 && Objects.equals(when, trigger.getWhen())
@@ -316,6 +349,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + PgDiffUtils.setlikeHashcode(updateColumns);
         result = prime * result + (comment == null ? 0 : comment.hashCode());
         result = prime * result + (constraint ? itrue : ifalse);
+        result = prime * result + (isImmediate == null ? 0 : isImmediate.hashCode());
+        result = prime * result + (refTableName == null ? 0 : refTableName.hashCode());
         return result;
     }
 
@@ -333,6 +368,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         triggerDst.setConstraint(isConstraint());
         triggerDst.setTableName(getTableName());
         triggerDst.setWhen(getWhen());
+        triggerDst.setImmediate(isImmediate());
+        triggerDst.setRefTableName(getRefTableName());
         triggerDst.setComment(getComment());
         triggerDst.updateColumns.addAll(updateColumns);
         triggerDst.deps.addAll(deps);

@@ -9,6 +9,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -55,6 +57,19 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnTruncate(ctx.truncate_true != null);
         trigger.setFunction(getFullCtxText(ctx.func_name));
 
+        if (ctx.constaint_option() != null ) {
+            trigger.setConstraint(true);
+            Table_deferrableContext  def  = ctx.table_deferrable();
+            if (def != null && def.NOT() == null){
+                Table_initialy_immedContext  initImmed  = ctx.table_initialy_immed();
+                if (initImmed != null){
+                    trigger.setImmediate(initImmed.DEFERRED() == null);
+                }
+            }
+            trigger.setRefTableName(ctx.referenced_table_name.getText());
+        }
+
+        trigger.setFunction(getFullCtxText(ctx.func_name));
         List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
         trigger.addDep(new GenericColumn(QNameParser.getSchemaName(funcIds, getDefSchemaName()),
                 QNameParser.getFirstName(funcIds) + "()", DbObjType.FUNCTION));
@@ -87,10 +102,6 @@ public class CreateTrigger extends ParserAbstract {
                         .append("will be skipped").toString());
                 return null;
             }
-        }
-
-        if (ctx.constaint_option() != null ) {
-            trigger.setConstraint(true);
         }
 
         return trigger;
