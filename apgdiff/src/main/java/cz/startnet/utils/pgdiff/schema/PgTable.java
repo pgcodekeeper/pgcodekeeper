@@ -35,7 +35,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<PgRule> rules = new ArrayList<>();
-    private boolean hasOids = false;
+    private boolean hasOids;
     private String tablespace;
 
     @Override
@@ -356,6 +356,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public void addOption(String option, String value) {
         options.put(option, value);
+        resetHash();
     }
 
     public void addInherits(final String schemaName, final String tableName) {
@@ -369,6 +370,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public void setHasOids(Boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
     }
 
     /**
@@ -490,7 +492,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
             eq = Objects.equals(name, table.getName())
                     && Objects.equals(tablespace, table.getTablespace())
-                    && Objects.equals(hasOids, table.getHasOids())
+                    && hasOids == table.getHasOids()
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)

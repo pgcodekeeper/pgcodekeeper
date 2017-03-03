@@ -339,6 +339,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
     }
 
+    @Override
+    public Map <String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String option, String value) {
+        options.put(option, value);
+        resetHash();
+    }
+
     /**
      * Getter for {@link #defaultValues}.
      *
@@ -479,11 +490,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public static class DefaultValue {
 
         private final String columnName;
-        private final String defaultValue;
+        private final String defaultVal;
 
         DefaultValue(final String columnName, final String defaultValue) {
             this.columnName = columnName;
-            this.defaultValue = defaultValue;
+            this.defaultVal = defaultValue;
         }
 
         public String getColumnName() {
@@ -491,7 +502,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         public String getDefaultValue() {
-            return defaultValue;
+            return defaultVal;
         }
 
         @Override
@@ -503,7 +514,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             } else if(obj instanceof DefaultValue) {
                 DefaultValue val = (DefaultValue) obj;
                 eq = Objects.equals(columnName, val.getColumnName())
-                        && Objects.equals(defaultValue, val.getDefaultValue());
+                        && Objects.equals(defaultVal, val.getDefaultValue());
             }
 
             return eq;
@@ -514,7 +525,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
-            result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+            result = prime * result + ((defaultVal == null) ? 0 : defaultVal.hashCode());
             return result;
         }
     }
@@ -662,15 +673,5 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     + newValue.getDefaultValue()
                     + ';');
         }
-    }
-
-    @Override
-    public Map <String, String> getOptions() {
-        return Collections.unmodifiableMap(options);
-    }
-
-    @Override
-    public void addOption(String option, String value) {
-        options.put(option, value);
     }
 }
