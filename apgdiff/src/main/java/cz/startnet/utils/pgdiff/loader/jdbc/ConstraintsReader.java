@@ -45,40 +45,36 @@ public class ConstraintsReader extends JdbcReader {
             throws SQLException {
         String contype = res.getString("contype");
 
-        // don't show trigger constraints
-        if ("t".equals(contype)){
-            return null;
-        } else {
-            String constraintName = res.getString("conname");
-            loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
-            PgConstraint c = new PgConstraint(constraintName, "");
+        String constraintName = res.getString("conname");
+        loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
+        PgConstraint c = new PgConstraint(constraintName, "");
 
-            switch (contype) {
-            case "f":
-                createFKeyCon(res, c);
-                break; // end foreign key
-            case "p":
-            case "u":
-                createUniqueCon(contype, res, c);
-                break;
-            default:
-                break;
-            }
-
-            // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
-            String definition = res.getString("definition");
-            if (definition.endsWith(NOT_VALID_SUFFIX)) {
-                definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
-                c.setNotValid(true);
-            }
-            c.setDefinition(definition);
-
-            String comment = res.getString("description");
-            if (comment != null && !comment.isEmpty()) {
-                c.setComment(loader.args, PgDiffUtils.quoteString(comment));
-            }
-            return c;
+        switch (contype) {
+        case "f":
+            createFKeyCon(res, c);
+            break; // end foreign key
+        case "p":
+        case "u":
+            createUniqueCon(contype, res, c);
+            break;
+        default:
+            break;
         }
+
+        // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
+        String definition = res.getString("definition");
+        if (definition.endsWith(NOT_VALID_SUFFIX)) {
+            definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
+            c.setNotValid(true);
+        }
+        c.setDefinition(definition);
+
+        String comment = res.getString("description");
+        if (comment != null && !comment.isEmpty()) {
+            c.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
+        return c;
+
     }
 
     private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
@@ -96,7 +92,7 @@ public class ConstraintsReader extends JdbcReader {
             }
         }
     }
-    
+
     private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
         if ("p".equals(contype)) {
             c.setPrimaryKey(true);

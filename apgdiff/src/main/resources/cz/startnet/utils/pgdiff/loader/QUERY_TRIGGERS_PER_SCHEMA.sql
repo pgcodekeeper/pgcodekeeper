@@ -9,7 +9,7 @@ SELECT ccc.relname,
        t.tgconstraint,
        t.tgdeferrable,
        t.tginitdeferred,
-       relcon.relname as conname,
+       relcon.relname as refrelname,
        (SELECT array_agg(attname ORDER BY attnum) 
         FROM pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,

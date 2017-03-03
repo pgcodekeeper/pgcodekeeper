@@ -469,6 +469,7 @@ RIGHT JOIN pg_catalog.pg_constraint c ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
 WHERE ccc.relkind = 'r'
+    AND c.contype != 't'
     AND ccc.relnamespace = schema_oid);
 
 END LOOP;
@@ -551,7 +552,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_triggers(schema_oids bigin
        tgconstraint oid,
        tgdeferrable boolean,
        tginitdeferred boolean,
-       conname name,
+       refrelname name,
        cols name[],
        definition text,
        comment text) AS
@@ -580,7 +581,7 @@ SELECT schema_oid,
        t.tgconstraint,
        t.tgdeferrable,
        t.tginitdeferred,
-       relcon.relname as conname,
+       relcon.relname as refrelname,
        (SELECT array_agg(attname ORDER BY attnum) 
         FROM pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,

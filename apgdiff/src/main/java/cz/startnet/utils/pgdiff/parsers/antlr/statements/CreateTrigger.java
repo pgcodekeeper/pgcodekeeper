@@ -57,7 +57,7 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnTruncate(ctx.truncate_true != null);
         trigger.setFunction(getFullCtxText(ctx.func_name));
 
-        if (ctx.constaint_option() != null ) {
+        if (ctx.CONSTRAINT() != null ) {
             trigger.setConstraint(true);
             Table_deferrableContext  def  = ctx.table_deferrable();
             if (def != null && def.NOT() == null){

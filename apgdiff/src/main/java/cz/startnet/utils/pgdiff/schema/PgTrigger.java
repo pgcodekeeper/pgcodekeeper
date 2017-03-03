@@ -42,8 +42,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private boolean onInsert;
     private boolean onUpdate;
     private boolean onTruncate;
-    private boolean constraint = false;
-    private Boolean isImmediate = null;
+    private boolean constraint;
+    private Boolean isImmediate;
     /**
      * Optional list of columns for UPDATE event.
      */
@@ -72,8 +72,10 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE");
-        sbSQL.append(constraint ? " CONSTRAINT ":" ");
-        sbSQL.append("TRIGGER ");
+        if (constraint) {
+            sbSQL.append(" CONSTRAINT");
+        }
+        sbSQL.append(" TRIGGER ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append("\n\t");
         sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
@@ -133,7 +135,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
         if (constraint){
             if (refTableName != null){
-                sbSQL.append("\n\tFROM ").append(PgDiffUtils.getQuotedName(refTableName));
+                sbSQL.append("\n\tFROM ").append(refTableName);
             }
             if (isImmediate != null){
                 sbSQL.append("\n\tDEFERRABLE INITIALLY ")
@@ -358,7 +360,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst = new PgTrigger(getName(), getRawStatement());
         triggerDst.setType(getType());
-        triggerDst.setConstraint(isConstraint());
         triggerDst.setForEachRow(isForEachRow());
         triggerDst.setFunction(getFunction());
         triggerDst.setOnDelete(isOnDelete());
