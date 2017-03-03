@@ -122,8 +122,20 @@ public class TriggersReader extends JdbcReader {
 
         if (res.getInt("tgconstraint") != 0) {
             t.setConstraint(true);
-            t.setRefTableName(res.getString("refrelname"));
-            //t.addDep(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TABLE));
+
+            String refRelName = res.getString("refrelname");
+            if (refRelName != null){
+                String refSchemaName = res.getString("refnspname");
+                StringBuilder sb = new StringBuilder();
+                if (!refSchemaName.equals(schemaName)){
+                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                }
+                sb.append(PgDiffUtils.getQuotedName(refRelName));
+
+                t.setRefTableName(sb.toString());
+                t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
+            }
+
             if (res.getBoolean("tgdeferrable")){
                 t.setImmediate(res.getBoolean("tginitdeferred"));
             }

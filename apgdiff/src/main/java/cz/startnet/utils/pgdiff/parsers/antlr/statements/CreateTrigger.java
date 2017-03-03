@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -66,7 +67,26 @@ public class CreateTrigger extends ParserAbstract {
                     trigger.setImmediate(initImmed.DEFERRED() == null);
                 }
             }
-            trigger.setRefTableName(ctx.referenced_table_name.getText());
+
+            Schema_qualified_nameContext refTable = ctx.referenced_table_name;
+            if (refTable != null){
+                List<IdentifierContext> refName = refTable.identifier();
+                String refSchemaName = QNameParser.getSecondName(refName);
+                String refRelName = QNameParser.getFirstName(refName);
+
+                StringBuilder sb = new StringBuilder();
+                if (refSchemaName != null){
+                    if (!refSchemaName.equals(schemaName)){
+                        sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                    }
+                } else {
+                    refSchemaName =  schemaName;
+                }
+                sb.append(PgDiffUtils.getQuotedName(refRelName));
+
+                trigger.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
+                trigger.setRefTableName(sb.toString());
+            }
         }
 
         trigger.setFunction(getFullCtxText(ctx.func_name));

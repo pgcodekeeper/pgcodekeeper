@@ -10,6 +10,7 @@ SELECT ccc.relname,
        t.tgdeferrable,
        t.tginitdeferred,
        relcon.relname as refrelname,
+       refnsp.nspname as refnspname,
        (SELECT array_agg(attname ORDER BY attnum) 
         FROM pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,
@@ -18,6 +19,7 @@ SELECT ccc.relname,
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid
 LEFT JOIN pg_catalog.pg_class relcon ON relcon.oid = t.tgconstrrelid
+LEFT JOIN pg_catalog.pg_namespace refnsp ON refnsp.oid = relcon.relnamespace
 LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid
     AND d.objsubid = 0
 JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
