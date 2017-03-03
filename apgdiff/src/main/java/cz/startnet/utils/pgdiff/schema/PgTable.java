@@ -260,11 +260,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         if (oldTable.getHasOids() && !newTable.getHasOids()){
             sb.append("\n\nALTER TABLE ")
             .append(PgDiffUtils.getQuotedName(getName()))
-            .append("\n\tSET WITHOUT OIDS;");
+            .append(" SET WITHOUT OIDS;");
         } else if (newTable.getHasOids() && !oldTable.getHasOids()){
             sb.append("\n\nALTER TABLE ")
             .append(PgDiffUtils.getQuotedName(getName()))
-            .append("\n\tSET WITH OIDS;");
+            .append(" SET WITH OIDS;");
         }
 
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {

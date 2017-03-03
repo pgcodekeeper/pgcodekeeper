@@ -1,0 +1,1 @@
+ALTER TABLE testtable RESET (fillfactor);
