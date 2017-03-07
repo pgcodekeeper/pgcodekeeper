@@ -172,17 +172,21 @@ public class DepcyResolver {
      */
     public void recreateDrops() {
         List<PgStatement> toRecreate = new ArrayList<>();
-        for (ActionContainer action : actions) {
-            if (action.getAction() != StatementActions.DROP) {
-                continue;
+        int oldActionsSize = -1;
+        while (actions.size() > oldActionsSize){
+            oldActionsSize = actions.size();
+            for (ActionContainer action : actions) {
+                if (action.getAction() == StatementActions.DROP) {
+                    PgStatement statement = action.getOldObj();
+                    if (!toRecreate.contains(statement)){
+                        toRecreate.add(statement);
+                    }
+                }
             }
-            // we need this temp list because we cannot add to actions list
-            // while iterating over it
-            toRecreate.add(action.getOldObj());
-        }
-        for (PgStatement drop : toRecreate) {
-            if (getObjectFromDB(drop, newDb) != null) {
-                addCreateStatements(drop);
+            for (PgStatement drop : toRecreate) {
+                if (getObjectFromDB(drop, newDb) != null) {
+                    addCreateStatements(drop);
+                }
             }
         }
     }
