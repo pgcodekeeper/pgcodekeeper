@@ -102,16 +102,16 @@ public class DepcyResolver {
      *            объект для удаления из старой базы
      */
     public void addDropStatements(PgStatement toDrop) {
-        toDrop = getObjectFromDB(toDrop, oldDb);
-        if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
-            if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(toDrop, StatementActions.DROP))) {
-                sKippedObjects.add(new AbstractMap.SimpleEntry<>(toDrop, StatementActions.DROP));
+        PgStatement statement = getObjectFromDB(toDrop, oldDb);
+        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)
+                && !sKippedObjects.contains(new AbstractMap.SimpleEntry<>(statement, StatementActions.DROP))) {
+            sKippedObjects.add(new AbstractMap.SimpleEntry<>(statement, StatementActions.DROP));
 
-                DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                        oldDepcyGraph.getReversedGraph(), toDrop);
-                customIteration(dfi, new DropTraversalAdapter(toDrop, StatementActions.DROP));
-            }
+            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+                    oldDepcyGraph.getReversedGraph(), statement);
+            customIteration(dfi, new DropTraversalAdapter(statement, StatementActions.DROP));
         }
+
     }
 
     /**
@@ -124,15 +124,14 @@ public class DepcyResolver {
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
-        toCreate = getObjectFromDB(toCreate, newDb);
-        if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
-            if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(toCreate, StatementActions.CREATE))) {
-                sKippedObjects.add(new AbstractMap.SimpleEntry<>(toCreate, StatementActions.CREATE));
+        PgStatement statement = getObjectFromDB(toCreate, newDb);
+        if (newDepcyGraph.getGraph().containsVertex(statement)
+                && !sKippedObjects.contains(new AbstractMap.SimpleEntry<>(statement, StatementActions.CREATE))) {
+            sKippedObjects.add(new AbstractMap.SimpleEntry<>(statement, StatementActions.CREATE));
 
-                DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                        newDepcyGraph.getGraph(), toCreate);
-                customIteration(dfi, new CreateTraversalAdapter(toCreate, StatementActions.CREATE));
-            }
+            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+                    newDepcyGraph.getGraph(), statement);
+            customIteration(dfi, new CreateTraversalAdapter(statement, StatementActions.CREATE));
         }
     }
 
@@ -143,24 +142,24 @@ public class DepcyResolver {
      */
     public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
         if (newObj != null && oldObj != null) {
-            oldObj = getObjectFromDB(oldObj, oldDb);
-            newObj = getObjectFromDB(newObj, newDb);
+            PgStatement oldObjStat = getObjectFromDB(oldObj, oldDb);
+            PgStatement newObjStat = getObjectFromDB(newObj, newDb);
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
-            boolean isChanged = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);
+            boolean isChanged = oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies);
 
             if (isChanged) {
                 if (isNeedDepcies.get()) {
                     // is state alterable (sb.length() > 0)
                     // is checked in the depcy tracker in this case
-                    addDropStatements(oldObj);
+                    addDropStatements(oldObjStat);
                 } else {
                     // объект будет пересоздан ниже в новом состоянии, поэтому
                     // ничего делать не нужно
-                    if (!inDropsList(oldObj)) {
+                    if (!inDropsList(oldObjStat)) {
                         addToListWithoutDepcies(
                                 sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
-                                        oldObj, null);
+                                        oldObjStat, null);
                     }
                 }
             }
@@ -177,10 +176,7 @@ public class DepcyResolver {
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
                 if (action.getAction() == StatementActions.DROP) {
-                    PgStatement statement = action.getOldObj();
-                    if (!toRecreate.contains(statement)){
-                        toRecreate.add(statement);
-                    }
+                    toRecreate.add(action.getOldObj());
                 }
             }
             for (PgStatement drop : toRecreate) {
@@ -351,12 +347,12 @@ public class DepcyResolver {
      * @return
      */
     public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
-        toCreate = getObjectFromDB(toCreate, newDb);
+        PgStatement statement = getObjectFromDB(toCreate, newDb);
         Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
+        if (newDepcyGraph.getGraph().containsVertex(statement)) {
 
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getGraph(), toCreate);
+                    newDepcyGraph.getGraph(), statement);
             customIteration(dfi, new DepcyIterator(depcies));
         }
         return depcies;
@@ -368,11 +364,11 @@ public class DepcyResolver {
      * @return
      */
     public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
-        toDrop = getObjectFromDB(toDrop, oldDb);
+        PgStatement statement = getObjectFromDB(toDrop, oldDb);
         Set<PgStatement> depcies = new HashSet<>();
-        if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
+        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedGraph(), toDrop);
+                    oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DepcyIterator(depcies));
         }
         return depcies;
@@ -432,12 +428,10 @@ public class DepcyResolver {
                 // в случае необходимости изменения (ALter) объекта с
                 // зависимостями нужно сначала создать объект с зависимостями,
                 // потом изменить его
-                if (isNeedDepcies.get()) {
-                    if (action == StatementActions.ALTER) {
-                        addCreateStatements(newObj);
-                        addToList(oldObj);
-                        return true;
-                    }
+                if (isNeedDepcies.get() && action == StatementActions.ALTER) {
+                    addCreateStatements(newObj);
+                    addToList(oldObj);
+                    return true;
                 }
             }
             // Колонки пропускаются при удалении таблицы
@@ -582,10 +576,8 @@ public class DepcyResolver {
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy)) {
-                if (isNeedDepcy.get()) {
-                    needDrop = st;
-                }
+            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
+                needDrop = st;
             }
         }
 
