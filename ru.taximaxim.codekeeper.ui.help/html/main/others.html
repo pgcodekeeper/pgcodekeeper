@@ -24,14 +24,14 @@
 <h3>Начало работы</h3>
 <p>
 	Последнюю версию cli сборки для вашей платформы на данный момент возможно скачать только по запросу.
-	Распаковать архив, выполнить pgcodekeeper-cli --apgdiff для проверки работоспособности. На MacOS нужно спуститься в поддиректорию pgcodekeeper-cli.app/Contents/MacOS/.
+	Распаковать архив, выполнить pgcodekeeper-cli для проверки работоспособности. На MacOS нужно спуститься в поддиректорию pgcodekeeper-cli.app/Contents/MacOS/.
 </p>
 <p>
-	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --apgdiff --help</b>
+	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --help</b>
 </p>
 <h3>Пример</h3>
 <p>
-<pre>pgcodekeeper-cli --apgdiff --diff --license /home/codekeeper/licenseFile \
+<pre>pgcodekeeper-cli --diff --license /home/codekeeper/licenseFile \
 --dbOld-format db --dbNew-format parsed \
 jdbc:postgresql://localhost:5432/testdb1?user=user&password=password \
 /home/codekeeper/projects/test1/ \

@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.mainapp;
 
-import java.util.Arrays;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -16,18 +14,17 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  */
 public class ApplicationStandalone implements IApplication {
 
-    private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     private static final String EXECUTABLE_NAME = "pgcodekeeper-standalone";
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        String[] pgCommands = getApgdiffArguments();
+        String[] pgCommands = Platform.getApplicationArgs();
         if (pgCommands != null) {
             callApgdiffMain(pgCommands);
         } else {
             System.err.println("Usage: " +
-                    EXECUTABLE_NAME + ' ' + APGDIFF_TO_CONSOLE_MODE +
-                    " apgdiff_arguments");
+                    EXECUTABLE_NAME + ' ' +
+                    " pgcodekeeper_arguments");
         }
         return IApplication.EXIT_OK;
     }
@@ -42,20 +39,8 @@ public class ApplicationStandalone implements IApplication {
         }
     }
 
-    /**
-     * @return arrays of arguments that go after --apgdiff,
-     *          or null if --apgdiff is not found in args
-     */
-    private String[] getApgdiffArguments() {
-        String[] args = Platform.getApplicationArgs();
-        int arg = Arrays.asList(args).indexOf(APGDIFF_TO_CONSOLE_MODE);
-        if (arg != -1) {
-            return Arrays.copyOfRange(args, ++arg, args.length);
-        }
-        return null;
-    }
-
     @Override
     public void stop() {
+        //don't need stop
     }
 }
