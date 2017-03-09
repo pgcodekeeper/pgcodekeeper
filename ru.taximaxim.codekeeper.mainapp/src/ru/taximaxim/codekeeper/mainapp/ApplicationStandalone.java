@@ -14,18 +14,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  */
 public class ApplicationStandalone implements IApplication {
 
-    private static final String EXECUTABLE_NAME = "pgcodekeeper-standalone";
-
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        String[] pgCommands = Platform.getApplicationArgs();
-        if (pgCommands != null) {
-            callApgdiffMain(pgCommands);
-        } else {
-            System.err.println("Usage: " +
-                    EXECUTABLE_NAME + ' ' +
-                    " pgcodekeeper_arguments");
-        }
+        callApgdiffMain(Platform.getApplicationArgs());
         return IApplication.EXIT_OK;
     }
 
@@ -34,7 +25,7 @@ public class ApplicationStandalone implements IApplication {
             Main.main(pgCommands);
         } catch (Exception e) {
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
-                    "Calling apgdiff error", e);
+                    "Calling pgcodekeeper error", e);
             Platform.getLog(Activator.getDefault().getBundle()).log(error);
         }
     }
