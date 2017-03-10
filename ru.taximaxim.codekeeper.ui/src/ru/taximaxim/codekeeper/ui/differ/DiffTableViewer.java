@@ -137,6 +137,10 @@ public class DiffTableViewer extends Composite {
         return viewer;
     }
 
+    Collection<TreeElement> getElements() {
+        return Collections.unmodifiableCollection(elements);
+    }
+
     public DiffTableViewer(Composite parent, boolean viewOnly, DiffSide projSide) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
@@ -391,7 +395,7 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                new DiffPaneDialog(getShell(), el, dbProject, dbRemote, projSide).open();
+                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote, projSide).open();
             }
         });
 
@@ -716,11 +720,11 @@ public class DiffTableViewer extends Composite {
 
     private void setChecked(TreeElement el, boolean checked) {
         el.setSelected(checked);
-        if (provider.isContainer(el)) {
+        if (isContainer(el)) {
             setCheckedGrayed(el, null);
         } else {
             viewer.setChecked(el, checked);
-            if (provider.isSubElement(el)) {
+            if (isSubElement(el)) {
                 setCheckedGrayed(el.getParent(), null);
             }
         }
@@ -786,6 +790,15 @@ public class DiffTableViewer extends Composite {
         }
     }
 
+    static boolean isContainer(TreeElement el) {
+        return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
+    }
+
+    static boolean isSubElement(TreeElement el) {
+        TreeElement parent = el.getParent();
+        return parent != null && isContainer(parent);
+    }
+
     private class DiffContentProvider implements ITreeContentProvider {
 
         @Override
@@ -802,7 +815,7 @@ public class DiffTableViewer extends Composite {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (!(parentElement instanceof TreeElement)) {
-                // process as root input (List of elements)
+                // process as root input (Collection of elements)
                 return getElements(parentElement);
             }
             TreeElement el = (TreeElement) parentElement;
@@ -839,15 +852,6 @@ public class DiffTableViewer extends Composite {
             return false;
         }
 
-        private boolean isContainer(TreeElement el) {
-            return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
-        }
-
-        private boolean isSubElement(TreeElement el) {
-            TreeElement parent = el.getParent();
-            return parent != null && isContainer(parent);
-        }
-
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             // no impl
@@ -882,7 +886,7 @@ public class DiffTableViewer extends Composite {
 
         private void setChecked(Object element, boolean checked) {
             TreeElement el = (TreeElement) element;
-            if (provider.isContainer(el)) {
+            if (isContainer(el)) {
                 setSubTreeChecked(el, checked);
             }
             // explicitly check root even when using setSubTreeChecked
@@ -917,7 +921,7 @@ public class DiffTableViewer extends Composite {
          * @param providedExpandedState element's expanded state, if null viewer is queried
          */
         private boolean contGraySelected(TreeElement el, Boolean providedExpandedState) {
-            if (!provider.isContainer(el) || !el.hasChildren() ||
+            if (!isContainer(el) || !el.hasChildren() ||
                     (providedExpandedState != null ? providedExpandedState : viewer.getExpandedState(el))) {
                 return false;
             }
@@ -1041,7 +1045,7 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private static class TableViewerFilter extends ViewerFilter {
+    private class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
         private boolean useRegEx;
@@ -1070,17 +1074,19 @@ public class DiffTableViewer extends Composite {
             if (filterName == null) {
                 return true;
             }
-            if (useRegEx) {
-                if (regExPattern != null) {
-                    return getMatchingLocation(((TreeElement) element).getName(),
-                            filterName, regExPattern) != null;
-                } else {
-                    return false;
+            Pattern filterRegex = useRegEx ? regExPattern : null;
+            TreeElement el = (TreeElement) element;
+            boolean found = getMatchingLocation(el.getName(), filterName, filterRegex) != null;
+
+            // also show containers that have content matching current filter
+            if (!found && isContainer(el)) {
+                Iterator<TreeElement> it = el.getChildren().iterator();
+                while (!found && it.hasNext()) {
+                    TreeElement child = it.next();
+                    found |= elements.contains(child) && select(viewer, el, child);
                 }
-            } else {
-                return getMatchingLocation(((TreeElement) element).getName(),
-                        filterName, null) != null;
             }
+            return found;
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
