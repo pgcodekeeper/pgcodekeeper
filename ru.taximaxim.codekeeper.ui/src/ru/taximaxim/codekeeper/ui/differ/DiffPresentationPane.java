@@ -165,7 +165,7 @@ public abstract class DiffPresentationPane extends Composite {
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, mainPrefs, false, projSide);
+        diffTable = new DiffTableViewer(sashOuter, false, projSide);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
