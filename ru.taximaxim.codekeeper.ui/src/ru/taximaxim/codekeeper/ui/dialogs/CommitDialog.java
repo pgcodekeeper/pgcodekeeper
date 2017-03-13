@@ -46,7 +46,6 @@ public class CommitDialog extends TrayDialog {
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable) {
         super(parentShell);
-
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
@@ -142,12 +141,10 @@ public class CommitDialog extends TrayDialog {
     @Override
     public int open() {
         int res = super.open();
-        if (res == CANCEL) {
-            // Если пользователь нажал отмену - снять выделения с зависимых элементов
-            if (depcyElementsSet != null) {
-                for (TreeElement el : depcyElementsSet) {
-                    el.setSelected(false);
-                }
+        // Если пользователь нажал отмену - снять выделения с зависимых элементов
+        if (res == CANCEL && depcyElementsSet != null) {
+            for (TreeElement el : depcyElementsSet) {
+                el.setSelected(false);
             }
         }
         return res;
@@ -165,34 +162,38 @@ public class CommitDialog extends TrayDialog {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             boolean showWarning = false;
-            elements: for (TreeElement el : depcyElementsSet) {
-                if (el.isSelected()) {
-                    continue;
-                }
-                switch (el.getSide()) {
-                // удаляется
-                case LEFT:
-                    TreeElement parent = el.getParent();
-                    while (parent != null) {
-                        if (parent.isSelected()) {
-                            showWarning = true;
-                            break elements;
-                        }
-                        parent = parent.getParent();
+            for (TreeElement el : depcyElementsSet) {
+                if (!el.isSelected()) {
+                    switch (el.getSide()) {
+                    // удаляется
+                    case LEFT:
+                        showWarning = searchFromParent(el);
+                        break;
+                        // создается
+                    case RIGHT:
+                        showWarning = el.isSubTreeSelected();
+                        break;
+                    default:
+                        break;
                     }
-                    break;
-                    // создается
-                case RIGHT:
-                    showWarning = el.isSubTreeSelected();
                     if (showWarning) {
-                        break elements;
+                        break;
                     }
-                    break;
-                case BOTH:
                 }
             }
             warningLbl.setVisible(showWarning);
             getButton(OK).setEnabled(!showWarning);
+        }
+
+        private boolean searchFromParent (TreeElement el){
+            TreeElement parent = el.getParent();
+            while (parent != null) {
+                if (parent.isSelected()) {
+                    return true;
+                }
+                parent = parent.getParent();
+            }
+            return false;
         }
     }
 }
