@@ -68,9 +68,8 @@ public class CreateTrigger extends ParserAbstract {
                 }
             }
 
-            Schema_qualified_nameContext refTable = ctx.referenced_table_name;
-            if (refTable != null){
-                List<IdentifierContext> refName = refTable.identifier();
+            if (ctx.referenced_table_name != null){
+                List<IdentifierContext> refName = ctx.referenced_table_name.identifier();
                 String refSchemaName = QNameParser.getSecondName(refName);
                 String refRelName = QNameParser.getFirstName(refName);
 
@@ -89,7 +88,6 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
 
-        trigger.setFunction(getFullCtxText(ctx.func_name));
         List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
         trigger.addDep(new GenericColumn(QNameParser.getSchemaName(funcIds, getDefSchemaName()),
                 QNameParser.getFirstName(funcIds) + "()", DbObjType.FUNCTION));

@@ -120,7 +120,7 @@ public class TriggersReader extends JdbcReader {
 
         t.addDep(new GenericColumn(funcSchema, funcName + "()", DbObjType.FUNCTION));
 
-        if (res.getInt("tgconstraint") != 0) {
+        if (res.getLong("tgconstraint") != 0) {
             t.setConstraint(true);
 
             String refRelName = res.getString("refrelname");
