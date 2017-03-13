@@ -851,16 +851,6 @@ public class DiffTableViewer extends Composite {
             }
             return false;
         }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            // no impl
-        }
-
-        @Override
-        public void dispose() {
-            // no impl
-        }
     }
 
     private class CheckStateListener implements ICheckStateListener {
