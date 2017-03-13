@@ -25,13 +25,13 @@ public class ApplicationStandalone implements IApplication {
             Main.main(pgCommands);
         } catch (Exception e) {
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
-                    "Calling pgcodekeeper error", e);
+                    "pgCodeKeeper error", e);
             Platform.getLog(Activator.getDefault().getBundle()).log(error);
         }
     }
 
     @Override
     public void stop() {
-        //don't need stop
+        // no impl
     }
 }
