@@ -4,17 +4,17 @@
    <extension
          point="org.eclipse.help.toc">
       <toc
-            file="toc.xml"
+            file="$nl$/toc.xml"
             primary="true">
       </toc>
       <toc
-            file="tocgettingstarted.xml">
+            file="$nl$/tocgettingstarted.xml">
       </toc>
    </extension>
    <extension
          point="org.eclipse.help.contexts">
          <contexts
-               file="pgCodeKeeperContext.xml">
+               file="$nl$/pgCodeKeeperContext.xml">
          </contexts>
    </extension>
 
