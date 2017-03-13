@@ -1,0 +1,1 @@
+ALTER VIEW testview RESET (check_option);

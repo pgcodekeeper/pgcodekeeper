@@ -7,7 +7,9 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,15 +23,18 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgView extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
+    private static final String CHECK_OPTION = "check_option";
     private String query;
     private String normalizedQuery;
+    private final Map<String, String> options = new LinkedHashMap<>();
     private List<String> columnNames = new ArrayList<>();
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
+
 
     @Override
     public DbObjType getStatementType() {
@@ -125,6 +130,22 @@ implements PgRuleContainer, PgTriggerContainer {
         sbSQL.append("CREATE VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : options.entrySet()){
+            if (!CHECK_OPTION.equals(entry.getKey())){
+                sb.append(entry.getKey());
+                if (!entry.getValue().isEmpty()){
+                    sb.append("=").append(entry.getValue());
+                }
+                sb.append(", ");
+            }
+        }
+
+        if (sb.length() > 0){
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH (").append(sb).append(")");
+        }
+
         if (columnNames != null && !columnNames.isEmpty()) {
             sbSQL.append(" (");
 
@@ -140,6 +161,14 @@ implements PgRuleContainer, PgTriggerContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
+        if (options.containsKey(CHECK_OPTION)){
+            String chekOption = options.get(CHECK_OPTION);
+            sbSQL.append("\nWITH ");
+            if (chekOption != null){
+                sbSQL.append(chekOption.toUpperCase());
+            }
+            sbSQL.append(" CHECK OPTION");
+        }
         sbSQL.append(';');
 
         appendOwnerSQL(sbSQL);
@@ -266,6 +295,9 @@ implements PgRuleContainer, PgTriggerContainer {
                                 .getColumnName()) + " IS NULL;");
             }
         }
+
+        PgTable.compareOptions(oldView.getOptions(), newView.getOptions(), sb, getName(), DbObjType.VIEW);
+
         return sb.length() > startLength;
     }
 
@@ -305,6 +337,17 @@ implements PgRuleContainer, PgTriggerContainer {
                 return;
             }
         }
+    }
+
+    @Override
+    public Map <String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String option, String value) {
+        options.put(option, value);
+        resetHash();
     }
 
     /**
@@ -360,7 +403,8 @@ implements PgRuleContainer, PgTriggerContainer {
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
-                    && Objects.equals(columnComments, view.getColumnComments());
+                    && Objects.equals(columnComments, view.getColumnComments())
+                    && Objects.equals(options, view.getOptions());
         }
 
         return eq;
@@ -404,6 +448,7 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
         return result;
     }
 
@@ -423,6 +468,7 @@ implements PgRuleContainer, PgTriggerContainer {
         }
         viewDst.setOwner(getOwner());
         viewDst.deps.addAll(deps);
+        viewDst.options.putAll(options);
         return viewDst;
     }
 
@@ -444,11 +490,11 @@ implements PgRuleContainer, PgTriggerContainer {
     public static class DefaultValue {
 
         private final String columnName;
-        private final String defaultValue;
+        private final String defaultVal;
 
         DefaultValue(final String columnName, final String defaultValue) {
             this.columnName = columnName;
-            this.defaultValue = defaultValue;
+            this.defaultVal = defaultValue;
         }
 
         public String getColumnName() {
@@ -456,7 +502,7 @@ implements PgRuleContainer, PgTriggerContainer {
         }
 
         public String getDefaultValue() {
-            return defaultValue;
+            return defaultVal;
         }
 
         @Override
@@ -468,7 +514,7 @@ implements PgRuleContainer, PgTriggerContainer {
             } else if(obj instanceof DefaultValue) {
                 DefaultValue val = (DefaultValue) obj;
                 eq = Objects.equals(columnName, val.getColumnName())
-                        && Objects.equals(defaultValue, val.getDefaultValue());
+                        && Objects.equals(defaultVal, val.getDefaultValue());
             }
 
             return eq;
@@ -479,7 +525,7 @@ implements PgRuleContainer, PgTriggerContainer {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
-            result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+            result = prime * result + ((defaultVal == null) ? 0 : defaultVal.hashCode());
             return result;
         }
     }

@@ -1,0 +1,1 @@
+ALTER VIEW testview SET (check_option = local);

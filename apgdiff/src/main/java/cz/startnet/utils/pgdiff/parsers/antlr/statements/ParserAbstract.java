@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
@@ -32,6 +33,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgOptionContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -293,5 +295,34 @@ public abstract class ParserAbstract {
             st.addDep(new GenericColumn(schemaCtx == null ? schema : schemaCtx.getText(),
                     qname.identifier_nontype().getText(), DbObjType.TYPE));
         }
+    }
+
+    public static void fillStorageParams(String[] options, PgOptionContainer optionContainer,
+            boolean isToast) {
+        for (String pair : options) {
+            int sep = pair.indexOf('=');
+            String option, value;
+            if (sep == -1) {
+                option = pair;
+                value = "";
+            } else {
+                option = pair.substring(0, sep);
+                value = pair.substring(sep + 1);
+            }
+            if (!PgDiffUtils.isValidId(value, false, false)) {
+                // only quote non-ids; pg_dump behavior
+                value = PgDiffUtils.quoteString(value);
+            }
+            fillStorageParams (value, option, isToast, optionContainer);
+        }
+    }
+
+    public static void fillStorageParams (String value, String option, boolean isToast,
+            PgOptionContainer  optionContainer){
+        option = PgDiffUtils.getQuotedName(option);
+        if (isToast) {
+            option = "toast."+ option;
+        }
+        optionContainer.addOption(option, value);
     }
 }

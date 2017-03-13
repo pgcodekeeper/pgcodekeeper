@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -85,6 +86,13 @@ public class ViewsReader extends JdbcReader {
 
         // Query view privileges
         loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
+
+        // STORAGE PARAMETRS
+        Array arr = res.getArray("reloptions");
+        if (arr != null) {
+            String[] options = (String[]) arr.getArray();
+            ParserAbstract.fillStorageParams(options, v, false);
+        }
 
         // COMMENT
         String comment = res.getString("comment");

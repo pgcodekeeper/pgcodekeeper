@@ -205,7 +205,8 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_views(schema_oids bigint[]
     column_names name[],
     column_comments text[],
     column_defaults text[],
-    column_acl text[]) AS
+    column_acl text[],
+    reloptions text[]) AS
 $BODY$
 DECLARE
 schema_name text;
@@ -235,7 +236,8 @@ SELECT schema_oid,
        subselect.column_names,
        subselect.column_comments,
        subselect.column_defaults,
-       subselect.column_acl
+       subselect.column_acl,
+       c.reloptions
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
