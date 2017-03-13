@@ -17,7 +17,6 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -252,13 +251,5 @@ class DiffTreeContentProvider implements ITreeContentProvider {
     @Override
     public Object[] getChildren(Object parentElement) {
         return getElements(parentElement);
-    }
-
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    }
-
-    @Override
-    public void dispose() {
     }
 }

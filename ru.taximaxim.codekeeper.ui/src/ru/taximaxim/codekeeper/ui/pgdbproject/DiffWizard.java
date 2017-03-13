@@ -58,7 +58,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void addPages() {
         pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs, proj);
-        pagePartial = new PagePartial(Messages.diffWizard_diff_tree, mainPrefs);
+        pagePartial = new PagePartial(Messages.diffWizard_diff_tree);
 
         addPage(pageDiff);
         addPage(pagePartial);
@@ -214,7 +214,6 @@ class PageDiff extends WizardPage implements Listener {
 
 class PagePartial extends WizardPage {
 
-    private final IPreferenceStore mainPrefs;
     private TreeDiffer treeDiffer;
     private Label lblSource, lblTarget;
     private DiffTableViewer diffTable;
@@ -230,9 +229,8 @@ class PagePartial extends WizardPage {
         return treeDiffer;
     }
 
-    public PagePartial(String pageName, IPreferenceStore mainPrefs) {
+    public PagePartial(String pageName) {
         super(pageName, pageName, null);
-        this.mainPrefs = mainPrefs;
         setDescription(Messages.diffwizard_pagepartial_description);
     }
 
@@ -246,7 +244,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, mainPrefs, false, DiffSide.LEFT);
+        diffTable = new DiffTableViewer(container, false, DiffSide.LEFT);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 480;
         gd.heightHint = 360;

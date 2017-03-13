@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.util.Collection;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -18,16 +20,18 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DiffPaneDialog extends Dialog {
 
     private final TreeElement input;
+    private final Collection<TreeElement> availableElements;
     private final DbSource dbProject;
     private final DbSource dbRemote;
     private final DiffSide projSide;
 
     private DiffPaneViewer diffPane;
 
-    public DiffPaneDialog(Shell parentShell, TreeElement el, DbSource dbProject,
-            DbSource dbRemote, DiffSide projSide) {
+    public DiffPaneDialog(Shell parentShell, TreeElement el, Collection<TreeElement> availableElements,
+            DbSource dbProject, DbSource dbRemote, DiffSide projSide) {
         super(parentShell);
         this.input = el;
+        this.availableElements = availableElements;
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.projSide = projSide;
@@ -57,7 +61,7 @@ public class DiffPaneDialog extends Dialog {
 
         diffPane = new DiffPaneViewer(container, SWT.NONE, projSide);
         diffPane.setDbSources(dbProject, dbRemote);
-        diffPane.setInput(input);
+        diffPane.setInput(input, availableElements);
 
         return area;
     }

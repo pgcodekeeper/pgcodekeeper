@@ -38,6 +38,8 @@ public interface ApgdiffConsts {
         String JDBC_SUCCESS = "success";
     }
 
+    Object[] EMPTY_ARRAY = new Object[0];
+
     @Deprecated
     // improve builtins detection using tokens and jdbc ways
     Collection<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(

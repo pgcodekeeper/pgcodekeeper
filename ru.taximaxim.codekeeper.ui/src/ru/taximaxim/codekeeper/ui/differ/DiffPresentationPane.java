@@ -165,20 +165,19 @@ public abstract class DiffPresentationPane extends Composite {
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, mainPrefs, false, projSide);
+        diffTable = new DiffTableViewer(sashOuter, false, projSide);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = ((IStructuredSelection) event
-                        .getSelection());
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 
                 if (selection.size() != 1) {
-                    diffPane.setInput(null);
+                    diffPane.setInput(null, null);
                 } else {
                     TreeElement el = (TreeElement) selection.getFirstElement();
-                    diffPane.setInput(el);
+                    diffPane.setInput(el, diffTable.getElements());
                 }
             }
         });
@@ -275,7 +274,7 @@ public abstract class DiffPresentationPane extends Composite {
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
         diffPane.setDbSources(dbProject, dbRemote);
-        diffPane.setInput(null);
+        diffPane.setInput(null, null);
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
