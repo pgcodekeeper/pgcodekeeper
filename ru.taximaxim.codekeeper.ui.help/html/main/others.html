@@ -13,27 +13,24 @@
 	В качестве альтернативы плагина для Eclipse IDE предоставляется возможность сравнения схем баз данных через командную строку.
 	Для этого необходимо скачать pgCodeKeeper-cli приложение, которое работает автономно.
 </p>
-<p>
 	Консольная сборка программы может быть использована для:
 	<ul>
     	<li>создания из дампа файловой структуры "проекта" pgCodeKeeper (без проекта Eclipse)</li>
     	<li>создания скриптов наката с использованием дампов и файловых структур pgCodeKeeper</li>
     	<li>создания скриптов наката с использованием соединений к базам данных</li>
 	</ul>
-</p>
 <h3>Начало работы</h3>
 <p>
 	Последнюю версию cli сборки для вашей платформы на данный момент возможно скачать только по запросу.
-	Распаковать архив, выполнить pgcodekeeper-cli --apgdiff для проверки работоспособности. На MacOS нужно спуститься в поддиректорию pgcodekeeper-cli.app/Contents/MacOS/.
+	Распаковать архив, выполнить pgcodekeeper-cli для проверки работоспособности. На MacOS нужно спуститься в поддиректорию pgcodekeeper-cli.app/Contents/MacOS/.
 </p>
 <p>
-	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --apgdiff --help</b>
+	Набор параметров, доступных для работы с программой Вы можете посмотреть выполнив команду <b>pgcodekeeper-cli --help</b>
 </p>
 <h3>Пример</h3>
-<p>
-<pre>pgcodekeeper-cli --apgdiff --diff --license /home/codekeeper/licenseFile \
+<pre>pgcodekeeper-cli --diff --license /home/codekeeper/licenseFile \
 --dbOld-format db --dbNew-format parsed \
-jdbc:postgresql://localhost:5432/testdb1?user=user&password=password \
+jdbc:postgresql://localhost:5432/testdb1?user=user&amp;password=password \
 /home/codekeeper/projects/test1/ \
 /home/codekeeper/projects/diff.sql</pre>
 
@@ -41,6 +38,5 @@ jdbc:postgresql://localhost:5432/testdb1?user=user&password=password \
 	будет записан скрипт миграции различий из проекта в директории
 	<span class="inline-code">test1</span> в базу данных <span class="inline-code">testdb1</span>
 	на сервере <span class="inline-code">localhost:5432</span>.  
-</p>
 </body>
 </html>

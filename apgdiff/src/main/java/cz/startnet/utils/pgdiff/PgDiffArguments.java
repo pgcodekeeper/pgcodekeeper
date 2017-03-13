@@ -297,6 +297,8 @@ public class PgDiffArguments {
                     case RESTART_WITH:
                         setIgnoreRestartWith(true);
                         break;
+                    default:
+                        break;
                     }
                 }
             } else if("--db-format".equals(args[i])) { //$NON-NLS-1$
@@ -364,7 +366,7 @@ public class PgDiffArguments {
         if (args.length == 1 && isVersion()) {
             printVersion(writer);
             return false;
-        } else if ((args.length == 1 && isHelp())) {
+        } else if (args.length == 1 && isHelp()) {
             printUsage(writer);
             return false;
         } else if (args.length == 1 && isListCharsets()) {
