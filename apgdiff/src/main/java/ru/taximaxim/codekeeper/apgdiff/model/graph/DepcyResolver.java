@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -104,14 +104,13 @@ public class DepcyResolver {
     public void addDropStatements(PgStatement toDrop) {
         PgStatement statement = getObjectFromDB(toDrop, oldDb);
         if (oldDepcyGraph.getReversedGraph().containsVertex(statement)
-                && !sKippedObjects.contains(new AbstractMap.SimpleEntry<>(statement, StatementActions.DROP))) {
-            sKippedObjects.add(new AbstractMap.SimpleEntry<>(statement, StatementActions.DROP));
+                && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.DROP))) {
+            sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.DROP));
 
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), statement);
             customIteration(dfi, new DropTraversalAdapter(statement, StatementActions.DROP));
         }
-
     }
 
     /**
@@ -126,8 +125,8 @@ public class DepcyResolver {
     public void addCreateStatements(PgStatement toCreate) {
         PgStatement statement = getObjectFromDB(toCreate, newDb);
         if (newDepcyGraph.getGraph().containsVertex(statement)
-                && !sKippedObjects.contains(new AbstractMap.SimpleEntry<>(statement, StatementActions.CREATE))) {
-            sKippedObjects.add(new AbstractMap.SimpleEntry<>(statement, StatementActions.CREATE));
+                && !sKippedObjects.contains(new SimpleEntry<>(statement, StatementActions.CREATE))) {
+            sKippedObjects.add(new SimpleEntry<>(statement, StatementActions.CREATE));
 
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), statement);
@@ -172,6 +171,8 @@ public class DepcyResolver {
     public void recreateDrops() {
         List<PgStatement> toRecreate = new ArrayList<>();
         int oldActionsSize = -1;
+        // since a recreate can trigger a drop via  dependency being altered
+        // run recreates until no more statements are being added (may need optimization)
         while (actions.size() > oldActionsSize){
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
