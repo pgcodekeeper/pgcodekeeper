@@ -192,6 +192,8 @@ public class PgDiffTest {
                     {"change_trigger_function"},
                     // Tests scenario where TRIGGER is modified.
                     {"modify_trigger"},
+                    // Tests scenario where CONSTRAINT TRIGGER is added.
+                    {"add_constraint_trigger"},
                     // Tests scenario where VIEW is added.
                     {"add_view"},
                     // Tests scenario where VIEW is dropped.
