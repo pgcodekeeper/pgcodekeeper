@@ -732,6 +732,7 @@ table_space
 action
     : cascade_restrict
       | SET (NULL | DEFAULT)
+      | NO ACTION
     ;
 
 owner_to
