@@ -167,7 +167,7 @@ public class CommitDialog extends TrayDialog {
                     switch (el.getSide()) {
                     // удаляется
                     case LEFT:
-                        showWarning = searchFromParent(el);
+                        showWarning = hasSelectedParent(el);
                         break;
                         // создается
                     case RIGHT:
@@ -185,7 +185,7 @@ public class CommitDialog extends TrayDialog {
             getButton(OK).setEnabled(!showWarning);
         }
 
-        private boolean searchFromParent (TreeElement el){
+        private boolean hasSelectedParent(TreeElement el) {
             TreeElement parent = el.getParent();
             while (parent != null) {
                 if (parent.isSelected()) {
