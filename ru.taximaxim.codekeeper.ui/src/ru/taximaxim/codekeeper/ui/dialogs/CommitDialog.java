@@ -46,7 +46,6 @@ public class CommitDialog extends TrayDialog {
             DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable) {
         super(parentShell);
-
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
@@ -82,14 +81,15 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, prefs, true, DiffSide.LEFT);
+        dtvTop = new DiffTableViewer(gTop, true, DiffSide.LEFT);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
 
+        dtvTop.setAutoExpand(true);
         List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
-        dtvTop.setInputCollection(result, dbProject, dbRemote, diffTree);
+        dtvTop.setInputCollection(result, dbProject, dbRemote);
 
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -99,17 +99,18 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, prefs, false, DiffSide.LEFT);
+            dtvBottom = new DiffTableViewer(gBottom, false, DiffSide.LEFT);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
+
             // выбрать все зависимые элементы для наката
             for (TreeElement el : depcyElementsSet) {
                 el.setSelected(true);
             }
-            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote, diffTree);
-            dtvBottom.redraw();
+            dtvTop.setAutoExpand(true);
+            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
 
             dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
             warningLbl = new Label(gBottom, SWT.NONE);
@@ -140,12 +141,10 @@ public class CommitDialog extends TrayDialog {
     @Override
     public int open() {
         int res = super.open();
-        if (res == CANCEL) {
-            // Если пользователь нажал отмену - снять выделения с зависимых элементов
-            if (depcyElementsSet != null) {
-                for (TreeElement el : depcyElementsSet) {
-                    el.setSelected(false);
-                }
+        // Если пользователь нажал отмену - снять выделения с зависимых элементов
+        if (res == CANCEL && depcyElementsSet != null) {
+            for (TreeElement el : depcyElementsSet) {
+                el.setSelected(false);
             }
         }
         return res;
@@ -163,34 +162,38 @@ public class CommitDialog extends TrayDialog {
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
             boolean showWarning = false;
-            elements: for (TreeElement el : depcyElementsSet) {
-                if (el.isSelected()) {
-                    continue;
-                }
-                switch (el.getSide()) {
-                // удаляется
-                case LEFT:
-                    TreeElement parent = el.getParent();
-                    while (parent != null) {
-                        if (parent.isSelected()) {
-                            showWarning = true;
-                            break elements;
-                        }
-                        parent = parent.getParent();
+            for (TreeElement el : depcyElementsSet) {
+                if (!el.isSelected()) {
+                    switch (el.getSide()) {
+                    // удаляется
+                    case LEFT:
+                        showWarning = hasSelectedParent(el);
+                        break;
+                        // создается
+                    case RIGHT:
+                        showWarning = el.isSubTreeSelected();
+                        break;
+                    default:
+                        break;
                     }
-                    break;
-                    // создается
-                case RIGHT:
-                    showWarning = el.isSubTreeSelected();
                     if (showWarning) {
-                        break elements;
+                        break;
                     }
-                    break;
-                case BOTH:
                 }
             }
             warningLbl.setVisible(showWarning);
             getButton(OK).setEnabled(!showWarning);
+        }
+
+        private boolean hasSelectedParent(TreeElement el) {
+            TreeElement parent = el.getParent();
+            while (parent != null) {
+                if (parent.isSelected()) {
+                    return true;
+                }
+                parent = parent.getParent();
+            }
+            return false;
         }
     }
 }

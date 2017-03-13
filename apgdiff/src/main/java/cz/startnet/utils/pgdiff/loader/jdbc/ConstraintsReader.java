@@ -43,40 +43,21 @@ public class ConstraintsReader extends JdbcReader {
 
     private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName)
             throws SQLException {
+        String contype = res.getString("contype");
+
         String constraintName = res.getString("conname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, constraintName, DbObjType.CONSTRAINT));
         PgConstraint c = new PgConstraint(constraintName, "");
 
-        String contype = res.getString("contype");
         switch (contype) {
         case "f":
-            String fschema = res.getString("foreign_schema_name");
-            String ftable = res.getString("foreign_table_name");
-            GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
-            c.setForeignTable(ftableRef);
-            c.addDep(ftableRef);
-
-            String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
-            for (String colName : referencedColumnNames) {
-                if (colName != null) {
-                    c.addForeignColumn(colName);
-                    c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
-                }
-            }
-
+            createFKeyCon(res, c);
             break; // end foreign key
         case "p":
         case "u":
-            if ("p".equals(contype)) {
-                c.setPrimaryKey(true);
-            } else {
-                c.setUnique(true);
-            }
-
-            String[] concols = (String[]) res.getArray("cols").getArray();
-            for (String name : concols) {
-                c.addColumn(name);
-            }
+            createUniqueCon(contype, res, c);
+            break;
+        default:
             break;
         }
 
@@ -92,7 +73,36 @@ public class ConstraintsReader extends JdbcReader {
         if (comment != null && !comment.isEmpty()) {
             c.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
-
         return c;
+
+    }
+
+    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
+        String fschema = res.getString("foreign_schema_name");
+        String ftable = res.getString("foreign_table_name");
+        GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
+        c.setForeignTable(ftableRef);
+        c.addDep(ftableRef);
+
+        String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
+        for (String colName : referencedColumnNames) {
+            if (colName != null) {
+                c.addForeignColumn(colName);
+                c.addDep(new GenericColumn(fschema, ftable, colName, DbObjType.COLUMN));
+            }
+        }
+    }
+
+    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
+        if ("p".equals(contype)) {
+            c.setPrimaryKey(true);
+        } else {
+            c.setUnique(true);
+        }
+
+        String[] concols = (String[]) res.getArray("cols").getArray();
+        for (String name : concols) {
+            c.addColumn(name);
+        }
     }
 }

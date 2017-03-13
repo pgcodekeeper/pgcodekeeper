@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Начало работы" link_to="$nl$/toc.xml#gettingstarted"> 
+	<topic href="$nl$/html/gettingstarted/installation_eclipse.html" label="Установка pgCodeKeeper"/>
+    <topic href="$nl$/html/gettingstarted/import_project.html" label="Импорт проекта"/>
+    <topic label="Виды и редакторы">
+    	<topic href="$nl$/html/gettingstarted/pgcodekeeper_project_view.html" label="Редактор pgCodeKeeper">
+            <topic href="$nl$/html/gettingstarted/update_project_dialog.html" label="Диалог обновления проекта"/>
+            <topic href="$nl$/html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей"/>
+        </topic>
+    	<topic href="$nl$/html/gettingstarted/sql_editor.html" label="SQL редактор pgCodeKeeper"/>
+    	<topic href="$nl$/html/gettingstarted/roll_on_script.html" label="Редактор скрипта наката"/>
+    	<topic href="$nl$/html/gettingstarted/pg_depend_view.html" label="pg Зависимости"/>
+    </topic>
+	 <topic href="$nl$/html/preferences/main_page.html" label="Настройки">
+    	<topic href="$nl$/html/preferences/excluded_objects.html" label="Исключенные объекты">
+    	</topic>
+     <topic href="$nl$/html/preferences/licensing.html" label="Лицензирование">
+     </topic>
+    	<topic href="$nl$/html/preferences/db_update.html" label="Обновление БД">
+    	</topic>
+    	<topic href="$nl$/html/preferences/prj_update.html" label="Обновление проекта">
+    	</topic>
+     <topic href="$nl$/html/preferences/using_reports.html" label="Отчеты об использовании">
+     </topic>
+     <topic href="$nl$/html/preferences/project_editor.html" label="Редактор проекта">
+     </topic>
+    	<topic label="Редактор SQL">
+        	<topic href="$nl$/html/preferences/syntax_highlighting.html" label="Подсветка синтаксиса">
+        	</topic>
+        	<topic href="$nl$/html/preferences/sql_editor_templates.html" label="Шаблоны редактора SQL">
+        	</topic>
+    	</topic>
+    	<topic href="$nl$/html/preferences/db_storage.html" label="Хранилище БД">
+    	</topic>
+    </topic>
+</toc>

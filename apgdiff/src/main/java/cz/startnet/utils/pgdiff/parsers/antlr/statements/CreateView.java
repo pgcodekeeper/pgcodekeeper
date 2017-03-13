@@ -6,6 +6,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -14,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
 
+    private static final String CHECK_OPTION = "check_option";
     private final Create_view_statementContext ctx;
 
     public CreateView(Create_view_statementContext ctx, PgDatabase db) {
@@ -36,6 +40,27 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(ParserAbstract.getFullCtxText(column));
             }
         }
+        Storage_parameterContext storage = ctx.storage_parameter();
+        if (storage != null){
+            List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
+            for (Storage_parameter_optionContext option: options){
+                String key = option.schema_qualified_name().getText();
+                VexContext value = option.vex();
+                if (value != null) {
+                    ParserAbstract.fillStorageParams(value.getText(), key , false, view);
+                } else {
+                    ParserAbstract.fillStorageParams("", key, false, view);
+                }
+            }
+        }
+        if (ctx.with_check_option() != null){
+            if (ctx.with_check_option().LOCAL() != null){
+                view.addOption(CHECK_OPTION, "local");
+            } else {
+                view.addOption(CHECK_OPTION, "cascaded");
+            }
+        }
+
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "VIEW", name);
             return null;

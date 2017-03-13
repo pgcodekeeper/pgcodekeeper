@@ -47,6 +47,12 @@ public class PgDiffTest {
                     {"drop_cluster"},
                     // Tests scenario where CLUSTER is changed on TABLE.
                     {"modify_cluster"},
+                    // Tests scenario where TABLE is modified by addition of an option.
+                    {"add_table_option"},
+                    // Tests scenario where TABLE is modified by removal option.
+                    {"delete_table_option"},
+                    // Tests scenario where TABLE is modified by changing of an option.
+                    {"modify_table_option"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
@@ -186,12 +192,20 @@ public class PgDiffTest {
                     {"change_trigger_function"},
                     // Tests scenario where TRIGGER is modified.
                     {"modify_trigger"},
+                    // Tests scenario where CONSTRAINT TRIGGER is added.
+                    {"add_constraint_trigger"},
                     // Tests scenario where VIEW is added.
                     {"add_view"},
                     // Tests scenario where VIEW is dropped.
                     {"drop_view"},
                     // Tests scenario where VIEW is modified.
                     {"modify_view"},
+                    // Tests scenario where VIEW is modified by addition of an option.
+                    {"add_view_option"},
+                    // Tests scenario where VIEW is modified by removal option.
+                    {"delete_view_option"},
+                    // Tests scenario where VIEW is modified by changing of an option.
+                    {"modify_view_option"},
                     // Tests scenario where multiple schemas are in the dumps.
                     {"multiple_schemas"},
                     // Tests scenario where --add-transaction is specified.

@@ -120,6 +120,27 @@ public class TriggersReader extends JdbcReader {
 
         t.addDep(new GenericColumn(funcSchema, funcName + "()", DbObjType.FUNCTION));
 
+        if (res.getLong("tgconstraint") != 0) {
+            t.setConstraint(true);
+
+            String refRelName = res.getString("refrelname");
+            if (refRelName != null){
+                String refSchemaName = res.getString("refnspname");
+                StringBuilder sb = new StringBuilder();
+                if (!refSchemaName.equals(schemaName)){
+                    sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
+                }
+                sb.append(PgDiffUtils.getQuotedName(refRelName));
+
+                t.setRefTableName(sb.toString());
+                t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
+            }
+
+            if (res.getBoolean("tgdeferrable")){
+                t.setImmediate(res.getBoolean("tginitdeferred"));
+            }
+        }
+
         Array arrCols = res.getArray("cols");
         if (arrCols != null) {
             for (String col_name : (String[]) arrCols.getArray()) {

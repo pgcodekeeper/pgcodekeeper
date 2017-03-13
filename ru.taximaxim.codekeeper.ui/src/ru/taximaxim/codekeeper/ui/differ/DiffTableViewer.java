@@ -2,14 +2,18 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -22,14 +26,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.PixelConverter;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -37,11 +41,14 @@ import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TreeExpansionEvent;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -60,11 +67,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -79,9 +86,10 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
-/*
- * Call CheckStateListener.updateCountLabels() when programmatically changing
- * elements' checkedSet state.
+/**
+ * Use {@link #setChecked(TreeElement, boolean)} for any kind of checkbox work.
+ * It refreshes all the needed states without calling slow full viewer refresh.
+ * Always call {@link #viewerChecksUpdated()} after finishing checkbox work.
  */
 public class DiffTableViewer extends Composite {
 
@@ -90,7 +98,7 @@ public class DiffTableViewer extends Composite {
     private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
     private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
-    private static final String REGEX_SPECIAL_CHARS = "[\\^$.|?*+(){}"; //$NON-NLS-1$
+    private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
 
     private final Image iSideBoth;
     private final Image iSideLeft;
@@ -98,13 +106,11 @@ public class DiffTableViewer extends Composite {
 
     private final boolean viewOnly;
     private final DiffSide projSide;
-    private TreeElement treeRoot;
-    // values are checkedSet states of the elements
-    private List<TreeElement> elements = new ArrayList<>();
-    private final CheckStateListener checkListener = new CheckStateListener();
+    private final Set<TreeElement> elements = new HashSet<>();
+    private final DiffContentProvider provider = new DiffContentProvider();
+    private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
-    private IStructuredSelection newSelection;
-    private IStructuredSelection oldSelection;
+    private IStructuredSelection oldSelection, newSelection;
 
     private final LocalResourceManager lrm;
     private Text txtFilterName;
@@ -113,12 +119,11 @@ public class DiffTableViewer extends Composite {
     private Label lblObjectCount;
     private Label lblCheckedCount;
 
-    private final CheckboxTableViewer viewer;
+    private final CheckboxTreeViewer viewer;
     private final TableViewerFilter viewerFilter = new TableViewerFilter();
-    private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
+    private TreeViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
 
-    private DbSource dbProject;
-    private DbSource dbRemote;
+    private DbSource dbProject, dbRemote;
 
     private Map<String, List<String>> prevChecked;
     private XmlHistory prevCheckedHistory;
@@ -128,12 +133,15 @@ public class DiffTableViewer extends Composite {
         CHECK, NAME, TYPE, CHANGE, LOCATION
     }
 
-    CheckboxTableViewer getViewer() {
+    StructuredViewer getViewer() {
         return viewer;
     }
 
-    public DiffTableViewer(Composite parent, final IPreferenceStore mainPrefs,
-            boolean viewOnly, DiffSide projSide) {
+    Collection<TreeElement> getElements() {
+        return Collections.unmodifiableCollection(elements);
+    }
+
+    public DiffTableViewer(Composite parent, boolean viewOnly, DiffSide projSide) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.projSide = projSide;
@@ -176,10 +184,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    viewer.setAllChecked(true);
-                    checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), true);
-                    viewerRefresh();
-                    cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
+                    setElementsChecked(elements, true);
                 }
             });
 
@@ -191,10 +196,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), false);
-                    viewerRefresh();
-
-                    cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
+                    setElementsChecked(elements, false);
                 }
             });
 
@@ -206,18 +208,25 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object[] initial = viewer.getCheckedElements();
+                    for (TreeElement el : elements) {
+                        setChecked(el, !el.isSelected());
+                    }
+                    viewerChecksUpdated();
+                }
+            });
 
-                    viewer.setAllChecked(true);
-                    checkListener.setElementsChecked(Arrays.asList(viewer.getCheckedElements()), true);
-                    checkListener.setElementsChecked(Arrays.asList(initial), false);
+            Button saveCheck2Clipboard = new Button(upperComp, SWT.PUSH);
+            saveCheck2Clipboard.setImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
+            saveCheck2Clipboard.setToolTipText(Messages.DiffTableViewer_copy_as_regex);
+            saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
 
-                    viewerRefresh();
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    saveCheckedElements2ClipboardAsExpession();
                 }
             });
         }
 
-        //accessible filter for viewOnly
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
         gd.widthHint = pc.convertWidthInCharsToPixels(30);
@@ -227,8 +236,10 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public void modifyText(ModifyEvent e) {
+                // TODO aggregate events with small input lengths for performance
+                // "postModifyListener"
                 viewerFilter.setFilter(txtFilterName.getText());
-                viewerRefresh();
+                viewer.refresh();
             }
         });
 
@@ -241,7 +252,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewerFilter.setUseRegEx(useRegEx.getSelection());
-                viewerRefresh();
+                viewer.refresh();
             }
         });
 
@@ -294,31 +305,15 @@ public class DiffTableViewer extends Composite {
                     updateCheckedSet(false);
                 }
             });
-
-            Button saveCheck2Clipboard = new Button(upperComp, SWT.PUSH);
-            saveCheck2Clipboard.setImage(Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
-            saveCheck2Clipboard.setToolTipText(Messages.DiffTableViewer_copy_as_regex);
-            saveCheck2Clipboard.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    saveCheckedElements2ClipboardAsExpession();
-                }
-            });
-            //set labels visible, when program is start
-            updateCheckedLabel();
         }
-        updateObjectsLabel();
+        updateObjectsLabels();
         // end upper composite
 
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
-            // TODO always needs SWT.CHECK?
-            // Creates a table viewer on the given table control.
-            // The SWT.CHECK style bit must be set on the given table control.
             viewerStyle |= SWT.CHECK;
         }
-        viewer = new CheckboxTableViewer(new Table(this, viewerStyle)){
+        viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle)){
 
             @Override
             public ISelection getSelection() {
@@ -327,8 +322,8 @@ public class DiffTableViewer extends Composite {
             }
         };
 
-        //КОСТЫЛЬ, дополнительные переменные
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
             @Override
             public void selectionChanged(final SelectionChangedEvent event) {
                 oldSelection = newSelection;
@@ -336,68 +331,45 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        viewer.getTable().setLinesVisible(true);
-        viewer.getTable().setHeaderVisible(true);
+        viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        viewer.getTree().setLinesVisible(true);
+        viewer.getTree().setHeaderVisible(true);
 
         viewer.getControl().setMenu(
                 getViewerMenu().createContextMenu(viewer.getControl()));
 
         if (!viewOnly) {
-            viewer.addCheckStateListener(checkListener);
-
-            viewer.setCheckStateProvider(new ICheckStateProvider() {
-
-                @Override
-                public boolean isChecked(Object element) {
-                    return ((TreeElement)element).isSelected();
-                }
-
-                @Override
-                public boolean isGrayed(Object element) {
-                    return false;
-                }
-
-            });
+            viewer.addCheckStateListener(new CheckStateListener());
+            checkProvider = new CheckStateProvider();
+            viewer.setCheckStateProvider(checkProvider);
+            viewer.addTreeListener(new RefreshCheckedTreeListener());
+        } else {
+            checkProvider = null;
         }
+        // resolves a bottleneck in findItems() which is very hot
+        // and slow when using native API impl
+        viewer.setUseHashlookup(true);
         viewer.setComparator(comparator);
         viewer.setFilters(new ViewerFilter[] { viewerFilter });
-        viewer.getTable().pack();
         initColumns();
-        viewer.setContentProvider(ArrayContentProvider.getInstance());
+        viewer.setContentProvider(provider);
     }
 
     private MenuManager getViewerMenu() {
         MenuManager menuMgr = new MenuManager();
         if (!viewOnly) {
-            menuMgr.add(new Action(
-                    Messages.diffTableViewer_select_child_elements) {
+            menuMgr.add(new Action(Messages.diffTableViewer_select_child_elements) {
 
                 @Override
                 public void run() {
-                    TreeElement el = (TreeElement)
-                            ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                    if (el != null) {
-                        setSubTreeChecked(el, true);
-                        updateCheckedLabel();
-                        notifyExternalCheckListener();
-                        viewerRefresh();
-                    }
+                    setSelectionSubtreesChecked((IStructuredSelection) viewer.getSelection(), true);
                 }
             });
-            menuMgr.add(new Action(
-                    Messages.diffTableViewer_deselect_child_elements) {
+            menuMgr.add(new Action(Messages.diffTableViewer_deselect_child_elements) {
 
                 @Override
                 public void run() {
-                    TreeElement el = (TreeElement)
-                            ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                    if (el != null) {
-                        setSubTreeChecked(el, false);
-                        updateCheckedLabel();
-                        notifyExternalCheckListener();
-                        viewerRefresh();
-                    }
+                    setSelectionSubtreesChecked((IStructuredSelection) viewer.getSelection(), false);
                 }
             });
             menuMgr.add(new Separator());
@@ -405,18 +377,14 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void run() {
-                    checkListener.setElementsChecked(
-                            ((IStructuredSelection) viewer.getSelection()).toList(), true);
-                    viewerRefresh();
+                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), true);
                 }
             });
             menuMgr.add(new Action(Messages.diffTableViewer_unmark_selected_elements) {
 
                 @Override
                 public void run() {
-                    checkListener.setElementsChecked(
-                            ((IStructuredSelection) viewer.getSelection()).toList(), false);
-                    viewerRefresh();
+                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), false);
                 }
             });
             menuMgr.add(new Separator());
@@ -427,7 +395,7 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                new DiffPaneDialog(getShell(), el, dbProject, dbRemote, projSide).open();
+                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote, projSide).open();
             }
         });
 
@@ -447,25 +415,24 @@ public class DiffTableViewer extends Composite {
     }
 
     private void initColumns() {
-        columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
-        columnCheck.getColumn().setResizable(true);
-        columnCheck.getColumn().setMoveable(true);
+        columnCheck = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnCheck.getColumn().setResizable(!viewOnly);
+        columnCheck.getColumn().setMoveable(!viewOnly);
 
-        columnCheck.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnCheck.getColumn(), Columns.CHECK));
+        columnCheck.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHECK));
 
         columnCheck.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
-                return " "; //$NON-NLS-1$
+                return ""; //$NON-NLS-1$
             }
         });
 
-        columnType = new TableViewerColumn(viewer, SWT.LEFT);
-        columnChange = new TableViewerColumn(viewer, SWT.LEFT);
-        columnName = new TableViewerColumn(viewer, SWT.LEFT);
-        columnLocation = new TableViewerColumn(viewer, SWT.LEFT);
+        columnType = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnName = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
@@ -487,14 +454,10 @@ public class DiffTableViewer extends Composite {
         columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
-        columnName.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnName.getColumn(), Columns.NAME));
-        columnType.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnType.getColumn(), Columns.TYPE));
-        columnChange.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnChange.getColumn(), Columns.CHANGE));
-        columnLocation.getColumn().addSelectionListener(
-                getHeaderSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
+        columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
+        columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
+        columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
+        columnLocation.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.LOCATION));
 
         updateColumnsWidth();
 
@@ -506,7 +469,7 @@ public class DiffTableViewer extends Composite {
                 cell.setText(name);
 
                 Region loc = viewerFilter.getMatchingLocation(name, viewerFilter.filterName,
-                        (viewerFilter.useRegEx) ? viewerFilter.regExPattern : null);
+                        viewerFilter.useRegEx ? viewerFilter.regExPattern : null);
                 if (loc != null) {
                     StyleRange highlightMatch = new StyleRange(loc.getOffset(),
                             loc.getLength(), null,
@@ -515,6 +478,7 @@ public class DiffTableViewer extends Composite {
                 } else {
                     cell.setStyleRanges(null);
                 }
+                super.update(cell);
             }
         });
 
@@ -544,8 +508,8 @@ public class DiffTableViewer extends Composite {
                 case BOTH: return iSideBoth;
                 case LEFT: return iSideLeft;
                 case RIGHT: return iSideRight;
+                default: return null;
                 }
-                return null;
             }
         });
 
@@ -559,7 +523,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setColumnHeaders(){
-        columnCheck.getColumn().setText(" "); //$NON-NLS-1$
+        columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
@@ -569,9 +533,9 @@ public class DiffTableViewer extends Composite {
     private void updateColumnsWidth(){
         PixelConverter pc = new PixelConverter(viewer.getControl());
         // set check column size to 4 chars
-        viewer.getTable().getColumns()[0].setWidth(pc.convertWidthInCharsToPixels(4));
+        columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
         // name column will take half of the space
-        int width = (int)(viewer.getTable().getSize().x * 0.5);
+        int width = (int)(viewer.getControl().getSize().x * 0.5f);
         columnName.getColumn().setWidth(Math.max(width, 200));
         // set type column size to 19 chars to fit "CONSTRAINT" in
         columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
@@ -581,9 +545,8 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().pack();
     }
 
-    private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,
-            final Columns index) {
-        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+    private SelectionAdapter getHeaderSelectionAdapter(final Columns index) {
+        return new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -591,14 +554,12 @@ public class DiffTableViewer extends Composite {
                     comparator.clearSortList();
                     setColumnHeaders();
                 }
-                sortViewer(column, index);
-                updateSortIndexes();
+                sortViewer(index);
             }
         };
-        return selectionAdapter;
     }
 
-    private void sortViewer(final TableColumn column, final Columns index) {
+    private void sortViewer(Columns index) {
         comparator.addSort(index);
         updateSortIndexes();
         viewer.refresh();
@@ -607,16 +568,16 @@ public class DiffTableViewer extends Composite {
     private void updateSortIndexes(){
         int i = 0;
         StringBuilder sb = new StringBuilder();
-        for (ru.taximaxim.codekeeper.ui.differ.DiffTableViewer.TableViewerComparator.SortingColumn col : comparator.sortOrder) {
+        for (TableViewerComparator.SortingColumn col : comparator.sortOrder) {
             sb.setLength(0);
             sb.append(comparator.sortOrder.size() - i++)
-            .append(col.desc == false ? '\u25BF' : '\u25B5')
+            .append(!col.desc ? '\u25BF' : '\u25B5')
             .append('\t');
 
             switch (col.col) {
             case CHECK:
                 sb.setLength(sb.length() - 1);
-                columnCheck.getColumn().setText(sb.toString());
+                columnCheck.getColumn().setText(sb.append('✓').toString());
                 break;
             case TYPE:
                 columnType.getColumn().setText(sb.append(Messages.diffTableViewer_object_type).toString());
@@ -634,44 +595,35 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    /**
-     * Метод используется для добавления слушателя внешнего который реагирует
-     * только на нижнюю часть таблицыв коммита
-     * @param listener
-     */
     public void addCheckStateListener(ICheckStateListener listener) {
-        viewer.addCheckStateListener(listener);
         programmaticCheckListeners.add(listener);
     }
 
     private void setCheckedFromPrevCheckedCombo() {
-        String comboText = cmbPrevChecked.getCombo().getText();
-        if (comboText != null && !comboText.isEmpty()) {
-            List<String> elementsToCheck = prevChecked.get(comboText);
-            if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
-                List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
-                for (String elementString : elementsToCheck){
-                    int comma = elementString.lastIndexOf(',');
-                    String elName;
-                    DbObjType elType;
-                    try {
-                        elName = elementString.substring(0, comma);
-                        elType = DbObjType.valueOf(elementString.substring(comma + 1));
-                    } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
-                        Log.log(Log.LOG_WARNING,
-                                "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
-                        continue;
-                    }
-                    for (TreeElement el : elements) {
-                        if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
-                            prevCheckedList.add(el);
-                        }
-                    }
+        List<String> elementsToCheck = prevChecked.get(cmbPrevChecked.getCombo().getText());
+        if (elementsToCheck == null || elementsToCheck.isEmpty()) {
+            return;
+        }
+        List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
+        for (String elementString : elementsToCheck){
+            int comma = elementString.lastIndexOf(',');
+            String elName;
+            DbObjType elType;
+            try {
+                elName = elementString.substring(0, comma);
+                elType = DbObjType.valueOf(elementString.substring(comma + 1));
+            } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
+                Log.log(Log.LOG_WARNING,
+                        "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
+                continue;
+            }
+            for (TreeElement el : elements) {
+                if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
+                    prevCheckedList.add(el);
                 }
-                checkListener.setElementsChecked(prevCheckedList, true);
-                viewerRefresh();
             }
         }
+        setElementsChecked(prevCheckedList, true);
     }
 
     private void saveCheckedElements2ClipboardAsExpession(){
@@ -687,20 +639,20 @@ public class DiffTableViewer extends Composite {
                 first = false;
             }
             String name = el.getName();
-            for (int i = 0; i < name.length(); ++i) {
-                if (REGEX_SPECIAL_CHARS.indexOf(name.charAt(i)) != -1) {
-                    name = Pattern.quote(name);
-                    break;
-                }
+            if (REGEX_SPECIAL_CHARS.matcher(name).find()) {
+                name = Pattern.quote(name);
             }
             sb.append('^').append(name).append('$');
         }
 
         if (sb.length() != 0) {
             Clipboard clip = new Clipboard(getDisplay());
-            clip.setContents(new String[] { sb.toString() },
-                    new TextTransfer[] { TextTransfer.getInstance() });
-            clip.dispose();
+            try {
+                clip.setContents(new String[] { sb.toString() },
+                        new TextTransfer[] { TextTransfer.getInstance() });
+            } finally {
+                clip.dispose();
+            }
         }
     }
 
@@ -725,87 +677,79 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    /**
-     * Устанавливает входные данные для таблицы
-     * @param treediffer содержит дерево + базы
-     * @param reverseSide содержит сторону
-     */
+    public void setAutoExpand(boolean enabled) {
+        viewer.setAutoExpandLevel(enabled ? AbstractTreeViewer.ALL_LEVELS : 0);
+    }
+
     public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IgnoreList ignoreList) {
-        this.treeRoot = diffTree;
-        this.dbProject = dbProject;
-        this.dbRemote = dbRemote;
-
-        if (treeRoot != null) {
-            elements = new TreeFlattener()
-                    .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-                    .useIgnoreList(ignoreList, dbRemote.getDbName())
-                    .flatten(diffTree);
-        } else {
-            elements.clear();
-        }
-
-        initializeViewer();
+        setInputCollection(diffTree == null ? Collections.<TreeElement>emptyList() :
+            new TreeFlattener()
+            .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+            .useIgnoreList(ignoreList, dbRemote.getDbName())
+            .flatten(diffTree), dbProject, dbRemote);
     }
 
     /**
      * Используется в коммит диалоге для установки элементов
-     * @param showOnlyElements элементы для показа
-     * @param rootDiffer дерево + базы
-     * @param reverseDiffSide сторона
+     * @param elements элементы для показа
      */
-    public void setInputCollection(Collection<TreeElement> showOnlyElements,
-            DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
-        this.treeRoot = diffTree;
+    public void setInputCollection(Collection<TreeElement> elements,
+            DbSource dbProject, DbSource dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
-        elements.clear();
-        elements.addAll(showOnlyElements);
+        // reset sorting while using empty input
+        // no full re-sorts, no full refreshes
+        viewer.setInput(null);
+        comparator.clearSortList();
+        sortViewer(Columns.NAME);
+        sortViewer(Columns.CHANGE);
+        sortViewer(Columns.TYPE);
+        sortViewer(Columns.LOCATION);
 
-        initializeViewer();
-    }
-
-    private void initializeViewer() {
-        viewer.setInput(elements);
-
+        this.elements.clear();
+        this.elements.addAll(elements);
+        viewer.setInput(this.elements);
         updateColumnsWidth();
-
-        updateObjectsLabel();
-
         if (!viewOnly) {
-            updateCheckedLabel();
             setCheckedFromPrevCheckedCombo();
         }
-
-        initialSorting();
+        updateObjectsLabels();
     }
 
-    private void initialSorting() {
-        comparator.clearSortList();
-        sortViewer(columnName.getColumn(), Columns.NAME);
-        sortViewer(columnChange.getColumn(), Columns.CHANGE);
-        sortViewer(columnType.getColumn(), Columns.TYPE);
-        sortViewer(columnLocation.getColumn(), Columns.LOCATION);
-        viewer.refresh();
-    }
-
-    private void viewerRefresh() {
-        viewer.refresh();
-        updateObjectsLabel();
-        if (!viewOnly) {
-            updateCheckedLabel();
+    private void setChecked(TreeElement el, boolean checked) {
+        el.setSelected(checked);
+        if (isContainer(el)) {
+            setCheckedGrayed(el, null);
+        } else {
+            viewer.setChecked(el, checked);
+            if (isSubElement(el)) {
+                setCheckedGrayed(el.getParent(), null);
+            }
         }
     }
 
-    private void updateObjectsLabel() {
-        lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, elements.size()));
-        lblObjectCount.getParent().layout();
+    private void setCheckedGrayed(TreeElement el, Boolean providedExpandedState) {
+        Entry<Boolean, Boolean> pair = checkProvider.getState(el, providedExpandedState);
+        viewer.setChecked(el, pair.getKey());
+        viewer.setGrayed(el, pair.getValue());
     }
 
-    private void updateCheckedLabel() {
-        lblCheckedCount.setText(MessageFormat.format(Messages.DiffTableViewer_selected, getCheckedElementsCount()));
-        lblCheckedCount.getParent().layout();
+    private void viewerChecksUpdated() {
+        updateObjectsLabels();
+        for (ICheckStateListener list : programmaticCheckListeners) {
+            list.checkStateChanged(null);
+        }
+    }
+
+    private void updateObjectsLabels() {
+        lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, elements.size()));
+        if (!viewOnly) {
+            lblCheckedCount.setText(MessageFormat.format(Messages.DiffTableViewer_selected,
+                    getCheckedElementsCount()));
+        }
+        lblObjectCount.getParent().layout();
     }
 
     public int getCheckedElementsCount() {
@@ -818,12 +762,27 @@ public class DiffTableViewer extends Composite {
         return count;
     }
 
+    private void setElementsChecked(Collection<?> elements, boolean state) {
+        for (Object element : elements) {
+            setChecked((TreeElement) element, state);
+        }
+        viewerChecksUpdated();
+    }
+
+    private void setSelectionSubtreesChecked(IStructuredSelection selection, boolean checked) {
+        for (Object o : selection.toList()) {
+            TreeElement el = (TreeElement) o;
+            setSubTreeChecked(el, checked);
+        }
+        viewerChecksUpdated();
+    }
+
     private void setSubTreeChecked(TreeElement element, boolean selected) {
         // Если элемент был проигнорирован, он будет в дереве, но его не будет в
         // таблице и выбор или снятие галочки не должно затрагивать статус
         // игнорированного элемента
         if (elements.contains(element)) {
-            element.setSelected(selected);
+            setChecked(element, selected);
         }
 
         for (TreeElement child : element.getChildren()) {
@@ -831,32 +790,169 @@ public class DiffTableViewer extends Composite {
         }
     }
 
+    static boolean isContainer(TreeElement el) {
+        return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
+    }
+
+    static boolean isSubElement(TreeElement el) {
+        TreeElement parent = el.getParent();
+        return parent != null && isContainer(parent);
+    }
+
+    private class DiffContentProvider implements ITreeContentProvider {
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            Collection<?> input = (Collection<?>) inputElement;
+            Set<TreeElement> rootTableEntries = new HashSet<>(input.size());
+            for (Object o : input) {
+                TreeElement el = (TreeElement) o;
+                rootTableEntries.add(isSubElement(el) ? el.getParent() : el);
+            }
+            return rootTableEntries.toArray();
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            if (!(parentElement instanceof TreeElement)) {
+                // process as root input (Collection of elements)
+                return getElements(parentElement);
+            }
+            TreeElement el = (TreeElement) parentElement;
+            if (isContainer(el) && el.hasChildren()) {
+                List<TreeElement> children = el.getChildren();
+                List<TreeElement> childrenInInput = new ArrayList<>(children.size());
+                for (TreeElement child : children) {
+                    if (elements.contains(child)) {
+                        childrenInInput.add(child);
+                    }
+                }
+                return childrenInInput.toArray();
+            } else {
+                return ApgdiffConsts.EMPTY_ARRAY;
+            }
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            TreeElement el = (TreeElement) element;
+            return isSubElement(el) ? el.getParent() : null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            TreeElement el = (TreeElement) element;
+            if (isContainer(el) && el.hasChildren()) {
+                for (TreeElement child : el.getChildren()) {
+                    if (elements.contains(child)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     private class CheckStateListener implements ICheckStateListener {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            if(oldSelection != null && oldSelection.toList().contains(event.getElement())){
-                setElementsChecked(oldSelection.toList(), event.getChecked());
+            List<?> selection = getSelectionList(oldSelection);
+            if (selection.contains(event.getElement())) {
+                for (Object element : selection) {
+                    setChecked(element, event.getChecked());
+                }
                 viewer.setSelection(oldSelection);
             } else {
-                ((TreeElement)event.getElement()).setSelected(event.getChecked());
+                setChecked(event.getElement(), event.getChecked());
             }
-            viewerRefresh();
-            updateCheckedLabel();
+            viewerChecksUpdated();
         }
 
-        public void setElementsChecked(List<?> elements, boolean state) {
-            for (Object element : elements) {
-                ((TreeElement)element).setSelected(state);
+        private List<?> getSelectionList(IStructuredSelection selection) {
+            return (selection != null && selection.size() > 1) ? selection.toList()
+                    : Collections.emptyList();
+        }
+
+        private void setChecked(Object element, boolean checked) {
+            TreeElement el = (TreeElement) element;
+            if (isContainer(el)) {
+                setSubTreeChecked(el, checked);
             }
-            notifyExternalCheckListener();
-            updateCheckedLabel();
+            // explicitly check root even when using setSubTreeChecked
+            // in case it's not in the viewer's input set
+            DiffTableViewer.this.setChecked(el, checked);
         }
     }
 
-    public void notifyExternalCheckListener() {
-        for (ICheckStateListener list : programmaticCheckListeners) {
-            list.checkStateChanged(null);
+    private class CheckStateProvider implements ICheckStateProvider {
+
+        @Override
+        public boolean isChecked(Object element) {
+            TreeElement el = (TreeElement)element;
+            if (el.isSelected()) {
+                return true;
+            }
+            // gray nodes need selection to show gray state
+            return contGraySelected(el, null);
+        }
+
+        @Override
+        public boolean isGrayed(Object element) {
+            return contGraySelected((TreeElement) element, null);
+        }
+
+        private Entry<Boolean, Boolean> getState(TreeElement el, Boolean providedExpandedState) {
+            Boolean grayed = contGraySelected(el, providedExpandedState);
+            return new SimpleEntry<>(el.isSelected() ? true : grayed, grayed);
+        }
+
+        /**
+         * @param providedExpandedState element's expanded state, if null viewer is queried
+         */
+        private boolean contGraySelected(TreeElement el, Boolean providedExpandedState) {
+            if (!isContainer(el) || !el.hasChildren() ||
+                    (providedExpandedState != null ? providedExpandedState : viewer.getExpandedState(el))) {
+                return false;
+            }
+            boolean hasChecked = false, hasUnchecked = false;
+            for (TreeElement child : el.getChildren()) {
+                if (elements.contains(child)) {
+                    if (child.isSelected()) {
+                        hasChecked = true;
+                    } else {
+                        hasUnchecked = true;
+                    }
+                }
+                if (hasChecked && hasUnchecked) {
+                    // has both states, no further checking required
+                    // also this state is always grayed so we may return here
+                    return true;
+                }
+            }
+            // both false means no subelements shown, no gray state needed
+            // otherwise hasChecked means ALL or NONE checked at this point
+            // and we can use XOR boolean function to get required gray state
+            // ALL  PAR  GRAY
+            //  0    0    0
+            //  0    1    1
+            //  1    0    1
+            //  1    1    0
+            return (hasChecked || hasUnchecked) &&
+                    (hasChecked ^ el.isSelected());
+        }
+    }
+
+    private class RefreshCheckedTreeListener implements ITreeViewerListener {
+
+        @Override
+        public void treeExpanded(TreeExpansionEvent event) {
+            setCheckedGrayed((TreeElement) event.getElement(), true);
+        }
+
+        @Override
+        public void treeCollapsed(TreeExpansionEvent event) {
+            setCheckedGrayed((TreeElement) event.getElement(), false);
         }
     }
 
@@ -874,11 +970,8 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public boolean equals(Object obj) {
-                if (obj instanceof SortingColumn) {
-                    return ((SortingColumn) obj).col == col;
-                } else {
-                    return false;
-                }
+                return obj instanceof SortingColumn
+                        && ((SortingColumn) obj).col == col;
             }
 
             @Override
@@ -942,7 +1035,7 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private static class TableViewerFilter extends ViewerFilter {
+    private class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
         private boolean useRegEx;
@@ -967,39 +1060,38 @@ public class DiffTableViewer extends Composite {
         }
 
         @Override
-        public boolean select(Viewer viewer, Object parentElement,
-                Object element) {
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
             if (filterName == null) {
                 return true;
             }
-            if (useRegEx) {
-                if (regExPattern != null) {
-                    return getMatchingLocation(((TreeElement) element).getName(),
-                            filterName, regExPattern) != null;
-                } else {
-                    return false;
+            Pattern filterRegex = useRegEx ? regExPattern : null;
+            TreeElement el = (TreeElement) element;
+            boolean found = getMatchingLocation(el.getName(), filterName, filterRegex) != null;
+
+            // also show containers that have content matching current filter
+            if (!found && isContainer(el)) {
+                Iterator<TreeElement> it = el.getChildren().iterator();
+                while (!found && it.hasNext()) {
+                    TreeElement child = it.next();
+                    found |= elements.contains(child) && select(viewer, el, child);
                 }
-            } else {
-                return getMatchingLocation(((TreeElement) element).getName(),
-                        filterName, null) != null;
             }
+            return found;
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
-            if (filter != null
-                    && !filter.isEmpty()
-                    && text != null) {
-                text = text.toLowerCase();
+            if (filter != null && !filter.isEmpty() && text != null) {
+                String textLc = text.toLowerCase();
                 int offset = -1;
                 int length = 0;
                 if (regExPattern != null) {
-                    Matcher matcher = regExPattern.matcher(text);
+                    Matcher matcher = regExPattern.matcher(textLc);
                     if (matcher.find()) {
                         offset = matcher.start();
                         length = matcher.end() - offset;
                     }
                 } else {
-                    offset = text.indexOf(filter);
+                    offset = textLc.indexOf(filter);
                     length = filter.length();
                 }
                 if (offset >= 0) {

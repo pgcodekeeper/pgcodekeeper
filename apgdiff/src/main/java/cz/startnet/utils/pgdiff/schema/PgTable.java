@@ -7,7 +7,10 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,22 +23,19 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgTable extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
+    private static final String OIDS = "OIDS";
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<Inherits> inherits = new ArrayList<>();
+    private final Map<String, String> options = new LinkedHashMap<>();
     private final List<PgConstraint> constraints = new ArrayList<>();
     private final List<PgIndex> indexes = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<PgRule> rules = new ArrayList<>();
-
-    /**
-     * WITH clause. If value is null then it is not set, otherwise can be set to
-     * OIDS=true, OIDS=false, or storage parameters can be set.
-     */
-    private String with;
+    private boolean hasOids;
     private String tablespace;
 
     @Override
@@ -153,21 +153,26 @@ implements PgRuleContainer, PgTriggerContainer {
             sbSQL.append(")");
         }
 
-        if (with != null && !with.isEmpty()) {
-            sbSQL.append("\n");
+        StringBuilder sb = new StringBuilder();
 
-            if ("OIDS=false".equalsIgnoreCase(with)) {
-                sbSQL.append("WITHOUT OIDS");
-            } else {
-                sbSQL.append("WITH ");
+        for (Entry <String, String> entry : options.entrySet()){
+            String key = entry.getKey();
+            String value = entry.getValue();
 
-                if ("OIDS".equalsIgnoreCase(with)
-                        || "OIDS=true".equalsIgnoreCase(with)) {
-                    sbSQL.append("OIDS");
-                } else {
-                    sbSQL.append(with);
-                }
+            sb.append(key);
+            if (!value.isEmpty()){
+                sb.append("=").append(value);
             }
+            sb.append(", ");
+        }
+
+        if (hasOids) {
+            sb.append(OIDS).append("=").append(hasOids).append(", ");
+        }
+
+        if (sb.length() > 0){
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
         if (tablespace != null && !tablespace.isEmpty()) {
@@ -250,23 +255,16 @@ implements PgRuleContainer, PgTriggerContainer {
             }
         }
 
-        if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
-            StringBuilder sbWith = new StringBuilder();
-            sbWith.append("\n\nALTER TABLE ");
-            sbWith.append(PgDiffUtils.getQuotedName(newTable.getName()));
+        PgTable.compareOptions(oldTable.getOptions(), newTable.getOptions(), sb, getName(), DbObjType.TABLE);
 
-            if (newTable.getWith() == null
-                    || "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
-                sbWith.append("\n\tSET WITHOUT OIDS;");
-            } else if ("OIDS".equalsIgnoreCase(newTable.getWith())
-                    || "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
-                sbWith.append("\n\tSET WITH OIDS;");
-            } else {
-                sbWith.append("\n\tSET ");
-                sbWith.append(newTable.getWith());
-                sbWith.append(';');
-            }
-            sb.append(sbWith);
+        if (oldTable.getHasOids() && !newTable.getHasOids()){
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()){
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITH OIDS;");
         }
 
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
@@ -350,8 +348,28 @@ implements PgRuleContainer, PgTriggerContainer {
         return Collections.unmodifiableList(indexes);
     }
 
+    @Override
+    public Map <String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String option, String value) {
+        options.put(option, value);
+        resetHash();
+    }
+
     public void addInherits(final String schemaName, final String tableName) {
         inherits.add(new Inherits(schemaName, tableName));
+        resetHash();
+    }
+
+    public Boolean getHasOids() {
+        return hasOids;
+    }
+
+    public void setHasOids(Boolean hasOids) {
+        this.hasOids = hasOids;
         resetHash();
     }
 
@@ -382,15 +400,6 @@ implements PgRuleContainer, PgTriggerContainer {
     @Override
     public List<PgRule> getRules() {
         return Collections.unmodifiableList(rules);
-    }
-
-    public void setWith(final String with) {
-        this.with = with;
-        resetHash();
-    }
-
-    public String getWith() {
-        return with;
     }
 
     public String getTablespace() {
@@ -483,14 +492,14 @@ implements PgRuleContainer, PgTriggerContainer {
 
             eq = Objects.equals(name, table.getName())
                     && Objects.equals(tablespace, table.getTablespace())
-                    && Objects.equals(with, table.getWith())
-
+                    && hasOids == table.getHasOids()
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
                     && revokes.equals(table.revokes)
                     && Objects.equals(owner, table.getOwner())
-                    && Objects.equals(comment, table.getComment());
+                    && Objects.equals(comment, table.getComment())
+                    && Objects.equals(options, table.getOptions());
         }
 
         return eq;
@@ -519,6 +528,8 @@ implements PgRuleContainer, PgTriggerContainer {
 
     @Override
     public int computeHash() {
+        final int itrue = 1231;
+        final int ifalse = 1237;
         final int prime = 31;
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
@@ -530,10 +541,11 @@ implements PgRuleContainer, PgTriggerContainer {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
-        result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
+        result = prime * result + (hasOids ? itrue : ifalse);
         return result;
     }
 
@@ -541,7 +553,8 @@ implements PgRuleContainer, PgTriggerContainer {
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
-        tableDst.setWith(getWith());
+        tableDst.setHasOids(getHasOids());
+        tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
@@ -580,6 +593,53 @@ implements PgRuleContainer, PgTriggerContainer {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
+    }
+
+    public static void compareOptions(Map<String, String> oldOptions, Map<String, String> newOptions,
+            StringBuilder sb, String name, DbObjType container){
+        StringBuilder setOptions = new StringBuilder();
+        StringBuilder resetOptions = new StringBuilder();
+        if (!oldOptions.isEmpty() || !newOptions.isEmpty()) {
+            for (Map.Entry<String, String> entry : oldOptions.entrySet()){
+                String key = entry.getKey();
+                if (newOptions.containsKey(key)){
+                    compareValue(entry.getValue(), newOptions.get(key), setOptions, key);
+                } else {
+                    resetOptions.append(key)
+                    .append(", ");
+                }
+            }
+
+            for (Map.Entry<String, String> entry : newOptions.entrySet()){
+                String key = entry.getKey();
+                if (!oldOptions.containsKey(key)){
+                    compareValue(null, newOptions.get(key), setOptions, key);
+                }
+            }
+        }
+
+        if(setOptions.length() > 0){
+            setOptions.setLength(setOptions.length()-2);
+            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
+            .append(" SET (").append(setOptions).append(");");
+        }
+
+        if(resetOptions.length() > 0){
+            resetOptions.setLength(resetOptions.length()-2);
+            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
+            .append(" RESET (").append(resetOptions).append(");");
+        }
+    }
+
+    private static void compareValue(String oldValue, String newValue, StringBuilder setOptions, String key) {
+        if (!Objects.equals(oldValue, newValue)){
+            setOptions.append(key);
+            if (!newValue.isEmpty()){
+                setOptions.append(" = ");
+                setOptions.append(newValue);
+            }
+            setOptions.append(", ");
+        }
     }
 
     public static class Inherits {

@@ -33,18 +33,12 @@ public class TreeElement {
         }
     }
 
-    private volatile int hashcode;
-
+    private int hashcode;
     private final String name;
-
     private final DbObjType type;
-
     private final DiffSide side;
-
     private boolean selected;
-
     private TreeElement parent;
-
     private final List<TreeElement> children = new ArrayList<>();
 
     public String getName() {

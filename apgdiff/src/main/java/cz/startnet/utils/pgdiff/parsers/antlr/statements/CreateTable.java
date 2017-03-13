@@ -10,7 +10,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -79,41 +83,50 @@ public class CreateTable extends ParserAbstract {
             table.setTablespace(QNameParser.getFirstName(ctx.table_space().name.identifier()));
         }
 
-        StringBuilder sb = new StringBuilder();
         boolean explicitOids = false;
-        if (ctx.storage_parameter_oid() != null) {
-            if (ctx.storage_parameter_oid().with_storage_parameter() != null) {
-                sb.append(getFullCtxText(ctx.storage_parameter_oid()
-                        .with_storage_parameter().storage_parameter()));
+        Storage_parameter_oidContext storage = ctx.storage_parameter_oid();
+        if (storage != null) {
+            With_storage_parameterContext parameters = storage.with_storage_parameter();
+            if (parameters != null) {
+                parseOptions(parameters.storage_parameter().storage_parameter_option(),table);
             }
-            if (ctx.storage_parameter_oid().WITHOUT() != null) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append("OIDS=false");
+            if (storage.WITHOUT() != null) {
+                table.setHasOids(false);
                 explicitOids = true;
-            } else if (ctx.storage_parameter_oid().WITH() != null) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append("OIDS=true");
+            } else if (storage.WITH() != null) {
+                table.setHasOids(true);
                 explicitOids = true;
             }
         }
         if (!explicitOids && oids != null) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append("OIDS=true");
+            table.setHasOids(true);
         }
-        if (sb.length() > 0) {
-            table.setWith(sb.toString());
-        }
+
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "TABLE", name);
             return null;
         }
         db.getSchema(schemaName).addTable(table);
         return table;
+    }
+
+
+    private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table){
+        for (Storage_parameter_optionContext option : options){
+            Schema_qualified_nameContext key = option.schema_qualified_name();
+            List <IdentifierContext> optionIds = key.identifier();
+            VexContext valueContext = option.vex();
+            String value = valueContext != null ? valueContext.getText() : "";
+            String optionText = key.getText();
+            if ("OIDS".equalsIgnoreCase(optionText)){
+                if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){
+                    table.setHasOids(true);
+                }
+            } else if("toast".equals(QNameParser.getSecondName(optionIds))){
+                ParserAbstract.fillStorageParams(value, QNameParser.getFirstName(optionIds), true, table);
+            } else {
+                ParserAbstract.fillStorageParams(value, optionText, false, table);
+            }
+        }
     }
 }
