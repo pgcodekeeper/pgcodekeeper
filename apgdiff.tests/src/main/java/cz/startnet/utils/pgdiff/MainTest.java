@@ -63,6 +63,7 @@ public class MainTest {
             {new ArgumentsProvider_19()},
             {new ArgumentsProvider_IgnoreLists()},
             {new ArgumentsProvider_AllowedObjects()},
+            {new ArgumentsProvider_Stop()},
             {new ArgumentsProvider_ConnectionString()},
         });
     }
@@ -810,6 +811,35 @@ class ArgumentsProvider_AllowedObjects extends ArgumentsProvider {
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         return new String[]{"--diff", "--dbNew-format", "dump", "--allowed-objects",
                 "FUNCTION,VIEW,INDEX",fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
+                getDiffResultFile().getAbsolutePath()};
+    }
+
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation for Stop test
+ */
+class ArgumentsProvider_Stop extends ArgumentsProvider {
+
+    {
+        this.resName = "stop_allowed_object";
+        this.testType = TestType.TEST_DIFF;
+        this.needLicense = true;
+    }
+    @Override
+    protected String[] arguments() throws URISyntaxException, IOException {
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
+        return new String[]{"--diff", "--dbNew-format", "dump", "--stop", "--allowed-objects",
+                "FUNCTION,VIEW,INDEX,SCHEMA", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
                 getDiffResultFile().getAbsolutePath()};
     }
 
