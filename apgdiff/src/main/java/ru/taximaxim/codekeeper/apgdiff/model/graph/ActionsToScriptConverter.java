@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.StopRuntimeException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -38,7 +39,7 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
-        Set<DbObjType> ignoredTypes= arguments.getAllowedTypes();
+        Set<DbObjType> ignoredTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if(type == DbObjType.COLUMN){
@@ -96,7 +97,14 @@ public class ActionsToScriptConverter {
                 default:
                     throw new IllegalStateException("Not implemented action");
                 }
-            }else{
+            } else {
+                if (arguments.isStopByAllow() && action.getStarter() != null
+                        && !action.getStarter().equals(action.getOldObj())){
+                    throw new StopRuntimeException("Can't add all dependencies of "
+                            + action.getOldObj().getQualifiedName() + " by type " +
+                            action.getOldObj().getStatementType() +
+                            " to script, because it is not allowed object");
+                }
                 script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
                         action.getOldObj().getQualifiedName(),
                         action.getOldObj().getStatementType()));

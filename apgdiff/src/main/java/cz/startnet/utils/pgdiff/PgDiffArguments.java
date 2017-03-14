@@ -53,6 +53,7 @@ public class PgDiffArguments {
     private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
     private boolean usingOnOff = true;
+    private boolean stopByAllow;
     private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
@@ -211,6 +212,14 @@ public class PgDiffArguments {
         this.help = help;
     }
 
+    public boolean isStopByAllow() {
+        return stopByAllow;
+    }
+
+    public void setStopByAllow(boolean stopByAllow) {
+        this.stopByAllow = stopByAllow;
+    }
+
     public String getLicensePath() {
         return licensePath;
     }
@@ -355,6 +364,8 @@ public class PgDiffArguments {
                 setVersion(true);
             } else if ("--help".equals(args[i])) { //$NON-NLS-1$
                 setHelp(true);
+            } else if ("--stop".equals(args[i])) { //$NON-NLS-1$
+                setStopByAllow(true);
             } else {
                 writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
                 success = false;

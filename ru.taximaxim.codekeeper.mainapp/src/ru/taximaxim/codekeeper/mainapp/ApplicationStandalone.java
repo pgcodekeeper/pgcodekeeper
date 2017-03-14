@@ -7,6 +7,7 @@ import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
 import cz.startnet.utils.pgdiff.Main;
+import cz.startnet.utils.pgdiff.StopRuntimeException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 /**
@@ -14,19 +15,25 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  */
 public class ApplicationStandalone implements IApplication {
 
+
+    public static final Integer EXIT_ERROR = new Integer(1);
+    public static final Integer EXIT_STOP = new Integer(2);
+
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        callApgdiffMain(Platform.getApplicationArgs());
-        return IApplication.EXIT_OK;
-    }
-
-    private void callApgdiffMain(String[] pgCommands) {
         try {
-            Main.main(pgCommands);
-        } catch (Exception e) {
+            Main.main(Platform.getApplicationArgs());
+            return IApplication.EXIT_OK;
+        }   catch (StopRuntimeException re) {
+            Status error = new Status(IStatus.CANCEL, ApgdiffConsts.APGDIFF_PLUGIN_ID,
+                    "script not contains all dependencies", re);
+            Platform.getLog(Activator.getDefault().getBundle()).log(error);
+            return EXIT_STOP;
+        }   catch (Exception e) {
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
                     "pgCodeKeeper error", e);
             Platform.getLog(Activator.getDefault().getBundle()).log(error);
+            return EXIT_ERROR;
         }
     }
 
