@@ -324,6 +324,14 @@
         <builder id="ru.taximaxim.codekeeper.ui.builder">
         </builder>
     </extension>
+    <extension
+          point="org.eclipse.ui.ide.projectNatureImages">
+       <image
+             icon="icons/nature_decorator.png"
+             id="ru.taximaxim.codekeeper.ui.natureImage"
+             natureId="ru.taximaxim.codekeeper.ui.nature">
+       </image>
+    </extension>
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
         </initializer>
