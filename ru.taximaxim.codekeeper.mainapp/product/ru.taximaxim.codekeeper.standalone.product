@@ -7,6 +7,8 @@
    </configIni>
 
    <launcherArgs>
+      <programArgs>-console
+      </programArgs>
       <vmArgsMac>-XstartOnFirstThread
       </vmArgsMac>
    </launcherArgs>
