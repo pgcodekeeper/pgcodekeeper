@@ -659,7 +659,7 @@ constraint_common
 
 constr_body
     :((EXCLUDE (USING index_method=identifier)?
-            LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN
+            LEFT_PAREN exclude_element=identifier WITH operator=comp_op RIGHT_PAREN
             index_parameters (WHERE vex)?)
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
@@ -667,6 +667,17 @@ constr_body
        | DEFAULT default_expr=vex
       )
       table_deferrable? table_initialy_immed?
+    ;
+    
+comp_op
+    :names_references
+    | EQUAL
+    | NOT_EQUAL
+    | LTH
+    | LEQ
+    | GTH
+    | GEQ
+    | DOUBLE_AND
     ;
 
 table_unique_prkey
@@ -690,6 +701,7 @@ table_references
 column_references
     :LEFT_PAREN names_references RIGHT_PAREN
     ;
+    
 names_references
     : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
     ;
