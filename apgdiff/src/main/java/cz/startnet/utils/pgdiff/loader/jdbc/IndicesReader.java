@@ -53,6 +53,10 @@ public class IndicesReader extends JdbcReader {
 
         i.setUnique(res.getBoolean("indisunique"));
 
+
+        // TABLESPACE
+        i.setTableSpace(res.getString("space"));
+
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {

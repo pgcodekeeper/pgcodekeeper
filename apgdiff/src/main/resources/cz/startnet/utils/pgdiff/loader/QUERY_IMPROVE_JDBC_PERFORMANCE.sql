@@ -371,6 +371,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_indices(schema_oids bigint
 	indisunique boolean,
     isClustered boolean,
     comment text,
+    space name,
     definition text,
     cols name[]) AS
 $BODY$
@@ -393,6 +394,7 @@ SELECT schema_oid,
     ind.indisunique,
     ind.indisclustered as isClustered,
     des.description AS comment,
+    t.spcname AS space,
     pg_get_indexdef(cls.oid) AS definition,
     (SELECT array_agg(attr.attname)
         FROM pg_catalog.pg_attribute attr
@@ -401,6 +403,7 @@ SELECT schema_oid,
 FROM pg_catalog.pg_index ind
 JOIN pg_catalog.pg_class cls ON cls.oid = ind.indexrelid
 JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid
+LEFT JOIN pg_tablespace t ON cls.reltablespace = t.oid
 LEFT JOIN pg_catalog.pg_description des ON ind.indexrelid = des.objoid
     AND des.objsubid = 0
 LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = ind.indexrelid
