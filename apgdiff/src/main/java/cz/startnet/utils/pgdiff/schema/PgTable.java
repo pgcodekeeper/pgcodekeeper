@@ -37,6 +37,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private String tablespace;
+    private boolean isCreationTableTypeMode;
 
     @Override
     public DbObjType getStatementType() {
@@ -370,6 +371,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public void setHasOids(Boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
+    }
+ 
+    public boolean isCreationTableTypeMode() {
+        return isCreationTableTypeMode;
+    }
+
+    public void setCreationTableTypeMode(boolean isCreationTableTypeMode) {
+        this.isCreationTableTypeMode = isCreationTableTypeMode;
         resetHash();
     }
 

@@ -82,7 +82,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        for (Table_column_defContext colCtx : ctx.table_col_def) {
+        for (Table_column_defContext colCtx : ctx.define_table().define_columns().table_col_def) {
             getConstraint(colCtx);
             if (colCtx.table_column_definition()!=null) {
                 getColumn(colCtx.table_column_definition());

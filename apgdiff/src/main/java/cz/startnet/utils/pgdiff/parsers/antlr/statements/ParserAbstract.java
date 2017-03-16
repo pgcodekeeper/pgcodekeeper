@@ -24,6 +24,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -102,7 +104,34 @@ public abstract class ParserAbstract {
                 }
             }
         }
+        return col;
+    }
+    
+    protected PgColumn getColumn(Table_of_type_column_definitionContext typeColCtx, List<String> sequences,
+            Map<String, GenericColumn> defaultFucntions, String defSchema) {
+        PgColumn col = null;
+        if (typeColCtx.column_name != null) {
+            col = new PgColumn(typeColCtx.column_name.getText());
+            for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
+                if (column_constraint.constr_body().default_expr != null) {
+                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                    String sequence = getSequence(column_constraint.constr_body().default_expr);
+                    if (sequence != null) {
+                        sequences.add(sequence);
+                    }
+                    GenericColumn func = getFunctionCall(
+                            column_constraint.constr_body().default_expr, defSchema);
+                    if (func != null) {
+                        defaultFucntions.put(typeColCtx.column_name.getText(), func);
+                    }
+                }
 
+                Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+                if (comConstr != null && comConstr.null_value != null) {
+                    col.setNullValue(comConstr.null_false == null);
+                }
+            }
+        }
         return col;
     }
 
@@ -201,6 +230,16 @@ public abstract class ParserAbstract {
         // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
         if (colCtx.tabl_constraint != null) {
             result.add(getTableConstraint(colCtx.tabl_constraint, scmName, tblName));
+        }
+        return result;
+    }
+    
+    protected List<PgConstraint> getConstraint(Table_of_type_column_defContext typeColCtx,
+            String scmName, String tblName) {
+        List<PgConstraint> result = new ArrayList<>();
+        // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
+        if (typeColCtx.tabl_constraint != null) {
+            result.add(getTableConstraint(typeColCtx.tabl_constraint, scmName, tblName));
         }
         return result;
     }
