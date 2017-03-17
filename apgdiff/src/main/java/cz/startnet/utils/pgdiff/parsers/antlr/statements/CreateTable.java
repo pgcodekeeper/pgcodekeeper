@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -27,9 +28,9 @@ public class CreateTable extends ParserAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String oids;
-
-    public CreateTable(Create_table_statementContext ctx, PgDatabase db, String tablespace, String oids) {
-        super(db);
+    public CreateTable(Create_table_statementContext ctx, PgDatabase db, String tablespace,
+            String oids, List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.oids = oids;
@@ -103,7 +104,7 @@ public class CreateTable extends ParserAbstract {
         }
 
         if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "TABLE", name);
+            logSkipedObject(schemaName, "TABLE", name, ctx.getStart());
             return null;
         }
         db.getSchema(schemaName).addTable(table);

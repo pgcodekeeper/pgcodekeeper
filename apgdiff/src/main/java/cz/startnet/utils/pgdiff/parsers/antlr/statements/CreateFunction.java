@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typeContext;
@@ -12,8 +13,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
     private final Create_function_statementContext ctx;
-    public CreateFunction(Create_function_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -36,7 +38,7 @@ public class CreateFunction extends ParserAbstract {
             addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
         }
         if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "FUNCTION", name);
+            logSkipedObject(schemaName, "FUNCTION", name, ctx.getStart());
             return null;
         }
         db.getSchema(schemaName).addFunction(function);

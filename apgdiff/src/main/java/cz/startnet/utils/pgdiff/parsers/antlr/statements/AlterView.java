@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -11,9 +12,9 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class AlterView extends ParserAbstract {
     private final Alter_view_statementContext ctx;
-
-    public AlterView(Alter_view_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterView(Alter_view_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -24,7 +25,7 @@ public class AlterView extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgView dbView = db.getSchema(schemaName).getView(name);
         if (dbView == null) {
-            logError("VIEW", name);
+            logError("VIEW", name, ctx.getStart());
             return null;
         }
         fillOwnerTo(ctx.owner_to(), dbView);

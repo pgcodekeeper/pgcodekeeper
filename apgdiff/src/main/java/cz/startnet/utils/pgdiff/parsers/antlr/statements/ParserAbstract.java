@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
@@ -43,9 +45,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class ParserAbstract {
     protected final PgDatabase db;
-
-    public ParserAbstract(PgDatabase db) {
+    private final List<AntlrError> errors;
+    public ParserAbstract(PgDatabase db, List<AntlrError> errors) {
         this.db = db;
+        this.errors = errors;
     }
 
     /**
@@ -246,18 +249,25 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void logError(String object, String name) {
+    protected void fillErrors(Token token, String object, String name){
+        errors.add(new AntlrError(token, 1, 0, "Cannot find "+ object +": "+ name));
+    }
+
+    protected void logError(String object, String name, Token token) {
         Log.log(Log.LOG_ERROR, new StringBuilder(0).append("Cannot find ")
                 .append(object).append(" in database: ").append(name)
                 .toString());
+        fillErrors(token, object, name);
     }
 
-    protected void logSkipedObject(String schema, String object, String name) {
+    protected void logSkipedObject(String schema, String object, String name,
+            Token token) {
         Log.log(Log.LOG_ERROR,
                 new StringBuilder(0).append("Cannot find schema ")
                 .append(schema).append(" in database. ")
                 .append("Thats why ").append(object).append(" ")
                 .append(name).append("will be skipped").toString());
+        fillErrors(token, object, name);
     }
 
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
@@ -272,6 +282,10 @@ public abstract class ParserAbstract {
             return constraint;
         }
         return null;
+    }
+
+    protected void fillErrors(AntlrError error){
+
     }
 
     /**

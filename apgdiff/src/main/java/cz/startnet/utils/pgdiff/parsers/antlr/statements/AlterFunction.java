@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -12,8 +13,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class AlterFunction extends ParserAbstract {
 
     private final Alter_function_statementContext ctx;
-    public AlterFunction(Alter_function_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterFunction(Alter_function_statementContext ctx, PgDatabase db, List <AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -26,7 +27,7 @@ public class AlterFunction extends ParserAbstract {
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
         if (func == null) {
-            logError("FUNCTION", name);
+            logError("FUNCTION", name, ctx.getStart());
             return null;
         }
         fillOwnerTo(ctx.owner_to(), func);

@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -9,8 +12,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CreateSchema extends ParserAbstract {
     private final Create_schema_statementContext ctx;
-    public CreateSchema(Create_schema_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateSchema(Create_schema_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors ) {
+        super(db, errors);
         this.ctx = ctx;
     }
 

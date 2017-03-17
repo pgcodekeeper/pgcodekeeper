@@ -5,6 +5,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -26,8 +27,9 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
 
-    public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 

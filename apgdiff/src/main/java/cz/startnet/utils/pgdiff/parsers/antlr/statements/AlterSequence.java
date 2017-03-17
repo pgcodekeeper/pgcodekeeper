@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -12,8 +13,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterSequence extends ParserAbstract {
     private final Alter_sequence_statementContext ctx;
-    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -24,7 +26,7 @@ public class AlterSequence extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgSequence sequence = db.getSchema(schemaName).getSequence(name);
         if (sequence == null) {
-            logError("SEQUENCE", name);
+            logError("SEQUENCE", name, ctx.getStart());
             return null;
         }
         fillOwnerTo(ctx.owner_to(), sequence);

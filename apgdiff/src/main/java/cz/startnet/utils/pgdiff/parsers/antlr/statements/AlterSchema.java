@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.List;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -9,9 +12,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class AlterSchema extends ParserAbstract {
     private final Alter_schema_statementContext ctx;
-
-    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -20,7 +23,7 @@ public class AlterSchema extends ParserAbstract {
         String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
         PgSchema sch = db.getSchema(name);
         if (sch == null) {
-            logError("SCHEMA", name);
+            logError("SCHEMA", name, ctx.getStart());
             return null;
         }
         if (!name.equals(ApgdiffConsts.PUBLIC)) {

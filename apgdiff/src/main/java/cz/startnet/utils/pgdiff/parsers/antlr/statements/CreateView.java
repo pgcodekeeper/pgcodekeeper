@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -19,9 +20,8 @@ public class CreateView extends ParserAbstract {
 
     private static final String CHECK_OPTION = "check_option";
     private final Create_view_statementContext ctx;
-
-    public CreateView(Create_view_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateView(Create_view_statementContext ctx, PgDatabase db, List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -62,7 +62,7 @@ public class CreateView extends ParserAbstract {
         }
 
         if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "VIEW", name);
+            logSkipedObject(schemaName, "VIEW", name, ctx.getStart());
             return null;
         }
         db.getSchema(schemaName).addView(view);

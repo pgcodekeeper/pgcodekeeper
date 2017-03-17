@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -18,15 +19,14 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends ParserAbstract {
 
     private final Alter_table_statementContext ctx;
-
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -81,7 +81,7 @@ public class AlterTable extends ParserAbstract {
                 String indexName = QNameParser.getFirstName(tablAction.index_name.identifier());
                 PgIndex index = tabl.getIndex(indexName);
                 if (index == null) {
-                    logError(indexName, schemaName);
+                    logError(indexName, schemaName, ctx.getStart());
                 } else {
                     index.setClusterIndex(true);
                 }

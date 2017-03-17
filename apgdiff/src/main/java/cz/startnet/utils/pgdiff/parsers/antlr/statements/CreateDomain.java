@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
@@ -15,9 +16,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class CreateDomain extends ParserAbstract {
 
     private final Create_domain_statementContext ctx;
-
-    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -47,7 +48,7 @@ public class CreateDomain extends ParserAbstract {
             }
         }
         if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "DOMAIN", name);
+            logSkipedObject(schemaName, "DOMAIN", name, ctx.getStart());
             return null;
         }
         db.getSchema(schemaName).addDomain(domain);

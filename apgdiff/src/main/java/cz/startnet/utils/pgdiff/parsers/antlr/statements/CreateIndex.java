@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -17,9 +18,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
-
-    public CreateIndex(Create_index_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -34,7 +35,7 @@ public class CreateIndex extends ParserAbstract {
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             if (db.getSchema(schemaName) == null) {
-                logSkipedObject(schemaName, "INDEX", ind.getTableName());
+                logSkipedObject(schemaName, "INDEX", ind.getTableName(), ctx.getStart());
                 return null;
             } else if(db.getSchema(schemaName).getTable(ind.getTableName()) == null) {
                 Log.log(Log.LOG_ERROR,

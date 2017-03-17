@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -17,8 +18,9 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class CommentOn extends ParserAbstract {
     private final Comment_on_statementContext ctx;
-    public CommentOn(Comment_on_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CommentOn(Comment_on_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -58,7 +60,7 @@ public class CommentOn extends ParserAbstract {
                 table.getColumn(name).setComment(db.getArguments(), comment);
             }
             //extension
-        }else if (ctx.EXTENSION() != null) {
+        } else if (ctx.EXTENSION() != null) {
             db.getExtension(name).setComment(db.getArguments(), comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {

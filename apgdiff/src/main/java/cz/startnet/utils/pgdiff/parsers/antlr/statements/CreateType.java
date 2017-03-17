@@ -7,6 +7,7 @@ import java.util.List;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -20,9 +21,8 @@ import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 public class CreateType extends ParserAbstract {
 
     private final Create_type_statementContext ctx;
-
-    public CreateType(Create_type_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateType(Create_type_statementContext ctx, PgDatabase db, List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -135,7 +135,7 @@ public class CreateType extends ParserAbstract {
             type.setCollatable(getFullCtxText(ctx.collatable));
         }
         if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "TYPE", name);
+            logSkipedObject(schemaName, "TYPE", name, ctx.getStart());
             return null;
         }
         if (newType != null) {

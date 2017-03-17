@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
@@ -24,8 +25,8 @@ public class CreateRule extends ParserAbstract {
     private final Rule_commonContext ctx;
     private final boolean revoke;
 
-    public CreateRule(Rule_commonContext ctx, PgDatabase db) {
-        super(db);
+    public CreateRule(Rule_commonContext ctx, PgDatabase db, List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
         revoke = ctx.REVOKE() != null;
     }

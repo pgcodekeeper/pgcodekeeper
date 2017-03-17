@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -14,8 +15,9 @@ public class AlterDomain extends ParserAbstract {
 
     private final Alter_domain_statementContext ctx;
 
-    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -26,6 +28,7 @@ public class AlterDomain extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgDomain domain = db.getSchema(schemaName).getDomain(name);
         if (domain == null) {
+            logError("DOMAIN", schemaName, ctx.getStart());
             return null;
         }
         fillOwnerTo(ctx.owner_to(), domain);

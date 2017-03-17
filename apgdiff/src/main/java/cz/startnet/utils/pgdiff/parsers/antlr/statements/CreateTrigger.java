@@ -5,6 +5,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -26,9 +27,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
     private final Create_trigger_statementContext ctx;
-
-    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db,
+            List<AntlrError> errors) {
+        super(db, errors);
         this.ctx = ctx;
     }
 
@@ -105,7 +106,7 @@ public class CreateTrigger extends ParserAbstract {
 
         PgSchema schema = db.getSchema(schemaName);
         if (schema == null) {
-            logSkipedObject(schemaName, "TRIGGER", trigger.getTableName());
+            logSkipedObject(schemaName, "TRIGGER", trigger.getTableName(), ctx.getStart());
             return null;
         } else {
             PgTriggerContainer c = schema.getTriggerContainer(trigger.getTableName());
