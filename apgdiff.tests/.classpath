@@ -7,7 +7,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/picocontainer-2.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/javers-core-1.1.1.jar" sourcepath="lib/javers-core-1.1.1-sources.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

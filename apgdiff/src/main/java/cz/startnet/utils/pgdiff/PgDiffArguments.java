@@ -366,6 +366,8 @@ public class PgDiffArguments {
                 setHelp(true);
             } else if ("--stop".equals(args[i])) { //$NON-NLS-1$
                 setStopByAllow(true);
+            } else if ("--apgdiff".equals(args[i])) {
+                // deprecated legacy pgcodekeeper-cli switch, ignore
             } else {
                 writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
                 success = false;

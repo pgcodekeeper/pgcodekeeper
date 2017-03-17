@@ -50,7 +50,7 @@
 
         <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
-        <sonar.java.source>1.7</sonar.java.source>
+        <sonar.java.source>1.8</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
@@ -99,8 +99,8 @@
                 <artifactId>tycho-compiler-plugin</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
 

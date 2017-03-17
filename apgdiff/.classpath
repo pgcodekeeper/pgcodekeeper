@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry exported="true" kind="lib" path="lib/postgresql-42.0.0.jre7.jar" sourcepath="lib/postgresql-42.0.0.jre7-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr-runtime-4.6.jar" sourcepath="lib/antlr-runtime-4.6-sources.zip"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/jgrapht-core-0.9.0.jar" sourcepath="lib/jgrapht-core-0.9.0-sources.jar"/>
 	<classpathentry kind="src" path="src/main/java"/>
@@ -10,5 +9,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/license3j/bcpg-jdk15on-1.52.jar" sourcepath="lib/license3j/bcpg-jdk15on-1.52-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/license3j/bcprov-jdk15on-1.52.jar" sourcepath="lib/license3j/bcprov-jdk15on-1.52-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/license3j/license3j-1.0.7.jar" sourcepath="lib/license3j/license3j-1.0.7-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
