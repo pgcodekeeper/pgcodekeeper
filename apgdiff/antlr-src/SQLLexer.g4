@@ -611,7 +611,6 @@ MULTIPLY: '*';
 DIVIDE  : '/';
 MODULAR : '%';
 EXP : '^';
-DOUBLE_AND: '&&';
 
 DOT : '.';
 QUOTE_CHAR : '\'';
