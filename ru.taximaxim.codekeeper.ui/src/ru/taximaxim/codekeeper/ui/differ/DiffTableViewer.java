@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -184,7 +186,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements, true);
+                    setElementsChecked(elements, true, true);
                 }
             });
 
@@ -196,7 +198,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements, false);
+                    setElementsChecked(elements, false, true);
                 }
             });
 
@@ -208,10 +210,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    for (TreeElement el : elements) {
-                        setChecked(el, !el.isSelected());
-                    }
-                    viewerChecksUpdated();
+                    setElementsChecked(elements, (el) -> !el.isSelected(), true);
                 }
             });
 
@@ -377,14 +376,14 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void run() {
-                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), true);
+                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), true, false);
                 }
             });
             menuMgr.add(new Action(Messages.diffTableViewer_unmark_selected_elements) {
 
                 @Override
                 public void run() {
-                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), false);
+                    setElementsChecked(((IStructuredSelection) viewer.getSelection()).toList(), false, false);
                 }
             });
             menuMgr.add(new Separator());
@@ -623,7 +622,7 @@ public class DiffTableViewer extends Composite {
                 }
             }
         }
-        setElementsChecked(prevCheckedList, true);
+        setElementsChecked(prevCheckedList, true, false);
     }
 
     private void saveCheckedElements2ClipboardAsExpession(){
@@ -762,10 +761,19 @@ public class DiffTableViewer extends Composite {
         return count;
     }
 
-    private void setElementsChecked(Collection<?> elements, boolean state) {
-        for (Object element : elements) {
-            setChecked((TreeElement) element, state);
+    private void setElementsChecked(Collection<?> elements, boolean state,
+            boolean checkFilterMatch) {
+        setElementsChecked(elements, (el) -> state, checkFilterMatch);
+    }
+
+    private void setElementsChecked(Collection<?> elements, Predicate<TreeElement> state,
+            boolean checkFilterMatch) {
+        Stream<TreeElement> stream = elements.stream().map((o) -> (TreeElement) o);
+        if (checkFilterMatch) {
+            stream = stream.filter((el) -> viewerFilter.select(viewer, el.getParent(), el));
         }
+        stream.forEach((el) -> setChecked(el, state.test(el)));
+
         viewerChecksUpdated();
     }
 
