@@ -53,7 +53,7 @@ public class PgDiffArguments {
     private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
     private boolean usingOnOff = true;
-    private boolean stopByAllow;
+    private boolean stopDepcyOmitted;
     private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
@@ -212,12 +212,12 @@ public class PgDiffArguments {
         this.help = help;
     }
 
-    public boolean isStopByAllow() {
-        return stopByAllow;
+    public boolean isStopDepcyOmitted() {
+        return stopDepcyOmitted;
     }
 
-    public void setStopByAllow(boolean stopByAllow) {
-        this.stopByAllow = stopByAllow;
+    public void setStopDepcyOmitted(boolean stopDepcyOmitted) {
+        this.stopDepcyOmitted = stopDepcyOmitted;
     }
 
     public String getLicensePath() {
@@ -331,6 +331,8 @@ public class PgDiffArguments {
                         break;
                     }
                 }
+            } else if ("--stop-depcy-omitted".equals(args[i])) { //$NON-NLS-1$
+                setStopDepcyOmitted(true);
             } else if ("--add-transaction".equals(args[i])) { //$NON-NLS-1$
                 setAddTransaction(true);
             } else if ("--no-check-function-bodies".equals(args[i])) { //$NON-NLS-1$
@@ -364,8 +366,6 @@ public class PgDiffArguments {
                 setVersion(true);
             } else if ("--help".equals(args[i])) { //$NON-NLS-1$
                 setHelp(true);
-            } else if ("--stop".equals(args[i])) { //$NON-NLS-1$
-                setStopByAllow(true);
             } else if ("--apgdiff".equals(args[i])) {
                 // deprecated legacy pgcodekeeper-cli switch, ignore
             } else {

@@ -45,6 +45,7 @@
                                 
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
                                 <option>-keep public class * extends java.lang.Enum { *; }</option>
+                                <option>-keep public class * extends java.lang.Exception { *; }</option>
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.MainPerspective { *; }</option>
                                 
