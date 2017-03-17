@@ -53,6 +53,7 @@
                                 <!-- Please keep this list maintained and organized -->
                                 <option>-keep public class * implements org.osgi.framework.BundleActivator { *; }</option>
                                 <option>-keep public class * extends java.lang.Enum { *; }</option>
+                                <option>-keep public class * extends java.lang.Exception { *; }</option>
 
                                 <option>-keep public class cz.startnet.utils.pgdiff.Main { *; }</option>
                                 <option>-keep public class cz.startnet.utils.pgdiff.PgCodekeeperException { *; }</option>
