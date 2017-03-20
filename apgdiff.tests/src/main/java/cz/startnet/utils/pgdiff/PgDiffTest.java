@@ -102,6 +102,8 @@ public class PgDiffTest {
                     {"drop_table"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
+                    // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
+                    {"add_exclude_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is modified.
                     {"modify_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is dropped.
