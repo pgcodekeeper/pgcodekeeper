@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -77,19 +76,15 @@ public class IndicesReader extends JdbcReader {
     private String getDefinition(ResultSet res) throws SQLException{
         String tablespace = res.getString("table_space");
         String definition = res.getString("definition");
-        definition = definition.substring(definition.indexOf("USING "));
         StringBuilder sb = new StringBuilder();
+        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, definition, loader.getCurrentLocation());
+        Index_restContext rest = parser.schema_create().create_index_statement().index_rest();
+        sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (tablespace != null){
-            SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, definition, loader.getCurrentLocation());
-            Index_restContext rest = parser.index_rest();
-            sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
             sb.append(" TABLESPACE " + tablespace);
-            Index_whereContext where = rest.index_where();
-            if (where != null){
-                sb.append(" " + ParserAbstract.getFullCtxText(rest.index_where()));
-            }
-        } else {
-            sb.append(definition);
+        }
+        if (rest.index_where() != null){
+            sb.append(" " + ParserAbstract.getFullCtxText(rest.index_where()));
         }
         return sb.toString();
     }

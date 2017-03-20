@@ -5,6 +5,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
@@ -17,10 +18,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateIndex extends ParserAbstract {
     private final Create_index_statementContext ctx;
+    private final String tablespace;
 
-    public CreateIndex(Create_index_statementContext ctx, PgDatabase db) {
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace) {
         super(db);
         this.ctx = ctx;
+        this.tablespace = tablespace;
     }
 
     @Override
@@ -30,7 +33,20 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        ind.setDefinition(getFullCtxText(ctx.index_rest()));
+        StringBuilder sb = new StringBuilder();
+        Index_restContext rest = ctx.index_rest();
+        sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
+        if (rest.table_space() != null){
+            sb.append(" " + getFullCtxText(rest.table_space()));
+        } else if (tablespace != null) {
+            sb.append(" TABLESPACE " + tablespace);
+        }
+
+        if (rest.index_where() != null){
+            sb.append(" " + ParserAbstract.getFullCtxText(rest.index_where()));
+        }
+
+        ind.setDefinition(sb.toString());
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             if (db.getSchema(schemaName) == null) {
