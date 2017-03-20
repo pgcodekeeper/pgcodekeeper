@@ -114,7 +114,6 @@ public class AntlrParser {
 
         try {
             SqlContext ctx = parser.sql();
-            // TODO no cancel checks in listener while walking the tree
             ParseTreeWalker.DEFAULT.walk(listener, ctx);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();

@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -202,5 +204,12 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
         safeParseStatement(new AlterDomain(ctx, db, errors));
+    }
+
+    @Override
+    public void exitEveryRule(ParserRuleContext ctx){
+        if(ctx.exception != null) {
+            throw new MonitorCancelledRuntimeException();
+        }
     }
 }
