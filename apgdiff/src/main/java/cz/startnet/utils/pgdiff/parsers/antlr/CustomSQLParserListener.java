@@ -150,7 +150,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             break;
         case "default_with_oids":
             oids = confValue;
-            if (oids.equals("false")) {
+            if ("false".equals(oids)) {
                 oids = null;
             }
             break;
@@ -159,11 +159,14 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             if (tablespace.isEmpty()
                     // special case for pg_dump's unset default_tablespace
                     // remove after good unquoting mechanism would be introduced
-                    || tablespace.equals("''")) {
+                    || "''".equals(tablespace)) {
                 tablespace = null;
             }
             break;
+        default:
+            break;
         }
+
     }
 
     @Override

@@ -146,23 +146,28 @@ public class CreateRule extends ParserAbstract {
                 }
 
                 // Если таблица, то поискать в ней колонки и добавить в каждую свою привилегию
-                for (PgColumn col : tblSt.getColumns()) {
-                    List<String> privList = colPriv.get(col.getName());
-                    if (privList != null) {
-                        StringBuilder privilege = new StringBuilder();
-                        for (String priv : privList) {
-                            privilege.append(priv).append('(').append(col.getName()).append("), ");
-                        }
-                        // Здесь не должно быть пустых привилегий для колонок,
-                        // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
-                        privilege.setLength(privilege.length() - 2);
-                        privilege.append(" ON TABLE ").append(tableName).append(' ');
-                        privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
+                setColumnPrivilege(tblSt, colPriv, tableName, ctx_body);
+            }
+        }
+    }
 
-                        col.addPrivilege(new PgPrivilege(revoke,
-                                privilege.toString(), getFullCtxText(ctx)));
-                    }
+    private void setColumnPrivilege(PgTable tblSt, Map<String, List<String>> colPriv,
+            String tableName, Body_rulesContext ctx_body) {
+        for (PgColumn col : tblSt.getColumns()) {
+            List<String> privList = colPriv.get(col.getName());
+            if (privList != null) {
+                StringBuilder privilege = new StringBuilder();
+                for (String priv : privList) {
+                    privilege.append(priv).append('(').append(col.getName()).append("), ");
                 }
+                // Здесь не должно быть пустых привилегий для колонок,
+                // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
+                privilege.setLength(privilege.length() - 2);
+                privilege.append(" ON TABLE ").append(tableName).append(' ');
+                privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
+
+                col.addPrivilege(new PgPrivilege(revoke,
+                        privilege.toString(), getFullCtxText(ctx)));
             }
         }
     }
@@ -198,9 +203,10 @@ public class CreateRule extends ParserAbstract {
         case TYPE:
             statement = db.getSchema(schemaName).getType(firstPart);
             // if type not found try domain
-            if (statement != null) {
-                break;
+            if (statement == null) {
+                statement = db.getSchema(schemaName).getDomain(firstPart);
             }
+            break;
         case DOMAIN:
             statement = db.getSchema(schemaName).getDomain(firstPart);
             break;

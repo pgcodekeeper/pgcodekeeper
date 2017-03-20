@@ -85,32 +85,7 @@ public class AntlrParser {
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
 
-        parser.addParseListener(new ParseTreeListener() {
-
-            @Override
-            public void visitTerminal(TerminalNode node) {
-            }
-
-            @Override
-            public void visitErrorNode(ErrorNode node) {
-            }
-
-            @Override
-            public void exitEveryRule(ParserRuleContext ctx) {
-                if (ctx.depth() <= monitoringLevel) {
-                    monitor.worked(1);
-                    try {
-                        PgDiffUtils.checkCancelled(monitor);
-                    } catch (InterruptedException e) {
-                        throw new MonitorCancelledRuntimeException();
-                    }
-                }
-            }
-
-            @Override
-            public void enterEveryRule(ParserRuleContext ctx) {
-            }
-        });
+        parser.addParseListener(new CustomParseTreeListener(monitoringLevel, monitor));
 
         try {
             SqlContext ctx = parser.sql();
@@ -118,6 +93,43 @@ public class AntlrParser {
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         }
+    }
+}
+
+class CustomParseTreeListener implements ParseTreeListener{
+    private final int monitoringLevel;
+    private final IProgressMonitor monitor;
+
+    public CustomParseTreeListener(int monitoringLevel, IProgressMonitor monitor){
+        this.monitoringLevel = monitoringLevel;
+        this.monitor = monitor;
+    }
+
+    @Override
+    public void visitTerminal(TerminalNode node) {
+        //no imp
+    }
+
+    @Override
+    public void visitErrorNode(ErrorNode node) {
+        //no imp
+    }
+
+    @Override
+    public void exitEveryRule(ParserRuleContext ctx) {
+        if (ctx.depth() <= monitoringLevel) {
+            monitor.worked(1);
+            try {
+                PgDiffUtils.checkCancelled(monitor);
+            } catch (InterruptedException e) {
+                throw new MonitorCancelledRuntimeException();
+            }
+        }
+    }
+
+    @Override
+    public void enterEveryRule(ParserRuleContext ctx) {
+        //no imp
     }
 }
 

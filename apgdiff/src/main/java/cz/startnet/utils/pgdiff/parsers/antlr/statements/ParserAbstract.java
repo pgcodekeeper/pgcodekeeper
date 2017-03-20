@@ -198,18 +198,16 @@ public abstract class ParserAbstract {
         return funcSignature;
     }
 
-    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx,
-            String scmName, String tblName) {
+    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
         List<PgConstraint> result = new ArrayList<>();
         // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
         if (colCtx.tabl_constraint != null) {
-            result.add(getTableConstraint(colCtx.tabl_constraint, scmName, tblName));
+            result.add(getTableConstraint(colCtx.tabl_constraint));
         }
         return result;
     }
 
-    protected PgConstraint getTableConstraint(Constraint_commonContext ctx,
-            String scmName, String tblName) {
+    protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
 
@@ -230,7 +228,7 @@ public abstract class ParserAbstract {
             }
         }
         if (ctx.constr_body().table_unique_prkey() != null) {
-            setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr, scmName, tblName);
+            setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
@@ -240,7 +238,7 @@ public abstract class ParserAbstract {
      * Вычитать PrimaryKey или Unique со списком колонок
      */
     private void setPrimaryUniq(Table_unique_prkeyContext ctx,
-            PgConstraint constr, String scmName, String tblName) {
+            PgConstraint constr) {
         constr.setUnique(ctx.UNIQUE() != null);
         constr.setPrimaryKey(ctx.PRIMARY() != null);
         for (Schema_qualified_nameContext name : ctx.column_references()
@@ -333,10 +331,10 @@ public abstract class ParserAbstract {
 
     public static void fillStorageParams (String value, String option, boolean isToast,
             PgOptionContainer  optionContainer){
-        option = PgDiffUtils.getQuotedName(option);
+        String quatedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
-            option = "toast."+ option;
+            quatedOption = "toast."+ option;
         }
-        optionContainer.addOption(option, value);
+        optionContainer.addOption(quatedOption, value);
     }
 }

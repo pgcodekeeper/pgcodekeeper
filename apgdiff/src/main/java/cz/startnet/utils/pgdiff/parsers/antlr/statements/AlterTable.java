@@ -71,7 +71,7 @@ public class AlterTable extends ParserAbstract {
                 }
             }
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schemaName, name);
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 if (tablAction.not_valid != null) {
                     constr.setNotValid(true);
                 }
@@ -96,28 +96,15 @@ public class AlterTable extends ParserAbstract {
                 if (tablAction.STATISTICS() != null) {
                     fillStatictics(tabl, tablAction);
                 }
-                if (tablAction.set_def_column() != null) {
+                if (tablAction.set_def_column() != null && tabl.getInherits().isEmpty()) {
                     // не добавляем в таблицу сиквенс если она наследует
                     // некоторые поля из др таблицы
                     // совместимость с текущей версией экспорта
-                    if (tabl.getInherits().isEmpty()) {
-                        fillDefColumn(tabl, tablAction);
-                    }
+                    fillDefColumn(tabl, tablAction);
                 }
             }
             if (tablAction.RULE() != null) {
-                PgRule rule = tabl.getRule(tablAction.rewrite_rule_name.getText());
-                if (rule != null) {
-                    if (tablAction.DISABLE() != null) {
-                        rule.setEnabledState("DISABLE");
-                    } else if (tablAction.ENABLE() != null) {
-                        if (tablAction.REPLICA() != null) {
-                            rule.setEnabledState("ENABLE REPLICA");
-                        } else if (tablAction.ALWAYS() != null) {
-                            rule.setEnabledState("ENABLE ALWAYS");
-                        }
-                    }
-                }
+                createRule(tabl, tablAction);
             }
         }
         for (String seq : sequences) {
@@ -137,6 +124,21 @@ public class AlterTable extends ParserAbstract {
             }
         }
         return null;
+    }
+
+    private void createRule(PgTable tabl, Table_actionContext tablAction) {
+        PgRule rule = tabl.getRule(tablAction.rewrite_rule_name.getText());
+        if (rule != null) {
+            if (tablAction.DISABLE() != null) {
+                rule.setEnabledState("DISABLE");
+            } else if (tablAction.ENABLE() != null) {
+                if (tablAction.REPLICA() != null) {
+                    rule.setEnabledState("ENABLE REPLICA");
+                } else if (tablAction.ALWAYS() != null) {
+                    rule.setEnabledState("ENABLE ALWAYS");
+                }
+            }
+        }
     }
 
     private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
@@ -164,5 +166,4 @@ public class AlterTable extends ParserAbstract {
                     Integer.valueOf(tablAction.integer.getText()));
         }
     }
-
 }

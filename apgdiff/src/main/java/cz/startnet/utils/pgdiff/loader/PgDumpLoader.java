@@ -202,15 +202,20 @@ public class PgDumpLoader implements AutoCloseable {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
-            Arrays.sort(files);
+            loadFiles (files, arguments, db, monitor, funcBodies);
+        }
+    }
 
-            for (File f : files) {
-                if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
-                    try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                        loader.load(funcBodies != null, db);
-                        if (funcBodies != null) {
-                            funcBodies.addAll(loader.getFuncBodyReferences());
-                        }
+    private static void loadFiles(File[] files, PgDiffArguments arguments,
+            PgDatabase db, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+                    throws IOException, InterruptedException {
+        Arrays.sort(files);
+        for (File f : files) {
+            if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+                try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                    loader.load(funcBodies != null, db);
+                    if (funcBodies != null) {
+                        funcBodies.addAll(loader.getFuncBodyReferences());
                     }
                 }
             }

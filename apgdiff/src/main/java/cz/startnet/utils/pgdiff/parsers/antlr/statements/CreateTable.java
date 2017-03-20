@@ -45,7 +45,7 @@ public class CreateTable extends ParserAbstract {
         List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
-            for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
+            for (PgConstraint constr : getConstraint(colCtx)) {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
