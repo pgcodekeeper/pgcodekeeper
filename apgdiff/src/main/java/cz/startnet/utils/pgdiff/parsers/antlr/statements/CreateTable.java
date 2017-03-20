@@ -52,22 +52,7 @@ public class CreateTable extends ParserAbstract {
         Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
         if(defineTypeContext != null){
-            table.setCreationTableTypeMode(true);
-        }
-        boolean isCreationTableTypeMode = table.isCreationTableTypeMode();
-        
-        if(!isCreationTableTypeMode){
-            for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
-                for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
-                    table.addConstraint(constr);
-                }
-                if (colCtx.table_column_definition() != null) {
-                    table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                            defaultFunctions, getDefSchemaName()));
-                }
-            }
-        } else {
-            String tableBaseType = defineTypeContext.type_name.getText();
+            table.setCreationTableTypeName(defineTypeContext.type_name.getText());
             List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
             if(lstTypeColDefCtx != null){
                 for (Table_of_type_column_defContext typeColCtx : lstTypeColDefCtx.table_col_def) {
@@ -78,6 +63,16 @@ public class CreateTable extends ParserAbstract {
                         table.addColumn(getColumn(typeColCtx.table_of_type_column_definition(), sequences,
                                 defaultFunctions, getDefSchemaName()));
                     }
+                }
+            }
+        } else {
+            for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
+                for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
+                    table.addConstraint(constr);
+                }
+                if (colCtx.table_column_definition() != null) {
+                    table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
+                            defaultFunctions, getDefSchemaName()));
                 }
             }
         }
@@ -94,17 +89,19 @@ public class CreateTable extends ParserAbstract {
             }
         }
         
-        Column_referencesContext parentTable = ctx.define_table().define_columns().parent_table;
-        if (parentTable != null) {
-            for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
-                List<IdentifierContext> idsInh = nameInher.identifier();
-                String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
-                String inhTableName = QNameParser.getFirstName(idsInh);
-                table.addInherits(inhSchemaName, inhTableName);
-                GenericColumn gc = new GenericColumn(
-                        inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
-                                inhTableName, DbObjType.TABLE);
-                table.addDep(gc);
+        if (defineColumnContext != null) {
+            Column_referencesContext parentTable = defineColumnContext.parent_table;
+            if(parentTable != null){
+                for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
+                    List<IdentifierContext> idsInh = nameInher.identifier();
+                    String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
+                    String inhTableName = QNameParser.getFirstName(idsInh);
+                    table.addInherits(inhSchemaName, inhTableName);
+                    GenericColumn gc = new GenericColumn(
+                            inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
+                                    inhTableName, DbObjType.TABLE);
+                    table.addDep(gc);
+                }
             }
         }
 

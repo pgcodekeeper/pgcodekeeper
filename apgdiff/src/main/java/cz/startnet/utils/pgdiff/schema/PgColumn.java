@@ -6,6 +6,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,6 +70,58 @@ public class PgColumn extends PgStatementWithSearchPath {
         if (collation != null) {
             sbDefinition.append(" COLLATE ").append(collation);
         }
+
+        if (defaultValue != null && !defaultValue.isEmpty()) {
+            StringBuilder sbDefault = sbDefinition;
+            if (separateDefault != null && nullValue) {
+                sbDefault = separateDefault;
+                sbDefault.append(cName);
+                sbDefault.append(" SET");
+            }
+            sbDefault.append(" DEFAULT ");
+            sbDefault.append(defaultValue);
+        } else if (!nullValue && addDefaults) {
+            final String defaultColValue = PgColumnUtils.getDefaultValue(type);
+
+            if (defaultColValue != null) {
+                sbDefinition.append(" DEFAULT ");
+                sbDefinition.append(defaultColValue);
+            }
+        }
+
+        if (!nullValue) {
+            sbDefinition.append(" NOT NULL");
+        }
+
+        return sbDefinition.toString();
+    }
+    
+    /**
+     * Returns full definition of the column for table wich was created
+     * with 'CREATE TABLE table_name OF type_name...'.
+     *
+     * @param addDefaults whether default value should be added in case NOT NULL
+     *                    constraint is specified but no default value is set
+     *
+     * @return full definition of the column
+     */
+    public String getFullDefinitionTypedTable(final boolean addDefaults,
+            StringBuilder separateDefault, PgTable pgTable, boolean printKey) {
+        final StringBuilder sbDefinition = new StringBuilder();
+        
+        if(printKey){
+            List<PgConstraint> constraints = pgTable.getConstraints();
+            for(PgConstraint pgConstraint : constraints){
+                if(pgConstraint.isPrimaryKey()){
+                    sbDefinition.append(pgConstraint.getDefinition());
+                }
+            }
+            return sbDefinition.toString();
+        }
+        
+        String cName = PgDiffUtils.getQuotedName(name);
+        sbDefinition.append(cName);
+        sbDefinition.append(" WITH OPTIONS");
 
         if (defaultValue != null && !defaultValue.isEmpty()) {
             StringBuilder sbDefault = sbDefinition;

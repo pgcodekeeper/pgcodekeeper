@@ -37,7 +37,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private String tablespace;
-    private boolean isCreationTableTypeMode;
+    private String creationTableTypeName;
 
     @Override
     public DbObjType getStatementType() {
@@ -111,6 +111,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getCreationSQL() {
+        if(creationTableTypeName != null){
+            return getCreationTypeDefineSQL();
+        } else {
+            return getCreationCoulumnDefineSQL();
+        }
+    }
+    
+    private String getCreationCoulumnDefineSQL(){
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
@@ -152,6 +160,102 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
 
             sbSQL.append(")");
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Entry <String, String> entry : options.entrySet()){
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            sb.append(key);
+            if (!value.isEmpty()){
+                sb.append("=").append(value);
+            }
+            sb.append(", ");
+        }
+
+        if (hasOids) {
+            sb.append(OIDS).append("=").append(hasOids).append(", ");
+        }
+
+        if (sb.length() > 0){
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nWITH (").append(sb).append(")");
+        }
+
+        if (tablespace != null && !tablespace.isEmpty()) {
+            sbSQL.append("\nTABLESPACE ");
+            sbSQL.append(tablespace);
+        }
+
+        sbSQL.append(';');
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        for (PgColumn col : columns) {
+            col.appendPrivileges(sbSQL);
+        }
+
+        for (PgColumn column : getColumnsWithStatistics()) {
+            sbSQL.append("\nALTER TABLE ONLY ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" ALTER COLUMN ");
+            sbSQL.append(
+                    PgDiffUtils.getQuotedName(column.getName()));
+            sbSQL.append(" SET STATISTICS ");
+            sbSQL.append(column.getStatistics());
+            sbSQL.append(';');
+        }
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+
+        for (final PgColumn column : columns) {
+            if (column.getComment() != null && !column.getComment().isEmpty()) {
+                sbSQL.append("\n\n");
+                column.appendCommentSql(sbSQL);
+            }
+        }
+
+        return sbSQL.toString();
+    }
+    
+    private String getCreationTypeDefineSQL(){
+        final StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("CREATE TABLE ");
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append(" OF " + creationTableTypeName);
+
+        boolean first = true;
+        
+        if (!columns.isEmpty()){
+            sbSQL.append(" (\n");
+            
+            for (PgColumn column : columns) {
+                if (first) {
+                    sbSQL.append("\t");
+                    sbSQL.append(column.getFullDefinitionTypedTable(false, null, this, first));
+                    first = false;
+                }
+            }
+            
+            for (PgColumn column : columns) {
+                if (first) {
+                    first = false;
+                } else {
+                    sbSQL.append(",\n");
+                }
+
+                sbSQL.append("\t");
+                sbSQL.append(column.getFullDefinitionTypedTable(false, null, this, first));
+            }
+
+            sbSQL.append("\n)");
+            sbSQL.append(')');
         }
 
         StringBuilder sb = new StringBuilder();
@@ -374,12 +478,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
  
-    public boolean isCreationTableTypeMode() {
-        return isCreationTableTypeMode;
+    public String getCreationTableTypeName() {
+        return creationTableTypeName;
     }
 
-    public void setCreationTableTypeMode(boolean isCreationTableTypeMode) {
-        this.isCreationTableTypeMode = isCreationTableTypeMode;
+    public void setCreationTableTypeName(String creationTableTypeName) {
+        this.creationTableTypeName = creationTableTypeName;
         resetHash();
     }
 
@@ -509,7 +613,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && revokes.equals(table.revokes)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment())
-                    && Objects.equals(options, table.getOptions());
+                    && Objects.equals(options, table.getOptions())
+                    && Objects.equals(creationTableTypeName, table.getCreationTableTypeName());
         }
 
         return eq;
@@ -556,6 +661,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
+        result = prime * result + ((creationTableTypeName == null) ? 0 : creationTableTypeName.hashCode());
         return result;
     }
 
