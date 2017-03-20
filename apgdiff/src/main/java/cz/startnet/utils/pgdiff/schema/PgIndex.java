@@ -20,7 +20,6 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     private String definition;
     private String tableName;
-    private String tableSpace;
     private boolean unique;
     private boolean clusterIndex;
 
@@ -47,21 +46,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append(' ');
-        if (getTableSpace() == null){
-            sbSQL.append(getDefinition());
-        } else {
-            String definition = getDefinition();
-            int sep = definition.indexOf("WHERE");
-            if (sep != -1){
-                sbSQL.append(definition.substring(0, sep));
-                sbSQL.append("TABLESPACE "+getTableSpace() + " ");
-                sbSQL.append(definition.substring(sep));
-            } else {
-                sbSQL.append(getDefinition());
-                sbSQL.append(" TABLESPACE "+getTableSpace());
-            }
-        }
-
+        sbSQL.append(getDefinition());
         sbSQL.append(';');
         sbSQL.append(getClusterSQL());
 
@@ -156,15 +141,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public void setTableSpace(final String tableSpace) {
-        this.tableSpace = tableSpace;
-        resetHash();
-    }
-
-    public String getTableSpace() {
-        return tableSpace;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         boolean equals = false;
@@ -185,7 +161,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         return Objects.equals(definition, index.getDefinition())
                 && Objects.equals(name, index.getName())
                 && Objects.equals(tableName, index.getTableName())
-                && Objects.equals(tableSpace, index.getTableSpace())
                 && unique == index.isUnique();
     }
 
@@ -202,7 +177,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         result = prime * result + (unique ? itrue : ifalse);
         result = prime * result + (clusterIndex ? itrue : ifalse);
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + ((tableSpace == null) ? 0 : tableSpace.hashCode());
         return result;
     }
 
@@ -213,7 +187,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setTableName(getTableName());
         indexDst.setUnique(isUnique());
         indexDst.setClusterIndex(isClusterIndex());
-        indexDst.setTableSpace(getTableSpace());
         indexDst.setComment(getComment());
         indexDst.deps.addAll(deps);
         return indexDst;

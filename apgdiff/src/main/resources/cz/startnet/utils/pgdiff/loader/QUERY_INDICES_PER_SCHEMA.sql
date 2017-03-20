@@ -5,7 +5,7 @@ SELECT  cls.relname,
     ind.indisunique,
     ind.indisclustered as isClustered,
     des.description AS comment,
-    t.spcname AS space,
+    t.spcname AS table_space,
     pg_get_indexdef(cls.oid) AS definition,
     (SELECT array_agg(attr.attname)
         FROM pg_catalog.pg_attribute attr

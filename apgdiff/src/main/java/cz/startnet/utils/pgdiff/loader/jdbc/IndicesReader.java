@@ -5,6 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -47,15 +52,10 @@ public class IndicesReader extends JdbcReader {
         PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
 
-        String definition = res.getString("definition");
-        i.setDefinition(definition.substring(definition.indexOf("USING ")));
+        i.setDefinition(getDefinition(res));
         i.setClusterIndex(res.getBoolean("isClustered"));
 
         i.setUnique(res.getBoolean("indisunique"));
-
-
-        // TABLESPACE
-        i.setTableSpace(res.getString("space"));
 
         // COMMENT
         String comment = res.getString("comment");
@@ -72,5 +72,25 @@ public class IndicesReader extends JdbcReader {
             }
         }
         return i;
+    }
+
+    private String getDefinition(ResultSet res) throws SQLException{
+        String tablespace = res.getString("table_space");
+        String definition = res.getString("definition");
+        definition = definition.substring(definition.indexOf("USING "));
+        StringBuilder sb = new StringBuilder();
+        if (tablespace != null){
+            SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, definition, loader.getCurrentLocation());
+            Index_restContext rest = parser.index_rest();
+            sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
+            sb.append(" TABLESPACE " + tablespace);
+            Index_whereContext where = rest.index_where();
+            if (where != null){
+                sb.append(" " + ParserAbstract.getFullCtxText(rest.index_where()));
+            }
+        } else {
+            sb.append(definition);
+        }
+        return sb.toString();
     }
 }
