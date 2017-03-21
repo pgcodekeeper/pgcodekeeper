@@ -108,6 +108,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
                     throws InterruptedException, IOException, LicenseException, CoreException {
         PgDatabase db = new PgDatabase();
+        db.dropPublic();
         db.setArguments(arguments);
         for (ApgdiffConsts.WORK_DIR_NAMES workDirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());

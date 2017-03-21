@@ -172,7 +172,15 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
-    public void replaceSchema(PgSchema oldSchema, PgSchema newSchema) {
+    public void dropPublic(){
+        PgSchema pub = getSchema(ApgdiffConsts.PUBLIC);
+        if (pub != null){
+            schemas.remove(pub);
+            resetHash();
+        }
+    }
+
+    private void replaceSchema(PgSchema oldSchema, PgSchema newSchema) {
         if (!oldSchema.getName().equals(newSchema.getName())) {
             throw new IllegalStateException("Replacing schema must have the same name");
         }
