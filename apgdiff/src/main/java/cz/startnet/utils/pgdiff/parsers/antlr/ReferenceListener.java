@@ -26,6 +26,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
@@ -40,6 +42,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -82,13 +86,28 @@ public class ReferenceListener extends SQLParserBaseListener {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        for (Table_column_defContext colCtx : ctx.define_table().define_columns().table_col_def) {
-            getConstraint(colCtx);
-            if (colCtx.table_column_definition()!=null) {
-                getColumn(colCtx.table_column_definition());
+        
+        Define_columnsContext defintColumns = ctx.define_table().define_columns();
+        Define_typeContext defineType = ctx.define_table().define_type();
+        
+        if(defintColumns != null){
+            for (Table_column_defContext colCtx : defintColumns.table_col_def) {
+                getConstraint(colCtx);
+                if (colCtx.table_column_definition()!=null) {
+                    getColumn(colCtx.table_column_definition());
+                }
             }
         }
-
+        
+        if(defineType != null && defineType.list_of_type_column_def() != null){
+            for (Table_of_type_column_defContext typeCtx : defineType.list_of_type_column_def().table_col_def) {
+                getConstraint(typeCtx);
+                if (typeCtx.table_of_type_column_definition()!=null) {
+                    getColumn(typeCtx.table_of_type_column_definition());
+                }
+            }
+        }
+        
         fillObjDefinition(schemaName, name, DbObjType.TABLE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
@@ -697,7 +716,13 @@ public class ReferenceListener extends SQLParserBaseListener {
             getTableConstraint(colCtx.tabl_constraint);
         }
     }
-
+    
+    private void getConstraint(Table_of_type_column_defContext typeCtx) {
+        if (typeCtx.tabl_constraint != null) {
+            getTableConstraint(typeCtx.tabl_constraint);
+        }
+    }
+    
     private void getTableConstraint(Constraint_commonContext ctx) {
         if (ctx.constr_body().FOREIGN() != null) {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
@@ -730,7 +755,17 @@ public class ReferenceListener extends SQLParserBaseListener {
             }
         }
     }
-
+    
+    private void getColumn(Table_of_type_column_definitionContext typeCtx) {
+        if (typeCtx.column_name != null) {
+            for (Constraint_commonContext column_constraint : typeCtx.colmn_constraint) {
+                if (column_constraint.constr_body().default_expr != null) {
+                    getSequence(column_constraint.constr_body().default_expr);
+                }
+            }
+        }
+    }
+    
     private void getSequence(VexContext default_expr) {
         SeqName name = new SeqName();
         new ParseTreeWalker().walk(name, default_expr);

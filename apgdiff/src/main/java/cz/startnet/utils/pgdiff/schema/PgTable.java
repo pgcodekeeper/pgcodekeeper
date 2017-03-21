@@ -247,7 +247,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
 
             sbSQL.append("\n)");
-            sbSQL.append(')');
         }
 
         StringBuilder sb = new StringBuilder();
