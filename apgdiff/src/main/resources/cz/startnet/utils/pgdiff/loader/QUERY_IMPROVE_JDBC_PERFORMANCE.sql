@@ -14,6 +14,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
   RETURNS TABLE(
        schema_oid bigint,
        relname name,
+       table_type_name name,
        relowner bigint,
        aclArray text,
        col_numbers integer[],
@@ -71,6 +72,7 @@ WITH extension_deps AS (
 
 SELECT schema_oid,
        subselectColumns.relname,
+       subselectColumns.table_type_name,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
@@ -98,6 +100,7 @@ SELECT schema_oid,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
+            columnsData.table_type_name,
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
@@ -122,6 +125,7 @@ FROM
      FROM
          (SELECT c.oid,
               c.relname,
+              tt.typname AS table_type_name,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
@@ -153,12 +157,14 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
+          LEFT JOIN pg_type tt ON tt.oid = c.reloftype
           WHERE c.relnamespace = schema_oid
               AND c.relkind = 'r'
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
+              columnsData.table_type_name,
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,

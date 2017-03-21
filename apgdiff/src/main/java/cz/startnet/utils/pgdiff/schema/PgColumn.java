@@ -106,20 +106,11 @@ public class PgColumn extends PgStatementWithSearchPath {
      * @return full definition of the column
      */
     public String getFullDefinitionTypedTable(final boolean addDefaults,
-            StringBuilder separateDefault, PgTable pgTable, boolean printKey) {
+            StringBuilder separateDefault) {
         final StringBuilder sbDefinition = new StringBuilder();
-        
-        if(printKey){
-            List<PgConstraint> constraints = pgTable.getConstraints();
-            for(PgConstraint pgConstraint : constraints){
-                if(pgConstraint.isPrimaryKey()){
-                    sbDefinition.append(pgConstraint.getDefinition());
-                }
-            }
-            return sbDefinition.toString();
-        }
-        
+
         String cName = PgDiffUtils.getQuotedName(name);
+        
         sbDefinition.append(cName);
         sbDefinition.append(" WITH OPTIONS");
 

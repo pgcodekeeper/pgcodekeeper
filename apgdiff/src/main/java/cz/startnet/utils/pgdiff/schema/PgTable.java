@@ -237,21 +237,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             
             for (PgColumn column : columns) {
                 if (first) {
-                    sbSQL.append("\t");
-                    sbSQL.append(column.getFullDefinitionTypedTable(false, null, this, first));
-                    first = false;
-                }
-            }
-            
-            for (PgColumn column : columns) {
-                if (first) {
                     first = false;
                 } else {
                     sbSQL.append(",\n");
                 }
 
                 sbSQL.append("\t");
-                sbSQL.append(column.getFullDefinitionTypedTable(false, null, this, first));
+                sbSQL.append(column.getFullDefinitionTypedTable(false, null));
             }
 
             sbSQL.append("\n)");

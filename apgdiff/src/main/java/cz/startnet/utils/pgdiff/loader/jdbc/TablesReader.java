@@ -71,6 +71,11 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
         String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
+        
+        String tableTypeName = res.getString("table_type_name");
+        if(tableTypeName != null){
+            t.setCreationTableTypeName(tableTypeName);
+        }
 
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1) {

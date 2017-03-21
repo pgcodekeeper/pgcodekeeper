@@ -52,7 +52,7 @@ public class CreateTable extends ParserAbstract {
         Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
         if(defineTypeContext != null){
-            table.setCreationTableTypeName(defineTypeContext.type_name.getText());
+            table.setCreationTableTypeName(QNameParser.getFirstName(defineTypeContext.type_name.identifier()));
             List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
             if(lstTypeColDefCtx != null){
                 for (Table_of_type_column_defContext typeColCtx : lstTypeColDefCtx.table_col_def) {
