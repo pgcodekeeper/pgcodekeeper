@@ -33,20 +33,7 @@ public class CreateIndex extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        StringBuilder sb = new StringBuilder();
-        Index_restContext rest = ctx.index_rest();
-        sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
-        if (rest.table_space() != null){
-            sb.append(" " + getFullCtxText(rest.table_space()));
-        } else if (tablespace != null) {
-            sb.append(" TABLESPACE " + tablespace);
-        }
-
-        if (rest.index_where() != null){
-            sb.append(" " + ParserAbstract.getFullCtxText(rest.index_where()));
-        }
-
-        ind.setDefinition(sb.toString());
+        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             if (db.getSchema(schemaName) == null) {
@@ -79,4 +66,18 @@ public class CreateIndex extends ParserAbstract {
         return ind;
     }
 
+
+    public static String parseIndex(Index_restContext rest, String tablespace){
+        StringBuilder sb = new StringBuilder();
+        sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
+        if (rest.table_space() != null){
+            sb.append(" ").append(getFullCtxText(rest.table_space()));
+        } else if (tablespace != null) {
+            sb.append(" TABLESPACE ").append(tablespace);
+        }
+        if (rest.index_where() != null){
+            sb.append(" ").append(ParserAbstract.getFullCtxText(rest.index_where()));
+        }
+        return sb.toString();
+    }
 }
