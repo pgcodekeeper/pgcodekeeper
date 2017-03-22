@@ -293,9 +293,17 @@ create_index_statement
     ;
 
 index_rest
+    : index_sort table_space? index_where?
+    ;
+    
+index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause? table_space? (WHERE vex)?
+      param_clause?
+    ;
+    
+index_where 
+    : WHERE vex
     ;
 
  create_extension_statement
