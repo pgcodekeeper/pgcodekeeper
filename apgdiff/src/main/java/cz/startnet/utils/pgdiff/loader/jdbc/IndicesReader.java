@@ -5,9 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -51,9 +48,13 @@ public class IndicesReader extends JdbcReader {
         PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
 
-        i.setDefinition(getDefinition(res));
-        i.setClusterIndex(res.getBoolean("isClustered"));
+        String tablespace = res.getString("table_space");
+        loader.submitAntlrTask(res.getString("definition") + ';',
+                p -> CreateIndex.parseIndex(p.sql().statement(0).schema_statement()
+                        .schema_create().create_index_statement().index_rest(), tablespace),
+                i::setDefinition);
 
+        i.setClusterIndex(res.getBoolean("isClustered"));
         i.setUnique(res.getBoolean("indisunique"));
 
         // COMMENT
@@ -71,13 +72,5 @@ public class IndicesReader extends JdbcReader {
             }
         }
         return i;
-    }
-
-    private String getDefinition(ResultSet res) throws SQLException{
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class,
-                res.getString("definition") + ';', loader.getCurrentLocation());
-        Index_restContext rest = parser.sql().statement(0).schema_statement()
-                .schema_create().create_index_statement().index_rest();
-        return CreateIndex.parseIndex(rest, res.getString("table_space"));
     }
 }

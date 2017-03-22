@@ -93,8 +93,8 @@ public class TablesReader extends JdbcReader {
                 loader.submitAntlrTask(columnDefault, p -> {
                     ValueExpr vex = new ValueExpr(schemaName);
                     vex.analyze(new Vex(p.vex_eof().vex()));
-                    return vex;
-                }, vex -> column.addAllDeps(vex.getDepcies()));
+                    return vex.getDepcies();
+                }, column::addAllDeps);
             }
 
             if (colNotNull[i]) {

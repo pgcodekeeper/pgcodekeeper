@@ -151,7 +151,7 @@ public class TriggersReader extends JdbcReader {
             When_triggerContext whenCtx = p.sql().statement(0).schema_statement().schema_create()
                     .create_trigger_statement().when_trigger();
             return whenCtx == null ? null : ParserAbstract.getFullCtxText(whenCtx.when_expr);
-        }, when -> t.setWhen(when));
+        }, t::setWhen);
 
         // COMMENT
         String comment = res.getString("comment");

@@ -71,12 +71,12 @@ public class CreateIndex extends ParserAbstract {
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (rest.table_space() != null){
-            sb.append(" ").append(getFullCtxText(rest.table_space()));
+            sb.append(' ').append(getFullCtxText(rest.table_space()));
         } else if (tablespace != null) {
             sb.append(" TABLESPACE ").append(tablespace);
         }
         if (rest.index_where() != null){
-            sb.append(" ").append(ParserAbstract.getFullCtxText(rest.index_where()));
+            sb.append(' ').append(ParserAbstract.getFullCtxText(rest.index_where()));
         }
         return sb.toString();
     }

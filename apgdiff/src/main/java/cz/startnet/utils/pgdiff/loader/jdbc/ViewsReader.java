@@ -51,8 +51,8 @@ public class ViewsReader extends JdbcReader {
         loader.submitAntlrTask(viewDef, p -> {
             Select sel = new Select(schemaName);
             sel.analyze(p.sql().statement(0).data_statement().select_stmt());
-            return sel;
-        }, sel -> v.addAllDeps(sel.getDepcies()));
+            return sel.getDepcies();
+        }, v::addAllDeps);
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
