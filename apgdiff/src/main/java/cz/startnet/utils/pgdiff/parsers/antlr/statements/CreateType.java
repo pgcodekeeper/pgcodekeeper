@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.antlr.v4.runtime.Token;
@@ -11,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
@@ -54,7 +52,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr, new ArrayList<String>(), new HashMap<String, GenericColumn>(), getDefSchemaName()));
+            type.addAttr(getColumn(attr, new ArrayList<String>(), getDefSchemaName()));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
         for (Token enume : ctx.enums) {

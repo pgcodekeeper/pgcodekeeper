@@ -4,10 +4,18 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -15,9 +23,12 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
 
 /**
  * Container for shared JdbcLoader state.
@@ -27,10 +38,14 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     private static final int DEFAULT_OBJECTS_COUNT = 100;
+    private static final ExecutorService ANTLR_POOL = Executors.newFixedThreadPool(
+            Integer.max(1, Runtime.getRuntime().availableProcessors() - 1),
+            new DaemonThreadFactory());
 
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
+    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -240,6 +255,21 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         setCurrentOperation("object count query");
         try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
             monitor.setWorkRemaining(resCount.next() ? resCount.getInt(1) : DEFAULT_OBJECTS_COUNT);
+        }
+    }
+
+    protected <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader,
+            Consumer<T> finalizer) {
+        String loc = getCurrentLocation();
+        Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
+                AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
+        antlrTasks.add(new AntlrTask<>(future, finalizer));
+    }
+
+    protected void finishAntlr() throws InterruptedException, ExecutionException {
+        AntlrTask<?> task;
+        while ((task = antlrTasks.poll()) != null) {
+            task.finish();
         }
     }
 

@@ -3,17 +3,12 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract.FunctionSearcher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -95,10 +90,11 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                GenericColumn func = parseFunctionCall(columnDefault, schemaName);
-                if (func != null) {
-                    column.addDep(func);
-                }
+                loader.submitAntlrTask(columnDefault, p -> {
+                    ValueExpr vex = new ValueExpr(schemaName);
+                    vex.analyze(new Vex(p.vex_eof().vex()));
+                    return vex;
+                }, vex -> column.addAllDeps(vex.getDepcies()));
             }
 
             if (colNotNull[i]) {
@@ -174,18 +170,5 @@ public class TablesReader extends JdbcReader {
             t.setTablespace(tableSpace);
         }
         return t;
-    }
-
-    // TODO отрефакторить в вычитку всех зависимостей из экспрешшена
-    private GenericColumn parseFunctionCall(String def, String defSchema) {
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, def, loader.getCurrentLocation());
-        FunctionSearcher fs = new FunctionSearcher();
-        ParseTreeWalker.DEFAULT.walk(fs, parser.vex());
-        if (fs.getName() == null) {
-            return null;
-        }
-        List<IdentifierContext> ids = fs.getName().identifier();
-        return new GenericColumn(QNameParser.getSchemaName(ids, defSchema),
-                QNameParser.getFirstName(ids), DbObjType.FUNCTION);
     }
 }

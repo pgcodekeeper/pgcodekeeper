@@ -1,10 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -16,7 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -42,26 +38,19 @@ public class CreateTable extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
                 table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                        defaultFunctions, getDefSchemaName()));
+                        getDefSchemaName()));
             }
         }
         for (String seq : sequences) {
             QNameParser seqName = new QNameParser(seq);
             table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
                     seqName.getFirstName(), DbObjType.SEQUENCE));
-        }
-        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-            PgColumn col = table.getColumn(function.getKey());
-            if (col != null) {
-                col.addDep(function.getValue());
-            }
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {

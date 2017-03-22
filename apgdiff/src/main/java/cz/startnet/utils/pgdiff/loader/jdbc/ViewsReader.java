@@ -5,10 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -46,14 +43,16 @@ public class ViewsReader extends JdbcReader {
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
-        String viewDef = res.getString("definition").trim();
-        if (viewDef.charAt(viewDef.length() - 1) == ';') {
-            viewDef = viewDef.substring(0, viewDef.length() - 1);
-        }
-
         PgView v = new PgView(viewName, "");
-        v.setQuery(viewDef);
-        parseAntlrSelect(schemaName, viewDef, v);
+        String viewDef = res.getString("definition").trim();
+        int semicolonPos = viewDef.length() - 1;
+        v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
+
+        loader.submitAntlrTask(viewDef, p -> {
+            Select sel = new Select(schemaName);
+            sel.analyze(p.sql().statement(0).data_statement().select_stmt());
+            return sel;
+        }, sel -> v.addAllDeps(sel.getDepcies()));
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
@@ -101,10 +100,5 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
-    }
-
-    private void parseAntlrSelect(String schemaName, String statement, PgView v) {
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, statement + ';', loader.getCurrentLocation());
-        UtilExpr.analyze(parser.sql().statement(0).data_statement().select_stmt(), new Select(schemaName), v);
     }
 }

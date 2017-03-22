@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -98,7 +96,9 @@ public class FunctionsReader extends JdbcReader {
         // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()) {
-            parseArguments("(" + arguments + ")", f, schemaName);
+            loader.submitAntlrTask('(' + arguments + ')',
+                    p -> p.function_args_parser().function_args(),
+                    ctx -> ParserAbstract.fillArguments(ctx, f, schemaName));
         }
 
         // OWNER
@@ -115,12 +115,6 @@ public class FunctionsReader extends JdbcReader {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return f;
-    }
-
-    private void parseArguments(String args, PgFunction f, String schemaName) {
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, args, loader.getCurrentLocation());
-        ParserAbstract.fillArguments(parser.function_args_parser().function_args(),
-                f, schemaName);
     }
 
     private String getFunctionBody(ResultSet res) throws SQLException {

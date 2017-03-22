@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
@@ -28,6 +27,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -73,7 +74,7 @@ public abstract class ParserAbstract {
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
-            Map<String, GenericColumn> defaultFucntions, String defSchema) {
+            String defSchema) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(colCtx.column_name.getText());
@@ -89,11 +90,10 @@ public abstract class ParserAbstract {
                     if (sequence != null) {
                         sequences.add(sequence);
                     }
-                    GenericColumn func = getFunctionCall(
-                            column_constraint.constr_body().default_expr, defSchema);
-                    if (func != null) {
-                        defaultFucntions.put(colCtx.column_name.getText(), func);
-                    }
+
+                    ValueExpr vex = new ValueExpr(defSchema);
+                    vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                    col.addAllDeps(vex.getDepcies());
                 }
 
                 Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
@@ -126,32 +126,6 @@ public abstract class ParserAbstract {
         }
         public String getSeqName() {
             return seqName;
-        }
-    }
-
-    protected GenericColumn getFunctionCall(VexContext ctx, String defSchema) {
-        FunctionSearcher fs = new FunctionSearcher();
-        ParseTreeWalker.DEFAULT.walk(fs, ctx);
-        if (fs.getName() == null) {
-            return null;
-        }
-        List<IdentifierContext> ids = fs.getName().identifier();
-        return new GenericColumn(QNameParser.getSchemaName(ids, defSchema),
-                QNameParser.getFirstName(ids), DbObjType.FUNCTION);
-    }
-
-    public static class FunctionSearcher extends SQLParserBaseListener {
-        private Schema_qualified_nameContext fname;
-        @Override
-        public void enterFunction_call(Function_callContext ctx) {
-            Schema_qualified_nameContext qname = ctx.schema_qualified_name();
-            String name = QNameParser.getFirstName(qname.identifier());
-            if (fname == null && !"nextval".equals(name)) {
-                fname = qname;
-            }
-        }
-        public Schema_qualified_nameContext getName() {
-            return fname;
         }
     }
 

@@ -23,6 +23,10 @@ function_args_parser
   : function_args EOF
   ;
 
+vex_eof
+  : vex EOF
+  ;
+
 /******* END Start symbols *******/
 
 statement
