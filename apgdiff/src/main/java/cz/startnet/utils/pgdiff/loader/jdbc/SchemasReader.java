@@ -27,7 +27,6 @@ public class SchemasReader implements PgCatalogStrings {
         loader.setCurrentOperation("schemas query");
         Map<Long, PgSchema> schemas = new HashMap<>();
         try (ResultSet result = loader.statement.executeQuery(JdbcQueries.QUERY_SCHEMAS)) {
-            db.dropPublic();
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgSchema schema = getSchema(result);

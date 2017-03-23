@@ -221,6 +221,7 @@ public final class DiffTree {
             // special case: if right schema is a bare default public schema
             // and left one is not bare - assume that right doesn't exist at all
             // and mark left as LEFT, not BOTH
+            // TODO refactor with new public creation rules in mind
             if(foundRight == null || (foundRight instanceof PgSchema
                     && foundRight.equals(new PgDatabase().getDefaultSchema())
                     && !sLeft.compare(foundRight))) {

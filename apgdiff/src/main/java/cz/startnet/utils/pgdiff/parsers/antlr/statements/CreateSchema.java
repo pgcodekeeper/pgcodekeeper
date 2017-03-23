@@ -28,12 +28,7 @@ public class CreateSchema extends ParserAbstract {
         if (ctx.schema_def != null) {
             schema.setDefinition(getFullCtxText(ctx.schema_def));
         }
-        PgSchema exists = db.getSchema(schema.getName());
-        if (exists == null) {
-            db.addSchema(schema);
-        } else {
-            db.tryReplacePublicDef(schema);
-        }
+        db.addSchema(schema);
         return schema;
     }
 

@@ -39,7 +39,7 @@ public class JdbcLoader extends JdbcLoaderBase {
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");

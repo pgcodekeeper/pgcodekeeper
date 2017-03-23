@@ -48,10 +48,25 @@ public class PgDatabase extends PgStatement {
     }
 
     public PgDatabase() {
+        this(true);
+    }
+
+    /**
+     * @param createDefaultObjects
+     *          add default public schema and default plpgsql extension automatically
+     */
+    public PgDatabase(boolean createDefaultObjects) {
         super("DB_name_placeholder", null);
 
-        addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
-        defaultSchema = schemas.get(0);
+        if (createDefaultObjects) {
+            addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
+            defaultSchema = schemas.get(0);
+
+            PgExtension ext = new PgExtension("plpgsql", null);
+            ext.setSchema("pg_catalog");
+            ext.setComment("'PL/pgSQL procedural language'");
+            addExtension(ext);
+        }
     }
 
     public void setDefaultSchema(final String name) {
@@ -172,47 +187,6 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
-    public void dropPublic(){
-        PgSchema pub = getSchema(ApgdiffConsts.PUBLIC);
-        if (pub != null){
-            schemas.remove(pub);
-            resetHash();
-        }
-    }
-
-    private void replaceSchema(PgSchema oldSchema, PgSchema newSchema) {
-        if (!oldSchema.getName().equals(newSchema.getName())) {
-            throw new IllegalStateException("Replacing schema must have the same name");
-        }
-
-        int old = schemas.indexOf(oldSchema);
-        if (old == -1) {
-            throw new IllegalStateException("Replaced schema is not in the database");
-        }
-
-        schemas.remove(old);
-        addSchema(newSchema);
-        if (defaultSchema == oldSchema) {
-            setDefaultSchema(newSchema.getName());
-        }
-    }
-
-    /**
-     * Tries to replace the definition of default public schema.
-     * Only replaces default public schema like one created by
-     * {@link PgDatabase#PgDatabase()} constructor.
-     */
-    public void tryReplacePublicDef(PgSchema newPublic) {
-        if (newPublic.getName().equals(ApgdiffConsts.PUBLIC)) {
-            PgSchema oldPublic = getSchema(ApgdiffConsts.PUBLIC);
-
-            if (oldPublic.compare(new PgDatabase().getDefaultSchema())
-                    && !newPublic.compare(oldPublic)) {
-                oldPublic.replaceDef(newPublic);
-            }
-        }
-    }
-
     /**
      * Returns extension of given name or null if the extension has not been found.
      *
@@ -312,7 +286,7 @@ public class PgDatabase extends PgStatement {
 
     @Override
     public PgDatabase shallowCopy() {
-        PgDatabase dbDst = new PgDatabase();
+        PgDatabase dbDst = new PgDatabase(false);
         dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
         return dbDst;
@@ -321,19 +295,12 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase deepCopy() {
         PgDatabase copy = shallowCopy();
-
         for(PgExtension ext : extensions) {
             copy.addExtension(ext.deepCopy());
         }
         for(PgSchema schema : schemas) {
-            PgSchema exists = copy.getSchema(schema.getName());
-            if (exists == null) {
-                copy.addSchema(schema.deepCopy());
-            } else {
-                copy.replaceSchema(exists, schema.deepCopy());
-            }
+            copy.addSchema(schema.deepCopy());
         }
-
         return copy;
     }
 
