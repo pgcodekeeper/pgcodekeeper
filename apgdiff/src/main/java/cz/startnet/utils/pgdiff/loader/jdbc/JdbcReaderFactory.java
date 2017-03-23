@@ -47,15 +47,18 @@ public abstract class JdbcReaderFactory {
     private static final String HELPER_SCHEMA = "pgcodekeeperhelper";
     public static final List<? extends JdbcReaderFactory> FACTORIES = Collections.unmodifiableList(Arrays.asList(
             // SONAR-OFF
-            new TypesReaderFactory(      1 << 0, "get_all_types",       JdbcQueries.QUERY_TYPES_PER_SCHEMA),
-            new SequencesReaderFactory(  1 << 1, "get_all_sequences",   JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA),
-            new FunctionsReaderFactory(  1 << 2, "get_all_functions",   JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA),
-            new TablesReaderFactory(     1 << 3, "get_all_tables",      JdbcQueries.QUERY_TABLES_PER_SCHEMA),
-            new ConstraintsReaderFactory(1 << 4, "get_all_constraints", JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA),
-            new IndicesReaderFactory(    1 << 5, "get_all_indices",     JdbcQueries.QUERY_INDICES_PER_SCHEMA),
+            // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
+            // to give them a chance to finish while JDBC processes other non-ANTLR stuff
             new ViewsReaderFactory(      1 << 6, "get_all_views",       JdbcQueries.QUERY_VIEWS_PER_SCHEMA),
+            new TablesReaderFactory(     1 << 3, "get_all_tables",      JdbcQueries.QUERY_TABLES_PER_SCHEMA),
+            new RulesReaderFactory(      1 << 8, "get_all_rules",       JdbcQueries.QUERY_RULES_PER_SCHEMA),
             new TriggersReaderFactory(   1 << 7, "get_all_triggers",    JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA),
-            new RulesReaderFactory(      1 << 8, "get_all_rules",       JdbcQueries.QUERY_RULES_PER_SCHEMA)
+            new IndicesReaderFactory(    1 << 5, "get_all_indices",     JdbcQueries.QUERY_INDICES_PER_SCHEMA),
+            new FunctionsReaderFactory(  1 << 2, "get_all_functions",   JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA),
+            // non-ANTLR tasks
+            new ConstraintsReaderFactory(1 << 4, "get_all_constraints", JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA),
+            new TypesReaderFactory(      1 << 0, "get_all_types",       JdbcQueries.QUERY_TYPES_PER_SCHEMA),
+            new SequencesReaderFactory(  1 << 1, "get_all_sequences",   JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA)
             // SONAR-ON
             ));
 

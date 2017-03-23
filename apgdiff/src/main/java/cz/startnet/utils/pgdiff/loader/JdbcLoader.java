@@ -67,6 +67,7 @@ public class JdbcLoader extends JdbcLoaderBase {
                 SequencesReader.querySequencesData(d, this);
             }
             connection.commit();
+            finishAntlr();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

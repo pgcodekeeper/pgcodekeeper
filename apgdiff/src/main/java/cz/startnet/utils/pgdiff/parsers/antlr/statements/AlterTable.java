@@ -1,15 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -18,7 +17,6 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends ParserAbstract {
@@ -38,7 +36,6 @@ public class AlterTable extends ParserAbstract {
         PgTable tabl = db.getSchema(schemaName).getTable(name);
 
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             PgStatement st = null;
             if (tablAction.owner_to() != null) {
@@ -55,19 +52,18 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, defaultFunctions, getDefSchemaName()));
+                        sequences, getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
                 if (sequence != null) {
                     sequences.add(sequence);
                 }
-                GenericColumn func = getFunctionCall(tablAction.set_def_column().expression, getDefSchemaName());
-                if (func != null) {
-                    PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                    if (col != null) {
-                        col.addDep(func);
-                    }
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if (col != null) {
+                    ValueExpr vex = new ValueExpr(schemaName);
+                    vex.analyze(new Vex(tablAction.set_def_column().expression));
+                    col.addAllDeps(vex.getDepcies());
                 }
             }
             if (tablAction.tabl_constraint != null) {
@@ -128,12 +124,6 @@ public class AlterTable extends ParserAbstract {
                 QNameParser seqName = new QNameParser(seq);
                 tabl.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
                         seqName.getFirstName(), DbObjType.SEQUENCE));
-            }
-        }
-        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-            PgColumn col = tabl.getColumn(function.getKey());
-            if (col != null) {
-                col.addDep(function.getValue());
             }
         }
         return null;

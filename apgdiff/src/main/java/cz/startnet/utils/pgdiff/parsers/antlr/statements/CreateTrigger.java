@@ -2,8 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
@@ -13,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -99,9 +96,10 @@ public class CreateTrigger extends ParserAbstract {
                 trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
             }
         }
-        WhenListener whenListener = new WhenListener();
-        ParseTreeWalker.DEFAULT.walk(whenListener, ctx);
-        trigger.setWhen(whenListener.getWhen());
+        When_triggerContext whenCtx = ctx.when_trigger();
+        if (whenCtx != null) {
+            trigger.setWhen(getFullCtxText(whenCtx.when_expr));
+        }
 
         PgSchema schema = db.getSchema(schemaName);
         if (schema == null) {
@@ -123,18 +121,5 @@ public class CreateTrigger extends ParserAbstract {
         }
 
         return trigger;
-    }
-
-    public static class WhenListener extends SQLParserBaseListener {
-        private String when;
-
-        @Override
-        public void exitWhen_trigger(When_triggerContext ctx) {
-            when = getFullCtxText(ctx.when_expr);
-        }
-
-        public String getWhen() {
-            return when;
-        }
     }
 }
