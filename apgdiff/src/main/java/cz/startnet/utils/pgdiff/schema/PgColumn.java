@@ -338,9 +338,8 @@ public class PgColumn extends PgStatementWithSearchPath {
             eq = true;
         } else if(obj instanceof PgColumn) {
             PgColumn col = (PgColumn) obj;
-
+            
             eq = Objects.equals(name, col.getName())
-                    && Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
                     && Objects.equals(defaultValue, col.getDefaultValue())
@@ -349,9 +348,19 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes);
+            
+            if(!isOfTypeTable()){
+                eq = eq && Objects.equals(type, col.getType());
+            } 
         }
-
         return eq;
+    }
+    
+    private boolean isOfTypeTable(){
+        if((getParent() instanceof PgTable) && ((PgTable)getParent()).getOfType() != null){
+           return true;   
+        } 
+        return false;
     }
 
     @Override

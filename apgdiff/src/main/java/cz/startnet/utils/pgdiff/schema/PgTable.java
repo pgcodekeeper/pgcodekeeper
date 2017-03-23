@@ -27,6 +27,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     private static final String OIDS = "OIDS";
     private final List<PgColumn> columns = new ArrayList<>();
+    private final List<PgColumn> columnsOfType = new ArrayList<>();
     private final List<Inherits> inherits = new ArrayList<>();
     private final Map<String, String> options = new LinkedHashMap<>();
     private final List<PgConstraint> constraints = new ArrayList<>();
@@ -37,7 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private String tablespace;
-    private String creationTableTypeName;
+    private String ofType;
 
     @Override
     public DbObjType getStatementType() {
@@ -73,6 +74,23 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         return null;
     }
+    
+    /**
+     * Finds columnOfType according to specified columnOfType {@code name}.
+     *
+     * @param name name of the column to be searched
+     *
+     * @return found column or null if no such column has been found
+     */
+    public PgColumn getColumnOfType(final String name) {
+        for (PgColumn column : columnsOfType) {
+            if (column.getName().equals(name)) {
+                return column;
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Getter for {@link #columns}. The list cannot be modified.
@@ -81,6 +99,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<PgColumn> getColumns() {
         return Collections.unmodifiableList(columns);
+    }
+    
+    /**
+     * Getter for {@link #columnsOfType}. The list cannot be modified.
+     *
+     * @return {@link #columnsOfType}
+     */
+    public List<PgColumn> getColumnsOfType() {
+        return Collections.unmodifiableList(columnsOfType);
     }
 
     /**
@@ -111,7 +138,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getCreationSQL() {
-        if(creationTableTypeName != null){
+        if(ofType != null){
             return getCreationTypeDefineSQL();
         } else {
             return getCreationCoulumnDefineSQL();
@@ -228,20 +255,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append(" OF " + creationTableTypeName);
+        sbSQL.append(" OF " + ofType);
 
         boolean first = true;
         
-        if (!columns.isEmpty()){
+        if (!columnsOfType.isEmpty()){
             sbSQL.append(" (\n");
             
-            for (PgColumn column : columns) {
+            for (PgColumn column : columnsOfType) {
                 if (first) {
                     first = false;
                 } else {
                     sbSQL.append(",\n");
                 }
-
+                
                 sbSQL.append("\t");
                 sbSQL.append(column.getFullDefinitionTypedTable(false, null));
             }
@@ -281,7 +308,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        for (PgColumn col : columns) {
+        for (PgColumn col : columnsOfType) {
             col.appendPrivileges(sbSQL);
         }
 
@@ -301,7 +328,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             appendCommentSql(sbSQL);
         }
 
-        for (final PgColumn column : columns) {
+        for (final PgColumn column : columnsOfType) {
             if (column.getComment() != null && !column.getComment().isEmpty()) {
                 sbSQL.append("\n\n");
                 column.appendCommentSql(sbSQL);
@@ -468,13 +495,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         this.hasOids = hasOids;
         resetHash();
     }
- 
-    public String getCreationTableTypeName() {
-        return creationTableTypeName;
+
+    public String getOfType() {
+        return ofType;
     }
 
-    public void setCreationTableTypeName(String creationTableTypeName) {
-        this.creationTableTypeName = creationTableTypeName;
+    public void setOfType(String ofType) {
+        this.ofType = ofType;
         resetHash();
     }
 
@@ -521,6 +548,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             return;
         }
         columns.add(column);
+        column.setParent(this);
+        resetHash();
+    }
+    
+    public void addColumnOfType(final PgColumn column) {
+        if (column == null) {
+            return;
+        }
+        columnsOfType.add(column);
         column.setParent(this);
         resetHash();
     }
@@ -582,34 +618,38 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 list.add(column);
             }
         }
-
+        
         return list;
     }
 
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
-
         if(this == obj) {
             eq = true;
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
-
+            
             eq = Objects.equals(name, table.getName())
                     && Objects.equals(tablespace, table.getTablespace())
                     && hasOids == table.getHasOids()
-                    && inherits.equals(table.inherits)
-                    && columns.equals(table.columns)
                     && grants.equals(table.grants)
                     && revokes.equals(table.revokes)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment())
-                    && Objects.equals(options, table.getOptions())
-                    && Objects.equals(creationTableTypeName, table.getCreationTableTypeName());
-        }
+                    && Objects.equals(options, table.getOptions());
 
+            if(ofType != null){
+                eq = eq && columnsOfType.equals(table.columnsOfType)
+                        && Objects.equals(ofType, table.getOfType());
+            } else {
+                eq = eq && inherits.equals(table.inherits)
+                        && columns.equals(table.columns);
+            }
+        }
         return eq;
     }
+    
 
     @Override
     public boolean equals(Object obj) {
@@ -638,12 +678,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         final int ifalse = 1237;
         final int prime = 31;
         int result = 1;
+        
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
         result = prime * result + PgDiffUtils.setlikeHashcode(indexes);
-        result = prime * result + ((inherits == null) ? 0 : inherits.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
@@ -652,19 +691,31 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
-        result = prime * result + ((creationTableTypeName == null) ? 0 : creationTableTypeName.hashCode());
+        
+        if(ofType != null){
+            result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
+            result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
+        } else {
+            result = prime * result + ((columns == null) ? 0 : columns.hashCode());
+            result = prime * result + ((inherits == null) ? 0 : inherits.hashCode());
+        }
+        
         return result;
     }
 
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
+        tableDst.setOfType(getOfType());
         tableDst.setTablespace(getTablespace());
         tableDst.setHasOids(getHasOids());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
+        }
+        for(PgColumn colSrc : columnsOfType) {
+            tableDst.addColumnOfType(colSrc.deepCopy());
         }
         tableDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {

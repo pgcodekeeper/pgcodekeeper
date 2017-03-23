@@ -16,7 +16,7 @@ WITH extension_deps AS (
 )
 
 SELECT subselectColumns.relname,
-       subselectColumns.table_type_name,
+       subselectColumns.of_type,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
@@ -44,7 +44,7 @@ SELECT subselectColumns.relname,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
-            columnsData.table_type_name,
+            columnsData.of_type,
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
@@ -69,7 +69,7 @@ FROM
      FROM
          (SELECT c.oid,
               c.relname,
-              tt.typname AS table_type_name,
+              tt.typname AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
@@ -108,7 +108,7 @@ FROM
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
-              columnsData.table_type_name,
+              columnsData.of_type,
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,

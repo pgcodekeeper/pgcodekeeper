@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
   RETURNS TABLE(
        schema_oid bigint,
        relname name,
-       table_type_name name,
+       of_type name,
        relowner bigint,
        aclArray text,
        col_numbers integer[],
@@ -72,7 +72,7 @@ WITH extension_deps AS (
 
 SELECT schema_oid,
        subselectColumns.relname,
-       subselectColumns.table_type_name,
+       subselectColumns.of_type,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
@@ -125,7 +125,7 @@ FROM
      FROM
          (SELECT c.oid,
               c.relname,
-              tt.typname AS table_type_name,
+              tt.typname AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
@@ -164,7 +164,7 @@ FROM
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
-              columnsData.table_type_name,
+              columnsData.of_type,
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,

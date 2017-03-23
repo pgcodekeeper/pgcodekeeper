@@ -72,9 +72,9 @@ public class TablesReader extends JdbcReader {
         String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
         
-        String tableTypeName = res.getString("table_type_name");
-        if(tableTypeName != null){
-            t.setCreationTableTypeName(tableTypeName);
+        String ofType = res.getString("of_type");
+        if(ofType != null){
+            t.setOfType(ofType);
         }
 
         for (int i = 0; i < colNumbers.length; i++) {
@@ -135,7 +135,11 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            t.addColumn(column);
+            if(ofType != null){
+                t.addColumnOfType(column);
+            } else {
+                t.addColumn(column);
+            }
         }
 
         // INHERITS

@@ -107,7 +107,7 @@ public abstract class ParserAbstract {
         return col;
     }
     
-    protected PgColumn getColumn(Table_of_type_column_definitionContext typeColCtx, List<String> sequences,
+    protected PgColumn getColumnOfType(Table_of_type_column_definitionContext typeColCtx, List<String> sequences,
             Map<String, GenericColumn> defaultFucntions, String defSchema) {
         PgColumn col = null;
         if (typeColCtx.column_name != null) {
