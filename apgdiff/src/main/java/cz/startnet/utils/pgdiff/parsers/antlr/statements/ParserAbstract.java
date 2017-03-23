@@ -35,6 +35,7 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgOptionContainer;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -57,7 +58,8 @@ public abstract class ParserAbstract {
     public abstract PgStatement getObject();
 
     protected String getDefSchemaName() {
-        return db.getDefaultSchema().getName();
+        PgSchema s = db.getDefaultSchema();
+        return s == null ? null : s.getName();
     }
 
     /**

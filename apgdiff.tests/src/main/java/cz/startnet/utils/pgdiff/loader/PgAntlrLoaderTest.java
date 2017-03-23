@@ -11,11 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -67,7 +64,6 @@ abstract class PgDatabaseObjectCreator {
 public class PgAntlrLoaderTest {
 
     private final String encoding = ApgdiffConsts.UTF_8;
-    private final List<Integer> skipForExport = Collections.unmodifiableList(Arrays.asList(8));
     /**
      * Provides parameters for running the tests.
      *
@@ -167,9 +163,6 @@ public class PgAntlrLoaderTest {
      */
     @Test
     public void exportFullDb() throws IOException, InterruptedException, LicenseException {
-        // skip cases with illegal object names (with file-system reserved chars)
-        Assume.assumeFalse(skipForExport.contains(fileIndex));
-
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
@@ -326,11 +319,6 @@ class PgDB2 extends PgDatabaseObjectCreator {
         ext.setSchema("postgis");
         d.addExtension(ext);
         ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
-
-        ext = new PgExtension("plpgsql", "");
-        ext.setSchema("pg_catalog");
-        d.addExtension(ext);
-        ext.setComment("'PL/pgSQL procedural language'");
 
         schema = d.getSchema(ApgdiffConsts.PUBLIC);
 

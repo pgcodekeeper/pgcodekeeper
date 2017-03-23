@@ -225,12 +225,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             return;
         }
         PgSchema schema = new PgSchema(name, ParserAbstract.getFullCtxText(ctx.getParent()));
-        PgSchema exists = db.getSchema(schema.getName());
-        if (exists == null) {
-            db.addSchema(schema);
-        } else {
-            db.tryReplacePublicDef(schema);
-        }
+        db.addSchema(schema);
         fillObjDefinition(null, name, DbObjType.SCHEMA, ctx.name.getStart()
                 .getStartIndex(), 0, ctx.name.getStart().getLine());
     }

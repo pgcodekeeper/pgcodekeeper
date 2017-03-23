@@ -17,8 +17,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
@@ -165,7 +165,7 @@ public class PgDumpLoader implements AutoCloseable {
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
                     throws InterruptedException, IOException, LicenseException {
-        PgDatabase db = new PgDatabase();
+        PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         File dir = new File(dirPath);
 
