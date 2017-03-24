@@ -62,12 +62,14 @@ public abstract class DiffPresentationPane extends Composite {
     protected final ProjectEditorDiffer projEditor;
     protected final IPreferenceStore mainPrefs;
     protected final PgDbProject proj;
+    private DbInfo lastRemote;
     protected DbSource dbProject, dbRemote;
     protected TreeElement diffTree;
 
     protected final LocalResourceManager lrm;
     private final Composite containerUpper;
     private final Composite contNotifications;
+    private final Label lblNotificationText;
     private final Button btnDismissRefresh;
 
     protected final DbStorePicker storePicker;
@@ -109,9 +111,8 @@ public abstract class DiffPresentationPane extends Composite {
         lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
                 lblNotification.getFont()).withStyle(SWT.BOLD).increaseHeight(2)));
 
-        Label l = new Label(contNotifications, SWT.NONE);
-        l.setText(Messages.DiffPresentationPane_project_modified);
-        l.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        lblNotificationText = new Label(contNotifications, SWT.NONE);
+        lblNotificationText.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
 
         btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
         btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
@@ -123,7 +124,7 @@ public abstract class DiffPresentationPane extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                showNotificationArea(false);
+                hideNotificationArea();
             }
         });
         // end notifications container
@@ -236,10 +237,10 @@ public abstract class DiffPresentationPane extends Composite {
 
         IEclipsePreferences projProps = proj.getPrefs();
         boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-        DbInfo storeDB = storePicker.getDbInfo();
+        lastRemote = storePicker.getDbInfo();
         File dumpfile;
-        if (storeDB != null) {
-            dbRemote = DbSource.fromDbInfo(storeDB, mainPrefs, forceUnixNewlines,
+        if (lastRemote != null) {
+            dbRemote = DbSource.fromDbInfo(lastRemote, mainPrefs, forceUnixNewlines,
                     proj.getProjectCharset(), projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         } else if ((dumpfile = storePicker.getPathOfFile()) != null) {
             dbRemote = DbSource.fromFile(forceUnixNewlines, dumpfile, proj.getProjectCharset());
@@ -289,17 +290,40 @@ public abstract class DiffPresentationPane extends Composite {
         setInput(null, null, null);
     }
 
-    public void showNotificationArea(boolean visible) {
+    public void hideNotificationArea() {
+        showNotificationArea(false, null);
+    }
+
+    private void showNotificationArea(boolean visible, String message) {
         if (diffTree == null && visible) {
-            // since there's only one notification about project files
-            // we can skip showing it if the pane is empty (has no project files loaded)
+            // since there's only one notification about diff sides changing
+            // we can skip showing it if the pane is empty (has no diff loaded)
             return;
+        }
+        if (message != null) {
+            lblNotificationText.setText(message);
         }
         ((GridData) contNotifications.getLayoutData()).exclude = !visible;
         contNotifications.setVisible(visible);
         this.layout();
         if (visible) {
             btnDismissRefresh.setFocus();
+        }
+    }
+
+    public void notifyProjectChanged() {
+        if (!isDisposed()) {
+            showNotificationArea(true, Messages.DiffPresentationPane_project_modified);
+            reset();
+        }
+    }
+
+    public void notifyRemoteChanged(DbInfo dbinfo) {
+        // may be called off UI thread so check that we're still alive
+        // also check that our current data comes from the changed DB
+        if (!isDisposed() && dbinfo.equals(lastRemote)) {
+            showNotificationArea(true, Messages.DiffPresentationPane_remote_changed_notification);
+            reset();
         }
     }
 

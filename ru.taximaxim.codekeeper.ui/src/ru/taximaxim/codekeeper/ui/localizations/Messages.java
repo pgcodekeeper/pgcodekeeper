@@ -236,6 +236,8 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_project_modified;
 
+    public static String DiffPresentationPane_remote_changed_notification;
+
     public static String DiffPresentationPane_select_db_source;
 
     public static String DiffPresentationPane_sql_file_filter;
