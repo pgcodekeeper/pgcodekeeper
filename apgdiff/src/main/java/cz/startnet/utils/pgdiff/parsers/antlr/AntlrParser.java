@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class AntlrParser {
@@ -154,26 +155,5 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, line, charPositionInLine, msg));
         }
-    }
-}
-
-final class MonitorCancelledRuntimeException extends RuntimeException {
-
-    private static final long serialVersionUID = 8530137642762407646L;
-
-    public MonitorCancelledRuntimeException() {
-        super();
-    }
-
-    public MonitorCancelledRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public MonitorCancelledRuntimeException(String message) {
-        super(message);
-    }
-
-    public MonitorCancelledRuntimeException(Throwable cause) {
-        super(cause);
     }
 }
