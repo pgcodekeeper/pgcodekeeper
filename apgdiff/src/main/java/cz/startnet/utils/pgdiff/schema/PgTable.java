@@ -646,6 +646,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 eq = eq && inherits.equals(table.inherits)
                         && columns.equals(table.columns);
             }
+   
         }
         return eq;
     }

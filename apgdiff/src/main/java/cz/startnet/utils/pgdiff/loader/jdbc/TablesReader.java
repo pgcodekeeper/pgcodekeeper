@@ -46,6 +46,13 @@ public class TablesReader extends JdbcReader {
             schema.addTable(table);
         }
     }
+    
+    private boolean isOfTypeColumnWithOptions(PgColumn column){
+        if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty()) || !column.getNullValue()){
+            return true;
+        }
+        return false;
+    }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException {
         String tableName = res.getString(CLASS_RELNAME);
@@ -75,6 +82,7 @@ public class TablesReader extends JdbcReader {
         String ofType = res.getString("of_type");
         if(ofType != null){
             t.setOfType(ofType);
+            t.addDep(new GenericColumn(schemaName, ofType, DbObjType.TYPE));
         }
 
         for (int i = 0; i < colNumbers.length; i++) {
@@ -134,14 +142,16 @@ public class TablesReader extends JdbcReader {
                 loader.setPrivileges(column, PgDiffUtils.getQuotedName(tableName),
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
-
+            
             if(ofType != null){
-                t.addColumnOfType(column);
+                if(isOfTypeColumnWithOptions(column)){
+                    t.addColumnOfType(column);
+                }
             } else {
                 t.addColumn(column);
             }
         }
-
+        
         // INHERITS
         Array inhrelsarray = res.getArray("inhrelnames");
         if (inhrelsarray != null) {

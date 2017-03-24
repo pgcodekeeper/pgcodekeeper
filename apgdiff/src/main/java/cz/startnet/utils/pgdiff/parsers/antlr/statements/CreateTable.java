@@ -50,8 +50,10 @@ public class CreateTable extends ParserAbstract {
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
+        
         if(defineTypeContext != null){
             table.setOfType(QNameParser.getFirstName(defineTypeContext.type_name.identifier()));
+            
             List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
             if(lstTypeColDefCtx != null){
                 for (Table_of_type_column_defContext typeColCtx : lstTypeColDefCtx.table_col_def) {
@@ -64,6 +66,12 @@ public class CreateTable extends ParserAbstract {
                     }
                 }
             }
+            
+            String ofType = QNameParser.getFirstName(defineTypeContext.type_name.identifier());
+            String ofTypeSchemaName = QNameParser.getSchemaName(defineTypeContext.type_name.identifier(), getDefSchemaName());
+            
+            table.addDep(new GenericColumn(ofTypeSchemaName,
+                    ofType, DbObjType.TYPE));
         } else {
             for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
                 for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
@@ -146,6 +154,7 @@ public class CreateTable extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addTable(table);
+        
         return table;
     }
 

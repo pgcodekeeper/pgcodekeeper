@@ -455,6 +455,7 @@ public class PgType extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        
         final int startLength = sb.length();
         PgType newType, oldType = this;
         if (newCondition instanceof PgType) {
@@ -487,6 +488,7 @@ public class PgType extends PgStatementWithSearchPath {
                     attrSb.append(", ");
                 }
             } else {
+                isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
                 .append(attr.getFullDefinition(false, null))
                 .append(", ");
@@ -494,6 +496,7 @@ public class PgType extends PgStatementWithSearchPath {
         }
         for (PgColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
+                isNeedDepcies.set(true);
                 attrSb.append("\n\tDROP ATTRIBUTE ")
                 .append(PgDiffUtils.getQuotedName(attr.getName()))
                 .append(", ");
