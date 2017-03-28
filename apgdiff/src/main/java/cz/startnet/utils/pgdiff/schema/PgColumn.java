@@ -299,7 +299,7 @@ public class PgColumn extends PgStatementWithSearchPath {
                 : oldColumn.getDefaultValue();
         final String newDefault = (newColumn.getDefaultValue() == null) ? ""
                 : newColumn.getDefaultValue();
-
+        
         if (!oldDefault.equals(newDefault)) {
             if (newDefault.isEmpty()) {
                 sb.append("\n\n" + getAlterTable() + ALTER_COLUMN

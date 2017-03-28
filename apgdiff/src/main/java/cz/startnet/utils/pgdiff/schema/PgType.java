@@ -455,7 +455,6 @@ public class PgType extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        
         final int startLength = sb.length();
         PgType newType, oldType = this;
         if (newCondition instanceof PgType) {

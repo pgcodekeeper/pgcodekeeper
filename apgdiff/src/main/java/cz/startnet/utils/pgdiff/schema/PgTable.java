@@ -346,6 +346,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        if(ofType != null){
+            return appendAlterSQLOfType(newCondition, sb, isNeedDepcies);
+        } else {
+            return appendAlterSQLCoulumn(newCondition, sb, isNeedDepcies);
+        }
+    }
+    
+    private boolean appendAlterSQLCoulumn(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies){
         final int startLength = sb.length();
         PgTable newTable;
         if (newCondition instanceof PgTable) {
@@ -408,7 +417,157 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
         return sb.length() > startLength;
     }
+    
+    private boolean appendAlterSQLOfType(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies){
+        final int startLength = sb.length();
+        PgTable newTable;
+        if (newCondition instanceof PgTable) {
+            newTable = (PgTable)newCondition;
+        } else {
+            return false;
+        }
+        PgTable oldTable = this;
 
+        if(!oldTable.getOfType().equals(newTable.getOfType())){
+            if (newTable.getOfType() != null){
+                sb.append("\n\nALTER TABLE ")
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(" OF ")
+                .append(newTable.getOfType())
+                .append(';');
+            } else {
+                sb.append("\n\nALTER TABLE ")
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(" NOT OF")
+                .append(';');
+            }
+        }
+        
+        StringBuilder colsSb = new StringBuilder();
+        for(PgColumn newCol : newTable.getColumnsOfType()){
+            PgColumn oldCol = oldTable.getColumnOfType(newCol.getName());
+            
+            if (oldCol != null) {
+                String oldDefault = (oldCol.getDefaultValue() == null) ? ""
+                        : oldCol.getDefaultValue();
+                String newDefault = (newCol.getDefaultValue() == null) ? ""
+                        : newCol.getDefaultValue();
+                
+                if (!oldDefault.equals(newDefault)) {
+                    if (newDefault.isEmpty()) {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" DROP DEFAULT");
+                    } else {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                        .append(" SET DEFAULT ")
+                        .append(newDefault);
+                        // isNeedDepcies.set(true);
+                    }
+                    colsSb.append(", ");
+                }
+                
+                if (oldCol.getNullValue() != newCol.getNullValue()) {
+                    if (newCol.getNullValue()) {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" DROP NOT NULL");
+                    } else {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" SET NOT NULL");
+                    }
+                    colsSb.append(", ");
+                }
+            } else {
+                String newDefault = (newCol.getDefaultValue() == null) ? ""
+                        : newCol.getDefaultValue();
+                
+                if(!newDefault.isEmpty()){
+                    colsSb.append("\n\tALTER COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                    .append(" SET DEFAULT ")
+                    .append(newDefault)
+                    .append(", ");
+                }
+                
+                if (!newCol.getNullValue()) {
+                    colsSb.append("\n\tALTER COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                    .append(" SET NOT NULL")
+                    .append(", ");
+                }
+            }
+        }
+        
+        
+        for(PgColumn oldCol : oldTable.getColumnsOfType()){
+            PgColumn newCol = newTable.getColumnOfType(oldCol.getName());
+            
+            if (newCol == null) {
+                String oldDefault = (oldCol.getDefaultValue() == null) ? ""
+                        : oldCol.getDefaultValue();
+                
+                if (!oldDefault.isEmpty()) {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" DROP DEFAULT")
+                        .append(", ");
+                    } 
+
+                
+                colsSb.append("\n\tALTER COLUMN ")
+                .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                .append(" DROP NOT NULL")
+                .append(", ");
+                
+            }
+        }
+
+        if (colsSb.length() > 0) {
+            // remove last comma
+            colsSb.setLength(colsSb.length() - 2);
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(colsSb).append(';');
+        }
+        
+        
+        
+
+        PgTable.compareOptions(oldTable.getOptions(), newTable.getOptions(), sb, getName(), DbObjType.TABLE);
+
+        if (oldTable.getHasOids() && !newTable.getHasOids()){
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()){
+            sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITH OIDS;");
+        }
+
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            sb.append("\n\nALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newTable.getName())
+                    + "\n\tSET TABLESPACE " + newTable.getTablespace() + ';');
+        }
+
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            sb.append(newTable.getOwnerSQL());
+        }
+
+        alterPrivileges(newTable, sb);
+
+        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+            sb.append("\n\n");
+            newTable.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+    
     /**
      * Finds index according to specified index {@code name}.
      *
@@ -646,7 +805,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 eq = eq && inherits.equals(table.inherits)
                         && columns.equals(table.columns);
             }
-   
         }
         return eq;
     }
