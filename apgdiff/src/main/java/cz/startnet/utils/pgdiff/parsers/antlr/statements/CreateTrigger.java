@@ -5,7 +5,6 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -21,24 +20,21 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
-import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateTrigger extends ParserAbstract {
     private final Create_trigger_statementContext ctx;
-    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db,
-            List<AntlrError> errors) {
-        super(db, errors);
+    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgTrigger trigger = new PgTrigger(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         trigger.setTableName(ctx.tabl_name.getText());
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
@@ -80,7 +76,7 @@ public class CreateTrigger extends ParserAbstract {
                         sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
                     }
                 } else {
-                    refSchemaName =  schemaName;
+                    refSchemaName = schemaName;
                 }
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
@@ -104,25 +100,7 @@ public class CreateTrigger extends ParserAbstract {
         ParseTreeWalker.DEFAULT.walk(whenListener, ctx);
         trigger.setWhen(whenListener.getWhen());
 
-        PgSchema schema = db.getSchema(schemaName);
-        if (schema == null) {
-            logSkipedObject(schemaName, "TRIGGER", trigger.getTableName(), ctx.getStart());
-            return null;
-        } else {
-            PgTriggerContainer c = schema.getTriggerContainer(trigger.getTableName());
-            if (c != null){
-                c.addTrigger(trigger);
-            } else {
-                Log.log(Log.LOG_ERROR,
-                        new StringBuilder().append("trigger container ")
-                        .append(trigger.getTableName())
-                        .append(" not found on schema ").append(schemaName)
-                        .append(" That's why trigger ").append(name)
-                        .append("will be skipped").toString());
-                return null;
-            }
-        }
-
+        getSafe(schema::getTriggerContainer, ctx.tabl_name).addTrigger(trigger);
         return trigger;
     }
 

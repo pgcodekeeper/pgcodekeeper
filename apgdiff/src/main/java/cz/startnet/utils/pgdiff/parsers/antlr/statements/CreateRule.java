@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
@@ -17,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -25,8 +27,8 @@ public class CreateRule extends ParserAbstract {
     private final Rule_commonContext ctx;
     private final boolean revoke;
 
-    public CreateRule(Rule_commonContext ctx, PgDatabase db, List<AntlrError> errors) {
-        super(db, errors);
+    public CreateRule(Rule_commonContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
         revoke = ctx.REVOKE() != null;
     }
@@ -56,8 +58,7 @@ public class CreateRule extends ParserAbstract {
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 PgFunction func = new PgFunction(QNameParser.getFirstName(functparam.name.identifier()), null);
                 fillArguments(functparam.function_args(), func, getDefSchemaName());
-                db.getSchema(getDefSchemaName())
-                .getFunction(func.getSignature())
+                db.getDefaultSchema().getFunction(func.getSignature())
                 .addPrivilege(
                         new PgPrivilege(revoke,
                                 getFullCtxText(ctx.body_rule),
@@ -127,9 +128,9 @@ public class CreateRule extends ParserAbstract {
             String tableName = getFullCtxText(tbl);
             List<IdentifierContext> ids = tbl.identifier();
             String firstPart = QNameParser.getFirstName(ids);
-            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+            PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
             //привилегии пишем так как получили одной строкой
-            PgTable tblSt = db.getSchema(schemaName).getTable(firstPart);
+            PgTable tblSt = schema.getTable(firstPart);
             // если таблица не найдена попробовать вьюхи и проч. общим методом
             if (tblSt == null) {
                 addToDB(tbl, DbObjType.TABLE, new PgPrivilege(
@@ -177,38 +178,38 @@ public class CreateRule extends ParserAbstract {
             return null;
         }
         List<IdentifierContext> ids = name.identifier();
-        String firstPart = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        ParserRuleContext firstPart = QNameParser.getFirstNameCtx(ids);
+        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            statement = db.getSchema(schemaName).getTable(firstPart);
+            statement = schema.getTable(firstPart.getText());
             if (statement == null) {
-                statement = db.getSchema(schemaName).getView(firstPart);
+                statement = getSafe(schema::getView, firstPart);
             }
             if (statement == null) {
-                statement = db.getSchema(schemaName).getSequence(firstPart);
+                statement = getSafe(schema::getSequence, firstPart);
             }
             break;
         case SEQUENCE:
-            statement = db.getSchema(schemaName).getSequence(firstPart);
+            statement = getSafe(schema::getSequence, firstPart);
             break;
         case DATABASE:
             statement = db;
             break;
         case SCHEMA:
-            schemaName = null;
-            statement = db.getSchema(firstPart);
+            schema = null;
+            statement = getSafe(db::getSchema, firstPart);
             break;
         case TYPE:
-            statement = db.getSchema(schemaName).getType(firstPart);
+            statement = schema.getType(firstPart.getText());
             // if type not found try domain
             if (statement == null) {
-                statement = db.getSchema(schemaName).getDomain(firstPart);
+                statement = getSafe(schema::getDomain, firstPart);
             }
             break;
         case DOMAIN:
-            statement = db.getSchema(schemaName).getDomain(firstPart);
+            statement = getSafe(schema::getDomain, firstPart);
             break;
         default:
             break;

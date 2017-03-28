@@ -19,7 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author Alexander Levsha
  */
-public abstract class PgStatement {
+public abstract class PgStatement implements IStatement {
     /**
      * The statement as it's been read from dump before parsing.
      */

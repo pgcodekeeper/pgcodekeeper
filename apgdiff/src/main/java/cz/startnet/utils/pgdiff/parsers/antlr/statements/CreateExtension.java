@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
-
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -13,9 +10,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CreateExtension extends ParserAbstract {
     private final Create_extension_statementContext ctx;
-    public CreateExtension(Create_extension_statementContext ctx, PgDatabase db,
-            List<AntlrError> errors) {
-        super(db, errors);
+    public CreateExtension(Create_extension_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
@@ -30,5 +26,4 @@ public class CreateExtension extends ParserAbstract {
         db.addExtension(ext);
         return ext;
     }
-
 }

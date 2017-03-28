@@ -5,7 +5,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -19,43 +18,30 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
 
-    public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db,
-            List<AntlrError> errors) {
-        super(db, errors);
+    public CreateRewrite(Create_rewrite_statementContext ctx, PgDatabase db) {
+        super(db);
         this.ctx = ctx;
     }
 
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgRule rule = new PgRule(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setCondition(getCondition(ctx));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule, db.getArguments(), schemaName);
+        setCommands(ctx, rule, db.getArguments(), QNameParser.getSchemaName(ids, getDefSchemaName()));
 
-        PgSchema schema = db.getSchema(schemaName);
-        String targetName = ctx.table_name.getText();
-        PgRuleContainer c = schema.getRuleContainer(targetName);
-        if (c != null){
-            c.addRule(rule);
-        } else {
-            Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
-                    " is missing its container " + targetName +
-                    " in schema " + schemaName);
-        }
+        getSafe(schema::getRuleContainer, ctx.table_name).addRule(rule);
         return rule;
     }
 

@@ -3,15 +3,13 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
@@ -33,13 +31,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgOptionContainer;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -47,10 +46,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public abstract class ParserAbstract {
     protected final PgDatabase db;
-    private final List<AntlrError> errors;
-    public ParserAbstract(PgDatabase db, List<AntlrError> errors) {
+    public ParserAbstract(PgDatabase db) {
         this.db = db;
-        this.errors = errors;
     }
 
     /**
@@ -78,12 +75,12 @@ public abstract class ParserAbstract {
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
-            Map<String, GenericColumn> defaultFucntions, String defSchema) {
+            Map<String, GenericColumn> defaultFucntions) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(colCtx.column_name.getText());
             col.setType(getFullCtxText(colCtx.datatype));
-            addTypeAsDepcy(colCtx.datatype, col, defSchema);
+            addTypeAsDepcy(colCtx.datatype, col, getDefSchemaName());
             if (colCtx.collate_name != null) {
                 col.setCollation(getFullCtxText(colCtx.collate_name.collation));
             }
@@ -95,7 +92,7 @@ public abstract class ParserAbstract {
                         sequences.add(sequence);
                     }
                     GenericColumn func = getFunctionCall(
-                            column_constraint.constr_body().default_expr, defSchema);
+                            column_constraint.constr_body().default_expr);
                     if (func != null) {
                         defaultFucntions.put(colCtx.column_name.getText(), func);
                     }
@@ -134,14 +131,14 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected GenericColumn getFunctionCall(VexContext ctx, String defSchema) {
+    protected GenericColumn getFunctionCall(VexContext ctx) {
         FunctionSearcher fs = new FunctionSearcher();
         ParseTreeWalker.DEFAULT.walk(fs, ctx);
         if (fs.getName() == null) {
             return null;
         }
         List<IdentifierContext> ids = fs.getName().identifier();
-        return new GenericColumn(QNameParser.getSchemaName(ids, defSchema),
+        return new GenericColumn(QNameParser.getSchemaName(ids, getDefSchemaName()),
                 QNameParser.getFirstName(ids), DbObjType.FUNCTION);
     }
 
@@ -249,27 +246,6 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void fillErrors(Token token, String object, String name){
-        errors.add(new AntlrError(token, 1, 0, "Cannot find "+ object +": "+ name));
-    }
-
-    protected void logError(String object, String name, Token token) {
-        Log.log(Log.LOG_ERROR, new StringBuilder(0).append("Cannot find ")
-                .append(object).append(" in database: ").append(name)
-                .toString());
-        fillErrors(token, object, name);
-    }
-
-    protected void logSkipedObject(String schema, String object, String name,
-            Token token) {
-        Log.log(Log.LOG_ERROR,
-                new StringBuilder(0).append("Cannot find schema ")
-                .append(schema).append(" in database. ")
-                .append("Thats why ").append(object).append(" ")
-                .append(name).append("will be skipped").toString());
-        fillErrors(token, object, name);
-    }
-
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
         if (constr.common_constraint().check_boolean_expression() != null) {
             String constr_name = "";
@@ -284,16 +260,32 @@ public abstract class ParserAbstract {
         return null;
     }
 
-    protected void fillErrors(AntlrError error){
-
-    }
-
-    public <T extends PgStatement> T getStatementSafe(Supplier<T> getter, Token errorToken) {
-        T statement = getter.get();
+    public <T extends IStatement> T getSafe(Function <String, T> getter,
+            ParserRuleContext ctx) {
+        T statement = getter.apply(ctx.getText());
         if (statement == null) {
-            throw new UnresolvedReferenceException(errorToken);
+            throw new UnresolvedReferenceException(ctx.getStart());
         }
         return statement;
+    }
+
+    public PgFunction getFunctionSafe(Function <String, PgFunction> getter,
+            String signature, ParserRuleContext ctx) {
+        PgFunction function = getter.apply(signature);
+        if (function == null) {
+            throw new UnresolvedReferenceException(ctx.getStart());
+        } else {
+            return function;
+        }
+    }
+
+    public PgSchema getSchemaSafe(Function <String, PgSchema> getter,
+            List<IdentifierContext> ids, PgSchema defaultSchema) {
+        if (ids.size() < 2) {
+            return defaultSchema;
+        } else {
+            return getSafe(getter, ids.get(0));
+        }
     }
 
     /**
