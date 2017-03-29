@@ -100,6 +100,16 @@ public class PgDiffTest {
                     {"add_table_with_not_existing_sequence"},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table"},
+                    // Tests scenario where new TYPED TABLE is added.
+                    {"add_table_of_type"},
+                    // Tests scenario where in TYPED TABLE new options is added.
+                    {"add_table_of_type_options"},
+                    // Tests scenario where options of TYPED TABLE is modified.
+                    {"modify_table_of_type_options"},
+                    // Tests scenario where column of TYPED TABLE with TYPE is modified.
+                    {"modify_table_of_type_column"},
+                    // Tests scenario where TYPED TABLE is dropped.
+                    {"drop_table_of_type"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE CONSTRAINT is modified.

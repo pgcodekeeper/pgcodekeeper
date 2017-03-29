@@ -100,7 +100,7 @@ SELECT schema_oid,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
-            columnsData.table_type_name,
+            columnsData.of_type,
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,

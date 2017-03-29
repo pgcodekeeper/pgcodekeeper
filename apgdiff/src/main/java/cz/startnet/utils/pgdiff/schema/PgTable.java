@@ -464,7 +464,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         .append(PgDiffUtils.getQuotedName(newCol.getName()))
                         .append(" SET DEFAULT ")
                         .append(newDefault);
-                        // isNeedDepcies.set(true);
                     }
                     colsSb.append(", ");
                 }
@@ -502,7 +501,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
         
-        
         for(PgColumn oldCol : oldTable.getColumnsOfType()){
             PgColumn newCol = newTable.getColumnOfType(oldCol.getName());
             
@@ -517,12 +515,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         .append(", ");
                     } 
 
-                
-                colsSb.append("\n\tALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(oldCol.getName()))
-                .append(" DROP NOT NULL")
-                .append(", ");
-                
+                if(!oldCol.getNullValue()){
+                    colsSb.append("\n\tALTER COLUMN ")
+                  .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                  .append(" DROP NOT NULL")
+                  .append(", ");
+                }
             }
         }
 
@@ -533,9 +531,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(colsSb).append(';');
         }
-        
-        
-        
 
         PgTable.compareOptions(oldTable.getOptions(), newTable.getOptions(), sb, getName(), DbObjType.TABLE);
 
