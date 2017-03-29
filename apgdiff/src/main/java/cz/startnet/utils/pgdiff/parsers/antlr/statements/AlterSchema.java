@@ -17,7 +17,8 @@ public class AlterSchema extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
-        PgSchema schema = getSafe(db::getSchema, ctx.schema_with_name().name);
+        PgSchema schema = getSafe(db::getSchema,
+                QNameParser.getFirstNameCtx(ctx.schema_with_name().name.identifier()));
         if (!name.equals(ApgdiffConsts.PUBLIC)) {
             fillOwnerTo(ctx.owner_to(), schema);
         }

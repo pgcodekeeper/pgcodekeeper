@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class AntlrParser {
@@ -93,6 +94,8 @@ public class AntlrParser {
             ParseTreeWalker.DEFAULT.walk(listener, ctx);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
+        } catch (UnresolvedReferenceException ex) {
+            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex));
         }
     }
 }

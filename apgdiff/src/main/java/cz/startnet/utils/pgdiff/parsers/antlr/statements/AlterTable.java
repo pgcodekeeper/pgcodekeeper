@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -34,27 +32,29 @@ public class AlterTable extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
-
-        String name = QNameParser.getFirstName(ids);
-        PgTable tabl = schema.getTable(name);
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgTable tabl = null;
 
         List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
-            PgStatement st = null;
+            // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                if ((st = tabl) != null) {
+                PgStatement st = null;
+                String name = nameCtx.getText();
+                if ((st = schema.getTable(name)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 } else if ((st = schema.getSequence(name)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = schema.getView(name)) != null) {
+                } else if ((st = getSafe(schema::getView, nameCtx)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 }
-            }
-            if (tabl == null) {
                 continue;
             }
+
+            // everything else requires a real table, so fail immediately
+            tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
                         sequences, defaultFunctions));
@@ -79,7 +79,7 @@ public class AlterTable extends ParserAbstract {
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {
-                ParserRuleContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
+                IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
                 PgIndex index = getSafe(tabl::getIndex, indexName);
                 index.setClusterIndex(true);
             }
@@ -124,7 +124,7 @@ public class AlterTable extends ParserAbstract {
     }
 
     private void createRule(PgTable tabl, Table_actionContext tablAction) {
-        PgRule rule = tabl.getRule(tablAction.rewrite_rule_name.getText());
+        PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
         if (rule != null) {
             if (tablAction.DISABLE() != null) {
                 rule.setEnabledState("DISABLE");

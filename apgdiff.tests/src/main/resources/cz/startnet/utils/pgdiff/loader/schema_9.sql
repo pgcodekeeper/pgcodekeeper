@@ -29,7 +29,7 @@ CREATE VIEW "user" AS
 ALTER TABLE public."user" OWNER TO postgres;
 ALTER VIEW public."user" OWNER TO postgres;
 
-ALTER TABLE "user" ALTER COLUMN created SET DEFAULT now();
+--ALTER TABLE "user" ALTER COLUMN created SET DEFAULT now();
 ALTER VIEW "user" ALTER COLUMN created SET DEFAULT now();
 
 

@@ -2,11 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -34,58 +33,64 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
         List<IdentifierContext> ids = ctx.name.identifier();
-        ParserRuleContext name = QNameParser.getFirstNameCtx(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        String name = nameCtx.getText();
         String comment = ctx.comment_text.getText();
-        PgSchema schema = db.getSchema(schemaName);
+
+        // column (separately because of schema qualification)
+        // otherwise schema reference is considered unresolved
+        if (ctx.COLUMN() != null) {
+            IdentifierContext schemaCtx = QNameParser.getThirdNameCtx(ids);
+            PgSchema schema = schemaCtx == null ? db.getDefaultSchema() : getSafe(db::getSchema, schemaCtx);
+            IdentifierContext tableCtx = QNameParser.getSecondNameCtx(ids);
+            String tableName = tableCtx.getText();
+            PgTable table = schema.getTable(tableName);
+            if (table == null) {
+                PgView view = schema.getView(tableName);
+                if (view == null) {
+                    getSafe(schema::getType, tableCtx).getAttr(name).setComment(db.getArguments(), comment);
+                } else {
+                    view.addColumnComment(db.getArguments(), name, comment);
+                }
+            } else {
+                getSafe(table::getColumn, nameCtx).setComment(db.getArguments(), comment);
+            }
+            return null;
+        }
+
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
 
         // function
         if (ctx.FUNCTION() != null) {
-            PgFunction func = new PgFunction(name.getText(), null);
+            PgFunction func = new PgFunction(name, null);
             fillArguments(ctx.function_args(), func, getDefSchemaName());
-            getFunctionSafe(schema::getFunction, func.getSignature(), ctx.function_args()).setComment(db.getArguments(), comment);
-            //column
-        } else if (ctx.COLUMN() != null){
-            ParserRuleContext tableName = QNameParser.getSecondNameCtx(ids);
-            if (schemaName.equals(tableName.getText())) {
-                schema = db.getDefaultSchema();
-            }
-            PgTable table = schema.getTable(tableName.getText());
-            if (table == null) {
-                PgView view = schema.getView(tableName.getText());
-                if (view == null) {
-                    getSafe(schema::getType, tableName)
-                    .getAttr(name.getText()).setComment(db.getArguments(), comment);
-                } else {
-                    view.addColumnComment(db.getArguments(), name.getText(), comment);
-                }
-            } else {
-                getSafe(table::getColumn, name).setComment(db.getArguments(), comment);
-            }
+            getSafe(schema::getFunction, func.getSignature(), nameCtx.getStart())
+            .setComment(db.getArguments(), comment);
             //extension
-        } else if (ctx.EXTENSION() != null) {
-            getSafe(db::getExtension, ctx.name).setComment(db.getArguments(), comment);
+        }  else if (ctx.EXTENSION() != null) {
+            getSafe(db::getExtension, nameCtx).setComment(db.getArguments(), comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {
             PgTable table = schema.getTable(QNameParser.getFirstName(ctx.table_name.identifier()));
             if (table == null) {
-                PgDomain domain = getSafe(schema::getDomain, name);
-                getSafe(domain::getConstraint, name).setComment(db.getArguments(), comment);
+                PgDomain domain = getSafe(schema::getDomain, nameCtx);
+                getSafe(domain::getConstraint, nameCtx).setComment(db.getArguments(), comment);
             } else {
-                getSafe(table::getConstraint, name).setComment(db.getArguments(), comment);
+                getSafe(table::getConstraint, nameCtx).setComment(db.getArguments(), comment);
             }
             // trigger
         } else if (ctx.TRIGGER() != null) {
-            PgTriggerContainer c = getSafe(schema::getTriggerContainer, ctx.table_name);
-            getSafe(c::getTrigger, name).setComment(db.getArguments(), comment);
+            PgTriggerContainer c = getSafe(schema::getTriggerContainer,
+                    QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
+            getSafe(c::getTrigger, nameCtx).setComment(db.getArguments(), comment);
             // database
-        } else if (ctx.DATABASE() !=null) {
+        } else if (ctx.DATABASE() != null) {
             db.setComment(db.getArguments(), comment);
             // index
         } else if (ctx.INDEX() != null) {
             PgIndex index = null;
             for (PgTable table : schema.getTables()) {
-                index = table.getIndex(name.getText());
+                index = table.getIndex(name);
                 if (index != null) {
                     index.setComment(db.getArguments(), comment);
                     break;
@@ -95,35 +100,39 @@ public class CommentOn extends ParserAbstract {
             if (index == null) {
                 PgConstraint constr = null;
                 for (PgTable table : schema.getTables()) {
-                    constr = table.getConstraint(name.getText());
+                    constr = table.getConstraint(name);
                     if (constr != null) {
                         constr.setComment(db.getArguments(), comment);
                         break;
                     }
                 }
+                if (constr == null) {
+                    throw new UnresolvedReferenceException(nameCtx.getStart());
+                }
             }
             //schema
-        } else if (ctx.SCHEMA() != null && !name.getText().equals(ApgdiffConsts.PUBLIC)) {
-            getSafe(db::getSchema, name).setComment(db.getArguments(), comment);
+        } else if (ctx.SCHEMA() != null && !name.equals(ApgdiffConsts.PUBLIC)) {
+            getSafe(db::getSchema, nameCtx).setComment(db.getArguments(), comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {
-            getSafe(schema::getSequence, name).setComment(db.getArguments(), comment);
+            getSafe(schema::getSequence, nameCtx).setComment(db.getArguments(), comment);
             // table
         } else if (ctx.TABLE() != null) {
-            getSafe(schema::getTable, name).setComment(db.getArguments(), comment);
+            getSafe(schema::getTable, nameCtx).setComment(db.getArguments(), comment);
             // view
         } else if (ctx.VIEW() != null) {
-            getSafe(schema::getView, name).setComment(db.getArguments(), comment);
+            getSafe(schema::getView, nameCtx).setComment(db.getArguments(), comment);
             // type
         } else if (ctx.TYPE() != null) {
-            getSafe(schema::getType, name).setComment(db.getArguments(), comment);
+            getSafe(schema::getType, nameCtx).setComment(db.getArguments(), comment);
             // domain
         } else if (ctx.DOMAIN() != null) {
-            getSafe(schema::getDomain, name).setComment(db.getArguments(), comment);
+            getSafe(schema::getDomain, nameCtx).setComment(db.getArguments(), comment);
             // rule
         } else if (ctx.RULE() != null) {
-            PgRuleContainer c = getSafe(schema::getRuleContainer, ctx.table_name);
-            getSafe(c::getRule, name).setComment(db.getArguments(), comment);
+            PgRuleContainer c = getSafe(schema::getRuleContainer,
+                    QNameParser.getFirstNameCtx(ctx.table_name.identifier()));
+            getSafe(c::getRule, nameCtx).setComment(db.getArguments(), comment);
         }
         return null;
     }

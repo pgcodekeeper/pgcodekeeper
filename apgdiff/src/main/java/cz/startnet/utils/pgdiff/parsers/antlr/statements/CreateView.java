@@ -28,7 +28,7 @@ public class CreateView extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgView view = new PgView(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));

@@ -32,16 +32,17 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgRule rule = new PgRule(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setCondition(getCondition(ctx));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule, db.getArguments(), QNameParser.getSchemaName(ids, getDefSchemaName()));
+        setCommands(ctx, rule, db.getArguments(), schema.getName());
 
-        getSafe(schema::getRuleContainer, ctx.table_name).addRule(rule);
+        getSafe(schema::getRuleContainer,
+                QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addRule(rule);
         return rule;
     }
 

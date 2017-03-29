@@ -22,7 +22,7 @@ public class AlterType extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgType type = getSafe(schema::getType, QNameParser.getFirstNameCtx(ids));
         fillOwnerTo(ctx.owner_to(), type);
         return type;

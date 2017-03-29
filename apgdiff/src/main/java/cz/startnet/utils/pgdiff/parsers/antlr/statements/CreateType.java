@@ -30,7 +30,7 @@ public class CreateType extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgTypeForm form = PgTypeForm.SHELL;
         if (ctx.RANGE() != null) {
             form = PgTypeForm.RANGE;
@@ -140,5 +140,4 @@ public class CreateType extends ParserAbstract {
         }
         return type;
     }
-
 }

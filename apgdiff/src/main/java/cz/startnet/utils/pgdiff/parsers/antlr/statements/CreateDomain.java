@@ -43,7 +43,7 @@ public class CreateDomain extends ParserAbstract {
                 domain.setNotNull(constr.common_constraint().null_false != null);
             }
         }
-        getSchemaSafe(db::getSchema, ids, db.getDefaultSchema()).addDomain(domain);
+        getSchemaSafe(ids, db.getDefaultSchema()).addDomain(domain);
         return domain;
     }
 }

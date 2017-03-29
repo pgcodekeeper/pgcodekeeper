@@ -21,14 +21,13 @@ public class AlterFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
 
-        PgFunction function = new PgFunction(QNameParser.getFirstName(ids),
-                getFullCtxText(ctx.getParent()));
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgFunction function = new PgFunction(nameCtx.getText(), getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
 
-        PgFunction func = getFunctionSafe(schema::getFunction, function.getSignature(),
-                ctx.function_parameters());
+        PgFunction func = getSafe(schema::getFunction, function.getSignature(), nameCtx.getStart());
         fillOwnerTo(ctx.owner_to(), func);
         return null;
     }

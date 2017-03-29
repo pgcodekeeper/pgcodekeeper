@@ -25,7 +25,7 @@ public class CreateIndex extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         String name = QNameParser.getFirstName(ids);
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));

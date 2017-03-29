@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.antlr.v4.runtime.ParserRuleContext;
+import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
@@ -38,7 +38,6 @@ public class CreateRule extends ParserAbstract {
         if (db.getArguments().isIgnorePrivileges()) {
             return null;
         }
-        String col_rule = "";
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
         if (ctx.body_rule.body_rules_rest().obj_name != null) {
@@ -56,13 +55,14 @@ public class CreateRule extends ParserAbstract {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                PgFunction func = new PgFunction(QNameParser.getFirstName(functparam.name.identifier()), null);
+                List<IdentifierContext> funcIds = functparam.name.identifier();
+                IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
+                PgFunction func = new PgFunction(functNameCtx.getText(), null);
                 fillArguments(functparam.function_args(), func, getDefSchemaName());
-                db.getDefaultSchema().getFunction(func.getSignature())
-                .addPrivilege(
-                        new PgPrivilege(revoke,
-                                getFullCtxText(ctx.body_rule),
-                                getFullCtxText(ctx)));
+
+                PgSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
+                getSafe(schema::getFunction, func.getSignature(), functNameCtx.getStart())
+                .addPrivilege(new PgPrivilege(revoke, getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -79,10 +79,8 @@ public class CreateRule extends ParserAbstract {
             obj_name = ctx.body_rule.on_domain().obj_name.name;
         }
 
-
         for (Schema_qualified_nameContext name : obj_name) {
-            addToDB(name, type, new PgPrivilege(revoke,
-                    col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)));
+            addToDB(name, type, new PgPrivilege(revoke, getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
         }
 
         return null;
@@ -96,7 +94,7 @@ public class CreateRule extends ParserAbstract {
     private void parseColumns(Body_rulesContext ctx_body) {
         List<String> tbl_priv = new ArrayList<>();
         // собрать информацию о привилегиях на колонки
-        Map<String, List<String>> colPriv = new HashMap<>();
+        Map<String, Entry<IdentifierContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : ctx_body.on_table().priv_tbl_col) {
             String privName = getFullCtxText(priv.table_column_privilege());
             // это привилегия на таблицу
@@ -105,13 +103,13 @@ public class CreateRule extends ParserAbstract {
                 continue;
             }
             for (IdentifierContext col : priv.column) {
-                String colName = getFullCtxText(col);
-                List<String> privList = colPriv.get(colName);
+                String colName = col.getText();
+                Entry<IdentifierContext, List<String>> privList = colPriv.get(colName);
                 if (privList == null) {
-                    privList = new ArrayList<>();
+                    privList = new SimpleEntry<>(col, new ArrayList<>());
                     colPriv.put(colName, privList);
                 }
-                privList.add(privName);
+                privList.getValue().add(privName);
             }
         }
         // заполнить привилегии на объекты таблицу/сиквенс/вью
@@ -128,7 +126,7 @@ public class CreateRule extends ParserAbstract {
             String tableName = getFullCtxText(tbl);
             List<IdentifierContext> ids = tbl.identifier();
             String firstPart = QNameParser.getFirstName(ids);
-            PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+            PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
             //привилегии пишем так как получили одной строкой
             PgTable tblSt = schema.getTable(firstPart);
             // если таблица не найдена попробовать вьюхи и проч. общим методом
@@ -152,72 +150,67 @@ public class CreateRule extends ParserAbstract {
         }
     }
 
-    private void setColumnPrivilege(PgTable tblSt, Map<String, List<String>> colPriv,
+    private void setColumnPrivilege(PgTable tblSt, Map<String, Entry<IdentifierContext, List<String>>> colPrivs,
             String tableName, Body_rulesContext ctx_body) {
-        for (PgColumn col : tblSt.getColumns()) {
-            List<String> privList = colPriv.get(col.getName());
-            if (privList != null) {
-                StringBuilder privilege = new StringBuilder();
-                for (String priv : privList) {
-                    privilege.append(priv).append('(').append(col.getName()).append("), ");
-                }
-                // Здесь не должно быть пустых привилегий для колонок,
-                // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
-                privilege.setLength(privilege.length() - 2);
-                privilege.append(" ON TABLE ").append(tableName).append(' ');
-                privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
-
-                col.addPrivilege(new PgPrivilege(revoke,
-                        privilege.toString(), getFullCtxText(ctx)));
+        for (Entry<String, Entry<IdentifierContext, List<String>>> colPriv : colPrivs.entrySet()) {
+            PgColumn col = getSafe(tblSt::getColumn, colPriv.getValue().getKey());
+            StringBuilder privilege = new StringBuilder();
+            for (String priv : colPriv.getValue().getValue()) {
+                privilege.append(priv).append('(').append(col.getName()).append("), ");
             }
+            // Здесь не должно быть пустых привилегий для колонок,
+            // т.к. пустые привилегии ушли в таблицу/вью/сиквенс
+            privilege.setLength(privilege.length() - 2);
+            privilege.append(" ON TABLE ").append(tableName).append(' ');
+            privilege.append(getFullCtxText(ctx_body.body_rules_rest()));
+
+            col.addPrivilege(new PgPrivilege(revoke, privilege.toString(), getFullCtxText(ctx)));
         }
     }
 
-    private PgStatement addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
-            return null;
+            return;
         }
         List<IdentifierContext> ids = name.identifier();
-        ParserRuleContext firstPart = QNameParser.getFirstNameCtx(ids);
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        IdentifierContext idCtx = QNameParser.getFirstNameCtx(ids);
+        String id = idCtx.getText();
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-            statement = schema.getTable(firstPart.getText());
+            statement = schema.getTable(id);
             if (statement == null) {
-                statement = getSafe(schema::getView, firstPart);
+                statement = schema.getView(id);
             }
             if (statement == null) {
-                statement = getSafe(schema::getSequence, firstPart);
+                statement = getSafe(schema::getSequence, idCtx);
             }
             break;
         case SEQUENCE:
-            statement = getSafe(schema::getSequence, firstPart);
+            statement = getSafe(schema::getSequence, idCtx);
             break;
         case DATABASE:
             statement = db;
             break;
         case SCHEMA:
-            schema = null;
-            statement = getSafe(db::getSchema, firstPart);
+            statement = getSafe(db::getSchema, idCtx);
             break;
         case TYPE:
-            statement = schema.getType(firstPart.getText());
+            statement = schema.getType(idCtx.getText());
             // if type not found try domain
             if (statement == null) {
-                statement = getSafe(schema::getDomain, firstPart);
+                statement = getSafe(schema::getDomain, idCtx);
             }
             break;
         case DOMAIN:
-            statement = getSafe(schema::getDomain, firstPart);
+            statement = getSafe(schema::getDomain, idCtx);
             break;
         default:
             break;
         }
         if (statement != null) {
             statement.addPrivilege(pgPrivilege);
-            return statement;
         }
-        return null;
     }
 }

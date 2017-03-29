@@ -138,7 +138,7 @@ public class PgDumpLoader implements AutoCloseable {
             throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
         SQLParserBaseListener listener = loadReferences ? new ReferenceListener(intoDb, inputObjectName)
-                : new CustomSQLParserListener(intoDb, inputObjectName, errors);
+                : new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor);
 
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName,
                 listener, monitor, monitoringLevel, errors);

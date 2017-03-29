@@ -20,7 +20,7 @@ public class AlterView extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgView dbView = getSafe(schema::getView, QNameParser.getFirstNameCtx(ids));
         fillOwnerTo(ctx.owner_to(), dbView);
         if (ctx.set_def_column() != null) {

@@ -21,7 +21,7 @@ public class AlterSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgSequence sequence = getSafe(schema::getSequence, QNameParser.getFirstNameCtx(ids));
 
         fillOwnerTo(ctx.owner_to(), sequence);

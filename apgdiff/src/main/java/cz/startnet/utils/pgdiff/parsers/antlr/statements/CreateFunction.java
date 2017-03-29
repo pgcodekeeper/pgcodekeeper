@@ -21,7 +21,7 @@ public class CreateFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         function.setBody(db.getArguments() ,getFullCtxText(ctx.funct_body));

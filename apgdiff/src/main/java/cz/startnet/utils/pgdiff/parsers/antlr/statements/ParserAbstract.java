@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -69,9 +70,9 @@ public abstract class ParserAbstract {
      * @return raw string
      */
     public static String getFullCtxText(ParserRuleContext ctx) {
-        Interval interval = new Interval(ctx.start.getStartIndex(),
-                ctx.stop.getStopIndex());
-        return ctx.start.getInputStream().getText(interval);
+        Interval interval = new Interval(ctx.getStart().getStartIndex(),
+                ctx.getStop().getStopIndex());
+        return ctx.getStart().getInputStream().getText(interval);
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
@@ -260,32 +261,23 @@ public abstract class ParserAbstract {
         return null;
     }
 
-    public <T extends IStatement> T getSafe(Function <String, T> getter,
-            ParserRuleContext ctx) {
-        T statement = getter.apply(ctx.getText());
+    public static <T extends IStatement> T getSafe(Function <String, T> getter,
+            IdentifierContext ctx) {
+        return getSafe(getter, ctx.getText(), ctx.getStart());
+    }
+
+    public static <T extends IStatement> T getSafe(Function <String, T> getter,
+            String name, Token errToken) {
+        T statement = getter.apply(name);
         if (statement == null) {
-            throw new UnresolvedReferenceException(ctx.getStart());
+            throw new UnresolvedReferenceException(errToken);
         }
         return statement;
     }
 
-    public PgFunction getFunctionSafe(Function <String, PgFunction> getter,
-            String signature, ParserRuleContext ctx) {
-        PgFunction function = getter.apply(signature);
-        if (function == null) {
-            throw new UnresolvedReferenceException(ctx.getStart());
-        } else {
-            return function;
-        }
-    }
-
-    public PgSchema getSchemaSafe(Function <String, PgSchema> getter,
-            List<IdentifierContext> ids, PgSchema defaultSchema) {
-        if (ids.size() < 2) {
-            return defaultSchema;
-        } else {
-            return getSafe(getter, ids.get(0));
-        }
+    public PgSchema getSchemaSafe(List<IdentifierContext> ids, PgSchema defaultSchema) {
+        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        return schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
     }
 
     /**
@@ -332,11 +324,11 @@ public abstract class ParserAbstract {
     }
 
     public static void fillStorageParams (String value, String option, boolean isToast,
-            PgOptionContainer  optionContainer){
-        String quatedOption = PgDiffUtils.getQuotedName(option);
+            PgOptionContainer optionContainer){
+        String quotedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
-            quatedOption = "toast."+ option;
+            quotedOption = "toast."+ option;
         }
-        optionContainer.addOption(quatedOption, value);
+        optionContainer.addOption(quotedOption, value);
     }
 }

@@ -23,7 +23,7 @@ public class AlterDomain extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgDomain domain = getSafe(schema::getDomain, QNameParser.getFirstNameCtx(ids));
 
         fillOwnerTo(ctx.owner_to(), domain);

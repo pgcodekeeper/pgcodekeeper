@@ -27,29 +27,29 @@ public class CreateSequence extends ParserAbstract {
             if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());
             }
-            if (body.incr!=null) {
+            if (body.incr != null) {
                 inc = Long.parseLong(body.incr.getText());
             }
-            if (body.maxval!=null) {
+            if (body.maxval != null) {
                 maxValue = Long.parseLong(body.maxval.getText());
             }
-            if (body.minval!=null) {
+            if (body.minval != null) {
                 minValue = Long.parseLong(body.minval.getText());
             }
-            if (body.start_val!=null) {
+            if (body.start_val != null) {
                 sequence.setStartWith(body.start_val.getText());
             }
-            if (body.cycle_val!=null) {
-                sequence.setCycle(body.cycle_true==null);
+            if (body.cycle_val != null) {
+                sequence.setCycle(body.cycle_true == null);
             }
-            if (body.col_name!=null) {
+            if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
                 sequence.setOwnedBy(body.col_name.getText());
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue);
-        getSchemaSafe(db::getSchema, ids, db.getDefaultSchema()).addSequence(sequence);
+        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
         return sequence;
     }
 

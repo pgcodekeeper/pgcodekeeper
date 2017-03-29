@@ -33,7 +33,7 @@ public class CreateTrigger extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgSchema schema = getSchemaSafe(db::getSchema, ids, db.getDefaultSchema());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgTrigger trigger = new PgTrigger(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         trigger.setTableName(ctx.tabl_name.getText());
         if (ctx.AFTER() != null) {
@@ -100,7 +100,8 @@ public class CreateTrigger extends ParserAbstract {
         ParseTreeWalker.DEFAULT.walk(whenListener, ctx);
         trigger.setWhen(whenListener.getWhen());
 
-        getSafe(schema::getTriggerContainer, ctx.tabl_name).addTrigger(trigger);
+        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.tabl_name.identifier()))
+        .addTrigger(trigger);
         return trigger;
     }
 

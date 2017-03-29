@@ -99,7 +99,7 @@ public class CreateTable extends ParserAbstract {
         if (!explicitOids && oids != null) {
             table.setHasOids(true);
         }
-        getSchemaSafe(db::getSchema, ids, db.getDefaultSchema()).addTable(table);
+        getSchemaSafe(ids, db.getDefaultSchema()).addTable(table);
         return table;
     }
 
