@@ -133,10 +133,10 @@ public class IgnoredObject {
 
     @Override
     public String toString() {
-        return appendRuleCode(new StringBuilder()).toString();
+        return appendRuleCode(new StringBuilder(), isShow).toString();
     }
 
-    StringBuilder appendRuleCode(StringBuilder sb) {
+    StringBuilder appendRuleCode(StringBuilder sb, boolean isShow) {
         sb.append(isShow ? "SHOW " : "HIDE ");
         if (isRegular || ignoreContent) {
             if (ignoreContent) {

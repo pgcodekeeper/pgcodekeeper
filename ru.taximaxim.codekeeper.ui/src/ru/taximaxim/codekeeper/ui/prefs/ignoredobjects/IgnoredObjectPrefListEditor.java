@@ -29,8 +29,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         REGULAR, IGNORE_CONTENT;
     }
 
-    public IgnoredObjectPrefListEditor(Composite parent, boolean doSorting, boolean noMargins) {
-        super(parent, doSorting, false, noMargins);
+    public IgnoredObjectPrefListEditor(Composite parent) {
+        super(parent, true, false, true);
     }
 
     @Override
