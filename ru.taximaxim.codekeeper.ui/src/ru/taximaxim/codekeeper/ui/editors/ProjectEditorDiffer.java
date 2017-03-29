@@ -380,15 +380,22 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 for (IEditorReference ref : page.getEditorReferences()) {
                     IEditorPart ed = ref.getEditor(false);
                     if (ed instanceof ProjectEditorDiffer) {
-                        ProjectEditorDiffer editor = (ProjectEditorDiffer) ed;
-                        UiSync.exec(editor.getContainer(), () -> {
-                            editor.commit.notifyRemoteChanged(dbinfo);
-                            editor.diff.notifyRemoteChanged(dbinfo);
-                        });
+                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed);
                     }
                 }
             }
         }
+    }
+
+    private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor) {
+        UiSync.exec(editor.getContainer(), () -> {
+            // no lastRemote sync between tabs so check both
+            // since the actual data is sync'd
+            if (dbinfo.equals(editor.commit.getLastRemote()) || dbinfo.equals(editor.diff.getLastRemote())) {
+                editor.commit.resetRemoteChanged();
+                editor.diff.resetRemoteChanged();
+            }
+        });
     }
 }
 

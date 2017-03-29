@@ -232,6 +232,10 @@ public abstract class DiffPresentationPane extends Composite {
         }
     }
 
+    public DbInfo getLastRemote() {
+        return lastRemote;
+    }
+
     public DbSource getRemoteDbSource() throws CoreException {
         DbSource dbRemote = null;
 
@@ -318,10 +322,9 @@ public abstract class DiffPresentationPane extends Composite {
         }
     }
 
-    public void notifyRemoteChanged(DbInfo dbinfo) {
+    public void resetRemoteChanged() {
         // may be called off UI thread so check that we're still alive
-        // also check that our current data comes from the changed DB
-        if (!isDisposed() && dbinfo.equals(lastRemote)) {
+        if (!isDisposed()) {
             showNotificationArea(true, Messages.DiffPresentationPane_remote_changed_notification);
             reset();
         }
