@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_column_name_typ
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateFunction extends ParserAbstract {
@@ -20,9 +21,8 @@ public class CreateFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgFunction function = new PgFunction(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         function.setBody(db.getArguments() ,getFullCtxText(ctx.funct_body));
 
@@ -35,12 +35,7 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getFullCtxText(ctx.rettype_data));
             addTypeAsDepcy(ctx.rettype_data, function, getDefSchemaName());
         }
-        if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "FUNCTION", name);
-            return null;
-        }
-        db.getSchema(schemaName).addFunction(function);
-
+        schema.addFunction(function);
         return function;
     }
 }

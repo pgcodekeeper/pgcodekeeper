@@ -1,7 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
@@ -15,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -22,7 +26,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class AlterTable extends ParserAbstract {
 
     private final Alter_table_statementContext ctx;
-
     public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -31,25 +34,29 @@ public class AlterTable extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgTable tabl = db.getSchema(schemaName).getTable(name);
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgTable tabl = null;
 
         List<String> sequences = new ArrayList<>();
+        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
-            PgStatement st = null;
+            // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                if ((st = tabl) != null) {
+                PgStatement st = null;
+                String name = nameCtx.getText();
+                if ((st = schema.getTable(name)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = db.getSchema(schemaName).getSequence(name)) != null) {
+                } else if ((st = schema.getSequence(name)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = db.getSchema(schemaName).getView(name)) != null) {
+                } else if ((st = getSafe(schema::getView, nameCtx)) != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 }
-            }
-            if (tabl == null) {
                 continue;
             }
+
+            // everything else requires a real table, so fail immediately
+            tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
                         sequences, getDefSchemaName()));
@@ -61,26 +68,22 @@ public class AlterTable extends ParserAbstract {
                 }
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if (col != null) {
-                    ValueExpr vex = new ValueExpr(schemaName);
+                    ValueExpr vex = new ValueExpr(schema.getName());
                     vex.analyze(new Vex(tablAction.set_def_column().expression));
                     col.addAllDeps(vex.getDepcies());
                 }
             }
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schemaName, name);
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 if (tablAction.not_valid != null) {
                     constr.setNotValid(true);
                 }
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {
-                String indexName = QNameParser.getFirstName(tablAction.index_name.identifier());
-                PgIndex index = tabl.getIndex(indexName);
-                if (index == null) {
-                    logError(indexName, schemaName);
-                } else {
-                    index.setClusterIndex(true);
-                }
+                IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
+                PgIndex index = getSafe(tabl::getIndex, indexName);
+                index.setClusterIndex(true);
             }
 
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
@@ -92,28 +95,15 @@ public class AlterTable extends ParserAbstract {
                 if (tablAction.STATISTICS() != null) {
                     fillStatictics(tabl, tablAction);
                 }
-                if (tablAction.set_def_column() != null) {
+                if (tablAction.set_def_column() != null && tabl.getInherits().isEmpty()) {
                     // не добавляем в таблицу сиквенс если она наследует
                     // некоторые поля из др таблицы
                     // совместимость с текущей версией экспорта
-                    if (tabl.getInherits().isEmpty()) {
-                        fillDefColumn(tabl, tablAction);
-                    }
+                    fillDefColumn(tabl, tablAction);
                 }
             }
             if (tablAction.RULE() != null) {
-                PgRule rule = tabl.getRule(tablAction.rewrite_rule_name.getText());
-                if (rule != null) {
-                    if (tablAction.DISABLE() != null) {
-                        rule.setEnabledState("DISABLE");
-                    } else if (tablAction.ENABLE() != null) {
-                        if (tablAction.REPLICA() != null) {
-                            rule.setEnabledState("ENABLE REPLICA");
-                        } else if (tablAction.ALWAYS() != null) {
-                            rule.setEnabledState("ENABLE ALWAYS");
-                        }
-                    }
-                }
+                createRule(tabl, tablAction);
             }
         }
         for (String seq : sequences) {
@@ -126,7 +116,28 @@ public class AlterTable extends ParserAbstract {
                         seqName.getFirstName(), DbObjType.SEQUENCE));
             }
         }
+        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
+            PgColumn col = tabl.getColumn(function.getKey());
+            if (col != null) {
+                col.addDep(function.getValue());
+            }
+        }
         return null;
+    }
+
+    private void createRule(PgTable tabl, Table_actionContext tablAction) {
+        PgRule rule = getSafe(tabl::getRule, tablAction.rewrite_rule_name.identifier(0));
+        if (rule != null) {
+            if (tablAction.DISABLE() != null) {
+                rule.setEnabledState("DISABLE");
+            } else if (tablAction.ENABLE() != null) {
+                if (tablAction.REPLICA() != null) {
+                    rule.setEnabledState("ENABLE REPLICA");
+                } else if (tablAction.ALWAYS() != null) {
+                    rule.setEnabledState("ENABLE ALWAYS");
+                }
+            }
+        }
     }
 
     private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
@@ -146,7 +157,6 @@ public class AlterTable extends ParserAbstract {
         if (table.getColumn(name) == null) {
             PgColumn col = new PgColumn(name);
             String number = tablAction.integer.getText();
-
             col.setStatistics(Integer.valueOf(number));
             table.addColumn(col);
         } else {
@@ -154,5 +164,4 @@ public class AlterTable extends ParserAbstract {
                     Integer.valueOf(tablAction.integer.getText()));
         }
     }
-
 }

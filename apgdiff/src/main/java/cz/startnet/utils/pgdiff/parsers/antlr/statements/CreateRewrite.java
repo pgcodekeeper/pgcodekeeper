@@ -18,10 +18,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
-import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CreateRewrite extends ParserAbstract {
     private final Create_rewrite_statementContext ctx;
@@ -34,26 +32,17 @@ public class CreateRewrite extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgRule rule = new PgRule(name, getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgRule rule = new PgRule(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setCondition(getCondition(ctx));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
-        setCommands(ctx, rule, db.getArguments(), schemaName);
+        setCommands(ctx, rule, db.getArguments(), schema.getName());
 
-        PgSchema schema = db.getSchema(schemaName);
-        String targetName = ctx.table_name.getText();
-        PgRuleContainer c = schema.getRuleContainer(targetName);
-        if (c != null){
-            c.addRule(rule);
-        } else {
-            Log.log(Log.LOG_ERROR, "Rule " + rule.getName() +
-                    " is missing its container " + targetName +
-                    " in schema " + schemaName);
-        }
+        getSafe(schema::getRuleContainer,
+                QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addRule(rule);
         return rule;
     }
 

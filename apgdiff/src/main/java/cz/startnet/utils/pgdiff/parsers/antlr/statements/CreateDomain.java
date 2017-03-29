@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class CreateDomain extends ParserAbstract {
 
     private final Create_domain_statementContext ctx;
-
     public CreateDomain(Create_domain_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -24,9 +23,7 @@ public class CreateDomain extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgDomain domain = new PgDomain(name, getFullCtxText(ctx.getParent()));
+        PgDomain domain = new PgDomain(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         domain.setDataType(getFullCtxText(ctx.dat_type));
         addTypeAsDepcy(ctx.dat_type, domain, getDefSchemaName());
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
@@ -46,11 +43,7 @@ public class CreateDomain extends ParserAbstract {
                 domain.setNotNull(constr.common_constraint().null_false != null);
             }
         }
-        if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "DOMAIN", name);
-            return null;
-        }
-        db.getSchema(schemaName).addDomain(domain);
+        getSchemaSafe(ids, db.getDefaultSchema()).addDomain(domain);
         return domain;
     }
 }

@@ -18,13 +18,35 @@ public final class QNameParser {
         return getLastId(ids, 3);
     }
 
+    public static IdentifierContext getFirstNameCtx(List<IdentifierContext> ids) {
+        return getLastIdCtx(ids, 1);
+    }
+
+    public static IdentifierContext getSecondNameCtx(List<IdentifierContext> ids) {
+        return getLastIdCtx(ids, 2);
+    }
+
+    public static IdentifierContext getThirdNameCtx(List<IdentifierContext> ids) {
+        return getLastIdCtx(ids, 3);
+    }
+
     public static String getSchemaName(List<IdentifierContext> ids, String defaultSchema) {
-        return ids.size() < 2 ? defaultSchema : ids.get(0).getText();
+        IdentifierContext schemaCtx = getSchemaNameCtx(ids);
+        return schemaCtx == null ? defaultSchema : schemaCtx.getText();
+    }
+
+    public static IdentifierContext getSchemaNameCtx(List<IdentifierContext> ids) {
+        return ids.size() < 2 ? null : ids.get(0);
     }
 
     private static String getLastId(List<IdentifierContext> ids, int i) {
+        IdentifierContext ctx = getLastIdCtx(ids, i);
+        return ctx == null ? null : ctx.getText();
+    }
+
+    private static IdentifierContext getLastIdCtx(List<IdentifierContext> ids, int i) {
         int n = ids.size() - i;
-        return n < 0 ? null : ids.get(n).getText();
+        return n < 0 ? null : ids.get(n);
     }
 
     private final List<IdentifierContext> parts;

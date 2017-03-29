@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterFunction extends ParserAbstract {
@@ -20,17 +21,14 @@ public class AlterFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+
+        IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
+        PgFunction function = new PgFunction(nameCtx.getText(), getFullCtxText(ctx.getParent()));
         fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
-        PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
-        if (func == null) {
-            logError("FUNCTION", name);
-            return null;
-        }
+
+        PgFunction func = getSafe(schema::getFunction, function.getSignature(), nameCtx.getStart());
         fillOwnerTo(ctx.owner_to(), func);
         return null;
     }
-
 }

@@ -26,5 +26,4 @@ public class CreateExtension extends ParserAbstract {
         db.addExtension(ext);
         return ext;
     }
-
 }

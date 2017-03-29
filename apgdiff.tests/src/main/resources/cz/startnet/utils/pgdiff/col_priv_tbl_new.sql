@@ -74,7 +74,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 REVOKE ALL(c1) ON TABLE t1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE t1 FROM botov_av;
 GRANT ALL(c1, c2) ON TABLE t1 TO maindb;
-GRANT SELECT, INSERT(c1,с2),REFERENCES(c1),UPDATE(c1) ON TABLE t1,t2 TO levsha_aa;
+GRANT SELECT, INSERT(c1,c2),REFERENCES(c1),UPDATE(c1) ON TABLE t1,t2 TO levsha_aa;
 
 --
 -- Name: v1.c1; Type: ACL; Schema: public; Owner: levsha_aa

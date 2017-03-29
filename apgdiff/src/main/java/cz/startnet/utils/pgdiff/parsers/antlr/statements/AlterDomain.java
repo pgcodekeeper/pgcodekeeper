@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterDomain extends ParserAbstract {
@@ -22,12 +23,9 @@ public class AlterDomain extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgDomain domain = db.getSchema(schemaName).getDomain(name);
-        if (domain == null) {
-            return null;
-        }
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgDomain domain = getSafe(schema::getDomain, QNameParser.getFirstNameCtx(ids));
+
         fillOwnerTo(ctx.owner_to(), domain);
         if (ctx.dom_constraint != null) {
             PgConstraint constraint = parseDomainConstraint(ctx.dom_constraint);

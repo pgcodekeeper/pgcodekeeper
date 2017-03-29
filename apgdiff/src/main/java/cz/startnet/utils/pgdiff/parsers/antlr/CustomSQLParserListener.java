@@ -1,5 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.List;
+
+import org.antlr.v4.runtime.Token;
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -21,6 +27,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
@@ -50,22 +59,33 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private final PgDatabase db;
     private final String parsedObjectName;
+    private final List<AntlrError> errors;
+    private final IProgressMonitor monitor;
     private String tablespace;
     private String oids;
 
-    public CustomSQLParserListener(PgDatabase database, String parsedObjectName) {
+    public CustomSQLParserListener(PgDatabase database, String parsedObjectName,
+            List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
+        this.errors = errors;
         this.parsedObjectName = parsedObjectName;
+        this.monitor = monitor;
     }
 
     private PgStatement safeParseStatement(ParserAbstract p) {
         try {
+            PgDiffUtils.checkCancelled(monitor);
             return p.getObject();
-        } catch (Exception ex) {
-            Log.log(Log.LOG_WARNING, "Exception while analyzing parser tree for: "
-                    + parsedObjectName, ex);
+        } catch (UnresolvedReferenceException ex) {
+            errors.add(handleUnresolvedReference(ex));
             return null;
-        }
+        } catch (InterruptedException ex) {
+            throw new MonitorCancelledRuntimeException();
+        }/* catch (Exception ex) {
+            Log.log(Log.LOG_WARNING,
+                    "Exception while analyzing parser tree for: " + parsedObjectName, ex);
+            return null;
+        }*/
     }
 
     @Override
@@ -134,16 +154,21 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             return;
         }
         String confParam = ctx.config_param.getText();
-        // TODO set param values can be identifiers, quoted identifiers, string or other literals: improve handling
-        String confValue = ctx.config_param_val.get(0).getText();
+        // TODO set param values can be identifiers, quoted identifiers, string
+        // or other literals: improve handling
+        Set_statement_valueContext confValueCtx = ctx.config_param_val.get(0);
+        String confValue = confValueCtx.getText();
 
         switch (confParam.toLowerCase()) {
         case "search_path":
-            db.setDefaultSchema(confValue);
+            // allow the exception to terminate entire walker here
+            // so that objects aren't created on the wrong search_path
+            db.setDefaultSchema(ParserAbstract.getSafe(
+                    db::getSchema, confValue, confValueCtx.getStart()).getName());
             break;
         case "default_with_oids":
             oids = confValue;
-            if (oids.equals("false")) {
+            if ("false".equals(oids)) {
                 oids = null;
             }
             break;
@@ -152,11 +177,14 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             if (tablespace.isEmpty()
                     // special case for pg_dump's unset default_tablespace
                     // remove after good unquoting mechanism would be introduced
-                    || tablespace.equals("''")) {
+                    || "''".equals(tablespace)) {
                 tablespace = null;
             }
             break;
+        default:
+            break;
         }
+
     }
 
     @Override
@@ -197,5 +225,12 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
         safeParseStatement(new AlterDomain(ctx, db));
+    }
+
+    static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex) {
+        Token t = ex.getErrorToken();
+        Log.log(Log.LOG_WARNING,"Cannot find object in database: " + t.getText(), ex);
+        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(),
+                "Cannot find object in database: " + t.getText());
     }
 }

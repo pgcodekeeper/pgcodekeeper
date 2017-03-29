@@ -9,7 +9,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
 public class AlterSchema extends ParserAbstract {
     private final Alter_schema_statementContext ctx;
-
     public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -18,15 +17,11 @@ public class AlterSchema extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
-        PgSchema sch = db.getSchema(name);
-        if (sch == null) {
-            logError("SCHEMA", name);
-            return null;
-        }
+        PgSchema schema = getSafe(db::getSchema,
+                QNameParser.getFirstNameCtx(ctx.schema_with_name().name.identifier()));
         if (!name.equals(ApgdiffConsts.PUBLIC)) {
-            fillOwnerTo(ctx.owner_to(), sch);
+            fillOwnerTo(ctx.owner_to(), schema);
         }
         return null;
     }
-
 }

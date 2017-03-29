@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class AntlrParser {
@@ -85,40 +87,53 @@ public class AntlrParser {
 
         final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
 
-        parser.addParseListener(new ParseTreeListener() {
-
-            @Override
-            public void visitTerminal(TerminalNode node) {
-            }
-
-            @Override
-            public void visitErrorNode(ErrorNode node) {
-            }
-
-            @Override
-            public void exitEveryRule(ParserRuleContext ctx) {
-                if (ctx.depth() <= monitoringLevel) {
-                    monitor.worked(1);
-                    try {
-                        PgDiffUtils.checkCancelled(monitor);
-                    } catch (InterruptedException e) {
-                        throw new MonitorCancelledRuntimeException();
-                    }
-                }
-            }
-
-            @Override
-            public void enterEveryRule(ParserRuleContext ctx) {
-            }
-        });
+        parser.addParseListener(new CustomParseTreeListener(monitoringLevel, monitor));
 
         try {
             SqlContext ctx = parser.sql();
-            // TODO no cancel checks in listener while walking the tree
             ParseTreeWalker.DEFAULT.walk(listener, ctx);
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
+        } catch (UnresolvedReferenceException ex) {
+            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex));
         }
+    }
+}
+
+class CustomParseTreeListener implements ParseTreeListener{
+    private final int monitoringLevel;
+    private final IProgressMonitor monitor;
+
+    public CustomParseTreeListener(int monitoringLevel, IProgressMonitor monitor){
+        this.monitoringLevel = monitoringLevel;
+        this.monitor = monitor;
+    }
+
+    @Override
+    public void visitTerminal(TerminalNode node) {
+        //no imp
+    }
+
+    @Override
+    public void visitErrorNode(ErrorNode node) {
+        //no imp
+    }
+
+    @Override
+    public void exitEveryRule(ParserRuleContext ctx) {
+        if (ctx.depth() <= monitoringLevel) {
+            monitor.worked(1);
+            try {
+                PgDiffUtils.checkCancelled(monitor);
+            } catch (InterruptedException e) {
+                throw new MonitorCancelledRuntimeException();
+            }
+        }
+    }
+
+    @Override
+    public void enterEveryRule(ParserRuleContext ctx) {
+        //no imp
     }
 }
 
@@ -143,26 +158,5 @@ class CustomAntlrErrorListener extends BaseErrorListener {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
             errors.add(new AntlrError(token, line, charPositionInLine, msg));
         }
-    }
-}
-
-final class MonitorCancelledRuntimeException extends RuntimeException {
-
-    private static final long serialVersionUID = 8530137642762407646L;
-
-    public MonitorCancelledRuntimeException() {
-        super();
-    }
-
-    public MonitorCancelledRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public MonitorCancelledRuntimeException(String message) {
-        super(message);
-    }
-
-    public MonitorCancelledRuntimeException(Throwable cause) {
-        super(cause);
     }
 }

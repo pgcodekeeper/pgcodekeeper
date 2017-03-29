@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.antlr.v4.runtime.Token;
@@ -10,7 +11,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
@@ -18,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 public class CreateType extends ParserAbstract {
 
     private final Create_type_statementContext ctx;
-
     public CreateType(Create_type_statementContext ctx, PgDatabase db) {
         super(db);
         this.ctx = ctx;
@@ -28,7 +30,7 @@ public class CreateType extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgTypeForm form = PgTypeForm.SHELL;
         if (ctx.RANGE() != null) {
             form = PgTypeForm.RANGE;
@@ -41,7 +43,7 @@ public class CreateType extends ParserAbstract {
         }
         PgType type = null, newType = null;
         if (form == PgTypeForm.BASE) {
-            type = db.getSchema(schemaName).getType(name);
+            type = schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {
                 throw new IllegalStateException("Duplicate type but existing is not SHELL type!");
             }
@@ -132,15 +134,10 @@ public class CreateType extends ParserAbstract {
         if (ctx.collatable != null) {
             type.setCollatable(getFullCtxText(ctx.collatable));
         }
-        if (db.getSchema(schemaName) == null) {
-            logSkipedObject(schemaName, "TYPE", name);
-            return null;
-        }
         if (newType != null) {
             // add only newly created type, not a filled SHELL that was added before
-            db.getSchema(schemaName).addType(type);
+            schema.addType(type);
         }
         return type;
     }
-
 }
