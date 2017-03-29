@@ -4,9 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -82,11 +79,12 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, command, loader.getCurrentLocation());
-        Create_rewrite_statementContext ruleCtx = parser.sql().statement(0).schema_statement()
-                .schema_create().create_rewrite_statement();
-        r.setCondition(CreateRewrite.getCondition(ruleCtx));
-        CreateRewrite.setCommands(ruleCtx, r, loader.args, schemaName);
+        loader.submitAntlrTask(command, p -> p.sql().statement(0).schema_statement()
+                .schema_create().create_rewrite_statement(), ctx -> {
+                    r.setCondition(CreateRewrite.getCondition(ctx));
+                    CreateRewrite.setCommands(ctx, r, loader.args, schemaName);
+                });
+
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {

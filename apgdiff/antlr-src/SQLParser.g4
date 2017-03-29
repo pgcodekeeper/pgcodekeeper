@@ -23,6 +23,10 @@ function_args_parser
   : function_args EOF
   ;
 
+vex_eof
+  : vex EOF
+  ;
+
 /******* END Start symbols *******/
 
 statement
@@ -293,9 +297,17 @@ create_index_statement
     ;
 
 index_rest
+    : index_sort table_space? index_where?
+    ;
+    
+index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause? table_space? (WHERE vex)?
+      param_clause?
+    ;
+    
+index_where 
+    : WHERE vex
     ;
 
  create_extension_statement
@@ -659,7 +671,7 @@ constraint_common
 
 constr_body
     :((EXCLUDE (USING index_method=identifier)?
-            LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN
+            LEFT_PAREN exclude_element=identifier WITH operator=all_op RIGHT_PAREN
             index_parameters (WHERE vex)?)
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
@@ -667,6 +679,12 @@ constr_body
        | DEFAULT default_expr=vex
       )
       table_deferrable? table_initialy_immed?
+    ;
+    
+all_op
+    :op
+    | EQUAL | NOT_EQUAL | LTH | LEQ | GTH | GEQ
+    | PLUS | MINUS | MULTIPLY | DIVIDE | MODULAR | EXP
     ;
 
 table_unique_prkey
@@ -690,6 +708,7 @@ table_references
 column_references
     :LEFT_PAREN names_references RIGHT_PAREN
     ;
+    
 names_references
     : name+=schema_qualified_name (COMMA name+=schema_qualified_name)*
     ;

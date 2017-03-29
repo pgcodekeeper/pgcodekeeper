@@ -29,6 +29,8 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
+    private static final int DATA_SELECT_LENGTH;
+
     private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
     }
@@ -65,6 +67,15 @@ public class SequencesReader extends JdbcReader {
         return s;
     }
 
+    static {
+        DATA_SELECT_LENGTH =
+                // static part
+                JdbcQueries.QUERY_SEQUENCES_DATA.length() +
+                // dynamic part
+                (",'test_id78901234567890123456789.test_id78901234567890123456789' qname"
+                        + " FROM test_id78901234567890123456789.test_id78901234567890123456789 UNION ALL ").length();
+    }
+
     public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException {
         loader.setCurrentOperation("sequences data query");
         Map<String, PgSequence> seqs = new HashMap<>();
@@ -74,14 +85,7 @@ public class SequencesReader extends JdbcReader {
             }
         }
 
-        // estimate union query size
-        final int selectSize =
-                // static part
-                JdbcQueries.QUERY_SEQUENCES_DATA.length() +
-                // dynamic part
-                (",'test_id78901234567890123456789.test_id78901234567890123456789' qname"
-                        + " FROM test_id78901234567890123456789.test_id78901234567890123456789 UNION ALL ").length();
-        StringBuilder sbUnionQuery = new StringBuilder(selectSize * seqs.size());
+        StringBuilder sbUnionQuery = new StringBuilder(DATA_SELECT_LENGTH * seqs.size());
 
         try (PreparedStatement accessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_ACCESS)) {
             Array arrSeqs = loader.connection.createArrayOf("text", seqs.keySet().toArray());

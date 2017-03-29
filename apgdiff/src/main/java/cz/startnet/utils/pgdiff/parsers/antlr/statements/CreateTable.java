@@ -40,26 +40,19 @@ public class CreateTable extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgTable table = new PgTable(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition() != null) {
                 table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                        defaultFunctions));
+                        getDefSchemaName()));
             }
         }
         for (String seq : sequences) {
             QNameParser seqName = new QNameParser(seq);
             table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
                     seqName.getFirstName(), DbObjType.SEQUENCE));
-        }
-        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-            PgColumn col = table.getColumn(function.getKey());
-            if (col != null) {
-                col.addDep(function.getValue());
-            }
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {

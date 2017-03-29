@@ -47,7 +47,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
@@ -79,6 +83,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -176,10 +181,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        // no impl
     }
 
     @Override
     public void doSaveAs() {
+        // no impl
     }
 
     @Override
@@ -205,6 +212,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             break;
         case IResourceChangeEvent.POST_CHANGE:
             handleChangeProject(event);
+            break;
+        default:
             break;
         }
     }
@@ -260,19 +269,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         }
 
         if (schemaChanged[0]) {
-            UiSync.exec(getContainer(), new Runnable() {
-
-                @Override
-                public void run() {
-                    if (!commit.isDisposed()) {
-                        commit.showNotificationArea(true);
-                        commit.reset();
-                    }
-                    if (!diff.isDisposed()) {
-                        diff.showNotificationArea(true);
-                        diff.reset();
-                    }
-                }
+            UiSync.exec(getContainer(), () -> {
+                commit.notifyProjectChanged();
+                diff.notifyProjectChanged();
             });
         }
     }
@@ -285,10 +284,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             DbSource dbRemote = getActivePane().getRemoteDbSource();
             if (dbRemote != null) {
                 DbSource dbProject = DbSource.fromProject(proj);
-                commit.showNotificationArea(false);
-                diff.showNotificationArea(false);
                 commit.reset();
                 diff.reset();
+                commit.hideNotificationArea();
+                diff.hideNotificationArea();
                 loadChanges(dbProject, dbRemote);
                 getActivePane().saveDbPrefs();
             }
@@ -372,6 +371,23 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                     site.getWorkbenchWindow());
         } catch (WorkbenchException e) {
             Log.log(Log.LOG_ERROR, "Can't change perspective", e); //$NON-NLS-1$
+        }
+    }
+
+    public static void notifyDbChanged(DbInfo dbinfo) {
+        for (IWorkbenchWindow wnd : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : wnd.getPages()) {
+                for (IEditorReference ref : page.getEditorReferences()) {
+                    IEditorPart ed = ref.getEditor(false);
+                    if (ed instanceof ProjectEditorDiffer) {
+                        ProjectEditorDiffer editor = (ProjectEditorDiffer) ed;
+                        UiSync.exec(editor.getContainer(), () -> {
+                            editor.commit.notifyRemoteChanged(dbinfo);
+                            editor.diff.notifyRemoteChanged(dbinfo);
+                        });
+                    }
+                }
+            }
         }
     }
 }

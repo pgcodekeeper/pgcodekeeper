@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -81,6 +82,10 @@ public abstract class PgStatement implements IStatement {
 
     public void addDep(GenericColumn dep){
         deps.add(dep);
+    }
+
+    public void addAllDeps(Collection<GenericColumn> deps){
+        this.deps.addAll(deps);
     }
 
     public String getComment() {

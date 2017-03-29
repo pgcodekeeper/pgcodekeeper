@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.DepcyOmittedException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -38,7 +39,7 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
-        Set<DbObjType> ignoredTypes= arguments.getAllowedTypes();
+        Set<DbObjType> ignoredTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if(type == DbObjType.COLUMN){
@@ -96,10 +97,17 @@ public class ActionsToScriptConverter {
                 default:
                     throw new IllegalStateException("Not implemented action");
                 }
-            }else{
+            } else {
+                PgStatement old = action.getOldObj();
+                PgStatement start = action.getStarter();
+                if (arguments.isStopDepcyOmitted() && start != null && !start.equals(old)) {
+                    throw new DepcyOmittedException(old.getQualifiedName()
+                            + " (" + type + ") is not an allowed script object, yet "
+                            + start.getQualifiedName() + " (" + start.getStatementType()
+                            + ") depends on it. Stopping.");
+                }
                 script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
-                        action.getOldObj().getQualifiedName(),
-                        action.getOldObj().getStatementType()));
+                        old.getQualifiedName(), old.getStatementType()));
             }
         }
 

@@ -54,7 +54,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr, new ArrayList<String>(), new HashMap<String, GenericColumn>()));
+            type.addAttr(getColumn(attr, new ArrayList<String>(), getDefSchemaName()));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
         for (Token enume : ctx.enums) {

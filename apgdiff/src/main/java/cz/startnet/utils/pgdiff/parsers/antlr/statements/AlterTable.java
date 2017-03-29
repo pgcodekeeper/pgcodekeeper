@@ -10,6 +10,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -57,18 +59,18 @@ public class AlterTable extends ParserAbstract {
             tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, defaultFunctions));
+                        sequences, getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
                 if (sequence != null) {
                     sequences.add(sequence);
                 }
-                GenericColumn func = getFunctionCall(tablAction.set_def_column().expression);
-                if (func != null) {
-                    PgColumn col = getSafe(tabl::getColumn,
-                            QNameParser.getFirstNameCtx(tablAction.column.identifier()));
-                    col.addDep(func);
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if (col != null) {
+                    ValueExpr vex = new ValueExpr(schema.getName());
+                    vex.analyze(new Vex(tablAction.set_def_column().expression));
+                    col.addAllDeps(vex.getDepcies());
                 }
             }
             if (tablAction.tabl_constraint != null) {

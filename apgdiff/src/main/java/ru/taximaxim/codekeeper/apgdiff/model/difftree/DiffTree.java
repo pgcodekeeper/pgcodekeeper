@@ -218,17 +218,12 @@ public final class DiffTree {
                 }
             }
 
-            // special case: if right schema is a bare default public schema
-            // and left one is not bare - assume that right doesn't exist at all
-            // and mark left as LEFT, not BOTH
-            if(foundRight == null || (foundRight instanceof PgSchema
-                    && foundRight.equals(new PgDatabase().getDefaultSchema())
-                    && !sLeft.compare(foundRight))) {
+            if(foundRight == null) {
                 rv.add(new CompareResult(sLeft, null));
             } else if(!sLeft.equals(foundRight)) {
                 rv.add(new CompareResult(sLeft, foundRight));
             } else {
-                // do nothing if both statements exist and equal
+                // do nothing if both statements exist and are equal
             }
         }
 

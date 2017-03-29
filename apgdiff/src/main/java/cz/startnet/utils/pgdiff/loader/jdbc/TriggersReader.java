@@ -4,12 +4,9 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger.WhenListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -148,19 +145,19 @@ public class TriggersReader extends JdbcReader {
                 t.addDep(new GenericColumn(schemaName, tableName, col_name, DbObjType.COLUMN));
             }
         }
-        t.setWhen(parseWhen(res.getString("definition")));
+
+        String definition = res.getString("definition");
+        loader.submitAntlrTask(definition, p -> {
+            When_triggerContext whenCtx = p.sql().statement(0).schema_statement().schema_create()
+                    .create_trigger_statement().when_trigger();
+            return whenCtx == null ? null : ParserAbstract.getFullCtxText(whenCtx.when_expr);
+        }, t::setWhen);
+
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
-    }
-
-    private String parseWhen(String string) {
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, string, loader.getCurrentLocation());
-        WhenListener whenListener = new WhenListener();
-        ParseTreeWalker.DEFAULT.walk(whenListener, parser.sql());
-        return whenListener.getWhen();
     }
 }

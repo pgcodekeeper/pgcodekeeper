@@ -95,7 +95,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_index_statement(Create_index_statementContext ctx) {
-        safeParseStatement(new CreateIndex(ctx, db));
+        safeParseStatement(new CreateIndex(ctx, db, tablespace));
     }
 
     @Override
