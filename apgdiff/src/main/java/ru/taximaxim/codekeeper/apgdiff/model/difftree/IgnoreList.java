@@ -85,11 +85,11 @@ public class IgnoreList {
         return status != null ? status : (inAddSubtree || isShow ? AddStatus.ADD : AddStatus.SKIP);
     }
 
-    public String getListCode(boolean isWhite) {
+    public String getListCode() {
         StringBuilder sb = new StringBuilder();
-        sb.append(isWhite ? "HIDE ALL\n" : "SHOW ALL\n");
+        sb.append(isShow ? "SHOW ALL\n" : "HIDE ALL\n");
         for (IgnoredObject rule : rules) {
-            rule.appendRuleCode(sb, isWhite).append('\n');
+            rule.appendRuleCode(sb).append('\n');
         }
         return sb.toString();
     }

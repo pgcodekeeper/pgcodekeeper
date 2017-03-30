@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -31,22 +30,11 @@ public class IgnoredObjectsPrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
 
     private IgnoredObjectPrefListEditor listEditor;
-    private static final String HIDE_ALL = "HIDE ALL"; //$NON-NLS-1$
-    private boolean isWhite;
-    private Path listFile;
+    private Button btnIsWhite;
 
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-
-        listFile = InternalIgnoreList.getInternalIgnoreFile();
-        if (listFile != null) {
-            try (BufferedReader reader = Files.newBufferedReader(listFile)) {
-                isWhite = HIDE_ALL.equals(reader.readLine());
-            } catch (IOException e) {
-                // black list by default, if file not found
-            }
-        }
     }
 
     @Override
@@ -58,14 +46,14 @@ implements IWorkbenchPreferencePage {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
-        Button btnIsWhite = new Button(parent, SWT.CHECK);
+        btnIsWhite = new Button(parent, SWT.CHECK);
         btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
-        btnIsWhite.setSelection(isWhite);
 
-        btnIsWhite.addListener(SWT.Selection, event -> isWhite = btnIsWhite.getSelection());
+        IgnoreList ignore = InternalIgnoreList.readInternalList();
+        btnIsWhite.setSelection(!ignore.isShow());
 
         listEditor = new IgnoredObjectPrefListEditor(parent);
-        listEditor.setInputList(new LinkedList<>(InternalIgnoreList.readInternalList().getList()));
+        listEditor.setInputList(new LinkedList<>(ignore.getList()));
 
         return parent;
     }
@@ -91,8 +79,14 @@ implements IWorkbenchPreferencePage {
 
     private void writeList() throws IOException, URISyntaxException {
         IgnoreList list = new IgnoreList();
-        list.addAll(listEditor.getList());
-        byte[] out = list.getListCode(isWhite).getBytes(StandardCharsets.UTF_8);
+        boolean isWhite = btnIsWhite.getSelection();
+        list.setShow(!isWhite);
+        for (IgnoredObject rule : listEditor.getList()){
+            rule.setShow(isWhite);
+            list.add(rule);
+        }
+        byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
+        Path listFile = InternalIgnoreList.getInternalIgnoreFile();
         if (listFile != null) {
             try {
                 Files.createDirectories(listFile.getParent());
