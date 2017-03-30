@@ -6,8 +6,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,15 +58,19 @@ public class PgColumn extends PgStatementWithSearchPath {
      * @return full definition of the column
      */
     public String getFullDefinition(final boolean addDefaults,
-            StringBuilder separateDefault) {
+            StringBuilder separateDefault, boolean isTableOfType) {
         final StringBuilder sbDefinition = new StringBuilder();
-
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
-        sbDefinition.append(' ');
-        sbDefinition.append(type);
-        if (collation != null) {
-            sbDefinition.append(" COLLATE ").append(collation);
+
+        if(isTableOfType){
+            sbDefinition.append(" WITH OPTIONS");
+        } else {
+            sbDefinition.append(' ');
+            sbDefinition.append(type);
+            if (collation != null) {
+                sbDefinition.append(" COLLATE ").append(collation);
+            }
         }
 
         if (defaultValue != null && !defaultValue.isEmpty()) {
@@ -95,49 +97,7 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         return sbDefinition.toString();
     }
-    
-    /**
-     * Returns full definition of the column for table wich was created
-     * with 'CREATE TABLE table_name OF type_name...'.
-     *
-     * @param addDefaults whether default value should be added in case NOT NULL
-     *                    constraint is specified but no default value is set
-     *
-     * @return full definition of the column
-     */
-    public String getFullDefinitionTypedTable(final boolean addDefaults,
-            StringBuilder separateDefault) {
-        final StringBuilder sbDefinition = new StringBuilder();
 
-        String cName = PgDiffUtils.getQuotedName(name);
-        
-        sbDefinition.append(cName);
-        sbDefinition.append(" WITH OPTIONS");
-
-        if (defaultValue != null && !defaultValue.isEmpty()) {
-            StringBuilder sbDefault = sbDefinition;
-            if (separateDefault != null && nullValue) {
-                sbDefault = separateDefault;
-                sbDefault.append(cName);
-                sbDefault.append(" SET");
-            }
-            sbDefault.append(" DEFAULT ");
-            sbDefault.append(defaultValue);
-        } else if (!nullValue && addDefaults) {
-            final String defaultColValue = PgColumnUtils.getDefaultValue(type);
-
-            if (defaultColValue != null) {
-                sbDefinition.append(" DEFAULT ");
-                sbDefinition.append(defaultColValue);
-            }
-        }
-
-        if (!nullValue) {
-            sbDefinition.append(" NOT NULL");
-        }
-
-        return sbDefinition.toString();
-    }
 
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
@@ -190,7 +150,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getAlterTable())
         .append("\n\tADD COLUMN ")
-        .append(getFullDefinition(false, defaultStatement))
+        .append(getFullDefinition(false, defaultStatement, false))
         .append(';');
         if (defaultStatement.length() > 0) {
             sbSQL.append("\n\n")
@@ -299,7 +259,7 @@ public class PgColumn extends PgStatementWithSearchPath {
                 : oldColumn.getDefaultValue();
         final String newDefault = (newColumn.getDefaultValue() == null) ? ""
                 : newColumn.getDefaultValue();
-        
+
         if (!oldDefault.equals(newDefault)) {
             if (newDefault.isEmpty()) {
                 sb.append("\n\n" + getAlterTable() + ALTER_COLUMN
@@ -338,7 +298,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             eq = true;
         } else if(obj instanceof PgColumn) {
             PgColumn col = (PgColumn) obj;
-            
+
             eq = Objects.equals(name, col.getName())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
@@ -347,20 +307,10 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(storage, col.getStorage())
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
-                    && revokes.equals(col.revokes);
-            
-            if(!isOfTypeTable()){
-                eq = eq && Objects.equals(type, col.getType());
-            } 
+                    && revokes.equals(col.revokes)
+                    && Objects.equals(type, col.getType());
         }
         return eq;
-    }
-    
-    private boolean isOfTypeTable(){
-        if((getParent() instanceof PgTable) && ((PgTable)getParent()).getOfType() != null){
-           return true;   
-        } 
-        return false;
     }
 
     @Override

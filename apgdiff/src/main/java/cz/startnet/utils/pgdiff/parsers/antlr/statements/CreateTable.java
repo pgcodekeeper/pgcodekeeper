@@ -52,7 +52,8 @@ public class CreateTable extends ParserAbstract {
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
         
         if(defineTypeContext != null){
-            table.setOfType(QNameParser.getFirstName(defineTypeContext.type_name.identifier()));
+            String ofType = QNameParser.getFirstName(defineTypeContext.type_name.identifier());
+            table.setOfType(ofType);
             
             List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
             if(lstTypeColDefCtx != null){
@@ -67,7 +68,6 @@ public class CreateTable extends ParserAbstract {
                 }
             }
             
-            String ofType = QNameParser.getFirstName(defineTypeContext.type_name.identifier());
             String ofTypeSchemaName = QNameParser.getSchemaName(defineTypeContext.type_name.identifier(), getDefSchemaName());
             
             table.addDep(new GenericColumn(ofTypeSchemaName,

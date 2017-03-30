@@ -106,7 +106,7 @@ public abstract class ParserAbstract {
         }
         return col;
     }
-    
+
     protected PgColumn getColumnOfType(Table_of_type_column_definitionContext typeColCtx, List<String> sequences,
             Map<String, GenericColumn> defaultFucntions, String defSchema) {
         PgColumn col = null;
@@ -233,7 +233,7 @@ public abstract class ParserAbstract {
         }
         return result;
     }
-    
+
     protected List<PgConstraint> getConstraint(Table_of_type_column_defContext typeColCtx,
             String scmName, String tblName) {
         List<PgConstraint> result = new ArrayList<>();

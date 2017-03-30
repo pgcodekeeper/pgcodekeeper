@@ -669,11 +669,7 @@ table_column_definition
     ;
     
 table_of_type_column_definition
-    : column_name=identifier with_options (colmn_constraint+=constraint_common)*
-    ;
-
-with_options
-    : WITH OPTIONS
+    : column_name=identifier WITH OPTIONS (colmn_constraint+=constraint_common)*
     ;
 
 like_option

@@ -46,13 +46,6 @@ public class TablesReader extends JdbcReader {
             schema.addTable(table);
         }
     }
-    
-    private boolean isOfTypeColumnWithOptions(PgColumn column){
-        if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty()) || !column.getNullValue()){
-            return true;
-        }
-        return false;
-    }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException {
         String tableName = res.getString(CLASS_RELNAME);
@@ -78,7 +71,7 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
         String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
-        
+
         String ofType = res.getString("of_type");
         if(ofType != null){
             t.setOfType(ofType);
@@ -95,7 +88,10 @@ public class TablesReader extends JdbcReader {
                 continue;
             }
             PgColumn column = new PgColumn(colNames[i]);
-            column.setType(colTypeName[i]);
+            if(ofType == null){
+                column.setType(colTypeName[i]);
+            }
+
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             // unbox
@@ -142,16 +138,17 @@ public class TablesReader extends JdbcReader {
                 loader.setPrivileges(column, PgDiffUtils.getQuotedName(tableName),
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
-            
+
             if(ofType != null){
-                if(isOfTypeColumnWithOptions(column)){
+                if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
+                        || !column.getNullValue()){
                     t.addColumnOfType(column);
                 }
             } else {
                 t.addColumn(column);
             }
         }
-        
+
         // INHERITS
         Array inhrelsarray = res.getArray("inhrelnames");
         if (inhrelsarray != null) {
