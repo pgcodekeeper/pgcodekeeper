@@ -868,7 +868,7 @@ class ArgumentsProvider_ConnectionString extends ArgumentsProvider {
     @Override
     protected String[] arguments() throws URISyntaxException, IOException {
         return new String[] {"--parse", "--db-format", "db", "jdbc:postgresql://"
-                + TEST.REMOTE_HOST + "/postgres" + "?user=" + TEST.REMOTE_USERNAME
+                + TEST.REMOTE_HOST + "/pgcodekeeper_testing" + "?user=" + TEST.REMOTE_USERNAME
                 + "&password=" + TEST.REMOTE_PASSWORD, getParseResultDir().getAbsolutePath()};
     }
 
