@@ -805,6 +805,7 @@ class ArgumentsProvider_AllowedObjects extends ArgumentsProvider {
         this.testType = TestType.TEST_DIFF;
         this.needLicense = true;
     }
+
     @Override
     protected String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
@@ -834,6 +835,7 @@ class ArgumentsProvider_Stop extends ArgumentsProvider {
         this.testType = TestType.TEST_DIFF;
         this.needLicense = true;
     }
+
     @Override
     protected String[] arguments() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
@@ -866,7 +868,7 @@ class ArgumentsProvider_ConnectionString extends ArgumentsProvider {
     @Override
     protected String[] arguments() throws URISyntaxException, IOException {
         return new String[] {"--parse", "--db-format", "db", "jdbc:postgresql://"
-                + TEST.REMOTE_HOST + "/maindb_dev2" + "?user=" + TEST.REMOTE_USERNAME
+                + TEST.REMOTE_HOST + "/postgres" + "?user=" + TEST.REMOTE_USERNAME
                 + "&password=" + TEST.REMOTE_PASSWORD, getParseResultDir().getAbsolutePath()};
     }
 
