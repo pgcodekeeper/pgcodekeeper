@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -29,6 +30,7 @@ public class IgnoredObjectsPrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
 
     private IgnoredObjectPrefListEditor listEditor;
+    private Button btnIsWhite;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -44,8 +46,15 @@ implements IWorkbenchPreferencePage {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
-        listEditor = new IgnoredObjectPrefListEditor(parent, true, true);
-        listEditor.setInputList(new LinkedList<>(InternalIgnoreList.readInternalList().getList()));
+        btnIsWhite = new Button(parent, SWT.CHECK);
+        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
+
+        IgnoreList ignore = InternalIgnoreList.readInternalList();
+        btnIsWhite.setSelection(!ignore.isShow());
+
+        listEditor = new IgnoredObjectPrefListEditor(parent);
+        listEditor.setInputList(new LinkedList<>(ignore.getList()));
+
         return parent;
     }
 
@@ -70,20 +79,22 @@ implements IWorkbenchPreferencePage {
 
     private void writeList() throws IOException, URISyntaxException {
         IgnoreList list = new IgnoreList();
-        list.addAll(listEditor.getList());
+        boolean isWhite = btnIsWhite.getSelection();
+        list.setShow(!isWhite);
+        for (IgnoredObject rule : listEditor.getList()){
+            rule.setShow(isWhite);
+            list.add(rule);
+        }
         byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
-
         Path listFile = InternalIgnoreList.getInternalIgnoreFile();
-        if (listFile == null) {
-            return;
+        if (listFile != null) {
+            try {
+                Files.createDirectories(listFile.getParent());
+            } catch (FileAlreadyExistsException ex) {
+                // no action
+            }
+            Files.write(listFile, out, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            InternalIgnoreList.notifyListeners(list);
         }
-        try {
-            Files.createDirectories(listFile.getParent());
-        } catch (FileAlreadyExistsException ex) {
-            // no action
-        }
-        Files.write(listFile, out, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-        InternalIgnoreList.notifyListeners(list);
     }
 }
