@@ -300,6 +300,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             PgColumn col = (PgColumn) obj;
 
             eq = Objects.equals(name, col.getName())
+                    && Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
                     && Objects.equals(defaultValue, col.getDefaultValue())
@@ -307,8 +308,7 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(storage, col.getStorage())
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
-                    && revokes.equals(col.revokes)
-                    && Objects.equals(type, col.getType());
+                    && revokes.equals(col.revokes);
         }
         return eq;
     }

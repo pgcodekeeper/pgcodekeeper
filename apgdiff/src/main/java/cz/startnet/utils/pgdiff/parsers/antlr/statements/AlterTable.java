@@ -54,7 +54,7 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.table_column_definition() != null) {
                 tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, defaultFunctions, getDefSchemaName()));
+                        sequences, getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);

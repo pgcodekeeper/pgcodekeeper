@@ -643,7 +643,7 @@ define_columns
   ;
 
 define_type
-  : OF type_name=schema_qualified_name
+  : OF type_name=data_type
     list_of_type_column_def?
   ;
 

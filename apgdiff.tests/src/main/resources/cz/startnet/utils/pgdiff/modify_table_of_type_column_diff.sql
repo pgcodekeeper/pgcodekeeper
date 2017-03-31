@@ -13,7 +13,7 @@ ALTER TYPE testtype
 
 -- DEPCY: This TABLE is a dependency of CONSTRAINT: testtable_pkey
 
-CREATE TABLE testtable OF testtype (
+CREATE TABLE testtable OF public.testtype (
 	field1 WITH OPTIONS NOT NULL,
 	field2 WITH OPTIONS DEFAULT 1000,
 	field3 WITH OPTIONS DEFAULT 'word'::text,

@@ -72,8 +72,11 @@ public class TablesReader extends JdbcReader {
         String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
 
-        String ofType = res.getString("of_type");
-        if(ofType != null){
+        Long ofTypeOid = res.getLong("of_type");
+
+        if(ofTypeOid != 0){
+            JdbcType jdbcTypes = loader.cachedTypesByOid.get(ofTypeOid);
+            String ofType = jdbcTypes.getFullName(schemaName);
             t.setOfType(ofType);
             t.addDep(new GenericColumn(schemaName, ofType, DbObjType.TYPE));
         }
@@ -88,7 +91,7 @@ public class TablesReader extends JdbcReader {
                 continue;
             }
             PgColumn column = new PgColumn(colNames[i]);
-            if(ofType == null){
+            if(ofTypeOid == 0){
                 column.setType(colTypeName[i]);
             }
 
@@ -139,7 +142,7 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            if(ofType != null){
+            if(ofTypeOid != 0){
                 if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
                         || !column.getNullValue()){
                     t.addColumnOfType(column);

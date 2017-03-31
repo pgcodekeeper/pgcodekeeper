@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
   RETURNS TABLE(
        schema_oid bigint,
        relname name,
-       of_type name,
+       of_type bigint,
        relowner bigint,
        aclArray text,
        col_numbers integer[],
@@ -72,7 +72,7 @@ WITH extension_deps AS (
 
 SELECT schema_oid,
        subselectColumns.relname,
-       subselectColumns.of_type,
+       subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
@@ -125,7 +125,7 @@ FROM
      FROM
          (SELECT c.oid,
               c.relname,
-              tt.typname AS of_type,
+              c.reloftype::bigint AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
@@ -157,7 +157,6 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
-          LEFT JOIN pg_type tt ON tt.oid = c.reloftype
           WHERE c.relnamespace = schema_oid
               AND c.relkind = 'r'
               AND c.oid NOT IN (SELECT objid FROM extension_deps)

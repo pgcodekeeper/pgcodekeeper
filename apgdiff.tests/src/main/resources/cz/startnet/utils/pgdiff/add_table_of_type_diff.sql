@@ -7,7 +7,7 @@ CREATE TYPE testtype AS (
 
 ALTER TYPE testtype OWNER TO shamsutdinov_lr;
 
-CREATE TABLE testtable OF testtype (
+CREATE TABLE testtable OF public.testtype (
 	field1 WITH OPTIONS NOT NULL,
 	field2 WITH OPTIONS DEFAULT 1000,
 	field3 WITH OPTIONS DEFAULT 'y'::bpchar,

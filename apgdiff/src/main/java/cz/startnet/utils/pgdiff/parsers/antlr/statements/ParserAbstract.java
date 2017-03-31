@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
@@ -30,6 +29,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -75,63 +76,56 @@ public abstract class ParserAbstract {
     }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
-            Map<String, GenericColumn> defaultFucntions, String defSchema) {
-        PgColumn col = null;
-        if (colCtx.column_name != null) {
-            col = new PgColumn(colCtx.column_name.getText());
-            col.setType(getFullCtxText(colCtx.datatype));
-            addTypeAsDepcy(colCtx.datatype, col, defSchema);
-            if (colCtx.collate_name != null) {
-                col.setCollation(getFullCtxText(colCtx.collate_name.collation));
-            }
-            for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-                if (column_constraint.constr_body().default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
-                    String sequence = getSequence(column_constraint.constr_body().default_expr);
-                    if (sequence != null) {
-                        sequences.add(sequence);
-                    }
-                    GenericColumn func = getFunctionCall(
-                            column_constraint.constr_body().default_expr, defSchema);
-                    if (func != null) {
-                        defaultFucntions.put(colCtx.column_name.getText(), func);
-                    }
+            String defSchema) {
+        PgColumn col = new PgColumn(colCtx.column_name.getText());
+        col.setType(getFullCtxText(colCtx.datatype));
+        addTypeAsDepcy(colCtx.datatype, col, defSchema);
+        if (colCtx.collate_name != null) {
+            col.setCollation(getFullCtxText(colCtx.collate_name.collation));
+        }
+        for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
+            if (column_constraint.constr_body().default_expr != null) {
+                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                String sequence = getSequence(column_constraint.constr_body().default_expr);
+                if (sequence != null) {
+                    sequences.add(sequence);
                 }
 
-                Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
-                if (comConstr != null && comConstr.null_value != null) {
-                    col.setNullValue(comConstr.null_false == null);
-                }
+                ValueExpr vex = new ValueExpr(defSchema);
+                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                col.addAllDeps(vex.getDepcies());
+            }
+
+            Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+            if (comConstr != null && comConstr.null_value != null) {
+                col.setNullValue(comConstr.null_false == null);
             }
         }
         return col;
     }
 
     protected PgColumn getColumnOfType(Table_of_type_column_definitionContext typeColCtx, List<String> sequences,
-            Map<String, GenericColumn> defaultFucntions, String defSchema) {
-        PgColumn col = null;
-        if (typeColCtx.column_name != null) {
-            col = new PgColumn(typeColCtx.column_name.getText());
-            for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
-                if (column_constraint.constr_body().default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
-                    String sequence = getSequence(column_constraint.constr_body().default_expr);
-                    if (sequence != null) {
-                        sequences.add(sequence);
-                    }
-                    GenericColumn func = getFunctionCall(
-                            column_constraint.constr_body().default_expr, defSchema);
-                    if (func != null) {
-                        defaultFucntions.put(typeColCtx.column_name.getText(), func);
-                    }
+            String defSchema) {
+        PgColumn col = new PgColumn(typeColCtx.column_name.getText());
+        for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
+            if (column_constraint.constr_body().default_expr != null) {
+                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                String sequence = getSequence(column_constraint.constr_body().default_expr);
+                if (sequence != null) {
+                    sequences.add(sequence);
                 }
 
-                Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
-                if (comConstr != null && comConstr.null_value != null) {
-                    col.setNullValue(comConstr.null_false == null);
-                }
+                ValueExpr vex = new ValueExpr(defSchema);
+                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                col.addAllDeps(vex.getDepcies());
+            }
+
+            Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+            if (comConstr != null && comConstr.null_value != null) {
+                col.setNullValue(comConstr.null_false == null);
             }
         }
+
         return col;
     }
 

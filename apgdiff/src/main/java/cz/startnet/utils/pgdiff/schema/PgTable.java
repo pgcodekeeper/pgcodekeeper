@@ -71,7 +71,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 return column;
             }
         }
-
         return null;
     }
 
@@ -88,7 +87,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 return column;
             }
         }
-
         return null;
     }
 
@@ -592,18 +590,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void addColumn(final PgColumn column) {
-        if (column == null) {
-            return;
-        }
         columns.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addColumnOfType(final PgColumn column) {
-        if (column == null) {
-            return;
-        }
         columnsOfType.add(column);
         column.setParent(this);
         resetHash();

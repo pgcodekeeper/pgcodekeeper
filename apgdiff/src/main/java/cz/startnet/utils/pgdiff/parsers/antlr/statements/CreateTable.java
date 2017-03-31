@@ -1,14 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -21,7 +19,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -47,14 +44,13 @@ public class CreateTable extends ParserAbstract {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
-        
+
         if(defineTypeContext != null){
-            String ofType = QNameParser.getFirstName(defineTypeContext.type_name.identifier());
+            Data_typeContext dataTypeCtxOfType = defineTypeContext.type_name;
+            String ofType = getFullCtxText(dataTypeCtxOfType);
             table.setOfType(ofType);
-            
             List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
             if(lstTypeColDefCtx != null){
                 for (Table_of_type_column_defContext typeColCtx : lstTypeColDefCtx.table_col_def) {
@@ -62,16 +58,14 @@ public class CreateTable extends ParserAbstract {
                         table.addConstraint(constr);
                     }
                     if (typeColCtx.table_of_type_column_definition() != null) {
-                       table.addColumnOfType(getColumnOfType(typeColCtx.table_of_type_column_definition(), sequences,
-                                defaultFunctions, getDefSchemaName()));
+                        table.addColumnOfType(getColumnOfType(typeColCtx.table_of_type_column_definition(), sequences,
+                                getDefSchemaName()));
                     }
                 }
             }
-            
-            String ofTypeSchemaName = QNameParser.getSchemaName(defineTypeContext.type_name.identifier(), getDefSchemaName());
-            
-            table.addDep(new GenericColumn(ofTypeSchemaName,
-                    ofType, DbObjType.TYPE));
+
+            addTypeAsDepcy(dataTypeCtxOfType, table, getDefSchemaName());
+
         } else {
             for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
                 for (PgConstraint constr : getConstraint(colCtx, schemaName, name)) {
@@ -79,34 +73,17 @@ public class CreateTable extends ParserAbstract {
                 }
                 if (colCtx.table_column_definition() != null) {
                     table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                            defaultFunctions, getDefSchemaName()));
+                            getDefSchemaName()));
                 }
             }
         }
-        
+
         for (String seq : sequences) {
             QNameParser seqName = new QNameParser(seq);
             table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
                     seqName.getFirstName(), DbObjType.SEQUENCE));
         }
-        
-        if(defineTypeContext != null){
-            for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-                PgColumn col = table.getColumnOfType(function.getKey());
-                if (col != null) {
-                    col.addDep(function.getValue());
-                }
-            }
-        } else {
-            for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-                PgColumn col = table.getColumn(function.getKey());
-                if (col != null) {
-                    col.addDep(function.getValue());
-                }
-            }
-        }
-        
-        
+
         if (defineColumnContext != null) {
             Column_referencesContext parentTable = defineColumnContext.parent_table;
             if(parentTable != null){
@@ -154,7 +131,7 @@ public class CreateTable extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addTable(table);
-        
+
         return table;
     }
 
