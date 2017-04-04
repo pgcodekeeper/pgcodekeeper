@@ -51,8 +51,8 @@ public class IndicesReader extends JdbcReader {
         String tablespace = res.getString("table_space");
         loader.submitAntlrTask(res.getString("definition") + ';',
                 p -> CreateIndex.parseIndex(p.sql().statement(0).schema_statement()
-                        .schema_create().create_index_statement().index_rest(), tablespace),
-                i::setDefinition);
+                        .schema_create().create_index_statement().index_rest(), tablespace,
+                        schemaName, i), i::setDefinition);
 
         i.setClusterIndex(res.getBoolean("isClustered"));
         i.setUnique(res.getBoolean("indisunique"));

@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -150,7 +152,13 @@ public class TriggersReader extends JdbcReader {
         loader.submitAntlrTask(definition, p -> {
             When_triggerContext whenCtx = p.sql().statement(0).schema_statement().schema_create()
                     .create_trigger_statement().when_trigger();
-            return whenCtx == null ? null : ParserAbstract.getFullCtxText(whenCtx.when_expr);
+            if (whenCtx != null){
+                ValueExpr vex = new ValueExpr(schemaName);
+                vex.analyze(new Vex(whenCtx.vex()));
+                t.addAllDeps(vex.getDepcies());
+                return ParserAbstract.getFullCtxText(whenCtx.when_expr);
+            }
+            return null;
         }, t::setWhen);
 
         // COMMENT

@@ -74,7 +74,7 @@ public class AlterTable extends ParserAbstract {
                 }
             }
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schema.getName());
                 if (tablAction.not_valid != null) {
                     constr.setNotValid(true);
                 }

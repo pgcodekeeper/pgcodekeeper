@@ -11,6 +11,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -95,6 +97,9 @@ public class CreateTrigger extends ParserAbstract {
         }
         When_triggerContext whenCtx = ctx.when_trigger();
         if (whenCtx != null) {
+            ValueExpr vex = new ValueExpr(schema.getName());
+            vex.analyze(new Vex(whenCtx.vex()));
+            trigger.addAllDeps(vex.getDepcies());
             trigger.setWhen(getFullCtxText(whenCtx.when_expr));
         }
 

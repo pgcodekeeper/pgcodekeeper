@@ -28,7 +28,7 @@ public class AlterDomain extends ParserAbstract {
 
         fillOwnerTo(ctx.owner_to(), domain);
         if (ctx.dom_constraint != null) {
-            PgConstraint constraint = parseDomainConstraint(ctx.dom_constraint);
+            PgConstraint constraint = parseDomainConstraint(ctx.dom_constraint, schema.getName());
             if (constraint != null) {
                 if (ctx.not_valid != null) {
                     constraint.setNotValid(true);

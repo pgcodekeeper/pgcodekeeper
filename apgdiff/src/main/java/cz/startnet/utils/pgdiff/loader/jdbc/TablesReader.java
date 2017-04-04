@@ -68,14 +68,11 @@ public class TablesReader extends JdbcReader {
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
 
         for (int i = 0; i < colNumbers.length; i++) {
-            if (colNumbers[i] < 1) {
-                // system columns
+            if (colNumbers[i] < 1 || !colIsLocal[i]) {
+                // пропускать не локальные (Inherited)  и системные (System) колонки
                 continue;
             }
-            // пропускать не локальные колонки (Inherited)
-            if (!colIsLocal[i]) {
-                continue;
-            }
+
             PgColumn column = new PgColumn(colNames[i]);
             column.setType(colTypeName[i]);
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);

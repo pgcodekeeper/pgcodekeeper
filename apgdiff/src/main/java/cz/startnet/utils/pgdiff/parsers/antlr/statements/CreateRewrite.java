@@ -9,12 +9,15 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
@@ -35,7 +38,7 @@ public class CreateRewrite extends ParserAbstract {
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgRule rule = new PgRule(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
-        rule.setCondition(getCondition(ctx));
+        rule.setCondition(getCondition(ctx, rule, schema.getName()));
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
@@ -46,8 +49,16 @@ public class CreateRewrite extends ParserAbstract {
         return rule;
     }
 
-    public static String getCondition(Create_rewrite_statementContext ctx) {
-        return ctx.WHERE() == null ? null : getFullCtxText(ctx.vex());
+    public static String getCondition(Create_rewrite_statementContext ctx, PgRule rule,
+            String schemaName) {
+        if (ctx.WHERE() != null){
+            VexContext exp = ctx.vex();
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            rule.addAllDeps(vex.getDepcies());
+            return getFullCtxText(exp);
+        }
+        return null;
     }
 
     public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,

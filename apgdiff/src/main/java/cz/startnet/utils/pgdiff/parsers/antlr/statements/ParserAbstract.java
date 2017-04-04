@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -13,6 +12,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
@@ -24,15 +24,17 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -174,16 +176,16 @@ public abstract class ParserAbstract {
         return funcSignature;
     }
 
-    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
+    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx, String schemaName) {
         List<PgConstraint> result = new ArrayList<>();
         // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
         if (colCtx.tabl_constraint != null) {
-            result.add(getTableConstraint(colCtx.tabl_constraint));
+            result.add(getTableConstraint(colCtx.tabl_constraint, schemaName));
         }
         return result;
     }
 
-    protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
+    protected PgConstraint getTableConstraint(Constraint_commonContext ctx, String schemaName) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
 
@@ -191,20 +193,43 @@ public abstract class ParserAbstract {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
-            String tableName = QNameParser.getFirstName(ids);
-            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-            GenericColumn ftable = new GenericColumn(schemaName, tableName, DbObjType.TABLE);
+            String refTableName = QNameParser.getFirstName(ids);
+            String refSchemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+            GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constr.setForeignTable(ftable);
             constr.addDep(ftable);
 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 String colName = QNameParser.getFirstName(name.identifier());
                 constr.addForeignColumn(colName);
-                constr.addDep(new GenericColumn(schemaName, tableName, colName, DbObjType.COLUMN));
+                constr.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
             }
         }
         if (ctx.constr_body().table_unique_prkey() != null) {
             setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
+        }
+        VexContext exp = ctx.constr_body().vex();
+        if (exp == null && ctx.constr_body().common_constraint() != null){
+            Check_boolean_expressionContext check = ctx.constr_body().common_constraint().check_boolean_expression();
+            if (check != null){
+                exp = check.expression;
+            }
+        }
+        if (exp != null){
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            constr.addAllDeps(vex.getDepcies());
+        }
+        if (ctx.constr_body().index_parameters() != null){
+            With_storage_parameterContext with = ctx.constr_body().index_parameters().with_storage_parameter();
+            if (with != null){
+                for (Storage_parameter_optionContext option : with.storage_parameter().storage_parameter_option()){
+                    exp = option.value;
+                    ValueExpr vex = new ValueExpr(schemaName);
+                    vex.analyze(new Vex(exp));
+                    constr.addAllDeps(vex.getDepcies());
+                }
+            }
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
@@ -223,8 +248,9 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
-        if (constr.common_constraint().check_boolean_expression() != null) {
+    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
+        Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
+        if (bool != null) {
             String constr_name = "";
             if (constr.name != null) {
                 constr_name = QNameParser.getFirstName(constr.name.identifier());
@@ -232,6 +258,10 @@ public abstract class ParserAbstract {
             PgConstraint constraint = new PgConstraint(constr_name,
                     getFullCtxText(constr));
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
+            VexContext exp = bool.expression;
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            constraint.addAllDeps(vex.getDepcies());
             return constraint;
         }
         return null;
