@@ -82,8 +82,9 @@ public class TablesReader extends JdbcReader {
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if(colOptions[i] != null){
-                String optionsString = colOptions[i].replace("{", "").replace("}", "");
-                ParserAbstract.fillStorageParams(optionsString.split(","), column, false);
+                ParserAbstract.fillStorageParams(
+                        colOptions[i].substring(1, colOptions[i].length()-1).split(","),
+                        column, false);
             }
 
             // unbox

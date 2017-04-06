@@ -330,7 +330,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes)
-                    && Objects.equals(options, col.options);
+                    && Objects.equals(options, col.getOptions());
         }
 
         return eq;
