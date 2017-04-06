@@ -66,6 +66,7 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
         String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
+        String[] colOptions = (String[]) res.getArray("col_options").getArray();
 
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1) {
@@ -79,6 +80,11 @@ public class TablesReader extends JdbcReader {
             PgColumn column = new PgColumn(colNames[i]);
             column.setType(colTypeName[i]);
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
+
+            if(colOptions[i] != null){
+                String optionsString = colOptions[i].replace("{", "").replace("}", "");
+                ParserAbstract.fillStorageParams(optionsString.split(","), column, false);
+            }
 
             // unbox
             long collation = colCollation[i];

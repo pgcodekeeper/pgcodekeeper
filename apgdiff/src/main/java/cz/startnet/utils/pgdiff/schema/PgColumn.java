@@ -6,6 +6,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,7 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgColumn extends PgStatementWithSearchPath {
+public class PgColumn extends PgStatementWithSearchPath implements PgOptionContainer {
 
     private static final String ALTER_TABLE = "ALTER TABLE ";
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
@@ -30,6 +32,8 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String collation;
     private boolean nullValue = true;
     private String storage;
+
+    private Map<String, String> options = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -48,6 +52,22 @@ public class PgColumn extends PgStatementWithSearchPath {
     public String getDefaultValue() {
         return defaultValue;
     }
+
+    @Override
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, String> options) {
+        this.options = options;
+    }
+
+    @Override
+    public void addOption(String attribute, String value){
+        this.options.put(attribute, value);
+        resetHash();
+    }
+
 
     /**
      * Returns full definition of the column.
@@ -278,6 +298,12 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         alterPrivileges(newColumn, sb);
 
+        final Map<String, String> oldOptions = oldColumn.getOptions();
+        final Map<String, String> newOptions = newColumn.getOptions();
+        if(!Objects.equals(oldOptions, newOptions)){
+            PgTable.compareOptions(oldOptions, newOptions, sb, getName(), DbObjType.COLUMN, PgDiffUtils.getQuotedName(newColumn.getParent().getName()));
+        }
+
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
             sb.append("\n\n");
             newColumn.appendCommentSql(sb);
@@ -303,7 +329,8 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(storage, col.getStorage())
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
-                    && revokes.equals(col.revokes);
+                    && revokes.equals(col.revokes)
+                    && Objects.equals(options, col.options);
         }
 
         return eq;
@@ -324,6 +351,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
         return result;
     }
 

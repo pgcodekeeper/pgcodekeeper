@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -30,9 +29,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -291,7 +290,8 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (!PgDiffUtils.isValidId(value, false, false)) {
+            if (!PgDiffUtils.isValidId(value, false, false)
+                    && optionContainer.getStatementType() != DbObjType.COLUMN) {
                 // only quote non-ids; pg_dump behavior
                 value = PgDiffUtils.quoteString(value);
             }

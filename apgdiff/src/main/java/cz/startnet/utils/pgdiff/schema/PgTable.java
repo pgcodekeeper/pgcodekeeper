@@ -110,6 +110,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getCreationSQL() {
+        final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
@@ -129,8 +130,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                 sbSQL.append("\t");
                 sbSQL.append(column.getFullDefinition(false, null));
-            }
 
+                if(!column.getOptions().isEmpty()){
+                    sbOption.append("\n");
+                    for(Entry<String,String> option : column.getOptions().entrySet()){
+                        sbOption.append("\nALTER TABLE ")
+                        .append(PgDiffUtils.getQuotedName(name))
+                        .append(" ALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(column.name))
+                        .append(" SET (")
+                        .append(option.getKey())
+                        .append("=")
+                        .append(option.getValue())
+                        .append(");");
+                    }
+                }
+            }
             sbSQL.append("\n)");
         }
 
@@ -181,6 +196,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         sbSQL.append(';');
+
+        sbSQL.append(sbOption.toString());
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
@@ -255,7 +272,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        PgTable.compareOptions(oldTable.getOptions(), newTable.getOptions(), sb, getName(), DbObjType.TABLE);
+        PgTable.compareOptions(oldTable.getOptions(), newTable.getOptions(), sb, getName(), DbObjType.TABLE, null);
 
         if (oldTable.getHasOids() && !newTable.getHasOids()){
             sb.append("\n\nALTER TABLE ")
@@ -596,7 +613,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public static void compareOptions(Map<String, String> oldOptions, Map<String, String> newOptions,
-            StringBuilder sb, String name, DbObjType container){
+            StringBuilder sb, String name, DbObjType container, String tableName){
         StringBuilder setOptions = new StringBuilder();
         StringBuilder resetOptions = new StringBuilder();
         if (!oldOptions.isEmpty() || !newOptions.isEmpty()) {
@@ -620,13 +637,25 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         if(setOptions.length() > 0){
             setOptions.setLength(setOptions.length()-2);
-            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
+            sb.append("\n\nALTER ");
+            if(container == DbObjType.COLUMN){
+                sb.append("TABLE " + tableName + " ALTER ");
+            }
+            sb.append(container.toString())
+            .append(' ')
+            .append(name)
             .append(" SET (").append(setOptions).append(");");
         }
 
         if(resetOptions.length() > 0){
             resetOptions.setLength(resetOptions.length()-2);
-            sb.append("\n\nALTER ").append(container.toString()).append(' ').append(name)
+            sb.append("\n\nALTER ");
+            if(container == DbObjType.COLUMN){
+                sb.append("TABLE " + tableName + " ALTER ");
+            }
+            sb.append(container.toString())
+            .append(' ')
+            .append(name)
             .append(" RESET (").append(resetOptions).append(");");
         }
     }

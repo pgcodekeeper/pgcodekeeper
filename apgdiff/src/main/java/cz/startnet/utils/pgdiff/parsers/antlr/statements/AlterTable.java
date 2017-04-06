@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Attribute_option_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
@@ -73,6 +74,16 @@ public class AlterTable extends ParserAbstract {
                     col.addAllDeps(vex.getDepcies());
                 }
             }
+
+            if(tablAction.set_attribute_option() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    for(Attribute_option_valueContext option :tablAction.set_attribute_option().attribute_option_value()){
+                        col.addOption(option.attribute_option.getText(), option.value.getText());
+                    }
+                }
+            }
+
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 if (tablAction.not_valid != null) {

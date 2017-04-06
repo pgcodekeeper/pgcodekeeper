@@ -296,7 +296,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        PgTable.compareOptions(oldView.getOptions(), newView.getOptions(), sb, getName(), DbObjType.VIEW);
+        PgTable.compareOptions(oldView.getOptions(), newView.getOptions(), sb, getName(), DbObjType.VIEW, null);
 
         return sb.length() > startLength;
     }

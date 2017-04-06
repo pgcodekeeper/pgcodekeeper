@@ -57,8 +57,6 @@ public abstract class PgStatement implements IStatement {
         return name;
     }
 
-    public abstract DbObjType getStatementType();
-
     public PgStatement getParent() {
         return parent;
     }
