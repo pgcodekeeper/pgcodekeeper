@@ -194,13 +194,13 @@ public class AlterTable extends ParserAbstract {
             }
         }
 
-        String[] extendedTypes = {"bit", "varbit", "bytea", "bpchar", "char", "varchar", "json", "jsonb", "path", "polygon", "text", "tsvector", "txid_snapshot", "xml"};
-        for(String type : extendedTypes) {
+        String[] plainTypes = {"bool", "box", "circle", "date", "interval", "line", "lseg", "macaddr", "money", "pg_lsn", "point", "float", "time", "timestamp", "tsquery", "uuid", "int", "integer"};
+        for(String type : plainTypes) {
             if(columnType.contains(type)){
-                return "EXTENDED";
+                return "PLAIN";
             }
         }
 
-        return "PLAIN";
+        return "EXTENDED";
     }
 }

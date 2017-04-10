@@ -235,7 +235,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         if (newStorage == null && oldStorage != null) {
             sb.append("\n\n")
             .append(ALTER_TABLE)
-            .append(" ")
             .append(PgDiffUtils.getQuotedName(oldColumn.getParent().getName()))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(oldColumn.getName()))
@@ -247,7 +246,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
             sb.append("\n\n")
             .append(ALTER_TABLE)
-            .append(" ")
             .append(PgDiffUtils.getQuotedName(newColumn.getParent().getName()))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(newColumn.getName()))
