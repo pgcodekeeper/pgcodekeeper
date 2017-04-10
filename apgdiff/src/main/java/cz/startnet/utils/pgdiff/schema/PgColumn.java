@@ -233,29 +233,27 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                         null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
-
-            sb.append("\n\n" + ALTER_TABLE
-                    + "ONLY "
-                    + PgDiffUtils.getQuotedName(oldColumn.getParent().getName())
-                    + ALTER_COLUMN
-                    + PgDiffUtils.getQuotedName(oldColumn.getName())
-                    + " SET STORAGE " + oldColumn.getDefaultStorage() + ';');
-
-            /*
-            sb.append("\n\n" + MessageFormat.format(
-                    Messages.Storage_WarningUnableToDetermineStorageType,
-                    newColumn.getParent().getName(), newColumn.getName()));
-             */
-
+            sb.append("\n\n")
+            .append(ALTER_TABLE)
+            .append(" ")
+            .append(PgDiffUtils.getQuotedName(oldColumn.getParent().getName()))
+            .append(ALTER_COLUMN)
+            .append(PgDiffUtils.getQuotedName(oldColumn.getName()))
+            .append(" SET STORAGE ")
+            .append(oldColumn.getDefaultStorage())
+            .append(';');
         }
 
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
-            sb.append("\n\n" + ALTER_TABLE
-                    + "ONLY "
-                    + PgDiffUtils.getQuotedName(newColumn.getParent().getName())
-                    + ALTER_COLUMN
-                    + PgDiffUtils.getQuotedName(newColumn.getName())
-                    + " SET STORAGE " + newStorage + ';');
+            sb.append("\n\n")
+            .append(ALTER_TABLE)
+            .append(" ")
+            .append(PgDiffUtils.getQuotedName(newColumn.getParent().getName()))
+            .append(ALTER_COLUMN)
+            .append(PgDiffUtils.getQuotedName(newColumn.getName()))
+            .append(" SET STORAGE ")
+            .append(newStorage)
+            .append(';');
         }
 
         if (!oldColumn.getType().equals(newColumn.getType()) ||

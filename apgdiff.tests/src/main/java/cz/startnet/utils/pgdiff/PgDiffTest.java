@@ -238,6 +238,8 @@ public class PgDiffTest {
                     {"add_column_add_defaults"},
                     // Tests set, reset attributes of column
                     {"alter_table_alter_column_set_reset"},
+                    // Tests set storage for column
+                    {"alter_table_alter_column_set_storage"},
                     // Tests adding new sequence that is owned by table
                     {"add_owned_sequence"},
                     // Tests adding empty table

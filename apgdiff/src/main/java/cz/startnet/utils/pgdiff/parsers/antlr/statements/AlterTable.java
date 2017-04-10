@@ -88,6 +88,7 @@ public class AlterTable extends ParserAbstract {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if(col != null){
                     col.setStorage(tablAction.set_storage().storage_option().getText());
+                    col.setDefaultStorage(identifyDefaultStorage(col));
                 }
             }
 
@@ -181,5 +182,25 @@ public class AlterTable extends ParserAbstract {
             table.getColumn(name).setStatistics(
                     Integer.valueOf(tablAction.integer.getText()));
         }
+    }
+
+    private String identifyDefaultStorage(PgColumn column){
+        String columnType = column.getType();
+
+        String[] mainTypes = {"cidr", "inet", "numeric"};
+        for(String type : mainTypes) {
+            if(columnType.contains(type)){
+                return "MAIN";
+            }
+        }
+
+        String[] extendedTypes = {"bit", "varbit", "bytea", "bpchar", "char", "varchar", "json", "jsonb", "path", "polygon", "text", "tsvector", "txid_snapshot", "xml"};
+        for(String type : extendedTypes) {
+            if(columnType.contains(type)){
+                return "EXTENDED";
+            }
+        }
+
+        return "PLAIN";
     }
 }
