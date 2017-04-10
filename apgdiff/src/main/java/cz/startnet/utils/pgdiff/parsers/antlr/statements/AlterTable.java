@@ -84,6 +84,13 @@ public class AlterTable extends ParserAbstract {
                 }
             }
 
+            if(tablAction.set_storage() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    col.setStorage(tablAction.set_storage().storage_option().getText());
+                }
+            }
+
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 if (tablAction.not_valid != null) {

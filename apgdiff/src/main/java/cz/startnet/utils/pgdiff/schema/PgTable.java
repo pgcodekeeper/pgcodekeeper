@@ -131,6 +131,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 sbSQL.append("\t");
                 sbSQL.append(column.getFullDefinition(false, null));
 
+                if(column.getStorage() != null){
+                    sbOption.append("\n")
+                    .append("\nALTER TABLE ")
+                    .append(PgDiffUtils.getQuotedName(name))
+                    .append(" ALTER COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(column.name))
+                    .append(" SET STORAGE ")
+                    .append(column.getStorage())
+                    .append(";");
+                }
+
                 if(!column.getOptions().isEmpty()){
                     sbOption.append("\n");
                     for(Entry<String,String> option : column.getOptions().entrySet()){
@@ -145,6 +156,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         .append(");");
                     }
                 }
+
             }
             sbSQL.append("\n)");
         }

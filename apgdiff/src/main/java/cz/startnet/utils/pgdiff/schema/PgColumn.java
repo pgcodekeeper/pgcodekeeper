@@ -32,8 +32,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private String collation;
     private boolean nullValue = true;
     private String storage;
-
-    private Map<String, String> options = new LinkedHashMap<>();
+    private String defaultStorage;
+    private final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -56,10 +56,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     @Override
     public Map<String, String> getOptions() {
         return options;
-    }
-
-    public void setOptions(Map<String, String> options) {
-        this.options = options;
     }
 
     @Override
@@ -138,6 +134,15 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     public void setStorage(final String storage) {
         this.storage = storage;
+        resetHash();
+    }
+
+    public String getDefaultStorage() {
+        return defaultStorage;
+    }
+
+    public void setDefaultStorage(String defaultStorage) {
+        this.defaultStorage = defaultStorage;
         resetHash();
     }
 
@@ -224,13 +229,24 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 (oldColumn.getStorage() == null ||oldColumn.getStorage().isEmpty()) ?
                         null : oldColumn.getStorage();
         final String newStorage =
-                (newColumn.getStorage() == null || newColumn .getStorage().isEmpty()) ?
+                (newColumn.getStorage() == null || newColumn.getStorage().isEmpty()) ?
                         null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
+
+            sb.append("\n\n" + ALTER_TABLE
+                    + "ONLY "
+                    + PgDiffUtils.getQuotedName(oldColumn.getParent().getName())
+                    + ALTER_COLUMN
+                    + PgDiffUtils.getQuotedName(oldColumn.getName())
+                    + " SET STORAGE " + oldColumn.getDefaultStorage() + ';');
+
+            /*
             sb.append("\n\n" + MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
                     newColumn.getParent().getName(), newColumn.getName()));
+             */
+
         }
 
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
@@ -332,7 +348,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && revokes.equals(col.revokes)
                     && Objects.equals(options, col.getOptions());
         }
-
         return eq;
     }
 
@@ -352,6 +367,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((options == null) ? 0 : options.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
 
@@ -362,9 +378,13 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
+        colDst.setDefaultStorage(getDefaultStorage());
         colDst.setCollation(getCollation());
         colDst.setType(getType());
         colDst.setComment(getComment());
+        for(Map.Entry<String,String> entry : getOptions().entrySet()){
+            colDst.addOption(entry.getKey(), entry.getValue());
+        }
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv.deepCopy());
         }
