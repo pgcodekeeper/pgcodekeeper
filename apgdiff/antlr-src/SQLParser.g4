@@ -292,7 +292,7 @@ drop_def
     ;
 
 create_index_statement
-    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name
+    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=identifier? ON table_name=schema_qualified_name
         index_rest
     ;
 
@@ -311,7 +311,7 @@ index_where
     ;
 
  create_extension_statement
-    : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name WITH?
+    : EXTENSION (IF NOT EXISTS)? name=identifier WITH?
          schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
     ;
 
@@ -321,7 +321,7 @@ create_language_statement
     ;
 
 create_event_trigger
-    : EVENT TRIGGER name=schema_qualified_name ON event=schema_qualified_name
+    : EVENT TRIGGER name=identifier ON event=event_name
         (WHEN filter_variable=schema_qualified_name (IN
             LEFT_PAREN
                 filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
@@ -392,7 +392,7 @@ set_statement_value
     ;
 
 create_rewrite_statement
-    : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
+    : (OR REPLACE)? RULE name=identifier AS ON event=(SELECT | INSERT | DELETE | UPDATE)
      TO table_name=schema_qualified_name (WHERE vex)? DO (ALSO | INSTEAD)?
      (NOTHING
         | commands+=rewrite_command
@@ -409,9 +409,9 @@ rewrite_command
     ;
 
 create_trigger_statement
-    : CONSTRAINT? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
+    : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
-    ON tabl_name=schema_qualified_name
+    ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
@@ -616,7 +616,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
+    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
     ;
 
 schema_definition
@@ -759,7 +759,7 @@ owner_to
     ;
 
 rename_to
-    : RENAME TO name=schema_qualified_name
+    : RENAME TO name=identifier
     ;
 
 set_schema
@@ -767,7 +767,7 @@ set_schema
     ;
 
 schema_with_name
-    : SCHEMA name=schema_qualified_name
+    : SCHEMA name=identifier
     ;
 
 table_column_privilege
@@ -812,7 +812,7 @@ drop_function_statement
     ;
 
 drop_trigger_statement
-    : TRIGGER (IF EXISTS)? name=schema_qualified_name ON schema_qualified_name cascade_restrict?
+    : TRIGGER (IF EXISTS)? name=identifier ON table_name=schema_qualified_name cascade_restrict?
     ;
 
 drop_statements
@@ -1768,6 +1768,13 @@ datetime_type
   | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | TIMESTAMPTZ
   | INTERVAL interval_field? type_length?
+  ;
+  
+event_name
+  : DDL_COMMAND_START 
+  | DDL_COMMAND_END
+  | TABLE_REWRITE
+  | SQL_DROP
   ;
 
 interval_field

@@ -584,6 +584,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     GROUPING : [gG] [rR] [oO] [uU] [pP] [iI] [nN] [gG];
     SETS : [sS] [eE] [tT] [sS];
     CIDR : [cC] [iI] [dD] [rR];
+    DDL_COMMAND_START : [dD] [dD] [lL] UNDERLINE [cC] [oO] [mM] [mM] [aA] [nN] [dD] UNDERLINE [sS] [tT] [aA] [rR] [tT] ;
+    DDL_COMMAND_END : [dD] [dD] [lL] UNDERLINE [cC] [oO] [mM] [mM] [aA] [nN] [dD] UNDERLINE [eE] [nN] [dD];
+    TABLE_REWRITE : [tT] [aA] [bB] [lL] [eE] UNDERLINE [rR] [eE] [wW] [rR] [iI] [tT] [eE];
+    SQL_DROP : [sS] [qQ] [lL] UNDERLINE [dD] [rR] [oO] [pP];
 
 fragment UNDERLINE : '_';
 

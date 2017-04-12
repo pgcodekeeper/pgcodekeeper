@@ -28,11 +28,11 @@ public class CreateTrigger extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        List<IdentifierContext> ids = ctx.table_name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgTrigger trigger = new PgTrigger(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
-        trigger.setTableName(ctx.tabl_name.getText());
+        String schemaName = schema.getName();
+        PgTrigger trigger = new PgTrigger(ctx.name.getText(), getFullCtxText(ctx.getParent()));
+        trigger.setTableName(ctx.table_name.getText());
         if (ctx.AFTER() != null) {
             trigger.setType(TgTypes.AFTER);
         } else if (ctx.BEFORE() != null) {
@@ -98,7 +98,7 @@ public class CreateTrigger extends ParserAbstract {
             trigger.setWhen(getFullCtxText(whenCtx.when_expr));
         }
 
-        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.tabl_name.identifier()))
+        getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
         .addTrigger(trigger);
         return trigger;
     }
