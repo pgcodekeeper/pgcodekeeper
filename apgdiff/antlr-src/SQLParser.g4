@@ -1096,6 +1096,7 @@ tokens_nonreserved
   | INDEX
   | INDEXES
 //  | INDICATOR
+  | INFORMATION_SCHEMA
   | INHERIT
   | INHERITS
   | INLINE
@@ -1239,11 +1240,13 @@ tokens_nonreserved
 //  | PERCENT_RANK
 //  | PERIOD
 //  | PERMISSION
+  | PG_CATALOG
   | PLAIN
   | PLANS
 //  | PLI
 //  | PORTION
 //  | POSITION_REGEX
+  | POSTGIS
 //  | POWER
 //  | PRECEDES
   | PRECEDING
@@ -1478,37 +1481,104 @@ tokens_nonreserved
   ;
 
 tokens_nonreserved_types
-  : BLOB
-  | BOOL
+  : ABSTIME
+  | ACLITEM
+  | ANYARRAY
+  | ANYELEMENT
+  | ANYENAM
+  | ANYNOARRAY
+  | ANYRANGE
+  | BIGSERIAL
+  | BLOB  
+  | BOOL  
+  | BOX
   | BYTEA
+  | CARDINAL_NUMBER
+  | CID
   | CIDR
+  | CIRCLE
+  | CSTRING
   | DATE
+  | DATERANGE
   | DOUBLE
+  | EVENT_TRIGGER
   | FLOAT4
   | FLOAT8
+  | FWD_HANDLER
+  | GEOGRAPHY
+  | GEOMETRY
+  | GTSVECTOR
+  | INDEX_AM_HANDLER
   | INET
   | INET4
   | INT1
-  | INT2
+  | INT2  
+  | INT2VECTOR
   | INT4
+  | INT4RANGE
   | INT8
+  | INT8RANGE
+  | INTERNAL
+  | JSON
+  | JSONB
+  | LANGUAGE_HANDLER
+  | LINE  
+  | LSEG  
+  | MACADDR 
   | MONEY
   | NAME
+  | NUMRANGE
   | OID
+  | OIDVECTOR
+  | OPAQUE
+  | PATH
+  | PG_DDL_COMMAND
+  | PG_LSN
+  | PG_NODE_TREE
+  | POINT
+  | POLYGON
+  | RASTER
+  | RECORD
+  | REFCURSOR
   | REGCLASS
   | REGCONFIG
+  | REGDICTIONARY
+  | REGNAMESPACE
+  | REGOPER
+  | REGOPERATOR
+  | REGPROC
+  | REGPROCEDURE  
+  | REGROLE
+  | REGTYPE
+  | RELTIME
+  | SERIAL
+  | SERIAL4
+  | SERIAL8
+  | SMGR
+  | SQL_IDENTIFIER
   | TEXT
+  | TID
   | TIMESTAMPTZ
   | TIMETZ
+  | TIME_STAMP
+  | TINTERVAL
   | TINYINT
   | TRIGGER
+  | TSM_HANDLER
+  | TSQUERY
+  | TSRANGE
+  | TSTZRANGE
+  | TSVECTOR
+  | TXID_SNAPSHOT
   | UNKNOWN
   | UUID
   | VARBINARY
   | VARBIT
   | VARYING
   | VOID
+  | XID
   | XML
+  | YES_OR_NO
   ;
 
 tokens_nonreserved_except_function_type
@@ -1692,27 +1762,117 @@ predefined_type
   | bit_type
   | binary_type
   | network_type
-  | (OID
-  | REGCLASS
-  | REGCONFIG
-  | TRIGGER
-  | UUID
-  | VOID
-  | UNKNOWN)
+  | reg_type
+  | identifier_type
+  | geometry_type
+  | extension_type
+  | pseudo_type
+  | interval_type
+  | (UUID 
+  | TSQUERY
+  | TSVECTOR 
+  | TXID_SNAPSHOT 
+  | PG_LSN 
+  | UNKNOWN 
+  | REGCLASS 
+  | REFCURSOR
+  | GTSVECTOR
+  | SMGR
+  | PG_NODE_TREE)
   | schema_qualified_name_nontype
+  ;
+  
+extension_type
+  : (POSTGIS DOT)? postgis_type
+  | (INFORMATION_SCHEMA DOT)? information_schema_type 
+  | (PG_CATALOG DOT) predefined_type
+  ;
+  
+interval_type
+  : NUMRANGE
+  | INT4RANGE
+  | INT8RANGE
+  | TSRANGE
+  | TSTZRANGE
+  | DATERANGE
+  ;
+  
+reg_type
+  : REGCONFIG
+  | REGDICTIONARY
+  | REGNAMESPACE
+  | REGOPER
+  | REGOPERATOR
+  | REGPROC
+  | REGPROCEDURE
+  | REGROLE
+  | REGTYPE
+  ;
+
+identifier_type
+  : OID
+  | XID
+  | CID
+  | TID
+  ;
+
+pseudo_type
+  : ANY
+  | ANYELEMENT
+  | ANYARRAY
+  | ANYNOARRAY
+  | ANYENAM
+  | ANYRANGE
+  | CSTRING
+  | INTERNAL
+  | LANGUAGE_HANDLER
+  | FWD_HANDLER
+  | INDEX_AM_HANDLER
+  | TSM_HANDLER
+  | RECORD
+  | TRIGGER
+  | EVENT_TRIGGER
+  | PG_DDL_COMMAND
+  | VOID
+  | OPAQUE
   ;
 
 network_type
   : CIDR
   | INET
   | INET4
+  | MACADDR
+  ;
+  
+postgis_type
+  : RASTER
+  | GEOGRAPHY
+  | GEOMETRY
+  ;
+  
+information_schema_type
+  : CARDINAL_NUMBER 
+  | CHARACTER_DATA 
+  | SQL_IDENTIFIER 
+  | TIME_STAMP 
+  | YES_OR_NO
+  ;
+
+geometry_type
+  : BOX
+  | CIRCLE
+  | LINE
+  | LSEG
+  | PATH
+  | POINT
+  | POLYGON
   ;
 
 character_string_type
   : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
   | VARCHAR type_length?
-  | (TEXT | NAME | XML)
+  | (TEXT | NAME | XML | JSON | JSONB)
   ;
 
 type_length
@@ -1737,11 +1897,18 @@ exact_numeric_type
   | TINYINT
   | INT2
   | SMALLINT
+  | INT2VECTOR
+  | OIDVECTOR
+  | ACLITEM
   | INT4
   | INT
   | INTEGER
   | INT8
-  | BIGINT)
+  | BIGINT
+  | BIGSERIAL
+  | SERIAL
+  | SERIAL4
+  | SERIAL8)
   ;
 
 approximate_numeric_type
@@ -1762,11 +1929,14 @@ boolean_type
   ;
 
 datetime_type
-  : DATE
+  : ABSTIME 
+  | DATE
+  | RELTIME
   | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
   | TIMETZ
   | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | TIMESTAMPTZ
+  | TINTERVAL
   | INTERVAL interval_field? type_length?
   ;
   
@@ -2035,6 +2205,7 @@ array_query
 type_coercion
     : data_type Character_String_Literal
     ;
+    
 /*
 ===============================================================================
   7.13 <query expression>
