@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -30,9 +29,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -274,8 +273,17 @@ public abstract class ParserAbstract {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null) {
             IdentifierContext schemaCtx = qname.identifier();
-            st.addDep(new GenericColumn(schemaCtx == null ? schema : schemaCtx.getText(),
-                    qname.identifier_nontype().getText(), DbObjType.TYPE));
+            String schemaName = schema;
+            if (schemaCtx != null){
+                schemaName = schemaCtx.getText();
+                if ("pg_catalog".equalsIgnoreCase(schemaName)
+                        || "information_schema".equalsIgnoreCase(schemaName)) {
+                    return;
+                }
+            }
+
+            st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
+                    DbObjType.TYPE));
         }
     }
 

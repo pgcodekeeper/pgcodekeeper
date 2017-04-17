@@ -606,10 +606,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     JSON : [jJ] [sS] [oO] [nN];
     JSONB : [jJ] [sS] [oO] [nN] [bB];
     RECORD : [rR] [eE] [cC] [oO] [rR] [dD];
-    POSTGIS : [pP] [oO] [sS] [tT] [gG] [iI] [sS];
-    RASTER : [rR] [aA] [sS] [tT] [eE] [rR];
-    GEOGRAPHY : [gG] [eE] [oO] [gG] [rR] [aA] [pP] [hH] [yY];
-    GEOMETRY : [gG] [eE] [oO] [mM] [eE] [tT] [rR] [yY];
     ANYELEMENT : [aA] [nN] [yY] [eE] [lL] [eE] [mM] [eE] [nN] [tT];
     ANYARRAY : [aA] [nN] [yY] [aA] [rR] [rR] [aA] [yY];
     ANYNOARRAY : [aA] [nN] [yY] [nN] [oO] [aA] [rR] [rR] [aA] [yY];
@@ -648,17 +644,10 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     INT2VECTOR : [iI] [nN] [tT] '2' [vV] [eE] [cC] [tT] [oO] [rR];
     OIDVECTOR : [oO] [iI] [dD] [vV] [eE] [cC] [tT] [oO] [rR];
     REFCURSOR : [rR] [eE] [fF] [cC] [uU] [rR] [sS] [oO] [rR];
-    INFORMATION_SCHEMA : [iI] [nN] [fF] [oO] [rR] [mM] [aA] [tT] [iI] [oO] [nN] UNDERLINE [sS] [cC] [hH] [eE] [mM] [aA]; 
-    CARDINAL_NUMBER : [cC] [aA] [rR] [dD] [iI] [nN] [aA] [lL] UNDERLINE [nN] [uU] [mM] [bB] [eE] [rR];
-    CHARACTER_DATA : [cC] [hH] [aA] [rR] [aA] [cC] [tT] [eE] [rR] UNDERLINE [dD] [aA] [tT] [aA];
-    SQL_IDENTIFIER : [sS] [qQ] [lL] UNDERLINE [iI] [dD] [eE] [nN] [tT] [iI] [fF] [iI] [eE] [rR];
-    TIME_STAMP : [tT] [iI] [mM] [eE] UNDERLINE [sS] [tT] [aA] [mM] [pP];
-    YES_OR_NO : [yY] [eE] [sS] UNDERLINE [oO] [rR] UNDERLINE [nN] [oO];
     ACLITEM : [aA] [cC] [lL] [iI] [tT] [eE] [mM];
     GTSVECTOR : [gG] [tT] [sS] [vV] [eE] [cC] [tT] [oO] [rR];
     SMGR : [sS] [mM] [gG] [rR];
     PG_NODE_TREE : [pP] [gG] UNDERLINE [nN] [oO] [dD] [eE] UNDERLINE [tT] [rR] [eE] [eE]; 
-    PG_CATALOG : [pP] [gG] UNDERLINE [cC] [aA] [tT] [aA] [lL] [oO] [gG];
 
 fragment UNDERLINE : '_';
 

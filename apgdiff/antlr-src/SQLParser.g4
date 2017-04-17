@@ -1096,7 +1096,6 @@ tokens_nonreserved
   | INDEX
   | INDEXES
 //  | INDICATOR
-  | INFORMATION_SCHEMA
   | INHERIT
   | INHERITS
   | INLINE
@@ -1240,13 +1239,11 @@ tokens_nonreserved
 //  | PERCENT_RANK
 //  | PERIOD
 //  | PERMISSION
-  | PG_CATALOG
   | PLAIN
   | PLANS
 //  | PLI
 //  | PORTION
 //  | POSITION_REGEX
-  | POSTGIS
 //  | POWER
 //  | PRECEDES
   | PRECEDING
@@ -1478,6 +1475,71 @@ tokens_nonreserved
   | YEAR
   | YES
   | ZONE
+  
+  | ABSTIME
+  | ACLITEM
+  | ANYARRAY
+  | ANYELEMENT
+  | ANYENAM
+  | ANYNOARRAY
+  | ANYRANGE
+  | BIGSERIAL
+  | BLOB  
+  | BOOL  
+  | BOX
+  | CID
+  | CIRCLE
+  | CSTRING
+  | DATERANGE
+  | EVENT_TRIGGER
+  | FWD_HANDLER
+  | GTSVECTOR
+  | INDEX_AM_HANDLER
+  | INT2  
+  | INT2VECTOR
+  | INT4RANGE
+  | INT8RANGE
+  | INTERNAL
+  | JSON
+  | JSONB
+  | LANGUAGE_HANDLER
+  | LINE  
+  | LSEG  
+  | MACADDR 
+  | NUMRANGE
+  | OIDVECTOR
+  | OPAQUE
+  | PATH
+  | PG_DDL_COMMAND
+  | PG_LSN
+  | PG_NODE_TREE
+  | POINT
+  | POLYGON
+  | RECORD
+  | REFCURSOR
+  | REGDICTIONARY
+  | REGNAMESPACE
+  | REGOPER
+  | REGOPERATOR
+  | REGPROC
+  | REGPROCEDURE  
+  | REGROLE
+  | REGTYPE
+  | RELTIME
+  | SERIAL
+  | SERIAL4
+  | SERIAL8
+  | SMGR
+  | TID
+  | TINTERVAL
+  | TSM_HANDLER
+  | TSQUERY
+  | TSRANGE
+  | TSTZRANGE
+  | TSVECTOR
+  | TXID_SNAPSHOT
+  | XID
+  
   ;
 
 tokens_nonreserved_types
@@ -1493,7 +1555,6 @@ tokens_nonreserved_types
   | BOOL  
   | BOX
   | BYTEA
-  | CARDINAL_NUMBER
   | CID
   | CIDR
   | CIRCLE
@@ -1505,8 +1566,6 @@ tokens_nonreserved_types
   | FLOAT4
   | FLOAT8
   | FWD_HANDLER
-  | GEOGRAPHY
-  | GEOMETRY
   | GTSVECTOR
   | INDEX_AM_HANDLER
   | INET
@@ -1537,7 +1596,6 @@ tokens_nonreserved_types
   | PG_NODE_TREE
   | POINT
   | POLYGON
-  | RASTER
   | RECORD
   | REFCURSOR
   | REGCLASS
@@ -1555,12 +1613,10 @@ tokens_nonreserved_types
   | SERIAL4
   | SERIAL8
   | SMGR
-  | SQL_IDENTIFIER
   | TEXT
   | TID
   | TIMESTAMPTZ
   | TIMETZ
-  | TIME_STAMP
   | TINTERVAL
   | TINYINT
   | TRIGGER
@@ -1578,7 +1634,6 @@ tokens_nonreserved_types
   | VOID
   | XID
   | XML
-  | YES_OR_NO
   ;
 
 tokens_nonreserved_except_function_type
@@ -1765,7 +1820,6 @@ predefined_type
   | reg_type
   | identifier_type
   | geometry_type
-  | extension_type
   | pseudo_type
   | interval_type
   | (UUID 
@@ -1780,12 +1834,6 @@ predefined_type
   | SMGR
   | PG_NODE_TREE)
   | schema_qualified_name_nontype
-  ;
-  
-extension_type
-  : (POSTGIS DOT)? postgis_type
-  | (INFORMATION_SCHEMA DOT)? information_schema_type 
-  | (PG_CATALOG DOT) predefined_type
   ;
   
 interval_type
@@ -1844,20 +1892,6 @@ network_type
   | MACADDR
   ;
   
-postgis_type
-  : RASTER
-  | GEOGRAPHY
-  | GEOMETRY
-  ;
-  
-information_schema_type
-  : CARDINAL_NUMBER 
-  | CHARACTER_DATA 
-  | SQL_IDENTIFIER 
-  | TIME_STAMP 
-  | YES_OR_NO
-  ;
-
 geometry_type
   : BOX
   | CIRCLE
