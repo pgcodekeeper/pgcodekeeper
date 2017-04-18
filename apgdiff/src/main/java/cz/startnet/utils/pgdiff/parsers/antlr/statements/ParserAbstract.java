@@ -209,9 +209,11 @@ public abstract class ParserAbstract {
             if (with != null){
                 for (Storage_parameter_optionContext option : with.storage_parameter().storage_parameter_option()){
                     exp = option.value;
-                    ValueExpr vex = new ValueExpr(schemaName);
-                    vex.analyze(new Vex(exp));
-                    constr.addAllDeps(vex.getDepcies());
+                    if (exp != null){
+                        ValueExpr vex = new ValueExpr(schemaName);
+                        vex.analyze(new Vex(exp));
+                        constr.addAllDeps(vex.getDepcies());
+                    }
                 }
             }
         }
