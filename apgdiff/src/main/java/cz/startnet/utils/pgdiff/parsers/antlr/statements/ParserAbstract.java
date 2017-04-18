@@ -148,26 +148,16 @@ public abstract class ParserAbstract {
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-                parseDefValues(argument.function_def_value().def_value, defSchemaName, function);
+                VexContext defExpression = argument.function_def_value().def_value;
+                ValueExpr vex = new ValueExpr(defSchemaName);
+                vex.analyze(new Vex(defExpression));
+                function.addAllDeps(vex.getDepcies());
             }
             if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
             }
             function.addArgument(arg);
         }
-    }
-
-    private static void parseDefValues(VexContext defExpression,
-            final String defSchemaName, PgFunction function) {
-        new ParseTreeWalker().walk(new SQLParserBaseListener() {
-            @Override
-            public void enterFunction_call(Function_callContext ctx) {
-                List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-                String objName = QNameParser.getFirstName(ids);
-                String schemaName = QNameParser.getSchemaName(ids, defSchemaName);
-                function.addDep(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
-            }
-        }, defExpression);
     }
 
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx, String schemaName) {
