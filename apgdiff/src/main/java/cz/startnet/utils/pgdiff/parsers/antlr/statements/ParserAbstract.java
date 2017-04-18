@@ -147,12 +147,8 @@ public abstract class ParserAbstract {
             addTypeAsDepcy(argument.data_type(), function, defSchemaName);
 
             if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument
-                        .function_def_value().def_value));
-                for (GenericColumn objName : parseDefValues(argument
-                        .function_def_value().def_value, defSchemaName)) {
-                    function.addDep(objName);
-                }
+                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
+                parseDefValues(argument.function_def_value().def_value, defSchemaName, function);
             }
             if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
@@ -161,19 +157,17 @@ public abstract class ParserAbstract {
         }
     }
 
-    private static List<GenericColumn> parseDefValues(ParserRuleContext defExpression,
-            final String defSchemaName) {
-        final List<GenericColumn> funcSignature = new ArrayList<>();
+    private static void parseDefValues(VexContext defExpression,
+            final String defSchemaName, PgFunction function) {
         new ParseTreeWalker().walk(new SQLParserBaseListener() {
             @Override
             public void enterFunction_call(Function_callContext ctx) {
                 List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
                 String objName = QNameParser.getFirstName(ids);
                 String schemaName = QNameParser.getSchemaName(ids, defSchemaName);
-                funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
+                function.addDep(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
             }
         }, defExpression);
-        return funcSignature;
     }
 
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx, String schemaName) {
