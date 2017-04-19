@@ -165,7 +165,7 @@ table_action
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET storage_parameter
-    | RESET LEFT_PAREN with_storage_parameter (COMMA with_storage_parameter)* RIGHT_PAREN
+    | RESET storage_parameter
     | INHERIT parent_table=schema_qualified_name
     | NO INHERIT parent_table=schema_qualified_name
     | OF type_name=schema_qualified_name

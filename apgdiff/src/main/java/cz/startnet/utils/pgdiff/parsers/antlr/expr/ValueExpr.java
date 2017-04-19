@@ -222,7 +222,10 @@ public class ValueExpr extends AbstractExpr {
         Frame_clauseContext frame = window.frame_clause();
         if (frame != null) {
             for (Frame_boundContext bound : frame.frame_bound()) {
-                analyze(new Vex(bound.vex()));
+                VexContext vex = bound.vex();
+                if (vex != null) {
+                    analyze(new Vex(vex));
+                }
             }
         }
     }

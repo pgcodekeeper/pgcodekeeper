@@ -76,6 +76,14 @@ public class CreateIndex extends ParserAbstract {
 
     public static String parseIndex(Index_restContext rest, String tablespace,
             String schemaName, PgIndex ind){
+        Param_clauseContext params = rest.index_sort().param_clause();
+        if (params != null) {
+            for (ParamContext param : params.param()) {
+                ValueExpr vex = new ValueExpr(schemaName);
+                vex.analyze(new Vex(param.value));
+                ind.addAllDeps(vex.getDepcies());
+            }
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (rest.table_space() != null){
