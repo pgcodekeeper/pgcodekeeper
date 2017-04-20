@@ -5,9 +5,11 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
@@ -82,9 +84,16 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
 
-        List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
-        trigger.addDep(new GenericColumn(QNameParser.getSchemaName(funcIds, getDefSchemaName()),
-                QNameParser.getFirstName(funcIds) + "()", DbObjType.FUNCTION));
+        Data_typeContext type = ctx.func_name.data_type();
+        if (type != null){
+            Schema_qualified_name_nontypeContext funcNameCtx = type.predefined_type().schema_qualified_name_nontype();
+            if (funcNameCtx != null){
+                IdentifierContext sch = funcNameCtx.identifier();
+                String schName = sch != null ?  sch.getText() : getDefSchemaName();
+                trigger.addDep(new GenericColumn(schName,
+                        funcNameCtx.identifier_nontype().getText() + "()", DbObjType.FUNCTION));
+            }
+        }
 
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name) {

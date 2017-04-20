@@ -164,10 +164,16 @@ public abstract class ParserAbstract {
         new ParseTreeWalker().walk(new SQLParserBaseListener() {
             @Override
             public void enterFunction_call(Function_callContext ctx) {
-                List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-                String objName = QNameParser.getFirstName(ids);
-                String schemaName = QNameParser.getSchemaName(ids, defSchemaName);
-                funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
+                Data_typeContext type = ctx.data_type();
+                if (type != null){
+                    Schema_qualified_name_nontypeContext funcNameCtx = type.predefined_type().schema_qualified_name_nontype();
+                    if (funcNameCtx != null){
+                        IdentifierContext sch = funcNameCtx.identifier();
+                        String schemaName = sch != null ?  sch.getText() : defSchemaName;
+                        String objName = funcNameCtx.identifier_nontype().getText();
+                        funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
+                    }
+                }
             }
         }, defExpression);
         return funcSignature;

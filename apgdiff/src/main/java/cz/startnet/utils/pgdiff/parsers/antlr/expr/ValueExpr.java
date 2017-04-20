@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
@@ -33,7 +34,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ValueExpr extends AbstractExpr {
 
@@ -158,26 +158,30 @@ public class ValueExpr extends AbstractExpr {
         GenericColumn ret = null;
         List<Vex> args = null;
 
-        Schema_qualified_nameContext funcName = function.schema_qualified_name();
+        Data_typeContext type = function.data_type();
+
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
 
-        if (funcName != null) {
-            ret = addObjectDepcy(funcName.identifier(), DbObjType.FUNCTION);
-            args = addVexCtxtoList(args, function.vex());
+        if (type != null){
+            Schema_qualified_name_nontypeContext funcNameCtx = type.predefined_type().schema_qualified_name_nontype();
+            if (funcNameCtx != null) {
+                ret = addFunctionDepcy(funcNameCtx);
+                args = addVexCtxtoList(args, function.vex());
 
-            Orderby_clauseContext orderBy = function.orderby_clause();
-            if (orderBy != null) {
-                orderBy(orderBy);
-            }
-            Filter_clauseContext filter = function.filter_clause();
-            if (filter != null) {
-                analyze(new Vex(filter.vex()));
-            }
-            Window_definitionContext window = function.window_definition();
-            if (window != null) {
-                window(window);
+                Orderby_clauseContext orderBy = function.orderby_clause();
+                if (orderBy != null) {
+                    orderBy(orderBy);
+                }
+                Filter_clauseContext filter = function.filter_clause();
+                if (filter != null) {
+                    analyze(new Vex(filter.vex()));
+                }
+                Window_definitionContext window = function.window_definition();
+                if (window != null) {
+                    window(window);
+                }
             }
         } else if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -190,6 +194,8 @@ public class ValueExpr extends AbstractExpr {
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
+        } else if (function.other_function() != null) {
+            args = addVexCtxtoList(args, function.other_function().vex());
         }
 
         if (args != null) {

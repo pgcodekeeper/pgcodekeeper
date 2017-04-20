@@ -5,8 +5,10 @@ import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.RESERV
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.TYPE_FUNC_NAME_KEYWORD;
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.UNRESERVED_KEYWORD;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -481,5 +483,47 @@ public class Keyword {
 
     public KeywordCategory getCategory() {
         return category;
+    }
+
+    public static void getAllTokensByGroups () {
+        for (KeywordCategory catagery : KeywordCategory.values()){
+            System.out.println("==================================================");
+            System.out.println(catagery);
+            System.out.println("==================================================");
+            List <String> keys = new ArrayList<>();
+            KEYWORDS.forEach((k,v) -> {
+                if (v.getCategory() == catagery){
+                    StringBuilder sb = new StringBuilder("  " + k.toUpperCase());
+                    sb.append(":");
+                    for (char ch : k.toCharArray()){
+                        if (ch == '_'){
+                            sb.append(" UNDERLINE ");
+                        } else {
+                            sb.append(" [").append(ch).append(Character.toUpperCase(ch)).append("]");
+                        }
+                    }
+                    sb.append(";");
+                    keys.add(sb.toString());
+                }
+            });
+            keys.sort(String::compareToIgnoreCase);
+            keys.forEach((v) -> System.out.println("  " + v));
+        }
+    }
+
+    public static void getAllWordsByGroups () {
+        for (KeywordCategory category : KeywordCategory.values()){
+            System.out.println("==================");
+            System.out.println(category);
+            System.out.println("==================");
+            List <String> keys = new ArrayList<>();
+            KEYWORDS.forEach((k,v) -> {
+                if (v.getCategory() == category){
+                    keys.add(k.toUpperCase());
+                }
+            });
+            keys.sort(String::compareToIgnoreCase);
+            keys.forEach((v) -> System.out.println("  | " + v));
+        }
     }
 }

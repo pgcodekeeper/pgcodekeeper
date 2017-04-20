@@ -847,407 +847,171 @@ identifier_nontype
 
 tokens_nonreserved
   : ABORT
-//  | A
-//  | ABS
-//  | ABSENT
   | ABSOLUTE
   | ACCESS
-//  | ACCORDING
   | ACTION
-//  | ADA
   | ADD
   | ADMIN
   | AFTER
   | AGGREGATE
-  | ALIGNMENT
-//  | ALLOCATE
   | ALSO
   | ALTER
   | ALWAYS
-//  | ARE
-//  | ARRAY_AGG
-//  | ARRAY_MAX_CARDINALITY
-//  | ASENSITIVE
   | ASSERTION
   | ASSIGNMENT
   | AT
-//  | ATOMIC
   | ATTRIBUTE
-//  | ATTRIBUTES
-  | AVG
   | BACKWARD
-//  | BASE64
   | BEFORE
   | BEGIN
-//  | BEGIN_FRAME
-//  | BEGIN_PARTITION
-//  | BERNOULLI
-//  | BIT_LENGTH
-//  | BLOCKED
-//  | BOM
-//  | BREADTH
   | BY
-//  | C
   | CACHE
-//  | CALL
   | CALLED
-  | CANONICAL
-//  | CARDINALITY
   | CASCADE
   | CASCADED
   | CATALOG
-//  | CATALOG_NAME
-  | CATEGORY
-//  | CEIL
-//  | CEILING
-  | CENTURY
   | CHAIN
   | CHARACTERISTICS
-//  | CHARACTERS
-//  | CHARACTER_LENGTH
-//  | CHARACTER_SET_CATALOG
-//  | CHARACTER_SET_NAME
-//  | CHARACTER_SET_SCHEMA
-//  | CHAR_LENGTH
   | CHECKPOINT
   | CLASS
-//  | CLASS_ORIGIN
-//  | CLOB
   | CLOSE
   | CLUSTER
-//  | COBOL
-  | COLLATABLE
-//  | COLLATION_CATALOG
-//  | COLLATION_NAME
-//  | COLLATION_SCHEMA
-  | COLLECT
-//  | COLUMNS
-//  | COLUMN_NAME
-//  | COMMAND_FUNCTION
-//  | COMMAND_FUNCTION_CODE
   | COMMENT
   | COMMENTS
   | COMMIT
   | COMMITTED
-//  | CONDITION
-//  | CONDITION_NUMBER
   | CONFIGURATION
-  | CONNECT
+  | CONFLICT
   | CONNECTION
-//  | CONNECTION_NAME
   | CONSTRAINTS
-//  | CONSTRAINT_CATALOG
-//  | CONSTRAINT_NAME
-//  | CONSTRAINT_SCHEMA
-//  | CONSTRUCTOR
-//  | CONTAINS
   | CONTENT
   | CONTINUE
-//  | CONTROL
   | CONVERSION
-//  | CONVERT
   | COPY
-//  | CORR
-//  | CORRESPONDING
   | COST
-  | COUNT
-//  | COVAR_POP
-//  | COVAR_SAMP
   | CSV
   | CUBE
-//  | CUME_DIST
   | CURRENT
-//  | CURRENT_DEFAULT_TRANSFORM_GROUP
-//  | CURRENT_PATH
-//  | CURRENT_ROW
-//  | CURRENT_TRANSFORM_GROUP_FOR_TYPE
   | CURSOR
-//  | CURSOR_NAME
   | CYCLE
   | DATA
   | DATABASE
-//  | DATALINK
-//  | DATETIME_INTERVAL_CODE
-//  | DATETIME_INTERVAL_PRECISION
   | DAY
-//  | DB
   | DEALLOCATE
-  | DECADE
   | DECLARE
   | DEFAULTS
   | DEFERRED
-//  | DEFINED
   | DEFINER
-//  | DEGREE
   | DELETE
   | DELIMITER
   | DELIMITERS
-//  | DENSE_RANK
-//  | DEPTH
-//  | DEREF
-//  | DERIVED
-//  | DESCRIBE
-//  | DESCRIPTOR
-//  | DETERMINISTIC
-//  | DIAGNOSTICS
+  | DEPENDS
   | DICTIONARY
   | DISABLE
   | DISCARD
-//  | DISCONNECT
-//  | DISPATCH
-//  | DLNEWCOPY
-//  | DLPREVIOUSCOPY
-//  | DLURLCOMPLETE
-//  | DLURLCOMPLETEONLY
-//  | DLURLCOMPLETEWRITE
-//  | DLURLPATH
-//  | DLURLPATHONLY
-//  | DLURLPATHWRITE
-//  | DLURLSCHEME
-//  | DLURLSERVER
-//  | DLVALUE
   | DOCUMENT
   | DOMAIN
-  | DOW
-  | DOY
+  | DOUBLE
   | DROP
-//  | DYNAMIC
-//  | DYNAMIC_FUNCTION
-//  | DYNAMIC_FUNCTION_CODE
   | EACH
-  | ELEMENT
-//  | EMPTY
   | ENABLE
   | ENCODING
   | ENCRYPTED
-  | END_EXEC
-//  | END_FRAME
-//  | END_PARTITION
-//  | ENFORCED
   | ENUM
-  | EPOCH
-//  | EQUALS
   | ESCAPE
   | EVENT
-  | EVERY
-//  | EXCEPTION
   | EXCLUDE
   | EXCLUDING
   | EXCLUSIVE
-//  | EXEC
   | EXECUTE
-//  | EXP
   | EXPLAIN
-//  | EXPRESSION
-  | EXTENDED
   | EXTENSION
   | EXTERNAL
   | FAMILY
-//  | FILE
   | FILTER
-//  | FINAL
   | FIRST
-//  | FIRST_VALUE
-//  | FLAG
-//  | FLOOR
   | FOLLOWING
   | FORCE
-  | FORCE_NOT_NULL
-  | FORCE_QUOTE
-  | FORMAT
-//  | FORTRAN
   | FORWARD
-//  | FOUND
-//  | FRAME_ROW
-//  | FREE
-//  | FS
   | FUNCTION
   | FUNCTIONS
-  | FUSION
-//  | G
-//  | GENERAL
-//  | GENERATED
-//  | GET
   | GLOBAL
-//  | GO
-//  | GOTO
   | GRANTED
-  | GROUPING
-//  | GROUPS
   | HANDLER
   | HEADER
-//  | HEX
-//  | HIERARCHY
   | HOLD
   | HOUR
-//  | ID
   | IDENTITY
   | IF
-//  | IGNORE
   | IMMEDIATE
-//  | IMMEDIATELY
   | IMMUTABLE
-//  | IMPLEMENTATION
   | IMPLICIT
-//  | IMPORT
+  | IMPORT
   | INCLUDING
   | INCREMENT
-//  | INDENT
   | INDEX
   | INDEXES
-//  | INDICATOR
   | INHERIT
   | INHERITS
   | INLINE
   | INPUT
   | INSENSITIVE
   | INSERT
-//  | INSTANCE
-//  | INSTANTIABLE
   | INSTEAD
-//  | INTEGRITY
-  | INTERNALLENGTH
-  | INTERSECTION
   | INVOKER
-  | ISCACHABLE
-  | ISODOW
   | ISOLATION
-  | ISOYEAR
-  | ISSTRICT
-//  | K
   | KEY
-//  | KEY_MEMBER
-//  | KEY_TYPE
   | LABEL
-//  | LAG
   | LANGUAGE
   | LARGE
   | LAST
-//  | LAST_VALUE
-  | LC_COLLATE
-  | LC_CTYPE
-//  | LEAD
   | LEAKPROOF
-//  | LENGTH
   | LEVEL
-//  | LIBRARY
-//  | LIKE_REGEX
-//  | LINK
   | LISTEN
-//  | LN
   | LOAD
   | LOCAL
   | LOCATION
-//  | LOCATOR
   | LOCK
-//  | LOWER
-//  | M
-  | MAIN
-//  | MAP
+  | LOCKED
+  | LOGGED
   | MAPPING
   | MATCH
-//  | MATCHED
   | MATERIALIZED
-  | MAX
   | MAXVALUE
-//  | MAX_CARDINALITY
-//  | MEMBER
-//  | MERGE
-//  | MESSAGE_LENGTH
-//  | MESSAGE_OCTET_LENGTH
-//  | MESSAGE_TEXT
-//  | METHOD
-  | MICROSECONDS
-  | MILLENNIUM
-  | MILLISECONDS
-  | MIN
+  | METHOD
   | MINUTE
   | MINVALUE
-//  | MOD
   | MODE
-//  | MODIFIES
-//  | MODULE
   | MONTH
-//  | MORE
   | MOVE
-//  | MULTISET
-//  | MUMPS
+  | NAME
   | NAMES
-//  | NAMESPACE
-//  | NCLOB
-//  | NESTING
-//  | NEW
   | NEXT
-//  | NFC
-//  | NFD
-//  | NFKC
-//  | NFKD
-//  | NIL
   | NO
-//  | NORMALIZE
-//  | NORMALIZED
   | NOTHING
   | NOTIFY
   | NOWAIT
-//  | NTH_VALUE
-//  | NTILE
-//  | NULLABLE
   | NULLS
-//  | NUMBER
-  | N_DISTINCT
-  | N_DISTINCT_INHERITED
   | OBJECT
-//  | OCCURRENCES_REGEX
-//  | OCTETS
-//  | OCTET_LENGTH
   | OF
   | OFF
   | OIDS
-//  | OLD
-//  | OPEN
   | OPERATOR
   | OPTION
   | OPTIONS
-//  | ORDERING
-//  | ORDINALITY
-//  | OTHERS
-  | OUTPUT
-//  | OVERRIDING
+  | ORDINALITY
+  | OVER
   | OWNED
   | OWNER
-//  | P
-//  | PAD
-//  | PARAMETER
-//  | PARAMETER_MODE
-//  | PARAMETER_NAME
-//  | PARAMETER_ORDINAL_POSITION
-//  | PARAMETER_SPECIFIC_CATALOG
-//  | PARAMETER_SPECIFIC_NAME
-//  | PARAMETER_SPECIFIC_SCHEMA
+  | PARALLEL
   | PARSER
   | PARTIAL
   | PARTITION
-//  | PASCAL
-  | PASSEDBYVALUE
   | PASSING
-//  | PASSTHROUGH
   | PASSWORD
-//  | PATH
-//  | PERCENT
-//  | PERCENTILE_CONT
-//  | PERCENTILE_DISC
-//  | PERCENT_RANK
-//  | PERIOD
-//  | PERMISSION
-  | PLAIN
   | PLANS
-//  | PLI
-//  | PORTION
-//  | POSITION_REGEX
-//  | POWER
-//  | PRECEDES
+  | POLICY
   | PRECEDING
-  | PREFERRED
   | PREPARE
   | PREPARED
   | PRESERVE
@@ -1256,31 +1020,14 @@ tokens_nonreserved
   | PROCEDURAL
   | PROCEDURE
   | PROGRAM
-  | PUBLIC
-  | QUARTER
   | QUOTE
   | RANGE
-//  | RANK
   | READ
-//  | READS
   | REASSIGN
-  | RECEIVE
   | RECHECK
-//  | RECOVERY
   | RECURSIVE
   | REF
-//  | REFERENCING
   | REFRESH
-  | REGEXP
-//  | REGR_AVGX
-//  | REGR_AVGY
-//  | REGR_COUNT
-//  | REGR_INTERCEPT
-//  | REGR_R2
-//  | REGR_SLOPE
-//  | REGR_SXX
-//  | REGR_SXY
-//  | REGR_SYY
   | REINDEX
   | RELATIVE
   | RELEASE
@@ -1288,258 +1035,88 @@ tokens_nonreserved
   | REPEATABLE
   | REPLACE
   | REPLICA
-//  | REQUIRING
   | RESET
-//  | RESPECT
   | RESTART
-//  | RESTORE
   | RESTRICT
-//  | RESULT
-//  | RETURN
-//  | RETURNED_CARDINALITY
-//  | RETURNED_LENGTH
-//  | RETURNED_OCTET_LENGTH
-//  | RETURNED_SQLSTATE
   | RETURNS
   | REVOKE
-  | RLIKE
   | ROLE
   | ROLLBACK
   | ROLLUP
-//  | ROUTINE
-//  | ROUTINE_CATALOG
-//  | ROUTINE_NAME
-//  | ROUTINE_SCHEMA
   | ROWS
-//  | ROW_COUNT
-//  | ROW_NUMBER
   | RULE
   | SAVEPOINT
-//  | SCALE
   | SCHEMA
-//  | SCHEMA_NAME
-//  | SCOPE
-//  | SCOPE_CATALOG
-//  | SCOPE_NAME
-//  | SCOPE_SCHEMA
   | SCROLL
   | SEARCH
   | SECOND
-//  | SECTION
   | SECURITY
-//  | SELECTIVE
-//  | SELF
-  | SEND
-//  | SENSITIVE
   | SEQUENCE
   | SEQUENCES
   | SERIALIZABLE
   | SERVER
-//  | SERVER_NAME
   | SESSION
   | SET
   | SETS
   | SHARE
   | SHOW
   | SIMPLE
-//  | SIZE
+  | SKIP_
   | SNAPSHOT
-//  | SOURCE
-//  | SPACE
-//  | SPECIFIC
-//  | SPECIFICTYPE
-//  | SPECIFIC_NAME
-//  | SQL
-//  | SQLCODE
-//  | SQLERROR
-//  | SQLEXCEPTION
-//  | SQLSTATE
-//  | SQLWARNING
-//  | SQRT
+  | SQL
   | STABLE
   | STANDALONE
   | START
-//  | STATE
   | STATEMENT
-//  | STATIC
   | STATISTICS
-  | STDDEV_POP
-  | STDDEV_SAMP
   | STDIN
   | STDOUT
   | STORAGE
   | STRICT
   | STRIP
-//  | STRUCTURE
-//  | STYLE
-//  | SUBCLASS_ORIGIN
-//  | SUBMULTISET
-//  | SUBSTRING_REGEX
-  | SUBTYPE
-  | SUBTYPE_DIFF
-  | SUBTYPE_OPCLASS
-//  | SUCCEEDS
-  | SUM
   | SYSID
   | SYSTEM
-//  | SYSTEM_TIME
-//  | SYSTEM_USER
-//  | T
   | TABLES
-//  | TABLESAMPLE
   | TABLESPACE
-//  | TABLE_NAME
   | TEMP
   | TEMPLATE
   | TEMPORARY
-//  | TIES
-  | TIMEZONE
-  | TIMEZONE_HOUR
-  | TIMEZONE_MINUTE
-//  | TOKEN
-//  | TOP_LEVEL_COUNT
+  | TEXT
   | TRANSACTION
-//  | TRANSACTIONS_COMMITTED
-//  | TRANSACTIONS_ROLLED_BACK
-//  | TRANSACTION_ACTIVE
-//  | TRANSFORM
-//  | TRANSFORMS
-//  | TRANSLATE
-//  | TRANSLATE_REGEX
-//  | TRANSLATION
-//  | TRIGGER_CATALOG
-//  | TRIGGER_NAME
-//  | TRIGGER_SCHEMA
-//  | TRIM_ARRAY
+  | TRANSFORM
+  | TRIGGER
   | TRUNCATE
   | TRUSTED
   | TYPE
   | TYPES
-  | TYPMOD_IN
-  | TYPMOD_OUT
-//  | UESCAPE
   | UNBOUNDED
   | UNCOMMITTED
-//  | UNDER
   | UNENCRYPTED
-//  | UNLINK
+  | UNKNOWN
   | UNLISTEN
   | UNLOGGED
-//  | UNNAMED
-//  | UNNEST
   | UNTIL
-//  | UNTYPED
   | UPDATE
-//  | UPPER
-//  | URI
-  | USAGE
-//  | USER_DEFINED_TYPE_CATALOG
-//  | USER_DEFINED_TYPE_CODE
-//  | USER_DEFINED_TYPE_NAME
-//  | USER_DEFINED_TYPE_SCHEMA
   | VACUUM
   | VALID
   | VALIDATE
   | VALIDATOR
   | VALUE
-//  | VALUE_OF
-  | VARIABLE
-  | VAR_POP
-  | VAR_SAMP
+  | VARYING
   | VERSION
-//  | VERSIONING
   | VIEW
+  | VIEWS
   | VOLATILE
-  | WEEK
-//  | WHENEVER
   | WHITESPACE
-//  | WIDTH_BUCKET
-//  | WITHIN
+  | WITHIN
   | WITHOUT
   | WORK
   | WRAPPER
   | WRITE
-//  | XMLAGG
-//  | XMLBINARY
-//  | XMLCAST
-//  | XMLCOMMENT
-//  | XMLDECLARATION
-//  | XMLDOCUMENT
-//  | XMLITERATE
-//  | XMLNAMESPACES
-//  | XMLQUERY
-//  | XMLSCHEMA
-//  | XMLTABLE
-//  | XMLTEXT
-//  | XMLVALIDATE
+  | XML
   | YEAR
   | YES
   | ZONE
-  
-  | ABSTIME
-  | ACLITEM
-  | ANYARRAY
-  | ANYELEMENT
-  | ANYENAM
-  | ANYNOARRAY
-  | ANYRANGE
-  | BIGSERIAL
-  | BLOB  
-  | BOOL  
-  | BOX
-  | CID
-  | CIRCLE
-  | CSTRING
-  | DATERANGE
-  | EVENT_TRIGGER
-  | FWD_HANDLER
-  | GTSVECTOR
-  | INDEX_AM_HANDLER
-  | INT2  
-  | INT2VECTOR
-  | INT4RANGE
-  | INT8RANGE
-  | INTERNAL
-  | JSON
-  | JSONB
-  | LANGUAGE_HANDLER
-  | LINE  
-  | LSEG  
-  | MACADDR 
-  | NUMRANGE
-  | OIDVECTOR
-  | OPAQUE
-  | PATH
-  | PG_DDL_COMMAND
-  | PG_LSN
-  | PG_NODE_TREE
-  | POINT
-  | POLYGON
-  | RECORD
-  | REFCURSOR
-  | REGDICTIONARY
-  | REGNAMESPACE
-  | REGOPER
-  | REGOPERATOR
-  | REGPROC
-  | REGPROCEDURE  
-  | REGROLE
-  | REGTYPE
-  | RELTIME
-  | SERIAL
-  | SERIAL4
-  | SERIAL8
-  | SMGR
-  | TID
-  | TINTERVAL
-  | TSM_HANDLER
-  | TSQUERY
-  | TSRANGE
-  | TSTZRANGE
-  | TSVECTOR
-  | TXID_SNAPSHOT
-  | XID
-  
   ;
 
 tokens_nonreserved_types
@@ -1650,6 +1227,7 @@ tokens_nonreserved_except_function_type
   | EXTRACT
   | FLOAT
   | GREATEST
+  | GROUPING
   | INOUT
   | INT
   | INTEGER
@@ -1705,10 +1283,10 @@ tokens_reserved_except_function_type
   | NATURAL
   | NOTNULL
   | OUTER
-  | OVER
   | OVERLAPS
   | RIGHT
   | SIMILAR
+  | TABLESAMPLE
   | VERBOSE
   ;
 
@@ -2134,14 +1712,19 @@ cast_specification
   ;
 
 function_call
-    : schema_qualified_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : data_type LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
     | date_time_function
     | string_value_function
     | xml_function
+    | other_function
     ;
+
+other_function
+  : (identifier DOT)? tokens_nonreserved_except_function_type LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN  
+  ;
 
 extract_function
   : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM vex RIGHT_PAREN
