@@ -9,6 +9,7 @@ import java.util.Set;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -66,9 +67,10 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx){
-        IdentifierContext sch = funcNameCtx.identifier();
+        IdentifierContext sch = funcNameCtx.schema;
         String funcSchema = sch != null ? sch.getText() : schema;
-        String funcName = funcNameCtx.identifier_nontype().getText();
+        Identifier_nontypeContext obj = funcNameCtx.identifier_nontype();
+        String funcName = obj != null ? obj.getText() : funcNameCtx.name.getText();
         GenericColumn depcy = new GenericColumn(funcSchema, funcName, DbObjType.FUNCTION);
         depcies.add(depcy);
         return depcy;

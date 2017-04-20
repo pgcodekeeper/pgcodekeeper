@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -139,9 +140,10 @@ public class ReferenceListener extends SQLParserBaseListener {
         if (type != null){
             Schema_qualified_name_nontypeContext funcNameCtx = type.predefined_type().schema_qualified_name_nontype();
             if (funcNameCtx != null){
-                IdentifierContext sch = funcNameCtx.identifier();
+                IdentifierContext sch = funcNameCtx.schema;
                 String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
-                String funcName = funcNameCtx.identifier_nontype().getText();
+                Identifier_nontypeContext obj = funcNameCtx.identifier_nontype();
+                String funcName = obj != null ? obj.getText() : funcNameCtx.name.getText();
                 int offset = 0;
                 // TODO proper qualified name splitting for every reference
                 if (sch != null) {

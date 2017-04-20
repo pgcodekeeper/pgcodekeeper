@@ -843,7 +843,8 @@ identifier
 
 identifier_nontype
   : (Identifier | QuotedIdentifier)
-  | tokens_nonreserved;
+  | tokens_nonreserved
+  ;
 
 tokens_nonreserved
   : ABORT
@@ -1377,8 +1378,9 @@ tokens_reserved
 */
 
 schema_qualified_name_nontype
-  : identifier_nontype
-  | identifier DOT identifier_nontype
+  :identifier_nontype
+  | schema = identifier DOT identifier_nontype
+  | schema = identifier DOT name = tokens_nonreserved_types 
   ;
 
 data_type
