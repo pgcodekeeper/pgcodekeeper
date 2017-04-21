@@ -5,6 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -83,6 +87,12 @@ public class TypesReader extends JdbcReader {
             if (def != null) {
                 def = PgDiffUtils.quoteString(def);
             }
+        } else {
+            loader.submitAntlrTask(def, p -> {
+                ValueExpr vex = new ValueExpr(schemaName);
+                vex.analyze(new Vex(p.vex_eof().vex()));
+                return vex.getDepcies();
+            }, d::addAllDeps);
         }
         d.setDefaultValue(def);
 
@@ -92,17 +102,19 @@ public class TypesReader extends JdbcReader {
         if (arrConnames != null) {
             String[] connames = (String[]) arrConnames.getArray();
             String[] condefs = (String[]) res.getArray("dom_condefs").getArray();
-            Boolean[] convalids = (Boolean[]) res.getArray("dom_convalidates").getArray();
             String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                String definition = condefs[i];
-                if (!convalids[i]) {
-                    definition = definition.substring(0, definition.length() - ConstraintsReader.NOT_VALID_SUFFIX.length());
-                    c.setNotValid(true);
-                }
-                c.setDefinition(definition);
+                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
+                        p -> p.sql().statement(0).schema_statement().schema_alter()
+                        .alter_table_statement().table_action(0), ctx -> {
+                            Constr_bodyContext body = ctx.tabl_constraint.constr_body();
+                            ParserAbstract.parseConstraintExpr(body, schemaName, c);
+                            c.setDefinition(ParserAbstract.getFullCtxText(body));
+                            c.setNotValid(ctx.not_valid != null);
+                        });
+
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
                     c.setComment(loader.args, PgDiffUtils.quoteString(concomments[i]));

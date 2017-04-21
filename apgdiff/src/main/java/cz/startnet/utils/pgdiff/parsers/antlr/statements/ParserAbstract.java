@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
@@ -192,26 +193,15 @@ public abstract class ParserAbstract {
         if (ctx.constr_body().table_unique_prkey() != null) {
             setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
         }
-        VexContext exp = ctx.constr_body().vex();
-        if (exp == null && ctx.constr_body().common_constraint() != null){
-            Check_boolean_expressionContext check = ctx.constr_body().common_constraint().check_boolean_expression();
-            if (check != null){
-                exp = check.expression;
-            }
-        }
-        if (exp != null){
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constr.addAllDeps(vex.getDepcies());
-        }
+
+        parseConstraintExpr(ctx.constr_body(), schemaName, constr);
         if (ctx.constr_body().index_parameters() != null){
             With_storage_parameterContext with = ctx.constr_body().index_parameters().with_storage_parameter();
             if (with != null){
                 for (Storage_parameter_optionContext option : with.storage_parameter().storage_parameter_option()){
-                    exp = option.value;
-                    if (exp != null){
+                    if (option.value != null){
                         ValueExpr vex = new ValueExpr(schemaName);
-                        vex.analyze(new Vex(exp));
+                        vex.analyze(new Vex(option.value));
                         constr.addAllDeps(vex.getDepcies());
                     }
                 }
@@ -219,6 +209,23 @@ public abstract class ParserAbstract {
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
+    }
+
+    public static void parseConstraintExpr(Constr_bodyContext ctx, String schemaName,
+            PgConstraint constr) {
+        VexContext exp = null;
+        Common_constraintContext common = ctx.common_constraint();
+        Check_boolean_expressionContext check;
+        if (common != null && (check = common.check_boolean_expression()) != null){
+            exp = check.expression;
+        } else {
+            exp = ctx.vex();
+        }
+        if (exp != null){
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            constr.addAllDeps(vex.getDepcies());
+        }
     }
 
     /**
