@@ -19,7 +19,8 @@ public class GeneralLiteralSearch extends SQLParserBaseListener {
 
     @Override
     public void enterPredefined_type(Predefined_typeContext ctx) {
-        if (ctx.REGCLASS() != null) {
+        if (ctx.schema_qualified_name_nontype() != null &&
+                "REGCLASS".equalsIgnoreCase(ctx.schema_qualified_name_nontype().identifier_nontype().getText())) {
             found = true;
         }
     }

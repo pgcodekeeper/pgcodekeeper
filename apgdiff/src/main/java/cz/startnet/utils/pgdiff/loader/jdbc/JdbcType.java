@@ -83,7 +83,7 @@ public class JdbcType{
 
     public void addTypeDepcy(PgStatement st) {
         if (!JdbcLoaderBase.isBuiltin(oid)
-                && !"pg_catalog".equalsIgnoreCase(parentSchema)
+                && !isPgCatalog
                 && !"information_schema".equalsIgnoreCase(parentSchema)) {
             st.addDep(new GenericColumn(parentSchema, typeName, DbObjType.TYPE));
         }

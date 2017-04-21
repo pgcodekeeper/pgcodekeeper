@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -171,8 +170,7 @@ public abstract class ParserAbstract {
                     if (funcNameCtx != null){
                         IdentifierContext sch = funcNameCtx.schema;
                         String schemaName = sch != null ?  sch.getText() : defSchemaName;
-                        Identifier_nontypeContext obj = funcNameCtx.identifier_nontype();
-                        String objName = obj != null ? obj.getText() : funcNameCtx.name.getText();
+                        String objName = funcNameCtx.identifier_nontype().getText();
                         funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
                     }
                 }
@@ -292,7 +290,6 @@ public abstract class ParserAbstract {
 
             st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
                     DbObjType.TYPE));
-            System.err.println(st.getBareName() + " >>> " + st.getDeps());
         }
     }
 

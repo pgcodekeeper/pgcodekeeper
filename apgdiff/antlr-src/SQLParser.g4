@@ -38,7 +38,7 @@ statement
 
 data_statement
   : select_stmt
-  | copy_statement
+//| copy_statement
   ;
 
   script_statement
@@ -52,12 +52,14 @@ data_statement
   | (NOT)? DEFERRABLE
   ;
 
+/*
 copy_statement
     : COPY (table_name=schema_qualified_name column_references?
            | ( query=select_stmt ))
         (FROM | TO) (filename=identifier | STDIN)
         (WITH? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
     ;
+    
 copy_option:
     FORMAT format_name=identifier
     | OIDS (boolean_val=truth_value)?
@@ -73,7 +75,8 @@ copy_option:
 //data_change_statement
 //  : insert_statement
 //  ;
-
+ */
+ 
 schema_statement
   : schema_create
     | schema_alter
@@ -321,7 +324,7 @@ create_language_statement
     ;
 
 create_event_trigger
-    : EVENT TRIGGER name=identifier ON event=event_name
+    : EVENT TRIGGER name=identifier ON event=identifier
         (WHEN filter_variable=schema_qualified_name (IN
             LEFT_PAREN
                 filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
@@ -1121,96 +1124,11 @@ tokens_nonreserved
   ;
 
 tokens_nonreserved_types
-  : ABSTIME
-  | ACLITEM
-  | ANYARRAY
-  | ANYELEMENT
-  | ANYENAM
-  | ANYNOARRAY
-  | ANYRANGE
-  | BIGSERIAL
-  | BLOB  
-  | BOOL  
-  | BOX
-  | BYTEA
-  | CID
-  | CIDR
-  | CIRCLE
-  | CSTRING
-  | DATE
-  | DATERANGE
-  | DOUBLE
-  | EVENT_TRIGGER
-  | FLOAT4
-  | FLOAT8
-  | FWD_HANDLER
-  | GTSVECTOR
-  | INDEX_AM_HANDLER
-  | INET
-  | INET4
-  | INT1
-  | INT2  
-  | INT2VECTOR
-  | INT4
-  | INT4RANGE
-  | INT8
-  | INT8RANGE
-  | INTERNAL
-  | JSON
-  | JSONB
-  | LANGUAGE_HANDLER
-  | LINE  
-  | LSEG  
-  | MACADDR 
-  | MONEY
-  | NAME
-  | NUMRANGE
-  | OID
-  | OIDVECTOR
-  | OPAQUE
-  | PATH
-  | PG_DDL_COMMAND
-  | PG_LSN
-  | PG_NODE_TREE
-  | POINT
-  | POLYGON
-  | RECORD
-  | REFCURSOR
-  | REGCLASS
-  | REGCONFIG
-  | REGDICTIONARY
-  | REGNAMESPACE
-  | REGOPER
-  | REGOPERATOR
-  | REGPROC
-  | REGPROCEDURE  
-  | REGROLE
-  | REGTYPE
-  | RELTIME
-  | SERIAL
-  | SERIAL4
-  | SERIAL8
-  | SMGR
+  : NAME
   | TEXT
-  | TID
-  | TIMESTAMPTZ
-  | TIMETZ
-  | TINTERVAL
-  | TINYINT
   | TRIGGER
-  | TSM_HANDLER
-  | TSQUERY
-  | TSRANGE
-  | TSTZRANGE
-  | TSVECTOR
-  | TXID_SNAPSHOT
   | UNKNOWN
-  | UUID
-  | VARBINARY
-  | VARBIT
   | VARYING
-  | VOID
-  | XID
   | XML
   ;
 
@@ -1379,8 +1297,7 @@ tokens_reserved
 
 schema_qualified_name_nontype
   :identifier_nontype
-  | schema = identifier DOT identifier_nontype
-  | schema = identifier DOT name = tokens_nonreserved_types 
+  | schema = identifier DOT identifier_nontype 
   ;
 
 data_type
@@ -1389,197 +1306,35 @@ data_type
   ;
 
 predefined_type
-  : character_string_type
-  | binary_large_object_string_type
-  | numeric_type
-  | boolean_type
-  | datetime_type
-  | bit_type
-  | binary_type
-  | network_type
-  | reg_type
-  | identifier_type
-  | geometry_type
-  | pseudo_type
-  | interval_type
-  | (UUID 
-  | TSQUERY
-  | TSVECTOR 
-  | TXID_SNAPSHOT 
-  | PG_LSN 
-  | UNKNOWN 
-  | REGCLASS 
-  | REFCURSOR
-  | GTSVECTOR
-  | SMGR
-  | PG_NODE_TREE)
-  | schema_qualified_name_nontype
-  ;
-  
-interval_type
-  : NUMRANGE
-  | INT4RANGE
-  | INT8RANGE
-  | TSRANGE
-  | TSTZRANGE
-  | DATERANGE
-  ;
-  
-reg_type
-  : REGCONFIG
-  | REGDICTIONARY
-  | REGNAMESPACE
-  | REGOPER
-  | REGOPERATOR
-  | REGPROC
-  | REGPROCEDURE
-  | REGROLE
-  | REGTYPE
-  ;
-
-identifier_type
-  : OID
-  | XID
-  | CID
-  | TID
-  ;
-
-pseudo_type
   : ANY
-  | ANYELEMENT
-  | ANYARRAY
-  | ANYNOARRAY
-  | ANYENAM
-  | ANYRANGE
-  | CSTRING
-  | INTERNAL
-  | LANGUAGE_HANDLER
-  | FWD_HANDLER
-  | INDEX_AM_HANDLER
-  | TSM_HANDLER
-  | RECORD
-  | TRIGGER
-  | EVENT_TRIGGER
-  | PG_DDL_COMMAND
-  | VOID
-  | OPAQUE
-  ;
-
-network_type
-  : CIDR
-  | INET
-  | INET4
-  | MACADDR
-  ;
-  
-geometry_type
-  : BOX
-  | CIRCLE
-  | LINE
-  | LSEG
-  | PATH
-  | POINT
-  | POLYGON
-  ;
-
-character_string_type
-  : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
+  | BIGINT 
+  | BINARY VARYING? type_length?
+  | BIT VARYING? type_length?
+  | BOOLEAN
+  | DEC precision_param?
+  | DECIMAL precision_param?
+  | DOUBLE PRECISION
+  | FLOAT precision_param?
+  | INT
+  | INTEGER
+  | INTERVAL ((identifier TO)? identifier)? type_length?
+  | NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
+  | NUMERIC precision_param?
+  | REAL
+  | SMALLINT
+  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
+  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | VARCHAR type_length?
-  | (TEXT | NAME | XML | JSON | JSONB)
+  | schema_qualified_name_nontype
   ;
 
 type_length
   : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
   ;
 
-binary_large_object_string_type
-  : BLOB type_length?
-  | BYTEA type_length?
-  ;
-
-numeric_type
-  : exact_numeric_type | approximate_numeric_type
-  ;
-
-exact_numeric_type
-  : NUMERIC precision_param?
-  | DECIMAL precision_param?
-  | DEC precision_param?
-  | MONEY
-  | (INT1
-  | TINYINT
-  | INT2
-  | SMALLINT
-  | INT2VECTOR
-  | OIDVECTOR
-  | ACLITEM
-  | INT4
-  | INT
-  | INTEGER
-  | INT8
-  | BIGINT
-  | BIGSERIAL
-  | SERIAL
-  | SERIAL4
-  | SERIAL8)
-  ;
-
-approximate_numeric_type
-  : FLOAT precision_param?
-  | (FLOAT4
-  | REAL
-  | FLOAT8)
-  | DOUBLE PRECISION
-  ;
-
 precision_param
   : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
-  ;
-
-boolean_type
-  : BOOLEAN
-  | BOOL
-  ;
-
-datetime_type
-  : ABSTIME 
-  | DATE
-  | RELTIME
-  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | TIMETZ
-  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | TIMESTAMPTZ
-  | TINTERVAL
-  | INTERVAL interval_field? type_length?
-  ;
-  
-event_name
-  : DDL_COMMAND_START 
-  | DDL_COMMAND_END
-  | TABLE_REWRITE
-  | SQL_DROP
-  ;
-
-interval_field
-    : primary_datetime_field
-    | YEAR TO MONTH
-    | DAY TO HOUR
-    | DAY TO MINUTE
-    | DAY TO SECOND
-    | HOUR TO MINUTE
-    | HOUR TO SECOND
-    | MINUTE TO SECOND
-    ;
-
-bit_type
-  : BIT VARYING? type_length?
-  | VARBIT type_length?
-  ;
-
-binary_type
-  : BINARY VARYING? type_length?
-  | VARBINARY type_length?
   ;
 
 /*
@@ -1678,27 +1433,8 @@ unsigned_numeric_literal
   ;
 
 general_literal
-  : Character_String_Literal
-  | datetime_literal
+  : identifier? Character_String_Literal
   | truth_value
-  ;
-
-datetime_literal
-  : timestamp_literal
-  | time_literal
-  | date_literal
-  ;
-
-time_literal
-  : TIME time_string=Character_String_Literal
-  ;
-
-timestamp_literal
-  : TIMESTAMP timestamp_string=Character_String_Literal
-  ;
-
-date_literal
-  : DATE date_string=Character_String_Literal
   ;
 
 truth_value
@@ -1729,25 +1465,7 @@ other_function
   ;
 
 extract_function
-  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM vex RIGHT_PAREN
-  ;
-
-extract_field
-  : primary_datetime_field
-  | time_zone_field
-  | extended_datetime_field
-  ;
-
-primary_datetime_field
-    : YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
-    ;
-
-extended_datetime_field
-  : CENTURY | DECADE | DOW | DOY | EPOCH | ISODOW | ISOYEAR | MICROSECONDS | MILLENNIUM | MILLISECONDS | QUARTER | WEEK
-  ;
-
-time_zone_field
-  : TIMEZONE | TIMEZONE_HOUR | TIMEZONE_MINUTE
+  : EXTRACT LEFT_PAREN extract_field_string=identifier FROM vex RIGHT_PAREN
   ;
 
 system_function

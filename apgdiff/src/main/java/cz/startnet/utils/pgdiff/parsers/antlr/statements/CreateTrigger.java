@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identifier_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
@@ -91,8 +90,7 @@ public class CreateTrigger extends ParserAbstract {
             if (funcNameCtx != null){
                 IdentifierContext sch = funcNameCtx.schema;
                 String schName = sch != null ?  sch.getText() : getDefSchemaName();
-                Identifier_nontypeContext obj = funcNameCtx.identifier_nontype();
-                String objName = obj != null ? obj.getText() : funcNameCtx.name.getText();
+                String objName = funcNameCtx.identifier_nontype().getText();
                 trigger.addDep(new GenericColumn(schName, objName + "()", DbObjType.FUNCTION));
             }
         }
