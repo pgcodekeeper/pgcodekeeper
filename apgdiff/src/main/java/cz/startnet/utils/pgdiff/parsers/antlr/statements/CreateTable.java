@@ -10,10 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -100,14 +97,7 @@ public class CreateTable extends ParserAbstract {
         for (Storage_parameter_optionContext option : options){
             Schema_qualified_nameContext key = option.schema_qualified_name();
             List <IdentifierContext> optionIds = key.identifier();
-            VexContext valueContext = option.vex();
             String value = "";
-            if (valueContext != null){
-                ValueExpr vex = new ValueExpr(schemaName);
-                vex.analyze(new Vex(valueContext));
-                table.addAllDeps(vex.getDepcies());
-                value = valueContext.getText();
-            }
             String optionText = key.getText();
             if ("OIDS".equalsIgnoreCase(optionText)){
                 if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){

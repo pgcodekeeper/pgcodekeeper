@@ -25,13 +25,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
@@ -195,18 +193,6 @@ public abstract class ParserAbstract {
         }
 
         parseConstraintExpr(ctx.constr_body(), schemaName, constr);
-        if (ctx.constr_body().index_parameters() != null){
-            With_storage_parameterContext with = ctx.constr_body().index_parameters().with_storage_parameter();
-            if (with != null){
-                for (Storage_parameter_optionContext option : with.storage_parameter().storage_parameter_option()){
-                    if (option.value != null){
-                        ValueExpr vex = new ValueExpr(schemaName);
-                        vex.analyze(new Vex(option.value));
-                        constr.addAllDeps(vex.getDepcies());
-                    }
-                }
-            }
-        }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
     }

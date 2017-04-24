@@ -303,7 +303,7 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause?
+      with_storage_parameter?
     ;
     
 index_where 
@@ -780,14 +780,6 @@ usage_select_update
 create_connect_temporary_temp
     :CREATE | CONNECT | TEMPORARY | TEMP
     ;
-
-param_clause
-  : WITH LEFT_PAREN param (COMMA param)* RIGHT_PAREN
-  ;
-
-param
-  : key=identifier EQUAL value=vex
-  ;
 
 partition_by_columns
     : PARTITION BY vex (COMMA vex)*

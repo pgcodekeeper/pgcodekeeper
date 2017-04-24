@@ -11,8 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -47,14 +45,7 @@ public class CreateView extends ParserAbstract {
             for (Storage_parameter_optionContext option: options){
                 String key = option.schema_qualified_name().getText();
                 VexContext value = option.vex();
-                if (value != null) {
-                    ValueExpr vex = new ValueExpr(schema.getName());
-                    vex.analyze(new Vex(value));
-                    view.addAllDeps(vex.getDepcies());
-                    ParserAbstract.fillStorageParams(value.getText(), key , false, view);
-                } else {
-                    ParserAbstract.fillStorageParams("", key, false, view);
-                }
+                ParserAbstract.fillStorageParams(value != null ? value.getText() : "", key , false, view);
             }
         }
         if (ctx.with_check_option() != null){
