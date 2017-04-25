@@ -42,7 +42,7 @@ public abstract class AbstractExpr {
         depcies = parent.depcies;
     }
 
-    protected AbstractExprWithNmspc findCte(String cteName) {
+    protected AbstractExprWithNmspc<?> findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
     }
 

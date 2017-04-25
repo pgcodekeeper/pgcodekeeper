@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -53,7 +53,9 @@ public class CreateRewrite extends ParserAbstract {
             String schemaName) {
         if (ctx.WHERE() != null){
             VexContext exp = ctx.vex();
-            ValueExpr vex = new ValueExpr(schemaName);
+            ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
+            vex.addReference("new", null);
+            vex.addReference("old", null);
             vex.analyze(new Vex(exp));
             rule.addAllDeps(vex.getDepcies());
             return getFullCtxText(exp);
@@ -61,6 +63,8 @@ public class CreateRewrite extends ParserAbstract {
         return null;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    // allows to write a common namespace-setup code with no copy-paste for each cmd type
     public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
             PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {

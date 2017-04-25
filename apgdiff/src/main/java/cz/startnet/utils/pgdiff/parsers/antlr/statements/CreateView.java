@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -32,7 +33,7 @@ public class CreateView extends ParserAbstract {
         PgView view = new PgView(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            UtilExpr.analyze(ctx.v_query, new Select(schema.getName()), view);
+            UtilExpr.analyze(new SelectStmt(ctx.v_query), new Select(schema.getName()), view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {

@@ -151,8 +151,7 @@ public class ValueExpr extends AbstractExpr {
                 if (arrayb != null) {
                     subOperands = addVexCtxtoList(subOperands, arrayb.vex());
                 } else {
-                    new Select(this).analyze(
-                            array.array_query().table_subquery().select_stmt());
+                    new Select(this).analyze(array.array_query().table_subquery().select_stmt());
                 }
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 addTypeDepcy(typeCoercion.data_type());
