@@ -79,10 +79,6 @@ public interface UIConsts {
     }
 
     interface PG_EDIT_PREF {
-        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
     }
 
@@ -152,7 +148,8 @@ public interface UIConsts {
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONPROJECT = "/icons/project.png"; //$NON-NLS-1$
+        String ICONREMOTE = "/icons/remote.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$

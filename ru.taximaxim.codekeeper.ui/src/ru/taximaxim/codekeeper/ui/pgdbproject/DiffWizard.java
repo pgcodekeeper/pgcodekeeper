@@ -24,7 +24,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -244,7 +243,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false, DiffSide.LEFT);
+        diffTable = new DiffTableViewer(container, false);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 480;
         gd.heightHint = 360;

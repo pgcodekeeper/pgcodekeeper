@@ -163,7 +163,6 @@ public final class Messages extends NLS {
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;
-    public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;

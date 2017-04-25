@@ -77,7 +77,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -107,7 +106,6 @@ public class DiffTableViewer extends Composite {
     private final Image iSideRight;
 
     private final boolean viewOnly;
-    private final DiffSide projSide;
     private final Set<TreeElement> elements = new HashSet<>();
     private final DiffContentProvider provider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
@@ -143,17 +141,18 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, DiffSide projSide) {
+    public DiffTableViewer(Composite parent, boolean viewOnly) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
-        this.projSide = projSide;
 
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONEDIT)));
-        iSideLeft = Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE);
-        iSideRight = Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD);
+        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONPROJECT)));
+        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONREMOTE)));
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -316,7 +315,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public ISelection getSelection() {
-                return new DepcyStructuredSelection(dbProject, dbRemote, DiffTableViewer.this.projSide,
+                return new DepcyStructuredSelection(dbProject, dbRemote,
                         (IStructuredSelection) super.getSelection());
             }
         };
@@ -394,7 +393,7 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote, projSide).open();
+                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote).open();
             }
         });
 
@@ -498,7 +497,12 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                return ((TreeElement) element).getSide().toString();
+                switch (((TreeElement) element).getSide()) {
+                case BOTH: return "edit";
+                case LEFT: return "project";
+                case RIGHT: return "remote";
+                default: return null;
+                }
             }
 
             @Override

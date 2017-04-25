@@ -79,7 +79,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -506,7 +505,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
-                                ProjectEditorDiffer.notifyDbChanged(dbInfo);
                             } else if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 depcyInput.getDependenciesFromOutput(output);
                             }

@@ -16,8 +16,6 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
 
     private BooleanFieldEditor prjUpdateIsBackLight;
     private ColorFieldEditor prjUpdateBackLightColor;
-    private BooleanFieldEditor dbUpdateIsBackLight;
-    private ColorFieldEditor prjDbBackLightColor;
 
     public ProjectEditorPrefPage() {
         super(GRID);
@@ -30,23 +28,6 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
 
     @Override
     protected void createFieldEditors() {
-        prjUpdateIsBackLight =
-                new BooleanFieldEditor(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT,
-                        Messages.pgProjectEditor_is_prj_update_backlight, getFieldEditorParent());
-        addField(prjUpdateIsBackLight);
-
-        prjUpdateBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT,
-                Messages.ProjectEditorPrefPage_project_color, getFieldEditorParent());
-        addField(prjUpdateBackLightColor);
-
-        dbUpdateIsBackLight =
-                new BooleanFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT,
-                        Messages.pgProjectEditor_is_db_update_backlight, getFieldEditorParent());
-        addField(dbUpdateIsBackLight);
-
-        prjDbBackLightColor = new ColorFieldEditor(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT,
-                Messages.ProjectEditorPrefPage_database_color, getFieldEditorParent());
-        addField(prjDbBackLightColor);
 
         addField( new ComboFieldEditor(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS,
                 Messages.generalPrefPage_perspective_changing_status, new String[][] {

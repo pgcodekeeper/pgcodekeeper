@@ -58,7 +58,6 @@ public abstract class DiffPresentationPane extends Composite {
     /**
      * should be true for commit, false for diff script
      */
-    private final DiffSide projSide;
     protected final ProjectEditorDiffer projEditor;
     protected final IPreferenceStore mainPrefs;
     protected final PgDbProject proj;
@@ -77,13 +76,12 @@ public abstract class DiffPresentationPane extends Composite {
     private final DiffTableViewer diffTable;
     private final DiffPaneViewer diffPane;
 
-    public DiffPresentationPane(Composite parent, DiffSide projSide,
-            IPreferenceStore mainPrefs, PgDbProject proj, ProjectEditorDiffer projEditor) {
+    public DiffPresentationPane(Composite parent, IPreferenceStore mainPrefs,
+            PgDbProject proj, ProjectEditorDiffer projEditor) {
         super(parent, SWT.NONE);
 
         this.setLayout(new GridLayout());
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        this.projSide = projSide;
         this.proj = proj;
         this.mainPrefs = mainPrefs;
         this.projEditor = projEditor;
@@ -166,7 +164,7 @@ public abstract class DiffPresentationPane extends Composite {
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false, projSide);
+        diffTable = new DiffTableViewer(sashOuter, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -202,7 +200,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
         });
 
-        diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, projSide);
+        diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
     }
 
     public void addSyncedPane(DiffPresentationPane pane) {
@@ -219,7 +217,7 @@ public abstract class DiffPresentationPane extends Composite {
     }
 
     private void openElementInEditor(TreeElement el) {
-        if (el != null && (el.getSide() == projSide || el.getSide() == DiffSide.BOTH)) {
+        if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
                 projEditor.getSite().getPage().openEditor(
                         new FileEditorInput(proj.getProject().getFile(

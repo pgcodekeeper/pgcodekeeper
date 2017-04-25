@@ -10,14 +10,11 @@ public class DepcyStructuredSelection extends StructuredSelection {
 
     final DbSource dbProject;
     final DbSource dbRemote;
-    final DiffSide projSide;
+    final DiffSide projSide = DiffSide.LEFT;
 
-    public DepcyStructuredSelection(DbSource dbProject, DbSource dbRemote, DiffSide projSide,
-            IStructuredSelection sel) {
+    public DepcyStructuredSelection(DbSource dbProject, DbSource dbRemote, IStructuredSelection sel) {
         super(sel.toList());
-
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
-        this.projSide = projSide;
     }
 }

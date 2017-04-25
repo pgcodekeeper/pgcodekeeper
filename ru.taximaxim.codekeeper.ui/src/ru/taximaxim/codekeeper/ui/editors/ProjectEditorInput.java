@@ -20,7 +20,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class ProjectEditorInput extends PlatformObject implements IEditorInput, IPersistableElement {
 
     private final String projName;
-    private boolean switchToDiffTab;
     private PgCodekeeperUIException ex;
 
     public ProjectEditorInput(String projectName) {
@@ -37,14 +36,6 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     public void setError(PgCodekeeperUIException ex) {
         this.ex = ex;
-    }
-
-    public boolean getSwitchToDiffTab() {
-        return switchToDiffTab;
-    }
-
-    public void setSwitchToDiffTab(boolean switchToDiffTab) {
-        this.switchToDiffTab = switchToDiffTab;
     }
 
     @Override
