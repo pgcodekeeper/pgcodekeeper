@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -64,7 +63,6 @@ public class TablesReader extends JdbcReader {
         Long[] colTypCollation = (Long[]) res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[]) res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
-        String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
 
         for (int i = 0; i < colNumbers.length; i++) {
@@ -108,12 +106,6 @@ public class TablesReader extends JdbcReader {
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()) {
                 column.setComment(loader.args, PgDiffUtils.quoteString(comment));
-            }
-
-            // SEQUENCES
-            if (colSeq[i] != null && !colSeq[i].isEmpty()) {
-                QNameParser seq = new QNameParser(colSeq[i]);
-                t.addDep(new GenericColumn(seq.getSchemaName(schemaName), seq.getFirstName(), DbObjType.SEQUENCE));
             }
 
             // COLUMNS PRIVILEGES

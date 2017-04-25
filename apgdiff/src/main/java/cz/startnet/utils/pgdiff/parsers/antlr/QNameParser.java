@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -50,6 +51,10 @@ public final class QNameParser {
     }
 
     private final List<IdentifierContext> parts;
+
+    public List<IdentifierContext> getIds() {
+        return Collections.unmodifiableList(parts);
+    }
 
     public QNameParser(String schemaQualifiedName) {
         this.parts = AntlrParser

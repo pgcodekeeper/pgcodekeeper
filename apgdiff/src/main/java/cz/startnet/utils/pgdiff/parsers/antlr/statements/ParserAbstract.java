@@ -7,10 +7,8 @@ import java.util.function.Function;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
@@ -20,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -30,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -79,8 +75,7 @@ public abstract class ParserAbstract {
         return ctx.getStart().getInputStream().getText(interval);
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
-            String defSchema) {
+    protected PgColumn getColumn(Table_column_definitionContext colCtx, String defSchema) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(colCtx.column_name.getText());
@@ -92,11 +87,6 @@ public abstract class ParserAbstract {
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
-                    String sequence = getSequence(column_constraint.constr_body().default_expr);
-                    if (sequence != null) {
-                        sequences.add(sequence);
-                    }
-
                     ValueExpr vex = new ValueExpr(defSchema);
                     vex.analyze(new Vex(column_constraint.constr_body().default_expr));
                     col.addAllDeps(vex.getDepcies());
@@ -110,29 +100,6 @@ public abstract class ParserAbstract {
         }
 
         return col;
-    }
-
-    protected String getSequence(VexContext default_expr) {
-        SeqNameListener name = new SeqNameListener();
-        ParseTreeWalker.DEFAULT.walk(name, default_expr);
-        return name.getSeqName();
-    }
-
-    private static class SeqNameListener extends SQLParserBaseListener {
-
-        private String seqName;
-
-        @Override
-        public void enterFunction_call(Function_callContext ctx) {
-            GeneralLiteralSearch seq = new GeneralLiteralSearch();
-            ParseTreeWalker.DEFAULT.walk(seq, ctx);
-            if (seq.isFound()) {
-                seqName = seq.getSeqName();
-            }
-        }
-        public String getSeqName() {
-            return seqName;
-        }
     }
 
     public static void fillArguments(Function_argsContext function_argsContext,

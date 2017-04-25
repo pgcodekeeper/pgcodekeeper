@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -36,20 +35,13 @@ public class CreateTable extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgTable table = new PgTable(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        List<String> sequences = new ArrayList<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx, schema.getName())) {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition() != null) {
-                table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                        getDefSchemaName()));
+                table.addColumn(getColumn(colCtx.table_column_definition(), getDefSchemaName()));
             }
-        }
-        for (String seq : sequences) {
-            QNameParser seqName = new QNameParser(seq);
-            table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
-                    seqName.getFirstName(), DbObjType.SEQUENCE));
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {

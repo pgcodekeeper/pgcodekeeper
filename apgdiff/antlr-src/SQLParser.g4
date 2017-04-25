@@ -20,7 +20,7 @@ qname_parser
   ;
 
 function_args_parser
-  : function_args EOF
+  : schema_qualified_name? function_args EOF
   ;
 
 vex_eof

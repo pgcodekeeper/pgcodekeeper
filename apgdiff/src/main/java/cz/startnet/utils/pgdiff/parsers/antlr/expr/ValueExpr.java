@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
@@ -16,15 +18,20 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
@@ -70,8 +77,28 @@ public class ValueExpr extends AbstractExpr {
         boolean doneWork = true;
 
         if (vex.castExpression() != null && dataType != null) {
-            // TODO check reg*** casts and try getting additional depcies from literal
             addTypeDepcy(dataType);
+
+            Predefined_typeContext pType = dataType.predefined_type();
+            Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
+            IdentifierContext typeSchema = customType == null ? null : customType.identifier();
+            // TODO remove when tokens are refactored
+            boolean regclassToken = pType.REGCLASS() != null;
+            if (regclassToken ||
+                    dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
+                    (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
+                // check simple built-in types for reg*** casts
+                Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
+                Unsigned_value_specificationContext value;
+                General_literalContext literal;
+                if (castPrimary != null
+                        && (value = castPrimary.unsigned_value_specification()) != null
+                        && (literal = value.general_literal()) != null
+                        && literal.Character_String_Literal() != null) {
+                    regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
+                            regclassToken ? "regclass" : customType.getText());
+                }
+            }
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
@@ -228,5 +255,36 @@ public class ValueExpr extends AbstractExpr {
                 }
             }
         }
+    }
+
+    private void regCast(String s, String regcast) {
+        DbObjType regcastType;
+        switch (regcast) {
+        case "regproc":
+            regcastType = DbObjType.FUNCTION;
+            break;
+        case "regclass":
+            regcastType = DbObjType.TABLE;
+            break;
+        case "regtype":
+            regcastType = DbObjType.TYPE;
+            break;
+
+        case "regnamespace":
+            addSchemaDepcy(new QNameParser(s).getIds());
+            return;
+
+        case "regprocedure":
+            addFunctionSigDepcy(s);
+            return;
+
+        case "regoper":
+        case "regoperator":
+            // TODO pending DbObjType.OPERATOR
+        default:
+            return;
+        }
+
+        addObjectDepcy(new QNameParser(s).getIds(), regcastType);
     }
 }
