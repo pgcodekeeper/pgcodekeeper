@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -89,7 +90,8 @@ public class CreateTable extends ParserAbstract {
         for (Storage_parameter_optionContext option : options){
             Schema_qualified_nameContext key = option.schema_qualified_name();
             List <IdentifierContext> optionIds = key.identifier();
-            String value = "";
+            VexContext valueCtx = option.vex();
+            String value = valueCtx == null ? "" : valueCtx.getText();
             String optionText = key.getText();
             if ("OIDS".equalsIgnoreCase(optionText)){
                 if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){
