@@ -35,7 +35,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class Select extends AbstractExprWithNmspc {
+public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
     /**
      * Flags for proper FROM (subquery) analysis.<br>
@@ -64,16 +64,18 @@ public class Select extends AbstractExprWithNmspc {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
-    @Override
     public List<String> analyze(ParserRuleContext ruleCtx) {
-        SelectStmt select = null;
         if (ruleCtx instanceof Select_stmtContext) {
-            select = new SelectStmt((Select_stmtContext) ruleCtx);
+            return analyze(new SelectStmt((Select_stmtContext) ruleCtx));
         } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
-            select = new SelectStmt((Select_stmt_no_parensContext) ruleCtx);
+            return analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
         } else {
-            return null;
+            throw new IllegalStateException("Not a select ctx");
         }
+    }
+
+    @Override
+    public List<String> analyze(SelectStmt select) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);

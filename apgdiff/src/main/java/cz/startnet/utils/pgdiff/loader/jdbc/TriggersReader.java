@@ -5,8 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -147,11 +146,9 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(definition, p -> {
-            When_triggerContext whenCtx = p.sql().statement(0).schema_statement().schema_create()
-                    .create_trigger_statement().when_trigger();
-            return whenCtx == null ? null : ParserAbstract.getFullCtxText(whenCtx.when_expr);
-        }, t::setWhen);
+        loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
+                .schema_create().create_trigger_statement().when_trigger(),
+                (whenCtx) -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
 
         // COMMENT
         String comment = res.getString("comment");

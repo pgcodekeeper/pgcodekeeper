@@ -2,15 +2,13 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 
-public class Delete extends AbstractExprWithNmspc {
+public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
     protected Delete(AbstractExpr parent) {
         super(parent);
@@ -21,8 +19,7 @@ public class Delete extends AbstractExprWithNmspc {
     }
 
     @Override
-    public List<String> analyze(ParserRuleContext ruleCtx) {
-        Delete_stmt_for_psqlContext delete = (Delete_stmt_for_psqlContext) ruleCtx;
+    public List<String> analyze(Delete_stmt_for_psqlContext delete) {
         With_clauseContext with = delete.with_clause();
         if (with != null) {
             analyzeCte(with);

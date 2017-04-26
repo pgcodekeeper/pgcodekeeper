@@ -1,10 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
@@ -16,9 +12,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -39,20 +35,14 @@ public class CreateTable extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgTable table = new PgTable(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
-        List<String> sequences = new ArrayList<>();
+        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         for (Table_column_defContext colCtx : ctx.table_col_def) {
-            for (PgConstraint constr : getConstraint(colCtx)) {
+            for (PgConstraint constr : getConstraint(colCtx, schema.getName())) {
                 table.addConstraint(constr);
             }
             if (colCtx.table_column_definition() != null) {
-                table.addColumn(getColumn(colCtx.table_column_definition(), sequences,
-                        getDefSchemaName()));
+                table.addColumn(getColumn(colCtx.table_column_definition(), getDefSchemaName()));
             }
-        }
-        for (String seq : sequences) {
-            QNameParser seqName = new QNameParser(seq);
-            table.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
-                    seqName.getFirstName(), DbObjType.SEQUENCE));
         }
         if (ctx.parent_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.parent_table.names_references().name) {
@@ -79,7 +69,7 @@ public class CreateTable extends ParserAbstract {
         if (storage != null) {
             With_storage_parameterContext parameters = storage.with_storage_parameter();
             if (parameters != null) {
-                parseOptions(parameters.storage_parameter().storage_parameter_option(),table);
+                parseOptions(parameters.storage_parameter().storage_parameter_option(), table, schema.getName());
             }
             if (storage.WITHOUT() != null) {
                 table.setHasOids(false);
@@ -92,17 +82,16 @@ public class CreateTable extends ParserAbstract {
         if (!explicitOids && oids != null) {
             table.setHasOids(true);
         }
-        getSchemaSafe(ids, db.getDefaultSchema()).addTable(table);
+        schema.addTable(table);
         return table;
     }
 
-
-    private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table){
+    private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table, String schemaName){
         for (Storage_parameter_optionContext option : options){
             Schema_qualified_nameContext key = option.schema_qualified_name();
             List <IdentifierContext> optionIds = key.identifier();
-            VexContext valueContext = option.vex();
-            String value = valueContext != null ? valueContext.getText() : "";
+            VexContext valueCtx = option.vex();
+            String value = valueCtx == null ? "" : valueCtx.getText();
             String optionText = key.getText();
             if ("OIDS".equalsIgnoreCase(optionText)){
                 if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){

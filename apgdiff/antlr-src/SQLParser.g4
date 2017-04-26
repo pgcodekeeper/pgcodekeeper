@@ -20,7 +20,7 @@ qname_parser
   ;
 
 function_args_parser
-  : function_args EOF
+  : schema_qualified_name? function_args EOF
   ;
 
 vex_eof
@@ -165,7 +165,7 @@ table_action
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET storage_parameter
-    | RESET LEFT_PAREN with_storage_parameter (COMMA with_storage_parameter)* RIGHT_PAREN
+    | RESET storage_parameter
     | INHERIT parent_table=schema_qualified_name
     | NO INHERIT parent_table=schema_qualified_name
     | OF type_name=schema_qualified_name
@@ -303,7 +303,7 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause?
+      with_storage_parameter?
     ;
     
 index_where 
@@ -780,14 +780,6 @@ usage_select_update
 create_connect_temporary_temp
     :CREATE | CONNECT | TEMPORARY | TEMP
     ;
-
-param_clause
-  : WITH LEFT_PAREN param (COMMA param)* RIGHT_PAREN
-  ;
-
-param
-  : key=identifier EQUAL value=vex
-  ;
 
 partition_by_columns
     : PARTITION BY vex (COMMA vex)*

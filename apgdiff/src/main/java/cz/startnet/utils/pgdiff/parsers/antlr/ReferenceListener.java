@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -29,7 +27,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
@@ -39,9 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -84,9 +79,6 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             getConstraint(colCtx);
-            if (colCtx.table_column_definition()!=null) {
-                getColumn(colCtx.table_column_definition());
-            }
         }
 
         fillObjDefinition(schemaName, name, DbObjType.TABLE, ctx.name
@@ -451,12 +443,6 @@ public class ReferenceListener extends SQLParserBaseListener {
                         .getStartIndex(), 0, ctx.name.getStart()
                         .getLine());
             }
-            if (tablAction.table_column_definition() != null) {
-                getColumn(tablAction.table_column_definition());
-            }
-            if (tablAction.set_def_column() != null) {
-                getSequence(tablAction.set_def_column().expression);
-            }
             if (tablAction.tabl_constraint != null) {
                 getTableConstraint(tablAction.tabl_constraint);
             }
@@ -716,37 +702,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
 
-    private void getColumn(Table_column_definitionContext colCtx) {
-        if (colCtx.column_name != null) {
-            for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-                if (column_constraint.constr_body().default_expr != null) {
-                    getSequence(column_constraint.constr_body().default_expr);
-                }
-            }
-        }
-    }
-
-    private void getSequence(VexContext default_expr) {
-        SeqName name = new SeqName();
-        new ParseTreeWalker().walk(name, default_expr);
-    }
-
     public List<FunctionBodyContainer> getFunctionBodies() {
         return funcBodies;
-    }
-
-    private class SeqName extends SQLParserBaseListener {
-
-        @Override
-        public void enterFunction_call(Function_callContext ctx) {
-            GeneralLiteralSearch seq = new GeneralLiteralSearch();
-            new ParseTreeWalker().walk(seq, ctx);
-            if (seq.isFound()) {
-                addObjReference(getDefSchemaName(), seq.getSeqName(),
-                        DbObjType.SEQUENCE, StatementActions.NONE, seq
-                        .getContext().getStart().getStartIndex() + 1,
-                        0, seq.getContext().getStart().getLine());
-            }
-        }
     }
 }
