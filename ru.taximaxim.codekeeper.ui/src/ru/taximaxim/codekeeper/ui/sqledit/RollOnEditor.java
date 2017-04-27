@@ -4,24 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map.Entry;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.PixelConverter;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
@@ -64,7 +56,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -171,29 +162,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         if (input instanceof DepcyFromPSQLOutput) {
             final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
             initializeDepcyInput(in);
-            try {
-                if (this.getSourceViewer() != null) {
-                    in.updateScript(this.getSourceViewer().getDocument().get());
-                }
-                IRunnableWithProgress runParse = new IRunnableWithProgress() {
 
-                    @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                    InterruptedException {
-                        try {
-                            in.updateParser(SubMonitor.convert(monitor));
-                            monitor.done();
-                        } catch (CoreException | IOException | LicenseException ex) {
-                            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
-                        }
-                    }
-                };
-                new ProgressMonitorDialog(site.getShell()).run(true, true, runParse);
-            } catch (InvocationTargetException e) {
-                throw new PartInitException(e.getLocalizedMessage(), e);
-            } catch (InterruptedException ex) {
-                throw new PartInitException(
-                        Messages.RollOnEditor_parsing_cancelled + ex.getLocalizedMessage(), ex);
+            if (this.getSourceViewer() != null) {
+                in.updateScript(this.getSourceViewer().getDocument().get());
             }
         }
         // после создания парсера вызвать создание основного редактора
@@ -207,14 +178,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         IEditorInput input = getEditorInput();
         if (input instanceof DepcyFromPSQLOutput) {
             DepcyFromPSQLOutput in = (DepcyFromPSQLOutput) input;
-            try {
-                in.updateScript(this.getSourceViewer().getDocument().get());
-                in.updateParser(progressMonitor);
-            } catch (CoreException | IOException | LicenseException e) {
-                Log.log(Log.LOG_ERROR, "Cannot parse Editor input"); //$NON-NLS-1$
-            } catch (InterruptedException ex) {
-                progressMonitor.setCanceled(true);
-            }
+            in.updateScript(this.getSourceViewer().getDocument().get());
         }
     }
 
@@ -241,7 +205,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
         this.connectionTimezone = differ.getTimezone();
         this.scriptFileEncoding = depcyInput.getScriptFileEncoding();
-        this.externalDbInfo = depcyInput.dbinfo;
+        this.externalDbInfo = depcyInput.getDbinfo();
     }
 
     protected Control createDialogArea(final Composite parent) {
@@ -415,38 +379,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
                         new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
                     }
-                    if (depcyInput != null) {
-                        showAddDepcyDialog();
-                    }
                     setRunButtonText(RUN_SCRIPT_LABEL);
                 }
                 isRunning = false;
             }
         });
-    }
-
-    private void showAddDepcyDialog() {
-        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY) && depcyInput != null && !depcyInput.isAddDepcyEmpty()) {
-            MessageBox mb = new MessageBox(parentComposite.getShell(), SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
-            mb.setText(Messages.sqlScriptDialog_psql_dependencies);
-            mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
-                    depcyInput.depcyToString() + UIConsts._NL);
-            String repeats = depcyInput.getRepeatedDepcy();
-            if (repeats.length() > 0) {
-                mb.setMessage(mb.getMessage() +
-                        Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + repeats);
-            }
-            mb.setMessage(mb.getMessage() + UIConsts._NL +
-                    Messages.SqlScriptDialog_add_it_to_script);
-            if (mb.open() == SWT.OK) {
-                List<Entry<PgStatement, PgStatement>> saveToRestore = depcyInput
-                        .addAdditionalDepciesSource();
-                Job job = differ.getDifferJob();
-                job.addJobChangeListener(new DiffReGenerationListener(saveToRestore));
-                job.setUser(true);
-                job.schedule();
-            }
-        }
     }
 
     private boolean checkDangerDdl() {
@@ -507,8 +444,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
                                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
-                            } else if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                                depcyInput.getDependenciesFromOutput(output);
                             }
                         } catch (IOException e) {
                             throw new IllegalStateException(e.getLocalizedMessage(), e);
@@ -518,7 +453,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         }
                     }
                 };
-            }else{
+            } else {
                 Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(" "))); //$NON-NLS-1$
@@ -608,64 +543,15 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
                 ProcessBuilder pb = new ProcessBuilder(command);
                 sr.launchAndRedirect(pb);
-                if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                    depcyInput.getDependenciesFromOutput(sr.getStorage());
-                }
             } catch (IOException ex) {
                 if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                    depcyInput.getDependenciesFromOutput(sr.getStorage());
-                    if (!depcyInput.isAddDepcyEmpty()) {
-                        // actually parsed some depcies, do not rethrow
-                        return;
-                    }
+                    return;
                 }
                 throw new IllegalStateException(ex.getLocalizedMessage(), ex);
             } finally {
                 // request UI change: button label changed
                 afterScriptFinished(sr.getStorage());
             }
-        }
-    }
-
-    private class DiffReGenerationListener extends JobChangeAdapter {
-
-        private final List<Entry<PgStatement, PgStatement>> saveToRestore;
-
-        DiffReGenerationListener(
-                List<Entry<PgStatement, PgStatement>> saveToRestore) {
-            this.saveToRestore = saveToRestore;
-        }
-
-        @Override
-        public void done(IJobChangeEvent event) {
-            if (event.getResult().isOK()) {
-                UiSync.exec(parentComposite, new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (parentComposite.isDisposed()) {
-                            return;
-                        }
-                        checkAskDanger();
-                    }
-                });
-            }
-        }
-
-        private void checkAskDanger() {
-            if (checkDangerDdl()) {
-                if (showDangerWarning() != SWT.OK) {
-                    differ.setAdditionalDepciesSource(saveToRestore);
-                    return;
-                } else {
-                    RollOnEditor.this.getSourceViewer().getTextWidget().setBackground(colorPink);
-                }
-            }
-            IEditorInput input = RollOnEditor.this.getEditorInput();
-            if (input instanceof DepcyFromPSQLOutput) {
-                ((DepcyFromPSQLOutput)input).updateScript(differ.getDiffDirect());
-            }
-            RollOnEditor.this.setInput(input);
         }
     }
 
@@ -710,10 +596,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partActivated(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
     public void partBroughtToTop(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
@@ -738,21 +626,26 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partDeactivated(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
     public void partOpened(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
     public void partHidden(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
     public void partVisible(IWorkbenchPartReference partRef) {
+        // no imp
     }
 
     @Override
     public void partInputChanged(IWorkbenchPartReference partRef) {
+        // no imp
     }
 }

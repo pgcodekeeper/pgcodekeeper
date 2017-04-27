@@ -17,7 +17,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -45,14 +44,6 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                 }
             }
         }
-        PgDbParser projParser = null;
-        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        if (input instanceof DepcyFromPSQLOutput) {
-            DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
-            parser = dep.getParser();
-            projParser = PgDbParser.getParser(dep.getProject());
-            funcBodies.addAll(dep.getFuncBodies());
-        }
 
         if (parser == null) {
             return null;
@@ -64,7 +55,6 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             refs.addAll(parser.getObjsForPath(file.getLocation().toOSString()));
         } else {
             Map<String, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
-            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);
             refs = PgDbParser.getAll(reference);
         }
         for (PgObjLocation obj : refs) {
@@ -75,13 +65,6 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                 if (def != null) {
                     fillHyperLink(input, hyperlinks, obj, def, message,
                             def.getLineNumber());
-                }
-                if (projParser != null) {
-                    PgObjLocation projDef = projParser.getDefinitionForObj(obj);
-                    if (projDef != null) {
-                        fillHyperLink(input, hyperlinks, obj, projDef, message,
-                                projDef.getLineNumber());
-                    }
                 }
             }
         }

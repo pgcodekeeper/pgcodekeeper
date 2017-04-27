@@ -692,8 +692,7 @@ class DiffPage extends DiffPresentationPane {
     }
 
     private void showEditor(Differ differ) throws PartInitException {
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                PgDatabase.listPgObjects(dbRemote.getDbObject()));
+        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj);
         input.setDbinfo(storePicker.getDbInfo());
         projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }

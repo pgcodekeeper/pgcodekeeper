@@ -115,9 +115,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     PgDbParser getParser() {
-        if (input instanceof DepcyFromPSQLOutput) {
-            return ((DepcyFromPSQLOutput) input).getParser();
-        } else if (input instanceof IFileEditorInput) {
+        if (input instanceof IFileEditorInput) {
             IProject proj = ((IFileEditorInput)input).getFile().getProject();
             try {
                 if (proj.hasNature(NATURE.ID)) {

@@ -96,11 +96,10 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public static PgDbParser getRollOnParser(InputStream input,
-            String scriptFileEncoding, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies)
+            String scriptFileEncoding, IProgressMonitor monitor)
                     throws InterruptedException, IOException, LicenseException {
         PgDbParser rollOnParser = new PgDbParser();
-        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodies);
+        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding);
         return rollOnParser;
     }
 
@@ -204,8 +203,7 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     private void fillRefsFromInputStream(InputStream input,
-            IProgressMonitor monitor, String scriptFileEncoding,
-            List<FunctionBodyContainer> funcBodies)
+            IProgressMonitor monitor, String scriptFileEncoding)
                     throws InterruptedException, IOException, LicenseException {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
