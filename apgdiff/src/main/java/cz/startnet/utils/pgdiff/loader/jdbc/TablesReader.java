@@ -75,10 +75,10 @@ public class TablesReader extends JdbcReader {
         Long ofTypeOid = res.getLong("of_type");
 
         if(ofTypeOid != 0){
-            JdbcType jdbcTypes = loader.cachedTypesByOid.get(ofTypeOid);
-            String ofType = jdbcTypes.getFullName(schemaName);
+            JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
+            String ofType = jdbcOfType.getFullName(schemaName);
             t.setOfType(ofType);
-            t.addDep(new GenericColumn(schemaName, ofType, DbObjType.TYPE));
+            jdbcOfType.addTypeDepcy(t);
         }
 
         for (int i = 0; i < colNumbers.length; i++) {
