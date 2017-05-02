@@ -1,7 +1,12 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +17,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -57,6 +67,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -73,6 +85,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
@@ -95,7 +108,6 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
 
 public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -681,6 +693,9 @@ class DiffPage extends DiffPresentationPane {
                             } catch (PartInitException ex) {
                                 ExceptionNotifier.notifyDefault(
                                         Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
+                            }  catch (CoreException | IOException ex ) {
+                                ExceptionNotifier.notifyDefault(
+                                        Messages.ProjectEditorDiffer_error_creating_file, ex);
                             }
                         }
                     });
@@ -691,10 +706,31 @@ class DiffPage extends DiffPresentationPane {
         job.schedule();
     }
 
-    private void showEditor(Differ differ) throws PartInitException {
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj);
-        input.setDbinfo(storePicker.getDbInfo());
-        projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
+    private void showEditor(Differ differ) throws PartInitException, CoreException, IOException  {
+        projEditor.getSite().getPage().openEditor(createScriptFile(differ, proj.getProject()), EDITOR.ROLLON);
+    }
+
+    private IEditorInput createScriptFile(Differ differ, IProject iProject) throws CoreException, IOException {
+        boolean mode = mainPrefs.getBoolean(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+        String name = LocalDateTime.now() + " From Project To " + //$NON-NLS-1$
+                storePicker.getDbInfo().getDbName() + ".sql"; //$NON-NLS-1$
+        IFolder folder;
+        if (mode){
+            folder = iProject.getFolder("MIGRATION"); //$NON-NLS-1$
+            if (!folder.exists()){
+                folder.create(IResource.NONE, true, null);
+            }
+            IFile file = folder.getFile(name);
+            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes());
+            file.create(source, IResource.NONE, null);
+            Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
+            return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
+        } else {
+            Path path = Files.createTempFile(Files.createTempDirectory("."), name + "_", ".sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            Files.write(path, differ.getDiffDirect().getBytes());
+            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
+            return new FileStoreEditorInput(externalFile);
+        }
     }
 
     @Override

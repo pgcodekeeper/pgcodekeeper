@@ -32,37 +32,39 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     // TODO: нужен метод который будет проверять валидность идентификатора с
     // точки зрения SQL а не Java
     private static final class WordDetector implements IWordDetector {
+        @Override
         public boolean isWordPart(char c) {
             return Character.isJavaIdentifierPart(c);
         }
 
+        @Override
         public boolean isWordStart(char c) {
             return !Character.isWhitespace(c);
         }
     }
-    
+
     private final ISharedTextColors fSharedColors;
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
-    private IPreferenceStore prefs;
-    
+    private final IPreferenceStore prefs;
+
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
             IPreferenceStore store) {
         super(store);
-        fSharedColors= sharedColors;        
+        fSharedColors= sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
-    
+
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
         return new SQLEditorTextHover();
     }
-    
+
     // Отображает всю строку при наведении на левую полосу редактора
     @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new IAnnotationHover() {
-            
+
             @Override
             public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
                 IDocument document= sourceViewer.getDocument();
@@ -76,12 +78,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             }
         };
     }
-    
+
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(
-                sqlSyntax), SQLEditorCommonDocumentProvider.SQL_CODE);
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
@@ -93,7 +94,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
         return SQLEditorCommonDocumentProvider.SQL_PARTITIONING;
     }
-    
+
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
@@ -101,23 +102,22 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT
         };
     }
-    
+
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
-        
+
         addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT);
         addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT);
         addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
-        
+
         return reconciler;
     }
-    
+
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
-        @SuppressWarnings("unchecked")
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null); //$NON-NLS-1$
         return targets;
@@ -131,7 +131,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     private RuleBasedScanner createRecipeScanner() {
         RuleBasedScanner recipeScanner= new RuleBasedScanner();
-        
+
         IRule[] rules= {
                 sqlSyntaxRules()
         };
@@ -140,7 +140,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     private WordRule sqlSyntaxRules() {
-        
+
         // Define a word rule and add SQL keywords to it.
         WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE, true);
         for (String reservedWord : sqlSyntax.getReservedwords()) {
@@ -174,14 +174,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         return wordRule;
     }
-    
+
     private TextAttribute getTextAttribute(IPreferenceStore prefs, SQLEditorStatementTypes type) {
         SQLEditorSyntaxModel sm = new SQLEditorSyntaxModel(type, prefs).load();
         int style = 0 | (sm.isBold() ? SWT.BOLD : 0)
                 | (sm.isItalic() ? SWT.ITALIC: 0)
                 | (sm.isUnderline() ? SWT.UNDERLINE_SINGLE: 0)
                 | (sm.isUnderline() ? TextAttribute.UNDERLINE: 0)
-                | (sm.isStrikethrough() ? TextAttribute.STRIKETHROUGH: 0); 
+                | (sm.isStrikethrough() ? TextAttribute.STRIKETHROUGH: 0);
         return new TextAttribute(fSharedColors.getColor(sm.getColor()), null, style);
     }
 
@@ -191,14 +191,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 getTextAttribute(prefs, SQLEditorStatementTypes.SINGLE_LINE_COMMENTS)));
         return commentScanner;
     }
-    
+
     private RuleBasedScanner createMultiCommentScanner() {
         RuleBasedScanner commentScanner= new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
                 getTextAttribute(prefs, SQLEditorStatementTypes.MULTI_LINE_COMMENTS)));
         return commentScanner;
     }
-    
+
     private RuleBasedScanner createCharacterStringLiteralCommentScanner() {
         RuleBasedScanner commentScanner= new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(

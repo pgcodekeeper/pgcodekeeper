@@ -24,6 +24,7 @@ import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -106,7 +107,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 getSharedColors(), getPreferenceStore()));
 
         this.input = input;
-        if (input instanceof IFileEditorInput) {
+        if (input instanceof IFileEditorInput || input instanceof FileStoreEditorInput) {
             setDocumentProvider(new SQLEditorFileDocumentProvider());
         } else if (input instanceof IStorageEditorInput) {
             setDocumentProvider(new SQLEditorStorageDocumentProvider());

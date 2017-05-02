@@ -47,18 +47,6 @@ final class SQLEditorTextHover implements ITextHover {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
                     region.setComment(loc.getComment());
                     return region;
-                } else {
-                    if (input instanceof DepcyFromPSQLOutput) {
-                        PgDbParser projParser = PgDbParser
-                                .getParser(((DepcyFromPSQLOutput) input)
-                                        .getProject());
-                        loc = projParser.getDefinitionForObj(obj);
-                        if (loc != null) {
-                            SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
-                            region.setComment(loc.getComment());
-                            return region;
-                        }
-                    }
                 }
             }
         }

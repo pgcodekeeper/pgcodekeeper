@@ -48,11 +48,18 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
                 Messages.ProjectEditorPrefPage_database_color, getFieldEditorParent());
         addField(prjDbBackLightColor);
 
+        addField( new ComboFieldEditor(PG_EDIT_PREF.DELETE_SCRIPT_AFTER_CLOSE,
+                Messages.ProjectEditorPrefPage_script_deleting_status, new String[][] {
+            {Messages.ProjectEditorPrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
+            {Messages.ProjectEditorPrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
+            {Messages.ProjectEditorPrefPage_status_ask_delete, MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
+
         addField( new ComboFieldEditor(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS,
                 Messages.generalPrefPage_perspective_changing_status, new String[][] {
-            {Messages.prespective_change_status_always,MessageDialogWithToggle.ALWAYS},
-            {Messages.prespective_change_status_never,MessageDialogWithToggle.NEVER},
-            {Messages.prespective_change_status_ask,MessageDialogWithToggle.PROMPT}},
+            {Messages.prespective_change_status_always, MessageDialogWithToggle.ALWAYS},
+            {Messages.prespective_change_status_never, MessageDialogWithToggle.NEVER},
+            {Messages.prespective_change_status_ask, MessageDialogWithToggle.PROMPT}},
                 getFieldEditorParent()));
     }
 }

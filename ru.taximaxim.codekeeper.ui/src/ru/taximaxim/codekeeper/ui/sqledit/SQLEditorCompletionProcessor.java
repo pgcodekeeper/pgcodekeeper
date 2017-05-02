@@ -24,11 +24,9 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
-    private final SqlPostgresSyntax sqlSyntax;
     private String text = ""; //$NON-NLS-1$
 
-    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
-        this.sqlSyntax = sqlSyntax;
+    public SQLEditorCompletionProcessor() {
     }
 
     @Override
@@ -72,11 +70,6 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         if (page instanceof SQLEditor) {
             PgDbParser parser = ((SQLEditor)page).getParser();
             loc.addAll(parser.getAllObjDefinitions());
-            if (page instanceof RollOnEditor) {
-                loc.addAll(PgDbParser.getParser(
-                        ((DepcyFromPSQLOutput) page.getEditorInput())
-                        .getProject()).getAllObjDefinitions());
-            }
         }
         for (PgObjLocation obj : loc) {
             Image img = Activator.getDbObjImage(obj.getObjType());

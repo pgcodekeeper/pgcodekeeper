@@ -48,8 +48,8 @@ IWorkbenchPreferencePage {
     @Override
     protected void createFieldEditors() {
         BooleanFieldEditor usePsqlDepcy = new BooleanFieldEditor(
-                DB_UPDATE_PREF.USE_PSQL_DEPCY,
-                Messages.generalPrefPage_use_psql_depcy_on_generating_script,
+                DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
+                Messages.DbUpdatePrefPage_create_script_project_directory,
                 getFieldEditorParent());
         addField(usePsqlDepcy);
 

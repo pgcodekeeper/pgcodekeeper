@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map.Entry;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -39,7 +40,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.MessageBox;
@@ -47,13 +47,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -87,11 +88,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
     private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
 
-    private XmlHistory history;
+    private final XmlHistory history;
 
     private Differ differ;
-    private List<Entry<PgStatement, PgStatement>> oldDepcy;
-    private DepcyFromPSQLOutput depcyInput;
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private Color colorPink;
@@ -106,11 +105,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private volatile boolean isRunning;
     private Thread scriptThread;
-    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
-    private String connectionTimezone = ApgdiffConsts.UTC;
+    private static final String SCRIPT_FILE_ENCODING = ApgdiffConsts.UTF_8;
+    private static final String CONNECTION_TIMEZONE = ApgdiffConsts.UTC;
 
     private Button runScriptBtn;
-    private Button saveAsBtn;
+    private IEditorInput input;
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -158,54 +157,18 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        // открыть с помощью кодкипера на каком-то скрипте
-        if (input instanceof DepcyFromPSQLOutput) {
-            final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
-            initializeDepcyInput(in);
-
-            if (this.getSourceViewer() != null) {
-                in.updateScript(this.getSourceViewer().getDocument().get());
-            }
-        }
-        // после создания парсера вызвать создание основного редактора
         super.init(site, input);
-        getEditorSite().getWorkbenchWindow().getPartService().addPartListener(this);
-    }
-
-    @Override
-    public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
-        IEditorInput input = getEditorInput();
-        if (input instanceof DepcyFromPSQLOutput) {
-            DepcyFromPSQLOutput in = (DepcyFromPSQLOutput) input;
-            in.updateScript(this.getSourceViewer().getDocument().get());
-        }
+        getSite().getPage().addPartListener(this);
+        this.input = input;
     }
 
     @Override
     public void dispose() {
-        getEditorSite().getWorkbenchWindow().getPartService().removePartListener(this);
+        getSite().getPage().removePartListener(this);
         if (colorPink != null) {
             colorPink.dispose();
         }
         super.dispose();
-    }
-
-    private void initializeDepcyInput(DepcyFromPSQLOutput input) {
-        depcyInput = input;
-        this.differ = depcyInput.getDiffer();
-
-        this.oldDepcy = differ.getAdditionalDepciesSource();
-        if (oldDepcy != null) {
-            differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
-        }
-        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
-                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
-        this.connectionTimezone = differ.getTimezone();
-        this.scriptFileEncoding = depcyInput.getScriptFileEncoding();
-        this.externalDbInfo = depcyInput.getDbinfo();
     }
 
     protected Control createDialogArea(final Composite parent) {
@@ -327,10 +290,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 runButtonMethod();
             }
         });
-
-        saveAsBtn = new Button(comp, SWT.PUSH);
-        saveAsBtn.setText(Messages.sqlScriptDialog_save_as);
-        saveAsBtn.addSelectionListener(new SaveButtonHandler());
     }
 
     private int showDangerWarning() {
@@ -439,7 +398,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         try{
                             JdbcConnector connector = new JdbcConnector(
                                     jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    scriptFileEncoding, connectionTimezone);
+                                    SCRIPT_FILE_ENCODING, CONNECTION_TIMEZONE);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
@@ -490,32 +449,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         runScriptBtn.getParent().layout();
     }
 
-    private class SaveButtonHandler extends SelectionAdapter {
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            String textRetrieved = RollOnEditor.this.getSourceViewer().getDocument().get();
-            FileDialog fd = new FileDialog(parentComposite.getShell(), SWT.SAVE);
-            fd.setText(Messages.sqlScriptDialog_save_as);
-            fd.setOverwrite(true);
-            fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            String scriptFileName = fd.open();
-
-            if (scriptFileName != null) {
-                File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, scriptFileEncoding)) {
-                    writer.write(textRetrieved);
-                } catch (IOException ex) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.sqlScriptDialog_error_saving_script_to_file, ex);
-                    return;
-                }
-
-                ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
-            }
-        }
-    }
-
     private class RunScriptExternal implements Runnable {
 
         private final String textRetrieved;
@@ -531,7 +464,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get();
-                try (PrintWriter writer = new PrintWriter(outFile, scriptFileEncoding)) {
+                try (PrintWriter writer = new PrintWriter(outFile, SCRIPT_FILE_ENCODING)) {
                     writer.write(textRetrieved);
                 }
 
@@ -544,9 +477,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 ProcessBuilder pb = new ProcessBuilder(command);
                 sr.launchAndRedirect(pb);
             } catch (IOException ex) {
-                if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                    return;
-                }
                 throw new IllegalStateException(ex.getLocalizedMessage(), ex);
             } finally {
                 // request UI change: button label changed
@@ -606,14 +536,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
-        if (depcyInput != null) {
-            if (isRunning) {
-                /*MessageBox errorDialog = new MessageBox(this.getEditorSite()
-                        .getShell(), SWT.OK);
-                errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
-                errorDialog.open();*/
-            } else {
-                differ.setAdditionalDepciesSource(oldDepcy);
+        if (partRef.getTitle() == getEditorInput().getName()){
+            if (!isRunning) {
                 try {
                     history.addHistoryEntry(cmbScript.getText());
                 } catch (IOException e) {
@@ -621,6 +545,36 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             Messages.SqlScriptDialog_error_adding_command_history, e);
                 }
             }
+            if (input instanceof IFileEditorInput
+                    && input.toString().contains("/MIGRATION/")){ //$NON-NLS-1$
+                askDeleteScript();
+            }
+        }
+    }
+
+    private void askDeleteScript() {
+        String mode = mainPrefs.getString(PG_EDIT_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+        // if select "YES" with toggle
+        if (mode.equals(MessageDialogWithToggle.ALWAYS)){
+            deleteFile();
+            // if not select "NO" with toggle, show choice message dialog
+        } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
+            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
+                    Messages.RollOnEditor_script_delete_dialog_title, Messages.RollOnEditor_script_delete_dialog_message,
+                    Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+            if(dialog.getReturnCode() == IDialogConstants.YES_ID){
+                deleteFile();
+            }
+        }
+    }
+
+    private void deleteFile() {
+        try {
+            IFile s = ((IFileEditorInput)input).getFile();
+            s.delete(true, null);
+            Log.log(Log.LOG_INFO, "Deleting file " + s.getName()); //$NON-NLS-1$
+        } catch (CoreException ex) {
+            Log.log(Log.LOG_ERROR, "Can't delete file", ex); //$NON-NLS-1$
         }
     }
 

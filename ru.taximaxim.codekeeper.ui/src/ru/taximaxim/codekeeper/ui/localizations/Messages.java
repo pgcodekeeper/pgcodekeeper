@@ -217,6 +217,8 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
+    public static String DbUpdatePrefPage_create_script_project_directory;
+
     public static String DepcyGraphView_project;
 
     public static String DepcyGraphView_remote;
@@ -404,6 +406,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
+    public static String ProjectEditorDiffer_error_creating_file;
+
     public static String ProjectEditorDiffer_error_opening_script_editor;
 
     public static String ProjectEditorDiffer_error_refreshing_project;
@@ -418,6 +422,14 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_project_color;
 
+    public static String ProjectEditorPrefPage_script_deleting_status;
+
+    public static String ProjectEditorPrefPage_status_always_delete;
+
+    public static String ProjectEditorPrefPage_status_ask_delete;
+
+    public static String ProjectEditorPrefPage_status_never_delete;
+
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
@@ -428,6 +440,10 @@ public final class Messages extends NLS {
     public static String RollOnEditor_jdbc_success;
 
     public static String RollOnEditor_parsing_cancelled;
+
+    public static String RollOnEditor_script_delete_dialog_message;
+
+    public static String RollOnEditor_script_delete_dialog_title;
 
     public static String RollOnEditor_selected_text_error;
 

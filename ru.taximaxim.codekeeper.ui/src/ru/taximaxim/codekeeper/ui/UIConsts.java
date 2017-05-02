@@ -68,7 +68,7 @@ public interface UIConsts {
 
     interface DB_UPDATE_PREF {
         String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
-        String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
+        String CREATE_SCRIPT_IN_PROJECT = "prefCreateScriptInProject"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
@@ -84,6 +84,7 @@ public interface UIConsts {
         String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
         String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String DELETE_SCRIPT_AFTER_CLOSE = "prefDeleteScriptAfterClose"; //$NON-NLS-1$
     }
 
     public enum DBSources {

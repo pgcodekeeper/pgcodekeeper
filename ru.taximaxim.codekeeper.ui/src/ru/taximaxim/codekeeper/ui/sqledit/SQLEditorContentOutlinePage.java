@@ -85,9 +85,6 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                     refs = parser.getObjsForPath(((FileEditorInput)inputElement)
                             .getFile().getLocation().toOSString());
                 }
-                if (inputElement instanceof DepcyFromPSQLOutput) {
-                    refs = parser.getAllObjReferences();
-                }
                 for (PgObjLocation loc : refs) {
                     if (loc.getAction() != StatementActions.NONE) {
                         segments.add(new Segments(loc));
@@ -137,8 +134,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         ISelection selection = event.getSelection();
         if (selection.isEmpty()) {
             fTextEditor.resetHighlightRange();
-        }
-        else {
+        } else {
             Segments segment = (Segments) ((IStructuredSelection) selection)
                     .getFirstElement();
             int start = segment.getOffset();

@@ -63,7 +63,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                 String message = obj.getObjName();
                 PgObjLocation def = parser.getDefinitionForObj(obj);
                 if (def != null) {
-                    fillHyperLink(input, hyperlinks, obj, def, message,
+                    fillHyperLink(hyperlinks, obj, def, message,
                             def.getLineNumber());
                 }
             }
@@ -76,12 +76,12 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         return hyperlinks.toArray(new IHyperlink[hyperlinks.size()]);
     }
 
-    private void fillHyperLink(IEditorInput input, List<IHyperlink> hyperlinks,
+    private void fillHyperLink(List<IHyperlink> hyperlinks,
             PgObjLocation obj, PgObjLocation objDefinition, String text,
             int lineNumber) {
         hyperlinks.add(new SQLEditorHyperLink(new Region(objDefinition
                 .getOffset(), objDefinition.getObjLength()), new Region(obj
                         .getOffset(), obj.getObjLength()), text, objDefinition
-                .getFilePath(), input, lineNumber));
+                .getFilePath(), lineNumber));
     }
 }
