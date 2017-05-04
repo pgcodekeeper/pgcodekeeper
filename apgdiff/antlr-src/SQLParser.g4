@@ -636,12 +636,33 @@ with_check_option
 
 create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name
-        (OF type_name=identifier)?
-        LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
-        (INHERITS parent_table= column_references)?
-        storage_parameter_oid?
-        on_commit?
-        table_space?
+    define_table
+    storage_parameter_oid?
+    on_commit?
+    table_space?
+  ;
+
+define_table
+   : define_columns 
+   | define_type
+   ;
+
+define_columns
+  : LEFT_PAREN 
+      (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? 
+    RIGHT_PAREN
+    (INHERITS parent_table=column_references)?
+  ;
+
+define_type
+  : OF type_name=data_type
+    list_of_type_column_def?
+  ;
+
+list_of_type_column_def
+  : LEFT_PAREN 
+      (table_col_def+=table_of_type_column_def (COMMA table_col_def+=table_of_type_column_def)*) 
+    RIGHT_PAREN
   ;
 
 table_column_def
@@ -649,13 +670,18 @@ table_column_def
        | tabl_constraint=constraint_common
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
-
-table_column_definition
-    : column_name=identifier datatype=data_type collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
+    
+table_of_type_column_def
+    : table_of_type_column_definition
+       | tabl_constraint=constraint_common
     ;
 
-with_options
-    : WITH OPTIONS
+table_column_definition
+    : column_name=identifier datatype=data_type collate_name=collate_identifier? (colmn_constraint+=constraint_common)*
+    ;
+    
+table_of_type_column_definition
+    : column_name=identifier WITH OPTIONS (colmn_constraint+=constraint_common)*
     ;
 
 like_option

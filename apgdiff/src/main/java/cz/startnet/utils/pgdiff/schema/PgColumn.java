@@ -58,15 +58,19 @@ public class PgColumn extends PgStatementWithSearchPath {
      * @return full definition of the column
      */
     public String getFullDefinition(final boolean addDefaults,
-            StringBuilder separateDefault) {
+            StringBuilder separateDefault, boolean isTableOfType) {
         final StringBuilder sbDefinition = new StringBuilder();
-
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
-        sbDefinition.append(' ');
-        sbDefinition.append(type);
-        if (collation != null) {
-            sbDefinition.append(" COLLATE ").append(collation);
+
+        if(isTableOfType){
+            sbDefinition.append(" WITH OPTIONS");
+        } else {
+            sbDefinition.append(' ');
+            sbDefinition.append(type);
+            if (collation != null) {
+                sbDefinition.append(" COLLATE ").append(collation);
+            }
         }
 
         if (defaultValue != null && !defaultValue.isEmpty()) {
@@ -93,6 +97,7 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         return sbDefinition.toString();
     }
+
 
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
@@ -145,7 +150,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getAlterTable())
         .append("\n\tADD COLUMN ")
-        .append(getFullDefinition(false, defaultStatement))
+        .append(getFullDefinition(false, defaultStatement, false))
         .append(';');
         if (defaultStatement.length() > 0) {
             sbSQL.append("\n\n")
@@ -305,7 +310,6 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes);
         }
-
         return eq;
     }
 

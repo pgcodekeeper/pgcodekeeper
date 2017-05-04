@@ -65,6 +65,15 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
 
+        Long ofTypeOid = res.getLong("of_type");
+
+        if(ofTypeOid != 0){
+            JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
+            String ofType = jdbcOfType.getFullName(schemaName);
+            t.setOfType(ofType);
+            jdbcOfType.addTypeDepcy(t);
+        }
+
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1 || !colIsLocal[i]) {
                 // пропускать не локальные (Inherited)  и системные (System) колонки
@@ -72,7 +81,10 @@ public class TablesReader extends JdbcReader {
             }
 
             PgColumn column = new PgColumn(colNames[i]);
-            column.setType(colTypeName[i]);
+            if(ofTypeOid == 0){
+                column.setType(colTypeName[i]);
+            }
+
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             // unbox
@@ -115,7 +127,14 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            t.addColumn(column);
+            if(ofTypeOid != 0){
+                if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
+                        || !column.getNullValue()){
+                    t.addColumnOfType(column);
+                }
+            } else {
+                t.addColumn(column);
+            }
         }
 
         // INHERITS

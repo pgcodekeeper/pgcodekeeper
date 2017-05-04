@@ -265,6 +265,7 @@ public class DepcyResolver {
         default:
             break;
         }
+        
         PgSchema oldSchema = null;
         if (statement instanceof PgStatementWithSearchPath) {
             oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
