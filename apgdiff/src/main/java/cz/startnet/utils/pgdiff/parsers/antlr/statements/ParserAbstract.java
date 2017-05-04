@@ -274,8 +274,10 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (!PgDiffUtils.isValidId(value, false, false)) {
-                // only quote non-ids; pg_dump behavior
+            if (optionContainer.getStatementType() != DbObjType.COLUMN
+                    && !PgDiffUtils.isValidId(value, false, false)) {
+                // only quote non-ids, do not quote columns
+                // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);
             }
             fillStorageParams (value, option, isToast, optionContainer);

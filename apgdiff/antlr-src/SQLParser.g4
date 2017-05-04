@@ -151,9 +151,9 @@ table_action
         | drop_def
         | ((SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
-        | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
+        | set_attribute_option
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
-        | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
+        | set_storage ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -172,6 +172,21 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
+    ;
+
+set_attribute_option
+    : SET storage_parameter
+    ;
+    
+set_storage
+    : SET STORAGE storage_option
+    ;
+
+storage_option
+    : PLAIN 
+    | EXTERNAL 
+    | EXTENDED 
+    | MAIN
     ;
 
 validate_constraint

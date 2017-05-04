@@ -64,6 +64,9 @@ public class TablesReader extends JdbcReader {
         String[] colCollationName = (String[]) res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
+        String[] colOptions = (String[]) res.getArray("col_options").getArray();
+        String[] colStorages = (String[]) res.getArray("col_storages").getArray();
+        String[] colDefaultStorages = (String[]) res.getArray("col_default_storages").getArray();
 
         Long ofTypeOid = res.getLong("of_type");
 
@@ -86,6 +89,29 @@ public class TablesReader extends JdbcReader {
             }
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
+
+            if(colOptions[i] != null){
+                ParserAbstract.fillStorageParams(colOptions[i].split(","), column, false);
+            }
+
+            if(!colStorages[i].equals(colDefaultStorages[i])){
+                switch(colStorages[i]) {
+                case "x":
+                    column.setStorage("EXTENDED");
+                    break;
+                case "m":
+                    column.setStorage("MAIN");
+                    break;
+                case "e":
+                    column.setStorage("EXTERNAL");
+                    break;
+                case "p":
+                    column.setStorage("PLAIN");
+                    break;
+                default:
+                    break;
+                }
+            }
 
             // unbox
             long collation = colCollation[i];

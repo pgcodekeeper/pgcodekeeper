@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -65,6 +66,25 @@ public class AlterTable extends ParserAbstract {
                     col.addAllDeps(vex.getDepcies());
                 }
             }
+
+            if(tablAction.set_attribute_option() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    for (Storage_parameter_optionContext option :
+                        tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
+                        col.addOption(option.storage_param.getText(),
+                                option.value == null ? "" : option.value.getText());
+                    }
+                }
+            }
+
+            if(tablAction.set_storage() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    col.setStorage(tablAction.set_storage().storage_option().getText());
+                }
+            }
+
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schema.getName());
                 if (tablAction.not_valid != null) {
