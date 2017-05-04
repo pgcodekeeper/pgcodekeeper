@@ -1,11 +1,8 @@
-ALTER TABLE testtable
-	ALTER COLUMN field1 SET STORAGE EXTENDED;
+-- WARNING: Column testtable.field1 in new table has no STORAGE set but in old table storage was set. Unable to determine STORAGE type.
 
-ALTER TABLE testtable
-	ALTER COLUMN field2 SET STORAGE EXTENDED;
+-- WARNING: Column testtable.field2 in new table has no STORAGE set but in old table storage was set. Unable to determine STORAGE type.
 
-ALTER TABLE testtable
-	ALTER COLUMN field3 SET STORAGE MAIN;
+-- WARNING: Column testtable.field3 in new table has no STORAGE set but in old table storage was set. Unable to determine STORAGE type.
 
-ALTER TABLE testtable
+ALTER TABLE ONLY testtable
 	ALTER COLUMN field4 SET STORAGE MAIN;

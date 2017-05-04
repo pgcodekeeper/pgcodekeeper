@@ -157,6 +157,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
+        if (!first) {
+            sbSQL.append('\n');
+        }
         sbSQL.append(')');
         if (inherits != null && !inherits.isEmpty()) {
             sbSQL.append("\nINHERITS (");
