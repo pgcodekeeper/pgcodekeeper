@@ -712,8 +712,7 @@ class DiffPage extends DiffPresentationPane {
 
     private IEditorInput createScriptFile(Differ differ, IProject iProject) throws CoreException, IOException {
         boolean mode = mainPrefs.getBoolean(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
-        String name = LocalDateTime.now() + " From Project To " + //$NON-NLS-1$
-                storePicker.getDbInfo().getDbName() + ".sql"; //$NON-NLS-1$
+        String name = LocalDateTime.now() + " migration script.sql"; //$NON-NLS-1$
         IFolder folder;
         if (mode){
             folder = iProject.getFolder("MIGRATION"); //$NON-NLS-1$

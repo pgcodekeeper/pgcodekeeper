@@ -1,9 +1,15 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -14,15 +20,19 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.Log;
 
 // разобраться с вычислением частей документа и выводить части в аутлайн
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
@@ -51,64 +61,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         viewer = getTreeViewer();
-        viewer.setContentProvider(new ITreeContentProvider() {
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-                if (newInput != null) {
-                    IDocument document = fDocumentProvider.getDocument(newInput);
-                    if (document != null) {
-                        //document.addPositionCategory("SEGMENTS");
-                        // document.addPositionUpdater(fPositionUpdater);
-                        // parse(document);
-                    }
-                }
-            }
-
-            @Override
-            public void dispose() {
-
-            }
-
-            @Override
-            public Object[] getElements(Object inputElement) {
-                List<Segments> segments = new ArrayList<>();
-                List<PgObjLocation> refs = new ArrayList<>();
-                PgDbParser parser = null;
-                if (fTextEditor instanceof SQLEditor) {
-                    parser  = ((SQLEditor)fTextEditor).getParser();
-                }
-                if (parser == null) {
-                    return segments.toArray();
-                }
-                if (inputElement instanceof FileEditorInput) {
-                    refs = parser.getObjsForPath(((FileEditorInput)inputElement)
-                            .getFile().getLocation().toOSString());
-                }
-                for (PgObjLocation loc : refs) {
-                    if (loc.getAction() != StatementActions.NONE) {
-                        segments.add(new Segments(loc));
-                    }
-                }
-                return segments.toArray();
-            }
-
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                return null;
-            }
-
-            @Override
-            public Object getParent(Object element) {
-                return null;
-            }
-
-            @Override
-            public boolean hasChildren(Object element) {
-                return false;
-            }
-        });
-
+        viewer.setContentProvider(new ContentProvider());
         viewer.setLabelProvider(new LabelProvider() {
 
             @Override
@@ -145,6 +98,72 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             } catch (IllegalArgumentException x) {
                 fTextEditor.resetHighlightRange();
             }
+        }
+    }
+
+    protected class ContentProvider implements ITreeContentProvider {
+        private static final String DBNAME = "DB_NAME_PLACEHOLDER";
+        private static final String SEGMENTS = IDocument.DEFAULT_CATEGORY; //"__java_segments";
+        private final IPositionUpdater fPositionUpdater = new DefaultPositionUpdater(SEGMENTS);
+        List<Segments> segments = new ArrayList<>();
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            if (newInput != null) {
+                IDocument document = fDocumentProvider.getDocument(newInput);
+                if (document != null) {
+                    document.addPositionCategory(SEGMENTS);
+                    document.addPositionUpdater(fPositionUpdater);
+                    parse(document);
+                }
+            }
+        }
+
+        private void parse(IDocument document) {
+
+            PgDatabase db = new PgDatabase();
+            db.setArguments(new PgDiffArguments());
+            ReferenceListener listener = new ReferenceListener(db, DBNAME);
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes());
+            try {
+                AntlrParser.parseSqlStream(stream, ApgdiffConsts.UTF_8, DBNAME, listener, new NullProgressMonitor(), 0, null);
+                List<PgObjLocation> refs = db.getObjReferences().get(DBNAME);
+                for (PgObjLocation loc : refs) {
+                    if (loc.getAction() != StatementActions.NONE) {
+                        segments.add(new Segments(loc));
+                    }
+                }
+            } catch (IOException | InterruptedException e1) {
+                Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
+            }
+        }
+
+        @Override
+        public void dispose() {
+            if (segments != null) {
+                segments.clear();
+                segments = null;
+            }
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return segments.toArray();
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            return null;
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            return false;
         }
     }
 }

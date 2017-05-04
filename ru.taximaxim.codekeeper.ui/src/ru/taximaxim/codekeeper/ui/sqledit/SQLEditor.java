@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IProject;
@@ -9,6 +12,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
@@ -31,6 +35,8 @@ import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -41,7 +47,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
 
     public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor"; //$NON-NLS-1$
-    static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
+    static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
     private Composite parentComposite;
     private SQLEditorContentOutlinePage fOutlinePage;
@@ -67,13 +73,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
     };
 
-
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (IContentOutlinePage.class.isAssignableFrom(adapter)) {
-            if (fOutlinePage != null) {
-                return adapter.cast(fOutlinePage);
-            }
+        if (IContentOutlinePage.class.isAssignableFrom(adapter) && (fOutlinePage != null)) {
+            return adapter.cast(fOutlinePage);
         }
         return super.getAdapter(adapter);
     }
@@ -85,7 +88,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         PgDbParser parser = getParser();
         if (parser != null) {
             parser.addListener(list);
-            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this);
+            fOutlinePage = new SQLEditorContentOutlinePage(getDocumentProvider(), this);
             fOutlinePage.setInput(getEditorInput());
         }
         super.createPartControl(parent);
@@ -94,9 +97,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     @Override
     protected void createActions() {
         super.createActions();
-
-        ResourceBundle bundle= ResourceBundle.getBundle(Messages.BUNDLE_NAME);
-        ContentAssistAction action= new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
+        ResourceBundle bundle = ResourceBundle.getBundle(Messages.BUNDLE_NAME);
+        ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
     }
@@ -123,6 +125,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                     return PgDbParser.getParser(proj);
                 }
             } catch (CoreException e) {
+                Log.log(e);
+            }
+        } else if (input instanceof FileStoreEditorInput){
+            IDocument document = getDocumentProvider().getDocument(input);
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes());
+            try {
+                return PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
+            } catch (InterruptedException | IOException | LicenseException e) {
                 Log.log(e);
             }
         }

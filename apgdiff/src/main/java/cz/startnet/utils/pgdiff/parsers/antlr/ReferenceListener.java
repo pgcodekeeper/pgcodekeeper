@@ -27,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_rule_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
@@ -577,13 +578,34 @@ public class ReferenceListener extends SQLParserBaseListener {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         } else {
-            offset = schemaName.length() + 1;
+            //offset = schemaName.length() + 1;
             addObjReference(null, schemaName, DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart()
                     .getLine());
         }
         addObjReference(schemaName, name, DbObjType.TRIGGER,
+                StatementActions.DROP, ctx.name.getStart().getStartIndex()
+                + offset, 0, ctx.name.getStart().getLine());
+    }
+
+    @Override
+    public void exitDrop_rule_statement(Drop_rule_statementContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        int offset=0;
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        } else {
+            //offset = schemaName.length() + 1;
+            addObjReference(null, schemaName, DbObjType.SCHEMA,
+                    StatementActions.NONE, ctx.name.getStart()
+                    .getStartIndex(), 0, ctx.name.getStart()
+                    .getLine());
+        }
+        addObjReference(schemaName, name, DbObjType.RULE,
                 StatementActions.DROP, ctx.name.getStart().getStartIndex()
                 + offset, 0, ctx.name.getStart().getLine());
     }
