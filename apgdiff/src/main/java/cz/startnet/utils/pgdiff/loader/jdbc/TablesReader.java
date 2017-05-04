@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -64,23 +63,31 @@ public class TablesReader extends JdbcReader {
         Long[] colTypCollation = (Long[]) res.getArray("col_typcollation").getArray();
         String[] colCollationName = (String[]) res.getArray("col_collationname").getArray();
         String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
-        String[] colSeq = (String[]) res.getArray("col_attseq").getArray();
         String[] colAcl = (String[]) res.getArray("col_acl").getArray();
         String[] colOptions = (String[]) res.getArray("col_options").getArray();
         String[] colStorages = (String[]) res.getArray("col_storages").getArray();
         String[] colDefaultStorages = (String[]) res.getArray("col_default_storages").getArray();
 
+        Long ofTypeOid = res.getLong("of_type");
+
+        if(ofTypeOid != 0){
+            JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
+            String ofType = jdbcOfType.getFullName(schemaName);
+            t.setOfType(ofType);
+            jdbcOfType.addTypeDepcy(t);
+        }
+
         for (int i = 0; i < colNumbers.length; i++) {
-            if (colNumbers[i] < 1) {
-                // system columns
+            if (colNumbers[i] < 1 || !colIsLocal[i]) {
+                // пропускать не локальные (Inherited)  и системные (System) колонки
                 continue;
             }
-            // пропускать не локальные колонки (Inherited)
-            if (!colIsLocal[i]) {
-                continue;
-            }
+
             PgColumn column = new PgColumn(colNames[i]);
-            column.setType(colTypeName[i]);
+            if(ofTypeOid == 0){
+                column.setType(colTypeName[i]);
+            }
+
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if(colOptions[i] != null){
@@ -139,12 +146,6 @@ public class TablesReader extends JdbcReader {
                 column.setComment(loader.args, PgDiffUtils.quoteString(comment));
             }
 
-            // SEQUENCES
-            if (colSeq[i] != null && !colSeq[i].isEmpty()) {
-                QNameParser seq = new QNameParser(colSeq[i]);
-                t.addDep(new GenericColumn(seq.getSchemaName(schemaName), seq.getFirstName(), DbObjType.SEQUENCE));
-            }
-
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
@@ -152,7 +153,14 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            t.addColumn(column);
+            if(ofTypeOid != 0){
+                if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
+                        || !column.getNullValue()){
+                    t.addColumnOfType(column);
+                }
+            } else {
+                t.addColumn(column);
+            }
         }
 
         // INHERITS

@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -24,7 +26,7 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    static final String NOT_VALID_SUFFIX = " NOT VALID";
+    static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
     private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
@@ -61,20 +63,22 @@ public class ConstraintsReader extends JdbcReader {
             break;
         }
 
-        // avoid calling parser for all constraints while decoupling NOT VALID marker from the definition string
         String definition = res.getString("definition");
-        if (definition.endsWith(NOT_VALID_SUFFIX)) {
-            definition = definition.substring(0, definition.length() - NOT_VALID_SUFFIX.length());
-            c.setNotValid(true);
-        }
-        c.setDefinition(definition);
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
+                p -> p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
+                .table_action(0), ctx -> {
+                    Constr_bodyContext body = ctx.tabl_constraint.constr_body();
+                    ParserAbstract.parseConstraintExpr(body, schemaName, c);
+                    c.setDefinition(ParserAbstract.getFullCtxText(body));
+                    c.setNotValid(ctx.not_valid != null);
+                });
+
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {
             c.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return c;
-
     }
 
     private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {

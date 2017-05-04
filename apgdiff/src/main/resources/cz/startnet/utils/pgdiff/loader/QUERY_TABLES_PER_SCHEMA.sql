@@ -16,6 +16,7 @@ WITH extension_deps AS (
 )
 
 SELECT subselectColumns.relname,
+       subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
@@ -34,7 +35,6 @@ SELECT subselectColumns.relname,
        subselectColumns.col_typcollation,
        subselectColumns.col_collationname,
        subselectColumns.col_collationnspname,
-       subselectColumns.col_attseq,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname as table_space,
@@ -46,6 +46,7 @@ SELECT subselectColumns.relname,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
+            columnsData.of_type,
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
@@ -68,11 +69,11 @@ FROM
             array_agg(columnsData.attcollation ORDER BY columnsData.attnum) AS col_collation,
             array_agg(columnsData.typcollation ORDER BY columnsData.attnum) AS col_typcollation,
             array_agg(columnsData.attcollationname ORDER BY columnsData.attnum) AS col_collationname,
-            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname,
-            array_agg(columnsData.attseq ORDER BY columnsData.attnum) AS col_attseq
+            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname
      FROM
          (SELECT c.oid,
               c.relname,
+              c.reloftype::bigint AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
@@ -95,8 +96,7 @@ FROM
               t.typcollation,
               tabsp.spcname,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
-              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname,
-              pg_catalog.pg_get_serial_sequence(quote_ident(c.relname), attr.attname) AS attseq
+              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
           JOIN pg_catalog.pg_attribute attr ON c.oid = attr.attrelid
               AND attr.attisdropped IS FALSE
@@ -113,6 +113,7 @@ FROM
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
+              columnsData.of_type,
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,
@@ -136,3 +137,4 @@ LEFT JOIN
           LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
           ORDER BY inhrelid, inh.inhseqno ) subinh
      GROUP BY subinh.inhrelid ) subselectInherits ON subselectInherits.inhrelid = subselectColumns.oid
+     

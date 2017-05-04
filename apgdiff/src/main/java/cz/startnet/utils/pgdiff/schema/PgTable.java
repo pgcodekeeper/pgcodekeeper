@@ -29,6 +29,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private static final String ALTER_TABLE = "\n\nALTER TABLE ";
 
     private final List<PgColumn> columns = new ArrayList<>();
+    private final List<PgColumn> columnsOfType = new ArrayList<>();
     private final List<Inherits> inherits = new ArrayList<>();
     private final Map<String, String> options = new LinkedHashMap<>();
     private final List<PgConstraint> constraints = new ArrayList<>();
@@ -39,6 +40,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private String tablespace;
+    private String ofType;
 
     @Override
     public DbObjType getStatementType() {
@@ -71,7 +73,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 return column;
             }
         }
+        return null;
+    }
 
+    /**
+     * Finds columnOfType according to specified columnOfType {@code name}.
+     *
+     * @param name name of the column to be searched
+     *
+     * @return found column or null if no such column has been found
+     */
+    public PgColumn getColumnOfType(final String name) {
+        for (PgColumn column : columnsOfType) {
+            if (column.getName().equals(name)) {
+                return column;
+            }
+        }
         return null;
     }
 
@@ -82,6 +99,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<PgColumn> getColumns() {
         return Collections.unmodifiableList(columns);
+    }
+
+    /**
+     * Getter for {@link #columnsOfType}. The list cannot be modified.
+     *
+     * @return {@link #columnsOfType}
+     */
+    public List<PgColumn> getColumnsOfType() {
+        return Collections.unmodifiableList(columnsOfType);
     }
 
     /**
@@ -116,68 +142,89 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append(" (\n");
 
         boolean first = true;
 
-        for (PgColumn column : columns) {
-            if (first) {
-                first = false;
-            } else {
-                sbSQL.append(",\n");
-            }
+        if(ofType != null){
+            sbSQL.append(" OF " + ofType);
 
-            sbSQL.append("\t");
-            sbSQL.append(column.getFullDefinition(false, null));
+            if (!columnsOfType.isEmpty()){
+                sbSQL.append(" (\n");
 
-            if(column.getStorage() != null){
-                sbOption.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(name))
-                .append(" ALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(column.name))
-                .append(" SET STORAGE ")
-                .append(column.getStorage())
-                .append(';');
-            }
-
-            if(!column.getOptions().isEmpty()){
-                sbOption.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(name))
-                .append(" ALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(column.name))
-                .append(" SET (");
-                for(Entry<String, String> option : column.getOptions().entrySet()){
-                    sbOption.append(option.getKey());
-                    if (!option.getValue().isEmpty()) {
-                        sbOption.append('=').append(option.getValue());
+                for (PgColumn column : columnsOfType) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        sbSQL.append(",\n");
                     }
-                    sbOption.append(", ");
+
+                    sbSQL.append("\t");
+                    sbSQL.append(column.getFullDefinition(false, null, true));
                 }
-                sbOption.append(");");
+
+                sbSQL.append("\n)");
             }
-        }
-
-        if (!first) {
-            sbSQL.append('\n');
-        }
-        sbSQL.append(')');
-        if (inherits != null && !inherits.isEmpty()) {
-            sbSQL.append("\nINHERITS (");
-
-            first = true;
-
-            for (final Inherits tableName : inherits) {
+        } else {
+            sbSQL.append(" (\n");
+            for (PgColumn column : columns) {
                 if (first) {
                     first = false;
                 } else {
-                    sbSQL.append(", ");
+                    sbSQL.append(",\n");
                 }
 
-                sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
-                        tableName.getValue());
+                sbSQL.append("\t");
+                sbSQL.append(column.getFullDefinition(false, null, false));
+
+                if(column.getStorage() != null){
+                    sbOption.append(ALTER_TABLE)
+                    .append(PgDiffUtils.getQuotedName(name))
+                    .append(" ALTER COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(column.name))
+                    .append(" SET STORAGE ")
+                    .append(column.getStorage())
+                    .append(';');
+                }
+
+                if(!column.getOptions().isEmpty()){
+                    sbOption.append(ALTER_TABLE)
+                    .append(PgDiffUtils.getQuotedName(name))
+                    .append(" ALTER COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(column.name))
+                    .append(" SET (");
+                    for(Entry<String, String> option : column.getOptions().entrySet()){
+                        sbOption.append(option.getKey());
+                        if (!option.getValue().isEmpty()) {
+                            sbOption.append('=').append(option.getValue());
+                        }
+                        sbOption.append(", ");
+                    }
+                    sbOption.append(");");
+                }
             }
 
-            sbSQL.append(")");
+            if (!first) {
+                sbSQL.append('\n');
+            }
+            sbSQL.append(')');
+            if (inherits != null && !inherits.isEmpty()) {
+                sbSQL.append("\nINHERITS (");
+
+                first = true;
+
+                for (final Inherits tableName : inherits) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        sbSQL.append(", ");
+                    }
+
+                    sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
+                            tableName.getValue());
+                }
+
+                sbSQL.append(")");
+            }
         }
 
         StringBuilder sb = new StringBuilder();
@@ -212,8 +259,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        for (PgColumn col : columns) {
-            col.appendPrivileges(sbSQL);
+        if(ofType != null){
+            for (PgColumn col : columnsOfType) {
+                col.appendPrivileges(sbSQL);
+            }
+        } else {
+            for (PgColumn col : columns) {
+                col.appendPrivileges(sbSQL);
+            }
         }
 
         for (PgColumn column : getColumnsWithStatistics()) {
@@ -234,10 +287,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             appendCommentSql(sbSQL);
         }
 
-        for (final PgColumn column : columns) {
-            if (column.getComment() != null && !column.getComment().isEmpty()) {
-                sbSQL.append("\n\n");
-                column.appendCommentSql(sbSQL);
+
+        if(ofType != null){
+            for (final PgColumn column : columnsOfType) {
+                if (column.getComment() != null && !column.getComment().isEmpty()) {
+                    sbSQL.append("\n\n");
+                    column.appendCommentSql(sbSQL);
+                }
+            }
+        } else {
+            for (final PgColumn column : columns) {
+                if (column.getComment() != null && !column.getComment().isEmpty()) {
+                    sbSQL.append("\n\n");
+                    column.appendCommentSql(sbSQL);
+                }
             }
         }
 
@@ -261,60 +324,165 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
         PgTable oldTable = this;
 
-        List<Inherits> oldInherits = oldTable.getInherits();
-        List<Inherits> newInherits = newTable.getInherits();
-        for (final Inherits tableName : oldInherits) {
-            if (!newInherits.contains(tableName)) {
+        if(ofType != null){
+            if(!oldTable.getOfType().equals(newTable.getOfType())){
+                if (newTable.getOfType() != null){
+                    sb.append("\n\nALTER TABLE ")
+                    .append(PgDiffUtils.getQuotedName(getName()))
+                    .append(" OF ")
+                    .append(newTable.getOfType())
+                    .append(';');
+                } else {
+                    sb.append("\n\nALTER TABLE ")
+                    .append(PgDiffUtils.getQuotedName(getName()))
+                    .append(" NOT OF")
+                    .append(';');
+                }
+            }
+
+            StringBuilder colsSb = new StringBuilder();
+            for(PgColumn newCol : newTable.getColumnsOfType()){
+                PgColumn oldCol = oldTable.getColumnOfType(newCol.getName());
+
+                if (oldCol != null) {
+                    String oldDefault = (oldCol.getDefaultValue() == null) ? ""
+                            : oldCol.getDefaultValue();
+                    String newDefault = (newCol.getDefaultValue() == null) ? ""
+                            : newCol.getDefaultValue();
+
+                    if (!oldDefault.equals(newDefault)) {
+                        if (newDefault.isEmpty()) {
+                            colsSb.append("\n\tALTER COLUMN ")
+                            .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                            .append(" DROP DEFAULT");
+                        } else {
+                            colsSb.append("\n\tALTER COLUMN ")
+                            .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                            .append(" SET DEFAULT ")
+                            .append(newDefault);
+                        }
+                        colsSb.append(", ");
+                    }
+
+                    if (oldCol.getNullValue() != newCol.getNullValue()) {
+                        if (newCol.getNullValue()) {
+                            colsSb.append("\n\tALTER COLUMN ")
+                            .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                            .append(" DROP NOT NULL");
+                        } else {
+                            colsSb.append("\n\tALTER COLUMN ")
+                            .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                            .append(" SET NOT NULL");
+                        }
+                        colsSb.append(", ");
+                    }
+                } else {
+                    String newDefault = (newCol.getDefaultValue() == null) ? ""
+                            : newCol.getDefaultValue();
+
+                    if(!newDefault.isEmpty()){
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                        .append(" SET DEFAULT ")
+                        .append(newDefault)
+                        .append(", ");
+                    }
+
+                    if (!newCol.getNullValue()) {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(newCol.getName()))
+                        .append(" SET NOT NULL")
+                        .append(", ");
+                    }
+                }
+            }
+
+            for(PgColumn oldCol : oldTable.getColumnsOfType()){
+                PgColumn newCol = newTable.getColumnOfType(oldCol.getName());
+
+                if (newCol == null) {
+                    String oldDefault = (oldCol.getDefaultValue() == null) ? ""
+                            : oldCol.getDefaultValue();
+
+                    if (!oldDefault.isEmpty()) {
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" DROP DEFAULT")
+                        .append(", ");
+                    }
+
+                    if(!oldCol.getNullValue()){
+                        colsSb.append("\n\tALTER COLUMN ")
+                        .append(PgDiffUtils.getQuotedName(oldCol.getName()))
+                        .append(" DROP NOT NULL")
+                        .append(", ");
+                    }
+                }
+            }
+
+            if (colsSb.length() > 0) {
+                // remove last comma
+                colsSb.setLength(colsSb.length() - 2);
+                sb.append("\n\nALTER TABLE ")
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(colsSb).append(';');
+            }
+        } else {
+            List<Inherits> oldInherits = oldTable.getInherits();
+            List<Inherits> newInherits = newTable.getInherits();
+            for (final Inherits tableName : oldInherits) {
+                if (!newInherits.contains(tableName)) {
+                    sb.append(ALTER_TABLE)
+                    .append(PgDiffUtils.getQuotedName(newTable.getName()))
+                    .append("\n\tNO INHERIT ")
+                    .append(tableName.getKey() == null ?
+                            "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+                    .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+                    .append(';');
+                }
+            }
+            for (final Inherits tableName : newInherits) {
+                if (!oldInherits.contains(tableName)) {
+                    sb.append(ALTER_TABLE)
+                    .append(PgDiffUtils.getQuotedName(newTable.getName()))
+                    .append("\n\tINHERIT ")
+                    .append(tableName.getKey() == null ?
+                            "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+                    .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+                    .append(';');
+                }
+            }
+
+            PgTable.compareOptions(oldTable, newTable, sb);
+
+            if (oldTable.getHasOids() && !newTable.getHasOids()){
+                sb.append(ALTER_TABLE)
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(" SET WITHOUT OIDS;");
+            } else if (newTable.getHasOids() && !oldTable.getHasOids()){
+                sb.append(ALTER_TABLE)
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(" SET WITH OIDS;");
+            }
+
+            if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
                 sb.append(ALTER_TABLE)
                 .append(PgDiffUtils.getQuotedName(newTable.getName()))
-                .append("\n\tNO INHERIT ")
-                .append(tableName.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+                .append("\n\tSET TABLESPACE ")
+                .append(newTable.getTablespace())
                 .append(';');
             }
-        }
-        for (final Inherits tableName : newInherits) {
-            if (!oldInherits.contains(tableName)) {
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(newTable.getName()))
-                .append("\n\tINHERIT ")
-                .append(tableName.getKey() == null ?
-                        "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-                .append(PgDiffUtils.getQuotedName(tableName.getValue()))
-                .append(';');
+
+            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+                sb.append(newTable.getOwnerSQL());
             }
-        }
 
-        PgTable.compareOptions(oldTable, newTable, sb);
+            alterPrivileges(newTable, sb);
 
-        if (oldTable.getHasOids() && !newTable.getHasOids()){
-            sb.append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(" SET WITHOUT OIDS;");
-        } else if (newTable.getHasOids() && !oldTable.getHasOids()){
-            sb.append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(" SET WITH OIDS;");
-        }
-
-        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-            sb.append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(newTable.getName()))
-            .append("\n\tSET TABLESPACE ")
-            .append(newTable.getTablespace())
-            .append(';');
-        }
-
-        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-            sb.append(newTable.getOwnerSQL());
-        }
-
-        alterPrivileges(newTable, sb);
-
-        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
-            sb.append("\n\n");
-            newTable.appendCommentSql(sb);
+            if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+                sb.append("\n\n");
+                newTable.appendCommentSql(sb);
+            }
         }
         return sb.length() > startLength;
     }
@@ -406,6 +574,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
 
+    public String getOfType() {
+        return ofType;
+    }
+
+    public void setOfType(String ofType) {
+        this.ofType = ofType;
+        resetHash();
+    }
+
     /**
      * Getter for {@link #inherits}.
      *
@@ -445,10 +622,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void addColumn(final PgColumn column) {
-        if (column == null) {
-            return;
-        }
         columns.add(column);
+        column.setParent(this);
+        resetHash();
+    }
+
+    public void addColumnOfType(final PgColumn column) {
+        columnsOfType.add(column);
         column.setParent(this);
         resetHash();
     }
@@ -532,7 +712,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && revokes.equals(table.revokes)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment())
-                    && Objects.equals(options, table.getOptions());
+                    && Objects.equals(options, table.getOptions())
+                    && columnsOfType.equals(table.columnsOfType)
+                    && Objects.equals(ofType, table.getOfType());
         }
 
         return eq;
@@ -579,18 +761,24 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
+        result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
+        result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
         return result;
     }
 
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
+        tableDst.setOfType(getOfType());
         tableDst.setTablespace(getTablespace());
         tableDst.setHasOids(getHasOids());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
+        }
+        for(PgColumn colSrc : columnsOfType) {
+            tableDst.addColumnOfType(colSrc.deepCopy());
         }
         tableDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {
