@@ -77,9 +77,9 @@ FROM
               c.relacl::text AS aclArray,
               attr.attnum::integer,
               attr.attname,
-              attr.attoptions::text,
-              attr.attstorage::text,
-              t.typstorage::text,
+              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
+              attr.attstorage,
+              t.typstorage,
               c.relhasoids,
               pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
               comments.description,

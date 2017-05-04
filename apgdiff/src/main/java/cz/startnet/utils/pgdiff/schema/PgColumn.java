@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +33,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private String collation;
     private boolean nullValue = true;
     private String storage;
-    private String defaultStorage;
     private final Map<String, String> options = new LinkedHashMap<>();
 
     @Override
@@ -55,7 +55,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     @Override
     public Map<String, String> getOptions() {
-        return options;
+        return Collections.unmodifiableMap(options);
     }
 
     @Override
@@ -134,15 +134,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     public void setStorage(final String storage) {
         this.storage = storage;
-        resetHash();
-    }
-
-    public String getDefaultStorage() {
-        return defaultStorage;
-    }
-
-    public void setDefaultStorage(String defaultStorage) {
-        this.defaultStorage = defaultStorage;
         resetHash();
     }
 
@@ -233,19 +224,15 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                         null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
-            sb.append("\n\n")
-            .append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(oldColumn.getParent().getName()))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(oldColumn.getName()))
-            .append(" SET STORAGE ")
-            .append(oldColumn.getDefaultStorage())
-            .append(';');
+            sb.append("\n\n" + MessageFormat.format(
+                    Messages.Storage_WarningUnableToDetermineStorageType,
+                    newColumn.getParent().getName(), newColumn.getName()));
         }
 
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
             sb.append("\n\n")
             .append(ALTER_TABLE)
+            .append("ONLY ")
             .append(PgDiffUtils.getQuotedName(newColumn.getParent().getName()))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(newColumn.getName()))
@@ -270,7 +257,6 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append(newColumn.getCollation());
             }
 
-            //
             PgDiffArguments arg = ((PgDatabase) newCondition.getParent().getParent().getParent()).getArguments();
 
             if (arg == null || arg.isUsingOnOff()) {
@@ -313,7 +299,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         final Map<String, String> oldOptions = oldColumn.getOptions();
         final Map<String, String> newOptions = newColumn.getOptions();
         if(!Objects.equals(oldOptions, newOptions)){
-            PgTable.compareOptions(oldOptions, newOptions, sb, getName(), DbObjType.COLUMN, PgDiffUtils.getQuotedName(newColumn.getParent().getName()));
+            PgTable.compareOptions(oldColumn, newColumn, sb);
         }
 
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
@@ -342,7 +328,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes)
-                    && Objects.equals(options, col.getOptions());
+                    && Objects.equals(options, col.options);
         }
         return eq;
     }
@@ -374,13 +360,10 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
-        colDst.setDefaultStorage(getDefaultStorage());
         colDst.setCollation(getCollation());
         colDst.setType(getType());
         colDst.setComment(getComment());
-        for(Map.Entry<String,String> entry : getOptions().entrySet()){
-            colDst.addOption(entry.getKey(), entry.getValue());
-        }
+        colDst.options.putAll(options);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv.deepCopy());
         }

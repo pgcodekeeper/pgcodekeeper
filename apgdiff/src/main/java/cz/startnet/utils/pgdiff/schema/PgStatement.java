@@ -46,6 +46,7 @@ public abstract class PgStatement implements IStatement {
         return rawStatement;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -57,6 +58,10 @@ public abstract class PgStatement implements IStatement {
         return name;
     }
 
+    @Override
+    public abstract DbObjType getStatementType();
+
+    @Override
     public PgStatement getParent() {
         return parent;
     }

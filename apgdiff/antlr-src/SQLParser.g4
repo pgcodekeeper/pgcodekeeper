@@ -175,7 +175,7 @@ table_action
     ;
 
 set_attribute_option
-    : SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
+    : SET storage_parameter
     ;
     
 set_storage

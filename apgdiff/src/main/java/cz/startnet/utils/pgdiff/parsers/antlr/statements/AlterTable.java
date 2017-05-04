@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Attribute_option_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -78,8 +78,10 @@ public class AlterTable extends ParserAbstract {
             if(tablAction.set_attribute_option() != null){
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if(col != null){
-                    for(Attribute_option_valueContext option :tablAction.set_attribute_option().attribute_option_value()){
-                        col.addOption(option.attribute_option.getText(), option.value.getText());
+                    for (Storage_parameter_optionContext option :
+                        tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
+                        col.addOption(option.storage_param.getText(),
+                                option.value == null ? "" : option.value.getText());
                     }
                 }
             }
@@ -88,7 +90,6 @@ public class AlterTable extends ParserAbstract {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if(col != null){
                     col.setStorage(tablAction.set_storage().storage_option().getText());
-                    col.setDefaultStorage(identifyDefaultStorage(col));
                 }
             }
 
@@ -182,25 +183,5 @@ public class AlterTable extends ParserAbstract {
             table.getColumn(name).setStatistics(
                     Integer.valueOf(tablAction.integer.getText()));
         }
-    }
-
-    private String identifyDefaultStorage(PgColumn column){
-        String columnType = column.getType();
-
-        String[] mainTypes = {"cidr", "inet", "numeric"};
-        for(String type : mainTypes) {
-            if(columnType.contains(type)){
-                return "MAIN";
-            }
-        }
-
-        String[] plainTypes = {"bool", "box", "circle", "date", "interval", "line", "lseg", "macaddr", "money", "pg_lsn", "point", "float", "time", "timestamp", "tsquery", "uuid", "int", "integer"};
-        for(String type : plainTypes) {
-            if(columnType.contains(type)){
-                return "PLAIN";
-            }
-        }
-
-        return "EXTENDED";
     }
 }

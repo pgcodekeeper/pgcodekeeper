@@ -70,8 +70,6 @@ public class TablesReader extends JdbcReader {
         String[] colStorages = (String[]) res.getArray("col_storages").getArray();
         String[] colDefaultStorages = (String[]) res.getArray("col_default_storages").getArray();
 
-
-
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1) {
                 // system columns
@@ -86,26 +84,7 @@ public class TablesReader extends JdbcReader {
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if(colOptions[i] != null){
-                ParserAbstract.fillStorageParams(
-                        colOptions[i].substring(1, colOptions[i].length()-1).split(","),
-                        column, false);
-            }
-
-            switch(colDefaultStorages[i]) {
-            case "x":
-                column.setDefaultStorage("EXTENDED");
-                break;
-            case "m":
-                column.setDefaultStorage("MAIN");
-                break;
-            case "e":
-                column.setDefaultStorage("EXTERNAL");
-                break;
-            case "p":
-                column.setDefaultStorage("PLAIN");
-                break;
-            default:
-                break;
+                ParserAbstract.fillStorageParams(colOptions[i].split(","), column, false);
             }
 
             if(!colStorages[i].equals(colDefaultStorages[i])){
