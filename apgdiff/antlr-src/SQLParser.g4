@@ -152,7 +152,7 @@ table_action
         | ((SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
         | set_attribute_option
-        | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
+        | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
         | set_storage ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
@@ -195,14 +195,6 @@ validate_constraint
 
 drop_constraint
     : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
-    ;
-
-attribute_option_value
-    : attribute_option=table_attribute_option EQUAL value=signed_numerical_literal
-    ;
-
-table_attribute_option
-    : N_DISTINCT | N_DISTINCT_INHERITED
     ;
 
 table_deferrable
