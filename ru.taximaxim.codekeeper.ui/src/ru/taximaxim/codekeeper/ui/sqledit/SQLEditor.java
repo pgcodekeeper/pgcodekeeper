@@ -50,7 +50,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
     private Composite parentComposite;
-    private SQLEditorContentOutlinePage fOutlinePage;
+    protected SQLEditorContentOutlinePage fOutlinePage;
     private IEditorInput input;
     private Image errorTitleImage;
 
@@ -175,8 +175,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public Image getTitleImage() {
         Image image = super.getTitleImage();
         try {
-            IResource file = ResourceUtil.getResource(getEditorInput());
-            if (file != null && file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
+            IEditorInput input = getEditorInput();
+            IResource file = ResourceUtil.getResource(input);
+            if (input.exists() && file != null
+                    && file.findMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO).length > 0) {
                 if (errorTitleImage == null) {
                     errorTitleImage = new DecorationOverlayIcon(image,
                             PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(

@@ -238,7 +238,7 @@ grant_option_for
 
 alter_sequence_statement
     : SEQUENCE (IF EXISTS)? name=schema_qualified_name
-     ( (sequence_body | RESTART (WITH? restart=identifier)?)*
+     ( (sequence_body | RESTART (WITH? restart=NUMBER_LITERAL)?)*
     | set_schema
     | owner_to
     | rename_to)

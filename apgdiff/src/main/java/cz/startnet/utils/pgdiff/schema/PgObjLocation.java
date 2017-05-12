@@ -14,6 +14,7 @@ public class PgObjLocation implements Serializable {
     private final String filePath;
     private final int lineNumber;
 
+    private String text;
     private DbObjType type;
     private String comment = "";
     private int objLength;
@@ -124,5 +125,13 @@ public class PgObjLocation implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getText() {
+        return getAction() + " " + text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 }

@@ -1,7 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -19,6 +22,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -30,9 +36,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -42,7 +46,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
@@ -51,11 +54,17 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -70,11 +79,11 @@ import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
@@ -90,10 +99,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private final XmlHistory history;
 
-    private Differ differ;
-
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-    private Color colorPink;
     private Composite parentComposite;
 
     private DbInfo externalDbInfo;
@@ -107,9 +113,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private Thread scriptThread;
     private static final String SCRIPT_FILE_ENCODING = ApgdiffConsts.UTF_8;
     private static final String CONNECTION_TIMEZONE = ApgdiffConsts.UTC;
-
     private Button runScriptBtn;
     private IEditorInput input;
+    private SourceViewer sw;
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -127,7 +133,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
         createDialogArea(parent);
 
-        SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
+        sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         sw.appendVerifyKeyListener(new VerifyKeyListener() {
 
@@ -146,11 +152,39 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
-        if (checkDangerDdl()) {
-            if (showDangerWarning() == SWT.OK) {
-                getSourceViewer().getTextWidget().setBackground(colorPink);
-            } else {
-                close(false);
+        setLineBackground();
+    }
+
+    private void setLineBackground(){
+        IDocument document = sw.getDocument();
+        IAnnotationModel model = sw.getAnnotationModel();
+        String an = "ru.taximaxim.codekeeper.ui.sql.errorannotation";
+        InputStream stream = new ByteArrayInputStream(document.get().getBytes());
+        List<PgObjLocation> refs = new ArrayList<>();
+        try {
+            PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, new NullProgressMonitor());
+            refs = parser.getAllObjReferences();
+        } catch (InterruptedException | IOException | LicenseException e) {
+            Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
+        }
+        for (PgObjLocation loc : refs) {
+            Position pos = new Position(loc.getOffset(), loc.getObjLength());
+            // drop table or column
+            if (loc.getAction() == StatementActions.DROP){
+                if (loc.getObjType() == DbObjType.TABLE){
+                    model.addAnnotation(new Annotation(an, false, "DROP TABLE statement"), pos); //$NON-NLS-1$
+                } else if (loc.getObjType() == DbObjType.COLUMN) {
+                    model.addAnnotation(new Annotation(an, false, "DROP COLUMN statement"), pos); //$NON-NLS-1$
+                }
+                // alter column or sequence
+            } else if (loc.getAction() == StatementActions.ALTER){
+                if(loc.getObjType() == DbObjType.TABLE
+                        && loc.getText().matches(DangerStatement.ALTER_COLUMN.getRegex().pattern())) {
+                    model.addAnnotation(new Annotation(an, false, "ALTER COLUMN ... TYPE statement"), pos); //$NON-NLS-1$
+                } else if (loc.getObjType() == DbObjType.SEQUENCE
+                        && loc.getText().matches(DangerStatement.RESTART_WITH.getRegex().pattern())) {
+                    model.addAnnotation(new Annotation(an, false, "ALTER SEQUENSE ... RESTART WITH statement"), pos); //$NON-NLS-1$
+                }
             }
         }
     }
@@ -165,9 +199,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     public void dispose() {
         getSite().getPage().removePartListener(this);
-        if (colorPink != null) {
-            colorPink.dispose();
-        }
         super.dispose();
     }
 
@@ -251,8 +282,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        colorPink = new Color(parent.getShell().getDisplay(), new RGB(0xff, 0xe1, 0xff));
-
         btnJdbcToggle.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -292,19 +321,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
     }
 
-    private int showDangerWarning() {
-        MessageBox mb = new MessageBox(parentComposite.getShell(), SWT.ICON_WARNING
-                | SWT.OK | SWT.CANCEL);
-        mb.setText(Messages.sqlScriptDialog_warning);
-        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
-        return mb.open();
-    }
-
     private String getReplacedString() {
         return getReplacedString(cmbScript.getText(), externalDbInfo);
     }
 
-    private static String getReplacedString(String s, DbInfo externalDbInfo) {
+    private static String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
+        String s = dbInfo;
         if (externalDbInfo != null) {
             if (externalDbInfo.getDbHost() != null) {
                 s = s.replace(DB_HOST_PLACEHOLDER, externalDbInfo.getDbHost());
@@ -345,22 +367,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
     }
 
-    private boolean checkDangerDdl() {
-        if (differ == null) {
-            return false;
-        }
-        return differ.getScript().isDangerDdl(
-                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
-                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
-                !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT));
-    }
-
     private void runButtonMethod() {
         if (!isRunning) {
             final String textRetrieved;
-            Point point = getSourceViewer().getSelectedRange();
-            IDocument document = getSourceViewer().getDocument();
+            Point point = sw.getSelectedRange();
+            IDocument document = sw.getDocument();
             if (point.y == 0){
                 textRetrieved = document.get();
             } else {
@@ -536,7 +547,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
-        if (partRef.getTitle() == getEditorInput().getName()){
+        if (partRef.getTitle() == getEditorInput().getName() && !PlatformUI.getWorkbench().isClosing()){
             if (!isRunning) {
                 try {
                     history.addHistoryEntry(cmbScript.getText());
@@ -546,7 +557,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 }
             }
             if (input instanceof IFileEditorInput
-                    && input.toString().contains("/MIGRATION/")){ //$NON-NLS-1$
+                    && ((IFileEditorInput) input).getFile().getProjectRelativePath()
+                    .toString().contains("MIGRATION/")){ //$NON-NLS-1$
                 askDeleteScript();
             }
         }

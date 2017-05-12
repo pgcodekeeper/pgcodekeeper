@@ -644,7 +644,7 @@
             </enablement>
         </decorator>
     </extension>
-    <!--extension point="org.eclipse.ui.editors.annotationTypes">
+    <extension point="org.eclipse.ui.editors.annotationTypes">
         <type
             markerSeverity="2"
             super="org.eclipse.ui.workbench.texteditor.error"
@@ -656,20 +656,21 @@
         name="pgCodeKeeper Marker Annotation"
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-            annotationType="ru.taximaxim.codekeeper.ui.sql.errorannotation"
-            includeOnPreferencePage="false"
-            overviewRulerPreferenceKey="clruler"
-            overviewRulerPreferenceValue="true"
-            colorPreferenceKey="clcolor"
-            colorPreferenceValue="255,255,0"
-            textPreferenceKey="cltext"
-            textPreferenceValue="true"
-            verticalRulerPreferenceKey="clvertical"
-            verticalRulerPreferenceValue="true"
-            textStylePreferenceKey="clstyle"
-            textStylePreferenceValue="BOX">
-        </specification>
-    </extension-->
+              annotationType="ru.taximaxim.codekeeper.ui.sql.errorannotation"
+              colorPreferenceKey="clcolor"
+              colorPreferenceValue="255,255,0"
+              includeOnPreferencePage="true"
+              label="pgCodeKeeper Dangerous Statements"
+              overviewRulerPreferenceKey="clruler"
+              overviewRulerPreferenceValue="true"
+              symbolicIcon="info"
+              textPreferenceKey="cltext"
+              textPreferenceValue="true"
+              textStylePreferenceKey="clstyle"
+              textStylePreferenceValue="BOX"
+              verticalRulerPreferenceKey="clvertical"
+              verticalRulerPreferenceValue="true"/>
+    </extension>
     <extension point="org.eclipse.ui.editors.markerUpdaters">
         <updater
             id="ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"

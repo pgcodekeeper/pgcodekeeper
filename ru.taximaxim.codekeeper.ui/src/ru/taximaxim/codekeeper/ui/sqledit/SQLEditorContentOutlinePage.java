@@ -24,17 +24,14 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
-// разобраться с вычислением частей документа и выводить части в аутлайн
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private IEditorInput fInput;
     private final AbstractDecoratedTextEditor fTextEditor;
@@ -102,8 +99,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     }
 
     protected class ContentProvider implements ITreeContentProvider {
-        private static final String DBNAME = "DB_NAME_PLACEHOLDER";
-        private static final String SEGMENTS = IDocument.DEFAULT_CATEGORY; //"__java_segments";
+        private static final String SEGMENTS = "ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"; //$NON-NLS-1$
         private final IPositionUpdater fPositionUpdater = new DefaultPositionUpdater(SEGMENTS);
         List<Segments> segments = new ArrayList<>();
 
@@ -120,21 +116,18 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         }
 
         private void parse(IDocument document) {
-
-            PgDatabase db = new PgDatabase();
-            db.setArguments(new PgDiffArguments());
-            ReferenceListener listener = new ReferenceListener(db, DBNAME);
             InputStream stream = new ByteArrayInputStream(document.get().getBytes());
+            List<PgObjLocation> refs = new ArrayList<>();
             try {
-                AntlrParser.parseSqlStream(stream, ApgdiffConsts.UTF_8, DBNAME, listener, new NullProgressMonitor(), 0, null);
-                List<PgObjLocation> refs = db.getObjReferences().get(DBNAME);
-                for (PgObjLocation loc : refs) {
-                    if (loc.getAction() != StatementActions.NONE) {
-                        segments.add(new Segments(loc));
-                    }
-                }
-            } catch (IOException | InterruptedException e1) {
+                PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, new NullProgressMonitor());
+                refs = parser.getAllObjReferences();
+            } catch (InterruptedException | IOException | LicenseException e) {
                 Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
+            }
+            for (PgObjLocation loc : refs) {
+                if (loc.getAction() != StatementActions.NONE) {
+                    segments.add(new Segments(loc));
+                }
             }
         }
 

@@ -56,6 +56,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -707,6 +708,19 @@ class DiffPage extends DiffPresentationPane {
     }
 
     private void showEditor(Differ differ) throws PartInitException, CoreException, IOException  {
+        if (differ.getScript().isDangerDdl(
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT))){
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+            mb.setText(Messages.sqlScriptDialog_warning);
+            mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+            if (mb.open() != SWT.OK){
+                return;
+            }
+        }
+
         projEditor.getSite().getPage().openEditor(createScriptFile(differ, proj.getProject()), EDITOR.ROLLON);
     }
 
