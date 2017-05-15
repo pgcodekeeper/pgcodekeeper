@@ -1074,6 +1074,13 @@ public class DiffTableViewer extends Composite {
             }
             Pattern filterRegex = useRegEx ? regExPattern : null;
             TreeElement el = (TreeElement) element;
+
+            // show all child, if parent have match
+            TreeElement parent = el.getParent();
+            if (isContainer(parent) && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+                return true;
+            }
+
             boolean found = getMatchingLocation(el.getName(), filterName, filterRegex) != null;
 
             // also show containers that have content matching current filter
@@ -1081,7 +1088,8 @@ public class DiffTableViewer extends Composite {
                 Iterator<TreeElement> it = el.getChildren().iterator();
                 while (!found && it.hasNext()) {
                     TreeElement child = it.next();
-                    found |= elements.contains(child) && select(viewer, el, child);
+                    found |= elements.contains(child) &&
+                            getMatchingLocation(child.getName(), filterName, filterRegex) != null;
                 }
             }
             return found;
