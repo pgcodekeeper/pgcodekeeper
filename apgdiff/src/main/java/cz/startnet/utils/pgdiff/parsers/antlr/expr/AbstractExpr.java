@@ -6,11 +6,16 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -37,7 +42,7 @@ public abstract class AbstractExpr {
         depcies = parent.depcies;
     }
 
-    protected AbstractExprWithNmspc findCte(String cteName) {
+    protected AbstractExprWithNmspc<?> findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
     }
 
@@ -120,5 +125,19 @@ public abstract class AbstractExpr {
         for (IdentifierContext col : cols) {
             depcies.add(new GenericColumn(schemaName, tableName, col.getText(), DbObjType.COLUMN));
         }
+    }
+
+    protected void addFunctionSigDepcy(String signature) {
+        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
+        Function_args_parserContext sig = p.function_args_parser();
+        List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
+        depcies.add(new GenericColumn(QNameParser.getSchemaName(ids, schema),
+                PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
+                ParserAbstract.getFullCtxText(sig.function_args()),
+                DbObjType.FUNCTION));
+    }
+
+    protected void addSchemaDepcy(List<IdentifierContext> ids) {
+        depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
     }
 }

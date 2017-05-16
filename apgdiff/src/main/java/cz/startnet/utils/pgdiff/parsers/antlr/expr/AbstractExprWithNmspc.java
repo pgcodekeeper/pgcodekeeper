@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -21,7 +19,12 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public abstract class AbstractExprWithNmspc extends AbstractExpr {
+/**
+ * @author levsha_aa
+ *
+ * @param <T> analyzed expression, should be extension of ParserRuleContext or a rulectx wrapper class
+ */
+public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
 
     /**
      * The local namespace of this Select.<br>
@@ -59,7 +62,7 @@ public abstract class AbstractExprWithNmspc extends AbstractExpr {
     }
 
     @Override
-    protected AbstractExprWithNmspc findCte(String cteName) {
+    protected AbstractExprWithNmspc<?> findCte(String cteName) {
         return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
@@ -213,5 +216,5 @@ public abstract class AbstractExprWithNmspc extends AbstractExpr {
         }
     }
 
-    public abstract List<String> analyze(ParserRuleContext ruleCtx);
+    public abstract List<String> analyze(T ruleCtx);
 }

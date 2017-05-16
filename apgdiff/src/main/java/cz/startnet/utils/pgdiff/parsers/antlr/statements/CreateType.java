@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.v4.runtime.Token;
@@ -52,7 +51,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr, new ArrayList<String>(), getDefSchemaName()));
+            type.addAttr(getColumn(attr, getDefSchemaName()));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
         for (Token enume : ctx.enums) {
