@@ -282,8 +282,8 @@ public abstract class ParserAbstract {
             String schemaName = schema;
             if (schemaCtx != null){
                 schemaName = schemaCtx.getText();
-                if ("pg_catalog".equalsIgnoreCase(schemaName)
-                        || "information_schema".equalsIgnoreCase(schemaName)) {
+                if ("pg_catalog".equals(schemaName)
+                        || "information_schema".equals(schemaName)) {
                     return;
                 }
             }

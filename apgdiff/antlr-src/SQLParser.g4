@@ -31,14 +31,12 @@ vex_eof
 
 statement
   : data_statement
-   /*| data_change_statement*/
   | schema_statement
   | script_statement
   ;
 
 data_statement
   : select_stmt
-//| copy_statement
   ;
 
   script_statement
@@ -52,31 +50,6 @@ data_statement
   | (NOT)? DEFERRABLE
   ;
 
-/*
-copy_statement
-    : COPY (table_name=schema_qualified_name column_references?
-           | ( query=select_stmt ))
-        (FROM | TO) (filename=identifier | STDIN)
-        (WITH? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
-    ;
-    
-copy_option:
-    FORMAT format_name=identifier
-    | OIDS (boolean_val=truth_value)?
-    | DELIMITER delimiter_character=identifier
-    | NULL null_string=identifier
-    | HEADER (boolean_val=truth_value)?
-    | QUOTE_CHAR quote_character=identifier
-    | ESCAPE escape_character=identifier
-    | FORCE_QUOTE (column_references | MULTIPLY)
-    | FORCE_NOT_NULL column_references
-    | ENCODING encoding_name=identifier
-    ;
-//data_change_statement
-//  : insert_statement
-//  ;
- */
- 
 schema_statement
   : schema_create
     | schema_alter
@@ -558,7 +531,7 @@ create_funct_params
             | AS function_body
             | AS Character_String_Literal (COMMA Character_String_Literal)*
           )+
-            (WITH LEFT_PAREN attribute+=function_attribute(COMMA attribute+=function_attribute)* RIGHT_PAREN)?
+      with_storage_parameter?
     ;
 
 function_ret_table
@@ -586,10 +559,6 @@ function_arguments
 
 function_def_value
     : (DEFAULT | EQUAL) def_value=vex
-    ;
-
-function_attribute
-    : ISSTRICT | ISCACHABLE
     ;
 
 argmode
@@ -840,15 +809,21 @@ if_exist_names_restrict_cascade
 identifier
   : (Identifier | QuotedIdentifier)
   | tokens_nonreserved
-  | tokens_nonreserved_types
-  | tokens_nonreserved_except_function_type
+  | tokens_nonreserved_except_function_type[true]
+  | tokens_nonkeyword
   ;
 
 identifier_nontype
   : (Identifier | QuotedIdentifier)
   | tokens_nonreserved
+  | tokens_reserved_except_function_type
+  | tokens_nonkeyword
   ;
 
+/*
+ * These rules should be generated using code in the Keyword class.
+ * Word tokens that are not keywords should be added to nonreserved list.
+ */
 tokens_nonreserved
   : ABORT
   | ABSOLUTE
@@ -1123,16 +1098,9 @@ tokens_nonreserved
   | ZONE
   ;
 
-tokens_nonreserved_types
-  : NAME
-  | TEXT
-  | TRIGGER
-  | UNKNOWN
-  | VARYING
-  | XML
-  ;
-
-tokens_nonreserved_except_function_type
+// allowSF - allow names of Special syntax Functions
+// check this parameter for every function that has an explicit function_call rule
+tokens_nonreserved_except_function_type[boolean allowSF]
   : BETWEEN
   | BIGINT
   | BIT
@@ -1143,7 +1111,7 @@ tokens_nonreserved_except_function_type
   | DEC
   | DECIMAL
   | EXISTS
-  | EXTRACT
+  | {$allowSF}? EXTRACT
   | FLOAT
   | GREATEST
   | GROUPING
@@ -1158,28 +1126,28 @@ tokens_nonreserved_except_function_type
   | NULLIF
   | NUMERIC
   | OUT
-  | OVERLAY
-  | POSITION
+  | {$allowSF}? OVERLAY
+  | {$allowSF}? POSITION
   | PRECISION
   | REAL
   | ROW
   | SETOF
   | SMALLINT
-  | SUBSTRING
+  | {$allowSF}? SUBSTRING
   | TIME
   | TIMESTAMP
   | TREAT
-  | TRIM
+  | {$allowSF}? TRIM
   | VALUES
   | VARCHAR
   | XMLATTRIBUTES
   | XMLCONCAT
-  | XMLELEMENT
-  | XMLEXISTS
-  | XMLFOREST
+  | {$allowSF}? XMLELEMENT
+  | {$allowSF}? XMLEXISTS
+  | {$allowSF}? XMLFOREST
   | XMLPARSE
-  | XMLPI
-  | XMLROOT
+  | {$allowSF}? XMLPI
+  | {$allowSF}? XMLROOT
   | XMLSERIALIZE
   ;
 
@@ -1288,6 +1256,31 @@ tokens_reserved
   | WINDOW
   | WITH
   ;
+  
+tokens_nonkeyword
+  : PLAIN
+  | EXTENDED
+  | MAIN
+  | SUBTYPE
+  | SUBTYPE_OPCLASS
+  | SUBTYPE_DIFF
+  | CANONICAL
+  | RECEIVE
+  | SEND
+  | TYPMOD_IN
+  | TYPMOD_OUT
+  | INTERNALLENGTH
+  | PASSEDBYVALUE
+  | ALIGNMENT
+  | CATEGORY
+  | PREFERRED
+  | COLLATABLE
+  | VARIABLE
+  | OUTPUT
+  | ELEMENT
+  | USAGE
+  | CONNECT
+  ;
 
 /*
 ===============================================================================
@@ -1296,8 +1289,8 @@ tokens_reserved
 */
 
 schema_qualified_name_nontype
-  :identifier_nontype
-  | schema = identifier DOT identifier_nontype 
+  : identifier_nontype
+  | schema=identifier DOT identifier_nontype 
   ;
 
 data_type
@@ -1306,9 +1299,7 @@ data_type
   ;
 
 predefined_type
-  : ANY
-  | BIGINT 
-  | BINARY VARYING? type_length?
+  : BIGINT 
   | BIT VARYING? type_length?
   | BOOLEAN
   | DEC precision_param?
@@ -1433,8 +1424,13 @@ unsigned_numeric_literal
   ;
 
 general_literal
-  : identifier? Character_String_Literal
+  : Character_String_Literal
+  | datetime_literal
   | truth_value
+  ;
+  
+datetime_literal
+  : identifier Character_String_Literal
   ;
 
 truth_value
@@ -1449,19 +1445,22 @@ cast_specification
   : (CAST | TREAT) LEFT_PAREN vex AS data_type RIGHT_PAREN
   ;
 
+// using data_type for function name because keyword-named functions
+// use the same category of keywords as keyword-named types
 function_call
-    : data_type LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : function_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
     | date_time_function
     | string_value_function
     | xml_function
-    | other_function
     ;
 
-other_function
-  : (identifier DOT)? tokens_nonreserved_except_function_type LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN  
+function_name
+  : data_type
+  // allow for all built-in function except those with explicit syntax rules defined
+  | (identifier DOT)? tokens_nonreserved_except_function_type[false]
   ;
 
 extract_function
@@ -1470,7 +1469,9 @@ extract_function
 
 system_function
     : CURRENT_CATALOG
-    | CURRENT_SCHEMA (LEFT_PAREN RIGHT_PAREN)?
+    // parens are handled by generic function call
+    // since current_schema is defined as reserved(can be function) keyword
+    | CURRENT_SCHEMA /*(LEFT_PAREN RIGHT_PAREN)?*/
     | CURRENT_USER
     | SESSION_USER
     | USER

@@ -26,7 +26,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
@@ -135,29 +134,25 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
                 .getStart().getLine());
 
-        Data_typeContext type = ctx.func_name.data_type();
-        if (type != null){
-            Schema_qualified_name_nontypeContext funcNameCtx = type.predefined_type().schema_qualified_name_nontype();
-            if (funcNameCtx != null){
-                IdentifierContext sch = funcNameCtx.schema;
-                String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
-                String funcName = funcNameCtx.identifier_nontype().getText();
-                int offset = 0;
-                // TODO proper qualified name splitting for every reference
-                if (sch != null) {
-                    offset = funcSchema.length() + 1;
-                    addObjReference(null, funcSchema, DbObjType.SCHEMA,
-                            StatementActions.NONE, ctx.func_name.getStart().getStartIndex(),
-                            0, ctx.func_name.getStart().getLine());
-                }
-                addObjReference(funcSchema, funcName + "()", DbObjType.FUNCTION,
-                        StatementActions.NONE, ctx.func_name.getStart().getStartIndex() + offset,
-                        funcName.length(), type.getStart().getLine());
-
-                fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
-                        .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
-            }
+        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
+                .data_type().predefined_type().schema_qualified_name_nontype();
+        IdentifierContext sch = funcNameCtx.schema;
+        String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
+        String funcName = funcNameCtx.identifier_nontype().getText();
+        int offset = 0;
+        // TODO proper qualified name splitting for every reference
+        if (sch != null) {
+            offset = funcSchema.length() + 1;
+            addObjReference(null, funcSchema, DbObjType.SCHEMA,
+                    StatementActions.NONE, ctx.func_name.getStart().getStartIndex(),
+                    0, ctx.func_name.getStart().getLine());
         }
+        addObjReference(funcSchema, funcName + "()", DbObjType.FUNCTION,
+                StatementActions.NONE, ctx.func_name.getStart().getStartIndex() + offset,
+                funcName.length(), ctx.func_name.getStart().getLine());
+
+        fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
+                .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
 
     @Override

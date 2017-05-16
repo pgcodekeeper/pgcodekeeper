@@ -5,10 +5,9 @@ import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.RESERV
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.TYPE_FUNC_NAME_KEYWORD;
 import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.UNRESERVED_KEYWORD;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -486,44 +485,57 @@ public class Keyword {
     }
 
     public static void getAllTokensByGroups () {
-        for (KeywordCategory catagery : KeywordCategory.values()){
-            System.out.println("==================================================");
-            System.out.println(catagery);
-            System.out.println("==================================================");
-            List <String> keys = new ArrayList<>();
-            KEYWORDS.forEach((k,v) -> {
-                if (v.getCategory() == catagery){
-                    StringBuilder sb = new StringBuilder("  " + k.toUpperCase());
-                    sb.append(":");
-                    for (char ch : k.toCharArray()){
-                        if (ch == '_'){
-                            sb.append(" UNDERLINE ");
-                        } else {
-                            sb.append(" [").append(ch).append(Character.toUpperCase(ch)).append("]");
-                        }
-                    }
-                    sb.append(";");
-                    keys.add(sb.toString());
+        Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
+        KEYWORDS.values().stream()
+        .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))
+        .forEach(v -> {
+            StringBuilder sb = map.get(v.getCategory());
+            if (sb == null) {
+                sb = new StringBuilder();
+                map.put(v.getCategory(), sb);
+            }
+            String k = v.getKeyword();
+            String kUpper = k.toUpperCase();
+            sb.append("    ").append(kUpper).append(':');
+            for (int i = 0; i < k.length(); ++i){
+                char ch = k.charAt(i);
+                if (ch == '_'){
+                    sb.append(" UNDERLINE ");
+                } else {
+                    sb.append(" [").append(ch).append(kUpper.charAt(i)).append(']');
                 }
-            });
-            keys.sort(String::compareToIgnoreCase);
-            keys.forEach((v) -> System.out.println("  " + v));
-        }
+            }
+            sb.append(";\n");
+        });
+        // SONAR-OFF
+        map.keySet().stream().sorted().forEach(k -> {
+            System.out.println("==================================================");
+            System.out.println(k);
+            System.out.println("==================================================");
+            System.out.println(map.get(k));
+        });
+        // SONAR-ON
     }
 
     public static void getAllWordsByGroups () {
-        for (KeywordCategory category : KeywordCategory.values()){
-            System.out.println("==================");
-            System.out.println(category);
-            System.out.println("==================");
-            List <String> keys = new ArrayList<>();
-            KEYWORDS.forEach((k,v) -> {
-                if (v.getCategory() == category){
-                    keys.add(k.toUpperCase());
-                }
-            });
-            keys.sort(String::compareToIgnoreCase);
-            keys.forEach((v) -> System.out.println("  | " + v));
-        }
+        Map<KeywordCategory, StringBuilder> map = new EnumMap<>(KeywordCategory.class);
+        KEYWORDS.values().stream()
+        .sorted((v1,v2) -> v1.getKeyword().compareTo(v2.getKeyword()))
+        .forEach(v -> {
+            StringBuilder sb = map.get(v.getCategory());
+            if (sb == null) {
+                sb = new StringBuilder();
+                map.put(v.getCategory(), sb);
+            }
+            sb.append("  | ").append(v.getKeyword().toUpperCase()).append("\n");
+        });
+        // SONAR-OFF
+        map.keySet().stream().sorted().forEach(k -> {
+            System.out.println("==================================================");
+            System.out.println(k);
+            System.out.println("==================================================");
+            System.out.println(map.get(k));
+        });
+        // SONAR-ON
     }
 }
