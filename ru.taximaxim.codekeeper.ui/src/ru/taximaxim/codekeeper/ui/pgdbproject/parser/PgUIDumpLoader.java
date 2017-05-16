@@ -63,9 +63,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(boolean loadReferences, PgDatabase db)
+    public PgDatabase loadFile(PgDatabase db)
             throws InterruptedException, IOException, CoreException {
-        load(loadReferences, db);
+        load(db);
 
         file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
         IDocument doc = null;
@@ -144,7 +144,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
                 IFile ifile = (IFile) resource;
                 try (PgUIDumpLoader loader = new PgUIDumpLoader(ifile, arguments, monitor)) {
-                    loader.loadFile(funcBodies != null, db);
+                    loader.loadFile(db);
                     if (funcBodies != null) {
                         funcBodies.addAll(loader.getFuncBodyReferences());
                     }

@@ -47,12 +47,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -73,18 +71,13 @@ public class ReferenceListener extends SQLParserBaseListener {
     private final String filePath;
     private final Map<String, List<PgObjLocation>> definitions;
     private final Map<String, List<PgObjLocation>> references;
-    private final PgDatabase db;
-    private final List<AntlrError> errors;
     private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     private final IProgressMonitor monitor;
 
-    public ReferenceListener(PgDatabase db, String filePath, List<AntlrError> errors,
-            IProgressMonitor monitor) {
+    public ReferenceListener(PgDatabase db, String filePath, IProgressMonitor monitor) {
         this.definitions = db.getObjDefinitions();
         this.references = db.getObjReferences();
-        this.errors = errors;
         this.monitor = monitor;
-        this.db = db;
         this.filePath = filePath;
     }
 
@@ -92,9 +85,6 @@ public class ReferenceListener extends SQLParserBaseListener {
         try {
             PgDiffUtils.checkCancelled(monitor);
             c.accept(ctx);
-        } catch (UnresolvedReferenceException ex) {
-            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex));
-            return;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         }
@@ -365,18 +355,13 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     public void createSchema(Create_schema_statementContext ctx) {
-        // So we use interface ParserClass and method loadDatabaseSchemaFromDirTree
-        // we need to fill db just names
         String name = QNameParser.getFirstName(ctx.name.identifier());
-        if (name == null) {
-            return;
+        if (name != null) {
+            fillObjDefinition(null, name,
+                    DbObjType.SCHEMA,
+                    ctx.name.getStart().getStartIndex(), 0,
+                    ctx.name.getStart().getLine());
         }
-        PgSchema schema = new PgSchema(name, ParserAbstract.getFullCtxText(ctx.getParent()));
-        db.addSchema(schema);
-        fillObjDefinition(null, name,
-                DbObjType.SCHEMA,
-                ctx.name.getStart().getStartIndex(), 0,
-                ctx.name.getStart().getLine());
     }
 
     public void createView(Create_view_statementContext ctx) {

@@ -22,8 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
-import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -122,31 +120,21 @@ public class PgDumpLoader implements AutoCloseable {
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException, LicenseException {
-        return load(false);
-    }
-
-    public PgDatabase load(boolean loadReferences)
-            throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
-        load(loadReferences, d);
+        load(d);
         args.getLicense().verifyDb(d);
         return d;
     }
 
-    protected PgDatabase load(boolean loadReferences, PgDatabase intoDb)
+    protected PgDatabase load(PgDatabase intoDb)
             throws IOException, InterruptedException {
-        PgDiffUtils.checkCancelled(monitor);
-        SQLParserBaseListener listener = loadReferences ? 
-                new ReferenceListener(intoDb, inputObjectName, errors, monitor)
-                : new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor);
 
+        PgDiffUtils.checkCancelled(monitor);
+        CustomSQLParserListener listener = new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor);
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName,
                 listener, monitor, monitoringLevel, errors);
-
-        if (loadReferences) {
-            funcBodyReferences = ((ReferenceListener) listener).getFunctionBodies();
-        }
+        funcBodyReferences = listener.getFunctionBodies();
         return intoDb;
     }
 
@@ -214,7 +202,7 @@ public class PgDumpLoader implements AutoCloseable {
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                    loader.load(funcBodies != null, db);
+                    loader.load(db);
                     if (funcBodies != null) {
                         funcBodies.addAll(loader.getFuncBodyReferences());
                     }

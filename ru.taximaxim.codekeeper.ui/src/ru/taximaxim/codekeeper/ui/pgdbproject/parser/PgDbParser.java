@@ -121,7 +121,7 @@ public class PgDbParser implements IResourceChangeListener {
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
         try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args, monitor)) {
-            PgDatabase db = loader.loadFile(true, new PgDatabase());
+            PgDatabase db = loader.loadFile(new PgDatabase());
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
             fillFunctionBodies(objDefinitions, objReferences, loader.getFuncBodyReferences());
@@ -212,7 +212,7 @@ public class PgDbParser implements IResourceChangeListener {
         args.setInCharsetName(scriptFileEncoding);
         PgDatabase db;
         try (PgDumpLoader loader = new PgDumpLoader(input, "bytestream:/", args, monitor, 2)) { //$NON-NLS-1$
-            db = loader.load(true);
+            db = loader.load();
         }
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
