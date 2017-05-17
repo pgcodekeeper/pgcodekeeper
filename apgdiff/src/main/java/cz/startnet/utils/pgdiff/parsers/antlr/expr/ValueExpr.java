@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
@@ -83,9 +84,7 @@ public class ValueExpr extends AbstractExpr {
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
             // TODO remove when tokens are refactored
-            boolean regclassToken = pType.REGCLASS() != null;
-            if (regclassToken ||
-                    dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
+            if (dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
                     (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
                 // check simple built-in types for reg*** casts
                 Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
@@ -96,7 +95,7 @@ public class ValueExpr extends AbstractExpr {
                         && (literal = value.general_literal()) != null
                         && literal.Character_String_Literal() != null) {
                     regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
-                            regclassToken ? "regclass" : customType.getText());
+                            customType.getText());
                 }
             }
         } else if ((collate = vex.collateIdentifier()) != null) {
@@ -184,13 +183,21 @@ public class ValueExpr extends AbstractExpr {
         GenericColumn ret = null;
         List<Vex> args = null;
 
-        Schema_qualified_nameContext funcName = function.schema_qualified_name();
+        Function_nameContext name = function.function_name();
+
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
 
-        if (funcName != null) {
-            ret = addObjectDepcy(funcName.identifier(), DbObjType.FUNCTION);
+        if (name != null){
+            Data_typeContext type = name.data_type();
+            Schema_qualified_name_nontypeContext funcNameCtx;
+            if (type != null &&
+                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
+                ret = addFunctionDepcy(funcNameCtx);
+
+            }
+
             args = addVexCtxtoList(args, function.vex());
 
             Orderby_clauseContext orderBy = function.orderby_clause();

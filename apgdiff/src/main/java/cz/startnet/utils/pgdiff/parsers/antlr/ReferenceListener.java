@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersConte
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
@@ -106,8 +107,8 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_index_statement(Create_index_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
+        List<IdentifierContext> ids = ctx.table_name.identifier();
+        String name = ctx.name.getText();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addObjReference(schemaName, QNameParser.getFirstName(ctx.table_name.identifier()),
                 DbObjType.TABLE, StatementActions.NONE, ctx.table_name
@@ -125,40 +126,41 @@ public class ReferenceListener extends SQLParserBaseListener {
             Create_extension_statementContext ctx) {
         if (ctx.schema_with_name() != null) {
             addObjReference(null,
-                    QNameParser.getFirstName(ctx.schema_with_name().name.identifier()),
+                    ctx.schema_with_name().name.getText(),
                     DbObjType.SCHEMA, StatementActions.NONE,
                     ctx.schema_with_name().name.getStart().getStartIndex(), 0,
                     ctx.schema_with_name().name.getStart().getLine());
         }
-        fillObjDefinition(null, QNameParser.getFirstName(ctx.name.identifier()),
+        fillObjDefinition(null, ctx.name.getText(),
                 DbObjType.EXTENSION, ctx.name.getStart().getStartIndex(), 0,
                 ctx.name.getStart().getLine());
     }
 
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.tabl_name), DbObjType.TABLE,
+        String name = ctx.name.getText();
+        String schemaName = QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName());
+        addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.table_name), DbObjType.TABLE,
                 StatementActions.NONE,
-                ctx.tabl_name.getStart().getStartIndex(), 0, ctx.tabl_name
+                ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
                 .getStart().getLine());
 
-        List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
-        String funcName = QNameParser.getFirstName(funcIds);
-        String funcSchema = QNameParser.getSchemaName(funcIds, getDefSchemaName());
+        Schema_qualified_name_nontypeContext funcNameCtx = ctx.func_name.function_name()
+                .data_type().predefined_type().schema_qualified_name_nontype();
+        IdentifierContext sch = funcNameCtx.schema;
+        String funcSchema = sch != null ?  sch.getText() : getDefSchemaName();
+        String funcName = funcNameCtx.identifier_nontype().getText();
         int offset = 0;
         // TODO proper qualified name splitting for every reference
-        if (funcIds.size() > 1) {
+        if (sch != null) {
             offset = funcSchema.length() + 1;
             addObjReference(null, funcSchema, DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.func_name.getStart().getStartIndex(),
                     0, ctx.func_name.getStart().getLine());
         }
-        addObjReference(funcSchema, funcName+"()", DbObjType.FUNCTION,
-                StatementActions.NONE, ctx.func_name.getStart().getStartIndex()+ offset,
-                funcName.length(), ctx.func_name.schema_qualified_name().getStart().getLine());
+        addObjReference(funcSchema, funcName + "()", DbObjType.FUNCTION,
+                StatementActions.NONE, ctx.func_name.getStart().getStartIndex() + offset,
+                funcName.length(), ctx.func_name.getStart().getLine());
 
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
@@ -188,15 +190,13 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String schemaName = QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName());
         addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.table_name), DbObjType.TABLE,
                 StatementActions.NONE,
                 ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
                 .getStart().getLine());
         // TODO process references in statements/expressions
-        fillObjDefinition(schemaName, name, DbObjType.RULE, ctx.name
+        fillObjDefinition(schemaName, ctx.name.getText(), DbObjType.RULE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
 
@@ -231,7 +231,7 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
         // So we use interface ParserClass and method loadDatabaseSchemaFromDirTree
         // we need to fill db just names
-        String name = QNameParser.getFirstName(ctx.name.identifier());
+        String name = ctx.name.getText();
         if (name == null) {
             return;
         }
@@ -435,7 +435,7 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
+        String name = ctx.schema_with_name().name.getText();
         addObjReference(null, name, DbObjType.SCHEMA, StatementActions.ALTER,
                 ctx.schema_with_name().name.getStart().getStartIndex(), 0,
                 ctx.schema_with_name().name.getStart().getLine());
@@ -571,9 +571,8 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     @Override
     public void exitDrop_trigger_statement(Drop_trigger_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        String name = ctx.name.getText();
+        String schemaName = QNameParser.getSchemaName(ctx.table_name.identifier(), getDefSchemaName());
 
         int offset=0;
         if (schemaName == null) {

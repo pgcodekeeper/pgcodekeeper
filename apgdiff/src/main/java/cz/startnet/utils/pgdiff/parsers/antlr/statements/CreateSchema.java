@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -16,7 +15,7 @@ public class CreateSchema extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = QNameParser.getFirstName(ctx.name.identifier());
+        String name = ctx.name.getText();
         if (name == null) {
             return null;
         }
