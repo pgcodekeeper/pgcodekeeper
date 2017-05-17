@@ -834,7 +834,7 @@ if_exist_names_restrict_cascade
 identifier
   : (Identifier | QuotedIdentifier)
   | tokens_nonreserved
-  | tokens_nonreserved_except_function_type[true]
+  | tokens_nonreserved_except_function_type
   | tokens_nonkeyword
   ;
 
@@ -1123,9 +1123,7 @@ tokens_nonreserved
   | ZONE
   ;
 
-// allowSF - allow names of Special syntax Functions
-// check this parameter for every function that has an explicit function_call rule
-tokens_nonreserved_except_function_type[boolean allowSF]
+tokens_nonreserved_except_function_type
   : BETWEEN
   | BIGINT
   | BIT
@@ -1136,7 +1134,7 @@ tokens_nonreserved_except_function_type[boolean allowSF]
   | DEC
   | DECIMAL
   | EXISTS
-  | {$allowSF}? EXTRACT
+  | EXTRACT
   | FLOAT
   | GREATEST
   | GROUPING
@@ -1151,29 +1149,39 @@ tokens_nonreserved_except_function_type[boolean allowSF]
   | NULLIF
   | NUMERIC
   | OUT
-  | {$allowSF}? OVERLAY
-  | {$allowSF}? POSITION
+  | OVERLAY
+  | POSITION
   | PRECISION
   | REAL
   | ROW
   | SETOF
   | SMALLINT
-  | {$allowSF}? SUBSTRING
+  | SUBSTRING
   | TIME
   | TIMESTAMP
   | TREAT
-  | {$allowSF}? TRIM
+  | TRIM
   | VALUES
   | VARCHAR
   | XMLATTRIBUTES
   | XMLCONCAT
-  | {$allowSF}? XMLELEMENT
-  | {$allowSF}? XMLEXISTS
-  | {$allowSF}? XMLFOREST
+  | XMLELEMENT
+  | XMLEXISTS
+  | XMLFOREST
   | XMLPARSE
-  | {$allowSF}? XMLPI
-  | {$allowSF}? XMLROOT
+  | XMLPI
+  | XMLROOT
   | XMLSERIALIZE
+  ;
+
+tokens_simple_functions
+  : COALESCE
+  | GREATEST
+  | GROUPING
+  | LEAST
+  | NULLIF
+  | ROW
+  | XMLCONCAT
   ;
 
 tokens_reserved_except_function_type
@@ -1485,7 +1493,7 @@ function_call
 function_name
   : data_type
   // allow for all built-in function except those with explicit syntax rules defined
-  | (identifier DOT)? tokens_nonreserved_except_function_type[false]
+  | (identifier DOT)? tokens_simple_functions
   ;
 
 extract_function
@@ -1511,7 +1519,7 @@ date_time_function
     ;
 
 string_value_function
-  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? vex? FROM? vex RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex? FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
   | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
@@ -1520,11 +1528,13 @@ string_value_function
 xml_function
     : XMLELEMENT LEFT_PAREN NAME name=identifier
         (COMMA XMLATTRIBUTES LEFT_PAREN vex (AS attname=identifier)? (COMMA vex (AS attname=identifier)?)* RIGHT_PAREN)?
-        (vex (COMMA vex)?)? RIGHT_PAREN
+        (vex (COMMA vex)*)? RIGHT_PAREN
     | XMLFOREST LEFT_PAREN vex (AS name=identifier)? (COMMA vex (AS name=identifier)?)* RIGHT_PAREN
     | XMLPI LEFT_PAREN NAME name=identifier (COMMA vex)? RIGHT_PAREN
     | XMLROOT LEFT_PAREN vex COMMA VERSION (vex | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
+    | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
+    | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
     ;
 
 comparison_mod
