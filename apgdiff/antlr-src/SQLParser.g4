@@ -259,7 +259,7 @@ alter_sequence_statement
     ;
 
 alter_view_statement
-    : VIEW (IF EXISTS)? name=schema_qualified_name
+    : MATERIALIZED? VIEW (IF EXISTS)? name=schema_qualified_name
      (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
     | owner_to
@@ -639,10 +639,12 @@ schema_definition
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name column_name=column_references?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? MATERIALIZED? VIEW name=schema_qualified_name column_name=column_references?
         (WITH storage_parameter)?
+        table_space?
         AS v_query=select_stmt
         with_check_option?
+        (WITH NO? DATA)?
     ;
         
 with_check_option
@@ -849,7 +851,7 @@ drop_trigger_statement
     ;
 
 drop_statements
-    :((DATABASE | DOMAIN | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    :((DATABASE | DOMAIN | TABLE| EXTENSION | SCHEMA | SEQUENCE | MATERIALIZED? VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade

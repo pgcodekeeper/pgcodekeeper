@@ -46,6 +46,16 @@ public class ViewsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
         PgView v = new PgView(viewName, "");
+
+        // materialized view
+        if ("m".equals(res.getString("kind"))) {
+            v.setIsWithData(res.getBoolean("relispopulated"));
+            String tableSpace = res.getString("table_space");
+            if (tableSpace != null && !tableSpace.isEmpty()) {
+                v.setTablespace(tableSpace);
+            }
+        }
+
         String viewDef = res.getString("definition").trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);

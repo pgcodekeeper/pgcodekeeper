@@ -211,6 +211,9 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_views(schema_oids bigint[]
   RETURNS TABLE(
     schema_oid bigint,
     relname name,
+    kind "char",
+    relispopulated boolean,
+    table_space name,
     relacl aclitem[],
     relowner bigint,
     definition text,
@@ -242,6 +245,9 @@ WITH extension_deps AS (
 
 SELECT schema_oid,
        c.relname,
+       c.relkind AS kind,
+       c.relispopulated,
+       tabsp.spcname as table_space,
        c.relacl,
        c.relowner::bigint,
        pg_get_viewdef(c.oid) AS definition,
@@ -273,10 +279,11 @@ LEFT JOIN
               AND des.objsubid = attr.attnum
           ORDER BY attr.attnum) columnsData
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
+LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
 WHERE relnamespace = schema_oid
-    AND relkind = 'v'
+    AND c.relkind IN ('v', 'm')
     AND c.oid NOT IN (SELECT objid FROM extension_deps));
 
 END LOOP;

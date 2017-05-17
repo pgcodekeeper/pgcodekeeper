@@ -223,8 +223,11 @@ public abstract class PgStatement implements IStatement {
         }
 
         DbObjType type = getStatementType();
-        sb.append("\n\nALTER ")
-        .append(type)
+        sb.append("\n\nALTER ");
+        if (type == DbObjType.VIEW && ((PgView) this).isWithData() != null){
+            sb.append("MATERIALIZED ");
+        }
+        sb.append(type)
         .append(' ');
         if (type == DbObjType.FUNCTION) {
             ((PgFunction) this).appendFunctionSignature(sb, false, true);

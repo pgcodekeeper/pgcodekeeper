@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
@@ -31,6 +32,13 @@ public class CreateView extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
         PgView view = new PgView(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        if (ctx.MATERIALIZED() != null) {
+            view.setIsWithData(ctx.NO() == null);
+            Table_spaceContext tablespace = ctx.table_space();
+            if (tablespace != null) {
+                view.setTablespace(tablespace.name.getText());
+            }
+        }
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
             UtilExpr.analyze(new SelectStmt(ctx.v_query), new Select(schema.getName()), view);
