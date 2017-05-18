@@ -55,9 +55,6 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 // refactor and put into separate package
 public abstract class DiffPresentationPane extends Composite {
 
-    /**
-     * should be true for commit, false for diff script
-     */
     protected final ProjectEditorDiffer projEditor;
     protected final IPreferenceStore mainPrefs;
     protected final PgDbProject proj;

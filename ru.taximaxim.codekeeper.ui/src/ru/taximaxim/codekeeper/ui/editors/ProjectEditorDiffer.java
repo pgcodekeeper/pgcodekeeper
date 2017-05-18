@@ -41,7 +41,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
@@ -71,6 +75,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -91,8 +96,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private ProjectEditorInput input;
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
-    private DiffPresentationPane commit;
-
+    private DiffPresentationPane pane;
     private Composite parent;
 
     public ProjectEditorSelectionProvider getSelectionProvider() {
@@ -120,14 +124,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         setSite(site);
         setInput(input);
+        getSite().setSelectionProvider(sp);
     }
 
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-        commit = new CommitPage(parent, mainPrefs, proj, this);
-
-        getSite().setSelectionProvider(sp);
+        pane = new CommitPage(parent, mainPrefs, proj, this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
@@ -231,9 +234,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
 
         if (schemaChanged[0]) {
-            UiSync.exec(parent, () -> {
-                commit.notifyProjectChanged();
-            });
+            UiSync.exec(parent, pane::notifyProjectChanged);
         }
     }
 
@@ -242,13 +243,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return;
         }
         try {
-            DbSource dbRemote = commit.getRemoteDbSource();
+            DbSource dbRemote = pane.getRemoteDbSource();
             if (dbRemote != null) {
                 DbSource dbProject = DbSource.fromProject(proj);
-                commit.reset();
-                commit.hideNotificationArea();
+                pane.reset();
+                pane.hideNotificationArea();
                 loadChanges(dbProject, dbRemote);
-                commit.saveDbPrefs();
+                pane.saveDbPrefs();
             }
         } catch (CoreException e1) {
             ExceptionNotifier.notifyDefault(
@@ -261,7 +262,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private void loadChanges(final DbSource dbProject, final DbSource dbRemote) {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, true);
+        final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
@@ -293,10 +294,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
                         @Override
                         public void run() {
-                            if (commit.isDisposed()) {
+                            if (pane.isDisposed()) {
                                 return;
                             }
-                            commit.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
+                            pane.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
                         }
                     });
                 }
@@ -330,6 +331,27 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         } catch (WorkbenchException e) {
             Log.log(Log.LOG_ERROR, "Can't change perspective", e); //$NON-NLS-1$
         }
+    }
+
+    public static void notifyDbChanged(DbInfo dbinfo) {
+        for (IWorkbenchWindow wnd : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : wnd.getPages()) {
+                for (IEditorReference ref : page.getEditorReferences()) {
+                    IEditorPart ed = ref.getEditor(false);
+                    if (ed instanceof ProjectEditorDiffer) {
+                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor) {
+        UiSync.exec(editor.pane, () -> {
+            if (dbinfo.equals(editor.pane.getLastRemote())) {
+                editor.pane.resetRemoteChanged();
+            }
+        });
     }
 }
 
