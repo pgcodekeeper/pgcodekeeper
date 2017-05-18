@@ -8,8 +8,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -58,10 +56,6 @@ public class DbStorePicker extends Composite {
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final int MAX_FILES_HISTORY = 10;
-
-    private static boolean inSync;
-    private final Set<DbStorePicker> syncedPickers = Collections.newSetFromMap(
-            new WeakHashMap<DbStorePicker, Boolean>());
 
     private final boolean useFileSources;
     private final boolean useDirSources;
@@ -214,33 +208,6 @@ public class DbStorePicker extends Composite {
         cmbDbNames.addSelectionChangedListener(listener);
     }
 
-    public void addSyncedPicker(DbStorePicker picker) {
-        syncedPickers.add(picker);
-    }
-
-    private void syncPickers(IStructuredSelection newSelection) {
-        if (inSync) {
-            return;
-        }
-        try {
-            inSync = true;
-            boolean isFile = newSelection.getFirstElement() instanceof File;
-            for (DbStorePicker picker : syncedPickers) {
-                if (!picker.cmbDbNames.getControl().isDisposed()) {
-                    if (isFile) {
-                        // updates to the file list do not auto propagate
-                        // force a reload
-                        picker.loadStore(newSelection);
-                    } else {
-                        picker.setSelection(newSelection);
-                    }
-                }
-            }
-        } finally {
-            inSync = false;
-        }
-    }
-
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;
@@ -257,7 +224,6 @@ public class DbStorePicker extends Composite {
             if (selected instanceof DbInfo || selected instanceof File) {
                 previous = sel;
                 revertSelection = false;
-                syncPickers(sel);
             } else if (selected instanceof LoadFileElement) {
                 LoadFileElement loadEl = (LoadFileElement) selected;
                 String pathToDump = loadEl.loadDir ? getDirPath() : getFilePath();

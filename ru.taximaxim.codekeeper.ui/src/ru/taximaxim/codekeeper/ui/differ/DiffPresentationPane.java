@@ -200,10 +200,6 @@ public abstract class DiffPresentationPane extends Composite {
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
     }
 
-    public void addSyncedPane(DiffPresentationPane pane) {
-        storePicker.addSyncedPicker(pane.storePicker);
-    }
-
     public void setTitleColor(RGB color){
         if (color == null){
             containerUpper.setBackground(null);
