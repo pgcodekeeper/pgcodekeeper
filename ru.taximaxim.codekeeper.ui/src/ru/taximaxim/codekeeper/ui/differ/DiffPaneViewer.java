@@ -25,7 +25,6 @@ public class DiffPaneViewer extends Composite {
     private final TextMergeViewer diffPane;
     private DbSource dbProject;
     private DbSource dbRemote;
-    private final DiffSide projSide;
     private Collection<TreeElement> availableElements;
 
     public void setDbSources(DbSource dbProject, DbSource dbRemote) {
@@ -33,9 +32,8 @@ public class DiffPaneViewer extends Composite {
         this.dbRemote = dbRemote;
     }
 
-    public DiffPaneViewer(Composite parent, int style, DiffSide projSide) {
+    public DiffPaneViewer(Composite parent, int style) {
         super(parent, style);
-        this.projSide = projSide;
 
         CompareConfiguration conf = new CompareConfiguration();
         conf.setLeftEditable(false);
@@ -72,8 +70,7 @@ public class DiffPaneViewer extends Composite {
 
         @Override
         public String getRightLabel(Object input) {
-            return (projSide == DiffSide.LEFT ? Messages.to : Messages.diffPartDescr_from)
-                    + Messages.DiffPaneViewer_project;
+            return Messages.DiffPaneViewer_project;
         }
 
         @Override
@@ -83,8 +80,7 @@ public class DiffPaneViewer extends Composite {
 
         @Override
         public String getLeftLabel(Object input) {
-            return (projSide == DiffSide.LEFT ? Messages.diffPartDescr_from : Messages.to)
-                    + Messages.database;
+            return Messages.database;
         }
 
         @Override
@@ -112,7 +108,7 @@ public class DiffPaneViewer extends Composite {
         }
 
         private String getElementSql(TreeElement el, boolean project) {
-            if (el.getSide() == projSide == project || el.getSide() == DiffSide.BOTH) {
+            if (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH) {
                 DbSource db = project ? dbProject : dbRemote;
                 return el.getPgStatement(db.getDbObject()).getFullSQL();
             } else {

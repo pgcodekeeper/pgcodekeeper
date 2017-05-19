@@ -183,7 +183,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
             TreeElement el = (TreeElement) selected;
             // does el exist in the chosen graph (or DB)
-            boolean elIsProject = el.getSide() == dss.projSide;
+            boolean elIsProject = el.getSide() == DiffSide.LEFT;
             if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
                 for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
                     if (!(dependant instanceof PgColumn)) {

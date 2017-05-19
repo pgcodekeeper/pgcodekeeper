@@ -30,17 +30,15 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -57,7 +55,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.EditorPart;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -66,7 +64,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -97,15 +94,15 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
 
-public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
+public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     private ProjectEditorInput input;
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
-    private DiffPresentationPane commit, diff;
-    private Image iCommit, iDiff;
+    private DiffPresentationPane pane;
+    private Composite parent;
 
     public ProjectEditorSelectionProvider getSelectionProvider() {
         return sp;
@@ -126,57 +123,33 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         sp = new ProjectEditorSelectionProvider(proj.getProject());
         setPartName(this.input.getName());
 
-        addPageChangedListener(new IPageChangedListener() {
-
-            @Override
-            public void pageChanged(PageChangedEvent event) {
-                ProjectEditorDiffer.this.input.setSwitchToDiffTab(event.getSelectedPage() == diff);
-            }
-        });
-
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
             askPerspectiveChange(site);
         }
-
-        super.init(site, input);
+        setSite(site);
+        setInput(input);
+        getSite().setSelectionProvider(sp);
     }
 
     @Override
-    protected void createPages() {
-
-        int i;
-
-        iCommit = ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(FILE.ICONBALLBLUE)).createImage();
-        commit = new CommitPage(getContainer(), mainPrefs, proj, this);
-        i = addPage(commit);
-        setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
-        setPageImage(i, iCommit);
-
-        iDiff = ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(FILE.ICONBALLRED)).createImage();
-        diff = new DiffPage(getContainer(), mainPrefs, proj, this);
-        i = addPage(diff);
-        setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
-        setPageImage(i, iDiff);
-
-        if (input.getSwitchToDiffTab()) {
-            setActivePage(1);
-        }
-
-        commit.addSyncedPane(diff);
-        diff.addSyncedPane(commit);
-
-        getSite().setSelectionProvider(sp);
+    public void createPartControl(Composite parent) {
+        this.parent = parent;
+        pane = new CommitPage(parent, mainPrefs, proj, this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
                 | IResourceChangeEvent.POST_CHANGE);
     }
 
-    private DiffPresentationPane getActivePane() {
-        return (DiffPresentationPane) getSelectedPage();
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
+
+    @Override
+    public void setFocus() {
+        // no imp
     }
 
     @Override
@@ -197,10 +170,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-
         super.dispose();
-        iCommit.dispose();
-        iDiff.dispose();
     }
 
     @Override
@@ -220,11 +190,11 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private void handlerCloseProject(IResourceChangeEvent event) {
         if (event.getResource().getName().equals(getEditorInput().getName())) {
-            UiSync.exec(getContainer(), new Runnable(){
+            UiSync.exec(parent, new Runnable(){
 
                 @Override
                 public void run() {
-                    if (!getContainer().isDisposed()) {
+                    if (!parent.isDisposed()) {
                         getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
                     }
                 }
@@ -269,27 +239,22 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         }
 
         if (schemaChanged[0]) {
-            UiSync.exec(getContainer(), () -> {
-                commit.notifyProjectChanged();
-                diff.notifyProjectChanged();
-            });
+            UiSync.exec(parent, pane::notifyProjectChanged);
         }
     }
 
     public void getChanges() {
-        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getContainer().getShell(), true)) {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
         try {
-            DbSource dbRemote = getActivePane().getRemoteDbSource();
+            DbSource dbRemote = pane.getRemoteDbSource();
             if (dbRemote != null) {
                 DbSource dbProject = DbSource.fromProject(proj);
-                commit.reset();
-                diff.reset();
-                commit.hideNotificationArea();
-                diff.hideNotificationArea();
+                pane.reset();
+                pane.hideNotificationArea();
                 loadChanges(dbProject, dbRemote);
-                getActivePane().saveDbPrefs();
+                pane.saveDbPrefs();
             }
         } catch (CoreException e1) {
             ExceptionNotifier.notifyDefault(
@@ -302,7 +267,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private void loadChanges(final DbSource dbProject, final DbSource dbRemote) {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, true);
+        final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
@@ -330,15 +295,14 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    UiSync.exec(getContainer(), new Runnable() {
+                    UiSync.exec(parent, new Runnable() {
 
                         @Override
                         public void run() {
-                            if (commit.isDisposed() || diff.isDisposed()) {
+                            if (pane.isDisposed()) {
                                 return;
                             }
-                            commit.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
-                            diff.setInput(dbProject, dbRemote, newDiffer.getDiffTreeRevert());
+                            pane.setInput(dbProject, dbRemote, newDiffer.getDiffTree());
                         }
                     });
                 }
@@ -357,7 +321,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(site.getShell(),
                     Messages.change_perspective_title, Messages.change_perspective_message,
-                    Messages.remember_choice_toggle,false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
+                    Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
             if(dialog.getReturnCode() == IDialogConstants.YES_ID){
                 changePerspective(site);
             }
@@ -388,12 +352,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     }
 
     private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor) {
-        UiSync.exec(editor.getContainer(), () -> {
-            // no lastRemote sync between tabs so check both
-            // since the actual data is sync'd
-            if (dbinfo.equals(editor.commit.getLastRemote()) || dbinfo.equals(editor.diff.getLastRemote())) {
-                editor.commit.resetRemoteChanged();
-                editor.diff.resetRemoteChanged();
+        UiSync.exec(editor.pane, () -> {
+            if (dbinfo.equals(editor.pane.getLastRemote())) {
+                editor.pane.resetRemoteChanged();
             }
         });
     }
@@ -401,37 +362,32 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
 class CommitPage extends DiffPresentationPane {
 
+    private LocalResourceManager lrm;
+    private Button btnSave, btnGetLatest, btnAddDepcy;
     private boolean isCommitCommandAvailable;
-
-    private Button btnSave;
+    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
     public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj,
             ProjectEditorDiffer projEditor) {
-        super(parent, DiffSide.LEFT, mainPrefs, proj, projEditor);
+        super(parent, mainPrefs, proj, projEditor);
 
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
 
     @Override
     protected void createUpperContainer(final Composite container, GridLayout gl) {
-        gl.numColumns = 3;
+        gl.numColumns = 6;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (mainPrefs.getBoolean(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT)){
-            String rgb = mainPrefs.getString(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT);
-            String[] colors = rgb.split(","); //$NON-NLS-1$
-            setTitleColor(new RGB(
-                    Integer.parseInt(colors[0]),
-                    Integer.parseInt(colors[1]),
-                    Integer.parseInt(colors[2])));
-        } else {
-            setTitleColor(null);
-        }
-        new Label(container, SWT.NONE).setImage(lrm.createImage(
-                ImageDescriptor.createFromURL(Activator.getContext().getBundle()
-                        .getResource(FILE.ICONBALLBLUE))));
+
+        lrm = new LocalResourceManager(JFaceResources.getResources(), container);
+
+        new Label(container, SWT.NONE).setText(Messages.ProjectEditorDiffer_apply_to);
 
         btnSave = new Button(container, SWT.PUSH);
         btnSave.setText(Messages.commitPartDescr_commit);
+        btnSave.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))));
         btnSave.setEnabled(false);
         btnSave.addSelectionListener(new SelectionAdapter() {
 
@@ -445,11 +401,98 @@ class CommitPage extends DiffPresentationPane {
             }
         });
 
+        btnGetLatest = new Button(container, SWT.PUSH);
+        btnGetLatest.setText(Messages.diffPartDescr_get_latest);
+        btnGetLatest.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONDATABASE))));
+        btnGetLatest.setEnabled(false);
+        btnGetLatest.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diff();
+            }
+        });
+
+        Label l = new Label(container, SWT.NONE);
+        l.setText("|");
+        l.setEnabled(false);
+
+        btnAddDepcy = new Button(container, SWT.PUSH);
+        btnAddDepcy.setText(Messages.diffPartDescr_add_dependencies);
+        btnAddDepcy.setEnabled(false);
+        btnAddDepcy.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ManualDepciesDialog dialog = new ManualDepciesDialog(getShell(),
+                        manualDepciesSource, manualDepciesTarget,
+                        PgDatabase.listPgObjects(dbRemote.getDbObject()),
+                        PgDatabase.listPgObjects(dbProject.getDbObject()),
+                        Messages.database, Messages.ProjectEditorDiffer_project);
+                if (dialog.open() == Dialog.OK) {
+                    manualDepciesSource = dialog.getDepciesSourceList();
+                    manualDepciesTarget = dialog.getDepciesTargetList();
+                }
+            }
+        });
+
         ICommandService commandService =
                 PlatformUI.getWorkbench().getService(ICommandService.class);
         @SuppressWarnings("unchecked")
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
+    }
+
+    private void diff() {
+        Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
+        if (warnCheckedElements() < 1 ||
+                !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return;
+        }
+
+        IEclipsePreferences pref = proj.getPrefs();
+        final Differ differ = new Differ(dbRemote.getDbObject(),
+                dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
+                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+        differ.setAdditionalDepciesSource(manualDepciesSource);
+        differ.setAdditionalDepciesTarget(manualDepciesTarget);
+
+        Job job = differ.getDifferJob();
+        job.addJobChangeListener(new JobChangeAdapter() {
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Differ job finished with status " +  //$NON-NLS-1$
+                        event.getResult().getSeverity());
+                if (event.getResult().isOK()) {
+                    UiSync.exec(CommitPage.this, new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (CommitPage.this.isDisposed()) {
+                                return;
+                            }
+                            try {
+                                showEditor(differ);
+                            } catch (PartInitException ex) {
+                                ExceptionNotifier.notifyDefault(
+                                        Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
+    }
+
+    private void showEditor(Differ differ) throws PartInitException {
+        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
+                PgDatabase.listPgObjects(dbRemote.getDbObject()));
+        input.setDbinfo(storePicker.getDbInfo());
+        projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }
 
     private void commit() throws PgCodekeeperException {
@@ -531,6 +574,10 @@ class CommitPage extends DiffPresentationPane {
     @Override
     public final void reset() {
         btnSave.setEnabled(false);
+        btnGetLatest.setEnabled(false);
+        btnAddDepcy.setEnabled(false);
+        manualDepciesSource.clear();
+        manualDepciesTarget.clear();
         super.reset();
     }
 
@@ -539,6 +586,10 @@ class CommitPage extends DiffPresentationPane {
         super.setInput(dbProject, dbRemote, diffTree);
         if (diffTree != null) {
             btnSave.setEnabled(true);
+            btnGetLatest.setEnabled(true);
+            btnAddDepcy.setEnabled(true);
+            manualDepciesSource.clear();
+            manualDepciesTarget.clear();
         }
     }
 
@@ -577,145 +628,5 @@ class CommitPage extends DiffPresentationPane {
             }
             return Status.OK_STATUS;
         }
-    }
-}
-
-class DiffPage extends DiffPresentationPane {
-
-    private Button btnGetLatest, btnAddDepcy;
-
-    /**
-     * A collection of manually added object dependencies.
-     * Keys are dependants, values are lists of dependencies.
-     */
-    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
-    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
-
-    public DiffPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj, ProjectEditorDiffer projEditor) {
-        super(parent, DiffSide.RIGHT, mainPrefs, proj, projEditor);
-    }
-
-    @Override
-    protected void createUpperContainer(Composite container, GridLayout gl) {
-        gl.numColumns = 3;
-        container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        if (mainPrefs.getBoolean(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT)){
-            String rgb = mainPrefs.getString(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT);
-            String[] colors = rgb.split(","); //$NON-NLS-1$
-            setTitleColor(new RGB(
-                    Integer.parseInt(colors[0]),
-                    Integer.parseInt(colors[1]),
-                    Integer.parseInt(colors[2])));
-        } else {
-            setTitleColor(null);
-        }
-
-        new Label(container, SWT.NONE).setImage(lrm.createImage(
-                ImageDescriptor.createFromURL(Activator.getContext().getBundle()
-                        .getResource(FILE.ICONBALLRED))));
-
-        btnGetLatest = new Button(container, SWT.PUSH);
-        btnGetLatest.setText(Messages.diffPartDescr_get_latest);
-        btnGetLatest.setEnabled(false);
-        btnGetLatest.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diff();
-            }
-        });
-
-        btnAddDepcy = new Button(container, SWT.PUSH);
-        btnAddDepcy.setText(Messages.diffPartDescr_add_dependencies);
-        btnAddDepcy.setEnabled(false);
-        btnAddDepcy.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ManualDepciesDialog dialog = new ManualDepciesDialog(getShell(),
-                        manualDepciesSource, manualDepciesTarget,
-                        PgDatabase.listPgObjects(dbRemote.getDbObject()),
-                        PgDatabase.listPgObjects(dbProject.getDbObject()),
-                        Messages.database, Messages.ProjectEditorDiffer_project);
-                if (dialog.open() == Dialog.OK) {
-                    manualDepciesSource = dialog.getDepciesSourceList();
-                    manualDepciesTarget = dialog.getDepciesTargetList();
-                }
-            }
-        });
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
-    }
-
-    private void diff() {
-        Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
-        if (warnCheckedElements() < 1 ||
-                !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
-            return;
-        }
-
-        IEclipsePreferences pref = proj.getPrefs();
-        final Differ differ = new Differ(dbRemote.getDbObject(),
-                dbProject.getDbObject(), diffTree, false,
-                pref.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-        differ.setAdditionalDepciesSource(manualDepciesSource);
-        differ.setAdditionalDepciesTarget(manualDepciesTarget);
-
-        Job job = differ.getDifferJob();
-        job.addJobChangeListener(new JobChangeAdapter() {
-
-            @Override
-            public void done(IJobChangeEvent event) {
-                Log.log(Log.LOG_INFO, "Differ job finished with status " +  //$NON-NLS-1$
-                        event.getResult().getSeverity());
-                if (event.getResult().isOK()) {
-                    UiSync.exec(DiffPage.this, new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (DiffPage.this.isDisposed()) {
-                                return;
-                            }
-                            try {
-                                showEditor(differ);
-                            } catch (PartInitException ex) {
-                                ExceptionNotifier.notifyDefault(
-                                        Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-        job.setUser(true);
-        job.schedule();
-    }
-
-    private void showEditor(Differ differ) throws PartInitException {
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                PgDatabase.listPgObjects(dbRemote.getDbObject()));
-        input.setDbinfo(storePicker.getDbInfo());
-        projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
-    }
-
-    @Override
-    public final void reset() {
-        setButtonsClearDepcies(false);
-        super.reset();
-    }
-
-    @Override
-    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
-        super.setInput(dbProject, dbRemote, diffTree);
-        if (diffTree != null) {
-            setButtonsClearDepcies(true);
-        }
-    }
-
-    private void setButtonsClearDepcies(boolean state) {
-        btnGetLatest.setEnabled(state);
-        btnAddDepcy.setEnabled(state);
-        manualDepciesSource.clear();
-        manualDepciesTarget.clear();
     }
 }
