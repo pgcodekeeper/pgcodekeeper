@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -148,6 +147,8 @@ public abstract class DiffPresentationPane extends Composite {
 
         btnGetChanges = new Button(containerUpper, SWT.PUSH);
         btnGetChanges.setText(Messages.get_changes);
+        btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
         btnGetChanges.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
 
@@ -198,15 +199,6 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
-    }
-
-    public void setTitleColor(RGB color){
-        if (color == null){
-            containerUpper.setBackground(null);
-        } else {
-            containerUpper.setBackground(lrm.createColor(color));
-            containerUpper.setBackgroundMode(SWT.INHERIT_FORCE);
-        }
     }
 
     private void openElementInEditor(TreeElement el) {

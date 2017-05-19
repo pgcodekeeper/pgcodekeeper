@@ -150,9 +150,9 @@ public class DiffTableViewer extends Composite {
         iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                 .getBundle().getResource(FILE.ICONEDIT)));
         iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONPROJECT)));
+                .getBundle().getResource(FILE.ICONFROMPROJECT)));
         iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                .getBundle().getResource(FILE.ICONREMOTE)));
+                .getBundle().getResource(FILE.ICONFROMREMOTE)));
 
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -254,14 +254,17 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        new Label(upperComp, SWT.NONE).setText(" | "); //$NON-NLS-1$
+        Label l = new Label(upperComp, SWT.NONE);
+        l.setText("|"); //$NON-NLS-1$
+        l.setEnabled(false);
+
         if (!viewOnly) {
             lblCheckedCount = new Label(upperComp, SWT.NONE);
         }
         lblObjectCount = new Label(upperComp, SWT.NONE);
 
         if (!viewOnly) {
-            Label l = new Label(upperComp, SWT.NONE);
+            l = new Label(upperComp, SWT.NONE);
             l.setText(Messages.diffTableViewer_stored_selections);
             l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 

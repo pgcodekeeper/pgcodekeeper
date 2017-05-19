@@ -32,6 +32,9 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -40,6 +43,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -67,6 +71,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
@@ -357,6 +362,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
 class CommitPage extends DiffPresentationPane {
 
+    private LocalResourceManager lrm;
     private Button btnSave, btnGetLatest, btnAddDepcy;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
@@ -371,11 +377,17 @@ class CommitPage extends DiffPresentationPane {
 
     @Override
     protected void createUpperContainer(final Composite container, GridLayout gl) {
-        gl.numColumns = 4;
+        gl.numColumns = 6;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        lrm = new LocalResourceManager(JFaceResources.getResources(), container);
+
+        new Label(container, SWT.NONE).setText(Messages.ProjectEditorDiffer_apply_to);
 
         btnSave = new Button(container, SWT.PUSH);
         btnSave.setText(Messages.commitPartDescr_commit);
+        btnSave.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))));
         btnSave.setEnabled(false);
         btnSave.addSelectionListener(new SelectionAdapter() {
 
@@ -391,6 +403,8 @@ class CommitPage extends DiffPresentationPane {
 
         btnGetLatest = new Button(container, SWT.PUSH);
         btnGetLatest.setText(Messages.diffPartDescr_get_latest);
+        btnGetLatest.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONDATABASE))));
         btnGetLatest.setEnabled(false);
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
 
@@ -399,6 +413,10 @@ class CommitPage extends DiffPresentationPane {
                 diff();
             }
         });
+
+        Label l = new Label(container, SWT.NONE);
+        l.setText("|");
+        l.setEnabled(false);
 
         btnAddDepcy = new Button(container, SWT.PUSH);
         btnAddDepcy.setText(Messages.diffPartDescr_add_dependencies);
