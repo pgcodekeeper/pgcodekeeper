@@ -54,7 +54,7 @@ public class CreateView extends ParserAbstract {
             for (Storage_parameter_optionContext option: options){
                 String key = option.schema_qualified_name().getText();
                 VexContext value = option.vex();
-                ParserAbstract.fillStorageParams(value != null ? value.getText() : "", key , false, view);
+                ParserAbstract.fillOptionParams(value != null ? value.getText() : "", key , false, view::addOption);
             }
         }
         if (ctx.with_check_option() != null){

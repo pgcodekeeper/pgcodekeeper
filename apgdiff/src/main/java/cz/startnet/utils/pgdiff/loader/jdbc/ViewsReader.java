@@ -107,7 +107,7 @@ public class ViewsReader extends JdbcReader {
         Array arr = res.getArray("reloptions");
         if (arr != null) {
             String[] options = (String[]) arr.getArray();
-            ParserAbstract.fillStorageParams(options, v, false);
+            ParserAbstract.fillOptionParams(options, v::addOption, false, false);
         }
 
         // COMMENT

@@ -226,6 +226,8 @@ public abstract class PgStatement implements IStatement {
         sb.append("\n\nALTER ");
         if (type == DbObjType.VIEW && ((PgView) this).isWithData() != null){
             sb.append("MATERIALIZED ");
+        } else if (type == DbObjType.TABLE && ((PgTable) this).getServerName() != null){
+            sb.append("FOREIGN ");
         }
         sb.append(type)
         .append(' ');

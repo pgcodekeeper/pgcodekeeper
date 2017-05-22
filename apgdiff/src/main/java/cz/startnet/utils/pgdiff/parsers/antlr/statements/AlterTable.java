@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
@@ -74,6 +75,15 @@ public class AlterTable extends ParserAbstract {
                         tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
                         col.addOption(option.storage_param.getText(),
                                 option.value == null ? "" : option.value.getText());
+                    }
+                }
+            }
+
+            if (tablAction.define_foreign_options() != null) {
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if (col != null) {
+                    for (Foreign_optionContext option : tablAction.define_foreign_options().foreign_option()) {
+                        col.addForeignOption(option.name.getText(), option.value.getText());
                     }
                 }
             }

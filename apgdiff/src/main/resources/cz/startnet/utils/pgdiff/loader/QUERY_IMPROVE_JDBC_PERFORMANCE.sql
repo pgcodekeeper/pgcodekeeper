@@ -17,9 +17,12 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        of_type bigint,
        relowner bigint,
        aclArray text,
+       server_name name,
+       ftoptions text[],
        col_numbers integer[],
        col_names name[],
        col_options text[],
+       col_foptions text[],
        col_storages "char"[],
        col_default_storages "char"[],
        col_defaults text[],
@@ -77,9 +80,12 @@ SELECT schema_oid,
        subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
+       subselectColumns.server_name,
+       subselectColumns.ftoptions,
        subselectColumns.col_numbers,
        subselectColumns.col_names,
        subselectColumns.col_options,
+       subselectColumns.col_foptions,
        subselectColumns.col_storages,
        subselectColumns.col_default_storages,
        subselectColumns.col_defaults,
@@ -107,11 +113,14 @@ FROM
             columnsData.of_type,
             columnsData.relowner,
             columnsData.aclArray,
+            columnsData.server_name,
+            columnsData.ftoptions,
             columnsData.spcname,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
             array_agg(columnsData.attoptions ORDER BY columnsData.attnum) AS col_options,
+            array_agg(columnsData.fattoptions ORDER BY columnsData.attnum) AS col_foptions,
             array_agg(columnsData.attstorage ORDER BY columnsData.attnum) AS col_storages,
             array_agg(columnsData.typstorage ORDER BY columnsData.attnum) AS col_default_storages,
             array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
@@ -134,9 +143,12 @@ FROM
               c.reloftype::bigint AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
+              ser.srvname AS server_name,
+              ftbl.ftoptions,
               attr.attnum::integer,
               attr.attname,
               array_to_string(attr.attoptions, ',') attoptions,
+              array_to_string(attr.attfdwoptions, ',') fattoptions,
               attr.attstorage,
               t.typstorage,
               c.relhasoids,
@@ -165,8 +177,10 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
+          LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
+          LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
           WHERE c.relnamespace = schema_oid
-              AND c.relkind = 'r'
+              AND c.relkind IN ('f','r')
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
@@ -174,6 +188,8 @@ FROM
               columnsData.of_type,
               columnsData.relowner,
               columnsData.aclArray,
+              columnsData.server_name,
+              columnsData.ftoptions,
               columnsData.reloptions,
               columnsData.toast_reloptions,
               columnsData.relhasoids,
