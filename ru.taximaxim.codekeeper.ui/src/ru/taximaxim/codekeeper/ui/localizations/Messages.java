@@ -159,7 +159,6 @@ public final class Messages extends NLS {
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
-    public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;
@@ -269,9 +268,6 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
-
-    public static String pgProjectEditor_is_prj_update_backlight;
-    public static String pgProjectEditor_is_db_update_backlight;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
@@ -410,14 +406,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
-    public static String ProjectEditorDiffer_page_text_commit;
-    public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorInput_pgcodekeeper_project;
-
-    public static String ProjectEditorPrefPage_database_color;
-
-    public static String ProjectEditorPrefPage_project_color;
 
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;

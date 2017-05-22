@@ -501,9 +501,9 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 switch (((TreeElement) element).getSide()) {
-                case BOTH: return "edit";
-                case LEFT: return "project";
-                case RIGHT: return "remote";
+                case BOTH: return "edit"; //$NON-NLS-1$
+                case LEFT: return "project"; //$NON-NLS-1$
+                case RIGHT: return "remote"; //$NON-NLS-1$
                 default: return null;
                 }
             }

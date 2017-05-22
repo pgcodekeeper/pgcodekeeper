@@ -415,7 +415,7 @@ class CommitPage extends DiffPresentationPane {
         });
 
         Label l = new Label(container, SWT.NONE);
-        l.setText("|");
+        l.setText("|"); //$NON-NLS-1$
         l.setEnabled(false);
 
         btnAddDepcy = new Button(container, SWT.PUSH);
