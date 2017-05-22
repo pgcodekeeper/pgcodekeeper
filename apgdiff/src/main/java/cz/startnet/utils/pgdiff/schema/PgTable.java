@@ -199,6 +199,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         }
                         sbOption.append(", ");
                     }
+                    sbOption.setLength(sbOption.length() - 2);
                     sbOption.append(");");
                 }
             }
