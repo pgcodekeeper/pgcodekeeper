@@ -133,11 +133,11 @@ public class DiffTableViewer extends Composite {
         CHECK, NAME, TYPE, CHANGE, LOCATION
     }
 
-    StructuredViewer getViewer() {
+    public StructuredViewer getViewer() {
         return viewer;
     }
 
-    Collection<TreeElement> getElements() {
+    public Collection<TreeElement> getElements() {
         return Collections.unmodifiableCollection(elements);
     }
 
