@@ -142,17 +142,14 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         IProject selectedProj = null;
-        DepcyStructuredSelection dss = null;
-        if (selection instanceof DepcyStructuredSelection) {
-            dss = (DepcyStructuredSelection) selection;
-        } else {
-            for (Object selected : ((IStructuredSelection) selection).toList()) {
-                if (selected instanceof DepcyStructuredSelection) {
-                    dss = (DepcyStructuredSelection) selected;
-                }
-                if (selected instanceof IProject) {
-                    selectedProj = (IProject) selected;
-                }
+        DBPair dss = null;
+        List<?> selected = ((IStructuredSelection) selection).toList();
+
+        for (Object object : selected) {
+            if (object instanceof DBPair) {
+                dss = (DBPair) object;
+            } else if (object instanceof IProject) {
+                selectedProj  = (IProject) object;
             }
         }
         if (dss == null) {
@@ -176,18 +173,16 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         Set<PgStatement> newInput = new HashSet<>();
-        for (Object selected : dss.toList()) {
-            if (!(selected instanceof TreeElement)) {
-                continue;
-            }
-
-            TreeElement el = (TreeElement) selected;
-            // does el exist in the chosen graph (or DB)
-            boolean elIsProject = el.getSide() == DiffSide.LEFT;
-            if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
-                for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
-                    if (!(dependant instanceof PgColumn)) {
-                        newInput.add(dependant);
+        for (Object object : selected) {
+            if (object instanceof TreeElement){
+                TreeElement el = (TreeElement) object;
+                // does el exist in the chosen graph (or DB)
+                boolean elIsProject = el.getSide() == DiffSide.LEFT;
+                if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
+                    for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
+                        if (!(dependant instanceof PgColumn)) {
+                            newInput.add(dependant);
+                        }
                     }
                 }
             }

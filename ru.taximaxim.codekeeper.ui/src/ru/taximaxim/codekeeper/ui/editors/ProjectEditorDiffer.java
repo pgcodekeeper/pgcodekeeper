@@ -112,6 +112,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
+import ru.taximaxim.codekeeper.ui.views.DBPair;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
@@ -282,8 +283,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 // bind both to postselection for performance
-                sp.fireSelectionChanged(event);
-                sp.firePostSelectionChanged(event);
+                sp.fireSelectionChanged(event, new DBPair(dbProject, dbRemote));
             }
         });
 

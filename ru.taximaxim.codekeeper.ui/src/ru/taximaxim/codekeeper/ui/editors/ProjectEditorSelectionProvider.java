@@ -14,7 +14,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
+import ru.taximaxim.codekeeper.ui.views.DBPair;
 
 public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
 
@@ -64,27 +64,22 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
         postListeners.remove(listener);
     }
 
-    public void fireSelectionChanged(SelectionChangedEvent event) {
-        modifyAndFireEvent(listeners, event);
-    }
-
-    public void firePostSelectionChanged(SelectionChangedEvent event) {
-        modifyAndFireEvent(postListeners, event);
-    }
-
-    private void modifyAndFireEvent(ListenerList<ISelectionChangedListener> listeners, SelectionChangedEvent event) {
-        SelectionChangedEvent newEvent = modifyEvent(event);
+    public void fireSelectionChanged(SelectionChangedEvent event, DBPair dbPair) {
+        SelectionChangedEvent newEvent = modifyEvent(event, dbPair);
         currentSelection = newEvent.getSelection();
         for(Object l : listeners.getListeners()) {
+            ((ISelectionChangedListener) l).selectionChanged(newEvent);
+        }
+        for(Object l : postListeners.getListeners()) {
             ((ISelectionChangedListener) l).selectionChanged(newEvent);
         }
     }
 
     /**
-     * Ensures that IProject is present as first element of the selection.
-     * Special handling for {@link DepcyStructuredSelection}
+     * Ensures that IProject is present as first element 
+     * and DBPair is present as second element of the selection.
      */
-    private SelectionChangedEvent modifyEvent(SelectionChangedEvent event) {
+    private SelectionChangedEvent modifyEvent(SelectionChangedEvent event, DBPair dbPair) {
         ISelection selection = event.getSelection();
         if (selection.isEmpty()) {
             return defaultSelectionEvent;
@@ -98,12 +93,9 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
         IStructuredSelection sel = (IStructuredSelection) selection;
         List<?> elements = sel.toList();
 
-        boolean isDepcySel = sel instanceof DepcyStructuredSelection;
-        List<Object> newElements = new ArrayList<>(elements.size() + (isDepcySel ? 2 : 1));
+        List<Object> newElements = new ArrayList<>(elements.size() + 2);
         newElements.add(proj);
-        if (isDepcySel) {
-            newElements.add(sel);
-        }
+        newElements.add(dbPair);
         newElements.addAll(elements);
 
         return new SelectionChangedEvent((ISelectionProvider) event.getSource(),
