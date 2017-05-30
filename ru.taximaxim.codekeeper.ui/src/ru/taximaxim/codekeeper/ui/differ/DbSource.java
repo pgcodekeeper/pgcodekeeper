@@ -161,8 +161,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines),
-                monitor, null);
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor);
     }
 }
 
@@ -316,7 +315,7 @@ class DbSourceDb extends DbSource {
 class DbSourceJdbc extends DbSource {
 
     private final JdbcConnector jdbcConnector;
-    private final String dbName, encoding, timezone;
+    private final String dbName, encoding;
     private final boolean forceUnixNewlines;
 
     @Override
@@ -329,7 +328,6 @@ class DbSourceJdbc extends DbSource {
         super(dbName);
         this.dbName = dbName;
         this.encoding = encoding;
-        this.timezone = timezone;
         this.forceUnixNewlines = forceUnixNewlines;
         jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, encoding, timezone);
     }

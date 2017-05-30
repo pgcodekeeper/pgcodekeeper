@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -33,7 +32,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
@@ -43,9 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -62,11 +58,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  */
 public class ReferenceListener extends SQLParserBaseListener {
 
-    /*
-     * TYPE
-     * DOMAIN
-     */
-
     private String defSchema = ApgdiffConsts.PUBLIC;
     private final String filePath;
     private final Map<String, List<PgObjLocation>> definitions;
@@ -81,7 +72,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         this.filePath = filePath;
     }
 
-    private void safeParseStatement(Consumer <ParserRuleContext> c, ParserRuleContext ctx) {
+    private void safeParseStatement(Consumer<ParserRuleContext> c, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
             c.accept(ctx);
@@ -219,9 +210,6 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             getConstraint(colCtx);
-            if (colCtx.table_column_definition() != null) {
-                getColumn(colCtx.table_column_definition());
-            }
         }
 
         fillObjDefinition(schemaName, QNameParser.getFirstName(ids),
@@ -471,10 +459,10 @@ public class ReferenceListener extends SQLParserBaseListener {
                     comment);
             // table
         } else if (ctx.TABLE() != null) {
-            setTableType(addObjReference(schemaName, name,
+            addObjReference(schemaName, name,
                     DbObjType.TABLE, StatementActions.COMMENT,
                     ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine()));
+                    ctx.name.getStart().getLine());
             setCommentToDefinition(name,
                     DbObjType.TABLE,
                     comment);
@@ -551,10 +539,10 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         switch (type) {
         case TABLE:
-            setTableType(addObjReference(schemaName, firstPart, type,
+            addObjReference(schemaName, firstPart, type,
                     StatementActions.NONE,
                     name.getStart().getStartIndex(), 0,
-                    name.getStart().getLine()));
+                    name.getStart().getLine());
             return;
         case SCHEMA:
             schemaName = null;
@@ -595,21 +583,15 @@ public class ReferenceListener extends SQLParserBaseListener {
         for (Table_actionContext tablAction : ctx.table_action()) {
 
             if (tablAction.owner_to() != null) {
-                setTableType(addObjReference(schemaName, name,
+                addObjReference(schemaName, name,
                         DbObjType.TABLE, StatementActions.ALTER,
                         ctx.name.getStart().getStartIndex(), 0,
-                        ctx.name.getStart().getLine()));
+                        ctx.name.getStart().getLine());
             } else {
                 addObjReference(schemaName, name,
                         DbObjType.TABLE, StatementActions.ALTER,
                         ctx.name.getStart().getStartIndex(), 0,
                         ctx.name.getStart().getLine());
-            }
-            if (tablAction.table_column_definition() != null) {
-                getColumn(tablAction.table_column_definition());
-            }
-            if (tablAction.set_def_column() != null) {
-                getSequence(tablAction.set_def_column().expression);
             }
             if (tablAction.tabl_constraint != null) {
                 getTableConstraint(tablAction.tabl_constraint);
@@ -804,26 +786,11 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     private void setCommentToDefinition(String objName, DbObjType objType, String comment) {
-        List<PgObjLocation> defs = new ArrayList<>();
-        for (String key : definitions.keySet()) {
-            defs.addAll(definitions.get(key));
-        }
-        for (PgObjLocation loc : defs) {
-            if (loc.getObjName().equals(objName)
-                    && loc.getObjType().equals(objType)) {
-                loc.setComment(comment);
-            }
-        }
-    }
-
-    private void setTableType(PgObjLocation obj) {
-        List<PgObjLocation> defs = new ArrayList<>();
-        for (String key : definitions.keySet()) {
-            defs.addAll(definitions.get(key));
-        }
-        for (PgObjLocation loc : defs) {
-            if (loc.getObject().equals(obj.getObject())) {
-                obj.setObjType(loc.getObjType());
+        for (List<PgObjLocation> locs: definitions.values()) {
+            for (PgObjLocation loc : locs) {
+                if (loc.getObjName().equals(objName) && loc.getObjType().equals(objType)) {
+                    loc.setComment(comment);
+                }
             }
         }
     }
@@ -854,36 +821,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
 
-    private void getColumn(Table_column_definitionContext colCtx) {
-        if (colCtx.column_name != null) {
-            for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-                if (column_constraint.constr_body().default_expr != null) {
-                    getSequence(column_constraint.constr_body().default_expr);
-                }
-            }
-        }
-    }
-
-    private void getSequence(VexContext default_expr) {
-        new ParseTreeWalker().walk(new SeqName(), default_expr);
-    }
-
     public List<FunctionBodyContainer> getFunctionBodies() {
         return funcBodies;
-    }
-
-    private class SeqName extends SQLParserBaseListener {
-
-        @Override
-        public void enterFunction_call(Function_callContext ctx) {
-            GeneralLiteralSearch seq = new GeneralLiteralSearch();
-            new ParseTreeWalker().walk(seq, ctx);
-            if (seq.isFound()) {
-                addObjReference(getDefSchemaName(), seq.getSeqName(),
-                        DbObjType.SEQUENCE, StatementActions.NONE,
-                        seq.getContext().getStart().getStartIndex() + 1, 0,
-                        seq.getContext().getStart().getLine());
-            }
-        }
     }
 }

@@ -25,9 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
@@ -65,14 +62,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     private final IProgressMonitor monitor;
     private String tablespace;
     private String oids;
-    private final ReferenceListener refer;
 
-    public CustomSQLParserListener(PgDatabase database, String parsedObjectName,
-            List<AntlrError> errors, IProgressMonitor monitor) {
+    public CustomSQLParserListener(PgDatabase database, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
-        refer = new ReferenceListener(db, parsedObjectName, monitor);
     }
 
     private PgStatement safeParseStatement(ParserAbstract p) {
@@ -84,83 +78,67 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             return null;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
-        }/* catch (Exception ex) {
-            Log.log(Log.LOG_WARNING,
-                    "Exception while analyzing parser tree for: " + parsedObjectName, ex);
-            return null;
-        }*/
+        }
     }
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
         safeParseStatement(new CreateTable(ctx, db, tablespace, oids));
-        refer.exitCreate_table_statement(ctx);
     }
 
     @Override
     public void exitCreate_index_statement(Create_index_statementContext ctx) {
         safeParseStatement(new CreateIndex(ctx, db, tablespace));
-        refer.exitCreate_index_statement(ctx);
     }
 
     @Override
     public void exitCreate_extension_statement(Create_extension_statementContext ctx) {
         safeParseStatement(new CreateExtension(ctx, db));
-        refer.exitCreate_extension_statement(ctx);
     }
 
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
         safeParseStatement(new CreateTrigger(ctx, db));
-        refer.exitCreate_trigger_statement(ctx);
     }
 
     @Override
     public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
         safeParseStatement(new CreateRewrite(ctx, db));
-        refer.exitCreate_rewrite_statement(ctx);
     }
 
     @Override
     public void exitCreate_function_statement(Create_function_statementContext ctx) {
         safeParseStatement(new CreateFunction(ctx, db));
-        refer.exitCreate_function_statement(ctx);
     }
 
     @Override
     public void exitCreate_sequence_statement(Create_sequence_statementContext ctx) {
         safeParseStatement(new CreateSequence(ctx, db));
-        refer.exitCreate_sequence_statement(ctx);
     }
 
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
         safeParseStatement(new CreateSchema(ctx, db));
-        refer.exitCreate_schema_statement(ctx);
     }
 
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
         safeParseStatement(new CreateView(ctx, db));
-        refer.exitCreate_view_statement(ctx);
     }
 
     @Override
     public void exitCreate_type_statement(Create_type_statementContext ctx) {
         safeParseStatement(new CreateType(ctx, db));
-        refer.exitCreate_type_statement(ctx);
     }
 
     @Override
     public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
         safeParseStatement(new CreateDomain(ctx, db));
-        refer.exitCreate_domain_statement(ctx);
     }
 
     @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
         safeParseStatement(new CommentOn(ctx, db));
-        refer.exitComment_on_statement(ctx);
     }
 
     @Override
@@ -199,74 +177,46 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         default:
             break;
         }
-        refer.exitSet_statement(ctx);
     }
 
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
         safeParseStatement(new CreateRule(ctx, db));
-        refer.exitRule_common(ctx);
     }
 
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
         safeParseStatement(new AlterFunction(ctx, db));
-        refer.exitAlter_function_statement(ctx);
     }
 
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
         safeParseStatement(new AlterSchema(ctx, db));
-        refer.exitAlter_schema_statement(ctx);
     }
 
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
         safeParseStatement(new AlterTable(ctx, db));
-        refer.alterTable(ctx);
     }
 
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
         safeParseStatement(new AlterSequence(ctx, db));
-        refer.exitAlter_sequence_statement(ctx);
     }
 
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
         safeParseStatement(new AlterView(ctx, db));
-        refer.exitAlter_view_statement(ctx);
     }
 
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
         safeParseStatement(new AlterType(ctx, db));
-        refer.exitAlter_type_statement(ctx);
     }
 
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
         safeParseStatement(new AlterDomain(ctx, db));
-        refer.exitAlter_domain_statement(ctx);
-    }
-
-    @Override
-    public void exitDrop_statements(Drop_statementsContext ctx) {
-        refer.exitDrop_statements(ctx);
-    }
-
-    @Override
-    public void exitDrop_trigger_statement(Drop_trigger_statementContext ctx) {
-        refer.exitDrop_trigger_statement(ctx);
-    }
-
-    @Override
-    public void exitDrop_function_statement(Drop_function_statementContext ctx) {
-        refer.exitDrop_function_statement(ctx);
-    }
-
-    public List<FunctionBodyContainer> getFunctionBodies() {
-        return refer.getFunctionBodies();
     }
 
     static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex) {

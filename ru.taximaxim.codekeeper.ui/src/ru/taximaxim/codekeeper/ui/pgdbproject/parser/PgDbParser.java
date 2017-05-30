@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -71,7 +73,7 @@ public class PgDbParser implements IResourceChangeListener {
             return parser;
         }
         parser = new PgDbParser(proj);
-        parser.getFullDBFromPgDbProjectJob(proj);
+        parser.getFullDBFromPgDbProjectJob();
         PROJ_PARSERS.put(proj, parser);
         return parser;
     }
@@ -89,7 +91,7 @@ public class PgDbParser implements IResourceChangeListener {
         }
 
         parser = new PgDbParser(proj);
-        parser.getFullDBFromPgDbProject(proj, builderMonitor);
+        parser.getFullDBFromPgDbProject(builderMonitor);
         PROJ_PARSERS.put(proj, parser);
         // signify newly loaded parser
         return null;
@@ -104,13 +106,10 @@ public class PgDbParser implements IResourceChangeListener {
         return rollOnParser;
     }
 
-    public void getObjFromProject(IProgressMonitor monitor)
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
-        getFullDBFromPgDbProject(proj, monitor);
-    }
-
-    public void getObjFromProjFile(IFile iFile, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+        SubMonitor mon = SubMonitor.convert(monitor, files.size());
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
@@ -120,12 +119,10 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args, monitor)) {
-            PgDatabase db = loader.loadFile(new PgDatabase());
-            objDefinitions.putAll(db.getObjDefinitions());
-            objReferences.putAll(db.getObjReferences());
-            fillFunctionBodies(objDefinitions, objReferences, loader.getFuncBodyReferences());
-        }
+        PgDatabase db = PgUIDumpLoader.buildFiles(args, files, proj, mon, funcBodies);
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.putAll(db.getObjReferences());
+        fillFunctionBodies(objDefinitions, objReferences, funcBodies);
     }
 
     public static void fillFunctionBodies(Map<String, List<PgObjLocation>> objDefinitions2,
@@ -154,14 +151,14 @@ public class PgDbParser implements IResourceChangeListener {
         }
     }
 
-    private void getFullDBFromPgDbProjectJob(final IProject pgProject) {
+    private void getFullDBFromPgDbProjectJob() {
         Job job = new Job("getDatabaseReferences") { //$NON-NLS-1$
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     // FIXME call build on project, use regular visible job (custom build job)
-                    getFullDBFromPgDbProject(pgProject, monitor);
+                    getFullDBFromPgDbProject(monitor);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 } catch (IOException | LicenseException | CoreException ex) {
@@ -175,8 +172,9 @@ public class PgDbParser implements IResourceChangeListener {
         job.schedule();
     }
 
-    private void getFullDBFromPgDbProject(IProject pgProject, IProgressMonitor monitor)
+    public void getFullDBFromPgDbProject(IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
+        SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         String charset = ApgdiffConsts.UTF_8;
         try {
@@ -187,8 +185,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         args.setInCharsetName(charset);
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                pgProject.getProject(), args, monitor, funcBodies);
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(proj, args, mon, funcBodies);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
@@ -212,7 +209,10 @@ public class PgDbParser implements IResourceChangeListener {
         args.setInCharsetName(scriptFileEncoding);
         PgDatabase db;
         try (PgDumpLoader loader = new PgDumpLoader(input, "bytestream:/", args, monitor, 2)) { //$NON-NLS-1$
+            loader.setLoadSchema(false);
+            loader.setLoadReferences(true);
             db = loader.load();
+            funcBodies.addAll(loader.getFuncBodyReferences());
         }
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
