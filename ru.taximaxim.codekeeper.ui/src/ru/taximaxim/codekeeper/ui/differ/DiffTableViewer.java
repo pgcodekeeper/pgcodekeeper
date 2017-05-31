@@ -1077,7 +1077,7 @@ public class DiffTableViewer extends Composite {
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isContainer(parent) && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+            if (isSubElement(el) && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
                 return true;
             }
 
