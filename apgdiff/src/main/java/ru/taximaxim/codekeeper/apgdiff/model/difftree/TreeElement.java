@@ -20,17 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 public class TreeElement {
 
     public enum DiffSide {
-        LEFT("delete"), RIGHT("new"), BOTH("edit");
-        private String changeType;
-
-        private DiffSide(String changeType) {
-            this.changeType = changeType;
-        }
-
-        @Override
-        public String toString() {
-            return changeType;
-        }
+        LEFT, RIGHT, BOTH;
     }
 
     private int hashcode;

@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -23,18 +22,16 @@ public class DiffPaneDialog extends Dialog {
     private final Collection<TreeElement> availableElements;
     private final DbSource dbProject;
     private final DbSource dbRemote;
-    private final DiffSide projSide;
 
     private DiffPaneViewer diffPane;
 
     public DiffPaneDialog(Shell parentShell, TreeElement el, Collection<TreeElement> availableElements,
-            DbSource dbProject, DbSource dbRemote, DiffSide projSide) {
+            DbSource dbProject, DbSource dbRemote) {
         super(parentShell);
         this.input = el;
         this.availableElements = availableElements;
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
-        this.projSide = projSide;
 
         setShellStyle(SWT.RESIZE | SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE);
         setBlockOnOpen(false);
@@ -59,7 +56,7 @@ public class DiffPaneDialog extends Dialog {
         gd.minimumWidth = 1024;
         container.setLayoutData(gd);
 
-        diffPane = new DiffPaneViewer(container, SWT.NONE, projSide);
+        diffPane = new DiffPaneViewer(container, SWT.NONE);
         diffPane.setDbSources(dbProject, dbRemote);
         diffPane.setInput(input, availableElements);
 

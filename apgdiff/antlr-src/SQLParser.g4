@@ -20,7 +20,7 @@ qname_parser
   ;
 
 function_args_parser
-  : function_args EOF
+  : schema_qualified_name? function_args EOF
   ;
 
 vex_eof
@@ -31,14 +31,12 @@ vex_eof
 
 statement
   : data_statement
-   /*| data_change_statement*/
   | schema_statement
   | script_statement
   ;
 
 data_statement
   : select_stmt
-  | copy_statement
   ;
 
   script_statement
@@ -51,28 +49,6 @@ data_statement
   | READ WRITE | READ ONLY
   | (NOT)? DEFERRABLE
   ;
-
-copy_statement
-    : COPY (table_name=schema_qualified_name column_references?
-           | ( query=select_stmt ))
-        (FROM | TO) (filename=identifier | STDIN)
-        (WITH? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
-    ;
-copy_option:
-    FORMAT format_name=identifier
-    | OIDS (boolean_val=truth_value)?
-    | DELIMITER delimiter_character=identifier
-    | NULL null_string=identifier
-    | HEADER (boolean_val=truth_value)?
-    | QUOTE_CHAR quote_character=identifier
-    | ESCAPE escape_character=identifier
-    | FORCE_QUOTE (column_references | MULTIPLY)
-    | FORCE_NOT_NULL column_references
-    | ENCODING encoding_name=identifier
-    ;
-//data_change_statement
-//  : insert_statement
-//  ;
 
 schema_statement
   : schema_create
@@ -151,9 +127,9 @@ table_action
         | drop_def
         | ((SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
-        | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
-        | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
-        | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
+        | set_attribute_option
+        | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
+        | set_storage ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -165,7 +141,7 @@ table_action
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
     | SET storage_parameter
-    | RESET LEFT_PAREN with_storage_parameter (COMMA with_storage_parameter)* RIGHT_PAREN
+    | RESET storage_parameter
     | INHERIT parent_table=schema_qualified_name
     | NO INHERIT parent_table=schema_qualified_name
     | OF type_name=schema_qualified_name
@@ -174,20 +150,27 @@ table_action
     | SET table_space
     ;
 
+set_attribute_option
+    : SET storage_parameter
+    ;
+    
+set_storage
+    : SET STORAGE storage_option
+    ;
+
+storage_option
+    : PLAIN 
+    | EXTERNAL 
+    | EXTENDED 
+    | MAIN
+    ;
+
 validate_constraint
     : VALIDATE CONSTRAINT constraint_name=schema_qualified_name
     ;
 
 drop_constraint
     : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
-    ;
-
-attribute_option_value
-    : attribute_option=table_attribute_option EQUAL value=signed_numerical_literal
-    ;
-
-table_attribute_option
-    : N_DISTINCT | N_DISTINCT_INHERITED
     ;
 
 table_deferrable
@@ -292,7 +275,7 @@ drop_def
     ;
 
 create_index_statement
-    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name
+    : unique_value=UNIQUE? INDEX CONCURRENTLY? name=identifier? ON table_name=schema_qualified_name
         index_rest
     ;
 
@@ -303,7 +286,7 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
-      param_clause?
+      with_storage_parameter?
     ;
     
 index_where 
@@ -311,7 +294,7 @@ index_where
     ;
 
  create_extension_statement
-    : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name WITH?
+    : EXTENSION (IF NOT EXISTS)? name=identifier WITH?
          schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
     ;
 
@@ -321,7 +304,7 @@ create_language_statement
     ;
 
 create_event_trigger
-    : EVENT TRIGGER name=schema_qualified_name ON event=schema_qualified_name
+    : EVENT TRIGGER name=identifier ON event=identifier
         (WHEN filter_variable=schema_qualified_name (IN
             LEFT_PAREN
                 filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
@@ -392,7 +375,7 @@ set_statement_value
     ;
 
 create_rewrite_statement
-    : (OR REPLACE)? RULE name=schema_qualified_name AS ON event=(SELECT | INSERT | DELETE | UPDATE)
+    : (OR REPLACE)? RULE name=identifier AS ON event=(SELECT | INSERT | DELETE | UPDATE)
      TO table_name=schema_qualified_name (WHERE vex)? DO (ALSO | INSTEAD)?
      (NOTHING
         | commands+=rewrite_command
@@ -409,9 +392,9 @@ rewrite_command
     ;
 
 create_trigger_statement
-    : CONSTRAINT? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
+    : CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
     (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
-    ON tabl_name=schema_qualified_name
+    ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
@@ -555,7 +538,7 @@ create_funct_params
             | AS function_body
             | AS Character_String_Literal (COMMA Character_String_Literal)*
           )+
-            (WITH LEFT_PAREN attribute+=function_attribute(COMMA attribute+=function_attribute)* RIGHT_PAREN)?
+      with_storage_parameter?
     ;
 
 function_ret_table
@@ -585,10 +568,6 @@ function_def_value
     : (DEFAULT | EQUAL) def_value=vex
     ;
 
-function_attribute
-    : ISSTRICT | ISCACHABLE
-    ;
-
 argmode
     : IN | OUT | INOUT | VARIADIC
     ;
@@ -616,7 +595,7 @@ sign
   ;
 
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
+    : SCHEMA (IF NOT EXISTS)? name=identifier? (AUTHORIZATION user_name=identifier)? schema_def=schema_definition?
     ;
 
 schema_definition
@@ -636,12 +615,33 @@ with_check_option
 
 create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name
-        (OF type_name=identifier)?
-        LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
-        (INHERITS parent_table= column_references)?
-        storage_parameter_oid?
-        on_commit?
-        table_space?
+    define_table
+    storage_parameter_oid?
+    on_commit?
+    table_space?
+  ;
+
+define_table
+   : define_columns 
+   | define_type
+   ;
+
+define_columns
+  : LEFT_PAREN 
+      (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? 
+    RIGHT_PAREN
+    (INHERITS parent_table=column_references)?
+  ;
+
+define_type
+  : OF type_name=data_type
+    list_of_type_column_def?
+  ;
+
+list_of_type_column_def
+  : LEFT_PAREN 
+      (table_col_def+=table_of_type_column_def (COMMA table_col_def+=table_of_type_column_def)*) 
+    RIGHT_PAREN
   ;
 
 table_column_def
@@ -649,13 +649,18 @@ table_column_def
        | tabl_constraint=constraint_common
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
-
-table_column_definition
-    : column_name=identifier datatype=data_type collate_name=collate_identifier? with_options? (colmn_constraint+=constraint_common)*
+    
+table_of_type_column_def
+    : table_of_type_column_definition
+       | tabl_constraint=constraint_common
     ;
 
-with_options
-    : WITH OPTIONS
+table_column_definition
+    : column_name=identifier datatype=data_type collate_name=collate_identifier? (colmn_constraint+=constraint_common)*
+    ;
+    
+table_of_type_column_definition
+    : column_name=identifier WITH OPTIONS (colmn_constraint+=constraint_common)*
     ;
 
 like_option
@@ -759,7 +764,7 @@ owner_to
     ;
 
 rename_to
-    : RENAME TO name=schema_qualified_name
+    : RENAME TO name=identifier
     ;
 
 set_schema
@@ -767,7 +772,7 @@ set_schema
     ;
 
 schema_with_name
-    : SCHEMA name=schema_qualified_name
+    : SCHEMA name=identifier
     ;
 
 table_column_privilege
@@ -780,14 +785,6 @@ usage_select_update
 create_connect_temporary_temp
     :CREATE | CONNECT | TEMPORARY | TEMP
     ;
-
-param_clause
-  : WITH LEFT_PAREN param (COMMA param)* RIGHT_PAREN
-  ;
-
-param
-  : key=identifier EQUAL value=vex
-  ;
 
 partition_by_columns
     : PARTITION BY vex (COMMA vex)*
@@ -812,7 +809,7 @@ drop_function_statement
     ;
 
 drop_trigger_statement
-    : TRIGGER (IF EXISTS)? name=schema_qualified_name ON schema_qualified_name cascade_restrict?
+    : TRIGGER (IF EXISTS)? name=identifier ON table_name=schema_qualified_name cascade_restrict?
     ;
 
 drop_statements
@@ -837,417 +834,188 @@ if_exist_names_restrict_cascade
 identifier
   : (Identifier | QuotedIdentifier)
   | tokens_nonreserved
-  | tokens_nonreserved_types
   | tokens_nonreserved_except_function_type
+  | tokens_nonkeyword
   ;
 
 identifier_nontype
   : (Identifier | QuotedIdentifier)
-  | tokens_nonreserved;
+  | tokens_nonreserved
+  | tokens_reserved_except_function_type
+  | tokens_nonkeyword
+  ;
 
+/*
+ * These rules should be generated using code in the Keyword class.
+ * Word tokens that are not keywords should be added to nonreserved list.
+ */
 tokens_nonreserved
   : ABORT
-//  | A
-//  | ABS
-//  | ABSENT
   | ABSOLUTE
   | ACCESS
-//  | ACCORDING
   | ACTION
-//  | ADA
   | ADD
   | ADMIN
   | AFTER
   | AGGREGATE
-  | ALIGNMENT
-//  | ALLOCATE
   | ALSO
   | ALTER
   | ALWAYS
-//  | ARE
-//  | ARRAY_AGG
-//  | ARRAY_MAX_CARDINALITY
-//  | ASENSITIVE
   | ASSERTION
   | ASSIGNMENT
   | AT
-//  | ATOMIC
   | ATTRIBUTE
-//  | ATTRIBUTES
-  | AVG
   | BACKWARD
-//  | BASE64
   | BEFORE
   | BEGIN
-//  | BEGIN_FRAME
-//  | BEGIN_PARTITION
-//  | BERNOULLI
-//  | BIT_LENGTH
-//  | BLOCKED
-//  | BOM
-//  | BREADTH
   | BY
-//  | C
   | CACHE
-//  | CALL
   | CALLED
-  | CANONICAL
-//  | CARDINALITY
   | CASCADE
   | CASCADED
   | CATALOG
-//  | CATALOG_NAME
-  | CATEGORY
-//  | CEIL
-//  | CEILING
-  | CENTURY
   | CHAIN
   | CHARACTERISTICS
-//  | CHARACTERS
-//  | CHARACTER_LENGTH
-//  | CHARACTER_SET_CATALOG
-//  | CHARACTER_SET_NAME
-//  | CHARACTER_SET_SCHEMA
-//  | CHAR_LENGTH
   | CHECKPOINT
   | CLASS
-//  | CLASS_ORIGIN
-//  | CLOB
   | CLOSE
   | CLUSTER
-//  | COBOL
-  | COLLATABLE
-//  | COLLATION_CATALOG
-//  | COLLATION_NAME
-//  | COLLATION_SCHEMA
-  | COLLECT
-//  | COLUMNS
-//  | COLUMN_NAME
-//  | COMMAND_FUNCTION
-//  | COMMAND_FUNCTION_CODE
   | COMMENT
   | COMMENTS
   | COMMIT
   | COMMITTED
-//  | CONDITION
-//  | CONDITION_NUMBER
   | CONFIGURATION
-  | CONNECT
+  | CONFLICT
   | CONNECTION
-//  | CONNECTION_NAME
   | CONSTRAINTS
-//  | CONSTRAINT_CATALOG
-//  | CONSTRAINT_NAME
-//  | CONSTRAINT_SCHEMA
-//  | CONSTRUCTOR
-//  | CONTAINS
   | CONTENT
   | CONTINUE
-//  | CONTROL
   | CONVERSION
-//  | CONVERT
   | COPY
-//  | CORR
-//  | CORRESPONDING
   | COST
-  | COUNT
-//  | COVAR_POP
-//  | COVAR_SAMP
   | CSV
   | CUBE
-//  | CUME_DIST
   | CURRENT
-//  | CURRENT_DEFAULT_TRANSFORM_GROUP
-//  | CURRENT_PATH
-//  | CURRENT_ROW
-//  | CURRENT_TRANSFORM_GROUP_FOR_TYPE
   | CURSOR
-//  | CURSOR_NAME
   | CYCLE
   | DATA
   | DATABASE
-//  | DATALINK
-//  | DATETIME_INTERVAL_CODE
-//  | DATETIME_INTERVAL_PRECISION
   | DAY
-//  | DB
   | DEALLOCATE
-  | DECADE
   | DECLARE
   | DEFAULTS
   | DEFERRED
-//  | DEFINED
   | DEFINER
-//  | DEGREE
   | DELETE
   | DELIMITER
   | DELIMITERS
-//  | DENSE_RANK
-//  | DEPTH
-//  | DEREF
-//  | DERIVED
-//  | DESCRIBE
-//  | DESCRIPTOR
-//  | DETERMINISTIC
-//  | DIAGNOSTICS
+  | DEPENDS
   | DICTIONARY
   | DISABLE
   | DISCARD
-//  | DISCONNECT
-//  | DISPATCH
-//  | DLNEWCOPY
-//  | DLPREVIOUSCOPY
-//  | DLURLCOMPLETE
-//  | DLURLCOMPLETEONLY
-//  | DLURLCOMPLETEWRITE
-//  | DLURLPATH
-//  | DLURLPATHONLY
-//  | DLURLPATHWRITE
-//  | DLURLSCHEME
-//  | DLURLSERVER
-//  | DLVALUE
   | DOCUMENT
   | DOMAIN
-  | DOW
-  | DOY
+  | DOUBLE
   | DROP
-//  | DYNAMIC
-//  | DYNAMIC_FUNCTION
-//  | DYNAMIC_FUNCTION_CODE
   | EACH
-  | ELEMENT
-//  | EMPTY
   | ENABLE
   | ENCODING
   | ENCRYPTED
-  | END_EXEC
-//  | END_FRAME
-//  | END_PARTITION
-//  | ENFORCED
   | ENUM
-  | EPOCH
-//  | EQUALS
   | ESCAPE
   | EVENT
-  | EVERY
-//  | EXCEPTION
   | EXCLUDE
   | EXCLUDING
   | EXCLUSIVE
-//  | EXEC
   | EXECUTE
-//  | EXP
   | EXPLAIN
-//  | EXPRESSION
-  | EXTENDED
   | EXTENSION
   | EXTERNAL
   | FAMILY
-//  | FILE
   | FILTER
-//  | FINAL
   | FIRST
-//  | FIRST_VALUE
-//  | FLAG
-//  | FLOOR
   | FOLLOWING
   | FORCE
-  | FORCE_NOT_NULL
-  | FORCE_QUOTE
-  | FORMAT
-//  | FORTRAN
   | FORWARD
-//  | FOUND
-//  | FRAME_ROW
-//  | FREE
-//  | FS
   | FUNCTION
   | FUNCTIONS
-  | FUSION
-//  | G
-//  | GENERAL
-//  | GENERATED
-//  | GET
   | GLOBAL
-//  | GO
-//  | GOTO
   | GRANTED
-  | GROUPING
-//  | GROUPS
   | HANDLER
   | HEADER
-//  | HEX
-//  | HIERARCHY
   | HOLD
   | HOUR
-//  | ID
   | IDENTITY
   | IF
-//  | IGNORE
   | IMMEDIATE
-//  | IMMEDIATELY
   | IMMUTABLE
-//  | IMPLEMENTATION
   | IMPLICIT
-//  | IMPORT
+  | IMPORT
   | INCLUDING
   | INCREMENT
-//  | INDENT
   | INDEX
   | INDEXES
-//  | INDICATOR
   | INHERIT
   | INHERITS
   | INLINE
   | INPUT
   | INSENSITIVE
   | INSERT
-//  | INSTANCE
-//  | INSTANTIABLE
   | INSTEAD
-//  | INTEGRITY
-  | INTERNALLENGTH
-  | INTERSECTION
   | INVOKER
-  | ISCACHABLE
-  | ISODOW
   | ISOLATION
-  | ISOYEAR
-  | ISSTRICT
-//  | K
   | KEY
-//  | KEY_MEMBER
-//  | KEY_TYPE
   | LABEL
-//  | LAG
   | LANGUAGE
   | LARGE
   | LAST
-//  | LAST_VALUE
-  | LC_COLLATE
-  | LC_CTYPE
-//  | LEAD
   | LEAKPROOF
-//  | LENGTH
   | LEVEL
-//  | LIBRARY
-//  | LIKE_REGEX
-//  | LINK
   | LISTEN
-//  | LN
   | LOAD
   | LOCAL
   | LOCATION
-//  | LOCATOR
   | LOCK
-//  | LOWER
-//  | M
-  | MAIN
-//  | MAP
+  | LOCKED
+  | LOGGED
   | MAPPING
   | MATCH
-//  | MATCHED
   | MATERIALIZED
-  | MAX
   | MAXVALUE
-//  | MAX_CARDINALITY
-//  | MEMBER
-//  | MERGE
-//  | MESSAGE_LENGTH
-//  | MESSAGE_OCTET_LENGTH
-//  | MESSAGE_TEXT
-//  | METHOD
-  | MICROSECONDS
-  | MILLENNIUM
-  | MILLISECONDS
-  | MIN
+  | METHOD
   | MINUTE
   | MINVALUE
-//  | MOD
   | MODE
-//  | MODIFIES
-//  | MODULE
   | MONTH
-//  | MORE
   | MOVE
-//  | MULTISET
-//  | MUMPS
+  | NAME
   | NAMES
-//  | NAMESPACE
-//  | NCLOB
-//  | NESTING
-//  | NEW
   | NEXT
-//  | NFC
-//  | NFD
-//  | NFKC
-//  | NFKD
-//  | NIL
   | NO
-//  | NORMALIZE
-//  | NORMALIZED
   | NOTHING
   | NOTIFY
   | NOWAIT
-//  | NTH_VALUE
-//  | NTILE
-//  | NULLABLE
   | NULLS
-//  | NUMBER
-  | N_DISTINCT
-  | N_DISTINCT_INHERITED
   | OBJECT
-//  | OCCURRENCES_REGEX
-//  | OCTETS
-//  | OCTET_LENGTH
   | OF
   | OFF
   | OIDS
-//  | OLD
-//  | OPEN
   | OPERATOR
   | OPTION
   | OPTIONS
-//  | ORDERING
-//  | ORDINALITY
-//  | OTHERS
-  | OUTPUT
-//  | OVERRIDING
+  | ORDINALITY
+  | OVER
   | OWNED
   | OWNER
-//  | P
-//  | PAD
-//  | PARAMETER
-//  | PARAMETER_MODE
-//  | PARAMETER_NAME
-//  | PARAMETER_ORDINAL_POSITION
-//  | PARAMETER_SPECIFIC_CATALOG
-//  | PARAMETER_SPECIFIC_NAME
-//  | PARAMETER_SPECIFIC_SCHEMA
+  | PARALLEL
   | PARSER
   | PARTIAL
   | PARTITION
-//  | PASCAL
-  | PASSEDBYVALUE
   | PASSING
-//  | PASSTHROUGH
   | PASSWORD
-//  | PATH
-//  | PERCENT
-//  | PERCENTILE_CONT
-//  | PERCENTILE_DISC
-//  | PERCENT_RANK
-//  | PERIOD
-//  | PERMISSION
-  | PLAIN
   | PLANS
-//  | PLI
-//  | PORTION
-//  | POSITION_REGEX
-//  | POWER
-//  | PRECEDES
+  | POLICY
   | PRECEDING
-  | PREFERRED
   | PREPARE
   | PREPARED
   | PRESERVE
@@ -1256,31 +1024,14 @@ tokens_nonreserved
   | PROCEDURAL
   | PROCEDURE
   | PROGRAM
-  | PUBLIC
-  | QUARTER
   | QUOTE
   | RANGE
-//  | RANK
   | READ
-//  | READS
   | REASSIGN
-  | RECEIVE
   | RECHECK
-//  | RECOVERY
   | RECURSIVE
   | REF
-//  | REFERENCING
   | REFRESH
-  | REGEXP
-//  | REGR_AVGX
-//  | REGR_AVGY
-//  | REGR_COUNT
-//  | REGR_INTERCEPT
-//  | REGR_R2
-//  | REGR_SLOPE
-//  | REGR_SXX
-//  | REGR_SXY
-//  | REGR_SYY
   | REINDEX
   | RELATIVE
   | RELEASE
@@ -1288,227 +1039,88 @@ tokens_nonreserved
   | REPEATABLE
   | REPLACE
   | REPLICA
-//  | REQUIRING
   | RESET
-//  | RESPECT
   | RESTART
-//  | RESTORE
   | RESTRICT
-//  | RESULT
-//  | RETURN
-//  | RETURNED_CARDINALITY
-//  | RETURNED_LENGTH
-//  | RETURNED_OCTET_LENGTH
-//  | RETURNED_SQLSTATE
   | RETURNS
   | REVOKE
-  | RLIKE
   | ROLE
   | ROLLBACK
   | ROLLUP
-//  | ROUTINE
-//  | ROUTINE_CATALOG
-//  | ROUTINE_NAME
-//  | ROUTINE_SCHEMA
   | ROWS
-//  | ROW_COUNT
-//  | ROW_NUMBER
   | RULE
   | SAVEPOINT
-//  | SCALE
   | SCHEMA
-//  | SCHEMA_NAME
-//  | SCOPE
-//  | SCOPE_CATALOG
-//  | SCOPE_NAME
-//  | SCOPE_SCHEMA
   | SCROLL
   | SEARCH
   | SECOND
-//  | SECTION
   | SECURITY
-//  | SELECTIVE
-//  | SELF
-  | SEND
-//  | SENSITIVE
   | SEQUENCE
   | SEQUENCES
   | SERIALIZABLE
   | SERVER
-//  | SERVER_NAME
   | SESSION
   | SET
   | SETS
   | SHARE
   | SHOW
   | SIMPLE
-//  | SIZE
+  | SKIP_
   | SNAPSHOT
-//  | SOURCE
-//  | SPACE
-//  | SPECIFIC
-//  | SPECIFICTYPE
-//  | SPECIFIC_NAME
-//  | SQL
-//  | SQLCODE
-//  | SQLERROR
-//  | SQLEXCEPTION
-//  | SQLSTATE
-//  | SQLWARNING
-//  | SQRT
+  | SQL
   | STABLE
   | STANDALONE
   | START
-//  | STATE
   | STATEMENT
-//  | STATIC
   | STATISTICS
-  | STDDEV_POP
-  | STDDEV_SAMP
   | STDIN
   | STDOUT
   | STORAGE
   | STRICT
   | STRIP
-//  | STRUCTURE
-//  | STYLE
-//  | SUBCLASS_ORIGIN
-//  | SUBMULTISET
-//  | SUBSTRING_REGEX
-  | SUBTYPE
-  | SUBTYPE_DIFF
-  | SUBTYPE_OPCLASS
-//  | SUCCEEDS
-  | SUM
   | SYSID
   | SYSTEM
-//  | SYSTEM_TIME
-//  | SYSTEM_USER
-//  | T
   | TABLES
-//  | TABLESAMPLE
   | TABLESPACE
-//  | TABLE_NAME
   | TEMP
   | TEMPLATE
   | TEMPORARY
-//  | TIES
-  | TIMEZONE
-  | TIMEZONE_HOUR
-  | TIMEZONE_MINUTE
-//  | TOKEN
-//  | TOP_LEVEL_COUNT
+  | TEXT
   | TRANSACTION
-//  | TRANSACTIONS_COMMITTED
-//  | TRANSACTIONS_ROLLED_BACK
-//  | TRANSACTION_ACTIVE
-//  | TRANSFORM
-//  | TRANSFORMS
-//  | TRANSLATE
-//  | TRANSLATE_REGEX
-//  | TRANSLATION
-//  | TRIGGER_CATALOG
-//  | TRIGGER_NAME
-//  | TRIGGER_SCHEMA
-//  | TRIM_ARRAY
+  | TRANSFORM
+  | TRIGGER
   | TRUNCATE
   | TRUSTED
   | TYPE
   | TYPES
-  | TYPMOD_IN
-  | TYPMOD_OUT
-//  | UESCAPE
   | UNBOUNDED
   | UNCOMMITTED
-//  | UNDER
   | UNENCRYPTED
-//  | UNLINK
+  | UNKNOWN
   | UNLISTEN
   | UNLOGGED
-//  | UNNAMED
-//  | UNNEST
   | UNTIL
-//  | UNTYPED
   | UPDATE
-//  | UPPER
-//  | URI
-  | USAGE
-//  | USER_DEFINED_TYPE_CATALOG
-//  | USER_DEFINED_TYPE_CODE
-//  | USER_DEFINED_TYPE_NAME
-//  | USER_DEFINED_TYPE_SCHEMA
   | VACUUM
   | VALID
   | VALIDATE
   | VALIDATOR
   | VALUE
-//  | VALUE_OF
-  | VARIABLE
-  | VAR_POP
-  | VAR_SAMP
+  | VARYING
   | VERSION
-//  | VERSIONING
   | VIEW
+  | VIEWS
   | VOLATILE
-  | WEEK
-//  | WHENEVER
   | WHITESPACE
-//  | WIDTH_BUCKET
-//  | WITHIN
+  | WITHIN
   | WITHOUT
   | WORK
   | WRAPPER
   | WRITE
-//  | XMLAGG
-//  | XMLBINARY
-//  | XMLCAST
-//  | XMLCOMMENT
-//  | XMLDECLARATION
-//  | XMLDOCUMENT
-//  | XMLITERATE
-//  | XMLNAMESPACES
-//  | XMLQUERY
-//  | XMLSCHEMA
-//  | XMLTABLE
-//  | XMLTEXT
-//  | XMLVALIDATE
+  | XML
   | YEAR
   | YES
   | ZONE
-  ;
-
-tokens_nonreserved_types
-  : BLOB
-  | BOOL
-  | BYTEA
-  | CIDR
-  | DATE
-  | DOUBLE
-  | FLOAT4
-  | FLOAT8
-  | INET
-  | INET4
-  | INT1
-  | INT2
-  | INT4
-  | INT8
-  | MONEY
-  | NAME
-  | OID
-  | REGCLASS
-  | REGCONFIG
-  | TEXT
-  | TIMESTAMPTZ
-  | TIMETZ
-  | TINYINT
-  | TRIGGER
-  | UNKNOWN
-  | UUID
-  | VARBINARY
-  | VARBIT
-  | VARYING
-  | VOID
-  | XML
   ;
 
 tokens_nonreserved_except_function_type
@@ -1525,6 +1137,7 @@ tokens_nonreserved_except_function_type
   | EXTRACT
   | FLOAT
   | GREATEST
+  | GROUPING
   | INOUT
   | INT
   | INTEGER
@@ -1561,6 +1174,16 @@ tokens_nonreserved_except_function_type
   | XMLSERIALIZE
   ;
 
+tokens_simple_functions
+  : COALESCE
+  | GREATEST
+  | GROUPING
+  | LEAST
+  | NULLIF
+  | ROW
+  | XMLCONCAT
+  ;
+
 tokens_reserved_except_function_type
   : AUTHORIZATION
   | BINARY
@@ -1580,10 +1203,10 @@ tokens_reserved_except_function_type
   | NATURAL
   | NOTNULL
   | OUTER
-  | OVER
   | OVERLAPS
   | RIGHT
   | SIMILAR
+  | TABLESAMPLE
   | VERBOSE
   ;
 
@@ -1666,6 +1289,31 @@ tokens_reserved
   | WINDOW
   | WITH
   ;
+  
+tokens_nonkeyword
+  : PLAIN
+  | EXTENDED
+  | MAIN
+  | SUBTYPE
+  | SUBTYPE_OPCLASS
+  | SUBTYPE_DIFF
+  | CANONICAL
+  | RECEIVE
+  | SEND
+  | TYPMOD_IN
+  | TYPMOD_OUT
+  | INTERNALLENGTH
+  | PASSEDBYVALUE
+  | ALIGNMENT
+  | CATEGORY
+  | PREFERRED
+  | COLLATABLE
+  | VARIABLE
+  | OUTPUT
+  | ELEMENT
+  | USAGE
+  | CONNECT
+  ;
 
 /*
 ===============================================================================
@@ -1675,7 +1323,7 @@ tokens_reserved
 
 schema_qualified_name_nontype
   : identifier_nontype
-  | identifier DOT identifier_nontype
+  | schema=identifier DOT identifier_nontype 
   ;
 
 data_type
@@ -1684,111 +1332,33 @@ data_type
   ;
 
 predefined_type
-  : character_string_type
-  | binary_large_object_string_type
-  | numeric_type
-  | boolean_type
-  | datetime_type
-  | bit_type
-  | binary_type
-  | network_type
-  | (OID
-  | REGCLASS
-  | REGCONFIG
-  | TRIGGER
-  | UUID
-  | VOID
-  | UNKNOWN)
-  | schema_qualified_name_nontype
-  ;
-
-network_type
-  : CIDR
-  | INET
-  | INET4
-  ;
-
-character_string_type
-  : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
+  : BIGINT 
+  | BIT VARYING? type_length?
+  | BOOLEAN
+  | DEC precision_param?
+  | DECIMAL precision_param?
+  | DOUBLE PRECISION
+  | FLOAT precision_param?
+  | INT
+  | INTEGER
+  | INTERVAL ((identifier TO)? identifier)? type_length?
+  | NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
+  | NUMERIC precision_param?
+  | REAL
+  | SMALLINT
+  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
+  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
   | VARCHAR type_length?
-  | (TEXT | NAME | XML)
+  | schema_qualified_name_nontype
   ;
 
 type_length
   : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
   ;
 
-binary_large_object_string_type
-  : BLOB type_length?
-  | BYTEA type_length?
-  ;
-
-numeric_type
-  : exact_numeric_type | approximate_numeric_type
-  ;
-
-exact_numeric_type
-  : NUMERIC precision_param?
-  | DECIMAL precision_param?
-  | DEC precision_param?
-  | MONEY
-  | (INT1
-  | TINYINT
-  | INT2
-  | SMALLINT
-  | INT4
-  | INT
-  | INTEGER
-  | INT8
-  | BIGINT)
-  ;
-
-approximate_numeric_type
-  : FLOAT precision_param?
-  | (FLOAT4
-  | REAL
-  | FLOAT8)
-  | DOUBLE PRECISION
-  ;
-
 precision_param
   : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
-  ;
-
-boolean_type
-  : BOOLEAN
-  | BOOL
-  ;
-
-datetime_type
-  : DATE
-  | TIME type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | TIMETZ
-  | TIMESTAMP type_length? ((WITH | WITHOUT) TIME ZONE)?
-  | TIMESTAMPTZ
-  | INTERVAL interval_field? type_length?
-  ;
-
-interval_field
-    : primary_datetime_field
-    | YEAR TO MONTH
-    | DAY TO HOUR
-    | DAY TO MINUTE
-    | DAY TO SECOND
-    | HOUR TO MINUTE
-    | HOUR TO SECOND
-    | MINUTE TO SECOND
-    ;
-
-bit_type
-  : BIT VARYING? type_length?
-  | VARBIT type_length?
-  ;
-
-binary_type
-  : BINARY VARYING? type_length?
-  | VARBINARY type_length?
   ;
 
 /*
@@ -1891,23 +1461,9 @@ general_literal
   | datetime_literal
   | truth_value
   ;
-
+  
 datetime_literal
-  : timestamp_literal
-  | time_literal
-  | date_literal
-  ;
-
-time_literal
-  : TIME time_string=Character_String_Literal
-  ;
-
-timestamp_literal
-  : TIMESTAMP timestamp_string=Character_String_Literal
-  ;
-
-date_literal
-  : DATE date_string=Character_String_Literal
+  : identifier Character_String_Literal
   ;
 
 truth_value
@@ -1922,8 +1478,10 @@ cast_specification
   : (CAST | TREAT) LEFT_PAREN vex AS data_type RIGHT_PAREN
   ;
 
+// using data_type for function name because keyword-named functions
+// use the same category of keywords as keyword-named types
 function_call
-    : schema_qualified_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
+    : function_name LEFT_PAREN (set_qualifier? vex (COMMA vex)* orderby_clause?)? RIGHT_PAREN
         filter_clause? (OVER window_definition)?
     | extract_function
     | system_function
@@ -1932,31 +1490,21 @@ function_call
     | xml_function
     ;
 
+function_name
+  : data_type
+  // allow for all built-in function except those with explicit syntax rules defined
+  | (identifier DOT)? tokens_simple_functions
+  ;
+
 extract_function
-  : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM vex RIGHT_PAREN
-  ;
-
-extract_field
-  : primary_datetime_field
-  | time_zone_field
-  | extended_datetime_field
-  ;
-
-primary_datetime_field
-    : YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
-    ;
-
-extended_datetime_field
-  : CENTURY | DECADE | DOW | DOY | EPOCH | ISODOW | ISOYEAR | MICROSECONDS | MILLENNIUM | MILLISECONDS | QUARTER | WEEK
-  ;
-
-time_zone_field
-  : TIMEZONE | TIMEZONE_HOUR | TIMEZONE_MINUTE
+  : EXTRACT LEFT_PAREN extract_field_string=identifier FROM vex RIGHT_PAREN
   ;
 
 system_function
     : CURRENT_CATALOG
-    | CURRENT_SCHEMA (LEFT_PAREN RIGHT_PAREN)?
+    // parens are handled by generic function call
+    // since current_schema is defined as reserved(can be function) keyword
+    | CURRENT_SCHEMA /*(LEFT_PAREN RIGHT_PAREN)?*/
     | CURRENT_USER
     | SESSION_USER
     | USER
@@ -1971,7 +1519,7 @@ date_time_function
     ;
 
 string_value_function
-  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? vex? FROM? vex RIGHT_PAREN
+  : TRIM LEFT_PAREN (LEADING | TRAILING | BOTH)? (chars=vex? FROM str=vex | FROM? str=vex (COMMA chars=vex)?) RIGHT_PAREN
   | SUBSTRING LEFT_PAREN vex (FROM vex)? (FOR vex)? RIGHT_PAREN
   | POSITION LEFT_PAREN vex_b IN vex RIGHT_PAREN
   | OVERLAY LEFT_PAREN vex PLACING vex FROM vex (FOR vex)? RIGHT_PAREN
@@ -1980,11 +1528,13 @@ string_value_function
 xml_function
     : XMLELEMENT LEFT_PAREN NAME name=identifier
         (COMMA XMLATTRIBUTES LEFT_PAREN vex (AS attname=identifier)? (COMMA vex (AS attname=identifier)?)* RIGHT_PAREN)?
-        (vex (COMMA vex)?)? RIGHT_PAREN
+        (vex (COMMA vex)*)? RIGHT_PAREN
     | XMLFOREST LEFT_PAREN vex (AS name=identifier)? (COMMA vex (AS name=identifier)?)* RIGHT_PAREN
     | XMLPI LEFT_PAREN NAME name=identifier (COMMA vex)? RIGHT_PAREN
     | XMLROOT LEFT_PAREN vex COMMA VERSION (vex | NO VALUE) (COMMA STANDALONE (YES | NO | NO VALUE))? RIGHT_PAREN
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
+    | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
+    | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
     ;
 
 comparison_mod
@@ -2028,6 +1578,7 @@ array_query
 type_coercion
     : data_type Character_String_Literal
     ;
+    
 /*
 ===============================================================================
   7.13 <query expression>

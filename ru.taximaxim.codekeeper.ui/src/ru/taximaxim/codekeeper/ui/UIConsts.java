@@ -79,10 +79,6 @@ public interface UIConsts {
     }
 
     interface PG_EDIT_PREF {
-        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
     }
 
@@ -149,10 +145,14 @@ public interface UIConsts {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
-        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
+        String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+
+        // pgadmin icons
+        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
+        String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$

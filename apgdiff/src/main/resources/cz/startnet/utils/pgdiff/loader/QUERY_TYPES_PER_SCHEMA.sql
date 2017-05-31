@@ -63,7 +63,6 @@ SELECT  -- GENERAL
     t.typnotnull AS dom_notnull,
     dom_constraints.connames AS dom_connames,
     dom_constraints.condefs AS dom_condefs,
-    dom_constraints.convalidates AS dom_convalidates,
     dom_constraints.concomments AS dom_concomments,
     -- END DOMAIN
 
@@ -105,7 +104,6 @@ LEFT JOIN
          c.contypid,
          array_agg(c.conname ORDER BY c.conname) AS connames,
          array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
-         array_agg(c.convalidated ORDER BY c.conname) AS convalidates,
          array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid

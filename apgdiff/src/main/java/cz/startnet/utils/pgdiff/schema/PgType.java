@@ -361,7 +361,7 @@ public class PgType extends PgStatementWithSearchPath {
             } else {
                 sb.append(',');
             }
-            sb.append("\n\t").append(attr.getFullDefinition(false, null));
+            sb.append("\n\t").append(attr.getFullDefinition(false, null, false));
         }
     }
 
@@ -487,13 +487,15 @@ public class PgType extends PgStatementWithSearchPath {
                     attrSb.append(", ");
                 }
             } else {
+                isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
-                .append(attr.getFullDefinition(false, null))
+                .append(attr.getFullDefinition(false, null, false))
                 .append(", ");
             }
         }
         for (PgColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
+                isNeedDepcies.set(true);
                 attrSb.append("\n\tDROP ATTRIBUTE ")
                 .append(PgDiffUtils.getQuotedName(attr.getName()))
                 .append(", ");
