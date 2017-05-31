@@ -81,16 +81,15 @@ public final class PgDiff {
      * @throws InterruptedException
      * @throws URISyntaxException
      */
-    static PgDatabase loadDatabaseSchema(String format, String srcPath,
-            PgDiffArguments arguments) throws InterruptedException, IOException, LicenseException, URISyntaxException {
-        if(format.equals("dump")) {
+    static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+        if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
             }
-        } else if(format.equals("parsed")) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments, null, null);
-        } else if(format.equals("db")) {
+        } else if("parsed".equals(format)) {
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null);
+        } else if("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();
         }

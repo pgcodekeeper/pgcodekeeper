@@ -160,8 +160,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines),
-                monitor, null);
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor);
     }
 }
 

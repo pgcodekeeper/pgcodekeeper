@@ -1,7 +1,12 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -9,9 +14,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceProxy;
-import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -25,7 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -63,9 +67,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(boolean loadReferences, PgDatabase db)
+    public PgDatabase loadFile(PgDatabase db)
             throws InterruptedException, IOException, CoreException {
-        load(loadReferences, db);
+        load(db);
 
         file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
         IDocument doc = null;
@@ -109,14 +113,14 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     throws InterruptedException, IOException, LicenseException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
-        for (ApgdiffConsts.WORK_DIR_NAMES workDirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+        for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
                 loadSubdir(arguments, iFolder, db, monitor, funcBodies);
             }
         }
 
-        IFolder schemasCommonDir = iProject.getFolder(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
+        IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
         if (!schemasCommonDir.exists()) {
             return db;
@@ -143,28 +147,86 @@ public class PgUIDumpLoader extends PgDumpLoader {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
                 IFile ifile = (IFile) resource;
-                try (PgUIDumpLoader loader = new PgUIDumpLoader(ifile, arguments, monitor)) {
-                    loader.loadFile(funcBodies != null, db);
-                    if (funcBodies != null) {
-                        funcBodies.addAll(loader.getFuncBodyReferences());
-                    }
-                }
+                loadFile(ifile, arguments, monitor, db, funcBodies);
             }
         }
     }
 
-    public static int countFiles(IContainer container) throws CoreException {
-        final int[] count = new int[1];
-        container.accept(new IResourceProxyVisitor() {
-
-            @Override
-            public boolean visit(IResourceProxy proxy) throws CoreException {
-                if (proxy.getType() == IResource.FILE) {
-                    ++count[0];
-                }
-                return true;
+    private static void loadFile(IFile file, PgDiffArguments arguments, IProgressMonitor monitor,
+            PgDatabase db, List<FunctionBodyContainer> funcBodies) throws IOException, CoreException, InterruptedException {
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
+            loader.setLoadReferences(funcBodies != null);
+            loader.loadFile(db);
+            if (funcBodies != null) {
+                funcBodies.addAll(loader.getFuncBodyReferences());
             }
-        }, IResource.FILE);
+        }
+    }
+
+    static PgDatabase buildFiles(PgDiffArguments arguments, Collection<IFile> files,
+            IProject proj, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+                    throws InterruptedException, IOException, CoreException {
+        Function<WORK_DIR_NAMES, IPath> projSubpath = e -> proj.getFullPath().append(e.name());
+        IPath schemasPath = projSubpath.apply(WORK_DIR_NAMES.SCHEMA);
+        IPath[] projDirs = Arrays.stream(WORK_DIR_NAMES.values())
+                .map(projSubpath)
+                .toArray(IPath[]::new);
+
+        Set<String> schemaDirnamesLoaded = new HashSet<>();
+        PgDatabase db = new PgDatabase();
+        db.setArguments(arguments);
+
+        for (IFile file : files) {
+            IPath filePath = file.getFullPath();
+            if (!"sql".equals(file.getFileExtension())
+                    || Arrays.stream(projDirs).noneMatch(d -> d.isPrefixOf(filePath))) {
+                // skip non-sql or non-project files
+                // still report work
+                monitor.worked(1);
+                continue;
+            }
+
+            if (schemasPath.isPrefixOf(filePath)) {
+                IPath relSchemasPath = filePath.makeRelativeTo(schemasPath);
+                String schemaDirname;
+                boolean schemaDefSql = relSchemasPath.segmentCount() == 1;
+                if (schemaDefSql) {
+                    // schema definition SQL-file
+                    schemaDirname = relSchemasPath.removeFileExtension().lastSegment();
+                } else {
+                    // schema-contained object
+                    // preload its schema so that search_path parses normally
+                    schemaDirname = relSchemasPath.segment(0);
+                }
+                if (!schemaDirnamesLoaded.add(schemaDirname)) {
+                    // schema already loaded, skip
+                    if (schemaDefSql) {
+                        // report schema pre-built if the same schema was to be built normally as well
+                        monitor.worked(1);
+                    }
+                    continue;
+                } else if (!schemaDefSql) {
+                    // pre-load schema for object's search path
+                    // otherwise we're dealing with the schema file itself, allow it to load normally
+                    // don't pass progress monitor since this file isn't in the original load-set
+                    loadFile(proj.getWorkspace().getRoot().getFile(schemasPath.append(schemaDirname + ".sql")),
+                            arguments, null, db, funcBodies);
+                }
+            }
+
+            loadFile(file, arguments, monitor, db, funcBodies);
+        }
+        return db;
+    }
+
+    public static int countFiles(IContainer container) throws CoreException {
+        int[] count = new int[1];
+        container.accept(p -> {
+            if (p.getType() == IResource.FILE) {
+                ++count[0];
+            }
+            return true;
+        }, 0);
         return count[0];
     }
 }
