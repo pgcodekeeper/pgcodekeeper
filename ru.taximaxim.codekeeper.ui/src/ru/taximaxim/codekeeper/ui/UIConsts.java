@@ -17,6 +17,15 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface EDITOR_COMMANDS {
+        String COMMIT = PLUGIN_ID.THIS + ".command.CommitProject";
+        String DIFF = PLUGIN_ID.THIS + ".command.DiffProject";
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy";
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges";
+        String FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath";
+        String DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords";
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -164,6 +173,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
