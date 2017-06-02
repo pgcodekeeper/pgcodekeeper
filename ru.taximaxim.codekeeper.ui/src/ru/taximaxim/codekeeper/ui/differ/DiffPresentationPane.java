@@ -313,6 +313,14 @@ public abstract class DiffPresentationPane extends Composite {
         }
     }
 
+    public void updateRemoteChanged() {
+        // may be called off UI thread so check that we're still alive
+        if (!isDisposed()) {
+            DiffPresentationPane.this.projEditor.getChanges();
+            showNotificationArea(true, Messages.DiffPresentationPane_remote_changed_notification);
+        }
+    }
+
     /**
      * @return number of checked elements
      */

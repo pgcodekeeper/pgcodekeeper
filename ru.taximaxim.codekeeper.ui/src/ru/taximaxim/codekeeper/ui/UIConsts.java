@@ -37,6 +37,12 @@ public interface UIConsts {
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
     }
 
+    interface EDITOR_ACTION {
+        String UPDATE = "UPDATE";
+        String RESET = "RESET";
+        String NO_ACTION = "NO_ACTION";
+    }
+
     interface PREF_PAGE {
         int WIDTH_HINT_PX = 240;
         String DB_STORE = PLUGIN_ID.THIS + ".dbstore"; //$NON-NLS-1$
@@ -80,6 +86,7 @@ public interface UIConsts {
 
     interface PG_EDIT_PREF {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
     }
 
     public enum DBSources {
