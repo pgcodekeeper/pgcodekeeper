@@ -60,6 +60,8 @@ public interface UIConsts {
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
         String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
+
+        String LAST_CREATED_OBJECT_TYPE = "pregLastCreatedObjectType"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {

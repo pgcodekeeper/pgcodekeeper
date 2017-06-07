@@ -393,6 +393,50 @@ public final class Messages extends NLS {
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
 
+    public static String PgObject_cant_find_porojects;
+
+    public static String PgObject_create_object;
+
+    public static String PgObject_desc;
+
+    public static String PgObject_empty_name;
+
+    public static String PgObject_file_creation_error;
+
+    public static String PgObject_full_desc;
+
+    public static String PgObject_full_desc_with_column;
+
+    public static String PgObject_in_table;
+
+    public static String PgObject_in_view;
+
+    public static String PgObject_invalid_format_column;
+
+    public static String PgObject_invalid_format_container;
+
+    public static String PgObject_invalid_format_object;
+
+    public static String PgObject_invalid_format_schema;
+
+    public static String PgObject_object_name;
+
+    public static String PgObject_object_type;
+
+    public static String PgObject_parent_type;
+
+    public static String PgObject_project_name;
+
+    public static String PgObject_schema_desc;
+
+    public static String PgObject_select_project;
+
+    public static String PgObject_table;
+
+    public static String PgObject_view;
+
+    public static String PgObject_wizard_title;
+
     public static String PrefListEditor_cannot_add;
 
     public static String PrefListEditor_cannot_edit;
