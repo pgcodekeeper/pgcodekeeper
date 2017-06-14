@@ -56,13 +56,14 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
+import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -81,7 +82,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
-import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -474,7 +474,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         public void run() {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-                File outFile = tempFile.get();
+                File outFile = tempFile.get().toFile();
                 try (PrintWriter writer = new PrintWriter(outFile, SCRIPT_FILE_ENCODING)) {
                     writer.write(textRetrieved);
                 }
