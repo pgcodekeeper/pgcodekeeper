@@ -112,7 +112,45 @@
                 <version>3.0.2</version>
                 <executions>
                     <execution>
-                        <id>copy-resources-x86</id>
+                        <id>copy-resources-linux-x86</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>*.sh</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-linux-x86-64</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>*.sh</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-win-x86</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -131,7 +169,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-resources-x86-64</id>
+                        <id>copy-resources-win-x86-64</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>

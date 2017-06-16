@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import cz.startnet.utils.pgdiff.DepcyOmittedException;
+import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -39,13 +39,13 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
-        Set<DbObjType> ignoredTypes = arguments.getAllowedTypes();
+        Set<DbObjType> allowedTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if(type == DbObjType.COLUMN){
                 type = DbObjType.TABLE;
             }
-            if (ignoredTypes.isEmpty() || ignoredTypes.contains(type)){
+            if (allowedTypes.isEmpty() || allowedTypes.contains(type)){
                 processSequence(action);
                 PgStatement oldObj = action.getOldObj();
                 String depcy = null;
@@ -99,12 +99,9 @@ public class ActionsToScriptConverter {
                 }
             } else {
                 PgStatement old = action.getOldObj();
-                PgStatement start = action.getStarter();
-                if (arguments.isStopDepcyOmitted() && start != null && !start.equals(old)) {
-                    throw new DepcyOmittedException(old.getQualifiedName()
-                            + " (" + type + ") is not an allowed script object, yet "
-                            + start.getQualifiedName() + " (" + start.getStatementType()
-                            + ") depends on it. Stopping.");
+                if (arguments.isStopByAllow()) {
+                    throw new NotAllowedObjectException(old.getQualifiedName()
+                            + " (" + type + ") is not an allowed script object. Stopping.");
                 }
                 script.addStatement(MessageFormat.format(HIDDEN_OBJECT,
                         old.getQualifiedName(), old.getStatementType()));

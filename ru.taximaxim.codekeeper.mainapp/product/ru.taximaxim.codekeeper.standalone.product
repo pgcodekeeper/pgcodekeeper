@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.10.0.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.10.0.qualifier" useFeatures="false" includeLaunchers="false">
+
 
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
-      <programArgs>-console
-      </programArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
+
 
    <launcher name="pgcodekeeper-cli">
       <linux icon="icons/product.xpm"/>
@@ -23,6 +21,7 @@
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -133,6 +132,8 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.launcher"/>
+      <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86_64" fragment="true"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
       <plugin id="org.eclipse.equinox.registry"/>
@@ -146,8 +147,17 @@ the disclosure of confidential information.
    <configurations>
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <property name="eclipse.consoleLog" value="true" />
       <property name="eclipse.log.level" value="INFO" />
+      <property name="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true" os="macosx" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
    </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>

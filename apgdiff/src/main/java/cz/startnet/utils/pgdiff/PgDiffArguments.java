@@ -53,7 +53,7 @@ public class PgDiffArguments {
     private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
     private boolean usingOnOff = true;
-    private boolean stopDepcyOmitted;
+    private boolean stopByAllow;
     private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
@@ -212,12 +212,12 @@ public class PgDiffArguments {
         this.help = help;
     }
 
-    public boolean isStopDepcyOmitted() {
-        return stopDepcyOmitted;
+    public boolean isStopByAllow() {
+        return stopByAllow;
     }
 
-    public void setStopDepcyOmitted(boolean stopDepcyOmitted) {
-        this.stopDepcyOmitted = stopDepcyOmitted;
+    public void setStopByAllow(boolean stopByAllow) {
+        this.stopByAllow = stopByAllow;
     }
 
     public String getLicensePath() {
@@ -331,8 +331,8 @@ public class PgDiffArguments {
                         break;
                     }
                 }
-            } else if ("--stop-depcy-omitted".equals(args[i])) { //$NON-NLS-1$
-                setStopDepcyOmitted(true);
+            } else if ("--stop-not-allowed".equals(args[i])) { //$NON-NLS-1$
+                setStopByAllow(true);
             } else if ("--add-transaction".equals(args[i])) { //$NON-NLS-1$
                 setAddTransaction(true);
             } else if ("--no-check-function-bodies".equals(args[i])) { //$NON-NLS-1$

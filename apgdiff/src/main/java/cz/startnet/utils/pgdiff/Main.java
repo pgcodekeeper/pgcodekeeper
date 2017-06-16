@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
@@ -26,25 +25,22 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
  */
 public final class Main {
 
-    public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
+    public static void main(String[] args) throws IOException, InterruptedException,
+    URISyntaxException, LicenseException, NotAllowedObjectException {
         PrintWriter writer = new PrintWriter(System.out, true);
         PgDiffArguments arguments = new PgDiffArguments();
 
         if (arguments.parse(writer, args)) {
-            try {
-                License l = new License(arguments.getLicensePath());
-                l.verify(false);
-                arguments.setLicense(l);
-                if(arguments.isModeDiff()) {
-                    diff(writer, arguments);
-                } else if(arguments.isModeParse()) {
-                    parse(arguments);
-                }
-            } catch (LicenseException ex) {
-                writer.println(Messages.Main_license_error + ex.getLocalizedMessage());
-                Log.log(ex);
+            License l = new License(arguments.getLicensePath());
+            l.verify(false);
+            arguments.setLicense(l);
+            if(arguments.isModeDiff()) {
+                diff(writer, arguments);
+            } else if(arguments.isModeParse()) {
+                parse(arguments);
             }
         }
+        Thread.sleep(100);
     }
 
     private static void diff(PrintWriter writer, PgDiffArguments arguments)

@@ -34,6 +34,7 @@ import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 @RunWith(value = Parameterized.class)
@@ -75,7 +76,7 @@ public class MainTest {
     }
 
     @Test
-    public void mainTest() throws IOException, URISyntaxException, InterruptedException{
+    public void mainTest() throws IOException, URISyntaxException, InterruptedException, LicenseException{
         switch (args.testType) {
         case TEST_DIFF:
             Main.main(args.args());
@@ -841,7 +842,7 @@ class ArgumentsProvider_Stop extends ArgumentsProvider {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         return new String[]{"--diff", "--dbNew-format", "dump", "--stop-depcy-omitted", "--allowed-objects",
-                "FUNCTION,VIEW,INDEX,SCHEMA", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
+                "FUNCTION,VIEW,INDEX,SCHEMA,TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(),
                 getDiffResultFile().getAbsolutePath()};
     }
 
