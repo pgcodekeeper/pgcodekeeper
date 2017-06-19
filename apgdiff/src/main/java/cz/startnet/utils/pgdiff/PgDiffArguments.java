@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -28,9 +29,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgDiffArguments {
     // SONAR-OFF
     private static final String DEFAULT_FORMAT = "dump"; //$NON-NLS-1$
+    private static final String INTERNAL_LICENSE = "lic"; //$NON-NLS-1$
     // SONAR-ON
 
-    private boolean modeDiff;
     private boolean modeParse;
     private String newSrc;
     private String oldSrc;
@@ -47,13 +48,14 @@ public class PgDiffArguments {
     private boolean ignoreDropColumn;
     private boolean ignoreAlterColumn;
     private boolean ignoreRestartWith;
-    private boolean version;
-    private boolean help;
     private boolean outputIgnoredStatements;
-    private boolean listCharsets;
     private boolean ignoreSlonyTriggers;
     private boolean usingOnOff = true;
     private boolean stopByAllow;
+    private boolean safeMode;
+    private boolean sourceMode;
+    private boolean targetMode;
+
     private final Set<DbObjType> allowedTypes = EnumSet.noneOf(DbObjType.class);
     /**
      * Whether ignore function bodies.
@@ -63,17 +65,9 @@ public class PgDiffArguments {
     private String timeZone;
     private boolean ignorePrivileges;
     private boolean forceUnixNewlines = true;
-    private String licensePath;
+    private String licensePath = PgDiffArguments.class.getResource(INTERNAL_LICENSE).toString();
     private License license;
     private final List<String> ignoreLists = new ArrayList<>();
-
-    public void setModeDiff(final boolean modeDiff) {
-        this.modeDiff = modeDiff;
-    }
-
-    public boolean isModeDiff() {
-        return modeDiff;
-    }
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -196,28 +190,36 @@ public class PgDiffArguments {
         this.outputIgnoredStatements = outputIgnoredStatements;
     }
 
-    public void setVersion(final boolean version) {
-        this.version = version;
-    }
-
-    public boolean isVersion() {
-        return version;
-    }
-
-    public boolean isHelp() {
-        return help;
-    }
-
-    public void setHelp(boolean help) {
-        this.help = help;
-    }
-
     public boolean isStopByAllow() {
         return stopByAllow;
     }
 
     public void setStopByAllow(boolean stopByAllow) {
         this.stopByAllow = stopByAllow;
+    }
+
+    public boolean isSafeMode() {
+        return safeMode;
+    }
+
+    public void setSafeMode(final boolean safeMode) {
+        this.safeMode = safeMode;
+    }
+
+    public boolean isSourceMode() {
+        return sourceMode;
+    }
+
+    public void setSourceMode(final boolean sourceMode) {
+        this.sourceMode = sourceMode;
+    }
+
+    public boolean isTargetMode() {
+        return targetMode;
+    }
+
+    public void setTargetMode(final boolean targetMode) {
+        this.targetMode = targetMode;
     }
 
     public String getLicensePath() {
@@ -254,33 +256,29 @@ public class PgDiffArguments {
      */
     public boolean parse(final PrintWriter writer, final String[] args) {
         boolean success = true;
-        int argsLength = args.length;
+        int argsLength = args.length - 2;
+
+        if (args.length == 1 && "--version".equals(args[0])) { //$NON-NLS-1$
+            printVersion(writer);
+            return false;
+        } else if (args.length == 1 && "--help".equals(args[0])) { //$NON-NLS-1$
+            printUsage(writer);
+            return false;
+        } else if (args.length == 1 && "--list-charsets".equals(args[0])) { //$NON-NLS-1$
+            listCharsets(writer);
+            return false;
+        } else if (args.length < 2) {
+            printUsage(writer);
+            return false;
+        }
 
         for (int i = 0; i < argsLength; i++) {
-            if("--diff".equals(args[i])) { //$NON-NLS-1$
-                setModeDiff(true);
-                argsLength -= 3; // dont read last three parameters in the loop, they're not options
-            } else if("--parse".equals(args[i])) { //$NON-NLS-1$
+            if ("--parse".equals(args[i])) { //$NON-NLS-1$
                 setModeParse(true);
-                argsLength -= 2; // same for last two params in this mode
-            } else if("--dbOld-format".equals(args[i])) { //$NON-NLS-1$
-                String format = args[++i];
-
-                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    setOldSrcFormat(format);
-                } else {
-                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
-                    success = false;
-                }
-            } else if("--dbNew-format".equals(args[i])) { //$NON-NLS-1$
-                String format = args[++i];
-
-                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    setNewSrcFormat(format);
-                } else {
-                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
-                    success = false;
-                }
+            } else if ("--list-charsets".equals(args[i]) //$NON-NLS-1$
+                    || "--help".equals(args[i]) //$NON-NLS-1$
+                    || "--version".equals(args[0])) { //$NON-NLS-1$
+                // skip, used before
             } else if ("--allow-danger-ddl".equals(args[i])) { //$NON-NLS-1$
                 String[] ignores = args[++i].split(","); //$NON-NLS-1$
                 for (String ignoredDanger : ignores) {
@@ -310,15 +308,6 @@ public class PgDiffArguments {
                         break;
                     }
                 }
-            } else if("--db-format".equals(args[i])) { //$NON-NLS-1$
-                String format = args[++i];
-
-                if("dump".equals(format) || "db".equals(format)) { //$NON-NLS-1$ //$NON-NLS-2$
-                    setParseSrcFormat(format);
-                } else {
-                    writer.println(Messages.PgDiffArguments_unsupported_db_format);
-                    success = false;
-                }
             } else if ("--allowed-objects".equals(args[i])) { //$NON-NLS-1$
                 String[] types = args[++i].split(","); //$NON-NLS-1$
                 for (String type : types) {
@@ -344,8 +333,6 @@ public class PgDiffArguments {
             } else if ("--in-charset-name".equals(args[i])) { //$NON-NLS-1$
                 setInCharsetName(args[i + 1]);
                 i++;
-            } else if ("--list-charsets".equals(args[i])) { //$NON-NLS-1$
-                setListCharsets(true);
             } else if ("--out-charset-name".equals(args[i])) { //$NON-NLS-1$
                 setOutCharsetName(args[i + 1]);
                 i++;
@@ -362,35 +349,30 @@ public class PgDiffArguments {
                 setLicensePath(args[++i]);
             } else if ("--ignore-list".equals(args[i])) { //$NON-NLS-1$
                 ignoreLists.add(args[++i]);
-            } else if ("--version".equals(args[i])) { //$NON-NLS-1$
-                setVersion(true);
-            } else if ("--help".equals(args[i])) { //$NON-NLS-1$
-                setHelp(true);
-            } else if ("--apgdiff".equals(args[i])) {
-                // deprecated legacy pgcodekeeper-cli switch, ignore
+            } else if ("--safe-mode".equals(args[i])) { //$NON-NLS-1$
+                setSafeMode(true);
+            } else if ("--src".equals(args[i])) { //$NON-NLS-1$
+                parseNewSource(args[++i]);
+                setSourceMode(true);
+                argsLength += 1;
+            } else if ("--target".equals(args[i])) { //$NON-NLS-1$
+                parseOldSource(args[++i]);
+                setTargetMode(true);
+                argsLength += 1;
+            } else if ("--f".equals(args[i])) { //$NON-NLS-1$
+                setDiffOutfile(args[++i]);
             } else {
                 writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
                 success = false;
-
                 break;
             }
         }
 
-        if (args.length == 1 && isVersion()) {
-            printVersion(writer);
-            return false;
-        } else if (args.length == 1 && isHelp()) {
-            printUsage(writer);
-            return false;
-        } else if (args.length == 1 && isListCharsets()) {
-            listCharsets(writer);
-            return false;
-        } else if(isModeDiff() == isModeParse()) {
+        if (isTargetMode() != isSourceMode()) {
+            writer.println(Messages.PgDiffArguments_src_target_one_argument_error);
             success = false;
-            if(isModeDiff()) {
-                writer.println(Messages.PgDiffArguments_only_diff_parse);
-            }
-        } else if (args.length < 3) {
+        } else if (isTargetMode() && isModeParse()) {
+            writer.println(Messages.PgDiffArguments_src_target_in_parser_mode_error);
             success = false;
         }
 
@@ -400,13 +382,12 @@ public class PgDiffArguments {
         }
 
         try {
-            if(isModeDiff()) {
-                setOldSrc(args[args.length - 3]);
-                setNewSrc(args[args.length - 2]);
-                setDiffOutfile(args[args.length - 1]);
-            } else if (isModeParse()) {
-                setParseSrc(args[args.length - 2]);
+            if (isModeParse()) {
+                parseParseSource(args[args.length - 2]);
                 setParserOutdir(args[args.length - 1]);
+            } else if (!isSourceMode()) {
+                parseNewSource(args[args.length - 2]);
+                parseOldSource(args[args.length - 1]);
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
             printUsage(writer);
@@ -414,6 +395,31 @@ public class PgDiffArguments {
         }
 
         return true;
+    }
+
+    private void parseParseSource (String source) {
+        setParseSrcFormat(parsePath(source, true));
+        setParseSrc(source);
+    }
+
+    private void parseOldSource (String source) {
+        setOldSrcFormat(parsePath(source, false));
+        setOldSrc(source);
+    }
+
+    private void parseNewSource (String source) {
+        setNewSrcFormat(parsePath(source, false));
+        setNewSrc(source);
+    }
+
+    private String parsePath(String source, boolean isParse) {
+        if (source.startsWith("jdbc:")) { //$NON-NLS-1$
+            return "db"; //$NON-NLS-1$
+        }
+        if (!isParse && new File(source).isDirectory()) {
+            return "parsed"; //$NON-NLS-1$
+        }
+        return DEFAULT_FORMAT;
     }
 
     private void printUsage(final PrintWriter writer) {
@@ -440,14 +446,6 @@ public class PgDiffArguments {
 
     public void setOutCharsetName(final String outCharsetName) {
         this.outCharsetName = outCharsetName;
-    }
-
-    public boolean isListCharsets() {
-        return listCharsets;
-    }
-
-    public void setListCharsets(final boolean listCharsets) {
-        this.listCharsets = listCharsets;
     }
 
     private void listCharsets(final PrintWriter writer) {

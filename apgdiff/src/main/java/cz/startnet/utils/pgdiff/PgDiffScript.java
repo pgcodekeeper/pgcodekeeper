@@ -44,6 +44,28 @@ public class PgDiffScript {
         return false;
     }
 
+    public Set<DangerStatement> checkDangerType(boolean ignoreDropCol, boolean ignoreAlterCol,
+            boolean ignoreDropTable, boolean ignoreRestartWith) {
+        final Set<DangerStatement> dangerTypes = new HashSet<>(4);
+
+        if (ignoreDropCol && ignoreAlterCol && ignoreDropTable) {
+            return dangerTypes;
+        }
+
+        for (PgDiffStatement st : statements) {
+            if (!ignoreDropCol && st.isDangerStatement(DangerStatement.DROP_COLUMN)) {
+                dangerTypes.add(DangerStatement.DROP_COLUMN);
+            } else if (!ignoreAlterCol && st.isDangerStatement(DangerStatement.ALTER_COLUMN)) {
+                dangerTypes.add(DangerStatement.ALTER_COLUMN);
+            } else if (!ignoreDropTable && st.isDangerStatement(DangerStatement.DROP_TABLE)) {
+                dangerTypes.add(DangerStatement.DROP_TABLE);
+            } else if (!ignoreRestartWith && st.isDangerStatement(DangerStatement.RESTART_WITH)) {
+                dangerTypes.add(DangerStatement.RESTART_WITH);
+            }
+        }
+        return dangerTypes;
+    }
+
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
         PgDiffStatement last = statements.isEmpty() ? null : statements.get(statements.size() - 1);
