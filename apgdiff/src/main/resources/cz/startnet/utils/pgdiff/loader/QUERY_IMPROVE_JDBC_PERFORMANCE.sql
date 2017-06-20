@@ -36,7 +36,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_acl text[],
        table_comment text,
        table_space name,
-       persistence char
+       persistence "char",
        has_oids boolean,
        inhrelnames name[],
        inhnspnames name[],
@@ -73,7 +73,8 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
-SELECT subselectColumns.relname,
+SELECT schema_oid,
+       subselectColumns.relname,
        subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
@@ -138,7 +139,7 @@ FROM
               c.relacl::text AS aclArray,
               attr.attnum::integer,
               attr.attname,
-              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
+              array_to_string(attr.attoptions, ',') attoptions,
               attr.attstorage,
               t.typstorage,
               c.relhasoids,
@@ -168,7 +169,7 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
-          WHERE c.relnamespace = ?
+          WHERE c.relnamespace = schema_oid
               AND c.relkind = 'r'
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
