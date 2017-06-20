@@ -203,6 +203,16 @@ public class TablesReader extends JdbcReader {
         if (tableSpace != null && !tableSpace.isEmpty()) {
             t.setTablespace(tableSpace);
         }
+
+        // persistence: U - unlogged, P - permanent, T - temporary
+        switch (res.getString("persistence")) {
+        case "u":
+            t.setLogged(false);
+            break;
+        default:
+            break;
+        }
+
         return t;
     }
 }

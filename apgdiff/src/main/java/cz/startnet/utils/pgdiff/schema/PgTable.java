@@ -39,6 +39,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
+    private boolean isLogged = true;
     private String tablespace;
     private String ofType;
 
@@ -140,7 +141,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public String getCreationSQL() {
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE TABLE ");
+        sbSQL.append("CREATE ");
+
+        if (!isLogged()) {
+            sbSQL.append("UNLOGGED ");
+        }
+
+        sbSQL.append("TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         boolean first = true;
@@ -288,7 +295,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             appendCommentSql(sbSQL);
         }
 
-
         if(ofType != null){
             for (final PgColumn column : columnsOfType) {
                 if (column.getComment() != null && !column.getComment().isEmpty()) {
@@ -325,9 +331,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
         PgTable oldTable = this;
 
-        if(ofType != null){
-            if(!oldTable.getOfType().equals(newTable.getOfType())){
-                if (newTable.getOfType() != null){
+        if (ofType != null) {
+            if (!oldTable.getOfType().equals(newTable.getOfType())) {
+                if (newTable.getOfType() != null) {
                     sb.append("\n\nALTER TABLE ")
                     .append(PgDiffUtils.getQuotedName(getName()))
                     .append(" OF ")
@@ -342,7 +348,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
 
             StringBuilder colsSb = new StringBuilder();
-            for(PgColumn newCol : newTable.getColumnsOfType()){
+            for (PgColumn newCol : newTable.getColumnsOfType()) {
                 PgColumn oldCol = oldTable.getColumnOfType(newCol.getName());
 
                 if (oldCol != null) {
@@ -381,7 +387,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     String newDefault = (newCol.getDefaultValue() == null) ? ""
                             : newCol.getDefaultValue();
 
-                    if(!newDefault.isEmpty()){
+                    if (!newDefault.isEmpty()){
                         colsSb.append("\n\tALTER COLUMN ")
                         .append(PgDiffUtils.getQuotedName(newCol.getName()))
                         .append(" SET DEFAULT ")
@@ -398,7 +404,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 }
             }
 
-            for(PgColumn oldCol : oldTable.getColumnsOfType()){
+            for (PgColumn oldCol : oldTable.getColumnsOfType()) {
                 PgColumn newCol = newTable.getColumnOfType(oldCol.getName());
 
                 if (newCol == null) {
@@ -412,7 +418,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         .append(", ");
                     }
 
-                    if(!oldCol.getNullValue()){
+                    if (!oldCol.getNullValue()) {
                         colsSb.append("\n\tALTER COLUMN ")
                         .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                         .append(" DROP NOT NULL")
@@ -453,38 +459,48 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     .append(';');
                 }
             }
-
-            PgTable.compareOptions(oldTable, newTable, sb);
-
-            if (oldTable.getHasOids() && !newTable.getHasOids()){
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append(" SET WITHOUT OIDS;");
-            } else if (newTable.getHasOids() && !oldTable.getHasOids()){
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append(" SET WITH OIDS;");
-            }
-
-            if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(newTable.getName()))
-                .append("\n\tSET TABLESPACE ")
-                .append(newTable.getTablespace())
-                .append(';');
-            }
-
-            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-                sb.append(newTable.getOwnerSQL());
-            }
-
-            alterPrivileges(newTable, sb);
-
-            if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
-                sb.append("\n\n");
-                newTable.appendCommentSql(sb);
-            }
         }
+
+        PgTable.compareOptions(oldTable, newTable, sb);
+
+        if (oldTable.getHasOids() && !newTable.getHasOids()) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITH OIDS;");
+        }
+
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append("\n\tSET TABLESPACE ")
+            .append(newTable.getTablespace())
+            .append(';');
+        }
+
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            sb.append(newTable.getOwnerSQL());
+        }
+
+        // since 9.5 PostgreSql
+        if (oldTable.isLogged != newTable.isLogged) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append("\n\tSET ")
+            .append(newTable.isLogged ? "LOGGED" : "UNLOGGED")
+            .append(';');
+        }
+
+        alterPrivileges(newTable, sb);
+
+        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+            sb.append("\n\n");
+            newTable.appendCommentSql(sb);
+        }
+
         return sb.length() > startLength;
     }
 
@@ -566,12 +582,21 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
 
-    public Boolean getHasOids() {
+    public boolean getHasOids() {
         return hasOids;
     }
 
-    public void setHasOids(Boolean hasOids) {
+    public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
+    }
+
+    public boolean isLogged() {
+        return isLogged;
+    }
+
+    public void setLogged(boolean isLogged) {
+        this.isLogged = isLogged;
         resetHash();
     }
 
@@ -707,6 +732,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             eq = Objects.equals(name, table.getName())
                     && Objects.equals(tablespace, table.getTablespace())
                     && hasOids == table.getHasOids()
+                    && isLogged == table.isLogged()
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
@@ -762,6 +788,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
+        result = prime * result + (isLogged ? itrue : ifalse);
         result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
         result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
         return result;

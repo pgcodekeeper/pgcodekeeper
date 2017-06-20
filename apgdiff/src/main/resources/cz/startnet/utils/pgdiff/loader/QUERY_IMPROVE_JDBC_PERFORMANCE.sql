@@ -36,6 +36,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_acl text[],
        table_comment text,
        table_space name,
+       persistence char
        has_oids boolean,
        inhrelnames name[],
        inhnspnames name[],
@@ -72,8 +73,7 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
-SELECT schema_oid,
-       subselectColumns.relname,
+SELECT subselectColumns.relname,
        subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
@@ -84,8 +84,8 @@ SELECT schema_oid,
        subselectColumns.col_default_storages,
        subselectColumns.col_defaults,
        subselectColumns.col_comments,
-       subselectColumns.atttypids as col_type_ids,
-       subselectColumns.atttypname as col_type_name,
+       subselectColumns.atttypids AS col_type_ids,
+       subselectColumns.atttypname AS col_type_name,
        subselectColumns.col_notnull,
        subselectColumns.col_collation,
        subselectColumns.col_statictics,
@@ -95,8 +95,9 @@ SELECT schema_oid,
        subselectColumns.col_collationnspname,
        subselectColumns.col_acl,
        comments.description AS table_comment,
-       subselectColumns.spcname as table_space,
-       subselectColumns.relhasoids as has_oids,
+       subselectColumns.spcname AS table_space,
+       subselectColumns.relpersistence AS persistence,
+       subselectColumns.relhasoids AS has_oids,
        subselectInherits.inhrelnames,
        subselectInherits.inhnspnames,
        subselectColumns.reloptions,
@@ -108,6 +109,7 @@ FROM
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
+            columnsData.relpersistence,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
@@ -136,7 +138,7 @@ FROM
               c.relacl::text AS aclArray,
               attr.attnum::integer,
               attr.attname,
-              array_to_string(attr.attoptions, ',') attoptions,
+              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
               attr.attstorage,
               t.typstorage,
               c.relhasoids,
@@ -153,6 +155,7 @@ FROM
               attr.attcollation,
               t.typcollation,
               tabsp.spcname,
+              c.relpersistence,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
               (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
@@ -165,7 +168,7 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
-          WHERE c.relnamespace = schema_oid
+          WHERE c.relnamespace = ?
               AND c.relkind = 'r'
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
@@ -177,7 +180,8 @@ FROM
               columnsData.reloptions,
               columnsData.toast_reloptions,
               columnsData.relhasoids,
-              columnsData.spcname) subselectColumns
+              columnsData.spcname,
+              columnsData.relpersistence) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
 LEFT JOIN

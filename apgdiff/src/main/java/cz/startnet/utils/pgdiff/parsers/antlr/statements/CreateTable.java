@@ -112,6 +112,11 @@ public class CreateTable extends ParserAbstract {
         if (!explicitOids && oids != null) {
             table.setHasOids(true);
         }
+
+        if (ctx.UNLOGGED() != null) {
+            table.setLogged(false);
+        }
+
         schema.addTable(table);
         return table;
     }

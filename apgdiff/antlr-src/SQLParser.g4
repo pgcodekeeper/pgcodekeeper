@@ -39,12 +39,12 @@ data_statement
   : select_stmt
   ;
 
-  script_statement
+script_statement
   : START TRANSACTION transaction_mode*
   | COMMIT (WORK | TRANSACTION)?
   ;
 
-  transaction_mode
+transaction_mode
   : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
   | READ WRITE | READ ONLY
   | (NOT)? DEFERRABLE
@@ -140,6 +140,7 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
+    | SET (LOGGED | UNLOGGED)
     | SET storage_parameter
     | RESET storage_parameter
     | INHERIT parent_table=schema_qualified_name
