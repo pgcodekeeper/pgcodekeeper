@@ -112,6 +112,26 @@
                 <version>3.0.2</version>
                 <executions>
                     <execution>
+                        <id>copy-resources-all</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/all/all/all</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>*.sh</include>
+                                        <include>*.bat</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-resources-linux-x86</id>
                         <phase>package</phase>
                         <goals>

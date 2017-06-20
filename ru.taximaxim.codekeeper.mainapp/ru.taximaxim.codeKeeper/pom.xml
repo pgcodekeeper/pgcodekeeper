@@ -152,6 +152,11 @@
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
+                        <environment>
+                            <os>all</os>
+                            <ws>all</ws>
+                            <arch>all</arch>
+                        </environment>
                     </environments>
                 </configuration>
             </plugin>
