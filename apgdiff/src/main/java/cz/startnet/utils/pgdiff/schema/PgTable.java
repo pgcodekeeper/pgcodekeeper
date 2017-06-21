@@ -855,6 +855,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         tableDst.setOfType(getOfType());
         tableDst.setTablespace(getTablespace());
         tableDst.setHasOids(getHasOids());
+        tableDst.setLogged(isLogged());
+        tableDst.setRowSecurity(isRowSecurity());
+        tableDst.setForceSecurity(isForceSecurity());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {

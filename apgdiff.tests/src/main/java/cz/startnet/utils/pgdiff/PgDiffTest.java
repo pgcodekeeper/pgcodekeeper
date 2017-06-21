@@ -110,6 +110,10 @@ public class PgDiffTest {
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.
                     {"drop_table_of_type"},
+                    // Tests scenario where TABLE row security is changed.
+                    {"modify_table_row_security"},
+                    // Tests scenario where TABLE logged status is changed.
+                    {"modify_table_unlogged"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
