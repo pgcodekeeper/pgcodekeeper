@@ -20,6 +20,7 @@ SELECT p.proname,
         p.probin,
         p.prorettype::bigint,
         p.proallargtypes::bigint[],
+        p.protrftypes::bigint[], --9.5
         p.proargmodes,
         p.proargnames,
         pg_get_function_arguments(p.oid) AS proarguments,

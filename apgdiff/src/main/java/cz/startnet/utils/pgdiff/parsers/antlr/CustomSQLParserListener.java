@@ -154,6 +154,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
+            // TODO remove after adding Transform object or other action
+            // transform is created in pg_catalog, error in parse
+            if ("pg_catalog".equals(confValue)) {
+                break;
+            }
             // allow the exception to terminate entire walker here
             // so that objects aren't created on the wrong search_path
             db.setDefaultSchema(ParserAbstract.getSafe(

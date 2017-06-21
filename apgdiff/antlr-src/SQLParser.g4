@@ -69,7 +69,8 @@ schema_create
     | create_language_statement
     | create_event_trigger
     | create_type_statement
-    | create_domain_statement)
+    | create_domain_statement
+    | create_transform_statement)
 
     | comment_on_statement
     | rule_common
@@ -186,6 +187,7 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
+      | TRANSFORM transform_for_type (COMMA transform_for_type)*
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
       | COST execution_cost=NUMBER_LITERAL
@@ -366,6 +368,14 @@ domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
      common_constraint
     ;
+    
+create_transform_statement
+    : (OR REPLACE)? TRANSFORM FOR schema_qualified_name LANGUAGE identifier 
+    LEFT_PAREN
+        FROM SQL WITH FUNCTION  function_parameters COMMA
+        TO SQL WITH FUNCTION function_parameters
+    RIGHT_PAREN
+    ;
 
 set_statement
     : SET (SESSION | LOCAL)?
@@ -542,6 +552,10 @@ create_funct_params
             | AS Character_String_Literal (COMMA Character_String_Literal)*
           )+
       with_storage_parameter?
+    ;
+
+transform_for_type
+    : FOR TYPE type_name=data_type
     ;
 
 function_ret_table

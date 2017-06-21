@@ -51,7 +51,7 @@ public class FunctionsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
 
-        f.setBody(loader.args, getFunctionBody(res));
+        f.setBody(loader.args, getFunctionBody(res, schemaName));
 
         // RETURN TYPE
         Array proargmodes = res.getArray("proargmodes");
@@ -117,11 +117,24 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private String getFunctionBody(ResultSet res) throws SQLException {
+    private String getFunctionBody(ResultSet res, String schemaName) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
+
+        // since 9.5 PostgreSQL
+        Array array = res.getArray("protrftypes");
+        if (array != null) {
+            body.append(" TRANSFORM ");
+            Long[] protrftypes = (Long[]) array.getArray();
+            for (Long s : protrftypes) {
+                body.append("FOR TYPE ")
+                .append(loader.cachedTypesByOid.get(s).getFullNameWithParent(schemaName));
+                body.append(", ");
+            }
+            body.setLength(body.length() - 2);
+        }
 
         if (res.getBoolean("proiswindow")) {
             body.append(" WINDOW");
