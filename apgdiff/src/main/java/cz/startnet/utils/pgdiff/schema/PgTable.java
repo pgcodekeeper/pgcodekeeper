@@ -40,6 +40,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private boolean isLogged = true;
+    private boolean isRowSecurity;
+    private boolean isForceSecurity;
     private String tablespace;
     private String ofType;
 
@@ -264,6 +266,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         sbSQL.append(';');
 
+        // since 9.5 PostgreSQL
+        if (isRowSecurity) {
+            sbSQL.append(ALTER_TABLE);
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" ENABLE ROW LEVEL SECURITY;");
+        }
+
+        // since 9.5 PostgreSQL
+        if (isForceSecurity) {
+            sbSQL.append(ALTER_TABLE).append("ONLY ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" FORCE ROW LEVEL SECURITY;");
+        }
+
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
@@ -485,13 +501,30 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             sb.append(newTable.getOwnerSQL());
         }
 
-        // since 9.5 PostgreSql
+        // since 9.5 PostgreSQL
         if (oldTable.isLogged != newTable.isLogged) {
             sb.append(ALTER_TABLE)
             .append(PgDiffUtils.getQuotedName(newTable.getName()))
             .append("\n\tSET ")
             .append(newTable.isLogged ? "LOGGED" : "UNLOGGED")
             .append(';');
+        }
+
+        // since 9.5 PostgreSQL
+        if (oldTable.isRowSecurity != newTable.isRowSecurity) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append(newTable.isRowSecurity ? " ENABLE" : " DISABLE")
+            .append(" ROW LEVEL SECURITY;");
+        }
+
+        // since 9.5 PostgreSQL
+        if (oldTable.isForceSecurity != newTable.isForceSecurity) {
+            sb.append(ALTER_TABLE)
+            .append("ONLY ")
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append(newTable.isForceSecurity ? "" : " NO")
+            .append(" FORCE ROW LEVEL SECURITY;");
         }
 
         alterPrivileges(newTable, sb);
@@ -597,6 +630,24 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public void setLogged(boolean isLogged) {
         this.isLogged = isLogged;
+        resetHash();
+    }
+
+    public boolean isRowSecurity() {
+        return isRowSecurity;
+    }
+
+    public void setRowSecurity(final boolean isRowSecurity) {
+        this.isRowSecurity = isRowSecurity;
+        resetHash();
+    }
+
+    public boolean isForceSecurity() {
+        return isForceSecurity;
+    }
+
+    public void setForceSecurity(final boolean isForceSecurity) {
+        this.isForceSecurity = isForceSecurity;
         resetHash();
     }
 
@@ -733,6 +784,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(tablespace, table.getTablespace())
                     && hasOids == table.getHasOids()
                     && isLogged == table.isLogged()
+                    && isRowSecurity == table.isRowSecurity()
+                    && isForceSecurity == table.isForceSecurity()
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
@@ -789,6 +842,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
         result = prime * result + (isLogged ? itrue : ifalse);
+        result = prime * result + (isRowSecurity ? itrue : ifalse);
+        result = prime * result + (isForceSecurity ? itrue : ifalse);
         result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
         result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
         return result;

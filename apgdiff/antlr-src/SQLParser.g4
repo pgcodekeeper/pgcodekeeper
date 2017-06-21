@@ -137,6 +137,8 @@ table_action
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
+    | (DISABLE | ENABLE) ROW LEVEL SECURITY
+    | (NO)? FORCE ROW LEVEL SECURITY
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS

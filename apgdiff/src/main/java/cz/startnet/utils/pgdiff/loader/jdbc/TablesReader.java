@@ -204,6 +204,16 @@ public class TablesReader extends JdbcReader {
             t.setTablespace(tableSpace);
         }
 
+        // since 9.5 PostgreSQL
+        if (res.getBoolean("row_security")){
+            t.setRowSecurity(true);
+        }
+
+        // since 9.5 PostgreSQL
+        if (res.getBoolean("force_security")){
+            t.setForceSecurity(true);
+        }
+
         // persistence: U - unlogged, P - permanent, T - temporary
         switch (res.getString("persistence")) {
         case "u":

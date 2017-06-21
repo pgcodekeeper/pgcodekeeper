@@ -78,7 +78,7 @@ public class AlterTable extends ParserAbstract {
                 }
             }
 
-            if(tablAction.set_storage() != null){
+            if (tablAction.set_storage() != null){
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if(col != null){
                     col.setStorage(tablAction.set_storage().storage_option().getText());
@@ -117,6 +117,15 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
             }
+
+            // since 9.5 PostgreSQL
+            if (tablAction.SECURITY() != null) {
+                if (tablAction.FORCE() != null) {
+                    tabl.setForceSecurity(tablAction.NO() == null);
+                } else {
+                    tabl.setRowSecurity(tablAction.ENABLE() != null);
+                }
+            }
         }
         for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
             PgColumn col = tabl.getColumn(function.getKey());
@@ -124,6 +133,8 @@ public class AlterTable extends ParserAbstract {
                 col.addDep(function.getValue());
             }
         }
+
+
         return null;
     }
 

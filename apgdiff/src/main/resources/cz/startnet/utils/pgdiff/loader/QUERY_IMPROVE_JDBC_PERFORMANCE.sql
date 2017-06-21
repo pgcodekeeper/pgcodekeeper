@@ -36,6 +36,8 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_acl text[],
        table_comment text,
        table_space name,
+       row_security boolean, -- 9.5
+       force_security boolean, -- 9.5
        persistence "char",
        has_oids boolean,
        inhrelnames name[],
@@ -97,6 +99,8 @@ SELECT schema_oid,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname AS table_space,
+       subselectColumns.relrowsecurity AS row_security, -- 9.5
+       subselectColumns.relforcerowsecurity AS force_security, -- 9.5
        subselectColumns.relpersistence AS persistence,
        subselectColumns.relhasoids AS has_oids,
        subselectInherits.inhrelnames,
@@ -110,6 +114,8 @@ FROM
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
+            columnsData.relrowsecurity, -- 9.5
+            columnsData.relforcerowsecurity, -- 9.5
             columnsData.relpersistence,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
@@ -156,6 +162,8 @@ FROM
               attr.attcollation,
               t.typcollation,
               tabsp.spcname,
+              c.relrowsecurity, --9.5
+              c.relforcerowsecurity, --9.5
               c.relpersistence,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
               (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
@@ -182,6 +190,8 @@ FROM
               columnsData.toast_reloptions,
               columnsData.relhasoids,
               columnsData.spcname,
+              columnsData.relrowsecurity, --9.5
+              columnsData.relforcerowsecurity, --9.5
               columnsData.relpersistence) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
