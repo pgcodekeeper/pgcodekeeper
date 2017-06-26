@@ -291,7 +291,15 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
+      including_index?
       with_storage_parameter?
+    ;
+    
+including_index
+    : (INCLUDING | INCLUDE)
+    LEFT_PAREN 
+        identifier (COMMA identifier)* 
+    RIGHT_PAREN 
     ;
     
 index_where 
@@ -710,7 +718,7 @@ all_op
     ;
 
 table_unique_prkey
-    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
+    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters including_index?
     ;
 
 index_parameters
