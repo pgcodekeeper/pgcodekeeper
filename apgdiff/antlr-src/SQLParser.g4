@@ -100,7 +100,8 @@ alter_function_statement
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
-    | set_schema)
+    | set_schema
+    | DEPENDS ON EXTENSION identifier)
     ;
 
 alter_schema_statement
@@ -190,6 +191,7 @@ function_actions_common
       | TRANSFORM transform_for_type (COMMA transform_for_type)*
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+      | PARALLEL identifier 
       | COST execution_cost=NUMBER_LITERAL
       | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*

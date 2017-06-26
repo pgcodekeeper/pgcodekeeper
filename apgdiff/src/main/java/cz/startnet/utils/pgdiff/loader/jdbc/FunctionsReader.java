@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.Array;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -124,16 +125,18 @@ public class FunctionsReader extends JdbcReader {
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        Array array = res.getArray("protrftypes");
-        if (array != null) {
-            body.append(" TRANSFORM ");
-            Long[] protrftypes = (Long[]) array.getArray();
-            for (Long s : protrftypes) {
-                body.append("FOR TYPE ")
-                .append(loader.cachedTypesByOid.get(s).getFullNameWithParent(schemaName));
-                body.append(", ");
+        if (checkColumn(res, "protrftypes")) {
+            Array array = res.getArray("protrftypes");
+            if (array != null) {
+                body.append(" TRANSFORM ");
+                Long[] protrftypes = (Long[]) array.getArray();
+                for (Long s : protrftypes) {
+                    body.append("FOR TYPE ")
+                    .append(loader.cachedTypesByOid.get(s).getFullNameWithParent(schemaName));
+                    body.append(", ");
+                }
+                body.setLength(body.length() - 2);
             }
-            body.setLength(body.length() - 2);
         }
 
         if (res.getBoolean("proiswindow")) {
@@ -162,6 +165,22 @@ public class FunctionsReader extends JdbcReader {
 
         if (res.getBoolean("proleakproof")) {
             body.append(" LEAKPROOF");
+        }
+
+        // since 9.6 PostgreSQL
+        // parallel mode: s - safe, r - restricted, u - unsafe
+        if (checkColumn(res, "proparallel")) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                body.append(" PARALLEL SAFE");
+                break;
+            case "r":
+                body.append(" PARALLEL RESTRICTED");
+                break;
+            default :
+                break;
+            }
         }
 
         float cost = res.getFloat("procost");
@@ -216,6 +235,21 @@ public class FunctionsReader extends JdbcReader {
             }
         }
         return body.toString();
+    }
+
+    private boolean checkColumn(ResultSet res, String string) throws SQLException {
+        ResultSetMetaData rsMetaData = res.getMetaData();
+        int numberOfColumns = rsMetaData.getColumnCount();
+
+        // get the column names; column indexes start from 1
+        for (int i = 1; i < numberOfColumns + 1; i++) {
+            String columnName = rsMetaData.getColumnName(i);
+            // Get the name of the column's table name
+            if (string.equals(columnName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

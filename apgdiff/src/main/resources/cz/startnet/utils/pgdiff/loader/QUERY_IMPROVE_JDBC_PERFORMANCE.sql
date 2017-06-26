@@ -322,6 +322,7 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_functions(schema_oids bigi
         prorettype bigint,
         proallargtypes bigint[],
         protrftypes bigint[], --9.5
+        proparallel "char", --9.6
         proargmodes "char"[],
         proargnames text[],
         proarguments text,
@@ -367,6 +368,7 @@ SELECT schema_oid,
         p.prorettype::bigint,
         p.proallargtypes::bigint[],
         p.protrftypes::bigint[], --9.5
+        p.proparallel, --9.6
         p.proargmodes,
         p.proargnames,
         pg_get_function_arguments(p.oid) AS proarguments,
