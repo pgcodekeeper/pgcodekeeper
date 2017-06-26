@@ -71,7 +71,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final Argument argument : arguments) {
-            if (!includeArgNames && argument.getMode().equalsIgnoreCase("OUT")) {
+            if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {
                 continue;
             }
             if (addComma) {
@@ -235,8 +235,10 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         if (obj instanceof PgFunction) {
             PgFunction func  = (PgFunction) obj;
-            return checkForChanges(func)
-                    && Objects.equals(owner, func.getOwner())
+            if (!checkForChanges(func)) {
+                return false;
+            }
+            return  Objects.equals(owner, func.getOwner())
                     && Objects.equals(grants, func.grants)
                     && Objects.equals(revokes, func.revokes)
                     && Objects.equals(comment, func.getComment());
@@ -425,12 +427,12 @@ public class PgFunction extends PgStatementWithSearchPath {
         // Если добавляется или удаляется out параметр нужно удалить функцию,
         // т.к. меняется её возвращаемое значение
         while (iOld.hasNext()) {
-            if (iOld.next().getMode().equalsIgnoreCase("OUT")) {
+            if ("OUT".equalsIgnoreCase(iOld.next().getMode())) {
                 return true;
             }
         }
         while (iNew.hasNext()) {
-            if (iNew.next().getMode().equalsIgnoreCase("OUT")) {
+            if ("OUT".equalsIgnoreCase(iNew.next().getMode())) {
                 return true;
             }
         }

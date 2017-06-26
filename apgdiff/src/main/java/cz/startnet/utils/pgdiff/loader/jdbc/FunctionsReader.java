@@ -65,11 +65,9 @@ public class FunctionsReader extends JdbcReader {
                 Long[] argTypeOids = (Long[]) res.getArray("proallargtypes").getArray();
                 for (int i = 0; i < argModes.length; i++) {
                     String type = argModes[i];
-                    if (type.equals("t")) {
+                    if ("t".equals(type)) {
                         returnsTable = true;
-                        if (returnedTableArguments.length() > 0) {
-                            returnedTableArguments.append(", ");
-                        }
+                        returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
                         returnedTableArguments.append(argNames[i]).append(" ");
 
                         JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
@@ -151,6 +149,8 @@ public class FunctionsReader extends JdbcReader {
         case "s":
             body.append(" STABLE");
             break;
+        default :
+            break;
         }
 
         // CALLED ON NULL INPUT is default
@@ -184,7 +184,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         float cost = res.getFloat("procost");
-        if (lanName.equals("internal") || lanName.equals("c")) {
+        if ("internal".equals(lanName) || "c".equals(lanName)) {
             /* default cost is 1 */
             if (cost != 1) {
                 body.append(" COST ").append((int) cost);
@@ -207,7 +207,7 @@ public class FunctionsReader extends JdbcReader {
                 String[] params = param.split("=");
                 String par = params[0];
                 String val = params[1];
-                if (!par.equals("DateStyle") && !par.equals("search_path")) {
+                if (!"DateStyle".equals(par) && !"search_path".equals(par)) {
                     par = PgDiffUtils.getQuotedName(par);
                     val = PgDiffUtils.quoteString(val);
                 }
@@ -221,7 +221,7 @@ public class FunctionsReader extends JdbcReader {
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
             body.append("\n    AS ").append(PgDiffUtils.quoteString(probin));
-            if (!definition.equals("-")) {
+            if (!"-".equals(definition)) {
                 body.append(", ");
                 if (!definition.contains("\'") && !definition.contains("\\")) {
                     body.append(PgDiffUtils.quoteString(definition));
@@ -230,7 +230,7 @@ public class FunctionsReader extends JdbcReader {
                 }
             }
         } else {
-            if (!definition.equals("-")) {
+            if (!"-".equals(definition)) {
                 body.append("\n    AS ").append(quote).append(definition).append(quote);
             }
         }
