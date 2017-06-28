@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IProject;
@@ -24,11 +25,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
@@ -46,11 +45,10 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
 
-    public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor"; //$NON-NLS-1$
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
     private Composite parentComposite;
-    protected SQLEditorContentOutlinePage fOutlinePage;
+    private SQLEditorContentOutlinePage fOutlinePage;
     private IEditorInput input;
     private Image errorTitleImage;
 
@@ -75,7 +73,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (IContentOutlinePage.class.isAssignableFrom(adapter) && (fOutlinePage != null)) {
+        if (IContentOutlinePage.class.isAssignableFrom(adapter) && fOutlinePage != null) {
             return adapter.cast(fOutlinePage);
         }
         return super.getAdapter(adapter);
@@ -106,14 +104,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
-                getSharedColors(), getPreferenceStore()));
+                getSharedColors(), getPreferenceStore(), this));
 
         this.input = input;
-        if (input instanceof IFileEditorInput || input instanceof FileStoreEditorInput) {
-            setDocumentProvider(new SQLEditorFileDocumentProvider());
-        } else if (input instanceof IStorageEditorInput) {
-            setDocumentProvider(new SQLEditorStorageDocumentProvider());
-        }
+        setDocumentProvider(new SQLEditorCommonDocumentProvider());
         super.init(site, input);
     }
 
@@ -127,14 +121,16 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             } catch (CoreException e) {
                 Log.log(e);
             }
-        } else if (input instanceof FileStoreEditorInput){
-            IDocument document = getDocumentProvider().getDocument(input);
-            InputStream stream = new ByteArrayInputStream(document.get().getBytes());
-            try {
-                return PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
-            } catch (InterruptedException | IOException | LicenseException e) {
-                Log.log(e);
-            }
+        }
+
+        // in case of exception, non-project or non-pgcodekeeper file
+        // try creating a rollon (standalone) parser
+        IDocument document = getDocumentProvider().getDocument(input);
+        InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
+        try {
+            return PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
+        } catch (InterruptedException | IOException | LicenseException e) {
+            Log.log(e);
         }
         return null;
     }

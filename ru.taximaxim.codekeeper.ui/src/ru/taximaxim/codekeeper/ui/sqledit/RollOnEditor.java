@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -71,8 +71,9 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
@@ -111,11 +112,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private volatile boolean isRunning;
     private Thread scriptThread;
-    private static final String SCRIPT_FILE_ENCODING = ApgdiffConsts.UTF_8;
-    private static final String CONNECTION_TIMEZONE = ApgdiffConsts.UTC;
     private Button runScriptBtn;
     private IEditorInput input;
-    private SourceViewer sw;
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -127,13 +125,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
             IVerticalRuler ruler, int styles) {
-        Layout gl = new GridLayout(1, false);
+        Layout gl = new GridLayout();
         parent.setLayout(gl);
         parent.setLayoutData(new GridData());
 
         createDialogArea(parent);
 
-        sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
+        SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         sw.appendVerifyKeyListener(new VerifyKeyListener() {
 
@@ -156,35 +154,38 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     private void setLineBackground(){
-        IDocument document = sw.getDocument();
-        IAnnotationModel model = sw.getAnnotationModel();
-        String an = "ru.taximaxim.codekeeper.ui.sql.errorannotation";
-        InputStream stream = new ByteArrayInputStream(document.get().getBytes());
-        List<PgObjLocation> refs = new ArrayList<>();
+        InputStream stream = new ByteArrayInputStream(
+                getSourceViewer().getDocument().get().getBytes(StandardCharsets.UTF_8));
+        List<PgObjLocation> refs;
         try {
-            PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, new NullProgressMonitor());
+            PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
             refs = parser.getAllObjReferences();
         } catch (InterruptedException | IOException | LicenseException e) {
             Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
+            return;
         }
+
+        IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
-            Position pos = new Position(loc.getOffset(), loc.getObjLength());
-            // drop table or column
-            if (loc.getAction() == StatementActions.DROP){
-                if (loc.getObjType() == DbObjType.TABLE){
-                    model.addAnnotation(new Annotation(an, false, "DROP TABLE statement"), pos); //$NON-NLS-1$
-                } else if (loc.getObjType() == DbObjType.COLUMN) {
-                    model.addAnnotation(new Annotation(an, false, "DROP COLUMN statement"), pos); //$NON-NLS-1$
-                }
-                // alter column or sequence
+            String annotationMsg = null;
+            if (loc.getAction() == StatementActions.DROP && loc.getObjType() == DbObjType.TABLE){
+                annotationMsg = "DROP TABLE statement"; //$NON-NLS-1$
             } else if (loc.getAction() == StatementActions.ALTER){
-                if(loc.getObjType() == DbObjType.TABLE
-                        && loc.getText().matches(DangerStatement.ALTER_COLUMN.getRegex().pattern())) {
-                    model.addAnnotation(new Annotation(an, false, "ALTER COLUMN ... TYPE statement"), pos); //$NON-NLS-1$
-                } else if (loc.getObjType() == DbObjType.SEQUENCE
-                        && loc.getText().matches(DangerStatement.RESTART_WITH.getRegex().pattern())) {
-                    model.addAnnotation(new Annotation(an, false, "ALTER SEQUENSE ... RESTART WITH statement"), pos); //$NON-NLS-1$
+                String text = loc.getText();
+                if (loc.getObjType() == DbObjType.TABLE) {
+                    if (DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches()) {
+                        annotationMsg = "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
+                    } else if (DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches()) {
+                        annotationMsg = "DROP COLUMN statement"; //$NON-NLS-1$
+                    }
+                } else if (loc.getObjType() == DbObjType.SEQUENCE &&
+                        DangerStatement.RESTART_WITH.getRegex().matcher(text).matches()) {
+                    annotationMsg = "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
                 }
+            }
+            if (annotationMsg != null) {
+                model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false, annotationMsg),
+                        new Position(loc.getOffset(), loc.getObjLength()));
             }
         }
     }
@@ -370,8 +371,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private void runButtonMethod() {
         if (!isRunning) {
             final String textRetrieved;
-            Point point = sw.getSelectedRange();
-            IDocument document = sw.getDocument();
+            Point point = getSourceViewer().getSelectedRange();
+            IDocument document = getSourceViewer().getDocument();
             if (point.y == 0){
                 textRetrieved = document.get();
             } else {
@@ -409,7 +410,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         try{
                             JdbcConnector connector = new JdbcConnector(
                                     jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    SCRIPT_FILE_ENCODING, CONNECTION_TIMEZONE);
+                                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
@@ -425,6 +426,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 };
             } else {
                 Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
+                try {
+                    history.addHistoryEntry(cmbScript.getText());
+                } catch (IOException e) {
+                    ExceptionNotifier.notifyDefault(
+                            Messages.SqlScriptDialog_error_adding_command_history, e);
+                }
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(" "))); //$NON-NLS-1$
 
@@ -475,7 +482,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get().toFile();
-                try (PrintWriter writer = new PrintWriter(outFile, SCRIPT_FILE_ENCODING)) {
+                try (PrintWriter writer = new PrintWriter(outFile, ApgdiffConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 }
 
@@ -547,46 +554,37 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
-        if (partRef.getTitle() == getEditorInput().getName() && !PlatformUI.getWorkbench().isClosing()){
-            if (!isRunning) {
-                try {
-                    history.addHistoryEntry(cmbScript.getText());
-                } catch (IOException e) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.SqlScriptDialog_error_adding_command_history, e);
-                }
-            }
-            if (input instanceof IFileEditorInput
-                    && ((IFileEditorInput) input).getFile().getProjectRelativePath()
-                    .toString().contains("MIGRATION/")){ //$NON-NLS-1$
-                askDeleteScript();
+        if (partRef.getPart(false) == this && !PlatformUI.getWorkbench().isClosing()
+                && input instanceof IFileEditorInput) {
+            IFile f = ((IFileEditorInput) input).getFile();
+            if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
+                askDeleteScript(f);
             }
         }
     }
 
-    private void askDeleteScript() {
-        String mode = mainPrefs.getString(PG_EDIT_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+    private void askDeleteScript(IFile f) {
+        String mode = mainPrefs.getString(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
         // if select "YES" with toggle
         if (mode.equals(MessageDialogWithToggle.ALWAYS)){
-            deleteFile();
+            deleteFile(f);
             // if not select "NO" with toggle, show choice message dialog
         } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
                     Messages.RollOnEditor_script_delete_dialog_title, Messages.RollOnEditor_script_delete_dialog_message,
-                    Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.DELETE_SCRIPT_AFTER_CLOSE);
+                    Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
             if(dialog.getReturnCode() == IDialogConstants.YES_ID){
-                deleteFile();
+                deleteFile(f);
             }
         }
     }
 
-    private void deleteFile() {
+    private void deleteFile(IFile f) {
         try {
-            IFile s = ((IFileEditorInput)input).getFile();
-            s.delete(true, null);
-            Log.log(Log.LOG_INFO, "Deleting file " + s.getName()); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, "Deleting file " + f.getName()); //$NON-NLS-1$
+            f.delete(true, null);
         } catch (CoreException ex) {
-            Log.log(Log.LOG_ERROR, "Can't delete file", ex); //$NON-NLS-1$
+            Log.log(ex);
         }
     }
 

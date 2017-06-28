@@ -17,7 +17,6 @@ import java.util.SortedMap;
 
 import org.osgi.framework.BundleContext;
 
-import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;

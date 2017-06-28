@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff;
 
-import java.util.regex.Pattern;
-
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -12,7 +10,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author Alexander Levsha
  */
-public class PgDiffStatement {
+class PgDiffStatement {
 
     final DiffStatementType type;
     final String objname;
@@ -21,41 +19,6 @@ public class PgDiffStatement {
 
     public enum DiffStatementType {
         DROP, CREATE, OTHER
-    }
-
-    private static final String ALTER_TABLE_PATTERN =
-            "^ALTER[\\s]+TABLE[\\s]+"
-                    + "(IF[\\s]+EXISTS[\\s]+)?"
-                    + "(ONLY[\\s]+)?"
-                    + "([\\w]+[\\s]+)"
-                    + "(\\*[\\s]+)?";
-
-    public enum DangerStatement {
-
-        DROP_TABLE("^DROP[\\s]+TABLE.+"),
-
-        ALTER_COLUMN(ALTER_TABLE_PATTERN
-                // match ALTER [ COLUMN ] column_name [ SET DATA ] TYPE data_type
-                + "ALTER[\\s]+(COLUMN[\\s]+)?([\\w]+[\\s]+)"
-                + "(SET[\\s]+DATA[\\s]+)?(TYPE).+"),
-
-        DROP_COLUMN(ALTER_TABLE_PATTERN
-                // match 'DROP COLUMN' or 'DROP column_name'
-                // but *not* 'DROP CONSTRAINT constraint_name'
-                + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*"),
-
-        RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*");
-
-        private final Pattern regex;
-
-        private DangerStatement(String regex) {
-            this.regex = Pattern.compile(regex,
-                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        }
-
-        public Pattern getRegex() {
-            return regex;
-        }
     }
 
     public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {

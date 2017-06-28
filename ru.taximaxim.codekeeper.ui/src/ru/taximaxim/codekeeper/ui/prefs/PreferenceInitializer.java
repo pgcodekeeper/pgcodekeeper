@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
 
@@ -30,11 +31,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         store.setDefault(DB_UPDATE_PREF.USING_ON_OFF, true);
+        store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT, true);
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);
         store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT, "158,182,211"); //$NON-NLS-1$
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "255,146,129"); //$NON-NLS-1$
+        store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
         setSQLSyntaxColorDefaults(store);

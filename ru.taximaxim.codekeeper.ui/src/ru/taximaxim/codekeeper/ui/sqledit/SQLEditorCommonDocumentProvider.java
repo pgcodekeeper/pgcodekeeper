@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.IDocumentPartitioner;
@@ -9,8 +10,9 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 
-public class SQLEditorCommonDocumentProvider {
+public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and
@@ -36,12 +38,25 @@ public class SQLEditorCommonDocumentProvider {
             SQL_CHARACTER_STRING_LITERAL
     };
 
+    @Override
+    protected FileInfo createFileInfo(Object element) throws CoreException{
+        FileInfo info = super.createFileInfo(element);
+        if(info == null){
+            info = createEmptyFileInfo();
+        }
+        IDocument document = info.fTextFileBuffer.getDocument();
+        if (document != null) {
+            setupDocument(document);
+        }
+        return info;
+    }
+
     void setupDocument(IDocument document) {
         if (document instanceof IDocumentExtension3) {
             IDocumentExtension3 ext= (IDocumentExtension3) document;
             IDocumentPartitioner partitioner= createRecipePartitioner();
-            ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
             partitioner.connect(document);
+            ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
         }
     }
 

@@ -55,12 +55,8 @@ final class SQLEditorTextHover implements ITextHover {
 
     @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        if (hoverRegion != null) {
-            if (hoverRegion.getLength() > -1
-                    && hoverRegion instanceof SQLEditorMyRegion) {
-                SQLEditorMyRegion myRegion = (SQLEditorMyRegion) hoverRegion;
-                return myRegion.getComment();
-            }
+        if (hoverRegion instanceof SQLEditorMyRegion) {
+            return ((SQLEditorMyRegion) hoverRegion).getComment();
         }
         return "";  //$NON-NLS-1$
     }

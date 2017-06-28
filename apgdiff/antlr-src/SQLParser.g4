@@ -115,8 +115,8 @@ schema_alter
 schema_drop
     : DROP (drop_function_statement
     | drop_trigger_statement
-    | drop_statements
-    | drop_rule_statement)
+    | drop_rule_statement
+    | drop_statements)
     ;
 
 alter_function_statement
@@ -815,9 +815,9 @@ drop_function_statement
 drop_trigger_statement
     : TRIGGER (IF EXISTS)? name=schema_qualified_name ON schema_qualified_name cascade_restrict?
     ;
-    
+
 drop_rule_statement
-    : RULE (IF EXISTS)? name=schema_qualified_name ON schema_qualified_name cascade_restrict?
+    : RULE (IF EXISTS)? name=identifier ON schema_qualified_name cascade_restrict?
     ;
 
 drop_statements

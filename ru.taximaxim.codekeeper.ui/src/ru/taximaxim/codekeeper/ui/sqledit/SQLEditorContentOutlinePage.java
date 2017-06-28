@@ -3,13 +3,13 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -98,25 +98,22 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         }
     }
 
-    protected class ContentProvider implements ITreeContentProvider {
-        private static final String SEGMENTS = "ru.taximaxim.codekeeper.ui.sqledit.marker.sqlmarkerupdate"; //$NON-NLS-1$
-        private final IPositionUpdater fPositionUpdater = new DefaultPositionUpdater(SEGMENTS);
-        List<Segments> segments = new ArrayList<>();
+    private class ContentProvider implements ITreeContentProvider {
+        private List<Segments> segments;
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            segments = Collections.emptyList();
             if (newInput != null) {
                 IDocument document = fDocumentProvider.getDocument(newInput);
                 if (document != null) {
-                    document.addPositionCategory(SEGMENTS);
-                    document.addPositionUpdater(fPositionUpdater);
                     parse(document);
                 }
             }
         }
 
         private void parse(IDocument document) {
-            InputStream stream = new ByteArrayInputStream(document.get().getBytes());
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             List<PgObjLocation> refs = new ArrayList<>();
             try {
                 PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, new NullProgressMonitor());
@@ -124,6 +121,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             } catch (InterruptedException | IOException | LicenseException e) {
                 Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
             }
+            segments = new ArrayList<>(refs.size());
             for (PgObjLocation loc : refs) {
                 if (loc.getAction() != StatementActions.NONE) {
                     segments.add(new Segments(loc));
@@ -133,10 +131,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         @Override
         public void dispose() {
-            if (segments != null) {
-                segments.clear();
-                segments = null;
-            }
+            // no impl
         }
 
         @Override

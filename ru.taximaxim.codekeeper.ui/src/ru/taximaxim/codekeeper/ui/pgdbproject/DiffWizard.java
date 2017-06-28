@@ -116,7 +116,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     treediffer.getDiffTree(), false, pageDiff.getTimezone());
             getContainer().run(true, true, differ);
 
-            Path path = Files.createTempFile(Files.createTempDirectory("."), Messages.DiffWizard_diff_wizard_result, ""); //$NON-NLS-1$ //$NON-NLS-2$
+            Path path = Files.createTempFile("diff_wizard_result_", ""); //$NON-NLS-1$ //$NON-NLS-2$
             Files.write(path, differ.getDiffDirect().getBytes());
             IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()

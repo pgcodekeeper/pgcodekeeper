@@ -10,6 +10,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -53,7 +54,7 @@ public class SQLEditorHyperLink implements IHyperlink {
 
         try {
             ITextEditor editor = (ITextEditor) IDE.openEditor(
-                    page, Paths.get(location).toUri(), SQLEditor.ID, true);
+                    page, Paths.get(location).toUri(), EDITOR.SQL, true);
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(

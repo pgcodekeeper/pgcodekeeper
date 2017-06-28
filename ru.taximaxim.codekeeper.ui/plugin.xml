@@ -288,17 +288,17 @@
         </page>
     </extension>
     <extension point="org.eclipse.ui.importWizards">
-       <category
-             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-             name="%category.name.keeperImportWizard">
-       </category>
-       <wizard
-             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-             class="ru.taximaxim.codekeeper.ui.pgdbproject.ImportProjWizard"
-             icon="icons/app_icon16.png"
-             id="ru.taximaxim.codekeeper.ui.importprojwizard"
-             name="%wizard.name.keeperImportWizard">
-       </wizard>
+        <category
+            id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            name="%category.name.keeperImportWizard">
+        </category>
+        <wizard
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.ImportProjWizard"
+            icon="icons/app_icon16.png"
+            id="ru.taximaxim.codekeeper.ui.importprojwizard"
+            name="%wizard.name.keeperImportWizard">
+        </wizard>
     </extension>
     <extension point="org.eclipse.ui.newWizards">
         <wizard
@@ -324,13 +324,12 @@
         <builder id="ru.taximaxim.codekeeper.ui.builder">
         </builder>
     </extension>
-    <extension
-          point="org.eclipse.ui.ide.projectNatureImages">
-       <image
-             icon="icons/nature_decorator.png"
-             id="ru.taximaxim.codekeeper.ui.natureImage"
-             natureId="ru.taximaxim.codekeeper.ui.nature">
-       </image>
+    <extension point="org.eclipse.ui.ide.projectNatureImages">
+        <image
+            icon="icons/nature_decorator.png"
+            id="ru.taximaxim.codekeeper.ui.natureImage"
+            natureId="ru.taximaxim.codekeeper.ui.nature">
+        </image>
     </extension>
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
@@ -368,6 +367,9 @@
         <target
             id="ru.taximaxim.codekeeper.ui.SQLEditorTarget"
             name="SQL Editor Target">
+           <context
+                 type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+           </context>
         </target>
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -646,26 +648,25 @@
     </extension>
     <extension point="org.eclipse.ui.editors.annotationTypes">
         <type
-            markerSeverity="2"
-            super="org.eclipse.ui.workbench.texteditor.error"
-            name="ru.taximaxim.codekeeper.ui.sql.errorannotation"
-            markerType="ru.taximaxim.codekeeper.ui.sql.errormarker" />
+            markerSeverity="1"
+            super="org.eclipse.ui.workbench.texteditor.warning"
+            name="ru.taximaxim.codekeeper.ui.sql.dangerannotation" />
     </extension>
-    <extension
-        id="ru.taximaxim.ui.markerannotation"
-        name="pgCodeKeeper Marker Annotation"
-        point="org.eclipse.ui.editors.markerAnnotationSpecification">
+    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-              annotationType="ru.taximaxim.codekeeper.ui.sql.errorannotation"
+              annotationType="ru.taximaxim.codekeeper.ui.sql.dangerannotation"
               colorPreferenceKey="clcolor"
-              colorPreferenceValue="255,255,0"
+              colorPreferenceValue="255, 146, 130"
+              contributesToHeader="true"
+              highlightPreferenceKey="clhighlight"
+              highlightPreferenceValue="true"
               includeOnPreferencePage="true"
-              label="pgCodeKeeper Dangerous Statements"
+              label="pgCodeKeeper Dangerous Statement"
               overviewRulerPreferenceKey="clruler"
               overviewRulerPreferenceValue="true"
-              symbolicIcon="info"
+              symbolicIcon="warning"
               textPreferenceKey="cltext"
-              textPreferenceValue="true"
+              textPreferenceValue="false"
               textStylePreferenceKey="clstyle"
               textStylePreferenceValue="BOX"
               verticalRulerPreferenceKey="clvertical"
@@ -679,9 +680,9 @@
         </updater>
     </extension>
     <extension point="org.eclipse.ui.intro.configExtension">
-		<configExtension 
-			configId="org.eclipse.ui.intro.universalConfig" 
-			content="$nl$/intro/pgcodekeeper_intro.xml">
-		</configExtension>
-	</extension>
+        <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="$nl$/intro/pgcodekeeper_intro.xml">
+        </configExtension>
+    </extension>
 </plugin>

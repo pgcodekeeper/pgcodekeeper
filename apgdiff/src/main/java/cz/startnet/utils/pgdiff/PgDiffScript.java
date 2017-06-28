@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 

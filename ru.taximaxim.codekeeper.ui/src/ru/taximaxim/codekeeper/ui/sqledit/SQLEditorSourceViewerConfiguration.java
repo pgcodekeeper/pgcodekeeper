@@ -43,15 +43,17 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         }
     }
 
+    private final SQLEditor editor;
     private final ISharedTextColors fSharedColors;
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
     private final IPreferenceStore prefs;
 
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
-            IPreferenceStore store) {
+            IPreferenceStore store, SQLEditor editor) {
         super(store);
         fSharedColors= sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
+        this.editor = editor;
     }
 
     @Override
@@ -119,7 +121,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
-        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null); //$NON-NLS-1$
+        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
         return targets;
     }
 

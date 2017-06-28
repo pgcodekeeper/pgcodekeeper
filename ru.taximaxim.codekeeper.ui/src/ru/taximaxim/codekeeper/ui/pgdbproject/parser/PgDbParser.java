@@ -40,8 +40,8 @@ public class PgDbParser implements IResourceChangeListener {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
-    private volatile ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
-    private volatile ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private final IProject proj;
     private final List<Listener> listeners = new ArrayList<>();
 

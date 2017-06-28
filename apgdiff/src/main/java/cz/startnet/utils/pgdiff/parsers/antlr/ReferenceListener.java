@@ -605,23 +605,20 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     @Override
     public void exitDrop_rule_statement(Drop_rule_statementContext ctx) {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        String name = QNameParser.getFirstName(ids);
+        List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
 
         int offset=0;
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         } else {
-            //offset = schemaName.length() + 1;
             addObjReference(null, schemaName, DbObjType.SCHEMA,
-                    StatementActions.NONE, ctx.name.getStart()
-                    .getStartIndex(), 0, ctx.name.getStart()
-                    .getLine(), ParserAbstract.getFullCtxText(ctx));
+                    StatementActions.NONE, ctx.name.getStart().getStartIndex(), 0,
+                    ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
         }
-        addObjReference(schemaName, name, DbObjType.RULE,
-                StatementActions.DROP, ctx.name.getStart().getStartIndex()
-                + offset, 0, ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+        addObjReference(schemaName, ctx.name.getText(), DbObjType.RULE,
+                StatementActions.DROP, ctx.name.getStart().getStartIndex() + offset, 0,
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
     }
 
     @Override

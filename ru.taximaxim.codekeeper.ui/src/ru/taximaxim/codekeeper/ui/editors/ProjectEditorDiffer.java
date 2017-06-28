@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,6 +79,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -94,6 +96,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
@@ -595,6 +598,8 @@ class CommitPage extends DiffPresentationPane {
 
 class DiffPage extends DiffPresentationPane {
 
+    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
+
     private Button btnGetLatest, btnAddDepcy;
 
     /**
@@ -694,9 +699,6 @@ class DiffPage extends DiffPresentationPane {
                             } catch (PartInitException ex) {
                                 ExceptionNotifier.notifyDefault(
                                         Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
-                            }  catch (CoreException | IOException ex ) {
-                                ExceptionNotifier.notifyDefault(
-                                        Messages.ProjectEditorDiffer_error_creating_file, ex);
                             }
                         }
                     });
@@ -707,7 +709,7 @@ class DiffPage extends DiffPresentationPane {
         job.schedule();
     }
 
-    private void showEditor(Differ differ) throws PartInitException, CoreException, IOException  {
+    private void showEditor(Differ differ) throws PartInitException {
         if (differ.getScript().isDangerDdl(
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
@@ -721,25 +723,38 @@ class DiffPage extends DiffPresentationPane {
             }
         }
 
-        projEditor.getSite().getPage().openEditor(createScriptFile(differ, proj.getProject()), EDITOR.ROLLON);
+        IEditorInput file = null;
+        try {
+            file = createScriptFile(differ);
+        } catch (CoreException | IOException ex) {
+            ExceptionNotifier.notifyDefault(
+                    Messages.ProjectEditorDiffer_error_creating_file, ex);
+        }
+        if (file != null) {
+            projEditor.getSite().getPage().openEditor(file, EDITOR.ROLLON);
+        }
     }
 
-    private IEditorInput createScriptFile(Differ differ, IProject iProject) throws CoreException, IOException {
+    private IEditorInput createScriptFile(Differ differ) throws CoreException, IOException {
         boolean mode = mainPrefs.getBoolean(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
-        String name = LocalDateTime.now() + " migration script.sql"; //$NON-NLS-1$
-        IFolder folder;
+        String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+        if (getLastRemote() != null) {
+            name += " for " + getLastRemote().getName();
+        }
+        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll("");
+        Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
         if (mode){
-            folder = iProject.getFolder("MIGRATION"); //$NON-NLS-1$
+            IProject iProject = proj.getProject();
+            IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
             if (!folder.exists()){
                 folder.create(IResource.NONE, true, null);
             }
-            IFile file = folder.getFile(name);
-            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes());
+            IFile file = folder.getFile(name + ".sql");
+            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes(proj.getProjectCharset()));
             file.create(source, IResource.NONE, null);
-            Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
             return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
         } else {
-            Path path = Files.createTempFile(Files.createTempDirectory("."), name + "_", ".sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            Path path = Files.createTempFile(name + '_', ".sql"); //$NON-NLS-1$
             Files.write(path, differ.getDiffDirect().getBytes());
             IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             return new FileStoreEditorInput(externalFile);

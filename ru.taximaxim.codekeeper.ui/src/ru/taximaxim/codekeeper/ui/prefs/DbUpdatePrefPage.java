@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -52,6 +54,13 @@ IWorkbenchPreferencePage {
                 Messages.DbUpdatePrefPage_create_script_project_directory,
                 getFieldEditorParent());
         addField(usePsqlDepcy);
+
+        addField( new ComboFieldEditor(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE,
+                Messages.ProjectEditorPrefPage_script_deleting_status, new String[][] {
+            {Messages.ProjectEditorPrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
+            {Messages.ProjectEditorPrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
+            {Messages.ProjectEditorPrefPage_status_ask_delete, MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
 
         Map<String, String> pref = new HashMap<>();
         pref.put(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, Messages.dBUpdatePrefPage_drop_table);
