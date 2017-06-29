@@ -1,8 +1,11 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -24,19 +27,20 @@ public final class JdbcQueries {
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_HELPER_FUNCTIONS;
+    public static String QUERY_CHECK_VERSION;
 
-    public static String QUERY_EXTENSIONS;
-    public static String QUERY_SCHEMAS;
+    public static Map <SupportedVersion, String> QUERY_EXTENSIONS;
+    public static Map <SupportedVersion, String> QUERY_SCHEMAS;
 
-    public static String QUERY_TABLES_PER_SCHEMA;
-    public static String QUERY_FUNCTIONS_PER_SCHEMA;
-    public static String QUERY_SEQUENCES_PER_SCHEMA;
-    public static String QUERY_INDICES_PER_SCHEMA;
-    public static String QUERY_CONSTRAINTS_PER_SCHEMA;
-    public static String QUERY_TRIGGERS_PER_SCHEMA;
-    public static String QUERY_VIEWS_PER_SCHEMA;
-    public static String QUERY_TYPES_PER_SCHEMA;
-    public static String QUERY_RULES_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_TABLES_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_FUNCTIONS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_SEQUENCES_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_INDICES_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_CONSTRAINTS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_TRIGGERS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_VIEWS_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_TYPES_PER_SCHEMA;
+    public static Map <SupportedVersion, String> QUERY_RULES_PER_SCHEMA;
 
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
@@ -45,20 +49,39 @@ public final class JdbcQueries {
 
     static {
         for (Field f : JdbcQueries.class.getFields()) {
-            if (!f.getName().startsWith("QUERY_")) {
-                continue;
-            }
-
             try {
-                String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
-                        JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
-                        StandardCharsets.UTF_8);
-                f.set(null, query);
+                if (Map.class.isAssignableFrom(f.getType())) {
+                    fillMaps(f);
+                } else if (f.getName().startsWith("QUERY")) {
+                    String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+                            JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
+                            StandardCharsets.UTF_8);
+                    f.set(null, query);
+                }
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR,
                         "Error while loading JDBC SQL Queries resource: " + f.getName(), ex);
             }
         }
+    }
+
+    private static void fillMaps (Field f) throws Exception {
+        Map <SupportedVersion, String> map  = new HashMap<>();
+
+        String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+                JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
+                StandardCharsets.UTF_8);
+        map.put(null, query);
+
+        for (SupportedVersion version : SupportedVersion.values()) {
+            URL url = JdbcQueries.class.getResource(f.getName() + '_' + version + ".sql");
+            if (url != null) {
+                query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+                        url).toPath()), StandardCharsets.UTF_8);
+                map.put(version, query);
+            }
+        }
+        f.set(null, map);
     }
 
     private JdbcQueries() {

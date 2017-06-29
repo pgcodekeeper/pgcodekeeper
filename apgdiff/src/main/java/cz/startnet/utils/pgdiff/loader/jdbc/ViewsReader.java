@@ -3,8 +3,10 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -18,12 +20,13 @@ public class ViewsReader extends JdbcReader {
 
     public static class ViewsReaderFactory extends JdbcReaderFactory {
 
-        public ViewsReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public ViewsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            super.fillFallbackQuery(version);
             return new ViewsReader(this, loader);
         }
     }

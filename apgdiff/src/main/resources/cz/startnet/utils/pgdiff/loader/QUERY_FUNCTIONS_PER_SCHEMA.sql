@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT p.proname,
+SELECT  p.oid,
+        p.proname,
         p.proowner,
         l.lanname AS lang_name,
         p.prosrc,
@@ -20,8 +21,6 @@ SELECT p.proname,
         p.probin,
         p.prorettype::bigint,
         p.proallargtypes::bigint[],
-        p.protrftypes::bigint[], --9.5
-        p.proparallel, --9.6
         p.proargmodes,
         p.proargnames,
         pg_get_function_arguments(p.oid) AS proarguments,

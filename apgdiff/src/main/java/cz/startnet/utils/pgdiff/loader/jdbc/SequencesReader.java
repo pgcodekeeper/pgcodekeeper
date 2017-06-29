@@ -9,6 +9,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -19,12 +20,13 @@ public class SequencesReader extends JdbcReader {
 
     public static class SequencesReaderFactory extends JdbcReaderFactory {
 
-        public SequencesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public SequencesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            super.fillFallbackQuery(version);
             return new SequencesReader(this, loader);
         }
     }

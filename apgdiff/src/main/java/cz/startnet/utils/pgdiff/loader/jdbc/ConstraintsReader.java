@@ -2,8 +2,10 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -16,12 +18,13 @@ public class ConstraintsReader extends JdbcReader {
 
     public static class ConstraintsReaderFactory extends JdbcReaderFactory {
 
-        public ConstraintsReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public ConstraintsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            super.fillFallbackQuery(version);
             return new ConstraintsReader(this, loader);
         }
     }

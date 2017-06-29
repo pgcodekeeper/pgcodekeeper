@@ -3,8 +3,10 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -16,12 +18,13 @@ public class IndicesReader extends JdbcReader {
 
     public static class IndicesReaderFactory extends JdbcReaderFactory {
 
-        public IndicesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public IndicesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            super.fillFallbackQuery(version);
             return new IndicesReader(this, loader);
         }
     }

@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -17,12 +19,13 @@ public class FunctionsReader extends JdbcReader {
 
     public static class FunctionsReaderFactory extends JdbcReaderFactory {
 
-        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            super.fillFallbackQuery(version);
             return new FunctionsReader(this, loader);
         }
     }

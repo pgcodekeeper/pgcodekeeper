@@ -8,9 +8,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
@@ -30,16 +32,33 @@ public abstract class JdbcReaderFactory {
     protected final long hasHelperMask;
     protected final String helperFunction;
     protected final String helperQuery;
-    protected final String fallbackQuery;
+    protected final Map<SupportedVersion, String> queries;
+    protected String fallbackQuery;
 
-    public JdbcReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
+    public JdbcReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
         this.hasHelperMask = hasHelperMask;
         this.helperFunction = helperFunction;
         this.helperQuery = "SELECT * FROM " + HELPER_SCHEMA + '.' + helperFunction + "(?,?)";
-        this.fallbackQuery = fallbackQuery;
+        this.queries = queries;
     }
 
-    public abstract JdbcReader getReader(JdbcLoaderBase loader);
+    public abstract JdbcReader getReader(JdbcLoaderBase loader, int version);
+
+    protected void fillFallbackQuery (int version) {
+        StringBuilder sb = new StringBuilder("SELECT * FROM (");
+        sb.append(queries.get(null));
+        sb.append(") t1 ");
+
+        queries.forEach((k,v) -> {
+            if (k!= null && version > k.getVersion()) {
+                sb.append("left join (").append(v)
+                .append(") t").append(k.getVersion())
+                .append(" USING (oid) ");
+            }
+        });
+
+        fallbackQuery = sb.toString();
+    }
 
     /*
      * Static part.

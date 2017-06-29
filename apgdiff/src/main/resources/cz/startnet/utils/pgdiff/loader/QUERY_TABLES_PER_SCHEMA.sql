@@ -15,7 +15,8 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
-SELECT subselectColumns.relname,
+SELECT subselectColumns.oid,
+       subselectColumns.relname,
        subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
@@ -38,8 +39,6 @@ SELECT subselectColumns.relname,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname AS table_space,
-       subselectColumns.relrowsecurity AS row_security, -- 9.5
-       subselectColumns.relforcerowsecurity AS force_security, -- 9.5
        subselectColumns.relpersistence AS persistence,
        subselectColumns.relhasoids AS has_oids,
        subselectInherits.inhrelnames,
@@ -53,8 +52,6 @@ FROM
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
-            columnsData.relrowsecurity, -- 9.5
-            columnsData.relforcerowsecurity, -- 9.5
             columnsData.relpersistence,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
@@ -101,8 +98,6 @@ FROM
               attr.attcollation,
               t.typcollation,
               tabsp.spcname,
-              c.relrowsecurity, --9.5
-              c.relforcerowsecurity, --9.5
               c.relpersistence,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
               (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
@@ -129,8 +124,6 @@ FROM
               columnsData.toast_reloptions,
               columnsData.relhasoids,
               columnsData.spcname,
-              columnsData.relrowsecurity, --9.5
-              columnsData.relforcerowsecurity, --9.5
               columnsData.relpersistence) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
