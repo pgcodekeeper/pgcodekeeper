@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -22,12 +23,14 @@ public final class JdbcQueries {
 
     // SONAR-OFF
 
-    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
 
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_HELPER_FUNCTIONS;
     public static String QUERY_CHECK_VERSION;
+
+    public static String QUERY_HELPER_FUNCTION_TEMPLATE;
+    public static String QUERY_HELPER_FUNCTIONS_BEGIN;
 
     public static Map <SupportedVersion, String> QUERY_EXTENSIONS;
     public static Map <SupportedVersion, String> QUERY_SCHEMAS;
@@ -45,12 +48,16 @@ public final class JdbcQueries {
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 
+    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
+
     // SONAR-ON
 
     static {
         for (Field f : JdbcQueries.class.getFields()) {
             try {
-                if (Map.class.isAssignableFrom(f.getType())) {
+                if ("QUERY_IMPROVE_JDBC_PERFORMANCE".equals(f.getName())) {
+                    fillHelperFunction(f);
+                } else if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
                 } else if (f.getName().startsWith("QUERY")) {
                     String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
@@ -82,6 +89,23 @@ public final class JdbcQueries {
             }
         }
         f.set(null, map);
+    }
+
+    private static void fillHelperFunction(Field f) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(QUERY_HELPER_FUNCTIONS_BEGIN);
+
+        for (JdbcReaderFactory fac : JdbcReaderFactory.FACTORIES) {
+
+            // set helper functions default PostgreSQL version 9.5
+            fac.fillFallbackQuery(SupportedVersion.VERSION_9_5.getVersion());
+
+            sb.append(QUERY_HELPER_FUNCTION_TEMPLATE
+                    .replace("%FUNCTION_NAME%", fac.getHelperFunction())
+                    .replace("%FUNCTION_QEURY%", fac.getFallBackQuery())
+                    .replace("?", "schema_oid"));
+        }
+        f.set(null, sb.toString());
     }
 
     private JdbcQueries() {

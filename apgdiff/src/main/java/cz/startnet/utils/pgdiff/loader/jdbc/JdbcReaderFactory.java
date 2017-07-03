@@ -44,14 +44,14 @@ public abstract class JdbcReaderFactory {
 
     public abstract JdbcReader getReader(JdbcLoaderBase loader, int version);
 
-    protected void fillFallbackQuery (int version) {
+    public void fillFallbackQuery (int version) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(queries.get(null));
         sb.append(") t1 ");
 
         queries.forEach((k,v) -> {
-            if (k!= null && version > k.getVersion()) {
-                sb.append("left join (").append(v)
+            if (k != null && version >= k.getVersion()) {
+                sb.append("LEFT JOIN (").append(v)
                 .append(") t").append(k.getVersion())
                 .append(" USING (oid) ");
             }
@@ -119,6 +119,14 @@ public abstract class JdbcReaderFactory {
             }
         }
         return bits;
+    }
+
+    public String getFallBackQuery() {
+        return fallbackQuery;
+    }
+
+    public String getHelperFunction() {
+        return helperFunction;
     }
 
     public static long getAllHelperBits() {

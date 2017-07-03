@@ -5,9 +5,9 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT  p.oid,
+SELECT  p.oid::bigint,
         p.proname,
-        p.proowner,
+        p.proowner::bigint,
         l.lanname AS lang_name,
         p.prosrc,
         p.proiswindow,
@@ -25,7 +25,7 @@ SELECT  p.oid,
         p.proargnames,
         pg_get_function_arguments(p.oid) AS proarguments,
         pg_get_function_identity_arguments(p.oid) AS proarguments_without_default,
-        proacl AS aclArray,
+        proacl::text AS aclarray,
         d.description AS comment,
         p.proretset
 FROM pg_catalog.pg_proc p

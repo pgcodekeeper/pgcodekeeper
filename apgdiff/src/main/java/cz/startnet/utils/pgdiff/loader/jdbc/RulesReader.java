@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class RulesReader extends JdbcReader {
@@ -34,7 +34,7 @@ public class RulesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
         String contName = result.getString(CLASS_RELNAME);
         PgRuleContainer c = schema.getRuleContainer(contName);
         if (c != null) {
@@ -45,7 +45,7 @@ public class RulesReader extends JdbcReader {
         }
     }
 
-    private PgRule getRule(ResultSet res, String schemaName, String tableName) throws SQLException {
+    private PgRule getRule(ResultSetWrapper res, String schemaName, String tableName) throws SQLException {
         String ruleName = res.getString("rulename");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, ruleName, DbObjType.RULE));
 

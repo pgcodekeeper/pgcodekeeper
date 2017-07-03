@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -14,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewsReader extends JdbcReader {
@@ -36,7 +35,7 @@ public class ViewsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
         PgView view = getView(result, schema.getName());
         loader.monitor.worked(1);
         if (view != null) {
@@ -44,7 +43,7 @@ public class ViewsReader extends JdbcReader {
         }
     }
 
-    private PgView getView(ResultSet res, String schemaName) throws SQLException {
+    private PgView getView(ResultSetWrapper res, String schemaName) throws SQLException {
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
@@ -63,12 +62,12 @@ public class ViewsReader extends JdbcReader {
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
 
         // Query columns default values and comments
-        Array colNamesArr = res.getArray("column_names");
+        String[] colNamesArr = res.getArray("column_names", String.class);
         if (colNamesArr != null) {
-            String[] colNames = (String[]) colNamesArr.getArray();
-            String[] colComments = (String[]) res.getArray("column_comments").getArray();
-            String[] colDefaults = (String[]) res.getArray("column_defaults").getArray();
-            String[] colACLs = (String[]) res.getArray("column_acl").getArray();
+            String[] colNames = colNamesArr;
+            String[] colComments = res.getArray("column_comments", String.class);
+            String[] colDefaults = res.getArray("column_defaults", String.class);
+            String[] colACLs = res.getArray("column_acl", String.class);
 
             for (int i = 0; i < colNames.length; i++) {
                 String colName = colNames[i];
@@ -97,9 +96,9 @@ public class ViewsReader extends JdbcReader {
         loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
 
         // STORAGE PARAMETRS
-        Array arr = res.getArray("reloptions");
+        String[] arr = res.getArray("reloptions", String.class);
         if (arr != null) {
-            String[] options = (String[]) arr.getArray();
+            String[] options = arr;
             ParserAbstract.fillStorageParams(options, v, false);
         }
 

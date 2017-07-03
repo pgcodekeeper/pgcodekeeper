@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
@@ -13,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
@@ -26,19 +24,22 @@ public class FunctionsReader extends JdbcReader {
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
             super.fillFallbackQuery(version);
-            return new FunctionsReader(this, loader);
+            return new FunctionsReader(this, loader, version);
         }
     }
 
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+    private final int currentVersion;
+
+    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
         super(factory, loader);
+        this.currentVersion = currentVersion;
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
         PgFunction function = getFunction(result, schema.getName());
         if (function != null) {
             schema.addFunction(function);
@@ -50,7 +51,7 @@ public class FunctionsReader extends JdbcReader {
      * (except for aggregate functions).
      * Defines function body from Postgres pg_get_functiondef() output.
      */
-    private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException {
+    private PgFunction getFunction(ResultSetWrapper res, String schemaName) throws SQLException {
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
@@ -58,25 +59,23 @@ public class FunctionsReader extends JdbcReader {
         f.setBody(loader.args, getFunctionBody(res, schemaName));
 
         // RETURN TYPE
-        Array proargmodes = res.getArray("proargmodes");
+
         boolean returnsTable = false;
         StringBuilder returnedTableArguments = new StringBuilder();
-        if (proargmodes != null) {
-            String[] argModes = (String[]) proargmodes.getArray();
-            if (Arrays.asList(argModes).contains("t")) {
-                String[] argNames = (String[]) res.getArray("proargnames").getArray();
-                Long[] argTypeOids = (Long[]) res.getArray("proallargtypes").getArray();
-                for (int i = 0; i < argModes.length; i++) {
-                    String type = argModes[i];
-                    if ("t".equals(type)) {
-                        returnsTable = true;
-                        returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
-                        returnedTableArguments.append(argNames[i]).append(" ");
+        String[] argModes = res.getArray("proargmodes", String.class);
+        if (argModes != null && Arrays.asList(argModes).contains("t")) {
+            String[] argNames = res.getArray("proargnames", String.class);
+            Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
+            for (int i = 0; i < argModes.length; i++) {
+                String type = argModes[i];
+                if ("t".equals(type)) {
+                    returnsTable = true;
+                    returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
+                    returnedTableArguments.append(argNames[i]).append(" ");
 
-                        JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
-                        returnedTableArguments.append(returnType.getFullName(schemaName));
-                        returnType.addTypeDepcy(f);
-                    }
+                    JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
+                    returnedTableArguments.append(returnType.getFullName(schemaName));
+                    returnType.addTypeDepcy(f);
                 }
             }
         }
@@ -109,7 +108,7 @@ public class FunctionsReader extends JdbcReader {
         // PRIVILEGES
         String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "(" +
                 res.getString("proarguments_without_default") + ")";
-        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner(), null);
+        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
 
         // COMMENT
         String comment = res.getString("comment");
@@ -119,18 +118,17 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private String getFunctionBody(ResultSet res, String schemaName) throws SQLException {
+    private String getFunctionBody(ResultSetWrapper res, String schemaName) throws SQLException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (checkColumn(res, "protrftypes")) {
-            Array array = res.getArray("protrftypes");
-            if (array != null) {
+        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
+            Long[] protrftypes = res.getArray("protrftypes", Long.class);
+            if (protrftypes != null) {
                 body.append(" TRANSFORM ");
-                Long[] protrftypes = (Long[]) array.getArray();
                 for (Long s : protrftypes) {
                     body.append("FOR TYPE ")
                     .append(loader.cachedTypesByOid.get(s).getFullNameWithParent(schemaName));
@@ -172,8 +170,11 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (checkColumn(res, "proparallel")) {
+        if (currentVersion > SupportedVersion.VERSION_9_6.getVersion()) {
             String parMode = res.getString("proparallel");
+            if (parMode == null) {
+                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
+            }
             switch (parMode) {
             case "s":
                 body.append(" PARALLEL SAFE");
@@ -204,9 +205,9 @@ public class FunctionsReader extends JdbcReader {
             body.append(" ROWS ").append((int) rows);
         }
 
-        Array configParams = res.getArray("proconfig");
-        if (configParams != null) {
-            for (String param : (String[]) configParams.getArray()) {
+        String [] proconfig = res.getArray("proconfig", String.class);
+        if (proconfig != null) {
+            for (String param : proconfig) {
                 String[] params = param.split("=");
                 String par = params[0];
                 String val = params[1];
@@ -238,21 +239,6 @@ public class FunctionsReader extends JdbcReader {
             }
         }
         return body.toString();
-    }
-
-    private boolean checkColumn(ResultSet res, String string) throws SQLException {
-        ResultSetMetaData rsMetaData = res.getMetaData();
-        int numberOfColumns = rsMetaData.getColumnCount();
-
-        // get the column names; column indexes start from 1
-        for (int i = 1; i < numberOfColumns + 1; i++) {
-            String columnName = rsMetaData.getColumnName(i);
-            // Get the name of the column's table name
-            if (string.equals(columnName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

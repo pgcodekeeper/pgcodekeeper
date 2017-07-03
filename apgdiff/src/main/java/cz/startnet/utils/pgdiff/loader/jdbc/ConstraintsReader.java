@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
@@ -36,7 +36,7 @@ public class ConstraintsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             PgConstraint constraint = getConstraint(result, schema.getName(), table.getName());
@@ -46,7 +46,7 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName)
+    private PgConstraint getConstraint(ResultSetWrapper res, String schemaName, String tableName)
             throws SQLException {
         String contype = res.getString("contype");
 
@@ -84,14 +84,14 @@ public class ConstraintsReader extends JdbcReader {
         return c;
     }
 
-    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
+    private void createFKeyCon(ResultSetWrapper res, PgConstraint c) throws SQLException {
         String fschema = res.getString("foreign_schema_name");
         String ftable = res.getString("foreign_table_name");
         GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
         c.setForeignTable(ftableRef);
         c.addDep(ftableRef);
 
-        String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
+        String[] referencedColumnNames = res.getArray("foreign_cols", String.class);
         for (String colName : referencedColumnNames) {
             if (colName != null) {
                 c.addForeignColumn(colName);
@@ -100,14 +100,14 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
+    private void createUniqueCon(String contype, ResultSetWrapper res, PgConstraint c) throws SQLException {
         if ("p".equals(contype)) {
             c.setPrimaryKey(true);
         } else {
             c.setUnique(true);
         }
 
-        String[] concols = (String[]) res.getArray("cols").getArray();
+        String[] concols = res.getArray("cols", String.class);
         for (String name : concols) {
             c.addColumn(name);
         }

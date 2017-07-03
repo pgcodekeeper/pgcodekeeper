@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -38,7 +39,7 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
         PgSequence sequence = getSequence(result, schema.getName());
         loader.monitor.worked(1);
         if (sequence != null) {
@@ -46,7 +47,7 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
-    private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
+    private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws SQLException {
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName, "");
@@ -60,7 +61,7 @@ public class SequencesReader extends JdbcReader {
         loader.setOwner(s, res.getLong(CLASS_RELOWNER));
 
         // PRIVILEGES
-        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclArray"), s.getOwner(), null);
+        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
