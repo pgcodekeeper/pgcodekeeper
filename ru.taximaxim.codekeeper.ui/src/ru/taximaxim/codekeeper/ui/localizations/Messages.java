@@ -217,7 +217,13 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
-    public static String DbUpdatePrefPage_create_script_project_directory;
+    public static String dbUpdatePrefPage_create_script_project_directory;
+
+    public static String dbUpdatePrefPage_status_alway_create;
+
+    public static String dbUpdatePrefPage_status_ask_create;
+
+    public static String dbUpdatePrefPage_status_never_create;
 
     public static String DepcyGraphView_project;
 
@@ -416,19 +422,23 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_page_text_commit;
     public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
+    public static String ProjectEditorDiffer_script_creation_message;
+
+    public static String ProjectEditorDiffer_script_creation_title;
+
     public static String ProjectEditorInput_pgcodekeeper_project;
 
     public static String ProjectEditorPrefPage_database_color;
 
     public static String ProjectEditorPrefPage_project_color;
 
-    public static String ProjectEditorPrefPage_script_deleting_status;
+    public static String dbUpdatePrefPage_script_deleting_status;
 
-    public static String ProjectEditorPrefPage_status_always_delete;
+    public static String dbUpdatePrefPage_status_always_delete;
 
-    public static String ProjectEditorPrefPage_status_ask_delete;
+    public static String dbUpdatePrefPage_status_ask_delete;
 
-    public static String ProjectEditorPrefPage_status_never_delete;
+    public static String dbUpdatePrefPage_status_never_delete;
 
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;

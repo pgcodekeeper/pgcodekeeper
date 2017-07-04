@@ -32,6 +32,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         store.setDefault(DB_UPDATE_PREF.USING_ON_OFF, true);
         store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
+        store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT, true);
         store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);

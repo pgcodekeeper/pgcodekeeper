@@ -598,7 +598,7 @@ class CommitPage extends DiffPresentationPane {
 
 class DiffPage extends DiffPresentationPane {
 
-    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
+    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss"); //$NON-NLS-1$
 
     private Button btnGetLatest, btnAddDepcy;
 
@@ -725,7 +725,22 @@ class DiffPage extends DiffPresentationPane {
 
         IEditorInput file = null;
         try {
-            file = createScriptFile(differ);
+            boolean mode = false;
+            String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+            // if select "YES" with toggle
+            if (creationMode.equals(MessageDialogWithToggle.ALWAYS)) {
+                mode = true;
+                // if not select "NO" with toggle, show choice message dialog
+            } else if (!creationMode.equals(MessageDialogWithToggle.NEVER)) {
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getShell(),
+                        Messages.ProjectEditorDiffer_script_creation_title, Messages.ProjectEditorDiffer_script_creation_message,
+                        Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+                if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
+                    mode = true;
+                }
+            }
+
+            file = createScriptFile(differ, mode);
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
                     Messages.ProjectEditorDiffer_error_creating_file, ex);
@@ -735,13 +750,12 @@ class DiffPage extends DiffPresentationPane {
         }
     }
 
-    private IEditorInput createScriptFile(Differ differ) throws CoreException, IOException {
-        boolean mode = mainPrefs.getBoolean(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+    private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
         String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
         if (getLastRemote() != null) {
-            name += " for " + getLastRemote().getName();
+            name += " for " + getLastRemote().getName(); //$NON-NLS-1$
         }
-        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll("");
+        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
         Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
         if (mode){
             IProject iProject = proj.getProject();
@@ -749,7 +763,7 @@ class DiffPage extends DiffPresentationPane {
             if (!folder.exists()){
                 folder.create(IResource.NONE, true, null);
             }
-            IFile file = folder.getFile(name + ".sql");
+            IFile file = folder.getFile(name + ".sql"); //$NON-NLS-1$
             InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes(proj.getProjectCharset()));
             file.create(source, IResource.NONE, null);
             return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));

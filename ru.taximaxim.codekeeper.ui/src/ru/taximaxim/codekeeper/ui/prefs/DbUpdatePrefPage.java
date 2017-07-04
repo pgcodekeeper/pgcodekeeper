@@ -49,17 +49,19 @@ IWorkbenchPreferencePage {
 
     @Override
     protected void createFieldEditors() {
-        BooleanFieldEditor usePsqlDepcy = new BooleanFieldEditor(
-                DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
-                Messages.DbUpdatePrefPage_create_script_project_directory,
-                getFieldEditorParent());
-        addField(usePsqlDepcy);
+
+        addField( new ComboFieldEditor(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
+                Messages.dbUpdatePrefPage_create_script_project_directory, new String[][] {
+            {Messages.dbUpdatePrefPage_status_alway_create, MessageDialogWithToggle.ALWAYS},
+            {Messages.dbUpdatePrefPage_status_never_create, MessageDialogWithToggle.NEVER},
+            {Messages.dbUpdatePrefPage_status_ask_create, MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
 
         addField( new ComboFieldEditor(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE,
-                Messages.ProjectEditorPrefPage_script_deleting_status, new String[][] {
-            {Messages.ProjectEditorPrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
-            {Messages.ProjectEditorPrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
-            {Messages.ProjectEditorPrefPage_status_ask_delete, MessageDialogWithToggle.PROMPT}},
+                Messages.dbUpdatePrefPage_script_deleting_status, new String[][] {
+            {Messages.dbUpdatePrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
+            {Messages.dbUpdatePrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
+            {Messages.dbUpdatePrefPage_status_ask_delete, MessageDialogWithToggle.PROMPT}},
                 getFieldEditorParent()));
 
         Map<String, String> pref = new HashMap<>();
