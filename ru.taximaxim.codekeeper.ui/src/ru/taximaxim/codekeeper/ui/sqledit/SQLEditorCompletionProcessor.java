@@ -13,8 +13,6 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -22,6 +20,12 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
+
+    private final SQLEditor editor;
+
+    public SQLEditorCompletionProcessor(SQLEditor editor) {
+        this.editor = editor;
+    }
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
@@ -51,13 +55,11 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 result.addAll(Arrays.asList(templates));
             }
         }
-        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
         List<PgObjLocation> loc = new ArrayList<>();
-        if (page instanceof SQLEditor) {
-            PgDbParser parser = ((SQLEditor)page).getParser();
-            loc.addAll(parser.getAllObjDefinitions());
-        }
+
+        PgDbParser parser = editor.getParser();
+        loc.addAll(parser.getAllObjDefinitions());
+
         for (PgObjLocation obj : loc) {
             Image img = Activator.getDbObjImage(obj.getObjType());
             String displayText = obj.getObjName();

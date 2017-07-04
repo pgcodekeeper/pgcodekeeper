@@ -59,7 +59,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
-        return new SQLEditorTextHover();
+        return new SQLEditorTextHover(editor);
     }
 
     // Отображает всю строку при наведении на левую полосу редактора
@@ -84,7 +84,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(), SQLEditorCommonDocumentProvider.SQL_CODE);
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(editor), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
