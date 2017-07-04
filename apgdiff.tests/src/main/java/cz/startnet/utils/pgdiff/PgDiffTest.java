@@ -59,6 +59,8 @@ public class PgDiffTest {
                     {"add_index"},
                     // Tests scenario where INDEX is dropped.
                     {"drop_index"},
+                    // Tests scenario where INDEX with including is added.
+                    {"add_index_with_including"},
                     // Tests scenario where INDEX that TABLE CLUSTER is based
                     // on is dropped.
                     {"drop_index_with_cluster"},
@@ -196,6 +198,8 @@ public class PgDiffTest {
                     // Tests scenario where FUNCTION with same name but
                     // different args is modified.
                     {"modify_function_similar"},
+                    // Tests scenario where FUNCTION with parallel mode is modified
+                    {"modify_function_parallel"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
                     // Tests scenario where TRIGGER is added in reverse add.
