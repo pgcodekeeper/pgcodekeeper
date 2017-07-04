@@ -128,7 +128,7 @@ public class PgObjLocation implements Serializable {
     }
 
     public String getText() {
-        return getAction() + " " + text;
+        return text;
     }
 
     public void setText(String text) {

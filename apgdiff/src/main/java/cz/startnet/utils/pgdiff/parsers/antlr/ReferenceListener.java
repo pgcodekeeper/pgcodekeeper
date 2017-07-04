@@ -102,7 +102,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(schemaName, QNameParser.getFirstName(ctx.table_name.identifier()),
                 DbObjType.TABLE, StatementActions.NONE, ctx.table_name
                 .getStart().getStartIndex(), 0, ctx.table_name
-                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         if (name != null) {
             fillObjDefinition(schemaName, name, DbObjType.INDEX, ctx.name
                     .getStart().getStartIndex(), 0, ctx.name.getStart()
@@ -119,7 +119,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                     DbObjType.SCHEMA, StatementActions.NONE,
                     ctx.schema_with_name().name.getStart().getStartIndex(), 0,
                     ctx.schema_with_name().name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
         }
         fillObjDefinition(null, QNameParser.getFirstName(ctx.name.identifier()),
                 DbObjType.EXTENSION, ctx.name.getStart().getStartIndex(), 0,
@@ -134,7 +134,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.tabl_name), DbObjType.TABLE,
                 StatementActions.NONE,
                 ctx.tabl_name.getStart().getStartIndex(), 0, ctx.tabl_name
-                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
 
         List<IdentifierContext> funcIds = ctx.func_name.schema_qualified_name().identifier();
         String funcName = QNameParser.getFirstName(funcIds);
@@ -145,12 +145,12 @@ public class ReferenceListener extends SQLParserBaseListener {
             offset = funcSchema.length() + 1;
             addObjReference(null, funcSchema, DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.func_name.getStart().getStartIndex(),
-                    0, ctx.func_name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                    0, ctx.func_name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
         addObjReference(funcSchema, funcName+"()", DbObjType.FUNCTION,
                 StatementActions.NONE, ctx.func_name.getStart().getStartIndex()+ offset,
                 funcName.length(), ctx.func_name.schema_qualified_name().getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx));
+                ParserAbstract.getFullCtxText(ctx.getParent()));
 
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
@@ -164,7 +164,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.dat_type), DbObjType.TYPE,
                 StatementActions.NONE,
                 ctx.dat_type.getStart().getStartIndex(), 0,
-                ctx.dat_type.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.dat_type.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         fillObjDefinition(schemaName, name, DbObjType.DOMAIN,
                 ctx.name.getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
     }
@@ -186,7 +186,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.table_name), DbObjType.TABLE,
                 StatementActions.NONE,
                 ctx.table_name.getStart().getStartIndex(), 0, ctx.table_name
-                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         // TODO process references in statements/expressions
         fillObjDefinition(schemaName, name, DbObjType.RULE, ctx.name
                 .getStart().getStartIndex(), 0, ctx.name.getStart().getLine());
@@ -260,7 +260,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(schemaName, name, DbObjType.FUNCTION,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), func.getBareName().length(),
-                    ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                    ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(schemaName, name, DbObjType.FUNCTION,
                     comment);
             // column
@@ -272,7 +272,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(schemaName, tableName, DbObjType.TABLE,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             //            setCommentToDefinition(schemaName, tableName, DbObjType.TABLE,
             //                    comment);
             // extension
@@ -280,7 +280,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, name, DbObjType.EXTENSION,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.EXTENSION, comment);
             // constraint
         } else if (ctx.CONSTRAINT() != null) {
@@ -289,14 +289,14 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, name, DbObjType.TRIGGER,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.TRIGGER, comment);
             // rule
         } else if (ctx.RULE() != null) {
             addObjReference(null, name, DbObjType.RULE,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.RULE, comment);
             // database
         } else if (ctx.DATABASE() != null) {
@@ -309,35 +309,35 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, name, DbObjType.INDEX,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.INDEX, comment);
             // schema
         } else if (ctx.SCHEMA() != null) {
             addObjReference(null, name, DbObjType.SCHEMA,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.SCHEMA, comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {
             addObjReference(schemaName, name, DbObjType.SEQUENCE,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.SEQUENCE, comment);
             // table
         } else if (ctx.TABLE() != null) {
             setTableType(addObjReference(schemaName, name, DbObjType.TABLE,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx)));
+                    ParserAbstract.getFullCtxText(ctx.getParent())));
             setCommentToDefinition(null, name, DbObjType.TABLE, comment);
             // view
         } else if (ctx.VIEW() != null) {
             addObjReference(schemaName, name, DbObjType.VIEW,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx));
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
             setCommentToDefinition(null, name, DbObjType.VIEW, comment);
         }
     }
@@ -350,7 +350,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                     addObjReference(null, value.getText(), DbObjType.SCHEMA,
                             StatementActions.NONE, value.getStart()
                             .getStartIndex(), 0, value.getStart().getLine(),
-                            ParserAbstract.getFullCtxText(ctx));
+                            ParserAbstract.getFullCtxText(ctx.getParent()));
                     defSchema = value.getText();
                     break;
                 }
@@ -384,7 +384,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                         DbObjType.FUNCTION, StatementActions.NONE,
                         functparam.name.getStart().getStartIndex(), func
                         .getBareName().length(), functparam.name
-                        .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                        .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -412,7 +412,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         case TABLE:
             setTableType(addObjReference(schemaName, firstPart, type,
                     StatementActions.NONE, name.getStart().getStartIndex(), 0,
-                    name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx)));
+                    name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent())));
             return;
         case SCHEMA:
             schemaName = null;
@@ -422,7 +422,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         addObjReference(schemaName, firstPart, type, StatementActions.NONE,
                 name.getStart().getStartIndex(), 0, name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx));
+                ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -436,7 +436,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                 DbObjType.FUNCTION, StatementActions.ALTER,
                 ctx.function_parameters().name.getStart().getStartIndex(),
                 function.getBareName().length(), ctx.function_parameters().name
-                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -445,7 +445,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(null, name, DbObjType.SCHEMA, StatementActions.ALTER,
                 ctx.schema_with_name().name.getStart().getStartIndex(), 0,
                 ctx.schema_with_name().name.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx));
+                ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -459,12 +459,12 @@ public class ReferenceListener extends SQLParserBaseListener {
                 setTableType(addObjReference(schemaName, name, DbObjType.TABLE,
                         StatementActions.ALTER, ctx.name.getStart()
                         .getStartIndex(), 0, ctx.name.getStart()
-                        .getLine(), ParserAbstract.getFullCtxText(ctx)));
+                        .getLine(), ParserAbstract.getFullCtxText(ctx.getParent())));
             } else {
                 addObjReference(schemaName, name, DbObjType.TABLE,
                         StatementActions.ALTER, ctx.name.getStart()
                         .getStartIndex(), 0, ctx.name.getStart()
-                        .getLine(), ParserAbstract.getFullCtxText(ctx));
+                        .getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             }
             if (tablAction.table_column_definition() != null) {
                 getColumn(tablAction.table_column_definition());
@@ -496,17 +496,17 @@ public class ReferenceListener extends SQLParserBaseListener {
                     addObjReference(null, schName, DbObjType.SCHEMA,
                             StatementActions.NONE, seqbody.col_name.getStart()
                             .getStartIndex(), 0, seqbody.col_name
-                            .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                            .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
                 }
                 addObjReference(schName, tableName, DbObjType.TABLE,
                         StatementActions.NONE, seqbody.col_name.getStart()
                         .getStartIndex() + offset, 0, seqbody.col_name
-                        .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                        .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             }
         }
         addObjReference(schemaName, name, DbObjType.SEQUENCE,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
-                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -516,7 +516,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addObjReference(schemaName, name, DbObjType.VIEW,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
-                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -526,7 +526,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addObjReference(schemaName, name, DbObjType.DOMAIN,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
-                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -536,7 +536,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         addObjReference(schemaName, name, DbObjType.TYPE,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
-                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -574,11 +574,11 @@ public class ReferenceListener extends SQLParserBaseListener {
                 addObjReference(null, schemaName, DbObjType.SCHEMA,
                         StatementActions.NONE, objName.getStart()
                         .getStartIndex(), 0, objName.getStart()
-                        .getLine(), ParserAbstract.getFullCtxText(ctx));
+                        .getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             }
             addObjReference(schemaName, name, type,
                     StatementActions.DROP, objName.getStart().getStartIndex()
-                    + offset, 0, objName.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                    + offset, 0, objName.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
     }
 
@@ -596,11 +596,11 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, schemaName, DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart()
-                    .getLine(), ParserAbstract.getFullCtxText(ctx));
+                    .getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
         addObjReference(schemaName, name, DbObjType.TRIGGER,
                 StatementActions.DROP, ctx.name.getStart().getStartIndex()
-                + offset, 0, ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                + offset, 0, ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -614,11 +614,11 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else {
             addObjReference(null, schemaName, DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                    ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
         addObjReference(schemaName, ctx.name.getText(), DbObjType.RULE,
                 StatementActions.DROP, ctx.name.getStart().getStartIndex() + offset, 0,
-                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                ctx.name.getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     @Override
@@ -634,14 +634,14 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, schemaName, DbObjType.SCHEMA,
                     StatementActions.NONE, nameCtx.getStart()
                     .getStartIndex(), 0, nameCtx.getStart()
-                    .getLine(), ParserAbstract.getFullCtxText(ctx));
+                    .getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
         PgFunction func = new PgFunction(name, "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func, getDefSchemaName());
         addObjReference(schemaName, func.getSignature(), DbObjType.FUNCTION,
                 StatementActions.DROP, nameCtx.getStart().getStartIndex()
                 + offset, func.getBareName().length(), nameCtx.getStart().getLine(),
-                ParserAbstract.getFullCtxText(ctx));
+                ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
     private String getDefSchemaName() {
@@ -742,12 +742,12 @@ public class ReferenceListener extends SQLParserBaseListener {
                 addObjReference(null, schemaName, DbObjType.SCHEMA,
                         StatementActions.NONE, tblRef.reftable.getStart()
                         .getStartIndex(), 0, tblRef.reftable.getStart()
-                        .getLine(), ParserAbstract.getFullCtxText(ctx));
+                        .getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
             }
             addObjReference(schemaName, tableName, DbObjType.TABLE,
                     StatementActions.NONE, tblRef.reftable.getStart()
                     .getStartIndex() + count, 0, tblRef.reftable
-                    .getStart().getLine(), ParserAbstract.getFullCtxText(ctx));
+                    .getStart().getLine(), ParserAbstract.getFullCtxText(ctx.getParent()));
         }
     }
 
@@ -781,7 +781,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                         DbObjType.SEQUENCE, StatementActions.NONE, seq
                         .getContext().getStart().getStartIndex() + 1,
                         0, seq.getContext().getStart().getLine(),
-                        ParserAbstract.getFullCtxText(ctx));
+                        ParserAbstract.getFullCtxText(ctx.getParent()));
             }
         }
     }
