@@ -11,7 +11,6 @@ import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -143,20 +142,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     @Override
-    public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
-        setLineBackground();
-    }
-
-    @Override
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
-        setLineBackground();
     }
 
-    private void setLineBackground() {
-        List<PgObjLocation> refs = getParser().getAllObjReferences();
+    public void setLineBackground() {
+        List<PgObjLocation> refs = getParser().getObjReferences().get(input.getName());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             String annotationMsg = null;

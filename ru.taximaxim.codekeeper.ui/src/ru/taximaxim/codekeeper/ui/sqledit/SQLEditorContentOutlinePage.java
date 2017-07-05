@@ -116,12 +116,16 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         private void parse(IDocument document) {
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             List<PgObjLocation> refs = new ArrayList<>();
+            String filename = fInput.getName();
             try {
                 PgDbParser parser = sqlEditor.getParser();
-                parser.updateRefsFromInputStream(stream);
-                refs = parser.getAllObjReferences();
+                parser.updateRefsFromInputStream(stream, filename);
+                refs = parser.getObjReferences().get(filename);
+                if (sqlEditor instanceof RollOnEditor) {
+                    ((RollOnEditor) sqlEditor).setLineBackground();
+                }
             } catch (InterruptedException | IOException | LicenseException e) {
-                Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, "Error while parse document: " + filename); //$NON-NLS-1$
             }
             segments = new ArrayList<>(refs.size());
             for (PgObjLocation loc : refs) {

@@ -127,11 +127,18 @@ public class PgDbParser implements IResourceChangeListener {
         }
     }
 
-    public void updateRefsFromInputStream(InputStream stream) throws InterruptedException, IOException, LicenseException {
-        fillRefsFromInputStream(stream, null, ApgdiffConsts.UTF_8);
+    public void updateRefsFromInputStream(InputStream stream, String filename) throws InterruptedException, IOException, LicenseException {
+        PgDiffArguments args = new PgDiffArguments();
+        LicensePrefs.setLicense(args);
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
+        PgDatabase db;
+        try (PgDumpLoader loader = new PgDumpLoader(stream, filename, args, null, 2)) {
+            db = loader.load(true);
+        }
+        objReferences.putAll(db.getObjReferences());
     }
 
-    public static void fillFunctionBodies(Map<String, List<PgObjLocation>> objDefinitions2,
+    private static void fillFunctionBodies(Map<String, List<PgObjLocation>> objDefinitions2,
             Map<String, List<PgObjLocation>> objReferences2,
             List<FunctionBodyContainer> funcBodies) {
         for (FunctionBodyContainer funcBody : funcBodies) {
