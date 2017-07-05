@@ -127,6 +127,10 @@ public class PgDbParser implements IResourceChangeListener {
         }
     }
 
+    public void updateRefsFromInputStream(InputStream stream) throws InterruptedException, IOException, LicenseException {
+        fillRefsFromInputStream(stream, null, ApgdiffConsts.UTF_8);
+    }
+
     public static void fillFunctionBodies(Map<String, List<PgObjLocation>> objDefinitions2,
             Map<String, List<PgObjLocation>> objReferences2,
             List<FunctionBodyContainer> funcBodies) {
@@ -292,11 +296,12 @@ public class PgDbParser implements IResourceChangeListener {
         switch (event.getType()) {
         case IResourceChangeEvent.PRE_CLOSE:
         case IResourceChangeEvent.PRE_DELETE:
-            if (event.getResource().equals(proj)) {
+            if (PROJ_PARSERS.containsKey(event.getResource())) {
                 PROJ_PARSERS.remove(event.getResource());
                 ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
             }
             break;
+        default : break;
         }
     }
 

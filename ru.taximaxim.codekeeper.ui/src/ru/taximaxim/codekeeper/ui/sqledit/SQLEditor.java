@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
@@ -51,6 +52,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private SQLEditorContentOutlinePage fOutlinePage;
     private IEditorInput input;
     private Image errorTitleImage;
+    private PgDbParser parser;
 
     private final Listener list = new Listener() {
 
@@ -83,13 +85,21 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-        PgDbParser parser = getParser();
+        parser = initialParser();
         if (parser != null) {
             parser.addListener(list);
             fOutlinePage = new SQLEditorContentOutlinePage(getDocumentProvider(), this);
             fOutlinePage.setInput(getEditorInput());
         }
         super.createPartControl(parent);
+    }
+
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+        if (fOutlinePage != null) {
+            fOutlinePage.update();
+        }
     }
 
     @Override
@@ -111,7 +121,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.init(site, input);
     }
 
-    PgDbParser getParser() {
+    private PgDbParser initialParser() {
         if (input instanceof IFileEditorInput) {
             IProject proj = ((IFileEditorInput)input).getFile().getProject();
             try {
@@ -135,10 +145,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return null;
     }
 
+    PgDbParser getParser() {
+        return parser;
+    }
+
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        PgDbParser parser = getParser();
         if (parser != null) {
             parser.removeListener(list);
         }

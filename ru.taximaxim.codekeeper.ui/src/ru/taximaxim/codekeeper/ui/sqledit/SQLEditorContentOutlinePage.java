@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -20,13 +19,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -34,13 +31,13 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private IEditorInput fInput;
-    private final AbstractDecoratedTextEditor fTextEditor;
+    private final SQLEditor sqlEditor;
     private final IDocumentProvider fDocumentProvider;
     private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
-            AbstractDecoratedTextEditor sqlEditor) {
-        fTextEditor = sqlEditor;
+            SQLEditor sqlEditor) {
+        this.sqlEditor = sqlEditor;
         this.fDocumentProvider = fDocumentProvider;
     }
 
@@ -52,6 +49,12 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
     public void setInput(IEditorInput input) {
         this.fInput = input;
+    }
+
+    public void update() {
+        if (fInput != null) {
+            viewer.setInput(fInput);
+        }
     }
 
     @Override
@@ -72,9 +75,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         });
         viewer.addSelectionChangedListener(this);
 
-        if (fInput != null) {
-            viewer.setInput(fInput);
-        }
+        update();
     }
 
     @Override
@@ -83,17 +84,17 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         ISelection selection = event.getSelection();
         if (selection.isEmpty()) {
-            fTextEditor.resetHighlightRange();
+            sqlEditor.resetHighlightRange();
         } else {
             Segments segment = (Segments) ((IStructuredSelection) selection)
                     .getFirstElement();
             int start = segment.getOffset();
             int length = segment.getLength();
             try {
-                fTextEditor.setHighlightRange(start, length, true);
-                fTextEditor.selectAndReveal(start, length);
+                sqlEditor.setHighlightRange(start, length, true);
+                sqlEditor.selectAndReveal(start, length);
             } catch (IllegalArgumentException x) {
-                fTextEditor.resetHighlightRange();
+                sqlEditor.resetHighlightRange();
             }
         }
     }
@@ -116,7 +117,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             List<PgObjLocation> refs = new ArrayList<>();
             try {
-                PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, new NullProgressMonitor());
+                PgDbParser parser = sqlEditor.getParser();
+                parser.updateRefsFromInputStream(stream);
                 refs = parser.getAllObjReferences();
             } catch (InterruptedException | IOException | LicenseException e) {
                 Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$

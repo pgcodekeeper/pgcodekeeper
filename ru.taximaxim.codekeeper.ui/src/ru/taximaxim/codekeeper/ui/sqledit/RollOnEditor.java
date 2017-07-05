@@ -1,12 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +11,7 @@ import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -64,7 +62,6 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -84,7 +81,6 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
@@ -147,24 +143,20 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+        setLineBackground();
+    }
+
+    @Override
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
         setLineBackground();
     }
 
-    private void setLineBackground(){
-        InputStream stream = new ByteArrayInputStream(
-                getSourceViewer().getDocument().get().getBytes(StandardCharsets.UTF_8));
-        List<PgObjLocation> refs;
-        try {
-            PgDbParser parser = PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
-            refs = parser.getAllObjReferences();
-        } catch (InterruptedException | IOException | LicenseException e) {
-            Log.log(Log.LOG_ERROR, "Error while parse document"); //$NON-NLS-1$
-            return;
-        }
-
+    private void setLineBackground() {
+        List<PgObjLocation> refs = getParser().getAllObjReferences();
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             String annotationMsg = null;
