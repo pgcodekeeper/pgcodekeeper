@@ -18,8 +18,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -165,24 +165,11 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     private void getFullDBFromPgDbProjectJob(final IProject pgProject) {
-        Job job = new Job("getDatabaseReferences") { //$NON-NLS-1$
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    // FIXME call build on project, use regular visible job (custom build job)
-                    getFullDBFromPgDbProject(pgProject, monitor);
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                } catch (IOException | LicenseException | CoreException ex) {
-                    return getLoadingErroStatus(ex);
-                }
-                return Status.OK_STATUS;
-            }
-
-        };
-        job.setSystem(true);
-        job.schedule();
+        try {
+            pgProject.build(0, new NullProgressMonitor());
+        } catch (CoreException e) {
+            Log.log(e);
+        }
     }
 
     private void getFullDBFromPgDbProject(IProject pgProject, IProgressMonitor monitor)
