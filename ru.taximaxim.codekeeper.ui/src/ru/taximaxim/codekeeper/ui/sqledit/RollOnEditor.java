@@ -29,10 +29,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
@@ -51,7 +47,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.MessageBox;
@@ -69,14 +64,11 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.utils.StringPair;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR_ACTION;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -119,7 +111,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private Combo cmbScript;
     private Button btnJdbcToggle;
     private DbStorePicker storePicker;
-    private ComboViewer actionViewer;
 
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -127,7 +118,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private String connectionTimezone = ApgdiffConsts.UTC;
 
     private Button runScriptBtn;
-    private Button saveAsBtn;
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -372,44 +362,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 runButtonMethod();
             }
         });
-
-        createActionCombo(comp);
-
-        saveAsBtn = new Button(comp, SWT.PUSH);
-        saveAsBtn.setText(Messages.sqlScriptDialog_save_as);
-        saveAsBtn.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true, 1, 1));
-        saveAsBtn.addSelectionListener(new SaveButtonHandler());
-    }
-
-    private void createActionCombo(Composite comp) {
-        new Label(comp, SWT.NONE).setText(Messages.ProjectEditorPrefPage_action_type);
-        actionViewer = new ComboViewer(comp, SWT.READ_ONLY | SWT.DROP_DOWN);
-        actionViewer.setContentProvider(ArrayContentProvider.getInstance());
-        actionViewer.setLabelProvider(new LabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                if (element instanceof StringPair) {
-                    return ((StringPair) element).getValue();
-                }
-                return super.getText(element);
-            }
-        });
-
-        List<StringPair> input = new ArrayList<>(3);
-        input.add(new StringPair(EDITOR_ACTION.UPDATE, Messages.ProjectEditorPrefPage_action_update));
-        input.add(new StringPair(EDITOR_ACTION.RESET, Messages.ProjectEditorPrefPage_action_reset));
-        input.add(new StringPair(EDITOR_ACTION.NO_ACTION, Messages.ProjectEditorPrefPage_action_no_action));
-
-        actionViewer.setInput(input);
-
-        String action = mainPrefs.getString(PG_EDIT_PREF.EDITOR_UPDATE_ACTION);
-
-        for (StringPair pair: input) {
-            if (pair.getKey().equals(action)) {
-                actionViewer.setSelection(new StructuredSelection(pair));
-            }
-        }
     }
 
     private int showDangerWarning() {
@@ -549,7 +501,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
-                                UiSync.exec(parentComposite,() -> updateEditor(dbInfo));
+                                ProjectEditorDiffer.notifyDbChanged(dbInfo);
                             } else if (depcyInput != null && mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 depcyInput.getDependenciesFromOutput(output);
                             }
@@ -559,15 +511,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                             // request UI change: button label changed
                             afterScriptFinished(output);
                         }
-                    }
-
-                    private void updateEditor(DbInfo dbInfo) {
-                        Object selected = ((IStructuredSelection) actionViewer.getSelection()).getFirstElement();
-                        if (selected instanceof StringPair) {
-                            StringPair pair = (StringPair) selected;
-                            mainPrefs.setValue(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, pair.getKey());
-                        }
-                        ProjectEditorDiffer.notifyDbChanged(dbInfo);
                     }
                 };
             }else{
@@ -605,32 +548,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private void setRunButtonText(String text) {
         runScriptBtn.setText(text);
         runScriptBtn.getParent().layout();
-    }
-
-    private class SaveButtonHandler extends SelectionAdapter {
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            String textRetrieved = RollOnEditor.this.getSourceViewer().getDocument().get();
-            FileDialog fd = new FileDialog(parentComposite.getShell(), SWT.SAVE);
-            fd.setText(Messages.sqlScriptDialog_save_as);
-            fd.setOverwrite(true);
-            fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            String scriptFileName = fd.open();
-
-            if (scriptFileName != null) {
-                File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, scriptFileEncoding)) {
-                    writer.write(textRetrieved);
-                } catch (IOException ex) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.sqlScriptDialog_error_saving_script_to_file, ex);
-                    return;
-                }
-
-                ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
-            }
-        }
     }
 
     private class RunScriptExternal implements Runnable {
