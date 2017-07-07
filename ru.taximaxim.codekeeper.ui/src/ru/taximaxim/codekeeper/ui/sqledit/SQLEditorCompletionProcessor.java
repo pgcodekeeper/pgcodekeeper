@@ -57,8 +57,10 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
         List<PgObjLocation> loc = new ArrayList<>();
 
-        PgDbParser parser = editor.getParser();
-        loc.addAll(parser.getAllObjDefinitions());
+        if (editor != null) {
+            PgDbParser parser = editor.getParser();
+            loc.addAll(parser.getAllObjDefinitions());
+        }
 
         for (PgObjLocation obj : loc) {
             Image img = Activator.getDbObjImage(obj.getObjType());

@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.builders.ProjectBuilder;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
@@ -72,6 +73,9 @@ public class PgDbParser implements IResourceChangeListener {
         }
         parser = new PgDbParser(proj);
         parser.getFullDBFromPgDbProjectJob(proj);
+        if (PROJ_PARSERS.get(proj) != null) {
+            return PROJ_PARSERS.get(proj);
+        }
         PROJ_PARSERS.put(proj, parser);
         return parser;
     }
@@ -166,7 +170,7 @@ public class PgDbParser implements IResourceChangeListener {
 
     private void getFullDBFromPgDbProjectJob(final IProject pgProject) {
         try {
-            pgProject.build(0, new NullProgressMonitor());
+            pgProject.build(ProjectBuilder.FULL_BUILD, new NullProgressMonitor());
         } catch (CoreException e) {
             Log.log(e);
         }
@@ -254,7 +258,7 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public Map<String, List<PgObjLocation>> getObjReferences() {
-        return objReferences;
+         return objReferences;
     }
 
     public static List<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {

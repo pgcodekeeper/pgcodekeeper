@@ -24,14 +24,17 @@ final class SQLEditorTextHover implements ITextHover {
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         IFile file = null;
+
+        if (editor == null) {
+            return new Region(offset, 0);
+        }
+
         PgDbParser parser = editor.getParser();
         IEditorInput input = editor.getEditorInput();
         if (input instanceof FileEditorInput) {
             file = ((FileEditorInput) input).getFile();
         }
-        if (parser == null) {
-            return new Region(offset, 0);
-        }
+
         List<PgObjLocation> refs;
         if (file != null) {
             refs = parser.getObjsForPath(file.getLocation().toOSString());
