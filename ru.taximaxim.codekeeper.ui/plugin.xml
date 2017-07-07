@@ -313,6 +313,15 @@
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             name="%category.name.keeperNewWizard">
         </category>
+        <wizard
+              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+              class="ru.taximaxim.codekeeper.ui.pgdbproject.MockDataWizard"
+              icon="icons/editor_area.png"
+              id="ru.taximaxim.codekeeper.ui.mockdatawizard"
+              name="%wizard.name.mockDataWizard"
+              project="false">
+              <selection class="org.eclipse.core.resources.IFile" />
+        </wizard>
     </extension>
     <extension
         id="ru.taximaxim.codekeeper.ui.nature"
@@ -619,6 +628,16 @@
         <commonWizard
             type="new"
             wizardId="ru.taximaxim.codekeeper.ui.newprojwizard">
+            <enablement>
+                <with variable="activeWorkbenchWindow.activePerspective">
+                    <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                    </equals>
+                </with>
+            </enablement>
+        </commonWizard>
+        <commonWizard
+            type="new"
+            wizardId="ru.taximaxim.codekeeper.ui.mockdatawizard">
             <enablement>
                 <with variable="activeWorkbenchWindow.activePerspective">
                     <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
