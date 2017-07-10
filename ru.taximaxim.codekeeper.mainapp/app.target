@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="109">
+<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="110">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.zest.feature.group" version="1.7.0.201606061308"/>
@@ -13,9 +13,9 @@
 <repository location="http://download.eclipse.org/tools/orbit/R-builds/R20170516192513/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.12.0.v20170209-1843"/>
-<unit id="org.eclipse.platform.ide" version="4.6.3.M20170301-0400"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.6"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.0.v20170531-1133"/>
+<unit id="org.eclipse.platform.ide" version="4.7.0.I20170612-0950"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.7"/>
 </location>
 </locations>
 </target>

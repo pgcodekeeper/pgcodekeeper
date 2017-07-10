@@ -106,7 +106,7 @@ the disclosure of confidential information.
 
    <plugins>
       <plugin id="apgdiff"/>
-      <plugin id="javax.xml"/>
+      <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.apache.felix.gogo.shell"/>
       <plugin id="org.eclipse.core.contenttype"/>
@@ -119,12 +119,10 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
       <plugin id="org.eclipse.equinox.registry"/>
-      <plugin id="org.eclipse.equinox.supplement"/>
       <plugin id="org.eclipse.equinox.transforms.hook" fragment="true"/>
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
-      <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.kohsuke.args4j"/>
       <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
