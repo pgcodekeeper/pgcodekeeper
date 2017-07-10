@@ -139,7 +139,7 @@ public class PgAntlrLoaderTest {
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
         args.setInCharsetName(encoding);
-        args.setForceUnixNewlines(false);
+        args.setKeepNewlines(true);
         PgDatabase d = ApgdiffTestUtils.loadTestDump(
                 filename, PgAntlrLoaderTest.class, args);
 
@@ -167,7 +167,7 @@ public class PgAntlrLoaderTest {
         String filename = "schema_" + fileIndex + ".sql";
         PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
         args.setInCharsetName(encoding);
-        args.setForceUnixNewlines(false);
+        args.setKeepNewlines(true);
         PgDatabase dbFromFile = ApgdiffTestUtils.loadTestDump(
                 filename, PgAntlrLoaderTest.class, args);
 
@@ -179,9 +179,7 @@ public class PgAntlrLoaderTest {
 
             args = ApgdiffTestUtils.getArgsLicensed();
             args.setInCharsetName(encoding);
-            args.setForceUnixNewlines(false);
-            args.setIgnoreSlonyTriggers(true);
-            args.setOutputIgnoredStatements(true);
+            args.setKeepNewlines(true);
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     exportDir.toString(), args, null);
 

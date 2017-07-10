@@ -62,7 +62,9 @@ public final class Messages extends NLS {
 
     public static String PgDiffArguments_no_license_set;
 
-    public static String PgDiffArguments_only_diff_parse;
+    public static String PgDiffArguments_src_target_in_parser_mode_error;
+
+    public static String PgDiffArguments_src_target_one_argument_error;
 
     public static String PgDiffArguments_unsupported_db_format;
 

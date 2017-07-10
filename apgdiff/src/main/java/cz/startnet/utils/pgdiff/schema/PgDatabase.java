@@ -32,9 +32,6 @@ public class PgDatabase extends PgStatement {
     private final List<PgSchema> schemas = new ArrayList<>();
     private final List<PgExtension> extensions = new ArrayList<>();
 
-    private final List<String> ignoredStatements = new ArrayList<>();
-    private final List<String> ignoredDataStatements = new ArrayList<>();
-
     // Contains object definitions
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
@@ -81,22 +78,6 @@ public class PgDatabase extends PgStatement {
         return "SET search_path = " + defaultSchema.getName() + ", pg_catalog;";
     }
 
-    public List<String> getIgnoredStatements() {
-        return Collections.unmodifiableList(ignoredStatements);
-    }
-
-    public List<String> getIgnoredDataStatements() {
-        return Collections.unmodifiableList(ignoredDataStatements);
-    }
-
-    public void addIgnoredStatement(final String ignoredStatement) {
-        ignoredStatements.add(ignoredStatement);
-    }
-
-    public void addIgnoredDataStatement(final String ignoredDataStatement) {
-        ignoredDataStatements.add(ignoredDataStatement);
-    }
-
     public void setArguments(PgDiffArguments arguments) {
         this.arguments = arguments;
     }
@@ -112,44 +93,7 @@ public class PgDatabase extends PgStatement {
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
-    /*
-    public List<PgStatement> getObjectsByName(String objName) {
-        List<PgStatement> result = new ArrayList<>();
-        result.add(getObjByName(getSchemas(), objName));
-        result.add(getObjByName(getExtensions(), objName));
-        for (PgSchema schema : getSchemas()) {
-            findObjInSchema(schema, objName, result);
-        }
-        return result;
-    }
-    public List<PgStatement> getSchemaQualObjByName(String schemaName, String objName) {
-        List<PgStatement> result = new ArrayList<>();
-        findObjInSchema(getSchema(schemaName), objName, result);
-        return result;
-    }
 
-    private static void findObjInSchema(PgSchema schema, String objName, List<PgStatement> result) {
-        result.add(getObjByName(schema.getFunctions(), objName));
-        result.add(getObjByName(schema.getViews(), objName));
-        result.add(getObjByName(schema.getSequences(), objName));
-        result.add(getObjByName(schema.getTables(), objName));
-        for (PgTable table : schema.getTables()) {
-            result.add(getObjByName(table.getColumns(), objName));
-            result.add(getObjByName(table.getConstraints(), objName));
-            result.add(getObjByName(table.getIndexes(), objName));
-            result.add(getObjByName(table.getTriggers(), objName));
-        }
-    }
-
-    private static <T extends PgStatement> T getObjByName(List<T> objs, String objName) {
-        for (T obj : objs) {
-            if (obj.getName().equals(objName)) {
-                return obj;
-            }
-        }
-        return null;
-    }
-     */
     /**
      * Returns schema of given name or null if the schema has not been found. If
      * schema name is null then default schema is returned.

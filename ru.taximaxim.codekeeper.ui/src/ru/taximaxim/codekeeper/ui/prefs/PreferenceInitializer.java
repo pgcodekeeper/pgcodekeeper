@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
 
+import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -21,7 +22,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
-        store.setDefault(PREF.LICENSE_PATH, LicensePrefs.getInternalLicenseUrl().toString());
+        store.setDefault(PREF.LICENSE_PATH, License.getInternalLicenseUrl().toString());
 
         store.setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
