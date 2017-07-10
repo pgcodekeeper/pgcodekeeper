@@ -34,12 +34,12 @@
                                 <id>upload-repo</id>
                                 <phase>deploy</phase>
                                 <goals>
-                                    <goal>upload</goal>
+                                    <goal>upload-single</goal>
                                 </goals>
                                 <configuration>
-                                    <fromDir>${project.build.directory}/products/</fromDir>
-                                    <includes>*.zip</includes>
+                                    <fromFile>${project.build.directory}/products/pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}-linux.gtk.x86_64.zip</fromFile>
                                     <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <toFile>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}.zip</toFile>
                                 </configuration>
                             </execution>
                         </executions>
@@ -75,12 +75,12 @@
                                 <id>public-upload-cli</id>
                                 <phase>deploy</phase>
                                 <goals>
-                                    <goal>upload</goal>
+                                    <goal>upload-single</goal>
                                 </goals>
                                 <configuration>
                                     <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
-                                    <fromDir>${project.build.directory}/products/</fromDir>
-                                    <includes>*.zip</includes>
+                                    <fromFile>${project.build.directory}/products/</fromFile>
+                                    <toFile>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}.zip</toFile>
                                 </configuration>
                             </execution>
                             <execution>
@@ -118,93 +118,35 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/all/all/all</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>*.sh</include>
-                                        <include>*.bat</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-resources-linux-x86</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>*.sh</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-resources-linux-x86-64</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
                             <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}</directory>
                                     <filtering>true</filtering>
                                     <includes>
-                                        <include>*.sh</include>
+                                        <include>pgcodekeeper-cli.*</include>
                                     </includes>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
                     <execution>
-                        <id>copy-resources-win-x86</id>
+                        <id>set-executable</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/win32/win32/x86</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>*.bat</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-resources-win-x86-64</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/win32/win32/x86_64</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>*.bat</include>
-                                    </includes>
-                                </resource>
-                            </resources>
+                            <target>
+                                <chmod file="${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh" perm="0775" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

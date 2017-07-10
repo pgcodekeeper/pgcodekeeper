@@ -18,15 +18,21 @@ public class ApplicationStandalone implements IApplication {
     private static final int EXIT_ERROR = 1;
 
     @Override
-    public Object start(IApplicationContext context) throws Exception {
+    public Object start(IApplicationContext context) {
         try {
-            Main.main(Platform.getApplicationArgs());
-            return IApplication.EXIT_OK;
+            return Main.main(Platform.getApplicationArgs()) ? EXIT_OK : EXIT_ERROR;
         }   catch (Exception e) {
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
                     "pgCodeKeeper error", e);
             Platform.getLog(Activator.getDefault().getBundle()).log(error);
             return EXIT_ERROR;
+        } finally {
+            try {
+                // see bug #514338
+                Thread.sleep(110);
+            } catch (InterruptedException ex) {
+                // no action
+            }
         }
     }
 

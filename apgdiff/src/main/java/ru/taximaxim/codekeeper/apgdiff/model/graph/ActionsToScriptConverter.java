@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class ActionsToScriptConverter {
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
-        Set<DbObjType> allowedTypes = arguments.getAllowedTypes();
+        Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
             if(type == DbObjType.COLUMN){
@@ -99,7 +100,7 @@ public class ActionsToScriptConverter {
                 }
             } else {
                 PgStatement old = action.getOldObj();
-                if (arguments.isStopByAllow()) {
+                if (arguments.isStopNotAllowed()) {
                     throw new NotAllowedObjectException(old.getQualifiedName()
                             + " (" + type + ") is not an allowed script object. Stopping.");
                 }

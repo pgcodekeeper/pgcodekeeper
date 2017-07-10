@@ -85,11 +85,11 @@ public abstract class DbSource {
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setCheckFunctionBodies(mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setUsingOnOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setUsingTypeCastOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
-        args.setForceUnixNewlines(forceUnixNewlines);
+        args.setKeepNewlines(!forceUnixNewlines);
         LicensePrefs.setLicense(args);
         return args;
     }

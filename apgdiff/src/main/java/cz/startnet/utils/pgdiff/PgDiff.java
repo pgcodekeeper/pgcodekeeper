@@ -148,7 +148,7 @@ public final class PgDiff {
                     + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
         }
 
-        if (!arguments.isCheckFunctionBodies()) {
+        if (arguments.isDisableCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false;");
         }
 
@@ -195,10 +195,7 @@ public final class PgDiff {
         }
 
         script.printStatements(writer);
-        if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDbFull, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
-            addIgnoredStatements(newDbFull, Messages.Database_NewDatabaseIgnoredStatements, writer);
-        }
+
         return script;
     }
 
@@ -239,27 +236,6 @@ public final class PgDiff {
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    /**
-     * Adds ignored Statements to script
-     * @param database database with ignored statements
-     * @param messageText resource for localization message
-     * @param script script to output statements
-     */
-    private static void addIgnoredStatements(PgDatabase database,
-            String messageText, PrintWriter writer) {
-        if (!database.getIgnoredStatements().isEmpty()) {
-            writer.println();
-            writer.print("/*");
-            writer.println(messageText);
-
-            for (final String statement : database.getIgnoredStatements()) {
-                writer.println();
-                writer.println(statement);
-            }
-            writer.println("*/");
-        }
     }
 
     private PgDiff() {
