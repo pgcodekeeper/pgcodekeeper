@@ -71,7 +71,6 @@ public final class Messages extends NLS {
 
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
-    public static String sqlScriptDialog_quick_run_script;
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
@@ -166,6 +165,8 @@ public final class Messages extends NLS {
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
+    public static String diffPartDescr_quick_run;
+    public static String diffPartDescr_quick_run_tooltip;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -459,7 +460,6 @@ public final class Messages extends NLS {
     public static String RollOnEditor_selected_text_error;
 
     public static String RollOnEditor_tooltip_run_selected;
-    public static String RollOnEditor_run_quick_roll;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
