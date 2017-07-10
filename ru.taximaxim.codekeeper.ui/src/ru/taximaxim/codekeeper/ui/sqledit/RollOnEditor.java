@@ -36,6 +36,7 @@ import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -92,6 +93,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
     private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
+    private static final String QUICK_RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_quick_run_script;
 
     private final XmlHistory history;
 
@@ -108,6 +110,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private volatile boolean isRunning;
     private Thread scriptThread;
     private Button runScriptBtn;
+    private Button quickRunScriptBtn;
     private IEditorInput input;
 
     public RollOnEditor() {
@@ -292,7 +295,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     protected void createButtonsForButtonBar(Composite parent) {
         Composite comp = new Composite(parent, SWT.NONE);
-        comp.setLayout(new GridLayout(3, true));
+        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
+        rowLayout.spacing = 10;
+        comp.setLayout(rowLayout);
 
         runScriptBtn = new Button(comp, SWT.PUSH);
         runScriptBtn.setText(RUN_SCRIPT_LABEL);
@@ -304,6 +309,18 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 runButtonMethod();
             }
         });
+
+        quickRunScriptBtn = new Button(comp, SWT.PUSH);
+        quickRunScriptBtn.setText(QUICK_RUN_SCRIPT_LABEL);
+        quickRunScriptBtn.setToolTipText(Messages.RollOnEditor_run_quick_roll);
+        quickRunScriptBtn.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+
+            }
+        });
+
     }
 
     private String getReplacedString() {
