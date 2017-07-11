@@ -121,6 +121,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 PgDbParser parser = sqlEditor.getParser();
                 parser.updateRefsFromInputStream(stream, filename);
                 refs = parser.getObjReferences().get(filename);
+                if (refs == null) {
+                    return;
+                }
                 if (sqlEditor instanceof RollOnEditor) {
                     ((RollOnEditor) sqlEditor).setLineBackground();
                 }
