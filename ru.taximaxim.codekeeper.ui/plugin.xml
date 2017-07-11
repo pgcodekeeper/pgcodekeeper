@@ -229,7 +229,8 @@
          </toolbar>
          </menuContribution>  
     </extension>
-    <extension point="org.eclipse.ui.editors">
+    <extension
+          point="org.eclipse.ui.editors">
         <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
@@ -712,5 +713,16 @@
             configId="org.eclipse.ui.intro.universalConfig"
             content="$nl$/intro/pgcodekeeper_intro.xml">
         </configExtension>
+    </extension>
+    <extension
+          id="ru.taximaxim.codekeeper.ui.bindings"
+          name="ru.taximaxim.codekeeper.ui.bindings.hotKey"
+          point="org.eclipse.ui.bindings">
+        <key
+              commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+              contextId="org.eclipse.ui.textEditorScope"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="M1+M2+M3+Z">
+        </key>
     </extension>
 </plugin>
