@@ -79,7 +79,7 @@
                                 </goals>
                                 <configuration>
                                     <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
-                                    <fromFile>${project.build.directory}/products/</fromFile>
+                                    <fromFile>${project.build.directory}/products/pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}-linux.gtk.x86_64.zip</fromFile>
                                     <toFile>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}.zip</toFile>
                                 </configuration>
                             </execution>
