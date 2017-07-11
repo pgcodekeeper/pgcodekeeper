@@ -22,6 +22,7 @@ public class ApplicationStandalone implements IApplication {
         try {
             return Main.main(Platform.getApplicationArgs()) ? EXIT_OK : EXIT_ERROR;
         }   catch (Exception e) {
+            e.printStackTrace(System.err);
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
                     "pgCodeKeeper error", e);
             Platform.getLog(Activator.getDefault().getBundle()).log(error);

@@ -53,7 +53,7 @@ public final class Main {
                 return diff(writer, arguments);
             }
         } catch (CmdLineException | LicenseException | NotAllowedObjectException ex) {
-            writer.println(ex.getLocalizedMessage());
+            System.err.println(ex.getLocalizedMessage());
             return false;
         }
     }

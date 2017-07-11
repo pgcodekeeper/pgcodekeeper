@@ -130,7 +130,6 @@ the disclosure of confidential information.
    <configurations>
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <property name="eclipse.consoleLog" value="true" />
       <property name="eclipse.log.level" value="INFO" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
    </configurations>
