@@ -165,8 +165,6 @@ public final class Messages extends NLS {
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
-    public static String diffPartDescr_quick_run;
-    public static String diffPartDescr_quick_run_tooltip;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 

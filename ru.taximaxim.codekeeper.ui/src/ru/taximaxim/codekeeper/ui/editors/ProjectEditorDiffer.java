@@ -600,7 +600,7 @@ class DiffPage extends DiffPresentationPane {
 
     private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss"); //$NON-NLS-1$
 
-    private Button btnGetLatest, btnAddDepcy, btnQuickRun;
+    private Button btnGetLatest, btnAddDepcy;
 
     /**
      * A collection of manually added object dependencies.
@@ -615,7 +615,7 @@ class DiffPage extends DiffPresentationPane {
 
     @Override
     protected void createUpperContainer(Composite container, GridLayout gl) {
-        gl.numColumns = 4;
+        gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         if (mainPrefs.getBoolean(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT)){
@@ -660,18 +660,6 @@ class DiffPage extends DiffPresentationPane {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();
                 }
-            }
-        });
-
-        btnQuickRun = new Button(container, SWT.PUSH);
-        btnQuickRun.setText(Messages.diffPartDescr_quick_run);
-        btnQuickRun.setToolTipText(Messages.diffPartDescr_quick_run_tooltip);
-        btnQuickRun.setEnabled(false);
-        btnQuickRun.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);

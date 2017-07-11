@@ -62,6 +62,12 @@
             id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
             name="%command.name.improvePerformanceJdbc">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
+              id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+              name="%command.commandname.QuickUpdate">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution
@@ -200,6 +206,28 @@
                 </visibleWhen>
             </menu>
         </menuContribution>
+                 <menuContribution               
+            allPopups="false"              
+            locationURI="toolbar:org.eclipse.ui.main.toolbar">            
+         <toolbar                  
+         id="ru.taximaxim.codekeeper.ui.toolbar">               
+         <command                     
+         commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"                     
+         icon="icons/refresh.png"                     
+         label="%command.commandname.QuickUpdate"                     
+         style="push">
+            <visibleWhen
+                  checkEnabled="true">
+               <with
+                     variable="activeEditorId">
+                  <equals
+                        value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                  </equals>
+               </with>
+            </visibleWhen>   
+         </command>
+         </toolbar>
+         </menuContribution>  
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
