@@ -99,9 +99,11 @@ public class MainTest {
             break;
         case TEST_OUTPUT:
             PrintStream old = System.out;
+            PrintStream olde = System.err;
             try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PrintStream ps = new PrintStream(baos)){
                 System.setOut(ps);
+                System.setErr(ps);
 
                 Main.main(args.args());
 
@@ -109,6 +111,7 @@ public class MainTest {
                 assertEquals("Output is not as expected", args.output(), baos.toString());
             }finally{
                 System.setOut(old);
+                System.setErr(olde);
             }
             break;
         }
