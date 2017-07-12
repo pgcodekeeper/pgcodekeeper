@@ -330,7 +330,7 @@ class ArgumentsProvider_5 extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"-S", "-D", "DROP_TABLE", "-o", getDiffResultFile().getAbsolutePath(),
-                "-s", fOriginal.getAbsolutePath(), "-t", fNew.getAbsolutePath()};
+                "-t", fOriginal.getAbsolutePath(), "-s", fNew.getAbsolutePath()};
     }
 
     @Override
@@ -360,7 +360,7 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"-o", getDiffResultFile().getAbsolutePath(),
-                "-s", fOriginal.getAbsolutePath(), "-t",  fNew.getAbsolutePath()};
+                "-t", fOriginal.getAbsolutePath(), "-s",  fNew.getAbsolutePath()};
     }
 
     @Override
@@ -390,7 +390,7 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -470,7 +470,7 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{ "-S", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -506,7 +506,7 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
 
         return new String[]{"--safe-mode", "--allow-danger-ddl", "DROP_TABLE",
                 "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -535,7 +535,7 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"-S", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -571,7 +571,7 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
 
         return new String[]{"-S", "-D", "DROP_COLUMN",
                 "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -600,7 +600,7 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"--safe-mode", "--output", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -636,7 +636,7 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
 
         return new String[]{"--safe-mode", "--allow-danger-ddl",
                 "ALTER_COLUMN", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -666,7 +666,7 @@ class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
         return new String[]{"--safe-mode", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -702,7 +702,7 @@ class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
 
         return new String[]{"--safe-mode", "--allow-danger-ddl",
                 "RESTART_WITH", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -733,7 +733,7 @@ class ArgumentsProvider_18 extends ArgumentsProvider{
 
         return new String[]{"--safe-mode", "-X", "-F", "-Z", "UTC",
                 "-D", "ALTER_COLUMN", "--output", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override
@@ -800,7 +800,7 @@ class ArgumentsProvider_IgnoreLists extends ArgumentsProvider {
 
         return new String[] {"--ignore-list", black.getAbsolutePath(),
                 "-I", white.getAbsolutePath(), "-o", getDiffResultFile().getAbsolutePath(),
-                old.getAbsolutePath(), new_.getAbsolutePath()};
+                new_.getAbsolutePath(), old.getAbsolutePath()};
     }
 
     @Override
@@ -830,7 +830,7 @@ class ArgumentsProvider_AllowedObjects extends ArgumentsProvider {
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         return new String[]{"--allowed-object", "FUNCTION", "--allowed-object", "VIEW",
                 "-O", "INDEX", "-o", getDiffResultFile().getAbsolutePath(),
-                fOriginal.getAbsolutePath(), fNew.getAbsolutePath()};
+                fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
     }
 
     @Override

@@ -68,14 +68,14 @@ public class PgDiffArguments {
     private boolean modeParse;
 
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
-            usage="old database schema source")
-    @Argument(index=0, metaVar="SOURCE", usage="old database schema source")
-    private String oldSrc;
+            usage="source of schema changes")
+    @Argument(index=0, metaVar="SOURCE", usage="source of schema changes")
+    private String newSrc;
 
     @Option(name="-t", depends="-s", aliases="--target", metaVar="<path or JDBC>",
-            forbids="--parse", usage="target database schema source (diff mode only)")
-    @Argument(index=1, metaVar="TARGET", usage="target database schema source (diff mode only)")
-    private String newSrc;
+            forbids="--parse", usage="destination for schema changes (diff mode only)")
+    @Argument(index=1, metaVar="DEST", usage="destination for schema changes (diff mode only)")
+    private String oldSrc;
 
     private String newSrcFormat;
     private String oldSrcFormat;
@@ -339,20 +339,20 @@ public class PgDiffArguments {
         }
 
         if (modeParse) {
-            if (oldSrc == null) {
+            if (newSrc == null) {
                 badArgs("Please specify SCHEMA to parse.");
             }
-            if (newSrc != null) {
-                badArgs("Parser mode doesn't require TARGET argument.");
+            if (oldSrc != null) {
+                badArgs("Parser mode doesn't require DEST argument.");
             }
         } else {
             if (oldSrc == null || newSrc == null) {
-                badArgs("Please specify both SOURCE and TARGET schemas.");
+                badArgs("Please specify both SOURCE and DEST.");
             }
 
-            setNewSrcFormat(parsePath(newSrc));
+            setOldSrcFormat(parsePath(oldSrc));
         }
-        setOldSrcFormat(parsePath(oldSrc));
+        setNewSrcFormat(parsePath(newSrc));
 
         return true;
     }

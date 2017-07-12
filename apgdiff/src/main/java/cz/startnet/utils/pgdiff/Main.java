@@ -92,7 +92,7 @@ public final class Main {
     private static void parse(PgDiffArguments arguments)
             throws IOException, InterruptedException, LicenseException, URISyntaxException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
-                arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
+                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
         new ModelExporter(new File(arguments.getOutputTarget()),
                 d, arguments.getOutCharsetName()).exportFull();
     }

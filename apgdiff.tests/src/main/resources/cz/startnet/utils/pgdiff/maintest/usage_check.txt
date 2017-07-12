@@ -1,10 +1,10 @@
 Usage:
-	pgcodekeeper-cli [option]... SOURCE TARGET
-	pgcodekeeper-cli -s SOURCE -t TARGET [option]...
+	pgcodekeeper-cli [option]... SOURCE DEST
+	pgcodekeeper-cli -s SOURCE -t DEST [option]...
 	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
 
- SOURCE                                 : old database schema source
- TARGET                                 : target database schema source (diff
+ SOURCE                                 : source of schema changes
+ DEST                                   : destination for schema changes (diff
                                           mode only)
  --help                                 : show this help
  --version                              : show version
@@ -12,8 +12,8 @@ Usage:
  -l (--license) <path>                  : path to license file
  --parse                                : run in parser mode to save database
                                           schema as a directory hierarchy
- -s (--source) <path or JDBC>           : old database schema source
- -t (--target) <path or JDBC>           : target database schema source (diff
+ -s (--source) <path or JDBC>           : source of schema changes
+ -t (--target) <path or JDBC>           : destination for schema changes (diff
                                           mode only)
  -o (--output) <path>                   : script output file or parser output
                                           directory
