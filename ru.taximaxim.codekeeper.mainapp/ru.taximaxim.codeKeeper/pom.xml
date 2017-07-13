@@ -4,6 +4,11 @@
 
 <!--
 файлы версионирования:
+
+~~~~~~~~ DEPRECATED ~~~~~~~~
+Use /script/update-version.sh NEW-VERSION
+to update all relevant poms and metadatas
+
     фича:
     feature/feature.xml
     feature/pom.xml
