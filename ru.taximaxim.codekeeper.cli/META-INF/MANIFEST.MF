@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: ru.taximaxim.codekeeper.cli;singleton:=true
+Bundle-Version: 3.11.3.qualifier
+Bundle-Activator: ru.taximaxim.codekeeper.cli.Activator
+Bundle-Vendor: %Bundle-Vendor
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
