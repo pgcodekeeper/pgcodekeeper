@@ -38,6 +38,7 @@ statement
 
 data_statement
   : select_stmt
+  | insert_stmt_for_psql
   | copy_statement
   ;
 
