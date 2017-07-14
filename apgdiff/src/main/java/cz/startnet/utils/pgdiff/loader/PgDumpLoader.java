@@ -125,6 +125,24 @@ public class PgDumpLoader implements AutoCloseable {
         return load(false);
     }
 
+    /**
+     * Used only for QuickUpdate button.
+     */
+    public PgDatabase load(String schemaName) throws IOException, InterruptedException, LicenseException {
+        PgSchema schema = new PgSchema(schemaName, null);
+        return load(schema);
+    }
+
+    private PgDatabase load(PgSchema schema)
+            throws IOException, InterruptedException, LicenseException {
+        PgDatabase d = new PgDatabase();
+        d.addSchema(schema);
+        d.setArguments(args);
+        load(false, d);
+        args.getLicense().verifyDb(d);
+        return d;
+    }
+
     public PgDatabase load(boolean loadReferences)
             throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();

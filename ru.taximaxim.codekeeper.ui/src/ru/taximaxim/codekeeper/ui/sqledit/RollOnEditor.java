@@ -352,6 +352,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
     }
 
+    public ISourceViewer getSourceViewerForQuickUpdate() {
+        return super.getSourceViewer();
+    }
+
+    public DbStorePicker getStorePicker() {
+        return storePicker;
+    }
+
     private void runButtonMethod() {
         if (!isRunning) {
             final String textRetrieved;
@@ -444,123 +452,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             setRunButtonText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
-    }
-
-    private void afterQuickUpdateScriptFinished(final String scriptOutput, boolean result) {
-        UiSync.exec(parentComposite, new Runnable() {
-
-            @Override
-            public void run() {
-                if (!runScriptBtn.isDisposed()) {
-                    parentComposite.setCursor(null);
-
-                    if (!result && mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                        new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
-                    }
-                    setRunButtonText(RUN_SCRIPT_LABEL);
-                }
-                isRunning = false;
-            }
-        });
-    }
-
-    public boolean runQuickUpdate() {
-        boolean executed = false;
-        if (!isRunning) {
-            final String textRetrieved;
-            Point point = getSourceViewer().getSelectedRange();
-            IDocument document = getSourceViewer().getDocument();
-            if (point.y == 0){
-                textRetrieved = document.get();
-            } else {
-                try {
-                    textRetrieved = document.get(point.x, point.y);
-                } catch (BadLocationException ble){
-                    Log.log(Log.LOG_WARNING, ble.getMessage());
-                    ExceptionNotifier.notifyDefault(Messages.RollOnEditor_selected_text_error, ble);
-                    return executed;
-                }
-            }
-            // new runnable to unlock the UI thread
-            Runnable launcher;
-
-            if (!btnJdbcToggle.getSelection()){
-                Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
-
-                DbInfo dbInfo = storePicker.getDbInfo();
-                if (dbInfo == null){
-                    ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
-                    return executed;
-                }
-
-                final String jdbcHost = dbInfo.getDbHost();
-                final int jdbcPort = dbInfo.getDbPort();
-                final String jdbcUser = dbInfo.getDbUser();
-                final String jdbcPass = dbInfo.getDbPass();
-                final String jdbcDbName = dbInfo.getDbName();
-
-                launcher = new Runnable() {
-
-                    @Override
-                    public void run() {
-                        String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
-                        try{
-                            JdbcConnector connector = new JdbcConnector(
-                                    jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
-                            output = new JdbcRunner(connector).runScript(textRetrieved);
-                            if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
-                                output = Messages.RollOnEditor_jdbc_success;
-                                ProjectEditorDiffer.notifyDbChanged(dbInfo);
-                            }
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e.getLocalizedMessage(), e);
-                        } finally {
-                            // request UI change: button label changed
-                            boolean result = Messages.RollOnEditor_jdbc_success.equals(output);
-                            afterQuickUpdateScriptFinished(output, result);
-                        }
-                    }
-                };
-            } else {
-                Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
-                try {
-                    history.addHistoryEntry(cmbScript.getText());
-                } catch (IOException e) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.SqlScriptDialog_error_adding_command_history, e);
-                }
-                final List<String> command = new ArrayList<>(Arrays.asList(
-                        getReplacedString().split(" "))); //$NON-NLS-1$
-
-                launcher = new RunScriptExternal(textRetrieved, command);
-            }
-            // run thread that calls StdStreamRedirector.launchAndRedirect()
-            scriptThread = new Thread(launcher);
-            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.sqlScriptDialog_exception_during_script_execution,e);
-                }
-            });
-            scriptThread.start();
-            isRunning = true;
-            setRunButtonText(STOP_SCRIPT_LABEL);
-            parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-            // case Stop script
-        } else {
-            ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-            Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
-
-            scriptThread.interrupt();
-            setRunButtonText(RUN_SCRIPT_LABEL);
-            isRunning = false;
-        }
-
-        executed = true;
-        return executed;
     }
 
     private void setRunButtonText(String text) {
