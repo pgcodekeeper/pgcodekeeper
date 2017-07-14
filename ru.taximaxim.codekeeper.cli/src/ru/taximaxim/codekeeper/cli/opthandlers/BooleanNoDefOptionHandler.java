@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.apgdiff.cli;
+package ru.taximaxim.codekeeper.cli.opthandlers;
 
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -10,9 +10,9 @@ import org.kohsuke.args4j.spi.Setter;
  *
  * @author levsha_aa
  */
-public class BooleanOptionHandlerNoDef extends BooleanOptionHandler {
+public class BooleanNoDefOptionHandler extends BooleanOptionHandler {
 
-    public BooleanOptionHandlerNoDef(CmdLineParser parser, OptionDef option, Setter<Boolean> setter) {
+    public BooleanNoDefOptionHandler(CmdLineParser parser, OptionDef option, Setter<Boolean> setter) {
         super(parser, option, setter);
     }
 

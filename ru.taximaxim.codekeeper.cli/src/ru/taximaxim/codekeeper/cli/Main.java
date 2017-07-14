@@ -3,7 +3,7 @@
  *
  * Distributed under MIT license
  */
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.cli;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,12 +17,17 @@ import java.util.stream.Collectors;
 
 import org.kohsuke.args4j.CmdLineException;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
+import cz.startnet.utils.pgdiff.NotAllowedObjectException;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.cli.localizations.Messages;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -38,7 +43,7 @@ public final class Main {
     public static boolean main(String[] args)
             throws IOException, InterruptedException, URISyntaxException {
         PrintWriter writer = new PrintWriter(System.out, true);
-        PgDiffArguments arguments = new PgDiffArguments();
+        CliArgs arguments = new CliArgs();
         try {
             if (!arguments.parse(writer, args)) {
                 return true;

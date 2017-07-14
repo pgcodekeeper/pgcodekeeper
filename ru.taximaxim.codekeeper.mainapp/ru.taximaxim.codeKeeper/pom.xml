@@ -42,6 +42,8 @@ to update all relevant poms and metadatas
         <module>../updatesite</module>
         <module>../../ru.taximaxim.codekeeper.ui.help</module>
         <module>../../org.jboss.tools.usage</module>
+        <module>../../ru.taximaxim.codekeeper.cli</module>
+        <module>../../ru.taximaxim.codekeeper.cli.tests</module>
     </modules>
 
     <prerequisites>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.11.3.qualifier" useFeatures="false" includeLaunchers="false">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.cli.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.cli.application-standalone" version="3.11.3.qualifier" useFeatures="false" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
@@ -108,13 +108,11 @@ the disclosure of confidential information.
       <plugin id="apgdiff"/>
       <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
-      <plugin id="org.apache.felix.gogo.shell"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.console"/>
       <plugin id="org.eclipse.equinox.launcher"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
@@ -124,6 +122,7 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.kohsuke.args4j"/>
+      <plugin id="ru.taximaxim.codekeeper.cli"/>
       <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
 

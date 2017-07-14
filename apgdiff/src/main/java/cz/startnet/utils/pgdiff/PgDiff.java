@@ -81,7 +81,7 @@ public final class PgDiff {
      * @throws InterruptedException
      * @throws URISyntaxException
      */
-    static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+    public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, LicenseException, URISyntaxException {
         if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
