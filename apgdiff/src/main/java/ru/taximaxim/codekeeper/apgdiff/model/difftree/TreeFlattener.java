@@ -87,7 +87,7 @@ public class TreeFlattener {
 
         if ((status == AddStatus.ADD || status == AddStatus.ADD_SUBTREE) &&
                 (!onlySelected || el.isSelected()) &&
-                (onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
+                (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
                 !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
             result.add(el);
