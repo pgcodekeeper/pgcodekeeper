@@ -47,6 +47,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.MessageBox;
@@ -118,6 +119,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private String connectionTimezone = ApgdiffConsts.UTC;
 
     private Button runScriptBtn;
+    private Button saveAsBtn;
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -349,8 +351,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     protected void createButtonsForButtonBar(Composite parent) {
         Composite comp = new Composite(parent, SWT.NONE);
-        comp.setLayout(new GridLayout(4, false));
-        comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        comp.setLayout(new GridLayout(3, true));
 
         runScriptBtn = new Button(comp, SWT.PUSH);
         runScriptBtn.setText(RUN_SCRIPT_LABEL);
@@ -362,6 +363,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 runButtonMethod();
             }
         });
+
+        saveAsBtn = new Button(comp, SWT.PUSH);
+        saveAsBtn.setText(Messages.sqlScriptDialog_save_as);
+        saveAsBtn.addSelectionListener(new SaveButtonHandler());
     }
 
     private int showDangerWarning() {
@@ -548,6 +553,32 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private void setRunButtonText(String text) {
         runScriptBtn.setText(text);
         runScriptBtn.getParent().layout();
+    }
+
+    private class SaveButtonHandler extends SelectionAdapter {
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            String textRetrieved = RollOnEditor.this.getSourceViewer().getDocument().get();
+            FileDialog fd = new FileDialog(parentComposite.getShell(), SWT.SAVE);
+            fd.setText(Messages.sqlScriptDialog_save_as);
+            fd.setOverwrite(true);
+            fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
+            String scriptFileName = fd.open();
+
+            if (scriptFileName != null) {
+                File script = new File(scriptFileName);
+                try (PrintWriter writer = new PrintWriter(script, scriptFileEncoding)) {
+                    writer.write(textRetrieved);
+                } catch (IOException ex) {
+                    ExceptionNotifier.notifyDefault(
+                            Messages.sqlScriptDialog_error_saving_script_to_file, ex);
+                    return;
+                }
+
+                ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
+            }
+        }
     }
 
     private class RunScriptExternal implements Runnable {

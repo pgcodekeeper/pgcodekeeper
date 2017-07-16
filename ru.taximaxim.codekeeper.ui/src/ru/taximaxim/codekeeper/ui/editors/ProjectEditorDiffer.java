@@ -71,7 +71,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR_ACTION;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
@@ -341,7 +340,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     public static void notifyDbChanged(DbInfo dbinfo) {
         String action = Activator.getDefault().getPreferenceStore().getString(PG_EDIT_PREF.EDITOR_UPDATE_ACTION);
-        if (action.equals(EDITOR_ACTION.NO_ACTION)) {
+        if (action.equals(PG_EDIT_PREF.NO_ACTION)) {
             return;
         }
         for (IWorkbenchWindow wnd : PlatformUI.getWorkbench().getWorkbenchWindows()) {
@@ -349,7 +348,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 for (IEditorReference ref : page.getEditorReferences()) {
                     IEditorPart ed = ref.getEditor(false);
                     if (ed instanceof ProjectEditorDiffer) {
-                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed, action.equals(EDITOR_ACTION.UPDATE));
+                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed, action.equals(PG_EDIT_PREF.UPDATE));
                     }
                 }
             }
