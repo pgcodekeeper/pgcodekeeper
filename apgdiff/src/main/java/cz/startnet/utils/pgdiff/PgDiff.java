@@ -164,7 +164,14 @@ public final class PgDiff {
             depRes.addCustomDepciesToNew(additionalDepciesTarget);
         }
 
-        // TODO when live DB connection is impelemted, pass the DB names to IgnoreList
+        List<String> dbNames = new ArrayList<>();
+        if ("db".equals(arguments.getNewSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
+        }
+        if ("db".equals(arguments.getOldSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
+        }
+
         List<TreeElement> selected = new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
