@@ -339,22 +339,30 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public static void notifyDbChanged(DbInfo dbinfo) {
+        String action = Activator.getDefault().getPreferenceStore().getString(PG_EDIT_PREF.EDITOR_UPDATE_ACTION);
+        if (action.equals(PG_EDIT_PREF.NO_ACTION)) {
+            return;
+        }
         for (IWorkbenchWindow wnd : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : wnd.getPages()) {
                 for (IEditorReference ref : page.getEditorReferences()) {
                     IEditorPart ed = ref.getEditor(false);
                     if (ed instanceof ProjectEditorDiffer) {
-                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed);
+                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed, action.equals(PG_EDIT_PREF.UPDATE));
                     }
                 }
             }
         }
     }
 
-    private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor) {
+    private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor, boolean update) {
         UiSync.exec(editor.pane, () -> {
             if (dbinfo.equals(editor.pane.getLastRemote())) {
-                editor.pane.resetRemoteChanged();
+                if (update) {
+                    editor.pane.updateRemoteChanged();
+                } else {
+                    editor.pane.resetRemoteChanged();
+                }
             }
         });
     }

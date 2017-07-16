@@ -409,6 +409,14 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorInput_pgcodekeeper_project;
 
+    public static String ProjectEditorPrefPage_action_no_action;
+
+    public static String ProjectEditorPrefPage_action_reset;
+
+    public static String ProjectEditorPrefPage_action_type;
+
+    public static String ProjectEditorPrefPage_action_update;
+
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
