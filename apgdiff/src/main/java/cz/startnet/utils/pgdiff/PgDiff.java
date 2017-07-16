@@ -81,7 +81,7 @@ public final class PgDiff {
      * @throws InterruptedException
      * @throws URISyntaxException
      */
-    static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+    public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, LicenseException, URISyntaxException {
         if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
@@ -168,6 +168,7 @@ public final class PgDiff {
         List<TreeElement> selected = new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
                 .flatten(root);
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);

@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.apgdiff.cli;
+package ru.taximaxim.codekeeper.cli.opthandlers;
 
 import java.util.Arrays;
 import java.util.Collections;

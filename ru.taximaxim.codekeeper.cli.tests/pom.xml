@@ -10,7 +10,7 @@
   </parent>
 
   <groupId>ru.taximaxim.codeKeeper</groupId>
-  <artifactId>ru.taximaxim.codekeeper.ui.tests</artifactId>
+  <artifactId>ru.taximaxim.codekeeper.cli.tests</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-test-plugin</packaging>
   
