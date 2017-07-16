@@ -81,9 +81,9 @@ public interface UIConsts {
     interface PG_EDIT_PREF {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
         String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
-        String UPDATE = "UPDATE";
-        String RESET = "RESET";
-        String NO_ACTION = "NO_ACTION";
+        String UPDATE = "UPDATE"; //$NON-NLS-1$
+        String RESET = "RESET"; //$NON-NLS-1$
+        String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
     public enum DBSources {

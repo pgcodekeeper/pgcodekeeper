@@ -7,6 +7,7 @@ import org.eclipse.swt.graphics.RGB;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
@@ -22,6 +23,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
         store.setDefault(PREF.LICENSE_PATH, LicensePrefs.getInternalLicenseUrl().toString());
+
+        store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
 
         store.setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);

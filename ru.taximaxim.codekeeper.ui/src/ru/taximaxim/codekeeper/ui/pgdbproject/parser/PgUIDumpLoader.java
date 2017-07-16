@@ -178,7 +178,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
         for (IFile file : files) {
             IPath filePath = file.getFullPath();
-            if (!"sql".equals(file.getFileExtension())
+            if (!"sql".equals(file.getFileExtension()) //$NON-NLS-1$
                     || Arrays.stream(projDirs).noneMatch(d -> d.isPrefixOf(filePath))) {
                 // skip non-sql or non-project files
                 // still report work
@@ -209,7 +209,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
-                    loadFile(proj.getWorkspace().getRoot().getFile(schemasPath.append(schemaDirname + ".sql")),
+                    loadFile(proj.getWorkspace().getRoot().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
                             arguments, null, db, funcBodies);
                 }
             }
