@@ -123,7 +123,8 @@ public class CliArgs extends PgDiffArguments {
 
     @Option(name="-O", aliases="--allowed-object", forbids="--parse",
             handler=DbObjTypeOptionHandler.class,
-            usage="allow only these objects in the script")
+            usage="build the script using these object types only"
+                    + "\nhide statements of other objects")
     private List<DbObjType> allowedTypes;
 
     @Option(name="--stop-not-allowed", forbids="--parse",
