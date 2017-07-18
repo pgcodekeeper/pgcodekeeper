@@ -6,21 +6,12 @@ import java.util.List;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import cz.startnet.utils.pgdiff.schema.PgType;
-import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
@@ -221,88 +212,6 @@ public class TreeElement {
         setSelected(true);
         for (TreeElement child : getChildren()) {
             child.setAllChecked();
-        }
-    }
-
-    /**
-     * отмечает только элементы указанные в
-     * полученном PgDatabase pgDatabase
-     */
-    public void setCheckedCustom(PgDatabase pgDatabase) {
-        boolean check = false;
-        if(pgDatabase.getSchemas().size() == 2){
-            for(PgSchema schema : pgDatabase.getSchemas()) {
-                if("public".equalsIgnoreCase(schema.getName())){
-                    check = true;
-                    break;
-                }
-            }
-        }
-
-        if(!pgDatabase.getSchemas().isEmpty()){
-            for(PgSchema schema : pgDatabase.getSchemas()){
-                if(check && "public".equalsIgnoreCase(schema.getName())){
-                    continue;
-                }
-
-                findElement(schema).setSelected(true);
-
-                if(!schema.getTypes().isEmpty()){
-                    for(PgType type : schema.getTypes()){
-                        findElement(type).setSelected(true);
-                    }
-                }
-
-                if(!schema.getDomains().isEmpty()){
-                    for(PgDomain domain : schema.getDomains()){
-                        findElement(domain).setSelected(true);
-                    }
-                }
-
-                if(!schema.getSequences().isEmpty()){
-                    for(PgSequence sequence : schema.getSequences()){
-                        findElement(sequence).setSelected(true);
-                    }
-                }
-
-                if(!schema.getFunctions().isEmpty()){
-                    for(PgFunction function : schema.getFunctions()){
-                        findElement(function).setSelected(true);
-                    }
-                }
-
-                if(!schema.getTables().isEmpty()){
-                    for(PgTable table : schema.getTables()){
-                        findElement(table).setSelected(true);
-                        if(!table.getConstraints().isEmpty()){
-                            for(PgConstraint constraint : table.getConstraints()){
-                                findElement(constraint).setSelected(true);
-                            }
-                        }
-                        if(!table.getIndexes().isEmpty()){
-                            for(PgIndex index : table.getIndexes()){
-                                findElement(index).setSelected(true);
-                            }
-                        }
-                        if(!table.getTriggers().isEmpty()){
-                            for(PgTrigger trigger : table.getTriggers()){
-                                findElement(trigger).setSelected(true);
-                            }
-                        }
-                        if(!table.getRules().isEmpty()){
-                            for(PgRule rule : table.getRules()){
-                                findElement(rule).setSelected(true);
-                            }
-                        }
-                    }
-                }
-
-                if(!schema.getViews().isEmpty()){
-                    for(PgView views : schema.getViews()){
-                        findElement(views).setSelected(true);
-                    }
-                }
-            }
         }
     }
 
