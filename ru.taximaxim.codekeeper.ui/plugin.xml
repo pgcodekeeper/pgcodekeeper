@@ -206,9 +206,9 @@
                 </visibleWhen>
             </menu>
         </menuContribution>
-                 <menuContribution               
+        <menuContribution               
             allPopups="false"              
-            locationURI="toolbar:org.eclipse.ui.main.toolbar">            
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">            
          <toolbar                  
          id="ru.taximaxim.codekeeper.ui.toolbar">               
          <command                     
