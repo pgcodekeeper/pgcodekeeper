@@ -147,6 +147,8 @@ public final class Messages extends NLS {
     // ui.handlers
     public static String database;
 
+    public static String quickUpdate_error_btn;
+
     // ui.parts
     public static String commitPartDescr_commit;
     public static String commitPartDescr_show_commit_window;
