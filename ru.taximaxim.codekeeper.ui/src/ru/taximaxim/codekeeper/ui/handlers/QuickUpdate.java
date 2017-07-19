@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ui.IEditorInput;
@@ -24,6 +25,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 
 import cz.startnet.utils.pgdiff.PgDiff;
@@ -54,7 +56,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
 
 public class QuickUpdate extends AbstractHandler {
-
     private JdbcConnector connector;
     private PgDiffArguments args;
     private IEditorPart editor;
@@ -136,6 +137,8 @@ public class QuickUpdate extends AbstractHandler {
 
         PgDbProject proj = new PgDbProject( ((IFileEditorInput)editor.getEditorInput()).getFile().getProject() );
         new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
+
+        ResourceUtil.getResource(editor.getEditorInput()).refreshLocal(IResource.DEPTH_ZERO, null);
     }
 
     private PgDatabase getDbProjectFragment(PgDiffArguments args, URI fileInEditorURI, String sqlText)
