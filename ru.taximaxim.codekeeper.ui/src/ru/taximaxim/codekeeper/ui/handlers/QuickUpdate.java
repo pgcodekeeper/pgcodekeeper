@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -33,6 +35,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -51,6 +54,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -159,7 +163,23 @@ public class QuickUpdate extends AbstractHandler {
 
             setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment), dbRemoteFull, dbProjectFull);
 
-            String result = rollOnDB(treeFull, dbRemoteFull, dbProjectFull, args, connector);
+            ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+            PgDiffScript script = getScript(diffInput, treeFull, dbRemoteFull, dbProjectFull);
+
+            if (script.isDangerDdl(false, false, false, false)) {
+                UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
+                    @Override
+                    public void run() {
+                        MessageBox mb = new MessageBox(editor.getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
+                        mb.setText(Messages.sqlScriptDialog_warning);
+                        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic);
+                        mb.open();
+                    }
+                });
+                return false;
+            }
+
+            String result = new JdbcRunner(connector).runScript(diffInput.toString());
 
             if(!JDBC_CONSTS.JDBC_SUCCESS.equals(result)){
                 ExceptionNotifier.notifyDefault(result, null);
@@ -209,16 +229,14 @@ public class QuickUpdate extends AbstractHandler {
             return dbSource.get(SubMonitor.convert(null, "", 1));
         }
 
-        private String rollOnDB(TreeElement treeFullwithCheckedElements,
-                PgDatabase dbRemoteFull, PgDatabase dbProjectFull, PgDiffArguments args, JdbcConnector connector) throws IOException{
-            ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        private PgDiffScript getScript(ByteArrayOutputStream diffInput,
+                TreeElement treeFullwithCheckedElements,
+                PgDatabase dbRemoteFull, PgDatabase dbProjectFull){
             PrintWriter writer = new UnixPrintWriter(diffInput, true);
-            PgDiff.diffDatabaseSchemasAdditionalDepcies(
-                    writer,
-                    args,
+            PgDiffScript script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                     treeFullwithCheckedElements, dbRemoteFull, dbProjectFull, null, null);
             writer.flush();
-            return new JdbcRunner(connector).runScript(diffInput.toString());
+            return script;
         }
 
         private String getSchemaName(String path){

@@ -73,6 +73,7 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
+    public static String sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_script_saved_to_file;
