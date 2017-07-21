@@ -108,6 +108,8 @@ public class QuickUpdate extends AbstractHandler {
         private PgDiffArguments args;
         private final IEditorPart editor;
         private final DbInfo dbInfo;
+        private String primarySqlText;
+        private String finalSqlText;
 
         public QuickUpdateJob(String name, IEditorPart editor, DbInfo dbInfo) {
             super(name);
@@ -153,9 +155,11 @@ public class QuickUpdate extends AbstractHandler {
 
         private boolean rollChangesOnDB()
                 throws IOException, InterruptedException, LicenseException, CoreException {
+            primarySqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
+
             PgDatabase dbProjectFragment = getDbProjectFragment(args,
                     ((FileEditorInput)editor.getEditorInput()).getURI(),
-                    ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get());
+                    primarySqlText);
 
             PgDatabase dbProjectFull = getDbProjectFull(editor);
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
@@ -201,10 +205,12 @@ public class QuickUpdate extends AbstractHandler {
             List<TreeElement> checked = setCheckedFromFragment(treeFull,
                     PgDatabase.listPgObjects(dbProjectFragment), dbRemoteFull, dbProjectFull);
 
-            PgDbProject proj = new PgDbProject( ((IFileEditorInput)editor.getEditorInput()).getFile().getProject() );
-            new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
-
-            ResourceUtil.getResource(editor.getEditorInput()).refreshLocal(IResource.DEPTH_ZERO, null);
+            finalSqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
+            if(primarySqlText.equals(finalSqlText)){
+                PgDbProject proj = new PgDbProject(((IFileEditorInput)editor.getEditorInput()).getFile().getProject());
+                new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
+                ResourceUtil.getResource(editor.getEditorInput()).refreshLocal(IResource.DEPTH_ZERO, null);
+            }
         }
 
         private PgDatabase getDbProjectFragment(PgDiffArguments args, URI fileInEditorURI, String sqlText)
