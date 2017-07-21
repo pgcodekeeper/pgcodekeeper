@@ -109,7 +109,6 @@ public class QuickUpdate extends AbstractHandler {
         private final IEditorPart editor;
         private final DbInfo dbInfo;
         private String primarySqlText;
-        private String finalSqlText;
 
         public QuickUpdateJob(String name, IEditorPart editor, DbInfo dbInfo) {
             super(name);
@@ -205,7 +204,7 @@ public class QuickUpdate extends AbstractHandler {
             List<TreeElement> checked = setCheckedFromFragment(treeFull,
                     PgDatabase.listPgObjects(dbProjectFragment), dbRemoteFull, dbProjectFull);
 
-            finalSqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
+            String finalSqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
             if(primarySqlText.equals(finalSqlText)){
                 PgDbProject proj = new PgDbProject(((IFileEditorInput)editor.getEditorInput()).getFile().getProject());
                 new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
@@ -217,8 +216,8 @@ public class QuickUpdate extends AbstractHandler {
                 throws IOException, InterruptedException, LicenseException {
             PgDatabase dbDump = null;
             String schemaName = getSchemaName(fileInEditorURI.getPath());
-            InputStream inputStream = new ByteArrayInputStream(sqlText.getBytes(StandardCharsets.UTF_8));
-            try(PgDumpLoader loader = new PgDumpLoader(inputStream, fileInEditorURI.getPath(), args)) {
+            try(InputStream inputStream = new ByteArrayInputStream(sqlText.getBytes(StandardCharsets.UTF_8));
+                    PgDumpLoader loader = new PgDumpLoader(inputStream, fileInEditorURI.getPath(), args)) {
                 if("PUBLIC".equals(schemaName)){
                     dbDump = loader.load();
                 } else {
