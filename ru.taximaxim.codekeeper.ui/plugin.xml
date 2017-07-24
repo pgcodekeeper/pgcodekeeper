@@ -14,6 +14,11 @@
             name="%context.name.keeperContext"
             parentId="org.eclipse.ui.contexts.window">
         </context>
+        <context 
+           id="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+           name="%context.name.keeperEditorContext"
+           parentId="org.eclipse.ui.textEditorScope">
+        </context>
     </extension>
     <extension point="org.eclipse.ui.commands">
         <category
@@ -720,9 +725,9 @@
           point="org.eclipse.ui.bindings">
         <key
               commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
-              contextId="org.eclipse.ui.textEditorScope"
+              contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-              sequence="M1+M2+M3+Z">
+              sequence="M1+M3+A">
         </key>
     </extension>
 </plugin>

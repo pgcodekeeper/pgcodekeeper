@@ -218,7 +218,7 @@ public class QuickUpdate extends AbstractHandler {
             String schemaName = getSchemaName(fileInEditorURI.getPath());
             try(InputStream inputStream = new ByteArrayInputStream(sqlText.getBytes(StandardCharsets.UTF_8));
                     PgDumpLoader loader = new PgDumpLoader(inputStream, fileInEditorURI.getPath(), args)) {
-                if("PUBLIC".equals(schemaName)){
+                if("PUBLIC".equalsIgnoreCase(schemaName)){
                     dbDump = loader.load();
                 } else {
                     dbDump = loader.load(getSchemaName(fileInEditorURI.getPath()));
