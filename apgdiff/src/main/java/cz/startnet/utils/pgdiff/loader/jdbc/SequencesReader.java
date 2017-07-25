@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
@@ -83,6 +84,9 @@ public class SequencesReader extends JdbcReader {
 
         List<String> schemasAccess = new ArrayList<>();
         try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
+            Array arrSchemas = loader.connection.createArrayOf("text",
+                    db.getSchemas().stream().map(PgSchema::getName).collect(Collectors.toList()).toArray());
+            schemasAccessQuery.setArray(1, arrSchemas);
             try (ResultSet schemaRes = schemasAccessQuery.executeQuery()) {
                 while (schemaRes.next()) {
                     schemasAccess.add(schemaRes.getString("nspname"));
@@ -91,11 +95,9 @@ public class SequencesReader extends JdbcReader {
         }
 
         Map<String, PgSequence> seqs = new HashMap<>();
-        for (PgSchema schema : db.getSchemas()) {
-            if(schemasAccess.contains(schema.getName())){
-                for (PgSequence seq : schema.getSequences()) {
-                    seqs.put(seq.getQualifiedName(), seq);
-                }
+        for (String schema : schemasAccess) {
+            for (PgSequence seq : db.getSchema(schema).getSequences()) {
+                seqs.put(seq.getQualifiedName(), seq);
             }
         }
 
