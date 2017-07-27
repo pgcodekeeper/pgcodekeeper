@@ -35,7 +35,6 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
-    public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String SQLEditorStatementTypes_consts;
 
@@ -69,15 +68,11 @@ public final class Messages extends NLS {
 
     public static String SQLEditorSytaxColoring_underline;
 
-    public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
-    public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_output;
-    public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
-    public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
     public static String sqlScriptDialog_use_command_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
@@ -162,7 +157,6 @@ public final class Messages extends NLS {
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
-    public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
     public static String diffPresentationPane_getting_changes_for_diff;
@@ -260,8 +254,6 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_db_tz;
 
-    public static String DiffWizard_diff_wizard_result;
-
     public static String DiffWizard_select_db_tz;
 
     public static String DiffWizard_source;
@@ -277,7 +269,6 @@ public final class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
-    public static String generalPrefPage_use_psql_depcy_on_generating_script;
 
     public static String pgProjectEditor_is_prj_update_backlight;
     public static String pgProjectEditor_is_db_update_backlight;
@@ -449,8 +440,6 @@ public final class Messages extends NLS {
 
     public static String RollOnEditor_jdbc_success;
 
-    public static String RollOnEditor_parsing_cancelled;
-
     public static String RollOnEditor_script_delete_dialog_message;
 
     public static String RollOnEditor_script_delete_dialog_title;
@@ -458,9 +447,7 @@ public final class Messages extends NLS {
     public static String RollOnEditor_selected_text_error;
 
     public static String RollOnEditor_tooltip_run_selected;
-    public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
-    public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
     public static String SqlScriptDialog_error_adding_command_history;
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
@@ -539,6 +526,10 @@ public final class Messages extends NLS {
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+    }
+
+    public static String getBundleName() {
+        return BUNDLE_NAME;
     }
 
     private Messages() {

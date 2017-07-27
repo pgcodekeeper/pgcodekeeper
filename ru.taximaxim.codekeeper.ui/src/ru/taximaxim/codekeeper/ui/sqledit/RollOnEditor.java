@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -568,9 +569,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             deleteFile(f);
             // if not select "NO" with toggle, show choice message dialog
         } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
-            // TODO file name
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
-                    Messages.RollOnEditor_script_delete_dialog_title, Messages.RollOnEditor_script_delete_dialog_message,
+                    Messages.RollOnEditor_script_delete_dialog_title, MessageFormat.format(
+                            Messages.RollOnEditor_script_delete_dialog_message, f.getName()),
                     Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
             if(dialog.getReturnCode() == IDialogConstants.YES_ID){
                 deleteFile(f);

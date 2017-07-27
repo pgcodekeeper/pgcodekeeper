@@ -45,7 +45,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                         SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj)));
                 break;
             default:
-                throw new IllegalStateException("Unknown build type!");
+                throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
             }
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();

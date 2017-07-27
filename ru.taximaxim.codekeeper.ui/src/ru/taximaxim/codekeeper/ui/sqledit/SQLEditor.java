@@ -97,7 +97,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     @Override
     protected void createActions() {
         super.createActions();
-        ResourceBundle bundle = ResourceBundle.getBundle(Messages.BUNDLE_NAME);
+        ResourceBundle bundle = ResourceBundle.getBundle(Messages.getBundleName());
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
@@ -135,7 +135,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             return parser;
         }
 
-        throw new PartInitException("Unknown editor input: " + in);
+        throw new PartInitException("Unknown editor input: " + in); //$NON-NLS-1$
     }
 
     /**
