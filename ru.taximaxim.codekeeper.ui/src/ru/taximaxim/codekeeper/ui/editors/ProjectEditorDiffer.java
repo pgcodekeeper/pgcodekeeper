@@ -112,6 +112,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 
 public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -266,16 +267,13 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                     if (schemaChanged[0]) {
                         return false;
                     }
+                    // something other than just markers has changed
+                    // check that it's our resource
                     if (delta.getFlags() != IResourceDelta.MARKERS &&
-                            delta.getResource().getType() == IResource.FILE) {
-                        // something other than just markers has changed
-                        for (IPath dir : projDirs) {
-                            // check that it's our resource
-                            if (dir.isPrefixOf(delta.getFullPath())) {
-                                schemaChanged[0] = true;
-                                return false;
-                            }
-                        }
+                            delta.getResource().getType() == IResource.FILE &&
+                            PgUIDumpLoader.isProjectPath(delta.getProjectRelativePath())) {
+                        schemaChanged[0] = true;
+                        return false;
                     }
                     return true;
                 }

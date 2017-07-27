@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -15,6 +16,7 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -55,14 +57,16 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 result.addAll(Arrays.asList(templates));
             }
         }
-        List<PgObjLocation> loc = new ArrayList<>();
 
-        if (editor != null) {
-            PgDbParser parser = editor.getParser();
-            loc.addAll(parser.getAllObjDefinitions());
-        }
+        PgDbParser parser = editor.getParser();
+        List<PgObjLocation> loc = parser.getAllObjDefinitions();
+        Collections.sort(loc, (o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()));
 
         for (PgObjLocation obj : loc) {
+            if (obj.getObjType() == DbObjType.SEQUENCE || obj.getObjType() == DbObjType.INDEX) {
+                continue;
+            }
+
             Image img = Activator.getDbObjImage(obj.getObjType());
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {

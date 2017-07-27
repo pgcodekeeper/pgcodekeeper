@@ -2,13 +2,10 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -23,24 +20,8 @@ final class SQLEditorTextHover implements ITextHover {
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        IFile file = null;
-
-        if (editor == null) {
-            return new Region(offset, 0);
-        }
-
         PgDbParser parser = editor.getParser();
-        IEditorInput input = editor.getEditorInput();
-        if (input instanceof FileEditorInput) {
-            file = ((FileEditorInput) input).getFile();
-        }
-
-        List<PgObjLocation> refs;
-        if (file != null) {
-            refs = parser.getObjsForPath(file.getLocation().toOSString());
-        } else {
-            refs = parser.getAllObjReferences();
-        }
+        List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {

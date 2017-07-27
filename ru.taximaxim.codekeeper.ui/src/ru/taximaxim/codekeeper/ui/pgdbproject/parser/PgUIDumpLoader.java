@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
@@ -12,6 +13,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -166,5 +168,15 @@ public class PgUIDumpLoader extends PgDumpLoader {
             }
         }, IResource.FILE);
         return count[0];
+    }
+
+    /**
+     * @param path project relative path of checked resource
+     * @return whether this resource is within the main database schema hierarchy
+     */
+    public static boolean isProjectPath(IPath path) {
+        String dir = path.segment(0);
+        return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+                .map(Enum::name).anyMatch(dir::equals);
     }
 }

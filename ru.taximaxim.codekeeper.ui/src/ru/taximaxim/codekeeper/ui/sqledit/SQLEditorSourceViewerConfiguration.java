@@ -26,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -57,8 +58,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer,
-            String contentType) {
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
         return new SQLEditorTextHover(editor);
     }
 
@@ -74,7 +74,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                     IRegion info= document.getLineInformation(lineNumber);
                     return document.get(info.getOffset(), info.getLength());
                 } catch (BadLocationException x) {
-                    // do nothing
+                    Log.log(x);
                 }
                 return null;
             }
