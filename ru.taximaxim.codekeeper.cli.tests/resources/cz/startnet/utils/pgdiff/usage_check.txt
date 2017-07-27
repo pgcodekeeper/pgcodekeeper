@@ -36,7 +36,9 @@ Usage:
                                           see: --allow-danger-ddl
  -D (--allow-danger-ddl)                : allows dangerous statements in
  <DANGER_STATEMENT>                       safe-mode scripts
- -O (--allowed-object) <OBJECT_TYPE>    : allow only these objects in the script
+ -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
+                                          types only
+                                          hide statements of other objects
  --stop-not-allowed                     : exit with an error when
                                           --allowed-object hides a statement
                                           from the script
