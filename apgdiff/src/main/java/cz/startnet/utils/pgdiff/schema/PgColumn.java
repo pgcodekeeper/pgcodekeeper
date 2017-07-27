@@ -185,7 +185,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     }
 
     private String getAlterTable() {
-        return ALTER_TABLE + this.getParent().getName();
+        return ALTER_TABLE + PgDiffUtils.getQuotedName(this.getParent().getName());
     }
 
     @Override
