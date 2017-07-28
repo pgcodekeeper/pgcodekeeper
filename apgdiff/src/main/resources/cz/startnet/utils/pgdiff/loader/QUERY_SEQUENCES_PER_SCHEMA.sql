@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.relowner::bigint,
+SELECT c.oid, 
+       c.relowner::bigint,
        c.relname,
        descr.description AS comment,
        d.refobjid::regclass::text referenced_table_name,

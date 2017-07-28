@@ -6,6 +6,7 @@ public enum SupportedVersion {
     VERSION_9_4 (90400),
     VERSION_9_5 (90500),
     VERSION_9_6 (90600),
+    VERSION_10 (100000),
     //TODO check version from postgresPRO
     VERSION_9_5_P (91500),
     VERSION_9_6_P (91600);

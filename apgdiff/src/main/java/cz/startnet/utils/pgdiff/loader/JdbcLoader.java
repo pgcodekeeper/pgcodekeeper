@@ -65,7 +65,9 @@ public class JdbcLoader extends JdbcLoaderBase {
                 }
                 new ExtensionsReader(this, d).read();
 
-                SequencesReader.querySequencesData(d, this);
+                if(version < SupportedVersion.VERSION_10.getVersion()) {
+                    SequencesReader.querySequencesData(d, this);
+                }
             }
             connection.commit();
             finishAntlr();
