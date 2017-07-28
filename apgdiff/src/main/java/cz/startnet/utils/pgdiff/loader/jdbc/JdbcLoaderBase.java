@@ -64,7 +64,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     public int getVersion() throws SQLException {
-        queryCheckVersion();
         return version;
     }
 

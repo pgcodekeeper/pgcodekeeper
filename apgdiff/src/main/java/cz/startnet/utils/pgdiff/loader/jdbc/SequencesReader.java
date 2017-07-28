@@ -48,55 +48,34 @@ public class SequencesReader extends JdbcReader {
     }
 
     private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws SQLException {
-        if(loader.getVersion() < SupportedVersion.VERSION_10.getVersion()) {
-            String sequenceName = res.getString(CLASS_RELNAME);
-            loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
-            PgSequence s = new PgSequence(sequenceName, "");
+        String sequenceName = res.getString(CLASS_RELNAME);
+        loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
+        PgSequence s = new PgSequence(sequenceName, "");
 
-            String refTable = res.getString("referenced_table_name");
-            if (refTable != null) {
-                s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
-                        + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
-            }
+        String refTable = res.getString("referenced_table_name");
+        if (refTable != null) {
+            s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
+                    + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
+        }
 
-            loader.setOwner(s, res.getLong(CLASS_RELOWNER));
+        loader.setOwner(s, res.getLong(CLASS_RELOWNER));
 
-            // PRIVILEGES
-            loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
-            // COMMENT
-            String comment = res.getString("comment");
-            if (comment != null && !comment.isEmpty()) {
-                s.setComment(loader.args, PgDiffUtils.quoteString(comment));
-            }
-            return s;
-        } else {
-            String sequenceName = res.getString(CLASS_RELNAME);
-            loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
-            PgSequence s = new PgSequence(sequenceName, "");
+        // PRIVILEGES
+        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()) {
+            s.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
 
-            String refTable = res.getString("referenced_table_name");
-            if (refTable != null) {
-                s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
-                        + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
-            }
-
-            loader.setOwner(s, res.getLong(CLASS_RELOWNER));
-
-            // PRIVILEGES
-            loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
-            // COMMENT
-            String comment = res.getString("comment");
-            if (comment != null && !comment.isEmpty()) {
-                s.setComment(loader.args, PgDiffUtils.quoteString(comment));
-            }
-
+        if(loader.getVersion() >= SupportedVersion.VERSION_10.getVersion()) {
             s.setStartWith(res.getString("seqstart"));
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
-
-            return s;
         }
+
+        return s;
     }
 
     static {
