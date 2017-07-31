@@ -409,7 +409,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         try{
                             JdbcConnector connector = new JdbcConnector(
                                     jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                                    ApgdiffConsts.UTC);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;

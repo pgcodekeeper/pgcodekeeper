@@ -13,7 +13,6 @@ public class ProjectEditorInputFactory implements IElementFactory {
 
     private static final String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
     private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
-    private static final String TAG_EDITOR_TAB = "editorTabDiff"; //$NON-NLS-1$
 
     @Override
     public IAdaptable createElement(IMemento memento) {
@@ -24,11 +23,6 @@ public class ProjectEditorInputFactory implements IElementFactory {
                 (projName == null) ? null : ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
         if (project == null || !project.exists() || !project.isOpen()) {
             input.setError(new PgCodekeeperUIException(Messages.project_either_closed_or_deleted + projName));
-        }
-
-        Boolean switchToDiffTab = memento.getBoolean(TAG_EDITOR_TAB);
-        if (switchToDiffTab != null) {
-            input.setSwitchToDiffTab(switchToDiffTab);
         }
 
         return input;
@@ -43,6 +37,5 @@ public class ProjectEditorInputFactory implements IElementFactory {
 
     static void saveState(IMemento memento, ProjectEditorInput input) {
         memento.putString(TAG_PROJECT, input.getName());
-        memento.putBoolean(TAG_EDITOR_TAB, input.getSwitchToDiffTab());
     }
 }

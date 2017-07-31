@@ -154,10 +154,8 @@ public final class Messages extends NLS {
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
-    public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
-    public static String diffPartDescr_from;
     public static String diffPartDescr_get_latest;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
@@ -269,9 +267,6 @@ public final class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
-
-    public static String pgProjectEditor_is_prj_update_backlight;
-    public static String pgProjectEditor_is_db_update_backlight;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
@@ -400,6 +395,8 @@ public final class Messages extends NLS {
     public static String PrefListEditor_cannot_add;
 
     public static String PrefListEditor_cannot_edit;
+    public static String ProjectEditorDiffer_apply_to;
+
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
@@ -410,8 +407,6 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
-    public static String ProjectEditorDiffer_page_text_commit;
-    public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
@@ -419,9 +414,13 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorInput_pgcodekeeper_project;
 
-    public static String ProjectEditorPrefPage_database_color;
+    public static String ProjectEditorPrefPage_action_no_action;
 
-    public static String ProjectEditorPrefPage_project_color;
+    public static String ProjectEditorPrefPage_action_reset;
+
+    public static String ProjectEditorPrefPage_action_type;
+
+    public static String ProjectEditorPrefPage_action_update;
 
     public static String dbUpdatePrefPage_script_deleting_status;
 

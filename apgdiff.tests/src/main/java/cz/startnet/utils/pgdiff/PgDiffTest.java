@@ -100,6 +100,16 @@ public class PgDiffTest {
                     {"add_table_with_not_existing_sequence"},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table"},
+                    // Tests scenario where new TYPED TABLE is added.
+                    {"add_table_of_type"},
+                    // Tests scenario where in TYPED TABLE new options is added.
+                    {"add_table_of_type_options"},
+                    // Tests scenario where options of TYPED TABLE is modified.
+                    {"modify_table_of_type_options"},
+                    // Tests scenario where column of TYPED TABLE with TYPE is modified.
+                    {"modify_table_of_type_column"},
+                    // Tests scenario where TYPED TABLE is dropped.
+                    {"drop_table_of_type"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
@@ -236,6 +246,10 @@ public class PgDiffTest {
                     {"quoted_schema"},
                     // Tests adding new column with add defaults turned on
                     {"add_column_add_defaults"},
+                    // Tests set, reset attributes of column
+                    {"alter_table_alter_column_set_reset"},
+                    // Tests set storage for column
+                    {"alter_table_alter_column_set_storage"},
                     // Tests adding new sequence that is owned by table
                     {"add_owned_sequence"},
                     // Tests adding empty table

@@ -2,6 +2,9 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,20 +30,38 @@ public class PgDiffScript {
 
     public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
             boolean ignoreDropTable, boolean ignoreRestartWith) {
-        // no need to traverse the list if all ignores are set
-        if (ignoreDropCol && ignoreAlterCol && ignoreDropTable) {
-            return false;
+        Set<DangerStatement> allowedDangers = EnumSet.noneOf(DangerStatement.class);
+        if (ignoreDropCol) {
+            allowedDangers.add(DangerStatement.DROP_COLUMN);
+        }
+        if (ignoreAlterCol) {
+            allowedDangers.add(DangerStatement.ALTER_COLUMN);
+        }
+        if (ignoreDropTable) {
+            allowedDangers.add(DangerStatement.DROP_TABLE);
+        }
+        if (ignoreRestartWith) {
+            allowedDangers.add(DangerStatement.RESTART_WITH);
         }
 
+        return !findDangers(allowedDangers).isEmpty();
+    }
+
+    public Set<DangerStatement> findDangers(Collection<DangerStatement> allowedDangers) {
+        Set<DangerStatement> allDangers = EnumSet.allOf(DangerStatement.class);
+        if (allowedDangers.containsAll(allDangers)) {
+            return Collections.emptySet();
+        }
+
+        Set<DangerStatement> dangerTypes = EnumSet.noneOf(DangerStatement.class);
         for (PgDiffStatement st : statements) {
-            if ((!ignoreDropCol && st.isDangerStatement(DangerStatement.DROP_COLUMN))
-                    || (!ignoreAlterCol && st.isDangerStatement(DangerStatement.ALTER_COLUMN))
-                    || (!ignoreDropTable && st.isDangerStatement(DangerStatement.DROP_TABLE))
-                    || (!ignoreRestartWith && st.isDangerStatement(DangerStatement.RESTART_WITH))) {
-                return true;
+            for (DangerStatement d : allDangers) {
+                if (!allowedDangers.contains(d) && st.isDangerStatement(d)) {
+                    dangerTypes.add(d);
+                }
             }
         }
-        return false;
+        return dangerTypes;
     }
 
     public void addStatement(String statement) {

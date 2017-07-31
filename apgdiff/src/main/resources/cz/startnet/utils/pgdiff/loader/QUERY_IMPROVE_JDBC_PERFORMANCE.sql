@@ -14,10 +14,14 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
   RETURNS TABLE(
        schema_oid bigint,
        relname name,
+       of_type bigint,
        relowner bigint,
        aclArray text,
        col_numbers integer[],
        col_names name[],
+       col_options text[],
+       col_storages "char"[],
+       col_default_storages "char"[],
        col_defaults text[],
        col_comments text[],
        col_type_ids oid[],
@@ -29,7 +33,6 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_tables(schema_oids bigint[
        col_typcollation oid[],
        col_collationname name[],
        col_collationnspname name[],
-       col_attseq text[],
        col_acl text[],
        table_comment text,
        table_space name,
@@ -71,10 +74,14 @@ WITH extension_deps AS (
 
 SELECT schema_oid,
        subselectColumns.relname,
+       subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclArray,
        subselectColumns.col_numbers,
        subselectColumns.col_names,
+       subselectColumns.col_options,
+       subselectColumns.col_storages,
+       subselectColumns.col_default_storages,
        subselectColumns.col_defaults,
        subselectColumns.col_comments,
        subselectColumns.atttypids as col_type_ids,
@@ -86,7 +93,6 @@ SELECT schema_oid,
        subselectColumns.col_typcollation,
        subselectColumns.col_collationname,
        subselectColumns.col_collationnspname,
-       subselectColumns.col_attseq,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectColumns.spcname as table_space,
@@ -98,12 +104,16 @@ SELECT schema_oid,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
+            columnsData.of_type,
             columnsData.relowner,
             columnsData.aclArray,
             columnsData.spcname,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
+            array_agg(columnsData.attoptions ORDER BY columnsData.attnum) AS col_options,
+            array_agg(columnsData.attstorage ORDER BY columnsData.attnum) AS col_storages,
+            array_agg(columnsData.typstorage ORDER BY columnsData.attnum) AS col_default_storages,
             array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
             array_agg(columnsData.description ORDER BY columnsData.attnum) AS col_comments,
             array_agg(columnsData.atttypid ORDER BY columnsData.attnum) AS atttypids,
@@ -117,15 +127,18 @@ FROM
             array_agg(columnsData.attcollation ORDER BY columnsData.attnum) AS col_collation,
             array_agg(columnsData.typcollation ORDER BY columnsData.attnum) AS col_typcollation,
             array_agg(columnsData.attcollationname ORDER BY columnsData.attnum) AS col_collationname,
-            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname,
-            array_agg(columnsData.attseq ORDER BY columnsData.attnum) AS col_attseq
+            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname
      FROM
          (SELECT c.oid,
               c.relname,
+              c.reloftype::bigint AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclArray,
               attr.attnum::integer,
               attr.attname,
+              array_to_string(attr.attoptions, ',') attoptions,
+              attr.attstorage,
+              t.typstorage,
               c.relhasoids,
               pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
               comments.description,
@@ -141,8 +154,7 @@ FROM
               t.typcollation,
               tabsp.spcname,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
-              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname,
-              pg_catalog.pg_get_serial_sequence(quote_ident(c.relname), attr.attname) AS attseq
+              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
           JOIN pg_catalog.pg_attribute attr ON c.oid = attr.attrelid
               AND attr.attisdropped IS FALSE
@@ -159,6 +171,7 @@ FROM
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
+              columnsData.of_type,
               columnsData.relowner,
               columnsData.aclArray,
               columnsData.reloptions,
@@ -705,7 +718,6 @@ CREATE OR REPLACE FUNCTION pgcodekeeperhelper.get_all_types(schema_oids bigint[]
             dom_notnull boolean,
             dom_connames name[],
             dom_condefs text[],
-            dom_convalidates boolean[],
             dom_concomments text[],
             enums name[],
             rngsubtype oid,
@@ -808,7 +820,6 @@ SELECT schema_oid,
     t.typnotnull AS dom_notnull,
     dom_constraints.connames AS dom_connames,
     dom_constraints.condefs AS dom_condefs,
-    dom_constraints.convalidates AS dom_convalidates,
     dom_constraints.concomments AS dom_concomments,
     -- END DOMAIN
 
@@ -850,7 +861,6 @@ LEFT JOIN
          c.contypid,
          array_agg(c.conname ORDER BY c.conname) AS connames,
          array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
-         array_agg(c.convalidated ORDER BY c.conname) AS convalidates,
          array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid

@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -94,20 +96,31 @@ public class PgDbParser implements IResourceChangeListener {
         build.runInBackground(null);
     }
 
-    /**
-     * Doesn't call {@link #notifyListeners()} due to possible repeated calls from builders and such.
-     */
-    public void getObjFromProjFile(IFile iFile, IProgressMonitor monitor)
+    public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(iFile.getCharset());
+        args.setInCharsetName(file.getCharset());
         LicensePrefs.setLicense(args);
-        try (PgUIDumpLoader loader = new PgUIDumpLoader(iFile, args, monitor)) {
-            PgDatabase db = loader.loadFile(true, new PgDatabase());
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
+            loader.setLoadSchema(false);
+            loader.setLoadReferences(true);
+            PgDatabase db = loader.loadFile(new PgDatabase());
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
             fillFunctionBodies(loader.getFuncBodyReferences());
         }
+        notifyListeners();
+    }
+
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
+            throws InterruptedException, IOException, LicenseException, CoreException {
+        SubMonitor mon = SubMonitor.convert(monitor, files.size());
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, mon, funcBodies);
+        objDefinitions.putAll(db.getObjDefinitions());
+        objReferences.putAll(db.getObjReferences());
+        fillFunctionBodies(funcBodies);
+        notifyListeners();
     }
 
     private void fillFunctionBodies(List<FunctionBodyContainer> funcBodies) {
@@ -138,12 +151,13 @@ public class PgDbParser implements IResourceChangeListener {
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
+        SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         LicensePrefs.setLicense(args);
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                proj, args, monitor, funcBodies);
+                proj, args, mon, funcBodies);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
@@ -162,7 +176,9 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
         try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
-            PgDatabase db = loader.load(true);
+            loader.setLoadSchema(false);
+            loader.setLoadReferences(true);
+            PgDatabase db = loader.load();
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
             fillFunctionBodies(loader.getFuncBodyReferences());
@@ -232,7 +248,8 @@ public class PgDbParser implements IResourceChangeListener {
                 ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
             }
             break;
-        default : break;
+        default:
+            break;
         }
     }
 

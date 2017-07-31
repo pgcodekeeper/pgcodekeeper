@@ -1,13 +1,14 @@
 package ru.taximaxim.codekeeper.ui.builders;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +30,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         if (!proj.hasNature(NATURE.ID)) {
             return null;
         }
+        System.err.println(getProject().getProjectRelativePath() + "~");
 
         try {
             int[] buildType = { kind };
@@ -37,12 +39,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             case IncrementalProjectBuilder.AUTO_BUILD:
             case IncrementalProjectBuilder.INCREMENTAL_BUILD:
                 IResourceDelta delta = getDelta(getProject());
-                buildIncrement(delta, parser, SubMonitor.convert(monitor, countFiles(delta)));
+                buildIncrement(delta, parser, monitor);
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
-                parser.getFullDBFromPgDbProject(proj,
-                        SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj)));
+                parser.getFullDBFromPgDbProject(proj, monitor);
                 break;
             default:
                 throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
@@ -54,73 +55,31 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         } finally {
             // update decorators if any kind of build was run
             PgDecorator.update();
+            SubMonitor.done(monitor);
         }
         return new IProject[] { proj };
     }
 
-    private void buildIncrement(IResourceDelta delta, PgDbParser parser, SubMonitor sub)
-            throws CoreException {
-        delta.accept(new BuilderDeltaVisitor(sub, parser));
-        parser.notifyListeners();
-    }
-
-    private int countFiles(IResourceDelta delta) throws CoreException {
-        int[] count = new int[] {0};
-        delta.accept(new IResourceDeltaVisitor() {
-
-            @Override
-            public boolean visit(IResourceDelta delta) throws CoreException {
-                if (delta.getResource().getType() == IResource.FILE) {
-                    ++count[0];
+    private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)
+            throws CoreException, InterruptedException, IOException, LicenseException {
+        List<IFile> files = new ArrayList<>();
+        delta.accept(d -> {
+            if (PgUIDumpLoader.isProjectPath(d.getProjectRelativePath())) {
+                IResource res = d.getResource();
+                if (res.getType() == IResource.FILE) {
+                    switch (d.getKind()) {
+                    case IResourceDelta.REMOVED:
+                    case IResourceDelta.REMOVED_PHANTOM:
+                        parser.removePathFromRefs(res.getLocation().toOSString());
+                        break;
+                    default:
+                        files.add((IFile) res);
+                        break;
+                    }
                 }
-                return true;
             }
+            return true;
         });
-        return count[0];
-    }
-}
-
-class BuilderDeltaVisitor implements IResourceDeltaVisitor {
-
-    private final SubMonitor sub;
-    private final PgDbParser parser;
-
-    public BuilderDeltaVisitor(SubMonitor sub, PgDbParser parser) {
-        this.sub = sub;
-        this.parser = parser;
-    }
-
-    @Override
-    public boolean visit(IResourceDelta delta) throws CoreException {
-        if (sub.isCanceled()) {
-            return false;
-        }
-        if (delta.getResource().getType() != IResource.FILE) {
-            return true;
-        }
-        sub.worked(1);
-
-        // check that it's our resource
-        if (!PgUIDumpLoader.isProjectPath(delta.getProjectRelativePath())) {
-            return true;
-        }
-
-        switch (delta.getKind()) {
-        case IResourceDelta.REMOVED:
-        case IResourceDelta.REMOVED_PHANTOM:
-            parser.removePathFromRefs(delta.getResource().getLocation().toOSString());
-            break;
-        default:
-            try {
-                parser.getObjFromProjFile((IFile) delta.getResource(), sub);
-            } catch (InterruptedException e) {
-                // cancelled
-                return false;
-            } catch (IOException | LicenseException ex) {
-                throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
-            }
-            break;
-        }
-        return true;
+        parser.getObjFromProjFiles(files, monitor);
     }
 }
