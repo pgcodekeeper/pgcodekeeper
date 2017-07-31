@@ -30,7 +30,6 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         if (!proj.hasNature(NATURE.ID)) {
             return null;
         }
-        System.err.println(getProject().getProjectRelativePath() + "~");
 
         try {
             int[] buildType = { kind };
