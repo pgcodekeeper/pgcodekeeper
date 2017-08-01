@@ -200,6 +200,11 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     @Override
+    public void exitDrop_rule_statement(Drop_rule_statementContext ctx) {
+        safeParseStatement(() -> dropRule(ctx));
+    }
+
+    @Override
     public void exitDrop_function_statement(Drop_function_statementContext ctx) {
         safeParseStatement(() -> dropFunction(ctx));
     }
@@ -750,8 +755,7 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
-    @Override
-    public void exitDrop_rule_statement(Drop_rule_statementContext ctx) {
+    public void dropRule(Drop_rule_statementContext ctx) {
         List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
 
