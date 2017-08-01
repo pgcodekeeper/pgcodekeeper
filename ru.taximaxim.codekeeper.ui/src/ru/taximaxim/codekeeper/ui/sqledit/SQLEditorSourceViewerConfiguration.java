@@ -59,7 +59,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new SQLEditorTextHover(editor);
+        return editor == null ? null : new SQLEditorTextHover(editor);
     }
 
     // Отображает всю строку при наведении на левую полосу редактора
@@ -83,6 +83,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+        if (editor == null) {
+            return null;
+        }
         ContentAssistant assistant= new ContentAssistant();
         assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(editor), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
@@ -121,7 +124,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
-        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
+        if (editor != null) {
+            targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
+        }
         return targets;
     }
 
