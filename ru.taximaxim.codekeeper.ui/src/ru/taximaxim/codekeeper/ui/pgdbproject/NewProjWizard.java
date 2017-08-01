@@ -135,10 +135,6 @@ implements IExecutableExtension, INewWizard {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
 
-            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
-            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
-
-            props.openProject();
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
                 if (!charset.isEmpty() &&
@@ -159,12 +155,16 @@ implements IExecutableExtension, INewWizard {
             }
             initSuccess = true;
 
+            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+
+            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
+            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
+
             BasicNewProjectResourceWizard.updatePerspective(config);
             BasicNewResourceWizard.selectAndReveal(props.getProject(),
                     workbench.getActiveWorkbenchWindow());
             OpenEditor.openEditor(workbench.getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
-            props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
         } catch (CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
         } catch (InvocationTargetException ex) {
