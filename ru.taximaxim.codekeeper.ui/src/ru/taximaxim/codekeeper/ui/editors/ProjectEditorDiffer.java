@@ -1,7 +1,13 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +18,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -44,6 +55,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -55,7 +67,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -63,6 +77,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
@@ -70,6 +85,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
@@ -77,6 +93,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
@@ -92,7 +109,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
@@ -220,16 +237,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     if (schemaChanged[0]) {
                         return false;
                     }
+                    // something other than just markers has changed
+                    // check that it's our resource
                     if (delta.getFlags() != IResourceDelta.MARKERS &&
-                            delta.getResource().getType() == IResource.FILE) {
-                        // something other than just markers has changed
-                        for (IPath dir : projDirs) {
-                            // check that it's our resource
-                            if (dir.isPrefixOf(delta.getFullPath())) {
-                                schemaChanged[0] = true;
-                                return false;
-                            }
-                        }
+                            delta.getResource().getType() == IResource.FILE &&
+                            PgUIDumpLoader.isProjectPath(delta.getProjectRelativePath())) {
+                        schemaChanged[0] = true;
+                        return false;
                     }
                     return true;
                 }
@@ -370,6 +384,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
 class CommitPage extends DiffPresentationPane {
 
+    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss"); //$NON-NLS-1$
+
     private LocalResourceManager lrm;
     private Button btnSave, btnGetLatest, btnAddDepcy;
     private boolean isCommitCommandAvailable;
@@ -497,10 +513,69 @@ class CommitPage extends DiffPresentationPane {
     }
 
     private void showEditor(Differ differ) throws PartInitException {
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
-                PgDatabase.listPgObjects(dbRemote.getDbObject()));
-        input.setDbinfo(storePicker.getDbInfo());
-        projEditor.getSite().getPage().openEditor(input, EDITOR.ROLLON);
+        if (differ.getScript().isDangerDdl(
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT))){
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+            mb.setText(Messages.sqlScriptDialog_warning);
+            mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+            if (mb.open() != SWT.OK){
+                return;
+            }
+        }
+
+        IEditorInput file = null;
+        try {
+            boolean mode = false;
+            String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+            // if select "YES" with toggle
+            if (creationMode.equals(MessageDialogWithToggle.ALWAYS)) {
+                mode = true;
+                // if not select "NO" with toggle, show choice message dialog
+            } else if (!creationMode.equals(MessageDialogWithToggle.NEVER)) {
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getShell(),
+                        Messages.ProjectEditorDiffer_script_creation_title, Messages.ProjectEditorDiffer_script_creation_message,
+                        Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
+                if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
+                    mode = true;
+                }
+            }
+
+            file = createScriptFile(differ, mode);
+        } catch (CoreException | IOException ex) {
+            ExceptionNotifier.notifyDefault(
+                    Messages.ProjectEditorDiffer_error_creating_file, ex);
+        }
+        if (file != null) {
+            projEditor.getSite().getPage().openEditor(file, EDITOR.ROLLON);
+        }
+    }
+
+    private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
+        String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+        if (getLastRemote() != null) {
+            name += " for " + getLastRemote().getName(); //$NON-NLS-1$
+        }
+        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
+        if (mode){
+            IProject iProject = proj.getProject();
+            IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
+            if (!folder.exists()){
+                folder.create(IResource.NONE, true, null);
+            }
+            IFile file = folder.getFile(name + ".sql"); //$NON-NLS-1$
+            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes(proj.getProjectCharset()));
+            file.create(source, IResource.NONE, null);
+            return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
+        } else {
+            Path path = Files.createTempFile(name + '_', ".sql"); //$NON-NLS-1$
+            Files.write(path, differ.getDiffDirect().getBytes());
+            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
+            return new FileStoreEditorInput(externalFile);
+        }
     }
 
     private void commit() throws PgCodekeeperException {

@@ -9,7 +9,6 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.DosFileAttributeView;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -41,6 +39,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -58,7 +57,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 public class ModelExporter {
 
     private static final int HASH_LENGTH = 10;
-    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
     private static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
 
@@ -121,22 +119,6 @@ public class ModelExporter {
         Files.deleteIfExists(toDelete);
     }
 
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    public void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        DosFileAttributeView att = Files.getFileAttributeView(f.toPath(), DosFileAttributeView.class);
-        if (att != null) {
-            att.setReadOnly(false);
-        }
-        Files.deleteIfExists(f.toPath());
-    }
-
     public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null){
             throw new PgCodekeeperException("Old database should not be null for partial export.");
@@ -177,7 +159,7 @@ public class ModelExporter {
             File schemaFolder = new File(outDir, getRelativeFilePath(st, false));
             if (schemaFolder.exists()) {
                 Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName()); //$NON-NLS-1$
-                deleteRecursive(schemaFolder);
+                FileUtils.deleteRecursive(schemaFolder.toPath());
             }
             break;
 
@@ -841,7 +823,7 @@ public class ModelExporter {
      */
     public static String getExportedFilename(PgStatement statement) {
         String name = statement.getBareName();
-        Matcher m = INVALID_FILENAME.matcher(name);
+        Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
         if (m.find()) {
             boolean bareNameGrouped = statement instanceof PgFunction;
             String hash = PgDiffUtils.md5(

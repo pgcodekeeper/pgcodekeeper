@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
 
 public class ProjectBuilder extends IncrementalProjectBuilder {
@@ -31,24 +32,24 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         }
 
         try {
-            PgDbParser parser = PgDbParser.getParserForBuilder(proj, monitor);
-            if (parser != null) {
-                switch (kind) {
-                case IncrementalProjectBuilder.AUTO_BUILD:
-                case IncrementalProjectBuilder.INCREMENTAL_BUILD:
-                    buildIncrement(getDelta(getProject()), parser, monitor);
-                    break;
+            int[] buildType = { kind };
+            PgDbParser parser = PgDbParser.getParserForBuilder(proj, buildType);
+            switch (buildType[0]) {
+            case IncrementalProjectBuilder.AUTO_BUILD:
+            case IncrementalProjectBuilder.INCREMENTAL_BUILD:
+                IResourceDelta delta = getDelta(getProject());
+                buildIncrement(delta, parser, monitor);
+                break;
 
-                case IncrementalProjectBuilder.FULL_BUILD:
-                    parser.getFullDBFromPgDbProject(monitor);
-                    break;
-                default:
-                    break;
-                }
+            case IncrementalProjectBuilder.FULL_BUILD:
+                parser.getFullDBFromPgDbProject(proj, monitor);
+                break;
+            default:
+                throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
             }
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
-        } catch (IOException | LicenseException ex) {
+        } catch (IOException | LicenseException | IllegalStateException ex) {
             throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
         } finally {
             // update decorators if any kind of build was run
@@ -62,14 +63,22 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             throws CoreException, InterruptedException, IOException, LicenseException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            IResource res = d.getResource();
-            if (res.getType() == IResource.FILE) {
-                files.add((IFile) res);
+            if (PgUIDumpLoader.isProjectPath(d.getProjectRelativePath())) {
+                IResource res = d.getResource();
+                if (res.getType() == IResource.FILE) {
+                    switch (d.getKind()) {
+                    case IResourceDelta.REMOVED:
+                    case IResourceDelta.REMOVED_PHANTOM:
+                        parser.removePathFromRefs(res.getLocation().toOSString());
+                        break;
+                    default:
+                        files.add((IFile) res);
+                        break;
+                    }
+                }
             }
             return true;
         });
-
         parser.getObjFromProjFiles(files, monitor);
-        parser.notifyListeners();
     }
 }

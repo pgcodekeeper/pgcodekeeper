@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
 
@@ -27,13 +28,16 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
 
-        store.setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         store.setDefault(DB_UPDATE_PREF.USING_ON_OFF, true);
+        store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
+        store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.PROMPT);
+
+        store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
         setSQLSyntaxColorDefaults(store);

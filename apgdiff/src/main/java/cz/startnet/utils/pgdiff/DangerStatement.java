@@ -19,6 +19,7 @@ public enum DangerStatement {
     RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*");
 
     private static class AlterTableStatic {
+
         static final String ALTER_TABLE_PATTERN =
                 "^ALTER[\\s]+TABLE[\\s]+"
                         + "(IF[\\s]+EXISTS[\\s]+)?"

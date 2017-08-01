@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -47,11 +49,20 @@ IWorkbenchPreferencePage {
 
     @Override
     protected void createFieldEditors() {
-        BooleanFieldEditor usePsqlDepcy = new BooleanFieldEditor(
-                DB_UPDATE_PREF.USE_PSQL_DEPCY,
-                Messages.generalPrefPage_use_psql_depcy_on_generating_script,
-                getFieldEditorParent());
-        addField(usePsqlDepcy);
+
+        addField( new ComboFieldEditor(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
+                Messages.dbUpdatePrefPage_create_script_project_directory, new String[][] {
+            {Messages.dbUpdatePrefPage_status_alway_create, MessageDialogWithToggle.ALWAYS},
+            {Messages.dbUpdatePrefPage_status_never_create, MessageDialogWithToggle.NEVER},
+            {Messages.dbUpdatePrefPage_status_ask_create, MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
+
+        addField( new ComboFieldEditor(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE,
+                Messages.dbUpdatePrefPage_script_deleting_status, new String[][] {
+            {Messages.dbUpdatePrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
+            {Messages.dbUpdatePrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
+            {Messages.dbUpdatePrefPage_status_ask_delete, MessageDialogWithToggle.PROMPT}},
+                getFieldEditorParent()));
 
         Map<String, String> pref = new HashMap<>();
         pref.put(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, Messages.dBUpdatePrefPage_drop_table);

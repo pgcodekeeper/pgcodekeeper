@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,17 +14,24 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.BuildAction;
+import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -31,9 +39,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
@@ -42,22 +48,9 @@ public class PgDbParser implements IResourceChangeListener {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
-    private volatile ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
-    private volatile ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
-    private final IProject proj;
+    private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private final List<Listener> listeners = new ArrayList<>();
-
-    private PgDbParser(IProject proj) {
-        this.proj = proj;
-        if (proj != null) {
-            ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
-                    IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
-        }
-    }
-
-    private PgDbParser() {
-        this(null);
-    }
 
     public void addListener(Listener e) {
         listeners.add(e);
@@ -68,181 +61,152 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public static PgDbParser getParser(IProject proj) {
-        PgDbParser parser = PROJ_PARSERS.get(proj);
-        if (parser != null) {
-            return parser;
-        }
-        parser = new PgDbParser(proj);
-        parser.getFullDBFromPgDbProjectJob();
-        PROJ_PARSERS.put(proj, parser);
-        return parser;
+        return getParserForBuilder(proj, null);
     }
 
     /**
-     * @return existing parser or null if parser was fully created by this call
-     * @throws InterruptedException
-     * @throws IOException
+     * @param buildType single element array; element may be altered to indicate
+     *                  actual required build type
      */
-    public static PgDbParser getParserForBuilder(IProject proj, IProgressMonitor builderMonitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
-        PgDbParser parser = PROJ_PARSERS.get(proj);
-        if (parser != null) {
-            return parser;
-        }
+    public static PgDbParser getParserForBuilder(IProject proj, int[] buildType) {
+        PgDbParser pnew = new PgDbParser();
+        PgDbParser p = PROJ_PARSERS.putIfAbsent(proj, pnew);
+        if (p == null) {
+            p = pnew;
+            // prepare newly created parser
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(p,
+                    IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
 
-        parser = new PgDbParser(proj);
-        parser.getFullDBFromPgDbProject(builderMonitor);
-        PROJ_PARSERS.put(proj, parser);
-        // signify newly loaded parser
-        return null;
+            if (buildType == null) {
+                // not a builder call, start builder
+                startBuildJob(proj);
+            } else {
+                // builder call, change build type to FULL for new parsers
+                buildType[0] = IncrementalProjectBuilder.FULL_BUILD;
+            }
+        }
+        return p;
     }
 
-    public static PgDbParser getRollOnParser(InputStream input,
-            String scriptFileEncoding, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, LicenseException {
-        PgDbParser rollOnParser = new PgDbParser();
-        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodies);
-        return rollOnParser;
+    private static void startBuildJob(IProject proj) {
+        BuildAction build = new BuildAction(
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow(),
+                IncrementalProjectBuilder.FULL_BUILD);
+        build.selectionChanged(new StructuredSelection(proj));
+        build.runInBackground(null);
+    }
+
+    public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
+            throws InterruptedException, IOException, LicenseException, CoreException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(file.getCharset());
+        LicensePrefs.setLicense(args);
+        try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
+            loader.setLoadSchema(false);
+            loader.setLoadReferences(true);
+            PgDatabase db = loader.loadFile(new PgDatabase());
+            objDefinitions.putAll(db.getObjDefinitions());
+            objReferences.putAll(db.getObjReferences());
+            fillFunctionBodies(loader.getFuncBodyReferences());
+        }
+        notifyListeners();
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = ApgdiffConsts.UTF_8;
-        try {
-            charset = proj.getDefaultCharset(true);
-        } catch (CoreException e) {
-            Log.log(e);
-        }
-        PgDiffArguments args = new PgDiffArguments();
-        LicensePrefs.setLicense(args);
-        args.setInCharsetName(charset);
-        PgDatabase db = PgUIDumpLoader.buildFiles(args, files, proj, mon, funcBodies);
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, mon, funcBodies);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
-        fillFunctionBodies(objDefinitions, objReferences, funcBodies);
+        fillFunctionBodies(funcBodies);
+        notifyListeners();
     }
 
-    public static void fillFunctionBodies(Map<String, List<PgObjLocation>> objDefinitions2,
-            Map<String, List<PgObjLocation>> objReferences2,
-            List<FunctionBodyContainer> funcBodies) {
+    private void fillFunctionBodies(List<FunctionBodyContainer> funcBodies) {
         for (FunctionBodyContainer funcBody : funcBodies) {
             String body = funcBody.getBody();
-            for (PgObjLocation def : getAll(objDefinitions2)) {
+            Set<PgObjLocation> newRefs = new LinkedHashSet<>();
+            for (PgObjLocation def : getAll(objDefinitions)) {
                 int index = body.indexOf(def.getObjName());
-                while (index > 0) {
+                while (index >= 0) {
                     PgObjLocation loc = new PgObjLocation(def.getObject().schema,
                             def.getObjName(), null, funcBody.getOffset() + index,
                             funcBody.getPath(), funcBody.getLineNumber());
                     loc.setObjType(def.getObjType());
                     loc.setAction(StatementActions.NONE);
-                    Set<PgObjLocation> newRefs = new HashSet<>();
                     newRefs.add(loc);
-                    List<PgObjLocation> refs = objReferences2.get(funcBody.getPath());
-                    if (refs != null) {
-                        newRefs.addAll(refs);
-                    }
-                    objReferences2.put(funcBody.getPath(), new ArrayList<>(newRefs));
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
             }
+            if (!newRefs.isEmpty()) {
+                List<PgObjLocation> refs = objReferences.get(funcBody.getPath());
+                if (refs != null) {
+                    newRefs.addAll(refs);
+                }
+                objReferences.put(funcBody.getPath(), new ArrayList<>(newRefs));
+            }
         }
     }
 
-    private void getFullDBFromPgDbProjectJob() {
-        Job job = new Job("getDatabaseReferences") { //$NON-NLS-1$
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    // FIXME call build on project, use regular visible job (custom build job)
-                    getFullDBFromPgDbProject(monitor);
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                } catch (IOException | LicenseException | CoreException ex) {
-                    return getLoadingErroStatus(ex);
-                }
-                return Status.OK_STATUS;
-            }
-
-        };
-        job.setSystem(true);
-        job.schedule();
-    }
-
-    public void getFullDBFromPgDbProject(IProgressMonitor monitor)
+    public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = ApgdiffConsts.UTF_8;
-        try {
-            charset = proj.getDefaultCharset(true);
-        } catch (CoreException e) {
-            Log.log(e);
-        }
         PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(proj.getDefaultCharset(true));
         LicensePrefs.setLicense(args);
-        args.setInCharsetName(charset);
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(proj, args, mon, funcBodies);
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+                proj, args, mon, funcBodies);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
-        fillFunctionBodies(objDefinitions, objReferences, funcBodies);
+        fillFunctionBodies(funcBodies);
         notifyListeners();
     }
 
     public void removePathFromRefs(String path) {
-        String p = path.toString();
-        objReferences.remove(p);
-        objDefinitions.remove(p);
+        objReferences.remove(path);
+        objDefinitions.remove(path);
     }
 
-    private void fillRefsFromInputStream(InputStream input,
-            IProgressMonitor monitor, String scriptFileEncoding,
-            List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, LicenseException {
+    public void fillRefsFromInputStream(InputStream input, String fileName,
+            IProgressMonitor monitor) throws InterruptedException, IOException, LicenseException {
         PgDiffArguments args = new PgDiffArguments();
         LicensePrefs.setLicense(args);
-        args.setInCharsetName(scriptFileEncoding);
-        PgDatabase db;
-        try (PgDumpLoader loader = new PgDumpLoader(input, "bytestream:/", args, monitor, 2)) { //$NON-NLS-1$
+        try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
             loader.setLoadSchema(false);
             loader.setLoadReferences(true);
-            db = loader.load();
-            funcBodies.addAll(loader.getFuncBodyReferences());
+            PgDatabase db = loader.load();
+            objDefinitions.putAll(db.getObjDefinitions());
+            objReferences.putAll(db.getObjReferences());
+            fillFunctionBodies(loader.getFuncBodyReferences());
         }
-        objDefinitions.clear();
-        objDefinitions.putAll(db.getObjDefinitions());
-        objReferences.clear();
-        objReferences.putAll(db.getObjReferences());
+        notifyListeners();
     }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
-        for (PgObjLocation col : getAll(objDefinitions)) {
-            if (col.getObject().equals(obj.getObject())
-                    && col.getObjType().equals(obj.getObjType())) {
-                return col;
+        List<PgObjLocation> l = objDefinitions.get(obj.getFilePath());
+        if (l != null) {
+            for (PgObjLocation col : l) {
+                if (col.getObject().equals(obj.getObject())
+                        && col.getObjType().equals(obj.getObjType())) {
+                    return col;
+                }
             }
         }
         return null;
     }
 
+    public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
+        String path = getPathFromInput(in);
+        return path == null ? Collections.emptyList() : getObjsForPath(path);
+    }
+
     public List<PgObjLocation> getObjsForPath(String pathToFile) {
-        List<PgObjLocation> locations = new ArrayList<>();
         List<PgObjLocation> refs = objReferences.get(pathToFile);
-        if (refs == null) {
-            return locations;
-        }
-        for (PgObjLocation loc : refs) {
-            if (loc.getFilePath().equals(pathToFile.toString())
-                    && hasDefinition(loc)) {
-                locations.add(loc);
-            }
-        }
-        return locations;
+        return refs == null ? Collections.emptyList() : Collections.unmodifiableList(refs);
     }
 
     public List<PgObjLocation> getAllObjDefinitions() {
@@ -269,24 +233,10 @@ public class PgDbParser implements IResourceChangeListener {
         return results;
     }
 
-    private boolean hasDefinition(PgObjLocation obj) {
-        for (PgObjLocation loc : getAll(objDefinitions)) {
-            if (loc.getObject().table.equals(obj.getObject().table)
-                    && loc.getObjType().equals(obj.getObjType())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void notifyListeners() {
         for (Listener e : listeners) {
             e.handleEvent(new Event());
         }
-    }
-
-    public List<Listener> getListeners() {
-        return listeners;
     }
 
     @Override
@@ -294,15 +244,27 @@ public class PgDbParser implements IResourceChangeListener {
         switch (event.getType()) {
         case IResourceChangeEvent.PRE_CLOSE:
         case IResourceChangeEvent.PRE_DELETE:
-            if (event.getResource().equals(proj)) {
-                PROJ_PARSERS.remove(event.getResource());
+            if (PROJ_PARSERS.remove(event.getResource(), this)) {
                 ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
             }
+            break;
+        default:
             break;
         }
     }
 
     public static IStatus getLoadingErroStatus(Exception ex) {
         return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.PgDbParser_error_loading_db, ex);
+    }
+
+    public static String getPathFromInput(IEditorInput in) {
+        IResource res = ResourceUtil.getResource(in);
+        if (res != null) {
+            return res.getLocation().toOSString();
+        } else if (in instanceof IURIEditorInput) {
+            return ((IURIEditorInput) in).getURI().toString();
+        } else {
+            return null;
+        }
     }
 }

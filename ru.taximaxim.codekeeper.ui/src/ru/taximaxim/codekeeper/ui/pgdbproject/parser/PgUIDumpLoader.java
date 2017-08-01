@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -18,6 +17,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -67,8 +68,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(PgDatabase db)
-            throws InterruptedException, IOException, CoreException {
+    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
         load(db);
 
         file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
@@ -116,7 +116,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
-                loadSubdir(arguments, iFolder, db, monitor, funcBodies);
+                loadSubdir(iFolder, db, monitor, funcBodies);
             }
         }
 
@@ -133,7 +133,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             for (String dirSub : DIR_LOAD_ORDER) {
                 IFolder iFolder = schemaFolder.getFolder(dirSub);
                 if (iFolder.exists()) {
-                    loadSubdir(arguments, iFolder, db, monitor, funcBodies);
+                    loadSubdir(iFolder, db, monitor, funcBodies);
                 }
             }
         }
@@ -141,19 +141,20 @@ public class PgUIDumpLoader extends PgDumpLoader {
         return db;
     }
 
-    private static void loadSubdir(PgDiffArguments arguments, IFolder folder, PgDatabase db,
-            IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, CoreException {
+    private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
+            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                IFile ifile = (IFile) resource;
-                loadFile(ifile, arguments, monitor, db, funcBodies);
+                loadFile((IFile) resource, monitor, db, funcBodies);
             }
         }
     }
 
-    private static void loadFile(IFile file, PgDiffArguments arguments, IProgressMonitor monitor,
-            PgDatabase db, List<FunctionBodyContainer> funcBodies) throws IOException, CoreException, InterruptedException {
+    private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
+            List<FunctionBodyContainer> funcBodies) throws IOException, CoreException, InterruptedException {
+        PgDiffArguments arguments = new PgDiffArguments();
+        arguments.setInCharsetName(file.getCharset());
+
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             loader.setLoadReferences(funcBodies != null);
             loader.loadFile(db);
@@ -163,23 +164,16 @@ public class PgUIDumpLoader extends PgDumpLoader {
         }
     }
 
-    static PgDatabase buildFiles(PgDiffArguments arguments, Collection<IFile> files,
-            IProject proj, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, CoreException {
-        Function<WORK_DIR_NAMES, IPath> projSubpath = e -> proj.getFullPath().append(e.name());
-        IPath schemasPath = projSubpath.apply(WORK_DIR_NAMES.SCHEMA);
-        IPath[] projDirs = Arrays.stream(WORK_DIR_NAMES.values())
-                .map(projSubpath)
-                .toArray(IPath[]::new);
-
+    static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
+            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
+        IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
         PgDatabase db = new PgDatabase();
-        db.setArguments(arguments);
+        db.setArguments(new PgDiffArguments());
 
         for (IFile file : files) {
-            IPath filePath = file.getFullPath();
-            if (!"sql".equals(file.getFileExtension()) //$NON-NLS-1$
-                    || Arrays.stream(projDirs).noneMatch(d -> d.isPrefixOf(filePath))) {
+            IPath filePath = file.getProjectRelativePath();
+            if (!"sql".equals(file.getFileExtension()) || !isProjectPath(filePath)) { //$NON-NLS-1$
                 // skip non-sql or non-project files
                 // still report work
                 monitor.worked(1);
@@ -209,12 +203,12 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
-                    loadFile(proj.getWorkspace().getRoot().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            arguments, null, db, funcBodies);
+                    loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
+                            null, db, funcBodies);
                 }
             }
 
-            loadFile(file, arguments, monitor, db, funcBodies);
+            loadFile(file, monitor, db, funcBodies);
         }
         return db;
     }
@@ -228,5 +222,15 @@ public class PgUIDumpLoader extends PgDumpLoader {
             return true;
         }, 0);
         return count[0];
+    }
+
+    /**
+     * @param path project relative path of checked resource
+     * @return whether this resource is within the main database schema hierarchy
+     */
+    public static boolean isProjectPath(IPath path) {
+        String dir = path.segment(0);
+        return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
+                .map(Enum::name).anyMatch(dir::equals);
     }
 }
