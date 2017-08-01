@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -163,6 +164,7 @@ implements IExecutableExtension, INewWizard {
                     workbench.getActiveWorkbenchWindow());
             OpenEditor.openEditor(workbench.getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
+            props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
         } catch (CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
         } catch (InvocationTargetException ex) {
