@@ -65,28 +65,25 @@
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution
-              allPopups="true"
-              locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-            <menu
-                label="Show In"
-                mnemonic="M2+M3+W">
-                <command
-                    commandId="org.eclipse.ui.ide.showInSystemExplorer"
-                    label="System explorer"
-                    style="push">
-                </command>
-                <command
-                    commandId="org.eclipse.ui.file.properties"
-                    label="Properties"
-                    style="push">
-                </command>
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=group.open">
+            <menu label="%menu.label.showIn"
+                  commandId="org.eclipse.ui.navigate.showInQuickMenu"
+                  id="ru.taximaxim.codekeeper.showInMenu"
+                  mnemonic="I">
+                <dynamic
+                    class="org.eclipse.ui.ExtensionFactory:showInContribution"
+                    id="ru.taximaxim.codekeeper.dynamicShowInMenu">
+                </dynamic>
+                <visibleWhen checkEnabled="false">
+                    <iterate
+                        ifEmpty="false">
+                        <test
+                            property="org.eclipse.core.resources.projectNature"
+                            value="ru.taximaxim.codekeeper.ui.nature">
+                        </test>
+                    </iterate>
+                </visibleWhen>
             </menu>
-            <command
-                commandId="org.eclipse.ui.navigate.showInQuickMenu"
-                label="Show In"
-                mnemonic="M2+M3+W"
-                style="push">
-            </command>
         </menuContribution>
         <menuContribution
             allPopups="false"
