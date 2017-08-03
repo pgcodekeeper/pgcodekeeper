@@ -32,12 +32,12 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
@@ -74,16 +74,17 @@ public class DbSourceTest {
                 TEST.REMOTE_USERNAME,
                 TEST.REMOTE_PASSWORD,
                 dbName,
-                ApgdiffConsts.UTF_8,
-                ApgdiffConsts.UTC, true));
+                ApgdiffConsts.UTC,
+                true));
     }
 
     @Test
     public void testDirTree() throws IOException, LicenseException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
-            new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            File dir = exportDir.get().toFile();
+            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
-            performTest(DbSource.fromDirTree(true, exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
+            performTest(DbSource.fromDirTree(true, dir.getAbsolutePath(), ApgdiffConsts.UTF_8));
         }
     }
 
@@ -99,17 +100,18 @@ public class DbSourceTest {
     public void testProject() throws CoreException, IOException, LicenseException,
     PgCodekeeperUIException, InterruptedException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+            File dir = tempDir.get().toFile();
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(tempDir.get());
+            IProject project = createProjectInWorkspace(dir.getName());
 
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
             // testing itself
             PgDbProject proj = new PgDbProject(project);
             proj.openProject();
 
-            assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
+            assertEquals("Project name differs", dir.getName(), proj.getProjectName());
 
             performTest(DbSource.fromProject(proj));
 
@@ -122,22 +124,22 @@ public class DbSourceTest {
             throws CoreException, IOException, LicenseException, PgCodekeeperUIException,
             URISyntaxException, BackingStoreException, InterruptedException {
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
+            File dir = tempDir.get().toFile();
             // create empty project in temp dir
-            IProject project = createProjectInWorkspace(tempDir.get());
+            IProject project = createProjectInWorkspace(dir.getName());
 
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
 
             // set required settings
             PgDbProject proj = new PgDbProject(project);
             proj.openProject();
 
-            assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
+            assertEquals("Project name differs", dir.getName(), proj.getProjectName());
 
             // testing itself
             performTest(DbSource.fromJdbc(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD,
-                    dbName, ApgdiffConsts.UTF_8, ApgdiffConsts.UTC, true));
+                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName, ApgdiffConsts.UTC, true));
 
             proj.deleteFromWorkspace();
         }
@@ -166,8 +168,8 @@ public class DbSourceTest {
         assertEquals("Db loaded not equal to predefined db", dbPredefined, dbSource);
     }
 
-    private IProject createProjectInWorkspace(File projectPath) throws CoreException{
-        IProject project = workspaceRoot.getProject(projectPath.getName());
+    private IProject createProjectInWorkspace(String projectName) throws CoreException{
+        IProject project = workspaceRoot.getProject(projectName);
         project.create(null);
 
         assertNotNull("Project location cannot be determined", project.getLocation());

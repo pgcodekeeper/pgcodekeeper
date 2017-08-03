@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -103,7 +104,7 @@ public class TriggersReader extends JdbcReader {
                     continue;
                 }
 
-                functionCall.append(new String(args, start, i - start, loader.connector.getCharset()));
+                functionCall.append(new String(args, start, i - start, StandardCharsets.UTF_8));
                 if (i != args.length - 1) {
                     functionCall.append("', '");
                 }

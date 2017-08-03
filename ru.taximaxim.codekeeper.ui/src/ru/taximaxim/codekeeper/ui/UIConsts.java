@@ -25,6 +25,7 @@ public interface UIConsts {
 
     interface MARKER {
         String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
+        String DANGER_ANNOTATION = PLUGIN_ID.THIS + ".sql.dangerannotation"; //$NON-NLS-1$
     }
 
     interface DECORATOR {
@@ -68,7 +69,8 @@ public interface UIConsts {
 
     interface DB_UPDATE_PREF {
         String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
-        String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
+        String CREATE_SCRIPT_IN_PROJECT = "prefCreateScriptInProject"; //$NON-NLS-1$
+        String DELETE_SCRIPT_AFTER_CLOSE = "prefDeleteScriptAfterClose"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
@@ -80,6 +82,10 @@ public interface UIConsts {
 
     interface PG_EDIT_PREF {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
+        String UPDATE = "UPDATE"; //$NON-NLS-1$
+        String RESET = "RESET"; //$NON-NLS-1$
+        String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
     public enum DBSources {
@@ -118,6 +124,10 @@ public interface UIConsts {
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
         String DB_USER = "prefDbUser"; //$NON-NLS-1$
          */
+    }
+
+    interface PROJ_PATH {
+        String MIGRATION_DIR = "MIGRATION"; //$NON-NLS-1$
     }
 
     interface NATURE {
