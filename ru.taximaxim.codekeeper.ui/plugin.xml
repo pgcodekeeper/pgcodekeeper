@@ -65,6 +65,30 @@
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution
+              allPopups="true"
+              locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+            <menu
+                label="Show In"
+                mnemonic="M2+M3+W">
+                <command
+                    commandId="org.eclipse.ui.ide.showInSystemExplorer"
+                    label="System explorer"
+                    style="push">
+                </command>
+                <command
+                    commandId="org.eclipse.ui.file.properties"
+                    label="Properties"
+                    style="push">
+                </command>
+            </menu>
+            <command
+                commandId="org.eclipse.ui.navigate.showInQuickMenu"
+                label="Show In"
+                mnemonic="M2+M3+W"
+                style="push">
+            </command>
+        </menuContribution>
+        <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <menu label="%menu.label.pgCodeKeeper">
