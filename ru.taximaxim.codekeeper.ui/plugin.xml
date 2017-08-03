@@ -446,6 +446,9 @@
                 relationship="stack"
                 relative="org.eclipse.ui.console.ConsoleView">
             </view>
+            <showInPart
+                  id="org.eclipse.ui.navigator.ProjectExplorer">
+            </showInPart>
         </perspectiveExtension>
     </extension>
     <extension
