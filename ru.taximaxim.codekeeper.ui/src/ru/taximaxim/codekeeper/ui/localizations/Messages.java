@@ -320,6 +320,46 @@ public final class Messages extends NLS {
     public static String LicensePrefs_open;
 
     public static String ManualDepciesDialog_set_add_depcies;
+    public static String MockDataPage_add_column;
+
+    public static String MockDataPage_column_down;
+
+    public static String MockDataPage_column_generator;
+
+    public static String MockDataPage_column_name;
+
+    public static String MockDataPage_column_type;
+
+    public static String MockDataPage_column_up;
+
+    public static String MockDataPage_column_wrong_format;
+
+    public static String MockDataPage_date_wrong_format;
+
+    public static String MockDataPage_delete_column;
+
+    public static String MockDataPage_description;
+
+    public static String MockDataPage_empty_table_name;
+
+    public static String MockDataPage_incorrect_row_count;
+
+    public static String MockDataPage_length;
+
+    public static String MockDataPage_maximum_value;
+
+    public static String MockDataPage_range_end;
+
+    public static String MockDataPage_range_start;
+
+    public static String MockDataPage_row_count;
+
+    public static String MockDataPage_schema_name;
+
+    public static String MockDataPage_step;
+
+    public static String MockDataPage_table_name;
+
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
