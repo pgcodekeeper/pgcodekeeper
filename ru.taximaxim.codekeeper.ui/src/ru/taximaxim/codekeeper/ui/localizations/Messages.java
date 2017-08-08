@@ -512,6 +512,16 @@ public final class Messages extends NLS {
 
     public static String FeedBackDialog_thank_you;
 
+    public static String FilterDialog_cancel;
+
+    public static String FilterDialog_reset;
+
+    public static String FilterDialog_show_change_types;
+
+    public static String FilterDialog_show_object_types;
+
+    public static String FilterDialog_title;
+
     // diff wizard
     public static String diffwizard_diffpage_source_warning;
     public static String diffwizard_diffpage_target_warning;

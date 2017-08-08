@@ -27,6 +27,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -76,6 +77,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -83,6 +85,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -123,6 +126,8 @@ public class DiffTableViewer extends Composite {
 
     private DbSource dbProject, dbRemote;
 
+    private final List<DbObjType> types = new ArrayList<>(8);
+    private final List<DiffSide> sides = new ArrayList<>(3);
     private Map<String, List<String>> prevChecked;
     private final XmlHistory prevCheckedHistory;
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
@@ -159,7 +164,7 @@ public class DiffTableViewer extends Composite {
         // upper composite
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        gl = new GridLayout(viewOnly ? 4 : 13, false);
+        gl = new GridLayout(viewOnly ? 4 : 14, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
@@ -219,6 +224,25 @@ public class DiffTableViewer extends Composite {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     saveCheckedElements2ClipboardAsExpession();
+                }
+            });
+
+            Button btnTypeFilter = new Button(upperComp, SWT.PUSH);
+            btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONEMPTYFILTER))));
+            btnTypeFilter.setToolTipText("Show filters");
+            btnTypeFilter.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    FilterDialog dialog = new FilterDialog(getShell(), types, sides);
+                    if(dialog.open() == Dialog.OK) {
+                        btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                                Activator.getContext().getBundle().getResource(
+                                        types.isEmpty() && sides.isEmpty() ?
+                                                FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
+                        viewer.refresh();
+                    }
                 }
             });
         }
@@ -813,7 +837,11 @@ public class DiffTableViewer extends Composite {
             Set<TreeElement> rootTableEntries = new HashSet<>(input.size());
             for (Object o : input) {
                 TreeElement el = (TreeElement) o;
-                rootTableEntries.add(isSubElement(el) ? el.getParent() : el);
+                el = isSubElement(el) ? el.getParent() : el;
+                if ((types.isEmpty() || types.contains(el.getType()))
+                        && (sides.isEmpty() || sides.contains(el.getSide()))) {
+                    rootTableEntries.add(el);
+                }
             }
             return rootTableEntries.toArray();
         }
