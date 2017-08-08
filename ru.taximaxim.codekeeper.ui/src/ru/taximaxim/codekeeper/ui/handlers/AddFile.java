@@ -56,6 +56,8 @@ public class AddFile extends AbstractHandler {
                     mainPrefs.setValue(PREF.DB_STORE_FILES, DbStorePicker.
                             dumpFileHistoryToPreference(dumpHistory));
                     mainPrefs.setValue(PREF.LAST_OPENED_LOCATION, dumpFile.getParent());
+                    GetChanges.addEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                            .getActivePage().getActiveEditor().getSite());
                     differ.getChanges(dumpFile);
                 }
             }

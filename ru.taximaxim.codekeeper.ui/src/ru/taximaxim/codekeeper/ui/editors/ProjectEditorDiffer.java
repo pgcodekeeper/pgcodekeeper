@@ -106,6 +106,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.handlers.GetChanges;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -467,6 +468,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+                GetChanges.removeEditor(getSite());
             }
         });
         job.setUser(true);
