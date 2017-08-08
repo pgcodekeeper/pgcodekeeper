@@ -14,6 +14,11 @@
             name="%context.name.keeperContext"
             parentId="org.eclipse.ui.contexts.window">
         </context>
+        <context
+            id="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+            name="%context.name.keeperProjectEditorContext"
+            parentId="org.eclipse.ui.contexts.window">
+        </context>
     </extension>
     <extension point="org.eclipse.ui.commands">
         <category
@@ -827,4 +832,26 @@
 			content="$nl$/intro/pgcodekeeper_intro.xml">
 		</configExtension>
 	</extension>
+    <extension point="org.eclipse.ui.bindings"
+        id="ru.taximaxim.codekeeper.ui.bindings"
+        name="ru.taximaxim.codekeeper.ui.bindings.hotKey">
+       <key
+             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M3+S">
+       </key>
+       <key
+             commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M3+D">
+       </key>
+       <key
+             commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M3+F">
+       </key>
+    </extension>
 </plugin>

@@ -66,6 +66,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
@@ -84,6 +86,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -139,6 +142,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
+
+    private IContextActivation contextActivation;
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -262,6 +267,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
+        IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
+        contextActivation = contextService.activateContext(UIConsts.EDITOR.PROJECT_SCOPE);
     }
 
     public void addDependency() {
@@ -305,6 +312,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     @Override
     public void dispose() {
+        IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
+        contextService.deactivateContext(contextActivation);
+
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
