@@ -839,19 +839,19 @@
              commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
              contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+M3+S">
+             sequence="M1+F5">
        </key>
        <key
              commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
              contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+M3+D">
+             sequence="M1+M3+S">
        </key>
        <key
              commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
              contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-             sequence="M1+M3+F">
+             sequence="M1+M3+D">
        </key>
     </extension>
 </plugin>

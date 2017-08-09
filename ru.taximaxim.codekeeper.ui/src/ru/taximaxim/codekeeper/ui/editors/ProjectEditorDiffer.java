@@ -66,7 +66,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
@@ -141,8 +140,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
-
-    private IContextActivation contextActivation;
 
     private boolean getChangesJobInProcessing = false;
 
@@ -272,8 +269,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
-        IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
-        contextActivation = contextService.activateContext(UIConsts.EDITOR.PROJECT_SCOPE);
+        PlatformUI.getWorkbench().getService(IContextService.class).activateContext(UIConsts.EDITOR.PROJECT_SCOPE);
     }
 
     public void addDependency() {
@@ -317,9 +313,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     @Override
     public void dispose() {
-        IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
-        contextService.deactivateContext(contextActivation);
-
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
