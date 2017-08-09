@@ -250,6 +250,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
 
+    public static String DiffTableViewer_show_filters;
+
     public static String DiffWizard_db_tz;
 
     public static String DiffWizard_select_db_tz;

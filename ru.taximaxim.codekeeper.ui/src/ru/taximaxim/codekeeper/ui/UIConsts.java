@@ -174,8 +174,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
-        String ICONEMPTYFILTER = "/icons/filter_ps.gif"; //$NON-NLS-1$
-        String ICONFILTER = "/icons/filter_tsk.gif"; //$NON-NLS-1$
+        String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
+        String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
