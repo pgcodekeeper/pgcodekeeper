@@ -288,7 +288,7 @@
               </command>
               <command
                     commandId="ru.taximaxim.codekeeper.ui.command.AddDepcy"
-                    icon="icons/loop_obj.png"
+                    icon="icons/dependency.png"
                     label="%command.commandname.AddDepcy"
                     style="push">
                  <visibleWhen
