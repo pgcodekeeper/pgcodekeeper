@@ -109,7 +109,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.ui.handlers.GetChanges;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -144,6 +143,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
     private IContextActivation contextActivation;
+
+    private boolean getChangesJobInProcessing = false;
+
+    public boolean isGetChangesJobInProcessing() {
+        return getChangesJobInProcessing;
+    }
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -446,6 +451,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
+                    getChangesJobInProcessing = true;
                     SubMonitor sub = SubMonitor.convert(monitor,
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
@@ -478,7 +484,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
-                GetChanges.removeEditor(getSite());
+                getChangesJobInProcessing = false;
             }
         });
         job.setUser(true);
