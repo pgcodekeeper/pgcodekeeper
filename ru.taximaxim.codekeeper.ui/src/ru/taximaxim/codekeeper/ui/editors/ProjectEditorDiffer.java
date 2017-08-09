@@ -269,7 +269,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
-        PlatformUI.getWorkbench().getService(IContextService.class).activateContext(UIConsts.EDITOR.PROJECT_SCOPE);
+        getSite().getService(IContextService.class).activateContext(UIConsts.EDITOR.PROJECT_SCOPE);
     }
 
     public void addDependency() {
