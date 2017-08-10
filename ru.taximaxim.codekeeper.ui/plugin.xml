@@ -218,7 +218,7 @@
          id="ru.taximaxim.codekeeper.ui.toolbar">               
          <command                     
          commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"                     
-         icon="icons/refresh.png"                     
+         icon="icons/quick_update.png"                     
          label="%command.commandname.QuickUpdate"                     
          style="push">
             <visibleWhen
