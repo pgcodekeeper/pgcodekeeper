@@ -75,6 +75,8 @@ public class QuickUpdate extends AbstractHandler {
             return null;
         }
 
+        editor.doSave(null);
+
         RollOnEditor rollOnEditor = (RollOnEditor)editor;
         DbInfo dbInfo = rollOnEditor.getStorePicker().getDbInfo();
         if (dbInfo == null){
