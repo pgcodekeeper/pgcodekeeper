@@ -28,8 +28,6 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -54,7 +52,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
@@ -149,22 +146,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
-
-        this.getSourceViewer().getTextWidget().addFocusListener(new FocusListener() {
-            private IContextActivation contextActivation;
-
-            @Override
-            public void focusGained(FocusEvent arg0) {
-                IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
-                contextActivation = contextService.activateContext(UIConsts.EDITOR.SCOPE);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                IContextService contextService = (PlatformUI.getWorkbench().getService(IContextService.class));
-                contextService.deactivateContext(contextActivation);
-            }
-        });
+        getSite().getService(IContextService.class).activateContext(UIConsts.EDITOR.SCOPE);
     }
 
     public void setLineBackground() {
@@ -372,12 +354,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
     }
 
-    public ISourceViewer getSourceViewerForQuickUpdate() {
+    public ISourceViewer getEditorSourceViewer() {
         return super.getSourceViewer();
     }
 
-    public DbStorePicker getStorePicker() {
-        return storePicker;
+    public DbInfo getDbInfo() {
+        return storePicker.getDbInfo();
     }
 
     private void runButtonMethod() {

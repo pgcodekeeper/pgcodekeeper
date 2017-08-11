@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +24,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
@@ -66,21 +61,20 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
 
 public class QuickUpdate extends AbstractHandler {
+
     @Override
     public Object execute(ExecutionEvent event) {
-        IWorkbench wb = PlatformUI.getWorkbench();
-        IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
-        IWorkbenchPage page = win.getActivePage();
-        IEditorPart editor = page.getActiveEditor();
+        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-        if(!isCorrectEditor(editor)){
+        if(!((editor instanceof RollOnEditor)
+                && (editor.getEditorInput() instanceof FileEditorInput)
+                && ((FileEditorInput)editor.getEditorInput()).getURI().getPath().contains("SCHEMA"))){
             return null;
         }
 
         editor.doSave(new NullProgressMonitor());
 
-        RollOnEditor rollOnEditor = (RollOnEditor)editor;
-        DbInfo dbInfo = rollOnEditor.getStorePicker().getDbInfo();
+        DbInfo dbInfo = ((RollOnEditor)editor).getDbInfo();
         if (dbInfo == null){
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
@@ -90,29 +84,13 @@ public class QuickUpdate extends AbstractHandler {
         return null;
     }
 
-    private boolean isCorrectEditor(IEditorPart editor){
-        if(!(editor instanceof RollOnEditor)){
-            return false;
-        }
-
-        IEditorInput input = editor.getEditorInput();
-        if(!(input instanceof FileEditorInput)){
-            return false;
-        }
-
-        FileEditorInput fei = (FileEditorInput) input;
-        if(!fei.getURI().getPath().contains("SCHEMA")){
-            return false;
-        }
-        return true;
-    }
-
     private class QuickUpdateJob extends Job {
         private JdbcConnector connector;
         private PgDiffArguments args;
         private final IEditorPart editor;
         private final DbInfo dbInfo;
         private String primarySqlText;
+        private PgDbProject pgDbProject;
         private IProject project;
 
         public QuickUpdateJob(String name, IEditorPart editor, DbInfo dbInfo) {
@@ -124,55 +102,51 @@ public class QuickUpdate extends AbstractHandler {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             try {
-                executeQuickUpdate();
-            } catch (IOException | LicenseException e) {
-                ExceptionNotifier.notifyDefault(Messages.quickUpdate_error_btn, e);
-                return new Status(Status.ERROR, PLUGIN_ID.THIS,
-                        Messages.quickUpdate_error_btn, e);
+                connector = new JdbcConnector(
+                        dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(),
+                        ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+
+                args = new PgDiffArguments();
+                args.setLicense(new License(Activator.getDefault().getPreferenceStore().getString(PREF.LICENSE_PATH)));
+                args.setInCharsetName(ApgdiffConsts.UTF_8);
+                args.setCheckFunctionBodies(false);
+
+                Log.log(Log.LOG_DEBUG, "QuickUpdate starting"); //$NON-NLS-1$
+
+                pgDbProject = new PgDbProject(((IFileEditorInput)editor.getEditorInput()).getFile().getProject());
+
+                if(rollChangesOnDB()){
+                    rollChangesOnProject();
+                }
             } catch (InterruptedException e) {
                 return Status.CANCEL_STATUS;
-            } catch (CoreException e) {
+            } catch (IOException | LicenseException | CoreException e) {
                 ExceptionNotifier.notifyDefault(Messages.quickUpdate_error_btn, e);
                 return new Status(Status.ERROR, PLUGIN_ID.THIS,
                         Messages.quickUpdate_error_btn, e);
             }
-
             return Status.OK_STATUS;
-        }
-
-        private void executeQuickUpdate() throws IOException, LicenseException, InterruptedException, CoreException {
-            connector = new JdbcConnector(
-                    dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(),
-                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
-
-            args = new PgDiffArguments();
-            args.setLicense(new License(Activator.getDefault().getPreferenceStore().getString(PREF.LICENSE_PATH)));
-            args.setInCharsetName(ApgdiffConsts.UTF_8);
-            args.setCheckFunctionBodies(false);
-
-            Log.log(Log.LOG_DEBUG, "QuickUpdate starting"); //$NON-NLS-1$
-
-            if(rollChangesOnDB()){
-                rollChangesOnProject();
-            }
         }
 
         private boolean rollChangesOnDB()
                 throws IOException, InterruptedException, LicenseException, CoreException {
-            primarySqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
+            primarySqlText = ((RollOnEditor)editor).getEditorSourceViewer().getDocument().get();
 
             PgDatabase dbProjectFragment = getDbProjectFragment(args,
-                    ((FileEditorInput)editor.getEditorInput()).getURI(),
+                    ((FileEditorInput)editor.getEditorInput()).getURI().getPath(),
                     primarySqlText);
 
-            PgDatabase dbProjectFull = getDbProjectFull(editor);
+            PgDatabase dbProjectFull = DbSource.fromProject(pgDbProject).get(SubMonitor.convert(null, "", 1));
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
             TreeElement treeFull = DiffTree.create(dbRemoteFull, dbProjectFull, null);
 
             setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment));
 
             ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-            PgDiffScript script = getScript(diffInput, treeFull, dbRemoteFull, dbProjectFull);
+            PrintWriter writer = new UnixPrintWriter(diffInput, true);
+            PgDiffScript script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args, treeFull,
+                    dbRemoteFull, dbProjectFull, null, null);
+            writer.flush();
 
             if (script.isDangerDdl(false, false, false, false)) {
                 UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
@@ -199,62 +173,44 @@ public class QuickUpdate extends AbstractHandler {
         private void rollChangesOnProject()
                 throws IOException, InterruptedException, LicenseException, CoreException {
             PgDatabase dbProjectFragment = getDbProjectFragment(args,
-                    ((FileEditorInput)editor.getEditorInput()).getURI(),
-                    ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get());
+                    ((FileEditorInput)editor.getEditorInput()).getURI().getPath(),
+                    ((RollOnEditor)editor).getEditorSourceViewer().getDocument().get());
 
-            PgDatabase dbProjectFull = getDbProjectFull(editor);
+            PgDatabase dbProjectFull = DbSource.fromProject(pgDbProject).get(SubMonitor.convert(null, "", 1));
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
             TreeElement treeFull = DiffTree.create(dbRemoteFull, dbProjectFull, null);
 
             List<TreeElement> checked = setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment));
 
-            String finalSqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
+            project = pgDbProject.getProject();
+            String finalSqlText = ((RollOnEditor)editor).getEditorSourceViewer().getDocument().get();
             if(primarySqlText.equals(finalSqlText)){
                 PgDbProject proj = new PgDbProject(((IFileEditorInput)editor.getEditorInput()).getFile().getProject());
                 new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
+                project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
                 ResourceUtil.getResource(editor.getEditorInput()).refreshLocal(IResource.DEPTH_ZERO, null);
+            } else {
+                project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
             }
-
-            project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
         }
 
-        private PgDatabase getDbProjectFragment(PgDiffArguments args, URI fileInEditorURI, String sqlText)
+        private PgDatabase getDbProjectFragment(PgDiffArguments args, String pathFileInEditor, String sqlText)
                 throws IOException, InterruptedException, LicenseException {
             PgDatabase dbDump = null;
-            String schemaName = getSchemaName(fileInEditorURI.getPath());
+
+            String schemaName = pathFileInEditor.substring(pathFileInEditor.indexOf("/SCHEMA/"), pathFileInEditor.length())
+                    .replace("/SCHEMA/", "");
+            schemaName = schemaName.substring(0, schemaName.indexOf("/"));
+
             try(InputStream inputStream = new ByteArrayInputStream(sqlText.getBytes(StandardCharsets.UTF_8));
-                    PgDumpLoader loader = new PgDumpLoader(inputStream, fileInEditorURI.getPath(), args)) {
+                    PgDumpLoader loader = new PgDumpLoader(inputStream, pathFileInEditor, args)) {
                 if("PUBLIC".equalsIgnoreCase(schemaName)){
                     dbDump = loader.load();
                 } else {
-                    dbDump = loader.load(getSchemaName(fileInEditorURI.getPath()));
+                    dbDump = loader.load(schemaName);
                 }
             }
             return dbDump;
-        }
-
-        private PgDatabase getDbProjectFull(IEditorPart editor)
-                throws IOException, InterruptedException, LicenseException, CoreException {
-            PgDbProject pgDbProject = new PgDbProject( ((IFileEditorInput)editor.getEditorInput()).getFile().getProject() );
-            project = pgDbProject.getProject();
-            DbSource dbSource = DbSource.fromProject(pgDbProject);
-            return dbSource.get(SubMonitor.convert(null, "", 1));
-        }
-
-        private PgDiffScript getScript(ByteArrayOutputStream diffInput,
-                TreeElement treeFullwithCheckedElements,
-                PgDatabase dbRemoteFull, PgDatabase dbProjectFull){
-            PrintWriter writer = new UnixPrintWriter(diffInput, true);
-            PgDiffScript script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                    treeFullwithCheckedElements, dbRemoteFull, dbProjectFull, null, null);
-            writer.flush();
-            return script;
-        }
-
-        private String getSchemaName(String path){
-            path = path.substring(path.indexOf("/SCHEMA/"), path.length());
-            path = path.replace("/SCHEMA/", "");
-            return path.substring(0, path.indexOf("/"));
         }
 
         /**
