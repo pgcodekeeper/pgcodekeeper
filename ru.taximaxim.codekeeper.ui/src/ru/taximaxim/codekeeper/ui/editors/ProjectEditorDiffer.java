@@ -111,7 +111,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -134,27 +133,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
-    private ProjectEditorInput input;
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
 
-    private DbInfo lastRemote;
+    private Object lastRemote;
     private DbSource dbProject, dbRemote;
     private TreeElement diffTree;
 
-    private Composite containerUpper;
     private Composite contNotifications;
     private Label lblNotificationText;
     private Button btnDismissRefresh;
 
-    private DbStorePicker storePicker;
-    private Button btnGetChanges;
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
     private LocalResourceManager lrm;
-    private Button btnSave, btnGetLatest, btnAddDepcy;
+    private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
@@ -164,15 +159,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!(input instanceof ProjectEditorInput)) {
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
-        this.input = (ProjectEditorInput) input;
-        Exception ex = this.input.getError();
+
+        ProjectEditorInput in = (ProjectEditorInput) input;
+        Exception ex = in.getError();
         if (ex != null) {
-            throw new PartInitException(this.input.getError().getLocalizedMessage(), ex);
+            throw new PartInitException(in.getError().getLocalizedMessage(), ex);
         }
 
-        proj = new PgDbProject(this.input.getProject());
+        proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(proj.getProject());
-        setPartName(this.input.getName());
+        setPartName(in.getName());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -231,42 +227,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
         // end notifications container
 
-        // upper container
-        containerUpper = new Composite(parent, SWT.NONE);
-        containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout gl = new GridLayout(3, false);
-        gl.marginHeight = gl.marginWidth = 0;
-        containerUpper.setLayout(gl);
-
-        // upper left part
-        Composite contUpperLeft = new Composite(containerUpper, SWT.NONE);
-        contUpperLeft.setLayoutData(new GridData(GridData.FILL_BOTH));
-        // initialize default layout for customizable container
-        gl = new GridLayout();
-        gl.marginHeight = gl.marginWidth = 0;
-        contUpperLeft.setLayout(gl);
-        createUpperContainer(contUpperLeft, gl);
-
-        // upper right part
-        storePicker = new DbStorePicker(containerUpper, SWT.NONE, mainPrefs, true, false);
-        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
-        storePicker.setSelection(new StructuredSelection(DbInfo.preferenceToStore(
-                proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")))); //$NON-NLS-1$
-
-        btnGetChanges = new Button(containerUpper, SWT.PUSH);
-        btnGetChanges.setText(Messages.get_changes);
-        btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
-        btnGetChanges.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-        btnGetChanges.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                getChanges();
-            }
-        });
-        // end upper container
-
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -298,7 +258,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                // bind both to postselection for performance
                 sp.fireSelectionChanged(event, new DBPair(dbProject, dbRemote));
             }
         });
@@ -310,6 +269,26 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
                 | IResourceChangeEvent.POST_CHANGE);
+
+        ICommandService commandService =
+                PlatformUI.getWorkbench().getService(ICommandService.class);
+        @SuppressWarnings("unchecked")
+        Collection<String> commandIds = commandService.getDefinedCommandIds();
+        isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
+    }
+
+    public void addDependency() {
+        if (isDBLoaded){
+            ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(),
+                    manualDepciesSource, manualDepciesTarget,
+                    PgDatabase.listPgObjects(dbRemote.getDbObject()),
+                    PgDatabase.listPgObjects(dbProject.getDbObject()),
+                    Messages.database, Messages.ProjectEditorDiffer_project);
+            if (dialog.open() == Dialog.OK) {
+                manualDepciesSource = dialog.getDepciesSourceList();
+                manualDepciesTarget = dialog.getDepciesTargetList();
+            }
+        }
     }
 
     @Override
@@ -410,29 +389,56 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void getChanges() {
+    /**
+     * @param remote remote DB schema: either {@link File} or {@link DbInfo}
+     * @throws IllegalArgumentException invalid remote type
+     */
+    public void getChanges(Object remote){
+        String charset;
+        try {
+            charset = proj.getProjectCharset();
+        } catch (CoreException e) {
+            ExceptionNotifier.notifyDefault(Messages.DiffPresentationPane_error_loading_changes, e);
+            return;
+        }
+        IEclipsePreferences projProps = proj.getPrefs();
+        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+
+        DbSource dbRemote;
+        String name;
+        if (remote instanceof DbInfo) {
+            DbInfo dbInfo = (DbInfo) remote;
+            dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            name = dbInfo.getName();
+
+            try {
+                projProps.put(PROJ_PREF.LAST_DB_STORE, dbInfo.toString());
+                projProps.flush();
+            } catch (BackingStoreException ex) {
+                Log.log(Log.LOG_WARNING, "Couldn't flush project properties!", ex); //$NON-NLS-1$
+            }
+        } else if (remote instanceof File) {
+            File file = (File) remote;
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            name = file.getName();
+        } else {
+            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        }
+
+        lastRemote = remote;
+        setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
+        loadChanges(dbRemote);
+    }
+
+    private void loadChanges(DbSource dbRemote) {
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
-        try {
-            DbSource dbRemote = getRemoteDbSource();
-            if (dbRemote != null) {
-                DbSource dbProject = DbSource.fromProject(proj);
-                reset();
-                hideNotificationArea();
-                loadChanges(dbProject, dbRemote);
-                saveDbPrefs();
-            }
-        } catch (CoreException e1) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.DiffPresentationPane_error_loading_changes, e1);
-        } catch (BackingStoreException e1) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.DiffPresentationPane_cannotSaveDbPropToProjProps, e1);
-        }
-    }
+        DbSource dbProject = DbSource.fromProject(proj);
+        reset();
+        hideNotificationArea();
 
-    private void loadChanges(final DbSource dbProject, final DbSource dbRemote) {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
         final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
@@ -517,105 +523,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public DbSource getRemoteDbSource() throws CoreException {
-        DbSource dbRemote = null;
-
-        IEclipsePreferences projProps = proj.getPrefs();
-        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-        lastRemote = storePicker.getDbInfo();
-        File dumpfile;
+    public Object getLastDb() {
         if (lastRemote != null) {
-            dbRemote = DbSource.fromDbInfo(lastRemote, mainPrefs, forceUnixNewlines,
-                    proj.getProjectCharset(), projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-        } else if ((dumpfile = storePicker.getPathOfFile()) != null) {
-            dbRemote = DbSource.fromFile(forceUnixNewlines, dumpfile, proj.getProjectCharset());
-        } else {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.DiffPresentationPane_cannot_get_changes);
-            mb.setMessage(Messages.DiffPresentationPane_select_db_source);
-            mb.open();
+            return lastRemote;
         }
-        return dbRemote;
+        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return lastStore.isEmpty() ? null : lastStore.get(0);
     }
 
-    public void saveDbPrefs() throws BackingStoreException {
-        DbInfo storeDB = storePicker.getDbInfo();
-        if (storeDB != null) {
-            IEclipsePreferences projProps = proj.getPrefs();
-            projProps.put(PROJ_PREF.LAST_DB_STORE, storeDB.toString());
-            projProps.flush();
-        }
-    }
-
-    private void createUpperContainer(Composite container, GridLayout gl){
-        gl.numColumns = 6;
-        container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        lrm = new LocalResourceManager(JFaceResources.getResources(), container);
-
-        new Label(container, SWT.NONE).setText(Messages.ProjectEditorDiffer_apply_to);
-
-        btnSave = new Button(container, SWT.PUSH);
-        btnSave.setText(Messages.commitPartDescr_commit);
-        btnSave.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))));
-        btnSave.setEnabled(false);
-        btnSave.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    commit();
-                } catch (PgCodekeeperException ex) {
-                    ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
-                }
-            }
-        });
-
-        btnGetLatest = new Button(container, SWT.PUSH);
-        btnGetLatest.setText(Messages.diffPartDescr_get_latest);
-        btnGetLatest.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONDATABASE))));
-        btnGetLatest.setEnabled(false);
-        btnGetLatest.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diff();
-            }
-        });
-
-        Label l = new Label(container, SWT.NONE);
-        l.setText("|"); //$NON-NLS-1$
-        l.setEnabled(false);
-
-        btnAddDepcy = new Button(container, SWT.PUSH);
-        btnAddDepcy.setText(Messages.diffPartDescr_add_dependencies);
-        btnAddDepcy.setEnabled(false);
-        btnAddDepcy.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(),
-                        manualDepciesSource, manualDepciesTarget,
-                        PgDatabase.listPgObjects(dbRemote.getDbObject()),
-                        PgDatabase.listPgObjects(dbProject.getDbObject()),
-                        Messages.database, Messages.ProjectEditorDiffer_project);
-                if (dialog.open() == Dialog.OK) {
-                    manualDepciesSource = dialog.getDepciesSourceList();
-                    manualDepciesTarget = dialog.getDepciesTargetList();
-                }
-            }
-        });
-
-        ICommandService commandService =
-                PlatformUI.getWorkbench().getService(ICommandService.class);
-        @SuppressWarnings("unchecked")
-        Collection<String> commandIds = commandService.getDefinedCommandIds();
-        isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
-    }
-
-    private void diff() {
+    public void diff() {
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
@@ -673,18 +589,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
-            btnSave.setEnabled(true);
-            btnGetLatest.setEnabled(true);
-            btnAddDepcy.setEnabled(true);
+            isDBLoaded = true;
             manualDepciesSource.clear();
             manualDepciesTarget.clear();
         }
     }
 
     private void reset() {
-        btnSave.setEnabled(false);
-        btnGetLatest.setEnabled(false);
-        btnAddDepcy.setEnabled(false);
+        isDBLoaded = false;
         manualDepciesSource.clear();
         manualDepciesTarget.clear();
         setInput(null, null, null);
@@ -738,7 +650,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
         String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
         if (lastRemote != null) {
-            name += " for " + lastRemote.getName(); //$NON-NLS-1$
+            name += " for " + getRemoteName(lastRemote); //$NON-NLS-1$
         }
         name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
         Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
@@ -784,7 +696,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    private void commit() throws PgCodekeeperException {
+    public void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
@@ -860,10 +772,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void updateRemoteChanged() {
+    public void updateRemoteChanged(Object remote) {
         // may be called off UI thread so check that we're still alive
         if (!parent.isDisposed()) {
-            getChanges();
+            getChanges(remote);
             showNotificationArea(true, Messages.DiffPresentationPane_remote_changed_notification);
         }
     }
@@ -940,11 +852,21 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         UiSync.exec(editor.parent, () -> {
             if (dbinfo.equals(editor.lastRemote)) {
                 if (update) {
-                    editor.updateRemoteChanged();
+                    editor.updateRemoteChanged(editor.lastRemote);
                 } else {
                     editor.resetRemoteChanged();
                 }
             }
         });
+    }
+
+    private static String getRemoteName(Object remote) {
+        if (remote instanceof DbInfo) {
+            return ((DbInfo) remote).getName();
+        } else if (remote instanceof File) {
+            return ((File) remote).getName();
+        } else {
+            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        }
     }
 }

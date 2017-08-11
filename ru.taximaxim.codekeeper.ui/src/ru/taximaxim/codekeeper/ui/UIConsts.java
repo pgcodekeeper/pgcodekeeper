@@ -36,6 +36,10 @@ public interface UIConsts {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
+
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
+        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
+        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -174,6 +178,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
