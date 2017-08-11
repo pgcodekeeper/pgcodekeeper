@@ -650,7 +650,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
         String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
         if (lastRemote != null) {
-            name += " for " + lastRemote.getName(); //$NON-NLS-1$
+            name += " for " + getRemoteName(lastRemote); //$NON-NLS-1$
         }
         name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
         Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
@@ -772,10 +772,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void updateRemoteChanged() {
+    public void updateRemoteChanged(Object remote) {
         // may be called off UI thread so check that we're still alive
         if (!parent.isDisposed()) {
-            getChanges();
+            getChanges(remote);
             showNotificationArea(true, Messages.DiffPresentationPane_remote_changed_notification);
         }
     }
@@ -852,11 +852,21 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         UiSync.exec(editor.parent, () -> {
             if (dbinfo.equals(editor.lastRemote)) {
                 if (update) {
-                    editor.updateRemoteChanged();
+                    editor.updateRemoteChanged(editor.lastRemote);
                 } else {
                     editor.resetRemoteChanged();
                 }
             }
         });
+    }
+
+    private static String getRemoteName(Object remote) {
+        if (remote instanceof DbInfo) {
+            return ((DbInfo) remote).getName();
+        } else if (remote instanceof File) {
+            return ((File) remote).getName();
+        } else {
+            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        }
     }
 }
