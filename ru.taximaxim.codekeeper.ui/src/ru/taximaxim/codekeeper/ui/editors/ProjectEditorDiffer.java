@@ -117,13 +117,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
-    private ProjectEditorInput input;
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
 
-    private DbInfo lastRemote;
-    private DbSource dbProject, dbRemote, currentSource;
+    private Object lastRemote;
+    private DbSource dbProject, dbRemote;
     private TreeElement diffTree;
 
     private Composite contNotifications;
@@ -144,15 +143,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!(input instanceof ProjectEditorInput)) {
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
-        this.input = (ProjectEditorInput) input;
-        Exception ex = this.input.getError();
+
+        ProjectEditorInput in = (ProjectEditorInput) input;
+        Exception ex = in.getError();
         if (ex != null) {
-            throw new PartInitException(this.input.getError().getLocalizedMessage(), ex);
+            throw new PartInitException(in.getError().getLocalizedMessage(), ex);
         }
 
-        proj = new PgDbProject(this.input.getProject());
+        proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(proj.getProject());
-        setPartName(this.input.getName());
+        setPartName(in.getName());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -254,13 +254,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
                 | IResourceChangeEvent.POST_CHANGE);
 
-
         ICommandService commandService =
                 PlatformUI.getWorkbench().getService(ICommandService.class);
         @SuppressWarnings("unchecked")
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
-
     }
 
     public void addDependency() {
@@ -378,56 +376,56 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void getChanges() {
+    /**
+     * @param remote remote DB schema: either {@link File} or {@link DbInfo}
+     * @throws IllegalArgumentException invalid remote type
+     */
+    public void getChanges(Object remote){
+        String charset;
+        try {
+            charset = proj.getProjectCharset();
+        } catch (CoreException e) {
+            ExceptionNotifier.notifyDefault(Messages.DiffPresentationPane_error_loading_changes, e);
+            return;
+        }
+        IEclipsePreferences projProps = proj.getPrefs();
+        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+
+        DbSource dbRemote;
+        String name;
+        if (remote instanceof DbInfo) {
+            DbInfo dbInfo = (DbInfo) remote;
+            dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
+                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            name = dbInfo.getName();
+
+            try {
+                projProps.put(PROJ_PREF.LAST_DB_STORE, dbInfo.toString());
+                projProps.flush();
+            } catch (BackingStoreException ex) {
+                Log.log(Log.LOG_WARNING, "Couldn't flush project properties!", ex); //$NON-NLS-1$
+            }
+        } else if (remote instanceof File) {
+            File file = (File) remote;
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            name = file.getName();
+        } else {
+            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        }
+
+        lastRemote = remote;
+        setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
+        loadChanges(dbRemote);
+    }
+
+    private void loadChanges(DbSource dbRemote) {
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
-        try {
-            if (currentSource != null) {
-                DbSource dbProject = DbSource.fromProject(proj);
-                reset();
-                hideNotificationArea();
-                loadChanges(dbProject, currentSource);
-                saveDbPrefs();
-            } else {
-                getChanges(getLastDb());
-            }
-        } catch (BackingStoreException e1) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.DiffPresentationPane_cannotSaveDbPropToProjProps, e1);
-        }
-    }
+        DbSource dbProject = DbSource.fromProject(proj);
+        reset();
+        hideNotificationArea();
 
-    public void getChanges(DbInfo dbInfo){
-        try {
-            IEclipsePreferences projProps = proj.getPrefs();
-            boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-            lastRemote = dbInfo;
-            currentSource = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
-                    proj.getProjectCharset(), projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-            setPartName(proj.getProjectName() + " - " + dbInfo.getName());
-            getChanges();
-        } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.DiffPresentationPane_error_loading_changes, e);
-        }
-    }
-
-    public void getChanges(File file){
-        try {
-            IEclipsePreferences projProps = proj.getPrefs();
-            boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-            lastRemote = null;
-            currentSource = DbSource.fromFile(forceUnixNewlines, file, proj.getProjectCharset());
-            setPartName(proj.getProjectName() + " - " + file.getName());
-            getChanges();
-        } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.DiffPresentationPane_error_loading_changes, e);
-        }
-    }
-
-    private void loadChanges(final DbSource dbProject, final DbSource dbRemote) {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
         final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
@@ -513,16 +511,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public DbInfo getLastDb() {
-        return DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE,  "")).get(0);
-    }
-
-    public void saveDbPrefs() throws BackingStoreException {
+    public Object getLastDb() {
         if (lastRemote != null) {
-            IEclipsePreferences projProps = proj.getPrefs();
-            projProps.put(PROJ_PREF.LAST_DB_STORE, lastRemote.toString());
-            projProps.flush();
+            return lastRemote;
         }
+        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+        return lastStore.isEmpty() ? null : lastStore.get(0);
     }
 
     public void diff() {
@@ -603,7 +597,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private void showEditor(Differ differ) throws PartInitException {
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 PgDatabase.listPgObjects(dbRemote.getDbObject()));
-        input.setDbinfo(lastRemote);
         getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }
 
