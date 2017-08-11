@@ -81,16 +81,15 @@ public final class PgDiff {
      * @throws InterruptedException
      * @throws URISyntaxException
      */
-    static PgDatabase loadDatabaseSchema(String format, String srcPath,
-            PgDiffArguments arguments) throws InterruptedException, IOException, LicenseException, URISyntaxException {
-        if(format.equals("dump")) {
+    public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+        if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
             }
-        } else if(format.equals("parsed")) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments, null, null);
-        } else if(format.equals("db")) {
+        } else if("parsed".equals(format)) {
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null);
+        } else if("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();
         }
@@ -149,7 +148,7 @@ public final class PgDiff {
                     + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
         }
 
-        if (!arguments.isCheckFunctionBodies()) {
+        if (arguments.isDisableCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false;");
         }
 
@@ -165,10 +164,18 @@ public final class PgDiff {
             depRes.addCustomDepciesToNew(additionalDepciesTarget);
         }
 
-        // TODO when live DB connection is impelemted, pass the DB names to IgnoreList
+        List<String> dbNames = new ArrayList<>();
+        if ("db".equals(arguments.getNewSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
+        }
+        if ("db".equals(arguments.getOldSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
+        }
+
         List<TreeElement> selected = new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
                 .flatten(root);
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);
@@ -196,10 +203,7 @@ public final class PgDiff {
         }
 
         script.printStatements(writer);
-        if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDbFull, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
-            addIgnoredStatements(newDbFull, Messages.Database_NewDatabaseIgnoredStatements, writer);
-        }
+
         return script;
     }
 
@@ -240,27 +244,6 @@ public final class PgDiff {
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    /**
-     * Adds ignored Statements to script
-     * @param database database with ignored statements
-     * @param messageText resource for localization message
-     * @param script script to output statements
-     */
-    private static void addIgnoredStatements(PgDatabase database,
-            String messageText, PrintWriter writer) {
-        if (!database.getIgnoredStatements().isEmpty()) {
-            writer.println();
-            writer.print("/*");
-            writer.println(messageText);
-
-            for (final String statement : database.getIgnoredStatements()) {
-                writer.println();
-                writer.println(statement);
-            }
-            writer.println("*/");
-        }
     }
 
     private PgDiff() {

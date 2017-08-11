@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>ru.taximaxim.codeKeeper</groupId>
+        <artifactId>ru.taximaxim.codeKeeper</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
+    </parent>
+
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codekeeper.cli</artifactId>
+    <version>3.11.5-SNAPSHOT</version>
+    <packaging>eclipse-plugin</packaging>
+</project>

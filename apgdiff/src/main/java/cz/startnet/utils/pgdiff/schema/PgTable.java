@@ -453,37 +453,37 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     .append(';');
                 }
             }
+        }
 
-            PgTable.compareOptions(oldTable, newTable, sb);
+        PgTable.compareOptions(oldTable, newTable, sb);
 
-            if (oldTable.getHasOids() && !newTable.getHasOids()){
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append(" SET WITHOUT OIDS;");
-            } else if (newTable.getHasOids() && !oldTable.getHasOids()){
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append(" SET WITH OIDS;");
-            }
+        if (oldTable.getHasOids() && !newTable.getHasOids()){
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()){
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" SET WITH OIDS;");
+        }
 
-            if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-                sb.append(ALTER_TABLE)
-                .append(PgDiffUtils.getQuotedName(newTable.getName()))
-                .append("\n\tSET TABLESPACE ")
-                .append(newTable.getTablespace())
-                .append(';');
-            }
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append("\n\tSET TABLESPACE ")
+            .append(newTable.getTablespace())
+            .append(';');
+        }
 
-            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-                sb.append(newTable.getOwnerSQL());
-            }
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            sb.append(newTable.getOwnerSQL());
+        }
 
-            alterPrivileges(newTable, sb);
+        alterPrivileges(newTable, sb);
 
-            if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
-                sb.append("\n\n");
-                newTable.appendCommentSql(sb);
-            }
+        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+            sb.append("\n\n");
+            newTable.appendCommentSql(sb);
         }
         return sb.length() > startLength;
     }
