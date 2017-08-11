@@ -597,6 +597,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private void showEditor(Differ differ) throws PartInitException {
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 PgDatabase.listPgObjects(dbRemote.getDbObject()));
+        input.setDbinfo(storePicker.getDbInfo());
         getSite().getPage().openEditor(input, EDITOR.ROLLON);
     }
 
