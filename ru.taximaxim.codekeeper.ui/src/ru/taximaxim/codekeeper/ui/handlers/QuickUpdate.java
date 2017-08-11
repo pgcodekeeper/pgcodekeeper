@@ -14,10 +14,12 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
@@ -49,7 +51,6 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -58,6 +59,7 @@ import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -75,7 +77,7 @@ public class QuickUpdate extends AbstractHandler {
             return null;
         }
 
-        editor.doSave(null);
+        editor.doSave(new NullProgressMonitor());
 
         RollOnEditor rollOnEditor = (RollOnEditor)editor;
         DbInfo dbInfo = rollOnEditor.getStorePicker().getDbInfo();
@@ -111,6 +113,7 @@ public class QuickUpdate extends AbstractHandler {
         private final IEditorPart editor;
         private final DbInfo dbInfo;
         private String primarySqlText;
+        private IProject project;
 
         public QuickUpdateJob(String name, IEditorPart editor, DbInfo dbInfo) {
             super(name);
@@ -166,7 +169,7 @@ public class QuickUpdate extends AbstractHandler {
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
             TreeElement treeFull = DiffTree.create(dbRemoteFull, dbProjectFull, null);
 
-            setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment), dbRemoteFull, dbProjectFull);
+            setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment));
 
             ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
             PgDiffScript script = getScript(diffInput, treeFull, dbRemoteFull, dbProjectFull);
@@ -203,8 +206,7 @@ public class QuickUpdate extends AbstractHandler {
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
             TreeElement treeFull = DiffTree.create(dbRemoteFull, dbProjectFull, null);
 
-            List<TreeElement> checked = setCheckedFromFragment(treeFull,
-                    PgDatabase.listPgObjects(dbProjectFragment), dbRemoteFull, dbProjectFull);
+            List<TreeElement> checked = setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment));
 
             String finalSqlText = ((RollOnEditor)editor).getSourceViewerForQuickUpdate().getDocument().get();
             if(primarySqlText.equals(finalSqlText)){
@@ -212,6 +214,8 @@ public class QuickUpdate extends AbstractHandler {
                 new ProjectUpdater(dbRemoteFull, dbProjectFull, checked, proj).updatePartial();
                 ResourceUtil.getResource(editor.getEditorInput()).refreshLocal(IResource.DEPTH_ZERO, null);
             }
+
+            project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
         }
 
         private PgDatabase getDbProjectFragment(PgDiffArguments args, URI fileInEditorURI, String sqlText)
@@ -231,8 +235,9 @@ public class QuickUpdate extends AbstractHandler {
 
         private PgDatabase getDbProjectFull(IEditorPart editor)
                 throws IOException, InterruptedException, LicenseException, CoreException {
-            PgDbProject proj = new PgDbProject( ((IFileEditorInput)editor.getEditorInput()).getFile().getProject() );
-            DbSource dbSource = DbSource.fromProject(proj);
+            PgDbProject pgDbProject = new PgDbProject( ((IFileEditorInput)editor.getEditorInput()).getFile().getProject() );
+            project = pgDbProject.getProject();
+            DbSource dbSource = DbSource.fromProject(pgDbProject);
             return dbSource.get(SubMonitor.convert(null, "", 1));
         }
 
@@ -260,17 +265,18 @@ public class QuickUpdate extends AbstractHandler {
          * @return возвращает коллекцию содержащую TreeElement'ы, которые
          * были помеченны как выбранные.
          */
-        private List<TreeElement> setCheckedFromFragment(TreeElement treeFull, Map<String, PgStatement> listPgObjectsFragment,
-                PgDatabase dumpFullDb, PgDatabase dumpFullProject) {
+        private List<TreeElement> setCheckedFromFragment(TreeElement treeFull, Map<String, PgStatement> listPgObjectsFragment) {
             List<TreeElement> checked = new ArrayList<>();
-
-            TreeFlattener treeFlattener = new TreeFlattener();
-            List<TreeElement> filtered = treeFlattener.getNewDeleteEdit(treeFlattener.flatten(treeFull),
-                    dumpFullProject, dumpFullDb);
 
             for(Entry<String, PgStatement> entry : listPgObjectsFragment.entrySet()){
                 TreeElement treeElement = treeFull.findElement(entry.getValue());
-                if(treeElement != null && filtered.contains(treeElement)){
+                if(treeElement != null){
+                    if (DiffTableViewer.isContainer(treeElement)) {
+                        treeElement.getChildren().forEach(e -> {
+                            e.setSelected(true);
+                            checked.add(e);
+                        });
+                    }
                     treeElement.setSelected(true);
                     checked.add(treeElement);
                 }
