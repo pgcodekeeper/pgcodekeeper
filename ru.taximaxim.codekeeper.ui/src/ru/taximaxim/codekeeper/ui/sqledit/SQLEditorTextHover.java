@@ -11,8 +11,10 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-//TODO использовать extension интерфейсы
+
 final class SQLEditorTextHover extends DefaultTextHover {
+
+    private static final String QUICKDIFF = "org.eclipse.ui.workbench.texteditor.quickdiff"; //$NON-NLS-1$
 
     private final SQLEditor editor;
 
@@ -42,7 +44,7 @@ final class SQLEditorTextHover extends DefaultTextHover {
     @Override
     protected boolean isIncluded(Annotation annotation) {
         // exclude text change annotations
-        return !annotation.getType().contains("quickdiff"); //$NON-NLS-1$
+        return !annotation.getType().startsWith(QUICKDIFF);
     }
 
     @Override
