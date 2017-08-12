@@ -271,18 +271,6 @@
                     </visibleWhen>
                 </command>
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.AddDepcy"
-                    icon="icons/loop_obj.png"
-                    label="%command.commandname.AddDepcy"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"

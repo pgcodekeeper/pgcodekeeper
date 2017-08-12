@@ -40,6 +40,7 @@ public interface UIConsts {
         String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
         String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
         String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -163,6 +164,7 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
         String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
