@@ -185,7 +185,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     }
 
     private String getAlterTable() {
-        return ALTER_TABLE + this.getParent().getName();
+        return ALTER_TABLE + PgDiffUtils.getQuotedName(this.getParent().getName());
     }
 
     @Override
@@ -264,7 +264,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
             PgDiffArguments arg = ((PgDatabase) newCondition.getParent().getParent().getParent()).getArguments();
 
-            if (arg == null || arg.isUsingOnOff()) {
+            if (arg == null || !arg.isUsingTypeCastOff()) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newColumn.getType());
             }

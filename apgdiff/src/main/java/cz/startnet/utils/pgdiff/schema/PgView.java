@@ -370,7 +370,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
         removeColumnComment(columnName);
         columnComments.add(new ColumnComment(columnName,
-                args.isForceUnixNewlines() ? comment.replace("\r", "") : comment));
+                args.isKeepNewlines() ? comment : comment.replace("\r", "")));
     }
 
     public void removeColumnComment(final String columnName) {

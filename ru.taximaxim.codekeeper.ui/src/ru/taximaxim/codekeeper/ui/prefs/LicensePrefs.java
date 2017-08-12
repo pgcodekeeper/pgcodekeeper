@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.IOException;
-import java.net.URL;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -31,8 +30,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class LicensePrefs extends PreferencePage
 implements IWorkbenchPreferencePage {
 
-    private static final String INTERNAL_LICENSE = "lic"; //$NON-NLS-1$
-
     private String licensePath;
     private Text txtLicense;
     private Label lblInfo;
@@ -41,10 +38,6 @@ implements IWorkbenchPreferencePage {
         License l = new License(Activator.getDefault().getPreferenceStore().getString(PREF.LICENSE_PATH));
         l.verify(true);
         args.setLicense(l);
-    }
-
-    static URL getInternalLicenseUrl() {
-        return LicensePrefs.class.getResource(INTERNAL_LICENSE);
     }
 
     @Override
@@ -106,7 +99,7 @@ implements IWorkbenchPreferencePage {
 
     private void update(String path) {
         try {
-            String internalLicense = getInternalLicenseUrl().toString();
+            String internalLicense = License.getInternalLicenseUrl().toString();
             if (path.equals(internalLicense)) {
                 txtLicense.setText(Messages.LicensePrefs_integrated);
             }
@@ -123,7 +116,7 @@ implements IWorkbenchPreferencePage {
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        update(getInternalLicenseUrl().toString());
+        update(License.getInternalLicenseUrl().toString());
     }
 
     @Override
@@ -134,7 +127,7 @@ implements IWorkbenchPreferencePage {
         // and won't be valid after restart
         // instead reset the value to use the default
         // that is set in PreferenceInitializer on each startup
-        if (licensePath.equals(getInternalLicenseUrl().toString())) {
+        if (licensePath.equals(License.getInternalLicenseUrl().toString())) {
             getPreferenceStore().setToDefault(PREF.LICENSE_PATH);
         } else {
             getPreferenceStore().setValue(PREF.LICENSE_PATH, licensePath);

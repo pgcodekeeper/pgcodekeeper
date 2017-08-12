@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader.TriggersReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader.TypesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader.ViewsReaderFactory;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public abstract class JdbcReaderFactory {
 
@@ -80,7 +81,16 @@ public abstract class JdbcReaderFactory {
             try (ResultSet res = st.executeQuery()) {
                 Set<String> funcs = new HashSet<>();
                 while (res.next()) {
-                    funcs.add(res.getString("proname"));
+                    if (!res.getBoolean("schema_access")) {
+                        Log.log(Log.LOG_WARNING, "No access to helper schema: " + HELPER_SCHEMA);
+                        break;
+                    }
+                    String func = res.getString("proname");
+                    if (res.getBoolean("function_access")) {
+                        funcs.add(func);
+                    } else {
+                        Log.log(Log.LOG_WARNING, "No access to helper function: " + func);
+                    }
                 }
                 for (JdbcReaderFactory factory : FACTORIES) {
                     if (funcs.contains(factory.helperFunction)) {

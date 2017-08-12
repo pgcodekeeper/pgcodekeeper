@@ -45,8 +45,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR_COMMANDS;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -77,8 +77,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         IToolBarManager toolman = getViewSite().getActionBars().getToolBarManager();
 
         CommandContributionItemParameter param = new CommandContributionItemParameter(
-                getViewSite(), EDITOR_COMMANDS.ADD_DEPCY, EDITOR_COMMANDS.ADD_DEPCY,
-                CommandContributionItem.STYLE_PUSH);
+                getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
         param.icon = ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONADDDEP));
         param.mode = CommandContributionItem.MODE_FORCE_TEXT;

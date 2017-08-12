@@ -13,13 +13,11 @@ import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class CommitProject extends AbstractHandler {
-    boolean isEnable;
 
     @Override
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
-        isEnable = part instanceof ProjectEditorDiffer;
-        if (isEnable){
+        if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
             try {
                 differ.commit();

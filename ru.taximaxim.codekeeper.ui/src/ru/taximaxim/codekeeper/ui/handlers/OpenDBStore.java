@@ -24,8 +24,8 @@ public class OpenDBStore extends AbstractHandler {
 
     private void addDB(Shell s) {
         if (!s.isDisposed()) {
-            PreferencesUtil.createPreferenceDialogOn(
-                    s, PREF_PAGE.DB_STORE, null, null).open();
+            PreferencesUtil.createPreferenceDialogOn(s, PREF_PAGE.DB_STORE, null, null)
+            .open();
         }
     }
 
