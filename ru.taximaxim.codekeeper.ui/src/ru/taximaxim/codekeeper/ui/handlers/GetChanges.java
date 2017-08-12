@@ -4,13 +4,17 @@ import java.io.File;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GetChanges extends AbstractHandler {
 
@@ -20,15 +24,25 @@ public class GetChanges extends AbstractHandler {
 
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
-            String filePath = event.getParameter(UIConsts.EDITOR_COMMANDS.FILE_PATH);
-            String coords = event.getParameter(UIConsts.EDITOR_COMMANDS.DB_COORDS);
+            String filePath = event.getParameter(COMMAND.PARAM_FILE_PATH);
+            String coords = event.getParameter(COMMAND.PARAM_DB_COORDS);
 
+            Object remote;
             if (filePath != null) {
-                differ.getChanges(new File(filePath));
+                remote = new File(filePath);
             } else if (coords != null) {
-                differ.getChanges(new DbInfo(coords));
+                remote = new DbInfo(coords);
             } else {
-                differ.getChanges();
+                remote = differ.getLastDb();
+            }
+
+            if (remote != null) {
+                differ.getChanges(remote);
+            } else {
+                MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+                mb.setText(Messages.GetChanges_select_source);
+                mb.setMessage(Messages.GetChanges_select_source_msg);
+                mb.open();
             }
         }
         return null;

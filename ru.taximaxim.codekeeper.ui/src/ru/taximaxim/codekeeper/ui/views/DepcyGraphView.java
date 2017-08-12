@@ -23,6 +23,8 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
@@ -43,6 +45,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -71,7 +74,16 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
 
-        IToolBarManager toolman = site.getActionBars().getToolBarManager();
+        IToolBarManager toolman = getViewSite().getActionBars().getToolBarManager();
+
+        CommandContributionItemParameter param = new CommandContributionItemParameter(
+                getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
+        param.icon = ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONADDDEP));
+        param.mode = CommandContributionItem.MODE_FORCE_TEXT;
+
+        toolman.add(new CommandContributionItem(param));
+
         ActionContributionItem ac = new ActionContributionItem(projectAction);
         ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         toolman.add(ac);

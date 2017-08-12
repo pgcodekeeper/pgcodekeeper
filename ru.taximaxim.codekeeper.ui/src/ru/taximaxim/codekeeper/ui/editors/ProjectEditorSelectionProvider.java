@@ -67,16 +67,16 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
     public void fireSelectionChanged(SelectionChangedEvent event, DBPair dbPair) {
         SelectionChangedEvent newEvent = modifyEvent(event, dbPair);
         currentSelection = newEvent.getSelection();
-        for(Object l : listeners.getListeners()) {
-            ((ISelectionChangedListener) l).selectionChanged(newEvent);
+        for(ISelectionChangedListener l : listeners) {
+            l.selectionChanged(newEvent);
         }
-        for(Object l : postListeners.getListeners()) {
-            ((ISelectionChangedListener) l).selectionChanged(newEvent);
+        for(ISelectionChangedListener l : postListeners) {
+            l.selectionChanged(newEvent);
         }
     }
 
     /**
-     * Ensures that IProject is present as first element 
+     * Ensures that IProject is present as first element
      * and DBPair is present as second element of the selection.
      */
     private SelectionChangedEvent modifyEvent(SelectionChangedEvent event, DBPair dbPair) {
