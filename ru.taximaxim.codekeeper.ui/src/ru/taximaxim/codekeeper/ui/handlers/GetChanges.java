@@ -50,7 +50,7 @@ public class GetChanges extends AbstractHandler {
 
     @Override
     public boolean isEnabled() {
-        return !((ProjectEditorDiffer)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                .getActiveEditor()).isGetChangesJobInProcessing();
+        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        return part instanceof ProjectEditorDiffer && !((ProjectEditorDiffer) part).isGetChangesJobInProcessing();
     }
 }

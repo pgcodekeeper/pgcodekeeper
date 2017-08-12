@@ -99,6 +99,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -155,7 +156,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
-    private boolean getChangesJobInProcessing = false;
+    private volatile boolean getChangesJobInProcessing;
 
     public boolean isGetChangesJobInProcessing() {
         return getChangesJobInProcessing;
@@ -283,7 +284,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
 
-        getSite().getService(IContextService.class).activateContext(EDITOR.PROJECT_SCOPE);
+        getSite().getService(IContextService.class).activateContext(CONTEXT.MAIN);
     }
 
     public void addDependency() {
@@ -455,7 +456,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    getChangesJobInProcessing = true;
                     SubMonitor sub = SubMonitor.convert(monitor,
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
@@ -476,19 +476,20 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
-                    UiSync.exec(parent, new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (!parent.isDisposed()) {
-                                setInput(dbProject, dbRemote, newDiffer.getDiffTree());
-                            }
-                        }
-                    });
-                }
+            public void scheduled(IJobChangeEvent event) {
                 getChangesJobInProcessing = false;
+            }
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        getChangesJobInProcessing = false;
+                        if (event.getResult().isOK()) {
+                            setInput(dbProject, dbRemote, newDiffer.getDiffTree());
+                        }
+                    }
+                });
             }
         });
         job.setUser(true);

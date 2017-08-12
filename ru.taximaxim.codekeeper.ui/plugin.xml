@@ -14,11 +14,6 @@
             name="%context.name.keeperContext"
             parentId="org.eclipse.ui.contexts.window">
         </context>
-        <context
-            id="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
-            name="%context.name.keeperProjectEditorContext"
-            parentId="org.eclipse.ui.contexts.window">
-        </context>
     </extension>
     <extension point="org.eclipse.ui.commands">
         <category
@@ -808,19 +803,19 @@
         name="ru.taximaxim.codekeeper.ui.bindings.hotKey">
        <key
              commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+F5">
        </key>
        <key
              commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
-             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+M3+S">
        </key>
        <key
              commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
-             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperProjectEditorScope"
+             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+M3+D">
        </key>
