@@ -229,7 +229,8 @@ public abstract class ParserAbstract {
             String name, Token errToken) {
         T statement = getter.apply(name);
         if (statement == null) {
-            throw new UnresolvedReferenceException(errToken);
+            throw new UnresolvedReferenceException("Cannot find object in database: "
+                    + errToken.getText(), errToken);
         }
         return statement;
     }

@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -267,36 +268,54 @@ public class PgSchema extends PgStatement {
     }
 
     public void addDomain(PgDomain dom) {
+        if (containsDomain(dom.getName())) {
+            throw new ObjectCreationException(dom);
+        }
         domains.add(dom);
         dom.setParent(this);
         resetHash();
     }
 
     public void addFunction(final PgFunction function) {
+        if (containsFunction(function.getName())) {
+            throw new ObjectCreationException(function);
+        }
         functions.add(function);
         function.setParent(this);
         resetHash();
     }
 
     public void addSequence(final PgSequence sequence) {
+        if (containsSequence(sequence.getName())) {
+            throw new ObjectCreationException(sequence);
+        }
         sequences.add(sequence);
         sequence.setParent(this);
         resetHash();
     }
 
     public void addTable(final PgTable table) {
+        if (containsTable(table.getName())) {
+            throw new ObjectCreationException(table);
+        }
         tables.add(table);
         table.setParent(this);
         resetHash();
     }
 
     public void addView(final PgView view) {
+        if (containsView(view.getName())) {
+            throw new ObjectCreationException(view);
+        }
         views.add(view);
         view.setParent(this);
         resetHash();
     }
 
     public void addType(final PgType type) {
+        if (containsType(type.getName())) {
+            throw new ObjectCreationException(type);
+        }
         types.add(type);
         type.setParent(this);
         resetHash();

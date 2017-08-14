@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -66,6 +67,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
+        if (getRule(rule.getName()) != null) {
+            throw new ObjectCreationException(rule, this);
+        }
         rules.add(rule);
         rule.setParent(this);
         resetHash();
@@ -96,6 +100,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
+        if (getTrigger(trigger.getName()) != null) {
+            throw new ObjectCreationException(trigger, this);
+        }
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();

@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -35,8 +36,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgConstraint> constraints = new ArrayList<>();
     private final List<PgIndex> indexes = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
-    // Костыль позволяет отследить использование Sequence в выражениях вставки
-    // DEFAULT (nextval)('sequenceName'::Type)
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
     private String tablespace;
@@ -623,24 +622,38 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void addColumn(final PgColumn column) {
+        if (containsColumn(column.getName())) {
+            throw new ObjectCreationException(column, this);
+        }
         columns.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addColumnOfType(final PgColumn column) {
+        if (containsColumnOfType(column.getName())) {
+            throw new ObjectCreationException(column, this);
+        }
         columnsOfType.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addConstraint(final PgConstraint constraint) {
+        if (getParent() != null && getContainingSchema().getTables().stream()
+                .filter(t -> t.containsConstraint(constraint.getName())).count() > 0) {
+            throw new ObjectCreationException(constraint);
+        }
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();
     }
 
     public void addIndex(final PgIndex index) {
+        if (getParent() != null && getContainingSchema().getTables().stream()
+                .filter(t -> t.containsIndex(index.getName())).count() > 0) {
+            throw new ObjectCreationException(index);
+        }
         indexes.add(index);
         index.setParent(this);
         resetHash();
@@ -648,6 +661,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
+        if (containsTrigger(trigger.getName())) {
+            throw new ObjectCreationException(trigger, this);
+        }
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
@@ -655,6 +671,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
+        if (containsRule(rule.getName())) {
+            throw new ObjectCreationException(rule, this);
+        }
         rules.add(rule);
         rule.setParent(this);
         resetHash();
@@ -662,6 +681,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public boolean containsColumn(final String name) {
         return getColumn(name) != null;
+    }
+
+    public boolean containsColumnOfType(final String name) {
+        return getColumnOfType(name) != null;
     }
 
     public boolean containsConstraint(final String name) {

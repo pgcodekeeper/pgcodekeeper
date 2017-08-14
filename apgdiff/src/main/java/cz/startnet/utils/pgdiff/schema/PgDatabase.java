@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -126,6 +127,9 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addSchema(final PgSchema schema) {
+        if (getSchema(schema.getName()) != null) {
+            throw new ObjectCreationException(schema);
+        }
         schemas.add(schema);
         schema.setParent(this);
         resetHash();
@@ -158,6 +162,9 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addExtension(final PgExtension extension) {
+        if (getExtension(extension.getName()) != null) {
+            throw new ObjectCreationException(extension);
+        }
         extensions.add(extension);
         extension.setParent(this);
         resetHash();
