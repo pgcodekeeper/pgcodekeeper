@@ -44,8 +44,10 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -92,6 +94,7 @@ public class QuickUpdate extends AbstractHandler {
         private String primarySqlText;
         private PgDbProject pgDbProject;
         private IProject project;
+        private String schemaNameProjectFragment;
 
         public QuickUpdateJob(String name, IEditorPart editor, DbInfo dbInfo) {
             super(name);
@@ -132,15 +135,41 @@ public class QuickUpdate extends AbstractHandler {
                 throws IOException, InterruptedException, LicenseException, CoreException {
             primarySqlText = ((RollOnEditor)editor).getEditorSourceViewer().getDocument().get();
 
+            if(primarySqlText.isEmpty()){
+                showWarningMessage(Messages.sqlScriptDialog_script_is_empty);
+                return false;
+            }
+
             PgDatabase dbProjectFragment = getDbProjectFragment(args,
                     ((FileEditorInput)editor.getEditorInput()).getURI().getPath(),
                     primarySqlText);
 
             PgDatabase dbProjectFull = DbSource.fromProject(pgDbProject).get(SubMonitor.convert(null, "", 1));
+
+            Map<String, PgStatement> listPgObjectsFragment = PgDatabase.listPgObjects(dbProjectFragment);
+
+            for(Entry<String, PgStatement> entry : listPgObjectsFragment.entrySet()){
+                PgStatement parent = entry.getValue().getParent();
+                if(parent != null
+                        && parent.getStatementType() == DbObjType.SCHEMA
+                        && !parent.getName().equals(schemaNameProjectFragment)){
+                    showWarningMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic);
+                    return false;
+                }
+            }
+
             PgDatabase dbRemoteFull = new JdbcLoader(connector, args).getDbFromJdbc();
             TreeElement treeFull = DiffTree.create(dbRemoteFull, dbProjectFull, null);
 
-            setCheckedFromFragment(treeFull, PgDatabase.listPgObjects(dbProjectFragment));
+            List<TreeElement> checked = setCheckedFromFragment(treeFull, listPgObjectsFragment);
+
+            if( (checked.size() == 1
+                    && checked.get(0).getType() == DbObjType.SCHEMA
+                    && checked.get(0).getSide() == DiffSide.BOTH)
+                    || checked.size() == 0 ){
+                showWarningMessage(Messages.sqlScriptDialog_script_have_no_changes);
+                return false;
+            }
 
             ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
             PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -149,15 +178,7 @@ public class QuickUpdate extends AbstractHandler {
             writer.flush();
 
             if (script.isDangerDdl(false, false, false, false)) {
-                UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
-                    @Override
-                    public void run() {
-                        MessageBox mb = new MessageBox(editor.getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
-                        mb.setText(Messages.sqlScriptDialog_warning);
-                        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic);
-                        mb.open();
-                    }
-                });
+                showWarningMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic);
                 return false;
             }
 
@@ -198,16 +219,20 @@ public class QuickUpdate extends AbstractHandler {
                 throws IOException, InterruptedException, LicenseException {
             PgDatabase dbDump = null;
 
-            String schemaName = pathFileInEditor.substring(pathFileInEditor.indexOf("/SCHEMA/"), pathFileInEditor.length())
+            schemaNameProjectFragment = pathFileInEditor.substring(pathFileInEditor.indexOf("/SCHEMA/"), pathFileInEditor.length())
                     .replace("/SCHEMA/", "");
-            schemaName = schemaName.substring(0, schemaName.indexOf("/"));
+            if(schemaNameProjectFragment.contains("/")){
+                schemaNameProjectFragment = schemaNameProjectFragment.substring(0, schemaNameProjectFragment.indexOf("/"));
+            } else {
+                schemaNameProjectFragment = schemaNameProjectFragment.substring(0, schemaNameProjectFragment.indexOf(".sql"));
+            }
 
             try(InputStream inputStream = new ByteArrayInputStream(sqlText.getBytes(StandardCharsets.UTF_8));
                     PgDumpLoader loader = new PgDumpLoader(inputStream, pathFileInEditor, args)) {
-                if("PUBLIC".equalsIgnoreCase(schemaName)){
+                if("PUBLIC".equalsIgnoreCase(schemaNameProjectFragment)){
                     dbDump = loader.load();
                 } else {
-                    dbDump = loader.load(schemaName);
+                    dbDump = loader.load(schemaNameProjectFragment);
                 }
             }
             return dbDump;
@@ -239,6 +264,18 @@ public class QuickUpdate extends AbstractHandler {
             }
 
             return checked;
+        }
+
+        private void showWarningMessage(String message){
+            UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
+                @Override
+                public void run() {
+                    MessageBox mb = new MessageBox(editor.getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
+                    mb.setText(Messages.sqlScriptDialog_warning);
+                    mb.setMessage(message);
+                    mb.open();
+                }
+            });
         }
     }
 }
