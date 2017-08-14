@@ -27,6 +27,7 @@ public final class JdbcQueries {
 
     public static String QUERY_EXTENSIONS;
     public static String QUERY_SCHEMAS;
+    public static String QUERY_SCHEMAS_ACCESS;
 
     public static String QUERY_TABLES_PER_SCHEMA;
     public static String QUERY_FUNCTIONS_PER_SCHEMA;
