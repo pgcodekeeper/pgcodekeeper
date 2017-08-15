@@ -17,6 +17,10 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface CONTEXT {
+        String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -141,6 +145,10 @@ public interface UIConsts {
 
     interface BUILDER {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
+    }
+
+    interface PROP_TEST {
+        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
     }
 
     interface HELP {

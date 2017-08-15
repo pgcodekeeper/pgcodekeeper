@@ -76,10 +76,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.services.IEvaluationService;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -98,6 +100,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -108,6 +111,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -153,6 +157,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
+
+    private volatile boolean getChangesJobInProcessing;
+
+    public boolean isGetChangesJobInProcessing() {
+        return getChangesJobInProcessing;
+    }
+
+    private void setGetChangesJobInProcessing(boolean getChangesJobInProcessing) {
+        this.getChangesJobInProcessing = getChangesJobInProcessing;
+        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.GET_CHANGES_RUNNING);
+    }
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -275,6 +290,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         @SuppressWarnings("unchecked")
         Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
+
+        getSite().getService(IContextService.class).activateContext(CONTEXT.MAIN);
     }
 
     public void addDependency() {
@@ -466,15 +483,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
-                    UiSync.exec(parent, new Runnable() {
+            public void scheduled(IJobChangeEvent event) {
+                setGetChangesJobInProcessing(true);
+            }
 
-                        @Override
-                        public void run() {
-                            if (!parent.isDisposed()) {
-                                setInput(dbProject, dbRemote, newDiffer.getDiffTree());
-                            }
+            @Override
+            public void done(IJobChangeEvent event) {
+                setGetChangesJobInProcessing(false);
+                if (event.getResult().isOK()) {
+                    UiSync.exec(parent, () -> {
+                        if (!parent.isDisposed()) {
+                            setInput(dbProject, dbRemote, newDiffer.getDiffTree());
                         }
                     });
                 }
