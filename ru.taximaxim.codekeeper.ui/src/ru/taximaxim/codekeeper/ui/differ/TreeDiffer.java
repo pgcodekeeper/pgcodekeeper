@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,6 +16,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -59,6 +62,12 @@ public class TreeDiffer implements IRunnableWithProgress {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.needTwoWay = needTwoWay;
+    }
+
+    public Map<String, List<AntlrError>> getErrors() {
+        Map<String, List<AntlrError>> errors = dbSource.getErrors();
+        errors.putAll(dbTarget.getErrors());
+        return errors;
     }
 
     @Override

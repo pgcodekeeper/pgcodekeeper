@@ -82,6 +82,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.services.IEvaluationService;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -470,6 +471,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     PgDiffUtils.checkCancelled(monitor);
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
                     newDiffer.run(sub.newChild(90));
+                    newDiffer.getErrors().forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(
+                            new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.getFullMessage(k)),
+                            StatusManager.SHOW)));
                     monitor.done();
                 } catch (InvocationTargetException | CoreException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,

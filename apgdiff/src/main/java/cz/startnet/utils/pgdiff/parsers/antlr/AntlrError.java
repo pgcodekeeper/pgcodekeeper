@@ -43,4 +43,8 @@ public class AntlrError {
     public int getStop() {
         return stop;
     }
+
+    public String getFullMessage(String path) {
+        return path + ' ' + "line " + getLine() + ':' + getCharPositionInLine() + ' ' + getMsg();
+    }
 }
