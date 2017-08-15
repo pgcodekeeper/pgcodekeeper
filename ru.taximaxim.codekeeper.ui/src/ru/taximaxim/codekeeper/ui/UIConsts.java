@@ -147,6 +147,10 @@ public interface UIConsts {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
     }
 
+    interface PROP_TEST {
+        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
+    }
+
     interface HELP {
         String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
         String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$

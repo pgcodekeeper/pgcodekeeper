@@ -81,6 +81,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.services.IEvaluationService;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -110,6 +111,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -160,6 +162,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     public boolean isGetChangesJobInProcessing() {
         return getChangesJobInProcessing;
+    }
+
+    private void setGetChangesJobInProcessing(boolean getChangesJobInProcessing) {
+        this.getChangesJobInProcessing = getChangesJobInProcessing;
+        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.GET_CHANGES_RUNNING);
     }
 
     @Override
@@ -477,19 +484,19 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             @Override
             public void scheduled(IJobChangeEvent event) {
-                getChangesJobInProcessing = false;
+                setGetChangesJobInProcessing(true);
             }
 
             @Override
             public void done(IJobChangeEvent event) {
-                UiSync.exec(parent, () -> {
-                    if (!parent.isDisposed()) {
-                        getChangesJobInProcessing = false;
-                        if (event.getResult().isOK()) {
+                setGetChangesJobInProcessing(false);
+                if (event.getResult().isOK()) {
+                    UiSync.exec(parent, () -> {
+                        if (!parent.isDisposed()) {
                             setInput(dbProject, dbRemote, newDiffer.getDiffTree());
                         }
-                    }
-                });
+                    });
+                }
             }
         });
         job.setUser(true);
