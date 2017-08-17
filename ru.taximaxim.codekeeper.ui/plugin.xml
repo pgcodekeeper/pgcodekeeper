@@ -113,12 +113,18 @@
              class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
              commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
           <enabledWhen>
-             <with variable="activeEditor">
-                <not>
-                    <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
-                    </test>
-                </not>
-             </with>
+             <and>
+                 <with variable="activeEditorId">
+                     <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                     </equals>
+                 </with>
+                 <with variable="activeEditor">
+                    <not>
+                        <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                        </test>
+                    </not>
+                 </with>
+             </and>
           </enabledWhen>
        </handler>
     </extension>
@@ -249,6 +255,28 @@
                 id="ru.taximaxim.codekeeper.ui.mainmenu.pgcodekeeper"
                 label="%menu.label.pgcodekeeper.main"
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
+                    icon="icons/app_icon16.png"
+                    label="%command.commandname.CommitProject"
+                    style="push">
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
+                    icon="icons/pgadmin/database.png"
+                    label="%command.commandname.DiffProject"
+                    style="push">
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+                    icon="icons/refresh.png"
+                    label="%command.commandname.GetChanges"
+                    style="push">
+                </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
+                </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                     label="%command.label.diffWizard"
