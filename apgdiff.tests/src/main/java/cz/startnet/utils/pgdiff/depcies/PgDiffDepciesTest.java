@@ -47,31 +47,8 @@ public class PgDiffDepciesTest {
             // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
             // view v2
             {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
-            // долгий тест накатывает перемещение объектов из одной
-            // схемы в другую, пользователь выбирает все измененные
-            // объекты для наката
-            {"move_object_between_schemas", "move_object_between_schemas"},
-            // тестирует накат только измененных колонок, пользователь выбирает таблицу
-            {"multi_alter_table", "multi_alter_table_usr_t_house"},
-            // пользователь выбирает только v_house
-            {"multi_alter_table", "multi_alter_table_usr_v_house"},
-            // пользователь выбирает только v_house_w
-            {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
-            // пользователь выбирает только функцию update_house_reached
-            {"multi_alter_table", "multi_alter_table_usr_func"},
-            // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
-            {"multi_alter_table", "multi_alter_table_usr_all"},
-            // накат триггера и функции из разных схем, пользователь выбрал только функцию
-            {"trigger_before_insert", "trigger_before_insert_usr_funct"},
-            // пользователь выбрал только триггер
-            {"trigger_before_insert", "trigger_before_insert_usr_trig"},
-            // пользователь выбрал триггер и функцию
-            {"trigger_before_insert", "trigger_before_insert_usr_all"},
             // изменяется тип колонки, пользователь выбирает таблицу
             {"trig_upd_col","trig_upd_col__usr_tbl"},
-            // задача из редмайна по номеру, пользователь выбирает все объекты
-            {"err6049", "err6049"},
-            {"err7095", "err7095"},
             // удаляется исходная таблица, пользователь выбрал на удаление t1
             {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
             // удаляется исходная таблица, пользователь выбрал t2
@@ -102,8 +79,6 @@ public class PgDiffDepciesTest {
             // удаляется таблица с содержимым индексом и триггером,
             // пользователь выбрал только таблицу
             {"drop_tbl", "drop_tbl_usr_tbl"},
-            // выбраны все объекты сложное вью with запросом, также с coalesce
-            {"compl_view", "compl_view"}
         });
     }
 
