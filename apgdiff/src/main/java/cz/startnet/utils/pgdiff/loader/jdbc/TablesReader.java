@@ -26,15 +26,12 @@ public class TablesReader extends JdbcReader {
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
             super.fillFallbackQuery(version);
-            return new TablesReader(this, loader, version);
+            return new TablesReader(this, loader);
         }
     }
 
-    private final int currentVersion;
-
-    private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+    private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
-        this.currentVersion = currentVersion;
     }
 
     @Override
@@ -209,20 +206,13 @@ public class TablesReader extends JdbcReader {
         }
 
         // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
+        if (loader.getVersion() > SupportedVersion.VERSION_9_5.getVersion()) {
             Boolean row_security = res.getBoolean("row_security");
-            if (row_security == null) {
+            Boolean force_security = res.getBoolean("force_security");
+            if (row_security == null || force_security == null) {
                 throw new SQLException("The version of the helper function does not match the version of the Postgres server");
             }
             t.setRowSecurity(row_security);
-        }
-
-        // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
-            Boolean force_security = res.getBoolean("force_security");
-            if (force_security == null) {
-                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
-            }
             t.setForceSecurity(force_security);
         }
 

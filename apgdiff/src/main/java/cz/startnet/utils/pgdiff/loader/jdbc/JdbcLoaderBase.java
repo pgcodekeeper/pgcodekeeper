@@ -63,10 +63,9 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         this.args = args;
     }
 
-    public int getVersion() throws SQLException {
+    public int getVersion() {
         return version;
     }
-
 
     protected void setCurrentObject(GenericColumn currentObject) {
         this.currentObject = currentObject;

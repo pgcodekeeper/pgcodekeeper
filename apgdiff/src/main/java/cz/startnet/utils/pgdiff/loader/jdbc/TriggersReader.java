@@ -26,7 +26,7 @@ public class TriggersReader extends JdbcReader {
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
             super.fillFallbackQuery(version);
-            return new TriggersReader(this, loader, version);
+            return new TriggersReader(this, loader);
         }
     }
 
@@ -41,11 +41,9 @@ public class TriggersReader extends JdbcReader {
     private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
     // SONAR-ON
 
-    private final int currentVersion;
 
-    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
-        this.currentVersion = currentVersion;
     }
 
     @Override
@@ -140,7 +138,7 @@ public class TriggersReader extends JdbcReader {
 
             // before PostgreSQL 9.5
             boolean tginitdeferred = res.getBoolean("tginitdeferred");
-            if (currentVersion < SupportedVersion.VERSION_9_5.getVersion()) {
+            if (loader.getVersion() < SupportedVersion.VERSION_9_5.getVersion()) {
                 t.setImmediate(tginitdeferred);
             } else if (tginitdeferred){
                 t.setImmediate(true);

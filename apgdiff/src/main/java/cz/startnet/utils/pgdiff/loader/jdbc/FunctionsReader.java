@@ -24,18 +24,15 @@ public class FunctionsReader extends JdbcReader {
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
             super.fillFallbackQuery(version);
-            return new FunctionsReader(this, loader, version);
+            return new FunctionsReader(this, loader);
         }
     }
 
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private final int currentVersion;
-
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
-        this.currentVersion = currentVersion;
     }
 
     @Override
@@ -125,7 +122,7 @@ public class FunctionsReader extends JdbcReader {
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
+        if (loader.getVersion() > SupportedVersion.VERSION_9_5.getVersion()) {
             Long[] protrftypes = res.getArray("protrftypes", Long.class);
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
@@ -170,7 +167,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (currentVersion > SupportedVersion.VERSION_9_6.getVersion()) {
+        if (loader.getVersion() > SupportedVersion.VERSION_9_6.getVersion()) {
             String parMode = res.getString("proparallel");
             if (parMode == null) {
                 throw new SQLException("The version of the helper function does not match the version of the Postgres server");
