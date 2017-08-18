@@ -48,7 +48,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             PgStatement st = (PgStatement) element;
             switch (st.getStatementType()) {
             case COLUMN:
-                break;
+                // just for tests
+                return "COL " + st.getBareName(); //$NON-NLS-1$
             case CONSTRAINT:
                 if (!((PgConstraint)st).getForeignColumns().isEmpty()) {
                     return "FK " + st.getBareName(); //$NON-NLS-1$
