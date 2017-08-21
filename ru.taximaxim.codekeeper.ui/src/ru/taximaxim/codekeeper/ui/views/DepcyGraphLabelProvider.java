@@ -18,9 +18,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
 
-    private final static RGB RGB_LBLUE = new RGB(216, 228, 248);
-    private final static RGB RGB_LGREEN = new RGB(204, 255, 204);
-    private final static RGB RGB_DBLUE = new RGB(1, 70, 122);
+    private static final RGB RGB_LBLUE = new RGB(216, 228, 248);
+    private static final RGB RGB_LGREEN = new RGB(204, 255, 204);
+    private static final RGB RGB_DBLUE = new RGB(1, 70, 122);
 
     private final Color colorHighlight;
     private final Color colorLBlue;
