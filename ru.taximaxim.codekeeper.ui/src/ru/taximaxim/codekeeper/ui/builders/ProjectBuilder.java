@@ -47,6 +47,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             default:
                 throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
             }
+            parser.serialize(proj.getName());
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
         } catch (IOException | LicenseException | IllegalStateException ex) {

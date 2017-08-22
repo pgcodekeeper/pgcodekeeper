@@ -1,7 +1,17 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +32,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -40,17 +52,20 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
-public class PgDbParser implements IResourceChangeListener {
+public class PgDbParser implements IResourceChangeListener, Serializable {
+
+    private static final long serialVersionUID = 8342974188310510735L;
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
-    private final List<Listener> listeners = new ArrayList<>();
+    private transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
         listeners.add(e);
@@ -72,6 +87,12 @@ public class PgDbParser implements IResourceChangeListener {
         PgDbParser pnew = new PgDbParser();
         PgDbParser p = PROJ_PARSERS.putIfAbsent(proj, pnew);
         if (p == null) {
+            p = deserialize(proj.getName());
+            if (p != null) {
+                PROJ_PARSERS.put(proj, p);
+            }
+        }
+        if (p == null) {
             p = pnew;
             // prepare newly created parser
             ResourcesPlugin.getWorkspace().addResourceChangeListener(p,
@@ -86,6 +107,67 @@ public class PgDbParser implements IResourceChangeListener {
             }
         }
         return p;
+    }
+
+    /**
+     * Returns path to %workspace%/.metadata/.plugins/%this_plugin%/projects.<br>
+     *
+     * @return path to folder with serialized projects
+     * @throws URISyntaxException if couldn't get path to the workspace
+     */
+    private static Path getInternalFolder() throws URISyntaxException {
+        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
+                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
+                .resolve("projects"); //$NON-NLS-1$
+    }
+
+    /**
+     * Serializes current parser to file with given name in workspace.</br>
+     * Handles {@link URISyntaxException} when couldn't get path to the workspace.</br>
+     * Handles {@link IOException} if have serialize error.
+     *
+     * @param name project name
+     */
+    public void serialize(String name) {
+        try {
+            File folder = getInternalFolder().toFile();
+            folder.mkdirs();
+            File f = new File(folder.getAbsolutePath(), name);
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+                oos.writeObject(this);
+                oos.flush();
+            }
+        } catch (IOException | URISyntaxException e) {
+            Log.log(Log.LOG_DEBUG, "Error while serialize project!", e);
+        }
+    }
+
+    /**
+     * Deserializes parser from file with given name in workspace. </br>
+     * Handles {@link ClassCastException} if object of another class. </br>
+     * Handles {@link ClassNotFoundException} if have deserialize error. </br>
+     * Handles {@link IOException} if have error while read file. </br>
+     * Handles {@link URISyntaxException} when couldn't get path to the workspace.
+     *
+     * @param name project name
+     * @return deserialized parser or null if errors has been handled
+     */
+    private static PgDbParser deserialize(String name) {
+        try {
+            Path path = getInternalFolder();
+            if (Files.exists(path) && Files.exists(path.resolve(name))) {
+                File f = path.resolve(name).toFile();
+                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(f))) {
+                    PgDbParser parser = (PgDbParser) oin.readObject();
+                    parser.listeners = new ArrayList<>();
+                    return parser;
+                }
+            }
+        } catch (ClassCastException | ClassNotFoundException | IOException | URISyntaxException e) {
+            Log.log(Log.LOG_DEBUG, "Error while deserialize project!", e);
+        }
+
+        return null;
     }
 
     private static void startBuildJob(IProject proj) {
