@@ -179,8 +179,7 @@ class DifferData_1 extends DifferData{
 
     @Override
     void setUserSelection(TreeElement root) {
-        TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);
+        root.getChild("public").getChild("t4").getChild("t4_c2_key").setSelected(true);
     }
 }
 
@@ -192,15 +191,14 @@ class DifferData_2 extends DifferData{
 
     @Override
     void setUserSelection(TreeElement root) {
-        TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);
+        root.getChild("public").getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        PgTable t = source.getSchema("public").getTable("table1");
-        PgView v = source.getSchema("public").getView("v_auto_mark");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, t);
+        PgTable t = source.getSchema("public").getTable("t1");
+        PgView v = source.getSchema("public").getView("v1");
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
@@ -220,15 +218,14 @@ class DifferData_3 extends DifferData{
 
     @Override
     void setUserSelection(TreeElement root) {
-        TreeElement schema = root.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);
+        root.getChild("public").getChild("t1").getChild("t1_c2_key").setSelected(true);
     }
 
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
-        PgColumn c = source.getSchema("public").getTable("table1").getColumn("col2");
-        PgView v = source.getSchema("public").getView("v_auto_mark");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, c);
+        PgColumn c = source.getSchema("public").getTable("t1").getColumn("c1");
+        PgView v = source.getSchema("public").getView("v1");
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
@@ -247,8 +244,7 @@ class DifferData_4 extends DifferData{
 
     @Override
     void setUserSelection(TreeElement root) {
-        TreeElement schema = root.getChild("audit");
-        schema.getChild("logged_actions").setSelected(true);
+        root.getChild("test").getChild("test_table").setSelected(true);
     }
 }
 
@@ -260,15 +256,14 @@ class DifferData_5 extends DifferData{
 
     @Override
     void setUserSelection(TreeElement root) {
-        TreeElement schema = root.getChild("public");
-        schema.getChild("v_auto_mark_two").setSelected(true);
+        root.getChild("public").getChild("v1").setSelected(true);
     }
 
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         PgSchema s = target.getSchema("newschema");
-        PgView v = target.getSchema("public").getView("v_auto_mark_two");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, s);
+        PgView v = target.getSchema("public").getView("v1");
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, s);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
