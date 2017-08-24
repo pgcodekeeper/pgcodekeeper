@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -197,8 +198,8 @@ class DifferData_2 extends DifferData{
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         PgTable t = source.getSchema("public").getTable("t1");
-        PgView v = source.getSchema("public").getView("v1");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, t);
+        PgSequence s = source.getSchema("public").getSequence("t1_c1_seq");
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
@@ -224,8 +225,8 @@ class DifferData_3 extends DifferData{
     @Override
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         PgColumn c = source.getSchema("public").getTable("t1").getColumn("c1");
-        PgView v = source.getSchema("public").getView("v1");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, c);
+        PgSequence s = source.getSchema("public").getSequence("t1_c1_seq");
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (s, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
