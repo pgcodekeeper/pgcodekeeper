@@ -211,31 +211,24 @@
                 </visibleWhen>
             </menu>
         </menuContribution>
-        <menuContribution               
-            allPopups="false"              
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">            
-         <toolbar                  
-         id="ru.taximaxim.codekeeper.ui.toolbar">               
-         <command                     
-         commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"                     
-         icon="icons/quick_update.png"                     
-         label="%command.commandname.QuickUpdate"                     
-         style="push">
-            <visibleWhen
-                  checkEnabled="true">
-               <with
-                     variable="activeEditorId">
-                  <equals
-                        value="ru.taximaxim.codekeeper.ui.RollOnEditor">
-                  </equals>
-               </with>
-            </visibleWhen>   
-         </command>
-         </toolbar>
-         </menuContribution>  
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+                    icon="icons/quick_update.png"
+                    label="%command.commandname.QuickUpdate"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </toolbar>
+        </menuContribution>
     </extension>
-    <extension
-          point="org.eclipse.ui.editors">
+    <extension point="org.eclipse.ui.editors">
         <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"

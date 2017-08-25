@@ -798,7 +798,7 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    public static boolean isContainer(TreeElement el) {
+    static boolean isContainer(TreeElement el) {
         return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
     }
 

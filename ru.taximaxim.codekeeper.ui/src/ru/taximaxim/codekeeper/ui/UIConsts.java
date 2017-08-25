@@ -17,11 +17,14 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface CONTEXT {
+        String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
         String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
-        String SCOPE = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
     }
 
     interface MARKER {

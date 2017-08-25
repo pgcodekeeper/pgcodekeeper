@@ -66,6 +66,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -146,7 +147,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
-        getSite().getService(IContextService.class).activateContext(UIConsts.EDITOR.SCOPE);
+        getSite().getService(IContextService.class).activateContext(CONTEXT.EDITOR);
     }
 
     public void setLineBackground() {
@@ -354,8 +355,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         });
     }
 
-    public ISourceViewer getEditorSourceViewer() {
-        return super.getSourceViewer();
+    public String getEditorText() {
+        return getSourceViewer().getTextWidget().getText();
     }
 
     public DbInfo getDbInfo() {

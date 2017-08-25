@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -26,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -166,5 +168,15 @@ public class PgUIDumpLoader extends PgDumpLoader {
             }
         }, IResource.FILE);
         return count[0];
+    }
+
+    /**
+     * @param path project relative path
+     * @return whether the path corresponds to a schema sql file
+     *          like this: /SCHEMA/schema_name.sql
+     */
+    public static boolean isSchemaFile(IPath path) {
+        return path.segmentCount() == 2 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
+                && path.segment(1).endsWith(".sql");
     }
 }

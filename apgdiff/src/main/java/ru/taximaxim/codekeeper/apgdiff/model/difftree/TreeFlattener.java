@@ -85,15 +85,4 @@ public class TreeFlattener {
             result.add(el);
         }
     }
-
-    public List<TreeElement> getNewDeleteEdit(List<TreeElement> elements, PgDatabase dbSource, PgDatabase dbTarget) {
-        List<TreeElement> filtered = new ArrayList<>();
-        for(TreeElement el : elements) {
-            if (el.getSide() != DiffSide.BOTH ||
-                    !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget))) {
-                filtered.add(el);
-            }
-        }
-        return filtered;
-    }
 }
