@@ -5,6 +5,7 @@ import static ru.taximaxim.codekeeper.apgdiff.licensing.internal.LicensingIntern
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.MessageFormat;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -12,6 +13,12 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.internal.LicensingInternal;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class License {
+
+    private static final String INTERNAL_LICENSE = "lic";
+
+    public static final URL getInternalLicenseUrl() {
+        return License.class.getResource(INTERNAL_LICENSE);
+    }
 
     private final com.verhas.licensor.License license;
 

@@ -85,11 +85,11 @@ public abstract class DbSource {
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setCheckFunctionBodies(mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setUsingOnOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setUsingTypeCastOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
-        args.setForceUnixNewlines(forceUnixNewlines);
+        args.setKeepNewlines(!forceUnixNewlines);
         LicensePrefs.setLicense(args);
         return args;
     }
@@ -118,7 +118,7 @@ public abstract class DbSource {
         } else {
             return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    charset, timezone, forceUnixNewlines);
+                    timezone, forceUnixNewlines);
         }
     }
 
@@ -131,9 +131,8 @@ public abstract class DbSource {
     }
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            String encoding, String timezone, boolean forceUnixNewlines) {
-        return new DbSourceJdbc(host, port, user, pass, dbname,
-                encoding, timezone, forceUnixNewlines);
+            String timezone, boolean forceUnixNewlines) {
+        return new DbSourceJdbc(host, port, user, pass, dbname, timezone, forceUnixNewlines);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -168,8 +167,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines),
-                monitor, null);
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor);
     }
 }
 
@@ -323,7 +321,7 @@ class DbSourceDb extends DbSource {
 class DbSourceJdbc extends DbSource {
 
     private final JdbcConnector jdbcConnector;
-    private final String dbName, encoding, timezone;
+    private final String dbName;
     private final boolean forceUnixNewlines;
 
     @Override
@@ -332,20 +330,18 @@ class DbSourceJdbc extends DbSource {
     }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
-            String encoding, String timezone, boolean forceUnixNewlines) {
+            String timezone, boolean forceUnixNewlines) {
         super(dbName);
         this.dbName = dbName;
-        this.encoding = encoding;
-        this.timezone = timezone;
         this.forceUnixNewlines = forceUnixNewlines;
-        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, encoding, timezone);
+        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, timezone);
     }
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines);
+        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
         return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
     }
 }

@@ -1,0 +1,8 @@
+ALTER TABLE testtable
+	ALTER COLUMN field1 SET NOT NULL, 
+	ALTER COLUMN field2 SET DEFAULT 1000, 
+	ALTER COLUMN field3 SET DEFAULT 'word'::text, 
+	ALTER COLUMN field4 SET DEFAULT true;
+
+ALTER TABLE testtable
+	ADD CONSTRAINT testtable_pkey PRIMARY KEY (field1);

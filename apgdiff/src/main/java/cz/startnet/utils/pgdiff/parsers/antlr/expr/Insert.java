@@ -2,13 +2,11 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 
-public class Insert extends AbstractExprWithNmspc {
+public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
 
     protected Insert(AbstractExpr parent) {
         super(parent);
@@ -19,8 +17,7 @@ public class Insert extends AbstractExprWithNmspc {
     }
 
     @Override
-    public List<String> analyze(ParserRuleContext ruleCtx) {
-        Insert_stmt_for_psqlContext insert = (Insert_stmt_for_psqlContext) ruleCtx;
+    public List<String> analyze(Insert_stmt_for_psqlContext insert) {
         With_clauseContext with = insert.with_clause();
         if (with != null) {
             analyzeCte(with);

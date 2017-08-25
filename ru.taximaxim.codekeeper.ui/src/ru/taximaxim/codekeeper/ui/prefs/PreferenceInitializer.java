@@ -5,6 +5,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.RGB;
 
+import ru.taximaxim.codekeeper.apgdiff.licensing.License;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -23,7 +24,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
-        store.setDefault(PREF.LICENSE_PATH, LicensePrefs.getInternalLicenseUrl().toString());
+        store.setDefault(PREF.LICENSE_PATH, License.getInternalLicenseUrl().toString());
+
+        store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
 
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
@@ -34,10 +37,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
         store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.PROMPT);
 
-        store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_IS_BACKLIGHT, true);
-        store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_IS_BACKLIGHT, true);
-        store.setDefault(PG_EDIT_PREF.PRJ_UPDATE_EDITOR_BACKLIGHT, "158,182,211"); //$NON-NLS-1$
-        store.setDefault(PG_EDIT_PREF.DB_UPDATE_EDITOR_BACKLIGHT, "255,146,129"); //$NON-NLS-1$
         store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);

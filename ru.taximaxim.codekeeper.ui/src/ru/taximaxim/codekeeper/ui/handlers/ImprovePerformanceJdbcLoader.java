@@ -21,7 +21,7 @@ public class ImprovePerformanceJdbcLoader extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
-            Path p = Files.createTempFile(Messages.ImprovePerformanceJdbcLoader_performance_helpers + '_', ".sql");
+            Path p = Files.createTempFile(Messages.ImprovePerformanceJdbcLoader_performance_helpers + '_', ".sql"); //$NON-NLS-1$
             Files.write(p, JdbcQueries.QUERY_IMPROVE_JDBC_PERFORMANCE.getBytes());
             HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().openEditor(
                     new FileStoreEditorInput(EFS.getLocalFileSystem().fromLocalFile(p.toFile())), EDITOR.ROLLON);

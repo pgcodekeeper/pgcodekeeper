@@ -296,7 +296,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        PgTable.compareOptions(oldView.getOptions(), newView.getOptions(), sb, getName(), DbObjType.VIEW);
+        PgTable.compareOptions(oldView, newView, sb);
 
         return sb.length() > startLength;
     }
@@ -370,7 +370,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
         removeColumnComment(columnName);
         columnComments.add(new ColumnComment(columnName,
-                args.isForceUnixNewlines() ? comment.replace("\r", "") : comment));
+                args.isKeepNewlines() ? comment : comment.replace("\r", "")));
     }
 
     public void removeColumnComment(final String columnName) {

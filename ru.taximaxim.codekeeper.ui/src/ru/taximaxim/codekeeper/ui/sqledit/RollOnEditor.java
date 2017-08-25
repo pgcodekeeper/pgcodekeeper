@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
@@ -110,7 +112,17 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private volatile boolean isRunning;
     private Thread scriptThread;
     private Button runScriptBtn;
-    private IEditorInput input;
+
+    private final Listener parserListener = e -> {
+        if (parentComposite == null) {
+            return;
+        }
+        UiSync.exec(parentComposite, () -> {
+            if (!getSourceViewer().getTextWidget().isDisposed()) {
+                setLineBackground();
+            }
+        });
+    };
 
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
@@ -147,11 +159,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void createPartControl(Composite parent) {
         parentComposite = parent;
         super.createPartControl(parent);
+        setLineBackground();
         getSite().getService(IContextService.class).activateContext(CONTEXT.EDITOR);
     }
 
     public void setLineBackground() {
-        List<PgObjLocation> refs = getParser().getObjReferences().get(input.getName());
+        // TODO who deletes stale annotations after editor refresh?
+        List<PgObjLocation> refs = getParser().getObjsForEditor(getEditorInput());
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
         for (PgObjLocation loc : refs) {
             String annotationMsg = null;
@@ -181,12 +195,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         getSite().getPage().addPartListener(this);
-        this.input = input;
+        getParser().addListener(parserListener);
     }
 
     @Override
     public void dispose() {
         getSite().getPage().removePartListener(this);
+        getParser().removeListener(parserListener);
         super.dispose();
     }
 
@@ -405,7 +420,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         try{
                             JdbcConnector connector = new JdbcConnector(
                                     jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                                    ApgdiffConsts.UTC);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
                                 output = Messages.RollOnEditor_jdbc_success;
@@ -550,8 +565,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
         if (partRef.getPart(false) == this && !PlatformUI.getWorkbench().isClosing()
-                && input instanceof IFileEditorInput) {
-            IFile f = ((IFileEditorInput) input).getFile();
+                && getEditorInput() instanceof IFileEditorInput) {
+            IFile f = ((IFileEditorInput) getEditorInput()).getFile();
             if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
                 askDeleteScript(f);
             }
@@ -566,7 +581,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             // if not select "NO" with toggle, show choice message dialog
         } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
-                    Messages.RollOnEditor_script_delete_dialog_title, Messages.RollOnEditor_script_delete_dialog_message,
+                    Messages.RollOnEditor_script_delete_dialog_title, MessageFormat.format(
+                            Messages.RollOnEditor_script_delete_dialog_message, f.getName()),
                     Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
             if(dialog.getReturnCode() == IDialogConstants.YES_ID){
                 deleteFile(f);

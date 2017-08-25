@@ -2,7 +2,7 @@
 <feature
       id="ru.taximaxim.codekeeper.feature"
       label="%feature.label"
-      version="3.9.1.qualifier"
+      version="3.11.5.qualifier"
       provider-name="%feature.provider-name"
       plugin="ru.taximaxim.codekeeper.mainapp">
 
@@ -20,8 +20,7 @@
 
    <url>
       <update label="%url.update.label" url="http://pgcodekeeper.ru/update/release/"/>
-      <discovery label="Eclipse Git Team Provider" url="http://download.eclipse.org/egit/updates"/>
-      <discovery label="Eclipse Orbit Neon.3+" url="http://download.eclipse.org/tools/orbit/R-builds/R20170307180635/repository/"/>
+      <discovery label="Eclipse Orbit Oxygen" url="http://download.eclipse.org/tools/orbit/R-builds/R20170516192513/repository"/>
    </url>
 
    <requires>

@@ -85,7 +85,7 @@ public class PgRule extends PgStatementWithSearchPath{
      * Adds {@link #command} to {@link #commands} with newlines as requested in arguments.
      */
     public void addCommand(PgDiffArguments args, String command) {
-        addCommand(args.isForceUnixNewlines() ? command.replace("\r", "") : command);
+        addCommand(args.isKeepNewlines() ? command : command.replace("\r", ""));
     }
 
     public PgRule(String name, String rawStatement) {

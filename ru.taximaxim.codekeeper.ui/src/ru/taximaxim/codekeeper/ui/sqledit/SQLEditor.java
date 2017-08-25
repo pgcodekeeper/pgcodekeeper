@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -20,12 +20,12 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -35,7 +35,6 @@ import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -43,6 +42,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
 
@@ -50,27 +50,21 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     private Composite parentComposite;
     private SQLEditorContentOutlinePage fOutlinePage;
-    private IEditorInput input;
     private Image errorTitleImage;
     private PgDbParser parser;
 
-    private final Listener list = new Listener() {
-
-        @Override
-        public void handleEvent(Event event) {
-            UiSync.exec(parentComposite, new Runnable() {
-
-                @Override
-                public void run() {
-                    if (fOutlinePage != null) {
-                        Control c = fOutlinePage.getControl();
-                        if (c != null && !c.isDisposed()) {
-                            fOutlinePage.externalRefresh();
-                        }
-                    }
-                }
-            });
+    private final Listener list = e -> {
+        if (parentComposite == null) {
+            return;
         }
+        UiSync.exec(parentComposite, () -> {
+            if (fOutlinePage != null) {
+                Control c = fOutlinePage.getControl();
+                if (c != null && !c.isDisposed()) {
+                    fOutlinePage.externalRefresh();
+                }
+            }
+        });
     };
 
     @Override
@@ -84,28 +78,26 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     @Override
     public void createPartControl(Composite parent) {
         parentComposite = parent;
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
-        parser = initialParser();
-        if (parser != null) {
-            parser.addListener(list);
-            fOutlinePage = new SQLEditorContentOutlinePage(getDocumentProvider(), this);
-            fOutlinePage.setInput(getEditorInput());
-        }
         super.createPartControl(parent);
     }
 
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
-        if (fOutlinePage != null) {
-            fOutlinePage.update();
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        try {
+            if (!isProject(res)) {
+                refreshParser(getParser(), res, progressMonitor);
+            }
+        } catch (IOException | InterruptedException | LicenseException | CoreException ex) {
+            Log.log(ex);
         }
     }
 
     @Override
     protected void createActions() {
         super.createActions();
-        ResourceBundle bundle = ResourceBundle.getBundle(Messages.BUNDLE_NAME);
+        ResourceBundle bundle = ResourceBundle.getBundle(Messages.getBundleName());
         ContentAssistAction action = new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
@@ -115,34 +107,67 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
                 getSharedColors(), getPreferenceStore(), this));
-
-        this.input = input;
         setDocumentProvider(new SQLEditorCommonDocumentProvider());
+
         super.init(site, input);
+
+        try {
+            parser = initParser();
+        } catch (InterruptedException | IOException | LicenseException | CoreException ex) {
+            throw new PartInitException(ex.getLocalizedMessage(), ex);
+        }
+        parser.addListener(list);
+
+        fOutlinePage = new SQLEditorContentOutlinePage(this);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }
 
-    private PgDbParser initialParser() {
-        if (input instanceof IFileEditorInput) {
-            IProject proj = ((IFileEditorInput)input).getFile().getProject();
-            try {
-                if (proj.hasNature(NATURE.ID)) {
-                    return PgDbParser.getParser(proj);
-                }
-            } catch (CoreException e) {
-                Log.log(e);
-            }
+    private PgDbParser initParser() throws InterruptedException, IOException, LicenseException, CoreException {
+        IEditorInput in = getEditorInput();
+
+        IResource res = ResourceUtil.getResource(in);
+        if (isProject(res)) {
+            return PgDbParser.getParser(res.getProject());
         }
 
-        // in case of exception, non-project or non-pgcodekeeper file
-        // try creating a rollon (standalone) parser
-        IDocument document = getDocumentProvider().getDocument(input);
-        InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-        try {
-            return PgDbParser.getRollOnParser(stream, ApgdiffConsts.UTF_8, null);
-        } catch (InterruptedException | IOException | LicenseException e) {
-            Log.log(e);
+        PgDbParser parser = new PgDbParser();
+        if (refreshParser(parser, res, null)) {
+            return parser;
         }
-        return null;
+
+        throw new PartInitException("Unknown editor input: " + in); //$NON-NLS-1$
+    }
+
+    /**
+     * Use only for non-project parsers
+     * @param {@link IFileEditorInput} {@link IResource} or null
+     * @return true if refresh was triggered successfully
+     */
+    private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
+            throws InterruptedException, IOException, LicenseException, CoreException {
+        if (res instanceof IFile) {
+            parser.getObjFromProjFile((IFile) res, monitor);
+            return true;
+        }
+
+        IEditorInput in = getEditorInput();
+        if (in instanceof IURIEditorInput) {
+            IURIEditorInput uri = (IURIEditorInput) in;
+            IDocument document = getDocumentProvider().getDocument(getEditorInput());
+            InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
+            parser.fillRefsFromInputStream(stream, uri.getURI().toString(), monitor);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param {@link IFileEditorInput} {@link IResource} or null
+     * @throws CoreException
+     */
+    private boolean isProject(IResource res) throws CoreException {
+        return res == null ? false : res.getProject().hasNature(NATURE.ID)
+                && PgUIDumpLoader.isProjectPath(res.getProjectRelativePath());
     }
 
     PgDbParser getParser() {

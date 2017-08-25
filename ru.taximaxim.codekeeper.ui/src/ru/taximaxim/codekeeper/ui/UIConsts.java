@@ -18,6 +18,7 @@ public interface UIConsts {
     }
 
     interface CONTEXT {
+        String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
         String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
     }
 
@@ -40,6 +41,11 @@ public interface UIConsts {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
+
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
+        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
+        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -85,11 +91,11 @@ public interface UIConsts {
     }
 
     interface PG_EDIT_PREF {
-        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
+        String UPDATE = "UPDATE"; //$NON-NLS-1$
+        String RESET = "RESET"; //$NON-NLS-1$
+        String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
     public enum DBSources {
@@ -142,6 +148,10 @@ public interface UIConsts {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
     }
 
+    interface PROP_TEST {
+        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
+    }
+
     interface HELP {
         String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
         String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
@@ -159,10 +169,15 @@ public interface UIConsts {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
-        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
+        String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
+
+        // pgadmin icons
+        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
+        String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
@@ -174,6 +189,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {

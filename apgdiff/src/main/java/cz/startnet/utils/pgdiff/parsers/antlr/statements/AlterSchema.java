@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -16,9 +15,8 @@ public class AlterSchema extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = QNameParser.getFirstName(ctx.schema_with_name().name.identifier());
-        PgSchema schema = getSafe(db::getSchema,
-                QNameParser.getFirstNameCtx(ctx.schema_with_name().name.identifier()));
+        String name = ctx.schema_with_name().name.getText();
+        PgSchema schema = getSafe(db::getSchema, ctx.schema_with_name().name);
         if (!name.equals(ApgdiffConsts.PUBLIC)) {
             fillOwnerTo(ctx.owner_to(), schema);
         }

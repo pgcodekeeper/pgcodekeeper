@@ -23,6 +23,8 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
@@ -43,6 +45,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -71,7 +74,16 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
 
-        IToolBarManager toolman = site.getActionBars().getToolBarManager();
+        IToolBarManager toolman = getViewSite().getActionBars().getToolBarManager();
+
+        CommandContributionItemParameter param = new CommandContributionItemParameter(
+                getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
+        param.icon = ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONADDDEP));
+        param.mode = CommandContributionItem.MODE_FORCE_TEXT;
+
+        toolman.add(new CommandContributionItem(param));
+
         ActionContributionItem ac = new ActionContributionItem(projectAction);
         ac.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         toolman.add(ac);
@@ -142,17 +154,14 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         IProject selectedProj = null;
-        DepcyStructuredSelection dss = null;
-        if (selection instanceof DepcyStructuredSelection) {
-            dss = (DepcyStructuredSelection) selection;
-        } else {
-            for (Object selected : ((IStructuredSelection) selection).toList()) {
-                if (selected instanceof DepcyStructuredSelection) {
-                    dss = (DepcyStructuredSelection) selected;
-                }
-                if (selected instanceof IProject) {
-                    selectedProj = (IProject) selected;
-                }
+        DBPair dss = null;
+        List<?> selected = ((IStructuredSelection) selection).toList();
+
+        for (Object object : selected) {
+            if (object instanceof DBPair) {
+                dss = (DBPair) object;
+            } else if (object instanceof IProject) {
+                selectedProj  = (IProject) object;
             }
         }
         if (dss == null) {
@@ -176,18 +185,16 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
 
         Set<PgStatement> newInput = new HashSet<>();
-        for (Object selected : dss.toList()) {
-            if (!(selected instanceof TreeElement)) {
-                continue;
-            }
-
-            TreeElement el = (TreeElement) selected;
-            // does el exist in the chosen graph (or DB)
-            boolean elIsProject = el.getSide() == dss.projSide;
-            if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
-                for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
-                    if (!(dependant instanceof PgColumn)) {
-                        newInput.add(dependant);
+        for (Object object : selected) {
+            if (object instanceof TreeElement){
+                TreeElement el = (TreeElement) object;
+                // does el exist in the chosen graph (or DB)
+                boolean elIsProject = el.getSide() == DiffSide.LEFT;
+                if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
+                    for (PgStatement dependant : depRes.getDropDepcies(el.getPgStatement(currentDb))) {
+                        if (!(dependant instanceof PgColumn)) {
+                            newInput.add(dependant);
+                        }
                     }
                 }
             }

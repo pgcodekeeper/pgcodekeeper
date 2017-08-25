@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -70,6 +72,11 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
+                    loader.submitAntlrTask(colDefault, p -> {
+                        ValueExpr vex = new ValueExpr(schemaName);
+                        vex.analyze(new Vex(p.vex_eof().vex()));
+                        return vex.getDepcies();
+                    }, v::addAllDeps);
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

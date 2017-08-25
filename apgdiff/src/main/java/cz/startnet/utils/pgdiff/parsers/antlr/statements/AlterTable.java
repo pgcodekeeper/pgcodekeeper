@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.Map.Entry;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class AlterTable extends ParserAbstract {
 
@@ -38,7 +37,6 @@ public class AlterTable extends ParserAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         PgTable tabl = null;
 
-        List<String> sequences = new ArrayList<>();
         Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
@@ -58,14 +56,9 @@ public class AlterTable extends ParserAbstract {
             // everything else requires a real table, so fail immediately
             tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
-                tabl.addColumn(getColumn(tablAction.table_column_definition(),
-                        sequences, getDefSchemaName()));
+                tabl.addColumn(getColumn(tablAction.table_column_definition(), getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
-                String sequence = getSequence(tablAction.set_def_column().expression);
-                if (sequence != null) {
-                    sequences.add(sequence);
-                }
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if (col != null) {
                     ValueExpr vex = new ValueExpr(schema.getName());
@@ -73,8 +66,27 @@ public class AlterTable extends ParserAbstract {
                     col.addAllDeps(vex.getDepcies());
                 }
             }
+
+            if(tablAction.set_attribute_option() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    for (Storage_parameter_optionContext option :
+                        tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
+                        col.addOption(option.storage_param.getText(),
+                                option.value == null ? "" : option.value.getText());
+                    }
+                }
+            }
+
+            if(tablAction.set_storage() != null){
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if(col != null){
+                    col.setStorage(tablAction.set_storage().storage_option().getText());
+                }
+            }
+
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schema.getName());
                 if (tablAction.not_valid != null) {
                     constr.setNotValid(true);
                 }
@@ -104,16 +116,6 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
-            }
-        }
-        for (String seq : sequences) {
-            // не добавляем в таблицу сиквенс если она наследует некоторые поля
-            // из др таблицы
-            // совместимость с текущей версией экспорта
-            if (tabl.getInherits().isEmpty()) {
-                QNameParser seqName = new QNameParser(seq);
-                tabl.addDep(new GenericColumn(seqName.getSchemaName(getDefSchemaName()),
-                        seqName.getFirstName(), DbObjType.SEQUENCE));
             }
         }
         for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {

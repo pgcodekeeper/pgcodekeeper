@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -134,10 +135,6 @@ implements IExecutableExtension, INewWizard {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
 
-            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
-            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
-
-            props.openProject();
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
                 if (!charset.isEmpty() &&
@@ -157,6 +154,11 @@ implements IExecutableExtension, INewWizard {
                 getContainer().run(true, true, new InitProjectFromSource(props, getDbSource(props)));
             }
             initSuccess = true;
+
+            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+
+            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
+            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
 
             BasicNewProjectResourceWizard.updatePerspective(config);
             BasicNewResourceWizard.selectAndReveal(props.getProject(),
@@ -378,8 +380,7 @@ class PageDb extends WizardPage {
                 throws InvocationTargetException, InterruptedException {
 
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), ApgdiffConsts.UTC);
 
             try (Connection conn = connector.getConnection(); Statement s = conn.createStatement()) {
                 ResultSet rs = s.executeQuery(QUERY_TZ);
