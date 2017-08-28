@@ -167,7 +167,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private boolean isProject(IResource res) throws CoreException {
         return res == null ? false : res.getProject().hasNature(NATURE.ID)
-                && PgUIDumpLoader.isProjectPath(res.getProjectRelativePath());
+                && PgUIDumpLoader.isInProject(res);
     }
 
     PgDbParser getParser() {

@@ -29,7 +29,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -86,8 +85,7 @@ public class QuickUpdate extends AbstractHandler {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         IEditorInput input = editor.getEditorInput();
         return editor instanceof RollOnEditor && input instanceof IFileEditorInput
-                && ResourceUtil.getFile(input).getLocation().toOSString().contains("SCHEMA");
-        // TODO replace last condition with PgUiDumpLoader's project file check
+                && PgUIDumpLoader.isInProject(ResourceUtil.getFile(input));
     }
 }
 
@@ -114,7 +112,7 @@ class QuickUpdateJob extends Job {
     protected IStatus run(IProgressMonitor monitor) {
         try {
             Log.log(Log.LOG_INFO, "QuickUpdate starting"); //$NON-NLS-1$
-            this.monitor = SubMonitor.convert(monitor, "Quick Update", STEPS);
+            this.monitor = SubMonitor.convert(monitor, STEPS);
 
             doRun();
         } catch (InterruptedException e) {
@@ -133,7 +131,8 @@ class QuickUpdateJob extends Job {
         boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath());
         String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 
-        PgDatabase dbProjectFragment = getDbProjectFragment();
+        PgDatabase dbProjectFragment =
+                PgUIDumpLoader.buildFiles(Arrays.asList(file), monitor.newChild(1), null);
         Collection<PgStatement> listPgObjectsFragment = PgDatabase.listPgObjects(dbProjectFragment).values();
 
         long schemaCount = listPgObjectsFragment.stream()
@@ -156,11 +155,10 @@ class QuickUpdateJob extends Job {
         DbSource dbProject = DbSource.fromProject(proj);
 
         TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, false);
-        // TODO this resets task name
-        // maybe SUPPRESS_BEGINTASK ?
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
-        Collection<TreeElement> checked = setCheckedFromFragment(treeFull, listPgObjectsFragment);
+        Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
+                listPgObjectsFragment, dbRemote.getDbObject(), dbProject.getDbObject());
 
         if (checked.isEmpty()) {
             // no diff
@@ -169,8 +167,6 @@ class QuickUpdateJob extends Job {
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
                 treeFull, false, timezone);
-        // TODO this resets task name
-        // maybe SUPPRESS_BEGINTASK ?
         differ.run(monitor.newChild(1));
 
         if (differ.getScript().isDangerDdl(false, false, false, false)) {
@@ -183,7 +179,7 @@ class QuickUpdateJob extends Job {
         JdbcRunner runner = new JdbcRunner(new JdbcConnector(
                 dbinfo.getDbHost(), dbinfo.getDbPort(),
                 dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                ApgdiffConsts.UTF_8, ApgdiffConsts.UTC));
+                ApgdiffConsts.UTF_8));
         String result = runner.runScript(differ.getDiffDirect());
 
         if(!JDBC_CONSTS.JDBC_SUCCESS.equals(result)) {
@@ -192,34 +188,26 @@ class QuickUpdateJob extends Job {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(dbRemote, DbSource.fromDbObject(dbProject), false);
-        // TODO this resets task name
-        // maybe SUPPRESS_BEGINTASK ?
+        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote, false);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 
-        Collection<TreeElement> checkedAfter = setCheckedFromFragment(
-                treeAfter, listPgObjectsFragment);
+        Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter,
+                listPgObjectsFragment, dbProject.getDbObject(), dbRemote.getDbObject());
         if (checkedAfter.isEmpty()) {
             // success, no export needed, Postgres didn't make any alterations
             return;
         }
 
+
+        checkFileModified();
+
         monitor.newChild(1).subTask("Updating Project");
         ProjectUpdater updater = new ProjectUpdater(
                 dbRemote.getDbObject(), dbProject.getDbObject(), checkedAfter, proj);
-        checkFileModified();
         updater.updatePartial();
 
         file.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(1));
-    }
-
-    private PgDatabase getDbProjectFragment()
-            throws IOException, InterruptedException, LicenseException, CoreException {
-        try(PgUIDumpLoader loader = new PgUIDumpLoader(file, new PgDiffArguments(), monitor.newChild(1))) {
-            // TODO schema-aware loading
-            return loader.load();
-        }
     }
 
     /**
@@ -231,7 +219,7 @@ class QuickUpdateJob extends Job {
      * были помечены как выбранные.
      */
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
-            Collection<PgStatement> listPgObjectsFragment) {
+            Collection<PgStatement> listPgObjectsFragment, PgDatabase left, PgDatabase right) {
         // mark schemas only when there are no schema-nested objects
         boolean markSchemas = ! listPgObjectsFragment.stream().anyMatch(
                 st -> st.getStatementType() != DbObjType.SCHEMA && st.getStatementType() != DbObjType.EXTENSION);
@@ -246,7 +234,7 @@ class QuickUpdateJob extends Job {
             // children of tables, views, overloads of functions
             switch (el.getType()) {
             case FUNCTION:
-                markFunctions((PgFunction) st, treeFull, checked);
+                markFunctions((PgFunction) st, el, checked, left, right);
                 break;
             case TABLE:
             case VIEW:
@@ -268,16 +256,16 @@ class QuickUpdateJob extends Job {
         return checked;
     }
 
-    private void markFunctions(PgFunction func, TreeElement treeFull, Set<TreeElement> checked) {
-        for (PgFunction f : func.getContainingSchema().getFunctions()) {
-            if (f.getBareName().equals(func.getBareName())) {
-                TreeElement overload = treeFull.findElement(f);
-                if (overload != null) {
-                    overload.setSelected(true);
-                    checked.add(overload);
-                }
-            }
-        }
+    private void markFunctions(PgFunction func, TreeElement elFunc, Set<TreeElement> checked,
+            PgDatabase left, PgDatabase right) {
+        // check every "adjacent" element for overload changes
+        elFunc.getParent().getChildren().stream()
+        .filter(el -> el.getType() == DbObjType.FUNCTION)
+        .filter(el -> func.getBareName().equals(el.getPgStatementSide(left, right).getBareName()))
+        .forEach(overload -> {
+            overload.setSelected(true);
+            checked.add(overload);
+        });
     }
 
     /**
@@ -286,7 +274,7 @@ class QuickUpdateJob extends Job {
      */
     private void checkFileModified() throws IOException, PgCodekeeperUIException {
         if (!Arrays.equals(textSnapshot, Files.readAllBytes(Paths.get(file.getLocationURI())))) {
-            throw new PgCodekeeperUIException("File was changed during the operation. Aborting.");
+            throw new PgCodekeeperUIException("File was changed during Quick Update. Aborting.");
         }
     }
 }
