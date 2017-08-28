@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -54,7 +53,7 @@ public final class PgDiff {
      * @throws URISyntaxException
      */
     public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+            throws InterruptedException, IOException, URISyntaxException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase newDatabase = loadDatabaseSchema(
@@ -82,7 +81,7 @@ public final class PgDiff {
      * @throws URISyntaxException
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+            throws InterruptedException, IOException, URISyntaxException {
         if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();

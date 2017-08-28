@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 
 import org.junit.Assert;
 
@@ -16,15 +15,11 @@ import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
-import ru.taximaxim.codekeeper.apgdiff.licensing.License;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 
 public final class ApgdiffTestUtils {
 
-    private static final String TEST_LICENSE = "testlic";
-
     public static PgDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException {
         try (PgDumpLoader loader = new PgDumpLoader(c.getResourceAsStream(resource),
                 "test:/" + c.getName() + '/' + resource, args)) {
             return loader.load();
@@ -61,22 +56,6 @@ public final class ApgdiffTestUtils {
         String res = new JdbcRunner(connector).runScript("DROP DATABASE " + dbName);
         Assert.assertEquals("DB cleanup script returned an error: " + res,
                 JDBC_CONSTS.JDBC_SUCCESS, res);
-    }
-
-    public static PgDiffArguments getArgsLicensed() throws IOException, LicenseException {
-        PgDiffArguments args = new PgDiffArguments();
-        setLicense(args);
-        return args;
-    }
-
-    public static URL getTestLicenseUrl() {
-        return ApgdiffTestUtils.class.getResource(TEST_LICENSE);
-    }
-
-    public static void setLicense(PgDiffArguments args) throws IOException, LicenseException {
-        // NOTE: TEST_LICENSE must provide full capabilities
-        // so that GUI/CLI and other potential mode selections won't matter
-        args.setLicense(new License(ApgdiffTestUtils.class.getResourceAsStream(TEST_LICENSE)));
     }
 
     private ApgdiffTestUtils() {

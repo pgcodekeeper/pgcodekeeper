@@ -12,7 +12,6 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.codekeeper.apgdiff,
  ru.taximaxim.codekeeper.apgdiff.fileutils,
  ru.taximaxim.codekeeper.apgdiff.ignoreparser,
- ru.taximaxim.codekeeper.apgdiff.licensing,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
  ru.taximaxim.codekeeper.apgdiff.model.graph

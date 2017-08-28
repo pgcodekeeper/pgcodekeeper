@@ -39,10 +39,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
 
 public class PgDbParser implements IResourceChangeListener {
 
@@ -97,10 +95,9 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(file.getCharset());
-        LicensePrefs.setLicense(args);
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, args, monitor)) {
             loader.setLoadSchema(false);
             loader.setLoadReferences(true);
@@ -113,7 +110,7 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         PgDatabase db = PgUIDumpLoader.buildFiles(files, mon, funcBodies);
@@ -150,12 +147,11 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
-        LicensePrefs.setLicense(args);
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 proj, args, mon, funcBodies);
         objDefinitions.clear();
@@ -172,9 +168,8 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public void fillRefsFromInputStream(InputStream input, String fileName,
-            IProgressMonitor monitor) throws InterruptedException, IOException, LicenseException {
+            IProgressMonitor monitor) throws InterruptedException, IOException {
         PgDiffArguments args = new PgDiffArguments();
-        LicensePrefs.setLicense(args);
         try (PgDumpLoader loader = new PgDumpLoader(input, fileName, args, monitor)) {
             loader.setLoadSchema(false);
             loader.setLoadReferences(true);

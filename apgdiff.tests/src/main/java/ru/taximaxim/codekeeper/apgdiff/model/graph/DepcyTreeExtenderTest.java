@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -66,9 +65,9 @@ public class DepcyTreeExtenderTest {
     private final PgDatabase dbTarget;
 
     public DepcyTreeExtenderTest(TreeElementCreator predefined)
-            throws InterruptedException, IOException, LicenseException {
+            throws InterruptedException, IOException {
         this.predefined = predefined;
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         this.dbSource = ApgdiffTestUtils.loadTestDump(
                 predefined.getFilename(), DepcyTreeExtenderTest.class, args);

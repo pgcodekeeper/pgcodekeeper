@@ -31,7 +31,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -110,7 +109,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
             PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
-                    throws InterruptedException, IOException, LicenseException, CoreException {
+                    throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
@@ -137,7 +136,6 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        arguments.getLicense().verifyDb(db);
         return db;
     }
 
@@ -210,6 +208,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
             loadFile(file, monitor, db, funcBodies);
         }
+
         return db;
     }
 

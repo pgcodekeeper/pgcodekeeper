@@ -22,7 +22,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -61,7 +60,7 @@ public class NormalizeProject extends AbstractHandler {
                     PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();
-                } catch (IOException | LicenseException | CoreException ex) {
+                } catch (IOException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
                 } catch (InterruptedException e) {

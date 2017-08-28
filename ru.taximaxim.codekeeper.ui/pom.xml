@@ -82,7 +82,6 @@
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.LicensePrefs { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.ProjectEditorPrefPage { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.prefs.SQLEditorMainPage { *; }</option>

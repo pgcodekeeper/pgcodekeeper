@@ -35,7 +35,6 @@ import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -89,7 +88,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (!isProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
-        } catch (IOException | InterruptedException | LicenseException | CoreException ex) {
+        } catch (IOException | InterruptedException | CoreException ex) {
             Log.log(ex);
         }
     }
@@ -113,7 +112,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         try {
             parser = initParser();
-        } catch (InterruptedException | IOException | LicenseException | CoreException ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
         }
         parser.addListener(list);
@@ -122,7 +121,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }
 
-    private PgDbParser initParser() throws InterruptedException, IOException, LicenseException, CoreException {
+    private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
         IEditorInput in = getEditorInput();
 
         IResource res = ResourceUtil.getResource(in);
@@ -144,7 +143,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      * @return true if refresh was triggered successfully
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         if (res instanceof IFile) {
             parser.getObjFromProjFile((IFile) res, monitor);
             return true;

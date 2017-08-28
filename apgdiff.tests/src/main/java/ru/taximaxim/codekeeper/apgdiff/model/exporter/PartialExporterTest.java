@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -132,14 +131,14 @@ public class PartialExporterTest {
     }
 
     @BeforeClass
-    public static void initDiffTree() throws InterruptedException, IOException, LicenseException {
+    public static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbSource = ApgdiffTestUtils.loadTestDump(
                 sourceFilename, PartialExporterTest.class, args);
-        args = ApgdiffTestUtils.getArgsLicensed();
+        args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbTarget = ApgdiffTestUtils.loadTestDump(
                 targetFilename, PartialExporterTest.class, args);

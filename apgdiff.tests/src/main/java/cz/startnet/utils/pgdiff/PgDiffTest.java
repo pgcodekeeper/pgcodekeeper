@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 
 /**
  * Tests for PgDiff class.
@@ -354,8 +353,8 @@ public class PgDiffTest {
     }
 
     @Test
-    public void runDiff() throws IOException, InterruptedException, LicenseException {
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+    public void runDiff() throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
         PgDatabase dbOld = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(

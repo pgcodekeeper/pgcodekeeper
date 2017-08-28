@@ -80,9 +80,6 @@
 
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser { *; }</option>
 
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.License { *; }</option>
-                                <option>-keep public class ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException { *; }</option>
-
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.localizations.Messages { *; }</option>
 
                                 <option>-keep public class ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType { *; }</option>

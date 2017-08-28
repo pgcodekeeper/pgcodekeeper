@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,11 +32,8 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
@@ -50,11 +46,11 @@ public class DbSourceTest {
     private static IWorkspaceRoot workspaceRoot;
 
     @BeforeClass
-    public static void initDb() throws IOException, InterruptedException, LicenseException {
+    public static void initDb() throws IOException, InterruptedException {
         JdbcTestUtils.createDb(dbName);
         ApgdiffTestUtils.fillDB(dbName);
 
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbPredefined = ApgdiffTestUtils.loadTestDump(
                 TEST.RESOURCE_DUMP, JdbcLoaderTest.class, args);
@@ -62,13 +58,10 @@ public class DbSourceTest {
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
         assertTrue("Workspace does not exist: " + workspacePath.getAbsolutePath(), workspacePath.exists());
-
-        IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-        prefs.setValue(PREF.LICENSE_PATH, ApgdiffTestUtils.getTestLicenseUrl().toString());
     }
 
     @Test
-    public void testJdbc() throws IOException, LicenseException, InterruptedException, CoreException {
+    public void testJdbc() throws IOException, InterruptedException, CoreException {
         performTest(DbSource.fromJdbc(TEST.REMOTE_HOST,
                 TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME,
@@ -79,7 +72,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testDirTree() throws IOException, LicenseException, InterruptedException, CoreException {
+    public void testDirTree() throws IOException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             File dir = exportDir.get().toFile();
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
@@ -89,7 +82,7 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException,
+    public void testFile() throws IOException, URISyntaxException, InterruptedException,
     CoreException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
 
@@ -97,8 +90,8 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testProject() throws CoreException, IOException, LicenseException,
-    PgCodekeeperUIException, InterruptedException{
+    public void testProject() throws CoreException, IOException, PgCodekeeperUIException,
+    InterruptedException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
             File dir = tempDir.get().toFile();
             // create empty project in temp dir
@@ -121,7 +114,7 @@ public class DbSourceTest {
 
     @Test
     public void testJdbcFromProject()
-            throws CoreException, IOException, LicenseException, PgCodekeeperUIException,
+            throws CoreException, IOException, PgCodekeeperUIException,
             URISyntaxException, BackingStoreException, InterruptedException {
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
             File dir = tempDir.get().toFile();
@@ -152,7 +145,7 @@ public class DbSourceTest {
     }
 
     private void performTest(DbSource source)
-            throws IOException, InterruptedException, LicenseException, CoreException {
+            throws IOException, InterruptedException, CoreException {
         assertFalse("DB source should not be loaded", source.isLoaded());
 
         try{

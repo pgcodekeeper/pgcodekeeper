@@ -18,10 +18,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
@@ -31,7 +29,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.cli.Activator;
 import ru.taximaxim.codekeeper.cli.Main;
@@ -165,28 +162,11 @@ abstract class ArgumentsProvider implements Closeable{
     enum TestType {TEST_OUTPUT, TEST_DIFF, TEST_PARSE}
 
     public TestType testType = TestType.TEST_OUTPUT;
-    public boolean needLicense = false;
     public String resName = null;
     public File resFile = null;
     public File resDir = null;
 
-    public String[] args() throws URISyntaxException, IOException {
-        String[] aa = arguments();
-        if (needLicense) {
-            List<String> args = new ArrayList<>(aa.length + 2);
-            args.add("--license");
-            args.add(ApgdiffTestUtils.getTestLicenseUrl().toString());
-            args.addAll(Arrays.asList(aa));
-            return args.toArray(new String[args.size()]);
-        } else {
-            return aa;
-        }
-    }
-
-    /**
-     * Should only be called by {@link #args()} method!
-     */
-    protected abstract String[] arguments() throws URISyntaxException, IOException;
+    protected abstract String[] args() throws URISyntaxException, IOException;
 
     public String output(){
         return "";
@@ -242,7 +222,7 @@ abstract class ArgumentsProvider implements Closeable{
 class ArgumentsProvider_usage extends ArgumentsProvider{
 
     @Override
-    public String[] arguments() {
+    public String[] args() {
         return new String[]{"--help"};
     }
 
@@ -264,7 +244,7 @@ class ArgumentsProvider_usage extends ArgumentsProvider{
 class ArgumentsProvider_2 extends ArgumentsProvider{
 
     @Override
-    public String[] arguments() {
+    public String[] args() {
         return new String[]{"--version"};
     }
 
@@ -282,7 +262,7 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
 class ArgumentsProvider_3 extends ArgumentsProvider{
 
     @Override
-    public String[] arguments() {
+    public String[] args() {
         return new String[]{"--list-charsets"};
     }
 
@@ -302,7 +282,7 @@ class ArgumentsProvider_3 extends ArgumentsProvider{
 class ArgumentsProvider_4 extends ArgumentsProvider{
 
     @Override
-    public String[] arguments() {
+    public String[] args() {
         return new String[]{};
     }
 
@@ -322,11 +302,10 @@ class ArgumentsProvider_5 extends ArgumentsProvider{
     {
         super.resName = "drop_table";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -352,11 +331,10 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
     {
         super.resName = "add_cluster";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -382,11 +360,10 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
     {
         super.resName = "modify_function_args2";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -411,11 +388,10 @@ class ArgumentsProvider_8 extends ArgumentsProvider{
 
     {
         super.resName = "drop_table";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -445,7 +421,7 @@ class ArgumentsProvider_8 extends ArgumentsProvider{
 class ArgumentsProvider_9 extends ArgumentsProvider{
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         return new String[]{"--parse", "-o", "out", "-s", "dumb", "--target", "tgt"};
     }
 
@@ -462,11 +438,10 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
 
     {
         super.resName = "drop_table";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -497,11 +472,10 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
     {
         super.resName = "drop_table";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -527,11 +501,10 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
 
     {
         super.resName = "drop_column";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -562,11 +535,10 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
     {
         super.resName = "drop_column";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -592,11 +564,10 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
 
     {
         super.resName = "modify_column_type";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -627,11 +598,10 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -658,11 +628,10 @@ class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
 
     {
         super.resName = "modify_sequence_start_ignore_off";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -693,11 +662,10 @@ class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
 
     {
         super.resName = "modify_sequence_start_ignore_off";
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -724,11 +692,10 @@ class ArgumentsProvider_18 extends ArgumentsProvider{
     {
         super.resName = "modify_column_type";
         super.testType = TestType.TEST_DIFF;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
 
@@ -761,11 +728,10 @@ class ArgumentsProvider_19 extends ArgumentsProvider{
     {
         super.resName = "loader/remote/testing_dump.sql";
         super.testType = TestType.TEST_PARSE;
-        super.needLicense = true;
     }
 
     @Override
-    public String[] arguments() throws URISyntaxException, IOException {
+    public String[] args() throws URISyntaxException, IOException {
         File db = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName));
 
         return new String[]{"--parse", "-o", getParseResultDir().getAbsolutePath(), db.getAbsolutePath()};
@@ -789,11 +755,10 @@ class ArgumentsProvider_IgnoreLists extends ArgumentsProvider {
     {
         this.resName = "ignore";
         this.testType = TestType.TEST_DIFF;
-        this.needLicense = true;
     }
 
     @Override
-    protected String[] arguments() throws URISyntaxException, IOException {
+    protected String[] args() throws URISyntaxException, IOException {
         File black = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("black.ignore"));
         File white = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource("white.ignore"));
         File old = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource("ignore_old.sql"));
@@ -822,11 +787,10 @@ class ArgumentsProvider_AllowedObjects extends ArgumentsProvider {
     {
         this.resName = "same_allowed_object";
         this.testType = TestType.TEST_DIFF;
-        this.needLicense = true;
     }
 
     @Override
-    protected String[] arguments() throws URISyntaxException, IOException {
+    protected String[] args() throws URISyntaxException, IOException {
         File fNew = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(TEST.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         return new String[]{"--allowed-object", "FUNCTION", "--allowed-object", "VIEW",
@@ -851,11 +815,10 @@ class ArgumentsProvider_ConnectionString extends ArgumentsProvider {
 
     {
         this.testType = TestType.TEST_PARSE;
-        this.needLicense = true;
     }
 
     @Override
-    protected String[] arguments() throws URISyntaxException, IOException {
+    protected String[] args() throws URISyntaxException, IOException {
         return new String[] {"--parse", "--output", getParseResultDir().getAbsolutePath(),
                 "jdbc:postgresql://" + TEST.REMOTE_HOST + "/pgcodekeeper_testing" +
                         "?user=" + TEST.REMOTE_USERNAME + "&password=" + TEST.REMOTE_PASSWORD};
