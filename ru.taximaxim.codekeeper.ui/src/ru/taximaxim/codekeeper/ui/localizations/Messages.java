@@ -23,7 +23,6 @@ public final class Messages extends NLS {
     public static String empty_selection;
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
-    public static String get_changes;
     public static String please_check_at_least_one_row;
 
     public static String projectEditorDiffer_save_project;
@@ -70,9 +69,6 @@ public final class Messages extends NLS {
 
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
-    public static String sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic;
-    public static String sqlScriptDialog_script_is_empty;
-    public static String sqlScriptDialog_script_have_no_changes;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_stop_script;
@@ -145,11 +141,7 @@ public final class Messages extends NLS {
     // ui.handlers
     public static String database;
 
-    public static String quickUpdate_error_btn;
-    public static String quickUpdate_process;
-
     // ui.parts
-    public static String commitPartDescr_commit;
     public static String commitPartDescr_show_commit_window;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
@@ -161,8 +153,6 @@ public final class Messages extends NLS {
 
     public static String ConsoleFactory_error_opening_console;
     public static String diffPaneDialog_diff_to_selected_object;
-    public static String diffPartDescr_add_dependencies;
-    public static String diffPartDescr_get_latest;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -233,18 +223,12 @@ public final class Messages extends NLS {
     public static String DiffPresentationPane_attention;
 
 
-    public static String DiffPresentationPane_cannot_get_changes;
-
-    public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
-
     public static String DiffPresentationPane_dismiss;
     public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;
 
     public static String DiffPresentationPane_remote_changed_notification;
-
-    public static String DiffPresentationPane_select_db_source;
 
     public static String DiffPresentationPane_sql_file_filter;
 
@@ -401,7 +385,6 @@ public final class Messages extends NLS {
     public static String PrefListEditor_cannot_add;
 
     public static String PrefListEditor_cannot_edit;
-    public static String ProjectEditorDiffer_apply_to;
 
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
@@ -531,6 +514,28 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source_msg;
 
     // SONAR-ON
+
+    public static String QuickUpdate_danger;
+
+    public static String QuickUpdate_empty_script;
+
+    public static String QuickUpdate_error;
+
+    public static String QuickUpdate_error_charset;
+
+    public static String QuickUpdate_file_modified;
+
+    public static String QuickUpdate_migration_failed;
+
+    public static String QuickUpdate_multiple_schemas;
+
+    public static String QuickUpdate_no_changes;
+
+    public static String QuickUpdate_quick_update;
+
+    public static String QuickUpdate_updating_db;
+
+    public static String QuickUpdate_updating_project;
 
     static {
         // initialize resource bundle

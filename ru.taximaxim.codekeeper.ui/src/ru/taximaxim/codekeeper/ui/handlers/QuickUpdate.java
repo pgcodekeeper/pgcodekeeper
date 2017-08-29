@@ -66,14 +66,19 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
         }
+        String text = editor.getEditorText();
+        if (text.trim().isEmpty()) {
+            ExceptionNotifier.notifyDefault(Messages.QuickUpdate_empty_script, null);
+            return null;
+        }
 
         IFile file = ResourceUtil.getFile(editor.getEditorInput());
         editor.doSave(new NullProgressMonitor());
         byte[] textSnapshot;
         try {
-            textSnapshot = editor.getEditorText().getBytes(file.getCharset());
+            textSnapshot = text.getBytes(file.getCharset());
         } catch (UnsupportedEncodingException | CoreException e) {
-            ExceptionNotifier.notifyDefault("Error getting file charset!", e);
+            ExceptionNotifier.notifyDefault(Messages.QuickUpdate_error_charset, e);
             return null;
         }
         new QuickUpdateJob(file, dbInfo, textSnapshot).schedule();
@@ -101,7 +106,7 @@ class QuickUpdateJob extends Job {
     private SubMonitor monitor;
 
     public QuickUpdateJob(IFile file, DbInfo dbInfo, byte[] textSnapshot) {
-        super(Messages.quickUpdate_process);
+        super(Messages.QuickUpdate_quick_update);
         this.file = file;
         this.proj = new PgDbProject(file.getProject());
         this.dbinfo = dbInfo;
@@ -118,8 +123,7 @@ class QuickUpdateJob extends Job {
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
         } catch (IOException | LicenseException | CoreException | PgCodekeeperUIException | InvocationTargetException e) {
-            ExceptionNotifier.notifyDefault(Messages.quickUpdate_error_btn, e);
-            return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.quickUpdate_error_btn, e);
+            return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
         }
@@ -139,12 +143,12 @@ class QuickUpdateJob extends Job {
                 .filter(st -> st.getStatementType() == DbObjType.SCHEMA).count();
         if (schemaCount > 1) {
             // more than 1 schema, shoudln't happen
-            throw new PgCodekeeperUIException("More than 1 schema loaded, invalid behaviour!");
-        } else if (schemaCount == listPgObjectsFragment.size() && !isSchemaFile) {
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_multiple_schemas);
+        } else if (listPgObjectsFragment.isEmpty() ||
+                (schemaCount == listPgObjectsFragment.size() && !isSchemaFile)) {
             // no objects (schemaCount == 0), or
             // only schema loaded but not a schema file: probably a search_path-only file
-            // TODO msg
-            throw new PgCodekeeperUIException(Messages.sqlScriptDialog_script_is_empty);
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_empty_script);
         }
 
         checkFileModified();
@@ -162,7 +166,7 @@ class QuickUpdateJob extends Job {
 
         if (checked.isEmpty()) {
             // no diff
-            throw new PgCodekeeperUIException(Messages.sqlScriptDialog_script_have_no_changes);
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_no_changes);
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
@@ -170,12 +174,12 @@ class QuickUpdateJob extends Job {
         differ.run(monitor.newChild(1));
 
         if (differ.getScript().isDangerDdl(false, false, false, false)) {
-            throw new PgCodekeeperUIException(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data_use_basic);
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
         }
 
         checkFileModified();
 
-        monitor.newChild(1).subTask("Updating DB");
+        monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
         JdbcRunner runner = new JdbcRunner(new JdbcConnector(
                 dbinfo.getDbHost(), dbinfo.getDbPort(),
                 dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
@@ -183,7 +187,7 @@ class QuickUpdateJob extends Job {
         String result = runner.runScript(differ.getDiffDirect());
 
         if(!JDBC_CONSTS.JDBC_SUCCESS.equals(result)) {
-            throw new PgCodekeeperUIException("Failed to migrate objects to DB: " + result);
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + result);
         }
 
         checkFileModified();
@@ -202,7 +206,7 @@ class QuickUpdateJob extends Job {
 
         checkFileModified();
 
-        monitor.newChild(1).subTask("Updating Project");
+        monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
         ProjectUpdater updater = new ProjectUpdater(
                 dbRemote.getDbObject(), dbProject.getDbObject(), checkedAfter, proj);
         updater.updatePartial();
@@ -274,7 +278,7 @@ class QuickUpdateJob extends Job {
      */
     private void checkFileModified() throws IOException, PgCodekeeperUIException {
         if (!Arrays.equals(textSnapshot, Files.readAllBytes(Paths.get(file.getLocationURI())))) {
-            throw new PgCodekeeperUIException("File was changed during Quick Update. Aborting.");
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_file_modified);
         }
     }
 }

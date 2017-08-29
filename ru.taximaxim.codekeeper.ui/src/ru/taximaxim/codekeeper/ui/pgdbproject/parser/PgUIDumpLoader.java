@@ -252,6 +252,6 @@ public class PgUIDumpLoader extends PgDumpLoader {
      */
     public static boolean isSchemaFile(IPath path) {
         return path.segmentCount() == 2 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
-                && path.segment(1).endsWith(".sql");
+                && path.segment(1).endsWith(".sql"); //$NON-NLS-1$
     }
 }

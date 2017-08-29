@@ -6,7 +6,7 @@ import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 
 public class ChangesJobTester extends PropertyTester {
 
-    private static final String IS_JOB_RUNNING = "isGetChangesRunning";
+    private static final String IS_JOB_RUNNING = "isGetChangesRunning"; //$NON-NLS-1$
 
     @Override
     public boolean test(Object receiver, String property, Object[] args,
