@@ -66,9 +66,6 @@ to update all relevant poms and metadatas
     <profiles>
         <profile>
             <id>jenkins</id>
-            <modules>
-		        <module>../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
-		    </modules>
             <build>
                 <plugins>
                     <plugin>
@@ -99,6 +96,12 @@ to update all relevant poms and metadatas
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>internal</id>
+            <modules>
+                <module>../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+            </modules>
         </profile>
     </profiles>
 
