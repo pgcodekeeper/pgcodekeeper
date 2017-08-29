@@ -13,11 +13,13 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
@@ -164,19 +166,20 @@ public class PgUIDumpLoader extends PgDumpLoader {
         }
     }
 
-    static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
+    public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
             List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
+        SubMonitor mon = SubMonitor.convert(monitor, files.size());
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
-        PgDatabase db = new PgDatabase();
+        PgDatabase db = new PgDatabase(false);
         db.setArguments(new PgDiffArguments());
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!"sql".equals(file.getFileExtension()) || !isProjectPath(filePath)) { //$NON-NLS-1$
+            if (!"sql".equals(file.getFileExtension()) || !isInProject(filePath)) { //$NON-NLS-1$
                 // skip non-sql or non-project files
                 // still report work
-                monitor.worked(1);
+                mon.worked(1);
                 continue;
             }
 
@@ -196,7 +199,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // schema already loaded, skip
                     if (schemaDefSql) {
                         // report schema pre-built if the same schema was to be built normally as well
-                        monitor.worked(1);
+                        mon.worked(1);
                     }
                     continue;
                 } else if (!schemaDefSql) {
@@ -208,7 +211,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
 
-            loadFile(file, monitor, db, funcBodies);
+            loadFile(file, mon, db, funcBodies);
         }
         return db;
     }
@@ -228,9 +231,27 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * @param path project relative path of checked resource
      * @return whether this resource is within the main database schema hierarchy
      */
-    public static boolean isProjectPath(IPath path) {
+    public static boolean isInProject(IPath path) {
         String dir = path.segment(0);
         return dir == null ? false : Arrays.stream(ApgdiffConsts.WORK_DIR_NAMES.values())
                 .map(Enum::name).anyMatch(dir::equals);
+    }
+
+    public static boolean isInProject(IResource resource) {
+        return isInProject(resource.getProjectRelativePath());
+    }
+
+    public static boolean isInProject(IResourceDelta delta) {
+        return isInProject(delta.getProjectRelativePath());
+    }
+
+    /**
+     * @param path project relative path
+     * @return whether the path corresponds to a schema sql file
+     *          like this: /SCHEMA/schema_name.sql
+     */
+    public static boolean isSchemaFile(IPath path) {
+        return path.segmentCount() == 2 && path.segment(0).equals(WORK_DIR_NAMES.SCHEMA.name())
+                && path.segment(1).endsWith(".sql"); //$NON-NLS-1$
     }
 }

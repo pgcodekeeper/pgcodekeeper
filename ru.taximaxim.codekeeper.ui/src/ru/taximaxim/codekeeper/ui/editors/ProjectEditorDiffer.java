@@ -390,7 +390,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     // check that it's our resource
                     if (delta.getFlags() != IResourceDelta.MARKERS &&
                             delta.getResource().getType() == IResource.FILE &&
-                            PgUIDumpLoader.isProjectPath(delta.getProjectRelativePath())) {
+                            PgUIDumpLoader.isInProject(delta)) {
                         schemaChanged[0] = true;
                         return false;
                     }

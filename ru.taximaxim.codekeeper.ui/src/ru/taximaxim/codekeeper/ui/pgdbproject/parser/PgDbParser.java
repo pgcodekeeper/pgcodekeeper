@@ -114,9 +114,8 @@ public class PgDbParser implements IResourceChangeListener {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, files.size());
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.buildFiles(files, mon, funcBodies);
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, funcBodies);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillFunctionBodies(funcBodies);
