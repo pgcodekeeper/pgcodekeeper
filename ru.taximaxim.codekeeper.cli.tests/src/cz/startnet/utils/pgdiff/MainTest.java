@@ -724,7 +724,7 @@ class ArgumentsProvider_18 extends ArgumentsProvider{
 class ArgumentsProvider_19 extends ArgumentsProvider{
 
     {
-        super.resName = "loader/remote/testing_dump.sql";
+        super.resName = "schema/test.sql";
         super.testType = TestType.TEST_PARSE;
     }
 
