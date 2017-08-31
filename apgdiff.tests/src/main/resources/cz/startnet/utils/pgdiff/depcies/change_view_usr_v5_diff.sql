@@ -1,3 +1,26 @@
+-- DEPCY: This VIEW depends on the COLUMN: t2.c3
+
+DROP VIEW v8;
+
+-- DEPCY: This VIEW depends on the COLUMN: t2.c3
+
+DROP VIEW v7;
+
+-- DEPCY: This VIEW depends on the COLUMN: t2.c3
+
+DROP VIEW v6;
+
+-- DEPCY: This VIEW depends on the COLUMN: t2.c3
+
+DROP VIEW v5;
+
+-- DEPCY: This VIEW depends on the COLUMN: t2.c3
+
+DROP VIEW v2;
+
+ALTER TABLE t2
+	DROP COLUMN c3;
+
 CREATE TABLE t3 (
 	c1 integer,
 	c2 text,
@@ -6,13 +29,11 @@ CREATE TABLE t3 (
 
 ALTER TABLE t3 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW depends on the COLUMN: t1.c4
+ALTER TABLE t1
+	ADD COLUMN c6 text;
 
-DROP VIEW v8;
-
--- DEPCY: This VIEW depends on the COLUMN: t1.c4
-
-DROP VIEW v5;
+ALTER TABLE t2
+	ADD COLUMN c6 text;
 
 -- DEPCY: This VIEW depends on the COLUMN: t1.c4
 
@@ -34,16 +55,6 @@ CREATE VIEW v1 AS
 
 ALTER VIEW v1 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW depends on the VIEW: v2
-
-DROP VIEW v7;
-
--- DEPCY: This VIEW depends on the VIEW: v2
-
-DROP VIEW v6;
-
-DROP VIEW v2;
-
 CREATE VIEW v2 AS
 	SELECT t2.c1,
     t2.c2,
@@ -51,11 +62,6 @@ CREATE VIEW v2 AS
    FROM t2;
 
 ALTER VIEW v2 OWNER TO galiev_mr;
-
--- DEPCY: This COLUMN is a dependency of VIEW: v3
-
-ALTER TABLE t1
-	ADD COLUMN c6 text;
 
 DROP VIEW v3;
 
