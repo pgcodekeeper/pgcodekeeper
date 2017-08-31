@@ -45,10 +45,4 @@ public class GetChanges extends AbstractHandler {
         }
         return null;
     }
-    /*
-    @Override
-    public boolean isEnabled() {
-        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return part instanceof ProjectEditorDiffer && !((ProjectEditorDiffer) part).isGetChangesJobInProcessing();
-    }*/
 }
