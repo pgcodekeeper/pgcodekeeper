@@ -29,18 +29,24 @@
 				</add>
 			</p2.composite.repository>
 
+			<echo message="adding to repo index" />
+			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
+				<arg value="add" />
+				<arg value="update" />
+			</exec>
+
 			<echo message="committing site repo" />
 			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
 				<arg value="commit" />
-				<arg value="-am" />
+				<arg value="-m" />
 				<arg value="Deploy ${build.version} into update site" />
 			</exec>
 
 			<echo message="pushing site repo" />
 			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
-                <arg value="push" />
-                <arg value="git@github.com:pgcodekeeper/pgcodekeeper.github.io.git" />
-            </exec>
+				<arg value="push" />
+				<arg value="git@github.com:pgcodekeeper/pgcodekeeper.github.io.git" />
+			</exec>
 		</sequential>
 	</target>
 </project>
