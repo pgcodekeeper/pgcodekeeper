@@ -7,7 +7,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.jboss.tools.usage.googleanalytics.eclipse;
+package org.jboss.tools.usage.googleanalytics;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,11 +26,11 @@ import org.eclipse.core.runtime.Platform;
 public class LinuxSystem {
 
 	public static final LinuxSystem INSTANCE = new LinuxSystem();
-	
+
 	/**
 	 * @see <a href="http://linuxmafia.com/faq/Admin/release-files.html"> an
 	 *      extensive list of release file locations</a>
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://superuser.com/questions/11008/how-do-i-find-out-what-version-of-linux-im-running">
 	 *      release-file strings</a>
@@ -58,8 +58,16 @@ public class LinuxSystem {
 	public final LinuxDistro SUSE_ALTERNATIVE = new ReleaseFileContentCheckedDistro("SUSE", "/etc/os-release");
 	public final LinuxDistro UBUNTU = new ReleaseFileContentCheckedDistro("Ubuntu", "/etc/lsb-release");
 	public final LinuxDistro PUPPY = new LinuxDistro("Puppy", "/etc/puppyversion");
-	public final LinuxDistro DEFAULT_OS_RELEASE_FILE_BASED_DISTRO = new OsReleaseFileDistro();
+	public final LinuxDistro DEFAULT_OS_RELEASE_FILE_BASED_DISTRO = new OsReleaseFileDistro("/etc/os-release");
 	public final LinuxDistro LIB_OS_RELEASE_FILE_BASED_DISTRO_ALTERNATIVE = new OsReleaseFileDistro("/usr/lib/os-release");
+
+
+	/**
+	 * The pattern to match the contents of the release-file -
+	 * /etc/fedora-release etc. Attention: Ubuntu has multi-line release
+	 * file
+	 */
+	private static final Pattern VERSION_REGEX = Pattern.compile("([0-9.]+)");
 
 	private final LinuxDistro[] ALL = new LinuxDistro[] {
 			CENTOS,
@@ -92,9 +100,9 @@ public class LinuxSystem {
 	boolean firstTimeNameDetection = true;
 
 	public LinuxDistro getDistro() {
-		if(firstTimeDistroDetection && detectedDistro==null) {
+		if (firstTimeDistroDetection && detectedDistro == null) {
 			firstTimeDistroDetection = false;
-			if(isLinux()) {
+			if (isLinux()) {
 				for (LinuxDistro distro : ALL) {
 					if (distro.isDetected()) {
 						detectedDistro = distro;
@@ -106,51 +114,29 @@ public class LinuxSystem {
 		return detectedDistro;
 	}
 
-	protected boolean isLinux() {
-		return Platform.getOS().toLowerCase().indexOf("linux")>-1;
+	private boolean isLinux() {
+		return Platform.getOS().toLowerCase().indexOf("linux") > -1;
 	}
 
 	public String getDistroNameAndVersion() {
-		if(firstTimeNameDetection && nameAndVersion==null) {
+		if (firstTimeNameDetection && nameAndVersion == null) {
 			firstTimeNameDetection = false;
 			LinuxDistro distro = getDistro();
-			if(isLinux()) {
-				nameAndVersion = (distro != null)?distro.getNameAndVersion():"Unknown";
+			if (isLinux()) {
+				nameAndVersion = (distro != null) ? distro.getNameAndVersion() : "Unknown";
 			}
 		}
 		return nameAndVersion;
 	}
 
-	protected boolean exists(String releaseFilePath) {
+	private boolean exists(String releaseFilePath) {
 		return releaseFilePath != null
 				&& releaseFilePath.length() > 0
 				&& new File(releaseFilePath).exists();
 	}
 
-	protected String getDistroFileContent(String filePath) throws IOException {
-		int charachtersToRead = 1024;
-		StringBuilder builder = new StringBuilder(charachtersToRead);
-		BufferedReader reader = new BufferedReader(new FileReader(filePath));
-		char[] buf = new char[charachtersToRead];
-		int charRead = 0;
-		while ((charRead = reader.read(buf)) != -1 && builder.length() < charachtersToRead) {
-			String readData = String.valueOf(buf, 0, charRead);
-			builder.append(readData);
-		}
-		reader.close();
-		return builder.toString();
-	}
-
 	public class LinuxDistro {
-
-		/**
-		 * The pattern to match the contents of the release-file -
-		 * /etc/fedora-release etc. Attention: Ubuntu has multi-line release
-		 * file
-		 */
-		private final Pattern VERSION_REGEX = Pattern.compile("([0-9.]+)");
-
-		protected final String releaseFilePath;
+		private final String releaseFilePath;
 		protected String name;
 
 		protected LinuxDistro(String name, String releaseFilePath) {
@@ -199,6 +185,21 @@ public class LinuxSystem {
 		public String toString() {
 			return getName();
 		}
+
+		private String getDistroFileContent(String filePath) throws IOException {
+			int charachtersToRead = 1024;
+			StringBuilder builder = new StringBuilder(charachtersToRead);
+			try (FileReader fReader = new FileReader(filePath);
+					BufferedReader reader = new BufferedReader(fReader)) {
+				char[] buf = new char[charachtersToRead];
+				int charRead = 0;
+				while ((charRead = reader.read(buf)) != -1 && builder.length() < charachtersToRead) {
+					String readData = String.valueOf(buf, 0, charRead);
+					builder.append(readData);
+				}
+			}
+			return builder.toString();
+		}
 	}
 
 	/**
@@ -213,9 +214,8 @@ public class LinuxSystem {
 
 		@Override
 		protected boolean isDetected() {
-			boolean fileExists = exists(getReleaseFilePath());
-			if (fileExists) {
-				String content = getReleaseFileContent();
+			String content = getReleaseFileContent();
+			if (exists(getReleaseFilePath())) {
 				return content.toLowerCase().indexOf(getName().toLowerCase()) >= 0;
 			}
 			return false;
@@ -224,22 +224,18 @@ public class LinuxSystem {
 
 	/**
 	 * A distribution definition based on "/etc/os-release" file.
-	 * The name is read from the "NAME=" property. 
+	 * The name is read from the "NAME=" property.
 	 * See http://www.freedesktop.org/software/systemd/man/os-release.html
 	 */
 	public class OsReleaseFileDistro extends LinuxDistro {
 
-		protected OsReleaseFileDistro() {
-			this("/etc/os-release");
-		}
-
-		protected OsReleaseFileDistro(String releaseFilePath) {
+		private OsReleaseFileDistro(String releaseFilePath) {
 			super("Unknown", releaseFilePath);
 		}
 
 		@Override
 		public String getName() {
-			if(!isDetected()) {
+			if (!isDetected()) {
 				return super.getName();
 			}
 			String content = getReleaseFileContent();
@@ -247,12 +243,12 @@ public class LinuxSystem {
 			try {
 				p.load(new StringReader(content));
 				String stName = p.getProperty("NAME");
-				if(stName==null) {
+				if (stName == null) {
 					stName = p.getProperty("ID");
 				}
-				if(stName!=null) {
-					if(stName.startsWith("\"") && stName.endsWith("\"") && stName.length()>3) {
-						stName = stName.substring(1, stName.length()-1);
+				if (stName != null) {
+					if (stName.startsWith("\"") && stName.endsWith("\"") && stName.length() > 3) {
+						stName = stName.substring(1, stName.length() - 1);
 					}
 					name = stName;
 				}

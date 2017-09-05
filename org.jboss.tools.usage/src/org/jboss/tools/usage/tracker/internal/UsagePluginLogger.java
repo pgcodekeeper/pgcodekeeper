@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.Status;
  */
 public class UsagePluginLogger {
 
-	private Plugin plugin;
+	private final Plugin plugin;
 
 	public UsagePluginLogger(Plugin plugin) {
 		this.plugin = plugin;
@@ -38,12 +38,11 @@ public class UsagePluginLogger {
 	}
 
 	public void error(Throwable t, boolean debug) {
-		if (debug && !isTracingEnabled()) {
-			return;
+		if (!debug || isTracingEnabled()) {
+			Status status = new Status(IStatus.ERROR, plugin.getBundle().getSymbolicName(),
+					0, t.getMessage() != null ? t.getMessage() : "", t);
+			plugin.getLog().log(status);
 		}
-
-		Status status = new Status(IStatus.ERROR, plugin.getBundle().getSymbolicName(), 0, t.getMessage()!=null?t.getMessage():"", t);
-		plugin.getLog().log(status);
 	}
 
 	public void debug(String message) {
@@ -51,24 +50,18 @@ public class UsagePluginLogger {
 	}
 
 	private void log(int severity, String message, boolean debug) {
-		if (debug && !isTracingEnabled()) {
-			return;
-		}
-
-		if (plugin != null) {
+		if ((!debug || isTracingEnabled()) && plugin != null) {
 			IStatus status = new Status(severity, plugin.getBundle().getSymbolicName(), message);
 			plugin.getLog().log(status);
 		}
 	}
 
-		
-	protected boolean isTracingEnabled() {
-		Plugin plugin = getPlugin();
-		return plugin != null && plugin.isDebugging();
+	private boolean isTracingEnabled() {
+		Plugin plug = getPlugin();
+		return plug != null && plug.isDebugging();
 	}
 
-	protected Plugin getPlugin() {
+	private Plugin getPlugin() {
 		return plugin;
 	}
-
 }

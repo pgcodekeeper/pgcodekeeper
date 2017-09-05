@@ -15,15 +15,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
 
+import org.jboss.tools.usage.localizations.Messages;
 import org.jboss.tools.usage.tracker.internal.UsagePluginLogger;
 
 /**
  * Class that executes a HTTP Get request to the given url.
- * 
+ *
  * @author Andre Dietisheim
  */
-public class HttpGetRequest implements IHttpGetRequest {
-	
+public class HttpGetRequest {
+
 	private static final String USER_AGENT = "User-Agent"; //$NON-NLS-1$
 
 	private static final String GET_METHOD_NAME = "GET"; //$NON-NLS-1$
@@ -32,7 +33,7 @@ public class HttpGetRequest implements IHttpGetRequest {
 
 	private UsagePluginLogger logger = null;
 
-	private String userAgent;
+	private final String userAgent;
 
 	public HttpGetRequest(String userAgent, UsagePluginLogger logger) {
 		this.userAgent = userAgent;
@@ -43,34 +44,20 @@ public class HttpGetRequest implements IHttpGetRequest {
 	 * @see org.jboss.tools.usage.IHttpGetRequest#request(java.lang.String)
 	 */
 	public boolean request(String urlString) {
-
-		boolean result = false;
 		try {
 			HttpURLConnection urlConnection = createURLConnection(urlString, userAgent);
 			urlConnection.connect();
-			int responseCode = getResponseCode(urlConnection);
+			int responseCode = urlConnection.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				result = true;
-				logger.debug(MessageFormat.format(HttpMessages.HttpGetMethod_Success, urlString, responseCode));
+				logger.debug(MessageFormat.format(Messages.HttpGetMethod_Success, urlString, responseCode));
+				return true;
 			} else {
-				logger.error(MessageFormat.format(HttpMessages.HttpGetMethod_Error_Http, urlString, responseCode));
+				logger.error(MessageFormat.format(Messages.HttpGetMethod_Error_Http, urlString, responseCode));
 			}
 		} catch (Exception e) {
-			logger.debug(MessageFormat.format(HttpMessages.HttpGetMethod_Error_Io, urlString, e.toString()));
+			logger.debug(MessageFormat.format(Messages.HttpGetMethod_Error_Io, urlString, e.toString()));
 		}
-		return result;
-	}
-
-	/**
-	 * Returns the return code from the given {@link HttpURLConnection}.
-	 * Provided to be called by test cases so that they can retrieve the return code.
-	 *
-	 * @param urlConnection to get the response code from
-	 * @return the return code the HttpUrlConnection received
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	protected int getResponseCode(HttpURLConnection urlConnection) throws IOException {
-		return urlConnection.getResponseCode();
+		return false;
 	}
 
 	/**
@@ -81,9 +68,8 @@ public class HttpGetRequest implements IHttpGetRequest {
 	 * @return the http url connection
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	protected HttpURLConnection createURLConnection(String urlString, String userAgent) throws IOException {
-		URL url = new URL(urlString);
-		HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+	private HttpURLConnection createURLConnection(String urlString, String userAgent) throws IOException {
+		HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString).openConnection();
 		urlConnection.setInstanceFollowRedirects(true);
 		urlConnection.setRequestMethod(GET_METHOD_NAME);
 		urlConnection.setRequestProperty(USER_AGENT, userAgent);

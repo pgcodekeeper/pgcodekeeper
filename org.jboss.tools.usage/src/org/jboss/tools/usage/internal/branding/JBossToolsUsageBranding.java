@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.jboss.tools.usage.internal.branding;
 
-import org.jboss.tools.usage.branding.IUsageBranding;
+import org.jboss.tools.usage.localizations.Messages;
 
 /**
  * @author André Dietisheim
@@ -19,22 +19,22 @@ public class JBossToolsUsageBranding implements IUsageBranding {
 
 	@Override
 	public String getPreferencesDescription() {
-		return JBossToolsUsageBrandingMessages.UsageReportPreferencePage_Description;
+		return Messages.UsageReportPreferencePage_Description;
 	}
 
 	@Override
 	public String getPreferencesAllowReportingCheckboxLabel() {
-		return JBossToolsUsageBrandingMessages.UsageReportPreferencePage_AllowReporting;
+		return Messages.UsageReportPreferencePage_AllowReporting;
 	}
 
 	@Override
 	public String getStartupAllowReportingTitle() {
-		return JBossToolsUsageBrandingMessages.UsageReport_DialogTitle;
+		return Messages.UsageReport_DialogTitle;
 	}
 
 	@Override
 	public String getStartupAllowReportingMessage() {
-		return JBossToolsUsageBrandingMessages.UsageReport_DialogMessage;
+		return Messages.UsageReport_DialogMessage;
 	}
 
 	@Override

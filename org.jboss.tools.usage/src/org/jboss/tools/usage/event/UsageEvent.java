@@ -16,27 +16,19 @@ package org.jboss.tools.usage.event;
  */
 public class UsageEvent {
 
-	private UsageEventType type;
+	private final UsageEventType type;
 	private String label;
 	private Integer value;
 
-	public UsageEvent(UsageEventType type) {
-		this(type, null, null);
-	}
-
-	public UsageEvent(UsageEventType type, String label) {
-		this(type, label, null);
-	}
-
 	public UsageEvent(UsageEventType type, String label, Integer value) {
-		if(type == null) {
+		if (type == null) {
 			throw new IllegalArgumentException("Type name may not be null"); //$NON-NLS-1$
 		}
 		this.type = type;
-		if(type.getLabelDescription()==null && label!=null) {
+		if (type.getLabelDescription() == null && label != null) {
 			throw new IllegalArgumentException("The label of this event may not be null since its event type has a label description"); //$NON-NLS-1$
 		}
-		if(type.getValueDescription()==null && value!=null) {
+		if (type.getValueDescription() == null && value != null) {
 			throw new IllegalArgumentException("The value of this event may not be null since its event type has a value description"); //$NON-NLS-1$
 		}
 		this.label = label;
@@ -79,11 +71,7 @@ public class UsageEvent {
 		return sb.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	@Override
-	public UsageEvent clone() {
+	public UsageEvent copy() {
 		return new UsageEvent(this.type, this.label, this.value);
 	}
 }

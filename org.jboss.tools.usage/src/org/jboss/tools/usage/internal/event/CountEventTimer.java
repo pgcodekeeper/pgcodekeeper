@@ -35,13 +35,14 @@ public class CountEventTimer {
 	}
 
 	public synchronized void start() {
-		if(job==null) {
+		if (job == null) {
 			job = new Job("Daily usage event reporting") {
+
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
 						UsageReporter.getInstance().trackCountEvents();
-						return Status.OK_STATUS;						
+						return Status.OK_STATUS;
 					} finally {
 						job.schedule(PERIOD);
 					}
@@ -53,7 +54,7 @@ public class CountEventTimer {
 	}
 
 	public synchronized void stop() {
-		if(job!=null) {
+		if (job != null) {
 			job.cancel();
 			job = null;
 		}

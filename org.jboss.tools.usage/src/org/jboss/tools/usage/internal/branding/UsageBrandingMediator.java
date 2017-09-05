@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.jboss.tools.usage.internal.branding;
 
-import org.jboss.tools.usage.branding.IUsageBranding;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 

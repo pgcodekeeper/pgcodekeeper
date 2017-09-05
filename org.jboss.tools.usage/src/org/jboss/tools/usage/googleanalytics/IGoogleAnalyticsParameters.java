@@ -10,12 +10,10 @@
  ******************************************************************************/
 package org.jboss.tools.usage.googleanalytics;
 
-import org.jboss.tools.usage.googleanalytics.AbstractGoogleAnalyticsParameters.GoogleAnalyticsEvent;
-
 /**
  * An interface that provides methods for all parameters that google analytics
  * needs to know about.
- * 
+ *
  * @author Andre Dietisheim
  * @see <a
  *      href="http://code.google.com/apis/analytics/docs/tracking/gaTrackingTroubleshooting.html#gifParameters">GIF
@@ -31,15 +29,12 @@ public interface IGoogleAnalyticsParameters {
 	public static final char SEMICOLON = ';';
 	public static final char PIPE = '|';
 
-	public static final String PARAM_HID = "utmhid";
 	public static final String PARAM_PAGE_REQUEST = "utmp";
 	public static final String PARAM_ACCOUNT_NAME = "utmac";
 	public static final String PARAM_HOST_NAME = "utmhn";
 	public static final String PARAM_EVENT_TRACKING = "utme";
 	public static final String PARAM_COOKIES = "utmcc";
 	public static final String PARAM_COOKIES_UNIQUE_VISITOR_ID = "__utma";
-	public static final String PARAM_COOKIES_SESSION = "__utmb";
-	public static final String PARAM_COOKIES_BROWSERSESSION = "__utmc";
 	public static final String PARAM_COOKIES_REFERRAL_TYPE = "__utmz";
 	public static final String PARAM_COOKIES_UTMCSR = "utmcsr";
 	public static final String PARAM_COOKIES_UTMCCN = "utmccn";
@@ -53,16 +48,12 @@ public interface IGoogleAnalyticsParameters {
 	public static final String PARAM_LANGUAGE_ENCODING = "utmcs";
 	public static final String PARAM_SCREEN_RESOLUTION = "utmsr";
 	public static final String PARAM_SCREEN_COLOR_DEPTH = "utmsc";
-	public static final String PARAM_PRODUCT_NAME = "utmipn";
-	public static final String PARAM_PRODUCT_CODE = "utmipc";
 	public static final String PARAM_FLASH_VERSION = "utmfl";
 	public static final String PARAM_BROWSER_LANGUAGE = "utmul";
-	public static final String PARAM_REPEAT_CAMPAIGN_VISIT = "utmcr";
 	public static final String PARAM_PAGE_TITLE = "utmdt";
 	public static final String PARAM_REQUEST_TYPE = "utmt";
 	public static final String PARAM_GAQ = "gaq";
-	public static final String PARAM_AD_CONTENT = "utm_content";
-	
+
 	public static final String VALUE_TRACKING_CODE_VERSION = "4.7.2";
 	public static final String VALUE_NO_REFERRAL = "0";
 	public static final String VALUE_ENCODING_UTF8 = "UTF-8";
@@ -97,39 +88,13 @@ public interface IGoogleAnalyticsParameters {
 	public long getVisitCount();
 
 	/**
-	 * Signals that a visit was executed. The
-	 * consequence is that visit timestamps and visit counters get updated
-	 * 
-	 * @see #getLastVisit()
-	 * @see #getCurrentVisit()
-	 * @see #getVisitCount()
-	 */
-	public void visit();
-
-	/**
-	 * Starts a new visit session. 
+	 * Starts a new visit session.
 	 */
 	public void startNewVisitSession();
 
 	public String getFlashVersion();
 
-	/**
-	 * Returns a user defined value that may be queried in Google Analytics.
-	 *
-	 * @return a user defined value
-	 */
-	public String getUserDefined();
-
-	/**
-	 * TODO: support multiple events. 
-	 */
-	public GoogleAnalyticsEvent getEvent();
-	
-	public String getCentralEnabledValue();
-
 	public String getJavaVmName();
-
-	public String getJavaVendor();
 
 	public String getJavaBitVersion();
 }

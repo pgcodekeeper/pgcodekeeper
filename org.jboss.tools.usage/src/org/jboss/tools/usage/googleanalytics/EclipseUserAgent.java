@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 
+ * Copyright (c)
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution,
@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.jboss.tools.usage.googleanalytics.eclipse;
+package org.jboss.tools.usage.googleanalytics;
 
 import java.text.MessageFormat;
 
@@ -19,10 +19,10 @@ import org.osgi.framework.Bundle;
 /**
  * Emulates a Firefox Browser User-Agent String but reports eclipse related
  * informations.
- * 
+ *
  * @author Andre Dietisheim
  */
-public class EclipseUserAgent implements IEclipseUserAgent {
+public class EclipseUserAgent {
 
 	public static final char BROWSER_LOCALE_DELIMITER = '-';
 
@@ -36,7 +36,7 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 	private static final String USERAGENT_LINUX = "{0}/{1} (X11; U; Linux i686; {3})"; //$NON-NLS-1$
 	private static final String USERAGENT_LINUX_64 = "{0}/{1} (X11; U; Linux x86_64; {3})"; //$NON-NLS-1$
 
-	public static final char VERSION_DELIMITER = '.'; //$NON-NLS-1$
+	public static final char VERSION_DELIMITER = '.';
 
 	private static final String PROP_OS_VERSION = "os.version"; //$NON-NLS-1$
 	private static final String PROP_SUN_ARCH = "sun.arch.data.model"; //$NON-NLS-1$
@@ -45,26 +45,22 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 
 	private String browserLanguage;
 
+	@Override
 	public String toString() {
 		String productId = getApplicationName();
 		String productVersion = getApplicationVersion();
 
-		return MessageFormat.format(
-				getUserAgentPattern()
-				, productId
-				, productVersion
-				, getOSVersion()
-				, getBrowserLanguage()
-				);
+		return MessageFormat.format(getUserAgentPattern(), productId, productVersion,
+				getOSVersion(), getBrowserLanguage());
 	}
 
 	private String createBrowserLanguage() {
-		String nl = getNL();
+		String nl = Platform.getNL();
 		if (nl == null) {
 			return ""; //$NON-NLS-1$
 		}
 
-		int indexOf = nl.indexOf(JAVA_LOCALE_DELIMITER); //$NON-NLS-1$
+		int indexOf = nl.indexOf(JAVA_LOCALE_DELIMITER);
 		if (indexOf <= 0) {
 			return nl;
 		}
@@ -76,10 +72,6 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 				.toString();
 	}
 
-	protected String getNL() {
-		return Platform.getNL();
-	}
-
 	public String getBrowserLanguage() {
 		if (browserLanguage == null) {
 			browserLanguage = createBrowserLanguage();
@@ -87,20 +79,12 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 		return browserLanguage;
 	}
 
-	public String getOS() {
-		return Platform.getOS();
-	}
-
-	public String getJavaArchitecture() {
-		return System.getProperty(PROP_SUN_ARCH);
-	}
-	
 	public String getOSVersion() {
 		return System.getProperty(PROP_OS_VERSION);
 	}
 
 	private String getUserAgentPattern() {
-		String os = getOS();
+		String os = Platform.getOS();
 		String userAgentPattern = ""; //$NON-NLS-1$
 		if (Platform.OS_LINUX.equals(os)) {
 			if (is64()) {
@@ -122,16 +106,15 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 
 	/**
 	 * Returns <code>true</code> if the jvm this is running in is a 64bit jvm.
-	 * 
+	 *
 	 * @param architecture
 	 * @return
-	 * 
+	 *
 	 * @see <a href="// http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-jre-is-installed-32bit-vs-64bit">stackoverflow</a>
 	 */
 	private boolean is64() {
-		String architecture = getJavaArchitecture();
-		return architecture != null
-				&& architecture.equals(ARCHITECTURE_64);
+		String architecture = System.getProperty(PROP_SUN_ARCH);
+		return architecture != null	&& architecture.equals(ARCHITECTURE_64);
 	}
 
 	public String getApplicationName() {
@@ -150,7 +133,7 @@ public class EclipseUserAgent implements IEclipseUserAgent {
 
 	/**
 	 * Returns the bundle that launched the application that this class runs in.
-	 * 
+	 *
 	 * @return the defining bundle
 	 */
 	private Bundle getApplicationBundle() {

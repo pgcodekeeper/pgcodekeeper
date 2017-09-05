@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -29,14 +30,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.jboss.tools.usage.branding.IUsageBranding;
+import org.jboss.tools.usage.JbossUtils;
 import org.jboss.tools.usage.event.UsageEventType;
-import org.jboss.tools.usage.googleanalytics.IJBossToolsEclipseEnvironment;
-import org.jboss.tools.usage.googleanalytics.eclipse.IEclipseUserAgent;
+import org.jboss.tools.usage.googleanalytics.EclipseUserAgent;
 import org.jboss.tools.usage.internal.JBossToolsUsageActivator;
+import org.jboss.tools.usage.internal.branding.IUsageBranding;
 import org.jboss.tools.usage.internal.event.EventRegister;
-import org.jboss.tools.usage.util.StatusUtils;
-import org.jboss.tools.usage.util.StringUtils;
+import org.jboss.tools.usage.internal.reporting.JBossToolsEclipseEnvironment;
+import org.jboss.tools.usage.localizations.Messages;
 import org.osgi.service.prefs.BackingStoreException;
 
 /**
@@ -46,7 +47,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 
 	private static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateTimeInstance(DateFormat.MEDIUM,
 			DateFormat.SHORT);
-	private IUsageBranding branding;
+	private final IUsageBranding branding;
 
 	public UsageReportPreferencePage() {
 		super(GRID);
@@ -62,7 +63,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 
 	private void createReportingData(Composite parent) {
 		Group group = new Group(parent, SWT.NONE);
-		group.setText(PreferencesMessages.UsageReportPreferencePage_ReportedValues);
+		group.setText(Messages.UsageReportPreferencePage_ReportedValues);
 		GridDataFactory.fillDefaults().grab(true, true).hint(SWT.FILL, SWT.FILL).applyTo(group);
 		FillLayout fillLayout = new FillLayout();
 		fillLayout.marginHeight = 4;
@@ -70,7 +71,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		group.setLayout(fillLayout);
 		StyledText text = new StyledText(group, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		text.setEditable(false);
-		IJBossToolsEclipseEnvironment eclipseEnvironment = JBossToolsUsageActivator.getDefault()
+		JBossToolsEclipseEnvironment eclipseEnvironment = JBossToolsUsageActivator.getDefault()
 				.getJBossToolsEclipseEnvironment();
 		if (eclipseEnvironment == null) {
 			text.setText("usage reporting facility is disabled");
@@ -79,71 +80,63 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		}
 	}
 
-	private void createText(IJBossToolsEclipseEnvironment eclipseEnvironment, StyledText text) {
-		List<StyleRange> styles = new ArrayList<StyleRange>();
+	private void createText(JBossToolsEclipseEnvironment eclipseEnvironment, StyledText text) {
+		List<StyleRange> styles = new ArrayList<>();
 		StringBuilder builder = new StringBuilder();
 
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JBossToolsVersion,
+		appendLabeledValue(Messages.UsageReportPreferencePage_JBossToolsVersion,
 				eclipseEnvironment.getJBossToolsVersion(), builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JBossToolsComponents,
+		appendLabeledValue(Messages.UsageReportPreferencePage_JBossToolsComponents,
 				eclipseEnvironment.getKeyword(), builder, styles);
-		builder.append(StringUtils.getLineSeparator());
+		builder.append(JbossUtils.getLineSeparator());
 
-		IEclipseUserAgent eclipseUserAgent = eclipseEnvironment.getEclipseUserAgent();
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ProductId,
+		EclipseUserAgent eclipseUserAgent = eclipseEnvironment.getEclipseUserAgent();
+		appendLabeledValue(Messages.UsageReportPreferencePage_ProductId,
 				eclipseUserAgent.getApplicationName(), builder, styles);
 
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ProductVersion,
+		appendLabeledValue(Messages.UsageReportPreferencePage_ProductVersion,
 				eclipseUserAgent.getApplicationVersion(), builder, styles);
-		builder.append(StringUtils.getLineSeparator());
+		builder.append(JbossUtils.getLineSeparator());
 
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_OperatingSystem, eclipseUserAgent.getOS(),
+		appendLabeledValue(Messages.UsageReportPreferencePage_OperatingSystem, Platform.getOS(),
 				builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_OperatingSystemVersion,
+		appendLabeledValue(Messages.UsageReportPreferencePage_OperatingSystemVersion,
 				eclipseUserAgent.getOSVersion(), builder, styles);
 		if (eclipseEnvironment.isLinuxDistro()) {
-			appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_LinuxDistro,
+			appendLabeledValue(Messages.UsageReportPreferencePage_LinuxDistro,
 					eclipseEnvironment.getUserDefined(), builder, styles);
 		}
-		builder.append(StringUtils.getLineSeparator());
+		builder.append(JbossUtils.getLineSeparator());
 
 		// JVM
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JvmName, eclipseEnvironment.getJavaVmName(),
+		appendLabeledValue(Messages.UsageReportPreferencePage_JvmName, eclipseEnvironment.getJavaVmName(),
 				builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JvmArchitecture, eclipseEnvironment.getJavaBitVersion(),
+		appendLabeledValue(Messages.UsageReportPreferencePage_JvmArchitecture, eclipseEnvironment.getJavaBitVersion(),
 				builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JvmVersion, eclipseEnvironment.getFlashVersion(),
+		appendLabeledValue(Messages.UsageReportPreferencePage_JvmVersion, eclipseEnvironment.getFlashVersion(),
 				builder, styles);
-		builder.append(StringUtils.getLineSeparator());
-		//
+		builder.append(JbossUtils.getLineSeparator());
 
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_Locale, eclipseUserAgent.getBrowserLanguage(),
+		appendLabeledValue(Messages.UsageReportPreferencePage_Locale, eclipseUserAgent.getBrowserLanguage(),
 				builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ScreenColors,
+		appendLabeledValue(Messages.UsageReportPreferencePage_ScreenColors,
 				eclipseEnvironment.getScreenColorDepth(), builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ScreenResolution,
+		appendLabeledValue(Messages.UsageReportPreferencePage_ScreenResolution,
 				eclipseEnvironment.getScreenResolution(), builder, styles);
-		builder.append(StringUtils.getLineSeparator());
+		builder.append(JbossUtils.getLineSeparator());
 
-//		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_ProductOwner,
-//				eclipseEnvironment.getHostname(), builder, styles);
-//		builder.append(StringUtils.getLineSeparator());
-
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_NumberOfUsageHits,
+		appendLabeledValue(Messages.UsageReportPreferencePage_NumberOfUsageHits,
 				String.valueOf(eclipseEnvironment.getVisitCount()), builder,
 				styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_FirstUsageHit,
+		appendLabeledValue(Messages.UsageReportPreferencePage_FirstUsageHit,
 				getFormattedDate(eclipseEnvironment.getFirstVisit()), builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_LastUsageHit,
+		appendLabeledValue(Messages.UsageReportPreferencePage_LastUsageHit,
 				getFormattedDate(eclipseEnvironment.getLastVisit()), builder, styles);
-		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_CurrentUsageHit,
+		appendLabeledValue(Messages.UsageReportPreferencePage_CurrentUsageHit,
 				getFormattedDate(eclipseEnvironment.getCurrentVisit()), builder,
 				styles);
-//		appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_JBossCentralEnabled,
-//				eclipseEnvironment.getCentralEnabledValue(), builder,
-//				styles);
 
-		builder.append(StringUtils.getLineSeparator());
+		builder.append(JbossUtils.getLineSeparator());
 		appendEvents(builder, styles);
 
 		text.setText(builder.toString());
@@ -156,20 +149,20 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 	private void appendEvents(StringBuilder builder, List<StyleRange> styles) {
 		UsageEventType[] events = EventRegister.getInstance().getRegisteredEventTypes();
 		if(events.length>0) {
-			appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_Events, "", builder, styles);
-			builder.append(StringUtils.getLineSeparator());
+			appendLabeledValue(Messages.UsageReportPreferencePage_Events, "", builder, styles);
+			builder.append(JbossUtils.getLineSeparator());
 			for (UsageEventType event : events) {
-				appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventComponent, event.getComponentName(), builder, styles);
-				appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventVersion, event.getComponentVersion(), builder, styles);
-				appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventCategory, event.getCategoryName(), builder, styles);
-				appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventAction, event.getActionName(), builder, styles);
-				if(event.getLabelDescription()!=null) {
-					appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventLabel, event.getLabelDescription(), builder, styles);
-					if(event.getValueDescription()!=null) {
-						appendLabeledValue(PreferencesMessages.UsageReportPreferencePage_EventValue, event.getValueDescription(), builder, styles);
+				appendLabeledValue(Messages.UsageReportPreferencePage_EventComponent, event.getComponentName(), builder, styles);
+				appendLabeledValue(Messages.UsageReportPreferencePage_EventVersion, event.getComponentVersion(), builder, styles);
+				appendLabeledValue(Messages.UsageReportPreferencePage_EventCategory, event.getCategoryName(), builder, styles);
+				appendLabeledValue(Messages.UsageReportPreferencePage_EventAction, event.getActionName(), builder, styles);
+				if(event.getLabelDescription() != null) {
+					appendLabeledValue(Messages.UsageReportPreferencePage_EventLabel, event.getLabelDescription(), builder, styles);
+					if(event.getValueDescription() != null) {
+						appendLabeledValue(Messages.UsageReportPreferencePage_EventValue, event.getValueDescription(), builder, styles);
 					}
 				}
-				builder.append(StringUtils.getLineSeparator());
+				builder.append(JbossUtils.getLineSeparator());
 			}
 		}
 	}
@@ -177,7 +170,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 	/**
 	 * Appends a labeled value to the given string builder and adds a bold font
 	 * style range to the given styles.
-	 * 
+	 *
 	 * @param label
 	 *            the label to append
 	 * @param value
@@ -191,8 +184,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		StyleRange styleRange = startLabelStyleRange(builder);
 		builder.append(label);
 		finishLabelStyleRange(builder, styleRange);
-		builder.append(value)
-				.append(StringUtils.getLineSeparator());
+		builder.append(value).append(JbossUtils.getLineSeparator());
 		styles.add(styleRange);
 	}
 
@@ -208,15 +200,17 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		return styleRange;
 	}
 
+	@Override
 	public void createFieldEditors() {
 		addField(new BooleanFieldEditor(
-					IUsageReportPreferenceConstants.USAGEREPORT_ENABLED_ID
-					, branding.getPreferencesAllowReportingCheckboxLabel()
-					, getFieldEditorParent()));
+				IUsageReportPreferenceConstants.USAGEREPORT_ENABLED_ID,
+				branding.getPreferencesAllowReportingCheckboxLabel(),
+				getFieldEditorParent()));
 	}
 
+	@Override
 	public void init(IWorkbench workbench) {
-		setPreferenceStore(UsageReportPreferences.createPreferenceStore());
+		setPreferenceStore(JbossUtils.getStore());
 		setDescription(branding.getPreferencesDescription());
 	}
 
@@ -225,8 +219,8 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 		try {
 			UsageReportPreferences.flush();
 		} catch (BackingStoreException e) {
-			IStatus status = StatusUtils.getErrorStatus(JBossToolsUsageActivator.PLUGIN_ID,
-					PreferencesMessages.UsageReportPreferencePage_Error_Saving, e);
+			IStatus status = JbossUtils.getErrorStatus(JBossToolsUsageActivator.PLUGIN_ID,
+					Messages.UsageReportPreferencePage_Error_Saving, e);
 			JBossToolsUsageActivator.getDefault().getLog().log(status);
 		}
 		return super.performOk();
@@ -234,12 +228,9 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
 
 	private String getFormattedDate(String timeStamp) {
 		try {
-
-			Date date = new Date(Long.parseLong(timeStamp));
-			if (date != null) {
-				return DATE_FORMAT.format(date);
-			}
+			return DATE_FORMAT.format(new Date(Long.parseLong(timeStamp)));
 		} catch (NumberFormatException e) {
+
 		}
 		return ""; //$NON-NLS-1$
 	}

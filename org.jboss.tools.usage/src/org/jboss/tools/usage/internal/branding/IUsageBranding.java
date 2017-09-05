@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.jboss.tools.usage.branding;
+package org.jboss.tools.usage.internal.branding;
 
 /**
  * Provides branding for usage reporting. Branding providers may register a

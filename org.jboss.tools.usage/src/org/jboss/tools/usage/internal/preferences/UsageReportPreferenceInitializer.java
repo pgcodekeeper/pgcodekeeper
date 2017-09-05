@@ -11,15 +11,17 @@
 package org.jboss.tools.usage.internal.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jboss.tools.usage.JbossUtils;
 
 /**
  * @author Andre Dietisheim
  */
 public class UsageReportPreferenceInitializer extends
-		AbstractPreferenceInitializer {
+AbstractPreferenceInitializer {
 
+	@Override
 	public void initializeDefaultPreferences() {
-		UsageReportPreferencesUtils.getStore().setDefault(
+		JbossUtils.getStore().setDefault(
 				IUsageReportPreferenceConstants.ASK_USER_USAGEREPORT_ID,
 				IUsageReportPreferenceConstants.ASK_USER_USAGEREPORT_DEFAULTVALUE);
 	}

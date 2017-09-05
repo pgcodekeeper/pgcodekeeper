@@ -17,16 +17,16 @@
 package org.jboss.tools.usage.internal.reporting;
 
 import java.text.MessageFormat;
+import java.util.Random;
 
+import org.jboss.tools.usage.JbossUtils;
 import org.jboss.tools.usage.event.UsageEvent;
 import org.jboss.tools.usage.googleanalytics.GoogleAnalyticsCookie;
 import org.jboss.tools.usage.googleanalytics.IGoogleAnalyticsParameters;
-import org.jboss.tools.usage.googleanalytics.IJBossToolsEclipseEnvironment;
 import org.jboss.tools.usage.googleanalytics.RequestType;
 import org.jboss.tools.usage.internal.JBossToolsUsageActivator;
 import org.jboss.tools.usage.internal.http.HttpGetRequest;
 import org.jboss.tools.usage.tracker.internal.UsagePluginLogger;
-import org.jboss.tools.usage.util.HttpEncodingUtils;
 
 /**
  * @author Andre Dietisheim
@@ -39,11 +39,7 @@ public class UsageRequest {
 
 	private static final String TRACKING_URL = "http://www.google-analytics.com/__utm.gif";
 	private final UsagePluginLogger logger = new UsagePluginLogger(JBossToolsUsageActivator.getDefault());
-	protected IJBossToolsEclipseEnvironment environment;
-
-	public UsageRequest(IJBossToolsEclipseEnvironment environment) {
-		this.environment = environment;
-	}
+	private final JBossToolsEclipseEnvironment environment = JBossToolsUsageActivator.getDefault().getJBossToolsEclipseEnvironment();
 
 	/**
 	 * Sends a tracking request
@@ -55,7 +51,7 @@ public class UsageRequest {
 	 * @param startNewVisitSession if false, the current session from environment is used
 	 * @return true if the request was sent successfully
 	 */
-	synchronized public boolean sendRequest(String pagePath,
+	public synchronized boolean sendRequest(String pagePath,
 			String title,
 			UsageEvent event,
 			RequestType type,
@@ -67,18 +63,18 @@ public class UsageRequest {
 	/**
 	 * @return the environment
 	 */
-	public IJBossToolsEclipseEnvironment getEnvironment() {
+	public JBossToolsEclipseEnvironment getEnvironment() {
 		return environment;
 	}
 
-	private String createUrl(IJBossToolsEclipseEnvironment environment,
+	private String createUrl(JBossToolsEclipseEnvironment environment,
 			String pagePath,
 			String title,
 			UsageEvent event,
 			RequestType type,
 			boolean startNewVisitSession) {
 
-		if(startNewVisitSession) {
+		if (startNewVisitSession) {
 			environment.startNewVisitSession();
 		}
 		StringBuilder builder = new StringBuilder(TRACKING_URL).append(IGoogleAnalyticsParameters.URL_PARAM_DELIMITER);
@@ -89,14 +85,14 @@ public class UsageRequest {
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_RESOLUTION, environment.getScreenResolution(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_SCREEN_COLOR_DEPTH, environment.getScreenColorDepth(), builder);
 		appendParameter(IGoogleAnalyticsParameters.PARAM_BROWSER_LANGUAGE, environment.getBrowserLanguage(), builder);
-		if(title!=null) {
-			String encoded = HttpEncodingUtils.checkedEncodeUtf8(title);
+		if (title != null) {
+			String encoded = JbossUtils.checkedEncodeUtf8(title);
 			appendParameter(IGoogleAnalyticsParameters.PARAM_PAGE_TITLE, encoded, builder);
 		}
 		appendParameter(IGoogleAnalyticsParameters.PARAM_FLASH_VERSION, environment.getFlashVersion(), builder);
-		if(event!=null) {
+		if (event != null) {
 			appendParameter(IGoogleAnalyticsParameters.PARAM_EVENT_TRACKING, event, builder);
-			if(type!=null && type!=RequestType.PAGE) {
+			if(type != null && type != RequestType.PAGE) {
 				appendParameter(IGoogleAnalyticsParameters.PARAM_REQUEST_TYPE, type.toString(), builder);
 			}
 		}
@@ -111,7 +107,7 @@ public class UsageRequest {
 		return builder.toString();
 	}
 
-	private boolean sendRequest(IJBossToolsEclipseEnvironment environment, String url) {
+	private boolean sendRequest(JBossToolsEclipseEnvironment environment, String url) {
 		HttpGetRequest request = new HttpGetRequest(environment.getUserAgent(), logger);
 		return request.request(url);
 	}
@@ -129,7 +125,7 @@ public class UsageRequest {
 	 *      href="http://www.martynj.com/google-analytics-cookies-tracking-multiple-domains-filters">cookie
 	 *      values and formats</a>
 	 */
-	private String getCookies(IJBossToolsEclipseEnvironment environment) {
+	private String getCookies(JBossToolsEclipseEnvironment environment) {
 		StringBuilder builder = new StringBuilder();
 
 		/**
@@ -141,57 +137,40 @@ public class UsageRequest {
 				.append(environment.getFirstVisit()).append(IGoogleAnalyticsParameters.DOT)
 				.append(environment.getLastVisit()).append(IGoogleAnalyticsParameters.DOT)
 				.append(environment.getCurrentVisit()).append(IGoogleAnalyticsParameters.DOT)
-				.append(environment.getVisitCount()))
-		.appendTo(builder);
+				.append(environment.getVisitCount())).appendTo(builder);
 
-		builder.append(IGoogleAnalyticsParameters.SEMICOLON)
-		.append(IGoogleAnalyticsParameters.PLUS_SIGN);
+		builder.append(IGoogleAnalyticsParameters.SEMICOLON).append(IGoogleAnalyticsParameters.PLUS_SIGN);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_REFERRAL_TYPE,
-				new StringBuilder()
-				.append("999.")
-				.append(environment.getFirstVisit())
-				.append(IGoogleAnalyticsParameters.DOT)
-				.append("1.1."))
-		.appendTo(builder);
+				new StringBuilder().append("999.").append(environment.getFirstVisit())
+				.append(IGoogleAnalyticsParameters.DOT).append("1.1.")).appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCSR,
-				"(direct)",
-				IGoogleAnalyticsParameters.PIPE)
-		.appendTo(builder);
+				"(direct)", IGoogleAnalyticsParameters.PIPE).appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCCN,
-				"(direct)",
-				IGoogleAnalyticsParameters.PIPE)
-		.appendTo(builder);
+				"(direct)",	IGoogleAnalyticsParameters.PIPE).appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_UTMCMD,
-				"(none)",
-				IGoogleAnalyticsParameters.PIPE)
-		.appendTo(builder);
+				"(none)", IGoogleAnalyticsParameters.PIPE).appendTo(builder);
 
 		new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_KEYWORD,
-				environment.getKeyword())
-		.appendTo(builder);
+				environment.getKeyword()).appendTo(builder);
 
-		builder.append(IGoogleAnalyticsParameters.SEMICOLON)
-		.append(IGoogleAnalyticsParameters.PLUS_SIGN);
+		builder.append(IGoogleAnalyticsParameters.SEMICOLON).append(IGoogleAnalyticsParameters.PLUS_SIGN);
 
-		if(environment.isLinuxDistro()) {
+		if (environment.isLinuxDistro()) {
 			/**
 			 * <tt>User defined Value<tt> cookie format: (domain hash).(setvar value)
 			 *
 			 * @see <a href="http://www.martynj.com/google-analytics-cookies-tracking-multiple-domains-filters">__utmv, __utmb, __utmc cookies formats and more</a>
 			 */
 			new GoogleAnalyticsCookie(IGoogleAnalyticsParameters.PARAM_COOKIES_USERDEFINED,
-					getRandomNumber()
-					+ IGoogleAnalyticsParameters.DOT
-					+ environment.getUserDefined(),
-					IGoogleAnalyticsParameters.SEMICOLON)
-			.appendTo(builder);
+					getRandomNumber() + IGoogleAnalyticsParameters.DOT
+					+ environment.getUserDefined(),	IGoogleAnalyticsParameters.SEMICOLON).appendTo(builder);
 		}
 
-		return HttpEncodingUtils.checkedEncodeUtf8(builder.toString());
+		return JbossUtils.checkedEncodeUtf8(builder.toString());
 	}
 
 	private void appendParameter(String name, UsageEvent event, StringBuilder builder) {
@@ -206,7 +185,7 @@ public class UsageRequest {
 				eventString = eventString + MessageFormat.format("({0})", event.getValue());
 			}
 		}
-		String encoded = HttpEncodingUtils.checkedEncodeUtf8(eventString);
+		String encoded = JbossUtils.checkedEncodeUtf8(eventString);
 		appendParameter(name, encoded, true, builder);
 	}
 
@@ -222,6 +201,6 @@ public class UsageRequest {
 	}
 
 	private String getRandomNumber() {
-		return Integer.toString((int) (Math.random() * 0x7fffffff));
+		return Integer.toString(new Random().nextInt(Integer.MAX_VALUE));
 	}
 }
