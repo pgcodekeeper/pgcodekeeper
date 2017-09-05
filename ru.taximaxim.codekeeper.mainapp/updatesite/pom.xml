@@ -203,9 +203,9 @@
                                     <goal>eclipse-run</goal>
                                 </goals>
                                 <configuration>
-                                    <appArgLine><![CDATA[-application org.eclipse.ant.core.antRunner \
-                                        -buildfile deploy-ant.xml default \
-                                        -Dproject.build.directory=${project.build.directory} \
+                                    <appArgLine><![CDATA[-application org.eclipse.ant.core.antRunner
+                                        -buildfile deploy-ant.xml default
+                                        -Dproject.build.directory=${project.build.directory}
                                         -Dbuild.version=${unqualifiedVersion}.${buildQualifier}]]>
                                     </appArgLine>
                                     <repositories>
