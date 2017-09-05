@@ -30,17 +30,17 @@
 			</p2.composite.repository>
 
 			<echo message="committing site repo" />
-			<exec executable="git" dir="${project.build.directory}" failonerror="true">
+			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
 				<arg value="commit" />
 				<arg value="-am" />
 				<arg value="Deploy ${build.version} into update site" />
 			</exec>
 
 			<echo message="pushing site repo" />
-			<!--exec executable="git" dir="${project.build.directory}" failonerror="true">
+			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
                 <arg value="push" />
                 <arg value="git@github.com:pgcodekeeper/pgcodekeeper.github.io.git" />
-            </exec-->
+            </exec>
 		</sequential>
 	</target>
 </project>
