@@ -46,6 +46,7 @@
 			<exec executable="git" dir="${project.build.directory}/pgcodekeeper.github.io" failonerror="true">
 				<arg value="push" />
 				<arg value="git@github.com:pgcodekeeper/pgcodekeeper.github.io.git" />
+				<arg value="HEAD" />
 			</exec>
 		</sequential>
 	</target>
