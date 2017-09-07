@@ -225,8 +225,9 @@ class QuickUpdateJob extends Job {
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
             Collection<PgStatement> listPgObjectsFragment, PgDatabase left, PgDatabase right) {
         // mark schemas only when there are no schema-nested objects
-        boolean markSchemas = ! listPgObjectsFragment.stream().anyMatch(
-                st -> st.getStatementType() != DbObjType.SCHEMA && st.getStatementType() != DbObjType.EXTENSION);
+        boolean markSchemas = listPgObjectsFragment.stream()
+                .map(PgStatement::getStatementType)
+                .allMatch(ty -> ty == DbObjType.SCHEMA || ty == DbObjType.EXTENSION);
 
         Set<TreeElement> checked = new HashSet<>();
         for (PgStatement st : listPgObjectsFragment){
