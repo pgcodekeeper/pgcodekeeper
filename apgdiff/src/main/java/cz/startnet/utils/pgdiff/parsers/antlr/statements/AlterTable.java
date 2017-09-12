@@ -37,7 +37,6 @@ public class AlterTable extends ParserAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         PgTable tabl = null;
 
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
@@ -127,14 +126,6 @@ public class AlterTable extends ParserAbstract {
                 }
             }
         }
-        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-            PgColumn col = tabl.getColumn(function.getKey());
-            if (col != null) {
-                col.addDep(function.getValue());
-            }
-        }
-
-
         return null;
     }
 

@@ -23,7 +23,6 @@ public final class JdbcQueries {
 
     // SONAR-OFF
 
-
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
     public static String QUERY_HELPER_FUNCTIONS;
@@ -45,6 +44,7 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_TYPES_PER_SCHEMA;
     public static Map <SupportedVersion, String> QUERY_RULES_PER_SCHEMA;
 
+    public static String QUERY_SCHEMAS_ACCESS;
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 

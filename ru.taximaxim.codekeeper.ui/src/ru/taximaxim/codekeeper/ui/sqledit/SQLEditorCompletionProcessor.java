@@ -2,10 +2,10 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContextInformation;
@@ -14,45 +14,36 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
-    private final SqlPostgresSyntax sqlSyntax;
-    private String text = ""; //$NON-NLS-1$
+    private final SQLEditor editor;
 
-    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
-        this.sqlSyntax = sqlSyntax;
+    public SQLEditorCompletionProcessor(SQLEditor editor) {
+        this.editor = editor;
     }
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
             int offset) {
-        IDocument document = viewer.getDocument();
-        text = ""; //$NON-NLS-1$
+        String part;
         try {
-            int length = 1;
-            text = document.get(offset - length, length);
-            if (text.getBytes()[0] != '\n') {
-                // TODO refactor, out of bounds at the beginning
-                while (Character.isJavaIdentifierPart(document.get(offset - length, length)
-                        .getBytes()[0])) {
-                    text = document.get(offset - length, length);
-                    length++;
-                }
-            }
-            if (length == 1) {
-                text = ""; //$NON-NLS-1$
-            }
-        } catch (BadLocationException e) {
-            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", e); //$NON-NLS-1$
+            part = viewer.getDocument().get(0, offset);
+        } catch (BadLocationException ex) {
+            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", ex); //$NON-NLS-1$
+            return null;
         }
+        int nonid = offset - 1;
+        while (nonid > 0 && Character.isJavaIdentifierPart(part.charAt(nonid))) {
+            --nonid;
+        }
+        String text = part.substring(nonid + 1, offset);
 
         List<ICompletionProposal> result = new ArrayList<>();
         // SQL TEmplates
@@ -66,19 +57,16 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 result.addAll(Arrays.asList(templates));
             }
         }
-        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
-        List<PgObjLocation> loc = new ArrayList<>();
-        if (page instanceof SQLEditor) {
-            PgDbParser parser = ((SQLEditor)page).getParser();
-            loc.addAll(parser.getAllObjDefinitions());
-            if (page instanceof RollOnEditor) {
-                loc.addAll(PgDbParser.getParser(
-                        ((DepcyFromPSQLOutput) page.getEditorInput())
-                        .getProject()).getAllObjDefinitions());
-            }
-        }
+
+        PgDbParser parser = editor.getParser();
+        List<PgObjLocation> loc = parser.getAllObjDefinitions();
+        Collections.sort(loc, (o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()));
+
         for (PgObjLocation obj : loc) {
+            if (obj.getObjType() == DbObjType.SEQUENCE || obj.getObjType() == DbObjType.INDEX) {
+                continue;
+            }
+
             Image img = Activator.getDbObjImage(obj.getObjType());
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {
@@ -107,7 +95,6 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
     @Override
     public IContextInformation[] computeContextInformation(ITextViewer viewer,
             int offset) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -128,7 +115,6 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     @Override
     public IContextInformationValidator getContextInformationValidator() {
-        // TODO Auto-generated method stub
         return null;
     }
 }

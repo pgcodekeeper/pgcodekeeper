@@ -4,7 +4,9 @@ import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -81,9 +83,23 @@ public class SequencesReader extends JdbcReader {
 
     public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException {
         loader.setCurrentOperation("sequences data query");
+
+        List<String> schemasAccess = new ArrayList<>();
+        try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
+            Array arrSchemas = loader.connection.createArrayOf("text", db.getSchemas().stream().map(PgSchema::getName).toArray());
+            schemasAccessQuery.setArray(1, arrSchemas);
+            try (ResultSet schemaRes = schemasAccessQuery.executeQuery()) {
+                while (schemaRes.next()) {
+                    schemasAccess.add(schemaRes.getString("nspname"));
+                }
+            } finally {
+                arrSchemas.free();
+            }
+        }
+
         Map<String, PgSequence> seqs = new HashMap<>();
-        for (PgSchema schema : db.getSchemas()) {
-            for (PgSequence seq : schema.getSequences()) {
+        for (String schema : schemasAccess) {
+            for (PgSequence seq : db.getSchema(schema).getSequences()) {
                 seqs.put(seq.getQualifiedName(), seq);
             }
         }

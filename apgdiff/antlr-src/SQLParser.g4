@@ -92,6 +92,7 @@ schema_alter
 schema_drop
     : DROP (drop_function_statement
     | drop_trigger_statement
+    | drop_rule_statement
     | drop_statements)
     ;
 
@@ -227,7 +228,7 @@ grant_option_for
 
 alter_sequence_statement
     : SEQUENCE (IF EXISTS)? name=schema_qualified_name
-     ( (sequence_body | RESTART (WITH? restart=identifier)?)*
+     ( (sequence_body | RESTART (WITH? restart=NUMBER_LITERAL)?)*
     | set_schema
     | owner_to
     | rename_to)
@@ -837,6 +838,10 @@ drop_function_statement
 
 drop_trigger_statement
     : TRIGGER (IF EXISTS)? name=identifier ON table_name=schema_qualified_name cascade_restrict?
+    ;
+
+drop_rule_statement
+    : RULE (IF EXISTS)? name=identifier ON schema_qualified_name cascade_restrict?
     ;
 
 drop_statements

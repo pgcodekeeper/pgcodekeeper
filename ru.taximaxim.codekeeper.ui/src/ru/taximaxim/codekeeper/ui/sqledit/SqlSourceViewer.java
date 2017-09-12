@@ -15,20 +15,20 @@ import ru.taximaxim.codekeeper.ui.Activator;
 
 public class SqlSourceViewer extends SourceViewer {
 
-    private IDocumentPartitioner partitioner = new SQLEditorCommonDocumentProvider()
+    private final IDocumentPartitioner partitioner = new SQLEditorCommonDocumentProvider()
             .createRecipePartitioner();
-    
+
     public SqlSourceViewer(Composite parent, int style) {
-        super(parent, new CompositeRuler(), 
+        super(parent, new CompositeRuler(),
                 SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER | style);
         this.setRangeIndicator(new DefaultRangeIndicator());
         this.configure(new SQLEditorSourceViewerConfiguration(EditorsUI
                 .getSharedTextColors(), Activator.getDefault()
-                .getPreferenceStore()));
-        
+                .getPreferenceStore(), null));
+
         this.getTextWidget().setFont(JFaceResources.getTextFont());
     }
-        
+
     @Override
     protected void inputChanged(Object newInput, Object oldInput) {
         if (oldInput instanceof IDocumentExtension3) {
@@ -36,7 +36,7 @@ public class SqlSourceViewer extends SourceViewer {
             doc.setDocumentPartitioner(SQLEditorCommonDocumentProvider.SQL_PARTITIONING, null);
             partitioner.disconnect();
         }
-        
+
         if (newInput instanceof IDocumentExtension3) {
             IDocumentExtension3 extension3 = (IDocumentExtension3) newInput;
             partitioner.connect((IDocument) newInput);
