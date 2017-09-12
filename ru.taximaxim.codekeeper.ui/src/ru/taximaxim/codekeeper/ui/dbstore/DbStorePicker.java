@@ -209,6 +209,10 @@ public class DbStorePicker extends Composite {
         cmbDbNames.addSelectionChangedListener(listener);
     }
 
+    public void removeListenerFromCombo(ISelectionChangedListener listener) {
+        cmbDbNames.removeSelectionChangedListener(listener);
+    }
+
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;

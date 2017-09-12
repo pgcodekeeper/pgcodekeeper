@@ -26,7 +26,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -55,6 +54,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.services.IEvaluationService;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -74,16 +74,18 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
@@ -94,24 +96,21 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
     private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
 
-    private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
-    private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
-
     private final XmlHistory history;
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private Composite parentComposite;
 
-    private DbInfo externalDbInfo;
-
     private Text txtCommand;
     private Combo cmbScript;
     private Button btnJdbcToggle;
-    private DbStorePicker storePicker;
 
     private volatile boolean isRunning;
     private Thread scriptThread;
-    private Button runScriptBtn;
+
+    private DbInfo lastDB;
+
+    private volatile boolean updateDdlJobInProcessing;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -131,6 +130,32 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
 
+    public boolean isUpdateDdlJobInProcessing() {
+        return updateDdlJobInProcessing;
+    }
+
+    public void setUpdateDdlJobInProcessing(boolean updateDdlJobInProcessing) {
+        this.updateDdlJobInProcessing = updateDdlJobInProcessing;
+        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.UPDATE_DDL_RUNNING);
+    }
+
+    public void setLastDb(DbInfo lastDb) {
+        this.lastDB = lastDb;
+    }
+
+    public DbInfo getLastDb() {
+        if (lastDB != null) {
+            return lastDB;
+        }
+
+        PgDbProject proj = new PgDbProject(((IFileEditorInput)getEditorSite().getPage().getActiveEditor().getEditorInput())
+                .getFile().getProject());
+
+        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+
+        return lastStore.isEmpty() ? null : lastStore.get(0);
+    }
+
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
             IVerticalRuler ruler, int styles) {
@@ -147,7 +172,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             @Override
             public void verifyKey(VerifyEvent event) {
                 if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == SWT.F5) {
-                    runButtonMethod();
+                    updateDdl();
                 }
             }
         });
@@ -214,12 +239,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
                 .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
 
-        storePicker = new DbStorePicker(parent, SWT.NONE, mainPrefs, false, false);
-        storePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-        if (externalDbInfo != null) {
-            storePicker.setSelection(new StructuredSelection(externalDbInfo));
-        }
-
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         notJdbc.setLayoutData(gd);
@@ -241,11 +260,11 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbScript.setToolTipText(
-                DB_NAME_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
-                DB_HOST_PLACEHOLDER + '=' + getReplacedString(DB_HOST_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
-                DB_PORT_PLACEHOLDER + '=' + getReplacedString(DB_PORT_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
-                DB_USER_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, externalDbInfo) + UIConsts._NL +
-                DB_PASS_PLACEHOLDER + '=' + getReplacedString(DB_USER_PLACEHOLDER, externalDbInfo));
+                DB_NAME_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
+                DB_HOST_PLACEHOLDER + '=' + getReplacedString(DB_HOST_PLACEHOLDER, lastDB) + UIConsts._NL +
+                DB_PORT_PLACEHOLDER + '=' + getReplacedString(DB_PORT_PLACEHOLDER, lastDB) + UIConsts._NL +
+                DB_USER_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
+                DB_PASS_PLACEHOLDER + '=' + getReplacedString(DB_USER_PLACEHOLDER, lastDB));
 
         List<String> prev = null;
         try {
@@ -293,39 +312,20 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 notJdbc.setVisible(isCmd);
                 ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
 
-                storePicker.setVisible(!isCmd);
-                ((GridData)storePicker.getLayoutData()).exclude = isCmd;
-
                 parent.layout();
 
                 Activator.getDefault().getPreferenceStore().setValue(
                         PREF.IS_DDL_UPDATE_OVER_JDBC, isCmd);
             }
         });
-        createButtonsForButtonBar(parent);
+
         btnJdbcToggle.notifyListeners(SWT.Selection, new Event());
 
         return parent;
     }
 
-    protected void createButtonsForButtonBar(Composite parent) {
-        Composite comp = new Composite(parent, SWT.NONE);
-        comp.setLayout(new GridLayout(3, true));
-
-        runScriptBtn = new Button(comp, SWT.PUSH);
-        runScriptBtn.setText(RUN_SCRIPT_LABEL);
-        runScriptBtn.setToolTipText(Messages.RollOnEditor_tooltip_run_selected);
-        runScriptBtn.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                runButtonMethod();
-            }
-        });
-    }
-
     private String getReplacedString() {
-        return getReplacedString(cmbScript.getText(), externalDbInfo);
+        return getReplacedString(cmbScript.getText(), lastDB);
     }
 
     private static String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
@@ -357,13 +357,12 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
             @Override
             public void run() {
-                if (!runScriptBtn.isDisposed()) {
+                if (!isUpdateDdlJobInProcessing()) {
                     parentComposite.setCursor(null);
 
                     if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
                         new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
                     }
-                    setRunButtonText(RUN_SCRIPT_LABEL);
                 }
                 isRunning = false;
             }
@@ -374,11 +373,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         return getSourceViewer().getTextWidget().getText();
     }
 
-    public DbInfo getDbInfo() {
-        return storePicker.getDbInfo();
-    }
-
-    private void runButtonMethod() {
+    public void updateDdl() {
         if (!isRunning) {
             final String textRetrieved;
             Point point = getSourceViewer().getSelectedRange();
@@ -400,7 +395,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             if (!btnJdbcToggle.getSelection()){
                 Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-                DbInfo dbInfo = storePicker.getDbInfo();
+                DbInfo dbInfo = getLastDb();
                 if (dbInfo == null){
                     ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
                     return;
@@ -418,6 +413,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     public void run() {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
+                            setUpdateDdlJobInProcessing(true);
+
                             JdbcConnector connector = new JdbcConnector(
                                     jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
                                     ApgdiffConsts.UTC);
@@ -429,6 +426,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         } catch (IOException e) {
                             throw new IllegalStateException(e.getLocalizedMessage(), e);
                         } finally {
+                            setUpdateDdlJobInProcessing(false);
+
                             // request UI change: button label changed
                             afterScriptFinished(output);
                         }
@@ -459,7 +458,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             });
             scriptThread.start();
             isRunning = true;
-            setRunButtonText(STOP_SCRIPT_LABEL);
             parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
             // case Stop script
         } else {
@@ -467,14 +465,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
 
             scriptThread.interrupt();
-            setRunButtonText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
-    }
-
-    private void setRunButtonText(String text) {
-        runScriptBtn.setText(text);
-        runScriptBtn.getParent().layout();
     }
 
     private class RunScriptExternal implements Runnable {

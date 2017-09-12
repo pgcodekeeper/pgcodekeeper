@@ -60,8 +60,7 @@ public class QuickUpdate extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         RollOnEditor editor = (RollOnEditor) HandlerUtil.getActiveEditor(event);
-        // TODO replace with pulldown menu+param
-        DbInfo dbInfo = editor.getDbInfo();
+        DbInfo dbInfo = editor.getLastDb();
         if (dbInfo == null){
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;

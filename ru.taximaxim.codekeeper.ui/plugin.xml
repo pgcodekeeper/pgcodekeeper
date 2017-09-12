@@ -118,6 +118,11 @@
             id="ru.taximaxim.codekeeper.ui.command.OpenDBStore"
             name="%command.commandname.OpenDBStore">
         </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
+            name="%command.commandname.UpdateDdl">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -132,6 +137,24 @@
                     <with variable="activeEditor">
                         <not>
                             <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                            </test>
+                        </not>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.UpdateDdl"
+            commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditorId">
+                        <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                        </equals>
+                    </with>
+                    <with variable="activeEditor">
+                        <not>
+                            <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
                             </test>
                         </not>
                     </with>
@@ -296,6 +319,12 @@
                     label="%command.commandname.QuickUpdate"
                     style="push">
                 </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
+                    icon="icons/update_ddl.gif"
+                    label="%command.commandname.UpdateDdl"
+                    style="push">
+                </command>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator1"
                     visible="true">
@@ -370,6 +399,48 @@
                 </command>
             </toolbar>
         </menuContribution>
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar.editor">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+                    icon="icons/quick_update.png"
+                    label="%command.commandname.QuickUpdate"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
+                    icon="icons/update_ddl.gif"
+                    label="%command.commandname.UpdateDdl"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator.first"
+                      visible="true">
+                </separator>
+                <control
+                      class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
+                      id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
+                      <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            </equals>
+                        </with>
+                      </visibleWhen>
+                </control>
+            </toolbar>
+        </menuContribution>
         <menuContribution locationURI="menu:ru.taximaxim.codekeeper.ui.command.GetChanges">
             <dynamic
                 class="ru.taximaxim.codekeeper.ui.menuitems.DbStoreList"
@@ -398,22 +469,6 @@
                 label="%command.commandname.OpenDBStore"
                 style="push">
             </command>
-        </menuContribution>
-        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
-            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
-                    icon="icons/quick_update.png"
-                    label="%command.commandname.QuickUpdate"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-            </toolbar>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
@@ -688,6 +743,13 @@
             properties="isGetChangesRunning"
             type="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer">
         </propertyTester>
+        <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester"
+            id="ru.taximaxim.codekeeper.ui.UpdateDdlJobTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isUpdateDdlRunning"
+            type="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor">
+        </propertyTester>
     </extension>
     <extension
         id="ru.taximaxim.codekeeper.ui.editorTemplates"
@@ -935,6 +997,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+A">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+R">
         </key>
     </extension>
 </plugin>
