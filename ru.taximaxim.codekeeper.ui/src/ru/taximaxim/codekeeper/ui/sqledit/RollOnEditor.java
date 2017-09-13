@@ -47,7 +47,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -64,6 +63,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
@@ -84,7 +84,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class RollOnEditor extends SQLEditor implements IPartListener2 {
+public class RollOnEditor extends SQLEditor {
 
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
@@ -97,6 +97,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private Composite parentComposite;
+    private RollOnEditorPartListener partListener;
 
     private Text txtCommand;
     private Combo cmbScript;
@@ -218,13 +219,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
-        getSite().getPage().addPartListener(this);
+        partListener = new RollOnEditorPartListener(this);
+        getSite().getPage().addPartListener(partListener);
         getParser().addListener(parserListener);
     }
 
     @Override
     public void dispose() {
-        getSite().getPage().removePartListener(this);
+        getSite().getPage().removePartListener(partListener);
         getParser().removeListener(parserListener);
         super.dispose();
     }
@@ -559,28 +561,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         }
     }
 
-    @Override
-    public void partActivated(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partBroughtToTop(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partClosed(IWorkbenchPartReference partRef) {
-        if (partRef.getPart(false) == this && !PlatformUI.getWorkbench().isClosing()
-                && getEditorInput() instanceof IFileEditorInput) {
-            IFile f = ((IFileEditorInput) getEditorInput()).getFile();
-            if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
-                askDeleteScript(f);
-            }
-        }
-    }
-
-    private void askDeleteScript(IFile f) {
+    public void askDeleteScript(IFile f) {
         String mode = mainPrefs.getString(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
         // if select "YES" with toggle
         if (mode.equals(MessageDialogWithToggle.ALWAYS)){
@@ -605,29 +586,23 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             Log.log(ex);
         }
     }
+}
 
-    @Override
-    public void partDeactivated(IWorkbenchPartReference partRef) {
-        // no imp
+class RollOnEditorPartListener extends IPartAdapter2 {
+    private final RollOnEditor rollOnEditor;
+
+    public RollOnEditorPartListener(RollOnEditor rollOnEditor) {
+        this.rollOnEditor = rollOnEditor;
     }
 
     @Override
-    public void partOpened(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partHidden(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partVisible(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partInputChanged(IWorkbenchPartReference partRef) {
-        // no imp
+    public void partClosed(IWorkbenchPartReference partRef) {
+        if (partRef.getPart(false) == rollOnEditor && !PlatformUI.getWorkbench().isClosing()
+                && rollOnEditor.getEditorInput() instanceof IFileEditorInput) {
+            IFile f = ((IFileEditorInput) rollOnEditor.getEditorInput()).getFile();
+            if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
+                rollOnEditor.askDeleteScript(f);
+            }
+        }
     }
 }

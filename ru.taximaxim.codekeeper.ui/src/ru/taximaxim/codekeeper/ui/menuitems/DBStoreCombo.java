@@ -1,4 +1,5 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
+
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -6,13 +7,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
@@ -58,7 +59,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     }
 }
 
-class EditorPartListener implements IPartListener2 {
+class EditorPartListener extends IPartAdapter2 {
     private final DbStorePicker storePicker;
 
     public EditorPartListener(DbStorePicker storePicker) {
@@ -77,40 +78,5 @@ class EditorPartListener implements IPartListener2 {
             }
 
         }
-    }
-
-    @Override
-    public void partBroughtToTop(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partClosed(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partDeactivated(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partOpened(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partHidden(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partVisible(IWorkbenchPartReference partRef) {
-        // no imp
-    }
-
-    @Override
-    public void partInputChanged(IWorkbenchPartReference partRef) {
-        // no imp
     }
 }
