@@ -67,19 +67,21 @@ public class DbStorePicker extends Composite {
     private final ComboViewer cmbDbNames;
 
     public DbStorePicker(Composite parent, int style, final IPreferenceStore prefStore,
-            boolean useFileSources, boolean useDirSources) {
+            boolean useFileSources, boolean useDirSources, boolean useLabel) {
         super(parent, style);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStore;
 
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(useLabel ? 3 : 2, false);
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
-                Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        if(useLabel) {
+            new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
+                    Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        }
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -207,10 +209,6 @@ public class DbStorePicker extends Composite {
 
     public void addListenerToCombo(ISelectionChangedListener listener) {
         cmbDbNames.addSelectionChangedListener(listener);
-    }
-
-    public void removeListenerFromCombo(ISelectionChangedListener listener) {
-        cmbDbNames.removeSelectionChangedListener(listener);
     }
 
     private class DbStoreSelectionListener implements ISelectionChangedListener {

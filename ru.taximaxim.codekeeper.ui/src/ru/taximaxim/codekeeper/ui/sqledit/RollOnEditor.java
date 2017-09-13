@@ -26,21 +26,19 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
@@ -72,7 +70,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
@@ -103,7 +100,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     private Text txtCommand;
     private Combo cmbScript;
-    private Button btnJdbcToggle;
 
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -148,12 +144,15 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             return lastDB;
         }
 
-        PgDbProject proj = new PgDbProject(((IFileEditorInput)getEditorSite().getPage().getActiveEditor().getEditorInput())
-                .getFile().getProject());
-
-        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
-
-        return lastStore.isEmpty() ? null : lastStore.get(0);
+        IEditorInput editorInput = getEditorSite().getPage().getActiveEditor().getEditorInput();
+        PgDbProject proj = null;
+        if(editorInput instanceof IFileEditorInput) {
+            proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
+            List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+            return lastStore.isEmpty() ? null : lastStore.get(0);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -234,11 +233,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         GridLayout lay = new GridLayout();
         parent.setLayout(lay);
 
-        btnJdbcToggle = new Button(parent, SWT.CHECK);
-        btnJdbcToggle.setText(Messages.sqlScriptDialog_use_command_for_ddl_update);
-        btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
-                .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
-
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         notJdbc.setLayoutData(gd);
@@ -248,6 +242,20 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         notJdbc.setLayout(gl);
 
         Label l = new Label(notJdbc, SWT.NONE);
+        l.setText(MessageFormat.format(Messages.sqlScriptDialog_option_is_enabled,
+                Messages.dbUpdatePrefPage_use_command_for_ddl_update,
+                Messages.sqlScriptDialog_update_db));
+        l.setForeground(getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_RED));
+        l.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        l.setLayoutData(gd);
+
+        l = new Label(notJdbc, SWT.HORIZONTAL | SWT.SEPARATOR);
+        l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        l.setLayoutData(gd);
+
+        l = new Label(notJdbc, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script
                 + SCRIPT_PLACEHOLDER + ' '
                 + DB_NAME_PLACEHOLDER + ' '
@@ -304,22 +312,29 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        btnJdbcToggle.addSelectionListener(new SelectionAdapter() {
+        l = new Label(notJdbc, SWT.HORIZONTAL | SWT.SEPARATOR);
+        l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
 
+        mainPrefs.addPropertyChangeListener(new IPropertyChangeListener(){
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean isCmd = btnJdbcToggle.getSelection();
-                notJdbc.setVisible(isCmd);
-                ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
+            public void propertyChange(PropertyChangeEvent event) {
+                if(!notJdbc.isDisposed()
+                        && DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE.equals(event.getProperty())) {
+                    boolean isCmd = mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE);
+                    notJdbc.setVisible(isCmd);
+                    ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
 
-                parent.layout();
-
-                Activator.getDefault().getPreferenceStore().setValue(
-                        PREF.IS_DDL_UPDATE_OVER_JDBC, isCmd);
+                    parent.layout();
+                }
             }
         });
 
-        btnJdbcToggle.notifyListeners(SWT.Selection, new Event());
+        mainPrefs.firePropertyChangeEvent(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
+                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE),
+                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE));
 
         return parent;
     }
@@ -392,7 +407,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             // new runnable to unlock the UI thread
             Runnable launcher;
 
-            if (!btnJdbcToggle.getSelection()){
+            if (!mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE)){
                 Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
                 DbInfo dbInfo = getLastDb();

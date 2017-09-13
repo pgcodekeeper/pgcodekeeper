@@ -66,7 +66,6 @@ public interface UIConsts {
 
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
         //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
@@ -89,6 +88,7 @@ public interface UIConsts {
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
+        String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

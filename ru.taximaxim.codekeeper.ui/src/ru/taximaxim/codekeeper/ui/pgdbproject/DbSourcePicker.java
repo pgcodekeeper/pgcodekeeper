@@ -52,7 +52,7 @@ class DbSourcePicker extends Composite {
         sourceComp.setLayout(new GridLayout(2, false));
         sourceComp.setText(groupTitle);
 
-        storePicker = new DbStorePicker(sourceComp, SWT.NONE, mainPrefs, true, true);
+        storePicker = new DbStorePicker(sourceComp, SWT.NONE, mainPrefs, true, true, true);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 

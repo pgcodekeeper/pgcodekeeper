@@ -21,49 +21,39 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     private IEditorPart editorPart;
     private DbStorePicker storePicker;
     private EditorPartListener editorPartListener;
-    private ISelectionChangedListener comboListener;
 
     @Override
     protected Control createControl(Composite parent) {
-        storePicker = new DbStorePicker(parent, SWT.NONE, Activator.getDefault().getPreferenceStore(), false, false);
+        storePicker = new DbStorePicker(parent, SWT.NONE, Activator.getDefault().getPreferenceStore(), false, false, false);
 
         editorPartListener = new EditorPartListener(storePicker);
 
         editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         editorPart.getSite().getPage().addPartListener(editorPartListener);
 
-        comboListener = new ISelectionChangedListener() {
+        storePicker.addListenerToCombo(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                editorPart.getSite().getPage().removePartListener(editorPartListener);
-
                 editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                editorPart.getSite().getPage().addPartListener(editorPartListener);
-
                 if(editorPart instanceof RollOnEditor) {
                     Object selectedObj = event.getStructuredSelection().getFirstElement();
                     DbInfo selectedDB = selectedObj instanceof DbInfo ? (DbInfo)selectedObj : null;
                     ((RollOnEditor)editorPart).setLastDb(selectedDB);
                 }
             }
-        };
-
-        storePicker.addListenerToCombo(comboListener);
+        });
 
         return storePicker;
     }
 
     @Override
     protected int computeWidth(Control control) {
-        return 220;
+        return 200;
     }
 
     @Override
     public void dispose() {
         editorPart.getSite().getPage().removePartListener(editorPartListener);
-        editorPartListener = null;
-        storePicker.removeListenerFromCombo(comboListener);
-        comboListener = null;
         storePicker.dispose();
     }
 }

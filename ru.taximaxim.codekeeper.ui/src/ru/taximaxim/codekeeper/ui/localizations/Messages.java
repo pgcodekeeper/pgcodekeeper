@@ -35,6 +35,8 @@ public final class Messages extends NLS {
     // ui
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String sqlScriptDialog_option_is_enabled;
+    public static String sqlScriptDialog_update_db;
     public static String SQLEditorStatementTypes_consts;
 
     public static String SQLEditorStatementTypes_funcs;
@@ -74,7 +76,6 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_warning;
-    public static String sqlScriptDialog_use_command_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -185,6 +186,7 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
     public static String dbUpdatePrefPage_check_function_bodies;
     public static String dbUpdatePrefPage_switch_on_off_using;
+    public static String dbUpdatePrefPage_use_command_for_ddl_update;
 
     public static String dbUpdatePrefPage_script_add_transaction;
 

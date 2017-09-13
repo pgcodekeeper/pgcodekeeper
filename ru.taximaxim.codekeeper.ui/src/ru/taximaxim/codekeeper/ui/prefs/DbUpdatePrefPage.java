@@ -94,6 +94,10 @@ IWorkbenchPreferencePage {
         BooleanFieldEditor usingOnOff = new BooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
                 Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent());
         addField(usingOnOff);
+
+        BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
+                Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
+        addField(commandLineDdlUpdate);
     }
 
     @Override
