@@ -149,7 +149,7 @@
             <enabledWhen>
                 <and>
                     <with variable="activeEditorId">
-                        <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                         </equals>
                     </with>
                     <with variable="activeEditor">
@@ -408,7 +408,7 @@
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
                         </with>
                     </visibleWhen>
@@ -420,7 +420,7 @@
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
                         </with>
                     </visibleWhen>
@@ -434,7 +434,7 @@
                       id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
                       <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
                         </with>
                       </visibleWhen>
@@ -487,13 +487,6 @@
             id="ru.taximaxim.codekeeper.ui.SQLEditor"
             name="%editor.name.sqlEditor"
             icon="IMG_OBJ_FILE">
-        </editor>
-        <editor
-            class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"
-            default="false"
-            filenames="*.sql"
-            id="ru.taximaxim.codekeeper.ui.RollOnEditor"
-            name="%editor.name.ddlUpdateEditor">
         </editor>
     </extension>
     <extension point="org.eclipse.ui.preferencePages">
@@ -748,7 +741,7 @@
             id="ru.taximaxim.codekeeper.ui.UpdateDdlJobTester"
             namespace="ru.taximaxim.codekeeper.ui"
             properties="isUpdateDdlRunning"
-            type="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor">
+            type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
         </propertyTester>
     </extension>
     <extension

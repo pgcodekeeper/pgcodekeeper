@@ -25,7 +25,6 @@ public interface UIConsts {
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
-        String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
     interface MARKER {

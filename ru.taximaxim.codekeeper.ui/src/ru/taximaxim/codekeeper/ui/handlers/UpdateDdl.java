@@ -13,7 +13,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class UpdateDdl extends AbstractHandler {
 
@@ -21,11 +21,11 @@ public class UpdateDdl extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
 
-        if (part instanceof RollOnEditor){
-            RollOnEditor rollOnEditor = (RollOnEditor) part;
+        if (part instanceof SQLEditor){
+            SQLEditor sqlEditor = (SQLEditor) part;
 
-            if (rollOnEditor.getLastDb() != null) {
-                rollOnEditor.updateDdl();
+            if (sqlEditor.getLastDb() != null) {
+                sqlEditor.updateDdl();
             } else {
                 MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
                 mb.setText(Messages.UpdateDdl_select_source);
@@ -48,6 +48,6 @@ public class UpdateDdl extends AbstractHandler {
                 && ((FileStoreEditorInput)input).getURI().getPath().contains(System.getProperty("java.io.tmpdir"))
                 && ((FileStoreEditorInput)input).getURI().getPath().contains("migration for default");
 
-        return editor instanceof RollOnEditor && (isMigrationFile || isTemporaryMigrationFile);
+        return editor instanceof SQLEditor && (isMigrationFile || isTemporaryMigrationFile);
     }
 }

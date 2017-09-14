@@ -662,7 +662,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     Messages.ProjectEditorDiffer_error_creating_file, ex);
         }
         if (file != null) {
-            getSite().getPage().openEditor(file, EDITOR.ROLLON);
+            getSite().getPage().openEditor(file, EDITOR.SQL);
         }
     }
 

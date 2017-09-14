@@ -16,7 +16,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
-import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
     private IEditorPart editorPart;
@@ -36,10 +36,10 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                if(editorPart instanceof RollOnEditor) {
+                if(editorPart instanceof SQLEditor) {
                     Object selectedObj = event.getStructuredSelection().getFirstElement();
                     DbInfo selectedDB = selectedObj instanceof DbInfo ? (DbInfo)selectedObj : null;
-                    ((RollOnEditor)editorPart).setLastDb(selectedDB);
+                    ((SQLEditor)editorPart).setLastDb(selectedDB);
                 }
             }
         });
@@ -69,14 +69,13 @@ class EditorPartListener extends IPartAdapter2 {
     @Override
     public void partActivated(IWorkbenchPartReference partRef) {
         IWorkbenchPart part = partRef.getPart(false);
-        if (part instanceof RollOnEditor) {
-            if(((RollOnEditor)part).getLastDb() == null) {
+        if (part instanceof SQLEditor) {
+            if(((SQLEditor)part).getLastDb() == null) {
                 storePicker.clearSelection();
             } else {
-                StructuredSelection selection = new StructuredSelection(((RollOnEditor)part).getLastDb());
+                StructuredSelection selection = new StructuredSelection(((SQLEditor)part).getLastDb());
                 storePicker.setSelection(selection);
             }
-
         }
     }
 }

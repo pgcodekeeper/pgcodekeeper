@@ -53,13 +53,13 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
-import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class QuickUpdate extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
-        RollOnEditor editor = (RollOnEditor) HandlerUtil.getActiveEditor(event);
+        SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         DbInfo dbInfo = editor.getLastDb();
         if (dbInfo == null){
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
@@ -88,7 +88,7 @@ public class QuickUpdate extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         IEditorInput input = editor.getEditorInput();
-        return editor instanceof RollOnEditor && input instanceof IFileEditorInput
+        return editor instanceof SQLEditor && input instanceof IFileEditorInput
                 && PgUIDumpLoader.isInProject(ResourceUtil.getFile(input));
     }
 }

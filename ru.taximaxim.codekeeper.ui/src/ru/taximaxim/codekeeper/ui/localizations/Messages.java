@@ -69,6 +69,12 @@ public final class Messages extends NLS {
 
     public static String SQLEditorSytaxColoring_underline;
 
+    public static String SqlEditor_jdbc_success;
+    public static String SqlEditor_script_delete_dialog_message;
+    public static String SqlEditor_script_delete_dialog_title;
+    public static String SqlEditor_selected_text_error;
+    public static String SqlEditor_tooltip_run_selected;
+
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
 
@@ -429,15 +435,6 @@ public final class Messages extends NLS {
 
     public static String ProjectUpdater_old_db_null;
 
-    public static String RollOnEditor_jdbc_success;
-
-    public static String RollOnEditor_script_delete_dialog_message;
-
-    public static String RollOnEditor_script_delete_dialog_title;
-
-    public static String RollOnEditor_selected_text_error;
-
-    public static String RollOnEditor_tooltip_run_selected;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog_error_adding_command_history;
     public static String SqlScriptDialog_error_loading_command_history;

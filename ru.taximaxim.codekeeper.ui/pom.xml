@@ -93,7 +93,6 @@
                                 
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.properties.ProjectProperties { *; }</option>
                                 
-                                <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditor { *; }</option>
                                 <option>-keep public class ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor { *; }</option>
