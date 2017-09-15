@@ -19,4 +19,8 @@ public enum SupportedVersion {
     public int getVersion() {
         return version;
     }
+
+    public boolean checkVersion(int version) {
+        return version >= this.version;
+    }
 }

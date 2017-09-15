@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
@@ -23,7 +23,6 @@ public class FunctionsReader extends JdbcReader {
 
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
             return new FunctionsReader(this, loader, version);
         }
     }
@@ -31,15 +30,12 @@ public class FunctionsReader extends JdbcReader {
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private final int currentVersion;
-
     private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader);
-        this.currentVersion = currentVersion;
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgFunction function = getFunction(result, schema.getName());
         if (function != null) {
             schema.addFunction(function);
@@ -50,8 +46,9 @@ public class FunctionsReader extends JdbcReader {
      * Returns function object accordingly to data stored in current res row
      * (except for aggregate functions).
      * Defines function body from Postgres pg_get_functiondef() output.
+     * @throws WrapperAccessException
      */
-    private PgFunction getFunction(ResultSetWrapper res, String schemaName) throws SQLException {
+    private PgFunction getFunction(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
@@ -118,20 +115,20 @@ public class FunctionsReader extends JdbcReader {
         return f;
     }
 
-    private String getFunctionBody(ResultSetWrapper res, String schemaName) throws SQLException {
+    private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
             Long[] protrftypes = res.getArray("protrftypes", Long.class);
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
                 for (Long s : protrftypes) {
                     body.append("FOR TYPE ")
-                    .append(loader.cachedTypesByOid.get(s).getFullNameWithParent(schemaName));
+                    .append(loader.cachedTypesByOid.get(s).getFullName(schemaName));
                     body.append(", ");
                 }
                 body.setLength(body.length() - 2);
@@ -170,11 +167,8 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (currentVersion > SupportedVersion.VERSION_9_6.getVersion()) {
+        if (SupportedVersion.VERSION_9_6.checkVersion(currentVersion)) {
             String parMode = res.getString("proparallel");
-            if (parMode == null) {
-                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
-            }
             switch (parMode) {
             case "s":
                 body.append(" PARALLEL SAFE");

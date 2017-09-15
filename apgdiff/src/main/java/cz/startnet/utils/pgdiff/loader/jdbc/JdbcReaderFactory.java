@@ -33,7 +33,10 @@ public abstract class JdbcReaderFactory {
     protected final String helperFunction;
     protected final String helperQuery;
     protected final Map<SupportedVersion, String> queries;
-    protected String fallbackQuery;
+
+    public String getHelperFunction() {
+        return helperFunction;
+    }
 
     public JdbcReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
         this.hasHelperMask = hasHelperMask;
@@ -44,20 +47,18 @@ public abstract class JdbcReaderFactory {
 
     public abstract JdbcReader getReader(JdbcLoaderBase loader, int version);
 
-    public void fillFallbackQuery (int version) {
+    public String makeFallbackQuery (int version) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(queries.get(null));
         sb.append(") t1 ");
 
-        queries.forEach((k,v) -> {
-            if (k != null && version >= k.getVersion()) {
-                sb.append("LEFT JOIN (").append(v)
-                .append(") t").append(k.getVersion())
-                .append(" USING (oid) ");
-            }
-        });
+        queries.entrySet().stream()
+        .filter(e -> e.getKey() != null && e.getKey().checkVersion(version))
+        .forEach(e -> sb.append("LEFT JOIN (").append(e.getValue())
+                .append(") t").append(e.getKey().getVersion())
+                .append(" USING (oid) "));
 
-        fallbackQuery = sb.toString();
+        return sb.toString();
     }
 
     /*
@@ -119,14 +120,6 @@ public abstract class JdbcReaderFactory {
             }
         }
         return bits;
-    }
-
-    public String getFallBackQuery() {
-        return fallbackQuery;
-    }
-
-    public String getHelperFunction() {
-        return helperFunction;
     }
 
     public static long getAllHelperBits() {

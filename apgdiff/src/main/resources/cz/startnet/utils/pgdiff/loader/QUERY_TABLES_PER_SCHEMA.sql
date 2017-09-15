@@ -81,7 +81,7 @@ FROM
               c.relacl::text AS aclarray,
               attr.attnum::integer,
               attr.attname,
-              array_to_string(attr.attoptions, ',') attoptions,
+              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
               attr.attstorage,
               t.typstorage,
               c.relhasoids,

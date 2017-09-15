@@ -13,11 +13,15 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * For every field in this class that starts with 'QUERY_'
- * the static initializer tries to find a file named
- * %FIELD_NAME%.sql in this package and assign its contents to the field.<br>
+ * the static initializer tries to: <br>
+ * - if the field is String: find a file named %FIELD_NAME%.sql in this package
+ *   and assign its contents to the field.<br>
+ * - if the field is Map: load %FIELD_NAME%.sql as described above and map its contents to null,
+ *   try to load every %FIELD_NAME%_%VERSION%.sql and map their contents with their versions.
+ *
  * Similar to {@link org.eclipse.osgi.util.NLS}, OSGi localization classes.
  *
- * @author levsha_aa
+ * @author levsha_aa, galiev_mr
  */
 public final class JdbcQueries {
 
@@ -52,14 +56,20 @@ public final class JdbcQueries {
 
     // SONAR-ON
 
+    private final static String HELPER_NAME = "%FUNCTION_NAME%";
+    private final static String HELPER_QUERY = "%FUNCTION_QUERY%";
+
     static {
         for (Field f : JdbcQueries.class.getFields()) {
+            if (!f.getName().startsWith("QUERY")) {
+                continue;
+            }
             try {
                 if ("QUERY_IMPROVE_JDBC_PERFORMANCE".equals(f.getName())) {
                     fillHelperFunction(f);
                 } else if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
-                } else if (f.getName().startsWith("QUERY")) {
+                } else if (String.class.isAssignableFrom(f.getType())) {
                     String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                             JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
                             StandardCharsets.UTF_8);
@@ -96,13 +106,11 @@ public final class JdbcQueries {
         sb.append(QUERY_HELPER_FUNCTIONS_BEGIN);
 
         for (JdbcReaderFactory fac : JdbcReaderFactory.FACTORIES) {
-
             // set helper functions default PostgreSQL version 9.5
-            fac.fillFallbackQuery(SupportedVersion.VERSION_9_5.getVersion());
 
             sb.append(QUERY_HELPER_FUNCTION_TEMPLATE
-                    .replace("%FUNCTION_NAME%", fac.getHelperFunction())
-                    .replace("%FUNCTION_QEURY%", fac.getFallBackQuery())
+                    .replace(HELPER_NAME, fac.getHelperFunction())
+                    .replace(HELPER_QUERY, fac.makeFallbackQuery(SupportedVersion.VERSION_9_5.getVersion()))
                     .replace("?", "schema_oid"));
         }
         f.set(null, sb.toString());

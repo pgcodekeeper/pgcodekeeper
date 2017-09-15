@@ -10,19 +10,24 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.wrappers.JsonResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.SQLResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
     protected final JdbcReaderFactory factory;
     protected final JdbcLoaderBase loader;
+    protected final int currentVersion;
+    protected final String fallbackQuery;
 
-    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
         this.factory = factory;
         this.loader = loader;
+        this.currentVersion = currentVersion;
+        this.fallbackQuery = factory.makeFallbackQuery(currentVersion);
     }
 
-    public void read() throws SQLException, InterruptedException {
+    public void read() throws SQLException, InterruptedException, WrapperAccessException {
         boolean helperSuccess = false;
         if ((loader.availableHelpersBits & factory.hasHelperMask) != 0) {
             try {
@@ -38,7 +43,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void readAllUsingHelper() throws SQLException, InterruptedException {
+    private void readAllUsingHelper() throws SQLException, InterruptedException, WrapperAccessException {
         try (PreparedStatement st = loader.connection.prepareStatement(factory.helperQuery)) {
             loader.setCurrentOperation(factory.helperFunction + " query");
 
@@ -54,8 +59,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void readSchemasSeparately() throws SQLException, InterruptedException {
-        try (PreparedStatement st = loader.connection.prepareStatement(factory.fallbackQuery)) {
+    private void readSchemasSeparately() throws SQLException, InterruptedException, WrapperAccessException {
+        try (PreparedStatement st = loader.connection.prepareStatement(fallbackQuery)) {
             for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
                 loader.setCurrentOperation("set search_path query");
                 loader.statement.execute("SET search_path TO " +
@@ -74,5 +79,6 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    protected abstract void processResult(ResultSetWrapper json, PgSchema schema) throws SQLException;
+    protected abstract void processResult(ResultSetWrapper json, PgSchema schema)
+            throws SQLException, WrapperAccessException;
 }

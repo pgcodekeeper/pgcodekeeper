@@ -299,10 +299,7 @@ index_sort
     ;
     
 including_index
-    : (INCLUDING | INCLUDE)
-    LEFT_PAREN 
-        identifier (COMMA identifier)* 
-    RIGHT_PAREN 
+    : INCLUDE LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN 
     ;
     
 index_where 
@@ -381,7 +378,7 @@ domain_constraint
     ;
     
 create_transform_statement
-    : (OR REPLACE)? TRANSFORM FOR schema_qualified_name LANGUAGE identifier 
+    : (OR REPLACE)? TRANSFORM FOR data_type LANGUAGE identifier 
     LEFT_PAREN
         FROM SQL WITH FUNCTION  function_parameters COMMA
         TO SQL WITH FUNCTION function_parameters
@@ -1323,7 +1320,8 @@ tokens_reserved
   ;
   
 tokens_nonkeyword
-  : PLAIN
+  : INCLUDE
+  | PLAIN
   | EXTENDED
   | MAIN
   | SUBTYPE

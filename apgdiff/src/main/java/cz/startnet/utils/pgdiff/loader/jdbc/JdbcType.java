@@ -81,14 +81,6 @@ public class JdbcType{
         return isArrayType ? schemaQualName + "[]" : schemaQualName;
     }
 
-    public String getFullNameWithParent(String targetSchemaName) {
-        String qname = PgDiffUtils.getQuotedName(typeName);
-        if (!targetSchemaName.equals(parentSchema)) {
-            qname = PgDiffUtils.getQuotedName(parentSchema) + '.' + qname;
-        }
-        return isArrayType ? qname + "[]" : qname;
-    }
-
     public void addTypeDepcy(PgStatement st) {
         if (!JdbcLoaderBase.isBuiltin(oid)
                 && !isPgCatalog

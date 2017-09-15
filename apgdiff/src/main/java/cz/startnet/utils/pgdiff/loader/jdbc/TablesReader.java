@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,6 +12,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TablesReader extends JdbcReader {
@@ -25,20 +25,16 @@ public class TablesReader extends JdbcReader {
 
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
             return new TablesReader(this, loader, version);
         }
     }
 
-    private final int currentVersion;
-
     private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader);
-        this.currentVersion = currentVersion;
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = getTable(result, schema.getName());
         loader.monitor.worked(1);
         if (table != null) {
@@ -46,7 +42,7 @@ public class TablesReader extends JdbcReader {
         }
     }
 
-    private PgTable getTable(ResultSetWrapper res, String schemaName) throws SQLException {
+    private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         PgTable t = new PgTable(tableName, "");
@@ -180,16 +176,14 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        String [] arr = res.getArray("reloptions", String.class);
-        if (arr != null) {
-            String[] options = arr;
-            ParserAbstract.fillStorageParams(options, t, false);
+        String [] arrOpts = res.getArray("reloptions", String.class);
+        if (arrOpts != null) {
+            ParserAbstract.fillStorageParams(arrOpts, t, false);
         }
 
-        arr = res.getArray("toast_reloptions", String.class);
-        if (arr != null) {
-            String[] options = arr;
-            ParserAbstract.fillStorageParams(options, t, true);
+        String[] arrToast = res.getArray("toast_reloptions", String.class);
+        if (arrToast != null) {
+            ParserAbstract.fillStorageParams(arrToast, t, true);
         }
 
         if (res.getBoolean("has_oids")){
@@ -209,21 +203,9 @@ public class TablesReader extends JdbcReader {
         }
 
         // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
-            Boolean row_security = res.getBoolean("row_security");
-            if (row_security == null) {
-                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
-            }
-            t.setRowSecurity(row_security);
-        }
-
-        // since 9.5 PostgreSQL
-        if (currentVersion > SupportedVersion.VERSION_9_5.getVersion()) {
-            Boolean force_security = res.getBoolean("force_security");
-            if (force_security == null) {
-                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
-            }
-            t.setForceSecurity(force_security);
+        if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
+            t.setRowSecurity(res.getBoolean("row_security"));
+            t.setForceSecurity(res.getBoolean("force_security"));
         }
 
         // persistence: U - unlogged, P - permanent, T - temporary

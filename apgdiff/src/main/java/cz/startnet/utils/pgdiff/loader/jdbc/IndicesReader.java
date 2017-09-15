@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -11,6 +10,7 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
@@ -23,17 +23,16 @@ public class IndicesReader extends JdbcReader {
 
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
-            return new IndicesReader(this, loader);
+            return new IndicesReader(this, loader, version);
         }
     }
 
-    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
             PgIndex index = getIndex(result, schema.getName(), table.getName());
@@ -44,7 +43,7 @@ public class IndicesReader extends JdbcReader {
         }
     }
 
-    private PgIndex getIndex(ResultSetWrapper res, String schemaName, String tableName) throws SQLException {
+    private PgIndex getIndex(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
         PgIndex i = new PgIndex(indexName, "");

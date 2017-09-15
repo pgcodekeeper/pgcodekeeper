@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
@@ -29,19 +30,18 @@ public class SequencesReader extends JdbcReader {
 
         @Override
         public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
-            return new SequencesReader(this, loader);
+            return new SequencesReader(this, loader, version);
         }
     }
 
     private static final int DATA_SELECT_LENGTH;
 
-    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgSequence sequence = getSequence(result, schema.getName());
         loader.monitor.worked(1);
         if (sequence != null) {
@@ -49,7 +49,7 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
-    private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws SQLException {
+    private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName, "");
