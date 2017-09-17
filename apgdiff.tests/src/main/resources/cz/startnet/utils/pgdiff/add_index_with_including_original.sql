@@ -44,7 +44,7 @@ CREATE INDEX testindex ON testtable USING btree (field1);
 -- Name: testindex2; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE INDEX testindex2 ON testtable USING btree (field2) INCLUDING (field4);
+CREATE INDEX testindex2 ON testtable USING btree (field2) INCLUDE (field4);
 
 ALTER TABLE testtable CLUSTER ON testindex2;
 
@@ -53,7 +53,7 @@ ALTER TABLE testtable CLUSTER ON testindex2;
 -- Name: testindex3; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
-CREATE INDEX testindex3 ON testtable USING btree (field2) INCLUDING (field4);
+CREATE INDEX testindex3 ON testtable USING btree (field2) INCLUDE (field4);
 
 ALTER TABLE testtable CLUSTER ON testindex3;
 
