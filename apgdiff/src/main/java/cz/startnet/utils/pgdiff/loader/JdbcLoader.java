@@ -16,6 +16,8 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
@@ -38,7 +40,12 @@ public class JdbcLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
+
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
+        return this.getDbFromJdbc(null);
+    }
+
+    public PgDatabase getDbFromJdbc(PgDatabase db) throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
@@ -53,9 +60,18 @@ public class JdbcLoader extends JdbcLoaderBase {
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
+            if (SupportedVersion.VERSION_9_3.checkVersion(version) && db != null) {
+                queryCheckTimestamps();
+            }
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
+
+            if (isContainsTimestamps) {
+                DBTimestamp dbTimestamp = new TimestampsReader(this).read();
+
+
+            }
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {

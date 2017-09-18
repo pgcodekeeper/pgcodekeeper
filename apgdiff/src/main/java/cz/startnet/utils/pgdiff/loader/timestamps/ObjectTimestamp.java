@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.differ.timestamps;
+package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.Serializable;
 import java.time.Instant;

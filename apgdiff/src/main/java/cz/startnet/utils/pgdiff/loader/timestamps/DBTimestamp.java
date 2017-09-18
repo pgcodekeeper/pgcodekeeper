@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.differ.timestamps;
+package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,15 +26,18 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
 public class DBTimestamp implements Serializable {
 
     private static final long serialVersionUID = 6207954672144447111L;
 
+    private static final String FOLDER = "ru.taximaxim.codekeeper.ui";
+
     private final List<ObjectTimestamp> objects = new ArrayList<>();
+
+    private static final Map <String, DBTimestamp> PROJ_TIMESTAMPS = new HashMap<>();
 
     public List<ObjectTimestamp> getObjects() {
         return objects;
@@ -87,7 +90,7 @@ public class DBTimestamp implements Serializable {
                         new GenericColumn(s.getName(), t.getName(), DbObjType.TYPE),
                         PgDiffUtils.sha(t.getRawStatement())));
                 s.getDomains().forEach(d -> statements.put(
-                        new GenericColumn(s.getName(), d.getName(), DbObjType.DOMAIN),
+                        new GenericColumn(s.getName(), d.getName(), DbObjType.TYPE),
                         PgDiffUtils.sha(d.getRawStatement())));
                 s.getSequences().forEach(seq -> statements.put(
                         new GenericColumn(s.getName(), seq.getName(), DbObjType.SEQUENCE),
@@ -97,25 +100,25 @@ public class DBTimestamp implements Serializable {
                         PgDiffUtils.sha(f.getRawStatement())));
                 for (PgTable t : s.getTables()) {
                     t.getTriggers().forEach(tr -> statements.put(
-                            new GenericColumn(s.getName(), tr.getName(), DbObjType.TRIGGER),
+                            new GenericColumn(s.getName(), t.getName(), tr.getName(), DbObjType.TRIGGER),
                             PgDiffUtils.sha(tr.getRawStatement())));
                     t.getRules().forEach(r -> statements.put(
-                            new GenericColumn(s.getName(), r.getName(), DbObjType.RULE),
+                            new GenericColumn(s.getName(), t.getName(), r.getName(), DbObjType.RULE),
                             PgDiffUtils.sha(r.getRawStatement())));
                     statements.put(new GenericColumn(s.getName(), t.getName(), DbObjType.TABLE),
                             PgDiffUtils.sha(t.getRawStatement()));
                 }
                 for (PgView v : s.getViews()) {
                     v.getTriggers().forEach(tr -> statements.put(
-                            new GenericColumn(s.getName(), tr.getName(), DbObjType.TRIGGER),
+                            new GenericColumn(s.getName(), v.getName(), tr.getName(), DbObjType.TRIGGER),
                             PgDiffUtils.sha(tr.getRawStatement())));
                     v.getRules().forEach(r -> statements.put(
-                            new GenericColumn(s.getName(), r.getName(), DbObjType.RULE),
+                            new GenericColumn(s.getName(), v.getName(), r.getName(), DbObjType.RULE),
                             PgDiffUtils.sha(r.getRawStatement())));
                     statements.put(new GenericColumn(s.getName(), v.getName(), DbObjType.TABLE),
                             PgDiffUtils.sha(v.getRawStatement()));
                 }
-                statements.put(new GenericColumn(null, s.getName(), DbObjType.TYPE),
+                statements.put(new GenericColumn(null, s.getName(), DbObjType.SCHEMA),
                         PgDiffUtils.sha(s.getRawStatement()));
             }
 
@@ -127,13 +130,22 @@ public class DBTimestamp implements Serializable {
                 }
             }
 
+            PROJ_TIMESTAMPS.put(project, timestamp);
+
             serialize(project, timestamp);
         }
     }
 
+    public static DBTimestamp getDBTimastamp (String project) {
+        return PROJ_TIMESTAMPS.get(project);
+    }
 
     public void addObject (String schema, String object, DbObjType type, String hash, Instant instant) {
         objects.add(new ObjectTimestamp(new GenericColumn(schema, object, type), hash, instant));
+    }
+
+    public void addObject (String schema, String object, String column, DbObjType type, String hash, Instant instant) {
+        objects.add(new ObjectTimestamp(new GenericColumn(schema, object, column, type), hash, instant));
     }
 
     /**
@@ -144,7 +156,7 @@ public class DBTimestamp implements Serializable {
      */
     private static Path getInternalFolder() throws URISyntaxException {
         return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
+                .resolve(".metadata").resolve(".plugins").resolve(FOLDER) //$NON-NLS-1$ //$NON-NLS-2$
                 .resolve("projects"); //$NON-NLS-1$
     }
 

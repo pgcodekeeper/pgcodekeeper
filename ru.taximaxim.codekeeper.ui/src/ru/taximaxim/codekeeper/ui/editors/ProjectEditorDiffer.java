@@ -118,6 +118,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
+import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -142,7 +143,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite parent;
 
     private Object lastRemote;
-    private DbSource dbProject, dbRemote;
+    private DbSource dbProject;
+    private DbSource dbRemote;
     private TreeElement diffTree;
 
     private Composite contNotifications;
@@ -152,7 +154,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
-    private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
@@ -200,7 +201,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.parent = parent;
 
         parent.setLayout(new GridLayout());
-        lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
 
         // notifications container
         // simplified for 1 static notification
@@ -458,7 +459,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         hideNotificationArea();
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer = new TreeDiffer(dbProject, dbRemote, false);
+        final TreeDiffer newDiffer;
+        newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override

@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -79,7 +80,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
             DbSource dbSource = pageDiff.getDbSource();
             DbSource dbTarget = pageDiff.getDbTarget();
-            TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget, false);
+            TreeDiffer treediffer = new ClassicTreeDiffer(dbSource, dbTarget, false);
 
             try {
                 getContainer().run(true, true, treediffer);

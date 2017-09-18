@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
@@ -158,7 +159,7 @@ class QuickUpdateJob extends Job {
                 proj.getProjectCharset(), timezone);
         DbSource dbProject = DbSource.fromProject(proj);
 
-        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, false);
+        TreeDiffer treediffer = new ClassicTreeDiffer(dbRemote, dbProject, false);
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
@@ -192,7 +193,7 @@ class QuickUpdateJob extends Job {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote, false);
+        TreeDiffer treedifferAfter = new ClassicTreeDiffer(DbSource.fromDbObject(dbProject), dbRemote, false);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 

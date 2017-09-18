@@ -56,6 +56,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
+    protected boolean isContainsTimestamps;
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -258,6 +259,15 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_VERSION)) {
             while (res.next()) {
                 version = res.getInt(VERSION);
+            }
+        }
+    }
+
+    protected void queryCheckTimestamps() throws SQLException {
+        setCurrentOperation("timestamp checking query");
+        try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
+            while (res.next()) {
+                isContainsTimestamps = res.getBoolean(CONTAINS_TIMESTAMPS);
             }
         }
     }

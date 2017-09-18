@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
@@ -26,7 +27,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.differ.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -271,7 +271,12 @@ class DbSourceDb extends DbSource {
     private final String exePgdump;
     private final String customParams;
 
-    private final String host, user, pass, dbname, encoding, timezone;
+    private final String host;
+    private final String user;
+    private final String pass;
+    private final String dbname;
+    private final String encoding;
+    private final String timezone;
     private final int port;
 
     @Override
@@ -327,10 +332,15 @@ class DbSourceJdbc extends DbSource {
     private final JdbcConnector jdbcConnector;
     private final String dbName;
     private final boolean forceUnixNewlines;
+    private PgDatabase db;
 
     @Override
     public String getDbName() {
         return dbName;
+    }
+
+    public void setProjectDb(PgDatabase db) {
+        this.db = db;
     }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
@@ -342,11 +352,11 @@ class DbSourceJdbc extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor)
+    public PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
-        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
+        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc(db);
     }
 }
 

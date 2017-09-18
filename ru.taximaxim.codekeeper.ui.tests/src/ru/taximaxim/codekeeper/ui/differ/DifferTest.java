@@ -96,7 +96,7 @@ public class DifferTest {
         DbSource dbSource = DbSource.fromFile(true, sourceFile, ApgdiffConsts.UTF_8);
         DbSource dbTarget = DbSource.fromFile(true, targetFile, ApgdiffConsts.UTF_8);
 
-        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget, false);
+        final TreeDiffer newDiffer = new ClassicTreeDiffer(dbSource, dbTarget, false);
 
         newDiffer.run(new NullProgressMonitor());
 
@@ -200,7 +200,7 @@ class DifferData_2 extends DifferData{
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         PgTable t = source.getSchema("public").getTable("table1");
         PgView v = source.getSchema("public").getView("v_auto_mark");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, t);
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, t);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
@@ -228,7 +228,7 @@ class DifferData_3 extends DifferData{
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source) {
         PgColumn c = source.getSchema("public").getTable("table1").getColumn("col2");
         PgView v = source.getSchema("public").getView("v_auto_mark");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, c);
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, c);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;
@@ -268,7 +268,7 @@ class DifferData_5 extends DifferData{
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesTarget(PgDatabase target) {
         PgSchema s = target.getSchema("newschema");
         PgView v = target.getSchema("public").getView("v_auto_mark_two");
-        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<PgStatement, PgStatement> (v, s);
+        Entry<PgStatement, PgStatement> arr = new AbstractMap.SimpleEntry<> (v, s);
         List<Entry<PgStatement, PgStatement>> list = new ArrayList<>();
         list.add(arr);
         return list;

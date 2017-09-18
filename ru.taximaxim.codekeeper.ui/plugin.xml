@@ -96,9 +96,9 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader"
-            id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-            name="%command.name.improvePerformanceJdbc">
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImproveTimestampKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.improveTimestampKeeper"
+            name="%command.name.improveTimestampKeeper">
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -317,11 +317,25 @@
                     visible="true">
                 </separator>
                 <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.improveTimestampKeeper"
+                      label="%command.label.improveTimestampKeeper"
+                      mnemonic="%command.mnemonic.improveTimestampKeeper"
+                      style="push">
+                </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
+                </separator>
+                <command
                     commandId="ru.taximaxim.codekeeper.ui.feedBack"
                     label="%command.label.feedback"
                     mnemonic="%command.mnemonic.feedback"
                     style="push">
                 </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator1"
+                      visible="true">
+                </separator>
                 <visibleWhen checkEnabled="false">
                     <with variable="activeWorkbenchWindow.activePerspective">
                         <equals value="ru.taximaxim.codekeeper.ui.mainperspective">

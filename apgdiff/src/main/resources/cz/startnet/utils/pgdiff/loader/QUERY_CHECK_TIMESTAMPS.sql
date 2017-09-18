@@ -1,0 +1,1 @@
+SELECT EXISTS ( SELECT 1 FROM pg_tables WHERE schemaname='pgcodekeeperhelper' AND tablename = 'ddl_events');

@@ -6,6 +6,8 @@ public interface PgCatalogStrings {
 
     String VERSION = "current_setting";
 
+    String CONTAINS_TIMESTAMPS = "exists";
+
     String NAMESPACE_NSPNAME = "nspname";
 
     String CLASS_RELNAME = "relname";
