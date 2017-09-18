@@ -33,10 +33,7 @@ public final class Messages extends NLS {
     public static String error_creating_dependency_graph;
 
     // ui
-    public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_exception_during_script_execution;
-    public static String sqlScriptDialog_option_is_enabled;
-    public static String sqlScriptDialog_update_db;
     public static String SQLEditorStatementTypes_consts;
 
     public static String SQLEditorStatementTypes_funcs;
@@ -193,6 +190,10 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_check_function_bodies;
     public static String dbUpdatePrefPage_switch_on_off_using;
     public static String dbUpdatePrefPage_use_command_for_ddl_update;
+    public static String dbUpdatePrefPage_command_to_execute;
+    public static String dbUpdatePrefPage_will_be_replaced;
+    public static String dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script;
+    public static String dbUpdatePrefPage_error_loading_command_history;
 
     public static String dbUpdatePrefPage_script_add_transaction;
 
@@ -435,10 +436,7 @@ public final class Messages extends NLS {
 
     public static String ProjectUpdater_old_db_null;
 
-    public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog_error_adding_command_history;
-    public static String SqlScriptDialog_error_loading_command_history;
-    public static String SqlScriptDialog_will_be_replaced;
     public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;

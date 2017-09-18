@@ -88,6 +88,8 @@ public interface UIConsts {
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
+        String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
+        String MIGRATION_COMMAND_SCRIPT = "prefMigrationCommandScript"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

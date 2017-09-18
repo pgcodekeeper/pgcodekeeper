@@ -36,14 +36,10 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -52,7 +48,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
@@ -87,7 +82,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -110,12 +104,12 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
 
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
-    private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
-    private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
-    private static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
-    private static final String DB_NAME_PLACEHOLDER = "%db"; //$NON-NLS-1$
-    private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
-    private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
+    public static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
+    public static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
+    public static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
+    public static final String DB_NAME_PLACEHOLDER = "%db"; //$NON-NLS-1$
+    public static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
+    public static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
@@ -205,8 +199,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         Layout gl = new GridLayout();
         parent.setLayout(gl);
         parent.setLayoutData(new GridData());
-
-        createDialogArea(parent);
 
         SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -379,121 +371,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.dispose();
     }
 
-    protected Control createDialogArea(final Composite parent) {
-        GridLayout lay = new GridLayout();
-        parent.setLayout(lay);
-
-        final Composite notJdbc = new Composite(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        notJdbc.setLayoutData(gd);
-
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = gl.marginWidth = 0;
-        notJdbc.setLayout(gl);
-
-        Label l = null;
-
-        inputNewLabel(notJdbc, l, gd, false, true, MessageFormat.format(Messages.sqlScriptDialog_option_is_enabled,
-                Messages.dbUpdatePrefPage_use_command_for_ddl_update, Messages.sqlScriptDialog_update_db));
-
-        inputNewLabel(notJdbc, l, gd, false, false, null);
-
-        inputNewLabel(notJdbc, l, gd, true, false, Messages.sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script
-                + SCRIPT_PLACEHOLDER + ' '
-                + DB_NAME_PLACEHOLDER + ' '
-                + DB_HOST_PLACEHOLDER + ' ' + DB_PORT_PLACEHOLDER + ' '
-                + DB_USER_PLACEHOLDER + ' ' + DB_PASS_PLACEHOLDER + ')' + ':');
-
-        cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
-        cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.setToolTipText(
-                DB_NAME_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
-                DB_HOST_PLACEHOLDER + '=' + getReplacedString(DB_HOST_PLACEHOLDER, lastDB) + UIConsts._NL +
-                DB_PORT_PLACEHOLDER + '=' + getReplacedString(DB_PORT_PLACEHOLDER, lastDB) + UIConsts._NL +
-                DB_USER_PLACEHOLDER + '=' + getReplacedString(DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
-                DB_PASS_PLACEHOLDER + '=' + getReplacedString(DB_USER_PLACEHOLDER, lastDB));
-
-        List<String> prev = null;
-        try {
-            prev = history.getHistory();
-        } catch (IOException e1) {
-            ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_loading_command_history, e1);
-        }
-        if (prev == null) {
-            prev = new ArrayList<>();
-        }
-        if (prev.isEmpty()) {
-            prev.add(UIConsts.DDL_DEFAULT_CMD);
-        }
-        for (String el : prev) {
-            cmbScript.add(el);
-        }
-        cmbScript.select(0);
-
-        cmbScript.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                txtCommand.setText(getReplacedString());
-            }
-        });
-
-        inputNewLabel(notJdbc, l, gd, true, false, Messages.SqlScriptDialog_command_to_execute + SCRIPT_PLACEHOLDER
-                + Messages.SqlScriptDialog_will_be_replaced);
-
-        txtCommand = new Text(notJdbc, SWT.BORDER | SWT.READ_ONLY);
-        txtCommand.setText(getReplacedString());
-        txtCommand.setBackground(parent.getShell().getDisplay()
-                .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        inputNewLabel(notJdbc, l, gd, true, false, null);
-
-        mainPrefs.addPropertyChangeListener(new IPropertyChangeListener(){
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if(!notJdbc.isDisposed()
-                        && DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE.equals(event.getProperty())) {
-                    boolean isCmd = mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE);
-                    notJdbc.setVisible(isCmd);
-                    ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
-
-                    parent.layout();
-                }
-            }
-        });
-
-        mainPrefs.firePropertyChangeEvent(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
-                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE),
-                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE));
-
-        return parent;
-    }
-
-    private void inputNewLabel(Composite parent, Label l, GridData gd, boolean verticalIndent,
-            boolean boldFont, String text) {
-        if(text != null) {
-            l = new Label(parent, SWT.NONE);
-            l.setText(text);
-            if(boldFont) {
-                l.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
-            }
-        } else {
-            l = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
-        }
-
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        if(verticalIndent) {
-            gd.verticalIndent = 12;
-        }
-        l.setLayoutData(gd);
-    }
-
-    private String getReplacedString() {
-        return getReplacedString(cmbScript.getText(), lastDB);
-    }
-
-    private static String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
+    public static String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
         String s = dbInfo;
         if (externalDbInfo != null) {
             if (externalDbInfo.getDbHost() != null) {
@@ -601,13 +479,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             } else {
                 Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                 try {
-                    history.addHistoryEntry(cmbScript.getText());
+                    history.addHistoryEntry(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT));
                 } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
                             Messages.SqlScriptDialog_error_adding_command_history, e);
                 }
                 final List<String> command = new ArrayList<>(Arrays.asList(
-                        getReplacedString().split(" "))); //$NON-NLS-1$
+                        getReplacedString(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT), lastDB)
+                        .split(" "))); //$NON-NLS-1$
 
                 launcher = new RunScriptExternal(textRetrieved, command);
             }
