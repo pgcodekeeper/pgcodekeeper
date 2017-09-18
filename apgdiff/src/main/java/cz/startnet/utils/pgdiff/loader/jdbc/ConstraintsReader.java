@@ -1,39 +1,41 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ConstraintsReader extends JdbcReader {
 
     public static class ConstraintsReaderFactory extends JdbcReaderFactory {
 
-        public ConstraintsReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public ConstraintsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new ConstraintsReader(this, loader);
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            return new ConstraintsReader(this, loader, version);
         }
     }
 
     static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
-    private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
             PgConstraint constraint = getConstraint(result, schema.getName(), table.getName());
@@ -43,8 +45,8 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName)
-            throws SQLException {
+    private PgConstraint getConstraint(ResultSetWrapper res, String schemaName, String tableName)
+            throws WrapperAccessException {
         String contype = res.getString("contype");
 
         String constraintName = res.getString("conname");
@@ -81,14 +83,14 @@ public class ConstraintsReader extends JdbcReader {
         return c;
     }
 
-    private void createFKeyCon(ResultSet res, PgConstraint c) throws SQLException {
+    private void createFKeyCon(ResultSetWrapper res, PgConstraint c) throws WrapperAccessException {
         String fschema = res.getString("foreign_schema_name");
         String ftable = res.getString("foreign_table_name");
         GenericColumn ftableRef = new GenericColumn(fschema, ftable, DbObjType.TABLE);
         c.setForeignTable(ftableRef);
         c.addDep(ftableRef);
 
-        String[] referencedColumnNames = (String[]) res.getArray("foreign_cols").getArray();
+        String[] referencedColumnNames = res.getArray("foreign_cols", String.class);
         for (String colName : referencedColumnNames) {
             if (colName != null) {
                 c.addForeignColumn(colName);
@@ -97,14 +99,14 @@ public class ConstraintsReader extends JdbcReader {
         }
     }
 
-    private void createUniqueCon(String contype, ResultSet res, PgConstraint c) throws SQLException {
+    private void createUniqueCon(String contype, ResultSetWrapper res, PgConstraint c) throws WrapperAccessException {
         if ("p".equals(contype)) {
             c.setPrimaryKey(true);
         } else {
             c.setUnique(true);
         }
 
-        String[] concols = (String[]) res.getArray("cols").getArray();
+        String[] concols = res.getArray("cols", String.class);
         for (String name : concols) {
             c.addColumn(name);
         }

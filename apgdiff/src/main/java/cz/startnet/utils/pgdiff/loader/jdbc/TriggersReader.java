@@ -1,30 +1,31 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TriggersReader extends JdbcReader {
 
     public static class TriggersReaderFactory extends JdbcReaderFactory {
 
-        public TriggersReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public TriggersReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader) {
-            return new TriggersReader(this, loader);
+        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
+            return new TriggersReader(this, loader, version);
         }
     }
 
@@ -39,12 +40,12 @@ public class TriggersReader extends JdbcReader {
     private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
     // SONAR-ON
 
-    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
-        super(factory, loader);
+    private TriggersReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+        super(factory, loader, currentVersion);
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
@@ -55,7 +56,7 @@ public class TriggersReader extends JdbcReader {
         }
     }
 
-    private PgTrigger getTrigger(ResultSet res, String schemaName, String tableName) throws SQLException {
+    private PgTrigger getTrigger(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName, "");
@@ -133,14 +134,18 @@ public class TriggersReader extends JdbcReader {
                 t.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
             }
 
-            if (res.getBoolean("tgdeferrable")){
-                t.setImmediate(res.getBoolean("tginitdeferred"));
+            // before PostgreSQL 9.5
+            boolean tginitdeferred = res.getBoolean("tginitdeferred");
+            if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
+                t.setImmediate(tginitdeferred);
+            } else if (tginitdeferred){
+                t.setImmediate(true);
             }
         }
 
-        Array arrCols = res.getArray("cols");
+        String[] arrCols = res.getArray("cols", String.class);
         if (arrCols != null) {
-            for (String col_name : (String[]) arrCols.getArray()) {
+            for (String col_name : arrCols) {
                 t.addUpdateColumn(col_name);
                 t.addDep(new GenericColumn(schemaName, tableName, col_name, DbObjType.COLUMN));
             }

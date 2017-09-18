@@ -6,7 +6,7 @@ WITH extension_deps AS (
 )
 
 SELECT c.relname,
-       c.relacl,
+       c.relacl::text,
        c.relowner::bigint,
        pg_get_viewdef(c.oid) AS definition,
        d.description AS comment,

@@ -3,7 +3,7 @@
 SELECT  cls.relname,
     clsrel.relname AS table_name,
     ind.indisunique,
-    ind.indisclustered as isClustered,
+    ind.indisclustered as isclustered,
     des.description AS comment,
     t.spcname AS table_space,
     pg_get_indexdef(cls.oid) AS definition,

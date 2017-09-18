@@ -154,6 +154,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
+            // костыль: TRANSFORM объекты создаются в pg_catalog и дампятся pg_dump
+            if ("pg_catalog".equals(confValue)) {
+                break;
+            }
             // allow the exception to terminate entire walker here
             // so that objects aren't created on the wrong search_path
             db.setDefaultSchema(ParserAbstract.getSafe(

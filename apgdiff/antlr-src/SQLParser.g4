@@ -39,12 +39,12 @@ data_statement
   : select_stmt
   ;
 
-  script_statement
+script_statement
   : START TRANSACTION transaction_mode*
   | COMMIT (WORK | TRANSACTION)?
   ;
 
-  transaction_mode
+transaction_mode
   : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
   | READ WRITE | READ ONLY
   | (NOT)? DEFERRABLE
@@ -69,7 +69,8 @@ schema_create
     | create_language_statement
     | create_event_trigger
     | create_type_statement
-    | create_domain_statement)
+    | create_domain_statement
+    | create_transform_statement)
 
     | comment_on_statement
     | rule_common
@@ -100,7 +101,8 @@ alter_function_statement
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
-    | set_schema)
+    | set_schema
+    | DEPENDS ON EXTENSION identifier)
     ;
 
 alter_schema_statement
@@ -138,9 +140,12 @@ table_action
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
+    | (DISABLE | ENABLE) ROW LEVEL SECURITY
+    | (NO)? FORCE ROW LEVEL SECURITY
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
+    | SET (LOGGED | UNLOGGED)
     | SET storage_parameter
     | RESET storage_parameter
     | INHERIT parent_table=schema_qualified_name
@@ -184,8 +189,10 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
+      | TRANSFORM transform_for_type (COMMA transform_for_type)*
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+      | PARALLEL identifier 
       | COST execution_cost=NUMBER_LITERAL
       | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
@@ -287,7 +294,12 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
+      including_index?
       with_storage_parameter?
+    ;
+    
+including_index
+    : INCLUDE LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN 
     ;
     
 index_where 
@@ -363,6 +375,14 @@ create_domain_statement
 domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
      common_constraint
+    ;
+    
+create_transform_statement
+    : (OR REPLACE)? TRANSFORM FOR data_type LANGUAGE identifier 
+    LEFT_PAREN
+        FROM SQL WITH FUNCTION  function_parameters COMMA
+        TO SQL WITH FUNCTION function_parameters
+    RIGHT_PAREN
     ;
 
 set_statement
@@ -542,6 +562,10 @@ create_funct_params
       with_storage_parameter?
     ;
 
+transform_for_type
+    : FOR TYPE type_name=data_type
+    ;
+
 function_ret_table
     :TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
     ;
@@ -694,7 +718,7 @@ all_op
     ;
 
 table_unique_prkey
-    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
+    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters including_index?
     ;
 
 index_parameters
@@ -1296,7 +1320,8 @@ tokens_reserved
   ;
   
 tokens_nonkeyword
-  : PLAIN
+  : INCLUDE
+  | PLAIN
   | EXTENDED
   | MAIN
   | SUBTYPE
