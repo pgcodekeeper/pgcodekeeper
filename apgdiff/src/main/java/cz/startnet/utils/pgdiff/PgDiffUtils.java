@@ -158,12 +158,9 @@ public final class PgDiffUtils {
         return sb.toString();
     }
 
-    /**
-     * @return lowercase hex MD5 for UTF-8 representation of given string.
-     */
-    public static String md5(String s) {
+    public static String hash (String s, String instance) {
         try {
-            byte[] hash = MessageDigest.getInstance("MD5")
+            byte[] hash = MessageDigest.getInstance(instance)
                     .digest(s.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(2 * hash.length);
             for (byte b : hash) {
@@ -172,8 +169,23 @@ public final class PgDiffUtils {
             return sb.toString();
         } catch (NoSuchAlgorithmException ex) {
             Log.log(ex);
-            return "MD5_ERROR_" + new Random().nextInt();
+            return instance +"_ERROR_" + new Random().nextInt();
         }
+    }
+
+    /**
+     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
+     */
+
+    public static String sha(String s) {
+        return hash(s, "SHA-256");
+    }
+
+    /**
+     * @return lowercase hex MD5 for UTF-8 representation of given string.
+     */
+    public static String md5(String s) {
+        return hash(s, "MD5");
     }
 
     public static String getErrorSubstr(String s, int pos) {

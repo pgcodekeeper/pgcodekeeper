@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.differ.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -192,10 +193,13 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(filesCount);
 
         IEclipsePreferences pref = proj.getPrefs();
-        return PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, null);
+
+        DBTimestamp.updateObjects(db, proj.getProjectName());
+        return db;
     }
 }
 
