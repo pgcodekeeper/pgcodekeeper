@@ -306,12 +306,12 @@
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-                    label="%command.label.improvePerformanceJdbc"
-                    mnemonic="%command.mnemonic.improvePerformanceJdbc"
-                    style="push">
-                </command>
+                <menu label="%command.label.improvePerformanceJdbc">
+                    <dynamic
+                        class="ru.taximaxim.codekeeper.ui.menuitems.JdbcPerfVersionsDynamic"
+                        id="ru.taximaxim.codekeeper.ui.dynamicJdbcPerf">
+                    </dynamic>
+                </menu>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator1"
                     visible="true">

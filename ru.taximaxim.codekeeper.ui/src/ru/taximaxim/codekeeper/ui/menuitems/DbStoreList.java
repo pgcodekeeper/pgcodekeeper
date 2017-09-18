@@ -29,7 +29,8 @@ public class DbStoreList extends ContributionItem {
 
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
         List<DbInfo> store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
-        for (DbInfo db : store) {
+        for (int i = 0; i < store.size(); ++i) {
+            DbInfo db = store.get(i);
             CommandContributionItemParameter paramToProject = new CommandContributionItemParameter(
                     PlatformUI.getWorkbench(), null, COMMAND.GET_CHANGES,
                     CommandContributionItem.STYLE_PUSH);
@@ -41,7 +42,7 @@ public class DbStoreList extends ContributionItem {
             paramToProject.icon = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
                     .getResource(db.equals(currentDB) ? FILE.ICONCHECK : FILE.ICONDATABASE));
             CommandContributionItem item = new CommandContributionItem(paramToProject);
-            item.fill(menu, index);
+            item.fill(menu, index + i);
         }
     }
 

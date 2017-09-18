@@ -52,8 +52,6 @@ public final class JdbcQueries {
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 
-    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
-
     // SONAR-ON
 
     private final static String HELPER_NAME = "%FUNCTION_NAME%";
@@ -65,9 +63,7 @@ public final class JdbcQueries {
                 continue;
             }
             try {
-                if ("QUERY_IMPROVE_JDBC_PERFORMANCE".equals(f.getName())) {
-                    fillHelperFunction(f);
-                } else if (Map.class.isAssignableFrom(f.getType())) {
+                if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
                 } else if (String.class.isAssignableFrom(f.getType())) {
                     String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
@@ -101,7 +97,7 @@ public final class JdbcQueries {
         f.set(null, map);
     }
 
-    private static void fillHelperFunction(Field f) throws Exception {
+    public static String getHelperFunctions(SupportedVersion version) {
         StringBuilder sb = new StringBuilder();
         sb.append(QUERY_HELPER_FUNCTIONS_BEGIN);
 
@@ -110,10 +106,10 @@ public final class JdbcQueries {
 
             sb.append(QUERY_HELPER_FUNCTION_TEMPLATE
                     .replace(HELPER_NAME, fac.getHelperFunction())
-                    .replace(HELPER_QUERY, fac.makeFallbackQuery(SupportedVersion.VERSION_9_5.getVersion()))
+                    .replace(HELPER_QUERY, fac.makeFallbackQuery(version.getVersion()))
                     .replace("?", "schema_oid"));
         }
-        f.set(null, sb.toString());
+        return sb.toString();
     }
 
     private JdbcQueries() {
