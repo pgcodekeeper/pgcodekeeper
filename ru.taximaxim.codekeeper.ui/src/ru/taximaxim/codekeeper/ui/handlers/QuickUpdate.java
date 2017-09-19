@@ -80,7 +80,7 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_error_charset, e);
             return null;
         }
-        new QuickUpdateJob(file, dbInfo, textSnapshot).schedule();
+        new QuickUpdateJob(editor, file, dbInfo, textSnapshot).schedule();
         return null;
     }
 
@@ -98,14 +98,16 @@ class QuickUpdateJob extends Job {
     private static final int STEPS = 7;
 
     private final IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+    private final SQLEditor editor;
     private final IFile file;
     private final PgDbProject proj;
     private final DbInfo dbinfo;
     private final byte[] textSnapshot;
     private SubMonitor monitor;
 
-    public QuickUpdateJob(IFile file, DbInfo dbInfo, byte[] textSnapshot) {
+    public QuickUpdateJob(SQLEditor editor, IFile file, DbInfo dbInfo, byte[] textSnapshot) {
         super(Messages.QuickUpdate_quick_update);
+        this.editor = editor;
         this.file = file;
         this.proj = new PgDbProject(file.getProject());
         this.dbinfo = dbInfo;
@@ -118,6 +120,7 @@ class QuickUpdateJob extends Job {
             Log.log(Log.LOG_INFO, "QuickUpdate starting"); //$NON-NLS-1$
             this.monitor = SubMonitor.convert(monitor, STEPS);
 
+            editor.setQuickUpdateJobInProcessing(true);
             doRun();
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
@@ -125,6 +128,7 @@ class QuickUpdateJob extends Job {
             return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
+            editor.setQuickUpdateJobInProcessing(false);
         }
         return Status.OK_STATUS;
     }

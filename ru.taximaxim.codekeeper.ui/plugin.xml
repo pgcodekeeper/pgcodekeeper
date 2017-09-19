@@ -102,7 +102,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
             id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
             name="%command.commandname.QuickUpdate">
         </command>
@@ -155,6 +154,24 @@
                     <with variable="activeEditor">
                         <not>
                             <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                            </test>
+                        </not>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
+            commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditorId">
+                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                        </equals>
+                    </with>
+                    <with variable="activeEditor">
+                        <not>
+                            <test property="ru.taximaxim.codekeeper.ui.isQuickUpdateRunning">
                             </test>
                         </not>
                     </with>
@@ -741,6 +758,13 @@
             id="ru.taximaxim.codekeeper.ui.UpdateDdlJobTester"
             namespace="ru.taximaxim.codekeeper.ui"
             properties="isUpdateDdlRunning"
+            type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+        </propertyTester>
+        <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester"
+            id="ru.taximaxim.codekeeper.ui.QuickUpdateJobTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isQuickUpdateRunning"
             type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
         </propertyTester>
     </extension>

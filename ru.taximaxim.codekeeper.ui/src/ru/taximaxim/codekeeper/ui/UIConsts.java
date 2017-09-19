@@ -153,6 +153,7 @@ public interface UIConsts {
     interface PROP_TEST {
         String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
         String UPDATE_DDL_RUNNING = PLUGIN_ID.THIS + ".isUpdateDdlRunning"; //$NON-NLS-1$
+        String QUICK_UPDATE_RUNNING = PLUGIN_ID.THIS + ".isQuickUpdateRunning"; //$NON-NLS-1$
     }
 
     interface HELP {

@@ -45,7 +45,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
@@ -118,15 +117,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private SqlEditorPartListener partListener;
 
-    private Text txtCommand;
-    private Combo cmbScript;
-
     private volatile boolean isRunning;
     private Thread scriptThread;
 
     private DbInfo lastDB;
 
     private volatile boolean updateDdlJobInProcessing;
+    private volatile boolean quickUpdateJobInProcessing;
 
     private Composite parentComposite;
     private SQLEditorContentOutlinePage fOutlinePage;
@@ -172,6 +169,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void setUpdateDdlJobInProcessing(boolean updateDdlJobInProcessing) {
         this.updateDdlJobInProcessing = updateDdlJobInProcessing;
         getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.UPDATE_DDL_RUNNING);
+    }
+
+    public boolean isQuickUpdateJobInProcessing() {
+        return quickUpdateJobInProcessing;
+    }
+
+    public void setQuickUpdateJobInProcessing(boolean quickUpdateJobInProcessing) {
+        this.quickUpdateJobInProcessing = quickUpdateJobInProcessing;
+        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.QUICK_UPDATE_RUNNING);
     }
 
     public void setLastDb(DbInfo lastDb) {
