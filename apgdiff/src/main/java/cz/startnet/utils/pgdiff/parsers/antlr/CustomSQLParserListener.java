@@ -58,17 +58,14 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private final PgDatabase db;
-    private final String parsedObjectName;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     private String tablespace;
     private String oids;
 
-    public CustomSQLParserListener(PgDatabase database, String parsedObjectName,
-            List<AntlrError> errors, IProgressMonitor monitor) {
+    public CustomSQLParserListener(PgDatabase database, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
-        this.parsedObjectName = parsedObjectName;
         this.monitor = monitor;
     }
 
@@ -81,11 +78,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             return null;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
-        }/* catch (Exception ex) {
-            Log.log(Log.LOG_WARNING,
-                    "Exception while analyzing parser tree for: " + parsedObjectName, ex);
-            return null;
-        }*/
+        }
     }
 
     @Override
@@ -161,6 +154,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
+            // костыль: TRANSFORM объекты создаются в pg_catalog и дампятся pg_dump
+            if ("pg_catalog".equals(confValue)) {
+                break;
+            }
             // allow the exception to terminate entire walker here
             // so that objects aren't created on the wrong search_path
             db.setDefaultSchema(ParserAbstract.getSafe(
@@ -184,7 +181,6 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         default:
             break;
         }
-
     }
 
     @Override

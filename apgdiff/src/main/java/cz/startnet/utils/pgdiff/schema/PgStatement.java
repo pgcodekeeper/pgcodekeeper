@@ -104,7 +104,7 @@ public abstract class PgStatement implements IStatement {
      * Sets {@link #comment} with newlines as requested in arguments.
      */
     public void setComment(PgDiffArguments args, String comment) {
-        setComment(args.isForceUnixNewlines() ? comment.replace("\r", "") : comment);
+        setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {

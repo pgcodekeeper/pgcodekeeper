@@ -24,12 +24,12 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectUpdaterTest {
@@ -53,20 +53,20 @@ public class ProjectUpdaterTest {
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
         referenceDir = new TempDir("test_old"); //$NON-NLS-1$
 
-        new ModelExporter(workingDir.get(), dbOld, ENCODING).exportFull();
+        new ModelExporter(workingDir.get().toFile(), dbOld, ENCODING).exportFull();
     }
 
     @Test
     public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException{
-        File dir = workingDir.get();
+        File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI());
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
         new ProjectUpdater(dbNew, null, null, proj).updateFull();
 
-        new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
-        if (compareFilesInPaths(workingDir.get().toPath(), referenceDir.get().toPath())){
+        new ModelExporter(referenceDir.get().toFile(), dbOld, ENCODING).exportFull();
+        if (compareFilesInPaths(workingDir.get(), referenceDir.get())){
             fail("ProjectUpdate fail: expected bases to differ");
         }
         proj.getProject().close(null);
@@ -78,13 +78,13 @@ public class ProjectUpdaterTest {
             workingDir.close();
         }catch(Exception ex){
             Log.log(Log.LOG_WARNING, "Could not delete folder " +
-                    (workingDir.get() == null ? "null" : workingDir.get().getAbsolutePath()), ex);
+                    (workingDir.get() == null ? "null" : workingDir.get()), ex);
         }
         try{
             referenceDir.close();
         }catch(Exception ex){
             Log.log(Log.LOG_WARNING, "Could not delete folder " +
-                    (referenceDir.get() == null ? "null" : referenceDir.get().getAbsolutePath()), ex);
+                    (referenceDir.get() == null ? "null" : referenceDir.get()), ex);
         }
     }
 

@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,13 +28,20 @@ public class JdbcConnector {
     private final String pass;
     private final String dbName;
     private final String url;
-
-    private final String encoding;
     private final String timezone;
-    private Charset charset;
 
-    public JdbcConnector(String host, int port, String user, String pass, String dbName,
-            String encoding, String timezone) {
+    /**
+     * @throws IllegalArgumentException url isn't valid
+     */
+    public static String dbNameFromUrl(String url) {
+        try {
+            return new JdbcConnector(url).dbName;
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
         this.dbName = dbName;
@@ -43,13 +49,11 @@ public class JdbcConnector {
         this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
         this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
 
-        this.encoding = encoding;
         this.timezone = timezone;
     }
 
     public JdbcConnector(String url) throws URISyntaxException {
         this.url = url;
-        this.encoding = ApgdiffConsts.UTF_8;
         this.timezone = ApgdiffConsts.UTC;
 
         String host = null, user = null, pass = null, dbName = null;
@@ -105,7 +109,6 @@ public class JdbcConnector {
      * @throws IOException  If driver not found or a database access error occurs
      */
     public Connection getConnection() throws IOException{
-        this.charset = Charset.forName(encoding);
         try{
             return establishConnection();
         } catch (ClassNotFoundException e) {
@@ -133,18 +136,6 @@ public class JdbcConnector {
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
                 host + ":" + port + ", db name " + dbName + ", username " + user);
         return DriverManager.getConnection(url, props);
-    }
-
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * @return {@link Charset} for {@link #encoding}, or null, if {@link #getConnection()}
-     *          wasn't called yet.
-     */
-    public Charset getCharset() {
-        return charset;
     }
 
     String getTimezone(){

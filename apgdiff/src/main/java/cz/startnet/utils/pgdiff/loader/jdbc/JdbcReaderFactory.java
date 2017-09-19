@@ -8,9 +8,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
@@ -20,6 +22,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.TablesReader.TablesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader.TriggersReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader.TypesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader.ViewsReaderFactory;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public abstract class JdbcReaderFactory {
 
@@ -29,16 +32,34 @@ public abstract class JdbcReaderFactory {
     protected final long hasHelperMask;
     protected final String helperFunction;
     protected final String helperQuery;
-    protected final String fallbackQuery;
+    protected final Map<SupportedVersion, String> queries;
 
-    public JdbcReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
+    public String getHelperFunction() {
+        return helperFunction;
+    }
+
+    public JdbcReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
         this.hasHelperMask = hasHelperMask;
         this.helperFunction = helperFunction;
         this.helperQuery = "SELECT * FROM " + HELPER_SCHEMA + '.' + helperFunction + "(?,?)";
-        this.fallbackQuery = fallbackQuery;
+        this.queries = queries;
     }
 
-    public abstract JdbcReader getReader(JdbcLoaderBase loader);
+    public abstract JdbcReader getReader(JdbcLoaderBase loader, int version);
+
+    public String makeFallbackQuery (int version) {
+        StringBuilder sb = new StringBuilder("SELECT * FROM (");
+        sb.append(queries.get(null));
+        sb.append(") t1 ");
+
+        queries.entrySet().stream()
+        .filter(e -> e.getKey() != null && e.getKey().checkVersion(version))
+        .forEach(e -> sb.append("LEFT JOIN (").append(e.getValue())
+                .append(") t").append(e.getKey().getVersion())
+                .append(" USING (oid) "));
+
+        return sb.toString();
+    }
 
     /*
      * Static part.
@@ -80,7 +101,16 @@ public abstract class JdbcReaderFactory {
             try (ResultSet res = st.executeQuery()) {
                 Set<String> funcs = new HashSet<>();
                 while (res.next()) {
-                    funcs.add(res.getString("proname"));
+                    if (!res.getBoolean("schema_access")) {
+                        Log.log(Log.LOG_WARNING, "No access to helper schema: " + HELPER_SCHEMA);
+                        break;
+                    }
+                    String func = res.getString("proname");
+                    if (res.getBoolean("function_access")) {
+                        funcs.add(func);
+                    } else {
+                        Log.log(Log.LOG_WARNING, "No access to helper function: " + func);
+                    }
                 }
                 for (JdbcReaderFactory factory : FACTORIES) {
                     if (funcs.contains(factory.helperFunction)) {

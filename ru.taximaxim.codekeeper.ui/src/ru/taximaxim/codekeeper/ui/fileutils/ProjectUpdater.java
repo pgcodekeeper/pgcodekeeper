@@ -1,12 +1,11 @@
 package ru.taximaxim.codekeeper.ui.fileutils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -15,6 +14,8 @@ import org.eclipse.core.runtime.CoreException;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -28,7 +29,7 @@ public class ProjectUpdater {
 
     private final Collection<TreeElement> changedObjects;
     private final String encoding;
-    private final File dirExport;
+    private final Path dirExport;
 
     /**
      * dbOld, changedObjects are necessary only for partial update
@@ -41,7 +42,7 @@ public class ProjectUpdater {
         this.changedObjects = checked;
 
         this.encoding = proj.getProjectCharset();
-        this.dirExport = proj.getPathToProject().toFile();
+        this.dirExport = proj.getPathToProject();
     }
 
     public void updatePartial() throws IOException {
@@ -51,43 +52,38 @@ public class ProjectUpdater {
         }
 
         boolean caughtProcessingEx = false;
-        try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
-            File dirTmp = tmp.get();
+        try (TempDir tmp = new TempDir(dirExport, "tmp-export")) { //$NON-NLS-1$
+            Path dirTmp = tmp.get();
 
             try {
                 for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                    final Path sourcePath = Paths.get(dirExport.getCanonicalPath(),
-                            subdirName.toString());
+                    final Path sourcePath = dirExport.resolve(subdirName.toString());
                     if (Files.exists(sourcePath)) {
                         continue;
                     }
-                    final Path targetPath = Paths.get(dirTmp.getCanonicalPath(),
-                            subdirName.toString());
+                    final Path targetPath = dirTmp.resolve(subdirName.toString());
 
-                    Files.walkFileTree(sourcePath,new SimpleFileVisitor<Path>() {
+                    Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
                         @Override
-                        public FileVisitResult preVisitDirectory(final Path dir,
-                                final BasicFileAttributes attrs) throws IOException {
-                            Files.createDirectories(targetPath.resolve(sourcePath
-                                    .relativize(dir)));
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
                             return FileVisitResult.CONTINUE;
                         }
 
                         @Override
-                        public FileVisitResult visitFile(final Path file,
-                                final BasicFileAttributes attrs) throws IOException {
-                            Files.copy(file,
-                                    targetPath.resolve(sourcePath.relativize(file)));
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
                             return FileVisitResult.CONTINUE;
                         }
                     });
                 }
 
-                new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding).exportPartial();
+                new ModelExporter(dirExport.toFile(), dbNew, dbOld, changedObjects, encoding)
+                .exportPartial();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
-                Log.log(Log.LOG_ERROR, "Error while updating project!" , ex); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, "Error while updating project!", ex); //$NON-NLS-1$
 
                 try {
                     restoreProjectDir(dirTmp);
@@ -118,12 +114,12 @@ public class ProjectUpdater {
     public void updateFull() throws IOException {
         Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
         boolean caughtProcessingEx = false;
-        try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
-            File dirTmp = tmp.get();
+        try (TempDir tmp = new TempDir(dirExport, "tmp-export")) { //$NON-NLS-1$
+            Path dirTmp = tmp.get();
 
             try {
                 safeCleanProjectDir(dirTmp);
-                new ModelExporter(dirExport, dbNew, encoding).exportFull();
+                new ModelExporter(dirExport.toFile(), dbNew, encoding).exportFull();
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
@@ -156,27 +152,27 @@ public class ProjectUpdater {
         }
     }
 
-    private void safeCleanProjectDir(File dirTmp) throws IOException {
+    private void safeCleanProjectDir(Path dirTmp) throws IOException {
         for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
             String sSubdirName = subdirName.toString();
-            File dirOld = new File(dirExport, sSubdirName);
-            if (dirOld.exists()) {
-                Dir.moveDirAtomic(dirOld, new File(dirTmp, sSubdirName));
+            Path dirOld = dirExport.resolve(sSubdirName);
+            if (Files.exists(dirOld)) {
+                Files.move(dirOld, dirTmp.resolve(sSubdirName), StandardCopyOption.ATOMIC_MOVE);
             }
         }
     }
 
-    private void restoreProjectDir(File dirTmp) throws IOException {
+    private void restoreProjectDir(Path dirTmp) throws IOException {
         for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
             String sSubdirName = subdirName.toString();
-            File subDir = new File(dirExport, sSubdirName);
-            File subDirTemp = new File(dirTmp, sSubdirName);
+            Path subDir = dirExport.resolve(sSubdirName);
+            Path subDirTemp = dirTmp.resolve(sSubdirName);
 
-            if (subDirTemp.exists()) {
-                if (subDir.exists()) {
-                    Dir.deleteRecursive(subDir);
+            if (Files.exists(subDirTemp)) {
+                if (Files.exists(subDir)) {
+                    FileUtils.deleteRecursive(subDir);
                 }
-                Dir.moveDirAtomic(subDirTemp, subDir);
+                Files.move(subDirTemp, subDir, StandardCopyOption.ATOMIC_MOVE);
             }
         }
     }

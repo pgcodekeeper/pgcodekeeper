@@ -257,8 +257,17 @@ public abstract class ParserAbstract {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null) {
             IdentifierContext schemaCtx = qname.identifier();
-            st.addDep(new GenericColumn(schemaCtx == null ? schema : schemaCtx.getText(),
-                    qname.identifier_nontype().getText(), DbObjType.TYPE));
+            String schemaName = schema;
+            if (schemaCtx != null){
+                schemaName = schemaCtx.getText();
+                if ("pg_catalog".equals(schemaName)
+                        || "information_schema".equals(schemaName)) {
+                    return;
+                }
+            }
+
+            st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
+                    DbObjType.TYPE));
         }
     }
 

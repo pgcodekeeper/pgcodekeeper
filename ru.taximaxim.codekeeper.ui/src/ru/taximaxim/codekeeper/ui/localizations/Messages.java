@@ -23,7 +23,6 @@ public final class Messages extends NLS {
     public static String empty_selection;
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
-    public static String get_changes;
     public static String please_check_at_least_one_row;
 
     public static String projectEditorDiffer_save_project;
@@ -35,7 +34,6 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
-    public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String SQLEditorStatementTypes_consts;
 
@@ -69,15 +67,11 @@ public final class Messages extends NLS {
 
     public static String SQLEditorSytaxColoring_underline;
 
-    public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
-    public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_output;
-    public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
-    public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
     public static String sqlScriptDialog_use_command_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
@@ -148,7 +142,6 @@ public final class Messages extends NLS {
     public static String database;
 
     // ui.parts
-    public static String commitPartDescr_commit;
     public static String commitPartDescr_show_commit_window;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
@@ -159,12 +152,7 @@ public final class Messages extends NLS {
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
-    public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
-    public static String diffPartDescr_add_dependencies;
-    public static String diffPartDescr_diff_script;
-    public static String diffPartDescr_from;
-    public static String diffPartDescr_get_latest;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -217,6 +205,14 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
+    public static String dbUpdatePrefPage_create_script_project_directory;
+
+    public static String dbUpdatePrefPage_status_alway_create;
+
+    public static String dbUpdatePrefPage_status_ask_create;
+
+    public static String dbUpdatePrefPage_status_never_create;
+
     public static String DepcyGraphView_project;
 
     public static String DepcyGraphView_remote;
@@ -227,18 +223,12 @@ public final class Messages extends NLS {
     public static String DiffPresentationPane_attention;
 
 
-    public static String DiffPresentationPane_cannot_get_changes;
-
-    public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
-
     public static String DiffPresentationPane_dismiss;
     public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;
 
     public static String DiffPresentationPane_remote_changed_notification;
-
-    public static String DiffPresentationPane_select_db_source;
 
     public static String DiffPresentationPane_sql_file_filter;
 
@@ -251,8 +241,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_selected;
 
     public static String DiffWizard_db_tz;
-
-    public static String DiffWizard_diff_wizard_result;
 
     public static String DiffWizard_select_db_tz;
 
@@ -269,10 +257,6 @@ public final class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
 
     public static String generalPrefPage_use_depcy_on_commit_page;
-    public static String generalPrefPage_use_psql_depcy_on_generating_script;
-
-    public static String pgProjectEditor_is_prj_update_backlight;
-    public static String pgProjectEditor_is_db_update_backlight;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
@@ -401,22 +385,39 @@ public final class Messages extends NLS {
     public static String PrefListEditor_cannot_add;
 
     public static String PrefListEditor_cannot_edit;
+
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
+
+    public static String ProjectEditorDiffer_error_creating_file;
 
     public static String ProjectEditorDiffer_error_opening_script_editor;
 
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
-    public static String ProjectEditorDiffer_page_text_commit;
-    public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
+    public static String ProjectEditorDiffer_script_creation_message;
+
+    public static String ProjectEditorDiffer_script_creation_title;
+
     public static String ProjectEditorInput_pgcodekeeper_project;
 
-    public static String ProjectEditorPrefPage_database_color;
+    public static String ProjectEditorPrefPage_action_no_action;
 
-    public static String ProjectEditorPrefPage_project_color;
+    public static String ProjectEditorPrefPage_action_reset;
+
+    public static String ProjectEditorPrefPage_action_type;
+
+    public static String ProjectEditorPrefPage_action_update;
+
+    public static String dbUpdatePrefPage_script_deleting_status;
+
+    public static String dbUpdatePrefPage_status_always_delete;
+
+    public static String dbUpdatePrefPage_status_ask_delete;
+
+    public static String dbUpdatePrefPage_status_never_delete;
 
     public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
@@ -427,14 +428,14 @@ public final class Messages extends NLS {
 
     public static String RollOnEditor_jdbc_success;
 
-    public static String RollOnEditor_parsing_cancelled;
+    public static String RollOnEditor_script_delete_dialog_message;
+
+    public static String RollOnEditor_script_delete_dialog_title;
 
     public static String RollOnEditor_selected_text_error;
 
     public static String RollOnEditor_tooltip_run_selected;
-    public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
-    public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
     public static String SqlScriptDialog_error_adding_command_history;
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
@@ -508,11 +509,41 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
+    public static String GetChanges_select_source;
+
+    public static String GetChanges_select_source_msg;
+
     // SONAR-ON
+
+    public static String QuickUpdate_danger;
+
+    public static String QuickUpdate_empty_script;
+
+    public static String QuickUpdate_error;
+
+    public static String QuickUpdate_error_charset;
+
+    public static String QuickUpdate_file_modified;
+
+    public static String QuickUpdate_migration_failed;
+
+    public static String QuickUpdate_multiple_schemas;
+
+    public static String QuickUpdate_no_changes;
+
+    public static String QuickUpdate_quick_update;
+
+    public static String QuickUpdate_updating_db;
+
+    public static String QuickUpdate_updating_project;
 
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+    }
+
+    public static String getBundleName() {
+        return BUNDLE_NAME;
     }
 
     private Messages() {

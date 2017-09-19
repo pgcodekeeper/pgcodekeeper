@@ -1,7 +1,12 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -22,9 +27,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -35,7 +40,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.StringEditorInput;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -111,9 +115,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     treediffer.getDiffTree(), false, pageDiff.getTimezone());
             getContainer().run(true, true, differ);
 
+            Path path = Files.createTempFile("diff_wizard_result_", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            Files.write(path, differ.getDiffDirect().getBytes());
+            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new StringEditorInput(differ.getDiffDirect(), Messages.DiffWizard_diff_wizard_result),
-                    EDITOR.ROLLON);
+            .openEditor(new FileStoreEditorInput(externalFile), EDITOR.ROLLON);
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -121,6 +127,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             // cancelled
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
+        } catch (IOException ex) {
+            ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_creating_file, ex);
         }
         return false;
     }
@@ -244,7 +252,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false, DiffSide.LEFT);
+        diffTable = new DiffTableViewer(container, false);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 480;
         gd.heightHint = 360;

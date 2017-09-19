@@ -57,6 +57,7 @@ public interface ApgdiffConsts {
             "bit varying", //$NON-NLS-1$
             "boolean", //$NON-NLS-1$
             "box", //$NON-NLS-1$
+            "bpchar",
             "bytea", //$NON-NLS-1$
             "char", //$NON-NLS-1$
             "character", //$NON-NLS-1$

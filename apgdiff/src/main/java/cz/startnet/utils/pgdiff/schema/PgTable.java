@@ -27,7 +27,8 @@ public class PgTable extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     private static final String OIDS = "OIDS";
-    private static final String ALTER_FOREIGN_OPTION =  "\n\n{0} OPTIONS ({1} {2} {3});";
+    private static final String ALTER_TABLE = "\n\nALTER TABLE ";
+    private static final String ALTER_FOREIGN_OPTION = "\n\n{0} OPTIONS ({1} {2} {3});";
 
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<PgColumn> columnsOfType = new ArrayList<>();
@@ -38,10 +39,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
     private boolean hasOids;
+    private boolean isLogged = true;
+    private boolean isRowSecurity;
+    private boolean isForceSecurity;
     private String tablespace;
     private String ofType;
     private String serverName;
-
 
     @Override
     public DbObjType getStatementType() {
@@ -61,10 +64,21 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return false;
     }
 
-    private String getTableAction (StatementActions action, boolean nextLine){
-        String foreign = getServerName() != null ? "FOREIGN " : "";
-        return (nextLine ? "\n\n" : "") + action.toString() + ' ' + foreign + "TABLE "
-        + PgDiffUtils.getQuotedName(name);
+    private String getAlterTable(boolean nextLine, boolean only) {
+        StringBuilder sb = new StringBuilder();
+        if (nextLine) {
+            sb.append("\n\n");
+        }
+        sb.append("ALTER ");
+        if (getServerName() != null) {
+            sb.append("FOREIGN ");
+        }
+        sb.append("TABLE ");
+        if (only) {
+            sb.append("ONLY ");
+        }
+        sb.append(PgDiffUtils.quoteName(getName()));
+        return sb.toString();
     }
 
     /**
@@ -145,15 +159,25 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getCreationSQL() {
+        final boolean isForeign = serverName != null;
+
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getTableAction(StatementActions.CREATE, false));
+        sbSQL.append("CREATE ");
+
+        if (!isLogged()) {
+            sbSQL.append("UNLOGGED ");
+        } else if (isForeign) {
+            sbSQL.append("FOREIGN ");
+        }
+
+        sbSQL.append("TABLE ");
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         boolean first = true;
-        boolean isForeign = serverName != null;
-
         if(ofType != null){
-            sbSQL.append(" OF " + ofType);
+            sbSQL.append(" OF ")
+            .append(ofType);
 
             if (!columnsOfType.isEmpty()){
                 sbSQL.append(" (\n");
@@ -184,14 +208,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 sbSQL.append(column.getFullDefinition(false, null, false));
 
                 if(column.getStorage() != null){
-                    sbOption.append(getTableAction(StatementActions.ALTER, true))
+                    sbOption.append(getAlterTable(true, false))
                     .append(" ALTER COLUMN ")
                     .append(PgDiffUtils.getQuotedName(column.name))
                     .append(" SET STORAGE ")
                     .append(column.getStorage())
                     .append(';');
                 }
-
 
                 writeOptions(column, sbOption, false);
                 writeOptions(column, sbOption, true);
@@ -256,6 +279,20 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         sbSQL.append(sbOption);
 
+        // since 9.5 PostgreSQL
+        if (isRowSecurity) {
+            sbSQL.append(ALTER_TABLE);
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" ENABLE ROW LEVEL SECURITY;");
+        }
+
+        // since 9.5 PostgreSQL
+        if (isForceSecurity) {
+            sbSQL.append(ALTER_TABLE).append("ONLY ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" FORCE ROW LEVEL SECURITY;");
+        }
+
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
@@ -270,10 +307,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         for (PgColumn column : getColumnsWithStatistics()) {
-            sbSQL.append(getTableAction(StatementActions.ALTER, true)).append(" ONLY ");
+            sbSQL.append(getAlterTable(true, true));
             sbSQL.append(" ALTER COLUMN ");
-            sbSQL.append(
-                    PgDiffUtils.getQuotedName(column.getName()));
+            sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
             sbSQL.append(" SET STATISTICS ");
             sbSQL.append(column.getStatistics());
             sbSQL.append(';');
@@ -283,7 +319,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
         }
-
 
         if(ofType != null){
             for (final PgColumn column : columnsOfType) {
@@ -306,7 +341,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        return getTableAction(StatementActions.DROP, false) + ';';
+        return "DROP " + (getServerName() == null ? "" : "FOREIGN ") + "TABLE "
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -326,22 +362,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             return true;
         }
 
-        if(ofType != null){
-            if(!oldTable.getOfType().equals(newTable.getOfType())){
-                if (newTable.getOfType() != null){
-                    sb.append(getTableAction(StatementActions.ALTER, false))
+        if (ofType != null) {
+            if (!oldTable.getOfType().equals(newTable.getOfType())) {
+                if (newTable.getOfType() != null) {
+                    sb.append(getAlterTable(true, false))
                     .append(" OF ")
                     .append(newTable.getOfType())
                     .append(';');
                 } else {
-                    sb.append(getTableAction(StatementActions.ALTER, false))
+                    sb.append(getAlterTable(true, false))
                     .append(" NOT OF")
                     .append(';');
                 }
             }
 
             StringBuilder colsSb = new StringBuilder();
-            for(PgColumn newCol : newTable.getColumnsOfType()){
+            for (PgColumn newCol : newTable.getColumnsOfType()) {
                 PgColumn oldCol = oldTable.getColumnOfType(newCol.getName());
 
                 if (oldCol != null) {
@@ -380,7 +416,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     String newDefault = (newCol.getDefaultValue() == null) ? ""
                             : newCol.getDefaultValue();
 
-                    if(!newDefault.isEmpty()){
+                    if (!newDefault.isEmpty()){
                         colsSb.append("\n\tALTER COLUMN ")
                         .append(PgDiffUtils.getQuotedName(newCol.getName()))
                         .append(" SET DEFAULT ")
@@ -397,7 +433,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 }
             }
 
-            for(PgColumn oldCol : oldTable.getColumnsOfType()){
+            for (PgColumn oldCol : oldTable.getColumnsOfType()) {
                 PgColumn newCol = newTable.getColumnOfType(oldCol.getName());
 
                 if (newCol == null) {
@@ -411,7 +447,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                         .append(", ");
                     }
 
-                    if(!oldCol.getNullValue()){
+                    if (!oldCol.getNullValue()) {
                         colsSb.append("\n\tALTER COLUMN ")
                         .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                         .append(" DROP NOT NULL")
@@ -432,7 +468,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             List<Inherits> newInherits = newTable.getInherits();
             for (final Inherits tableName : oldInherits) {
                 if (!newInherits.contains(tableName)) {
-                    sb.append(getTableAction(StatementActions.ALTER, true))
+                    sb.append(getAlterTable(true, false))
                     .append("\n\tNO INHERIT ")
                     .append(tableName.getKey() == null ?
                             "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
@@ -442,7 +478,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
             for (final Inherits tableName : newInherits) {
                 if (!oldInherits.contains(tableName)) {
-                    sb.append(getTableAction(StatementActions.ALTER, true))
+                    sb.append(getAlterTable(true, false))
                     .append("\n\tINHERIT ")
                     .append(tableName.getKey() == null ?
                             "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
@@ -450,39 +486,66 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     .append(';');
                 }
             }
-
-            if (newTable.getServerName() == null) {
-                compareOptions(oldTable, newTable, sb);
-            } else {
-                compareForeignOptions(oldTable.getOptions(), newTable.getOptions(), sb);
-            }
-
-            if (oldTable.getHasOids() && !newTable.getHasOids()){
-                sb.append(getTableAction(StatementActions.ALTER, true))
-                .append(" SET WITHOUT OIDS;");
-            } else if (newTable.getHasOids() && !oldTable.getHasOids()){
-                sb.append(getTableAction(StatementActions.ALTER, true))
-                .append(" SET WITH OIDS;");
-            }
-
-            if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-                sb.append(getTableAction(StatementActions.ALTER, true))
-                .append("\n\tSET TABLESPACE ")
-                .append(newTable.getTablespace())
-                .append(';');
-            }
-
-            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-                sb.append(newTable.getOwnerSQL());
-            }
-
-            alterPrivileges(newTable, sb);
-
-            if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
-                sb.append("\n\n");
-                newTable.appendCommentSql(sb);
-            }
         }
+
+        if (newTable.getServerName() == null) {
+            compareOptions(oldTable, newTable, sb);
+        } else {
+            compareForeignOptions(oldTable.getOptions(), newTable.getOptions(), sb);
+        }
+
+        if (oldTable.getHasOids() && !newTable.getHasOids()) {
+            sb.append(getAlterTable(true, false))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()) {
+            sb.append(getAlterTable(true, false))
+            .append(" SET WITH OIDS;");
+        }
+
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            sb.append(getAlterTable(true, false))
+            .append("\n\tSET TABLESPACE ")
+            .append(newTable.getTablespace())
+            .append(';');
+        }
+
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            sb.append(newTable.getOwnerSQL());
+        }
+
+        // since 9.5 PostgreSQL
+        if (oldTable.isLogged != newTable.isLogged) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append("\n\tSET ")
+            .append(newTable.isLogged ? "LOGGED" : "UNLOGGED")
+            .append(';');
+        }
+
+        // since 9.5 PostgreSQL
+        if (oldTable.isRowSecurity != newTable.isRowSecurity) {
+            sb.append(ALTER_TABLE)
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append(newTable.isRowSecurity ? " ENABLE" : " DISABLE")
+            .append(" ROW LEVEL SECURITY;");
+        }
+
+        // since 9.5 PostgreSQL
+        if (oldTable.isForceSecurity != newTable.isForceSecurity) {
+            sb.append(ALTER_TABLE)
+            .append("ONLY ")
+            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            .append(newTable.isForceSecurity ? "" : " NO")
+            .append(" FORCE ROW LEVEL SECURITY;");
+        }
+
+        alterPrivileges(newTable, sb);
+
+        if (!Objects.equals(oldTable.getComment(), newTable.getComment())) {
+            sb.append("\n\n");
+            newTable.appendCommentSql(sb);
+        }
+
         return sb.length() > startLength;
     }
 
@@ -564,12 +627,39 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
 
-    public Boolean getHasOids() {
+    public boolean getHasOids() {
         return hasOids;
     }
 
-    public void setHasOids(Boolean hasOids) {
+    public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
+        resetHash();
+    }
+
+    public boolean isLogged() {
+        return isLogged;
+    }
+
+    public void setLogged(boolean isLogged) {
+        this.isLogged = isLogged;
+        resetHash();
+    }
+
+    public boolean isRowSecurity() {
+        return isRowSecurity;
+    }
+
+    public void setRowSecurity(final boolean isRowSecurity) {
+        this.isRowSecurity = isRowSecurity;
+        resetHash();
+    }
+
+    public boolean isForceSecurity() {
+        return isForceSecurity;
+    }
+
+    public void setForceSecurity(final boolean isForceSecurity) {
+        this.isForceSecurity = isForceSecurity;
         resetHash();
     }
 
@@ -715,6 +805,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(tablespace, table.getTablespace())
                     && Objects.equals(serverName, table.getServerName())
                     && hasOids == table.getHasOids()
+                    && isLogged == table.isLogged()
+                    && isRowSecurity == table.isRowSecurity()
+                    && isForceSecurity == table.isForceSecurity()
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && grants.equals(table.grants)
@@ -771,6 +864,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
+        result = prime * result + (isLogged ? itrue : ifalse);
+        result = prime * result + (isRowSecurity ? itrue : ifalse);
+        result = prime * result + (isForceSecurity ? itrue : ifalse);
         result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
         result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
         return result;
@@ -783,6 +879,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         tableDst.setTablespace(getTablespace());
         tableDst.setServerName(getServerName());
         tableDst.setHasOids(getHasOids());
+        tableDst.setLogged(isLogged());
+        tableDst.setRowSecurity(isRowSecurity());
+        tableDst.setForceSecurity(isForceSecurity());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for(PgColumn colSrc : columns) {
@@ -830,7 +929,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isForeign) {
         Map<String, String> options = isForeign ? column.getForeignOptions() : column.getOptions();
         if(!options.isEmpty()){
-            sbOption.append(getTableAction(StatementActions.ALTER, true))
+            sbOption.append(getAlterTable(true, false))
             .append(" ALTER COLUMN ")
             .append(PgDiffUtils.getQuotedName(column.name))
             .append(isForeign ? " OPTIONS (" : " SET (");
@@ -848,30 +947,28 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public void compareForeignOptions (Map <String, String> oldForeignOptions,
             Map <String, String> newForeignOptions, StringBuilder sb){
-        if (!Objects.equals(oldForeignOptions, newForeignOptions)
-                && !oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
+        if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
                 if (newForeignOptions.containsKey(key)) {
                     String newValue =  newForeignOptions.get(key);
                     if (!Objects.equals(value, newValue)) {
                         sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                                getTableAction(StatementActions.ALTER, false), "SET", key, newValue));
+                                getAlterTable(true, false), "SET", key, newValue));
                     }
                 } else {
                     sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getTableAction(StatementActions.ALTER, false), "DROP", key, ""));
+                            getAlterTable(true, false), "DROP", key, ""));
                 }
             });
 
             newForeignOptions.forEach((key, value) -> {
                 if (!oldForeignOptions.containsKey(key)) {
                     sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getTableAction(StatementActions.ALTER, false), "ADD", key, value));
+                            getAlterTable(true, false), "ADD", key, value));
                 }
             });
         }
     }
-
 
     public static class Inherits {
         private final String key;

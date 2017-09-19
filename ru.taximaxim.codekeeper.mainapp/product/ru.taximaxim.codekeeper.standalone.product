@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.9.1.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.cli.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.cli.application-standalone" version="4.0.0.qualifier" useFeatures="false" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>
-
-   <launcherArgs>
-      <programArgs>-console
-      </programArgs>
-      <vmArgsMac>-XstartOnFirstThread
-      </vmArgsMac>
-   </launcherArgs>
-
-   <windowImages/>
-
-   <launcher name="pgcodekeeper-cli">
-      <linux icon="icons/product.xpm"/>
-      <solaris/>
-      <win useIco="true">
-         <ico path="icons/product.ico"/>
-         <bmp/>
-      </win>
-   </launcher>
-
-   <vm>
-   </vm>
 
    <license>
         <text>
@@ -127,12 +106,14 @@ the disclosure of confidential information.
 
    <plugins>
       <plugin id="apgdiff"/>
-      <plugin id="javax.xml"/>
+      <plugin id="org.apache.felix.gogo.command"/>
+      <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.launcher"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
       <plugin id="org.eclipse.equinox.registry"/>
@@ -140,6 +121,8 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
+      <plugin id="org.kohsuke.args4j"/>
+      <plugin id="ru.taximaxim.codekeeper.cli"/>
       <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
 
@@ -149,5 +132,9 @@ the disclosure of confidential information.
       <property name="eclipse.log.level" value="INFO" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
    </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
 
 </product>

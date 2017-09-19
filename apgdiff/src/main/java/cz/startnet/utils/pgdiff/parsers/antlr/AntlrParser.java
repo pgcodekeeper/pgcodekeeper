@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -81,17 +82,16 @@ public class AntlrParser {
     }
 
     public static void parseSqlStream(InputStream inputStream, String charsetName,
-            String parsedObjectName, SQLParserBaseListener listener,
-            IProgressMonitor mon, final int monitoringLevel, List<AntlrError> errors) throws IOException, InterruptedException {
+            String parsedObjectName, List<AntlrError> errors,IProgressMonitor mon, int monitoringLevel,
+            Collection<SQLParserBaseListener> listeners) throws IOException, InterruptedException {
         SQLParser parser = makeBasicParser(SQLParser.class, inputStream, charsetName, parsedObjectName, errors);
-
-        final IProgressMonitor monitor = mon == null ? new NullProgressMonitor() : mon;
-
-        parser.addParseListener(new CustomParseTreeListener(monitoringLevel, monitor));
-
+        parser.addParseListener(new CustomParseTreeListener(
+                monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
         try {
             SqlContext ctx = parser.sql();
-            ParseTreeWalker.DEFAULT.walk(listener, ctx);
+            for (SQLParserBaseListener listener : listeners) {
+                ParseTreeWalker.DEFAULT.walk(listener, ctx);
+            }
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {

@@ -1,13 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
@@ -34,9 +31,8 @@ public class CreateRewrite extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        List<IdentifierContext> ids = ctx.name.identifier();
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgRule rule = new PgRule(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        PgSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
+        PgRule rule = new PgRule(ctx.name.getText(), getFullCtxText(ctx.getParent()));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setCondition(getCondition(ctx, rule, schema.getName()));
         if (ctx.INSTEAD() != null){
