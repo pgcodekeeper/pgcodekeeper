@@ -52,7 +52,7 @@ public class JdbcPerfVersionsDynamic extends ContributionItem {
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(
                         new FileStoreEditorInput(EFS.getLocalFileSystem().fromLocalFile(p.toFile())), EDITOR.ROLLON);
             } catch (PartInitException | IOException e) {
-                ExceptionNotifier.notifyDefault("Error while creating helper functions!", e);
+                ExceptionNotifier.notifyDefault(Messages.JdbcPerfVersionsDynamic_jdbc_helper_error, e);
             }
         }
     }

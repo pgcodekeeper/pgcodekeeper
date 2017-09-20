@@ -513,6 +513,8 @@ public final class Messages extends NLS {
 
     public static String GetChanges_select_source_msg;
 
+    public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
+
     // SONAR-ON
 
     public static String QuickUpdate_danger;
