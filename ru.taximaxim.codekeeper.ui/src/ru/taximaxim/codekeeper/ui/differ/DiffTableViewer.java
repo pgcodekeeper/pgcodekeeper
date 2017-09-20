@@ -40,7 +40,6 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -85,7 +84,6 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 /**
  * Use {@link #setChecked(TreeElement, boolean)} for any kind of checkbox work.
@@ -113,10 +111,10 @@ public class DiffTableViewer extends Composite {
     private IStructuredSelection oldSelection, newSelection;
 
     private final LocalResourceManager lrm;
-    private Text txtFilterName;
-    private Button useRegEx;
+    private final Text txtFilterName;
+    private final Button useRegEx;
     private ComboViewer cmbPrevChecked;
-    private Label lblObjectCount;
+    private final Label lblObjectCount;
     private Label lblCheckedCount;
 
     private final CheckboxTreeViewer viewer;
@@ -126,18 +124,18 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject, dbRemote;
 
     private Map<String, List<String>> prevChecked;
-    private XmlHistory prevCheckedHistory;
+    private final XmlHistory prevCheckedHistory;
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
         CHECK, NAME, TYPE, CHANGE, LOCATION
     }
 
-    StructuredViewer getViewer() {
+    public StructuredViewer getViewer() {
         return viewer;
     }
 
-    Collection<TreeElement> getElements() {
+    public Collection<TreeElement> getElements() {
         return Collections.unmodifiableCollection(elements);
     }
 
@@ -314,14 +312,7 @@ public class DiffTableViewer extends Composite {
         if (!viewOnly) {
             viewerStyle |= SWT.CHECK;
         }
-        viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle)){
-
-            @Override
-            public ISelection getSelection() {
-                return new DepcyStructuredSelection(dbProject, dbRemote,
-                        (IStructuredSelection) super.getSelection());
-            }
-        };
+        viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -725,7 +716,10 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setChecked(TreeElement el, boolean checked) {
-        el.setSelected(checked);
+        if (elements.contains(el)) {
+            // меняем состояние только элементов в наборе
+            el.setSelected(checked);
+        }
         if (isContainer(el)) {
             setCheckedGrayed(el, null);
         } else {
@@ -793,13 +787,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setSubTreeChecked(TreeElement element, boolean selected) {
-        // Если элемент был проигнорирован, он будет в дереве, но его не будет в
-        // таблице и выбор или снятие галочки не должно затрагивать статус
-        // игнорированного элемента
-        if (elements.contains(element)) {
-            setChecked(element, selected);
-        }
-
+        setChecked(element, selected);
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
         }

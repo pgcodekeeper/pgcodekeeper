@@ -2,59 +2,88 @@ package cz.startnet.utils.pgdiff.wrappers;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-
 
 public class JsonResultSetWrapper implements ResultSetWrapper {
 
+    /**
+     * Hex string with even number of chars.
+     */
+    private static final Pattern PATTERN_BYTEA2JSON =
+            Pattern.compile("^\\\\x(?:[\\da-f]{2})*$", Pattern.CASE_INSENSITIVE);
+    /**
+     * Get values using local {@link #get(String)} method for proper missing key handling.
+     */
     private final Map <String, Object> result;
 
-    public JsonResultSetWrapper (String json) throws SQLException {
+    public JsonResultSetWrapper (String json) throws WrapperAccessException {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
-        result = new Gson().fromJson(json, type);
+        try {
+            result = new Gson().fromJson(json, type);
+        } catch(JsonParseException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    private Object get(String columnName) throws WrapperAccessException {
+        if (result.containsKey(columnName)) {
+            return result.get(columnName);
+        }
+        throw new WrapperAccessException("Column " + columnName + " doesn't exist in json/resultset!");
+    }
+
+    private Number getNumber(String columnName) throws WrapperAccessException {
+        Object o = get(columnName);
+        return o == null ? 0 : (Number) o;
     }
 
     @Override
-    public Long getLong(String columnName) throws SQLException {
-        return Long.valueOf((((Double) result.get(columnName)).longValue()));
+    public double getDouble(String columnName) throws WrapperAccessException {
+        return getNumber(columnName).doubleValue();
     }
 
     @Override
-    public Boolean getBoolean(String columnName) throws SQLException {
-        return (Boolean) result.get(columnName);
+    public long getLong(String columnName) throws WrapperAccessException {
+        return getNumber(columnName).longValue();
     }
 
     @Override
-    public String getString(String columnName) throws SQLException {
-        return (String) result.get(columnName);
+    public boolean getBoolean(String columnName) throws WrapperAccessException {
+        Object o = get(columnName);
+        return o == null ? false : (boolean) o;
     }
 
     @Override
-    public float getFloat(String columnName) throws SQLException {
-        return Float.valueOf(((Double) result.get(columnName)).floatValue());
+    public String getString(String columnName) throws WrapperAccessException {
+        return (String) get(columnName);
+    }
+
+    @Override
+    public float getFloat(String columnName) throws WrapperAccessException {
+        return getNumber(columnName).floatValue();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T[] getArray(String columnName, Class<T> arrayElement) throws SQLException {
-        Object obj = result.get(columnName);
+    public <T> T[] getArray(String columnName, Class<T> arrayElement) throws WrapperAccessException {
+        Object obj = get(columnName);
         if (obj == null) {
             return null;
         }
 
-        List<?> l = (List<?>) obj;
         if (Number.class.isAssignableFrom(arrayElement)) {
-            Function<Number, T> converter = getConverter(arrayElement);
-            return (l).stream().map(e -> converter.apply((Number) e))
+            return ((List<Number>) obj).stream()
+                    .map(getConverter(arrayElement))
                     .toArray(i -> (T[]) Array.newInstance(arrayElement, i));
         } else {
-            return (l).toArray((T[]) Array.newInstance(arrayElement, 0));
+            return ((List<?>) obj).toArray((T[]) Array.newInstance(arrayElement, 0));
         }
     }
 
@@ -70,31 +99,35 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
     }
 
     @Override
-    public int getInt(String columnName) throws SQLException {
-        return ((Double)result.get(columnName)).intValue();
+    public int getInt(String columnName) throws WrapperAccessException {
+        return getNumber(columnName).intValue();
     }
 
     @Override
-    public byte[] getBytes(String columnName) throws SQLException {
-        // we have byte array in string
-        String s = (String) result.get(columnName);
-        // remove /x
-        s = s.substring(2);
-        return hexStringToByteArray(s);
+    public byte[] getBytes(String columnName) throws WrapperAccessException {
+        // we have byte array in string: \x001122ff...
+        String s = (String) get(columnName);
+        if (PATTERN_BYTEA2JSON.matcher(s).matches()) {
+            // remove \x
+            s = s.substring(2);
+            return hexStringToByteArray(s);
+        } else {
+            throw new IllegalStateException("Unknown bytea2json serialization format!");
+        }
     }
 
-    public static byte[] hexStringToByteArray(String s) {
+    private static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
+                    | Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }
 
     @Override
-    public short getShort(String columnName) throws SQLException {
-        return ((Double)result.get(columnName)).shortValue();
+    public short getShort(String columnName) throws WrapperAccessException {
+        return getNumber(columnName).shortValue();
     }
 }

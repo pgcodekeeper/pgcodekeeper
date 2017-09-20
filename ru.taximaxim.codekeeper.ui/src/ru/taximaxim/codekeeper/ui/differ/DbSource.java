@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -26,7 +27,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
-import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
@@ -85,11 +85,11 @@ public abstract class DbSource {
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setCheckFunctionBodies(mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setUsingOnOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setUsingTypeCastOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
-        args.setForceUnixNewlines(forceUnixNewlines);
+        args.setKeepNewlines(!forceUnixNewlines);
         LicensePrefs.setLicense(args);
         return args;
     }
@@ -137,6 +137,13 @@ public abstract class DbSource {
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
+    }
+
+    /**
+     * Calls {@link #getDbObject()} on the argument.
+     */
+    public static DbSource fromDbObject(DbSource dbSource) {
+        return fromDbObject(dbSource.getDbObject(), dbSource.getOrigin());
     }
 }
 
@@ -292,7 +299,7 @@ class DbSourceDb extends DbSource {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
         try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-            File dump = tf.get();
+            File dump = tf.get().toFile();
 
             pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 

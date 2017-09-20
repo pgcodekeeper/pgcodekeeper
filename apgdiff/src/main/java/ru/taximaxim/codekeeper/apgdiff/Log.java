@@ -52,22 +52,20 @@ public final class Log {
             }
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
-            // SONAR-OFF
             if (failedToGetLog) {
-                System.out.println("LogService not found! Logging to stdout.");
+                System.err.println("LogService not found! Logging to stdout.");
             } else {
-                System.out.println("ERROR while trying to log!");
-                exLog.printStackTrace();
+                System.err.println("ERROR while trying to log!");
+                exLog.printStackTrace(System.err);
             }
 
-            System.out.println("Attempted to log:");
-            System.out.println("Message: " + msg);
-            System.out.println("Exception: ");
+            System.err.println("Attempted to log:");
+            System.err.println("Message: " + msg);
+            System.err.println("Exception: ");
             if (ex != null) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
-            System.out.println();
-            // SONAR-ON
+            System.err.println();
         }
     }
 

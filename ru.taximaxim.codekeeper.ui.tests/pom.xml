@@ -22,7 +22,6 @@
 	 	    <version>${tycho.version}</version>
 	 	    <configuration>
               <appArgLine>-nl en</appArgLine>
-	 	      <product>ru.taximaxim.codeKeeper</product>
 	        </configuration>
 	 	  </plugin>
 	 </plugins>

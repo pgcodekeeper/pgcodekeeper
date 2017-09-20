@@ -154,8 +154,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
-            // TODO remove after adding Transform object or other action
-            // transform is created in pg_catalog, error in parse
+            // костыль: TRANSFORM объекты создаются в pg_catalog и дампятся pg_dump
             if ("pg_catalog".equals(confValue)) {
                 break;
             }

@@ -16,9 +16,9 @@ import org.eclipse.ui.navigator.ICommonMenuConstants;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent;
 
 public class NavigatorOutlineActionProvider extends CommonActionProvider {
@@ -73,7 +73,7 @@ public class NavigatorOutlineActionProvider extends CommonActionProvider {
                 try {
                     ITextEditor editor = (ITextEditor) IDE.openEditor(
                             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
-                            segment.getParentFile(), SQLEditor.ID, true);
+                            segment.getParentFile(), EDITOR.SQL, true);
                     editor.setHighlightRange(segment.offset, segment.length, true);
                     editor.selectAndReveal(segment.offset, segment.length);
                 } catch (PartInitException e) {

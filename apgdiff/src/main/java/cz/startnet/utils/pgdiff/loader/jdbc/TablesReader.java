@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,6 +12,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TablesReader extends JdbcReader {
@@ -24,8 +24,7 @@ public class TablesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
             return new TablesReader(this, loader);
         }
     }
@@ -35,7 +34,7 @@ public class TablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = getTable(result, schema.getName());
         loader.monitor.worked(1);
         if (table != null) {
@@ -43,10 +42,16 @@ public class TablesReader extends JdbcReader {
         }
     }
 
-    private PgTable getTable(ResultSetWrapper res, String schemaName) throws SQLException {
+    private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         PgTable t = new PgTable(tableName, "");
+
+        t.setServerName(res.getString("server_name"));
+        String[] foptions = res.getArray("ftoptions", String.class);
+        if (foptions != null) {
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
+        }
 
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
@@ -67,6 +72,7 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = res.getArray("col_collationnspname", String.class);
         String[] colAcl = res.getArray("col_acl", String.class);
         String[] colOptions = res.getArray("col_options", String.class);
+        String[] colFOptions = res.getArray("col_foptions", String.class);
         String[] colStorages = res.getArray("col_storages", String.class);
         String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
 
@@ -92,8 +98,11 @@ public class TablesReader extends JdbcReader {
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
-            if(colOptions[i] != null){
-                ParserAbstract.fillStorageParams(colOptions[i].split(","), column, false);
+            if (colOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
+            }
+            if (colFOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
             }
 
             if(!colStorages[i].equals(colDefaultStorages[i])){
@@ -177,16 +186,14 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        String [] arr = res.getArray("reloptions", String.class);
-        if (arr != null) {
-            String[] options = arr;
-            ParserAbstract.fillStorageParams(options, t, false);
+        String [] opts = res.getArray("reloptions", String.class);
+        if (opts != null) {
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
         }
 
-        arr = res.getArray("toast_reloptions", String.class);
-        if (arr != null) {
-            String[] options = arr;
-            ParserAbstract.fillStorageParams(options, t, true);
+        String[] toast = res.getArray("toast_reloptions", String.class);
+        if (toast != null) {
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
         }
 
         if (res.getBoolean("has_oids")){
@@ -206,14 +213,9 @@ public class TablesReader extends JdbcReader {
         }
 
         // since 9.5 PostgreSQL
-        if (loader.getVersion() > SupportedVersion.VERSION_9_5.getVersion()) {
-            Boolean row_security = res.getBoolean("row_security");
-            Boolean force_security = res.getBoolean("force_security");
-            if (row_security == null || force_security == null) {
-                throw new SQLException("The version of the helper function does not match the version of the Postgres server");
-            }
-            t.setRowSecurity(row_security);
-            t.setForceSecurity(force_security);
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.getVersion())) {
+            t.setRowSecurity(res.getBoolean("row_security"));
+            t.setForceSecurity(res.getBoolean("force_security"));
         }
 
         // persistence: U - unlogged, P - permanent, T - temporary

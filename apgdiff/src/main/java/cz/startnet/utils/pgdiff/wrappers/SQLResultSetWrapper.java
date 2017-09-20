@@ -9,53 +9,94 @@ public class SQLResultSetWrapper implements ResultSetWrapper {
 
     private final ResultSet rs;
 
-    public SQLResultSetWrapper (ResultSet rs) throws SQLException {
+    public SQLResultSetWrapper (ResultSet rs) {
         this.rs = rs;
     }
 
     @Override
-    public Long getLong(String columnName) throws SQLException {
-        return rs.getLong(columnName);
-    }
-
-    @Override
-    public Boolean getBoolean(String columnName) throws SQLException {
-        return rs.getBoolean(columnName);
-    }
-
-    @Override
-    public String getString(String columnName) throws SQLException {
-        return rs.getString(columnName);
-    }
-
-    @Override
-    public float getFloat(String columnName) throws SQLException {
-        return rs.getFloat(columnName);
-    }
-
-    @Override
-    public <T> T[] getArray(String columnName, Class<T> array) throws SQLException {
-        Array arr = rs.getArray(columnName);
-        if (arr != null) {
-            @SuppressWarnings("unchecked")
-            T[] ret = (T[]) arr.getArray();
-            return ret;
+    public double getDouble(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getDouble(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
         }
-        return null;
     }
 
     @Override
-    public int getInt(String columnName) throws SQLException {
-        return rs.getInt(columnName);
+    public long getLong(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getLong(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
     }
 
     @Override
-    public byte[] getBytes(String columnName) throws SQLException {
-        return rs.getBytes(columnName);
+    public boolean getBoolean(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getBoolean(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
     }
 
     @Override
-    public short getShort(String columnName) throws SQLException {
-        return rs.getShort(columnName);
+    public String getString(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getString(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    @Override
+    public float getFloat(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getFloat(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    @Override
+    public <T> T[] getArray(String columnName, Class<T> arrayElement) throws WrapperAccessException {
+        try {
+            Array arr = rs.getArray(columnName);
+            if (arr != null) {
+                @SuppressWarnings("unchecked")
+                T[] ret = (T[]) arr.getArray();
+                return ret;
+            }
+            return null;
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    @Override
+    public int getInt(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getInt(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    @Override
+    public byte[] getBytes(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getBytes(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    @Override
+    public short getShort(String columnName) throws WrapperAccessException {
+        try {
+            return rs.getShort(columnName);
+        } catch (SQLException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
     }
 }

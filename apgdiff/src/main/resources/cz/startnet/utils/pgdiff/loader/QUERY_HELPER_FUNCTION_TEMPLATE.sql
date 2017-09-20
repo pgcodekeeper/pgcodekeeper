@@ -19,7 +19,7 @@ LOOP
     EXECUTE 'SET search_path TO ' || quote_literal(schema_name);
     RETURN QUERY (
 
-SELECT row_to_json (json_columns), schema_oid FROM ( %FUNCTION_QEURY% ) AS json_columns);
+SELECT row_to_json (json_columns), schema_oid FROM ( %FUNCTION_QUERY% ) AS json_columns);
 
 END LOOP;
 EXECUTE 'SET search_path TO ' || quote_literal(schema_name_current);

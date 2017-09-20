@@ -13,16 +13,19 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * For every field in this class that starts with 'QUERY_'
- * the static initializer tries to find a file named
- * %FIELD_NAME%.sql in this package and assign its contents to the field.<br>
+ * the static initializer tries to: <br>
+ * - if the field is String: find a file named %FIELD_NAME%.sql in this package
+ *   and assign its contents to the field.<br>
+ * - if the field is Map: load %FIELD_NAME%.sql as described above and map its contents to null,
+ *   try to load every %FIELD_NAME%_%VERSION%.sql and map their contents with their versions.
+ *
  * Similar to {@link org.eclipse.osgi.util.NLS}, OSGi localization classes.
  *
- * @author levsha_aa
+ * @author levsha_aa, galiev_mr
  */
 public final class JdbcQueries {
 
     // SONAR-OFF
-
 
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
@@ -45,21 +48,24 @@ public final class JdbcQueries {
     public static Map <SupportedVersion, String> QUERY_TYPES_PER_SCHEMA;
     public static Map <SupportedVersion, String> QUERY_RULES_PER_SCHEMA;
 
+    public static String QUERY_SCHEMAS_ACCESS;
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 
-    public static String QUERY_IMPROVE_JDBC_PERFORMANCE;
-
     // SONAR-ON
+
+    private final static String HELPER_NAME = "%FUNCTION_NAME%";
+    private final static String HELPER_QUERY = "%FUNCTION_QUERY%";
 
     static {
         for (Field f : JdbcQueries.class.getFields()) {
+            if (!f.getName().startsWith("QUERY")) {
+                continue;
+            }
             try {
-                if ("QUERY_IMPROVE_JDBC_PERFORMANCE".equals(f.getName())) {
-                    fillHelperFunction(f);
-                } else if (Map.class.isAssignableFrom(f.getType())) {
+                if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
-                } else if (f.getName().startsWith("QUERY")) {
+                } else if (String.class.isAssignableFrom(f.getType())) {
                     String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                             JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
                             StandardCharsets.UTF_8);
@@ -91,21 +97,19 @@ public final class JdbcQueries {
         f.set(null, map);
     }
 
-    private static void fillHelperFunction(Field f) throws Exception {
+    public static String getHelperFunctions(SupportedVersion version) {
         StringBuilder sb = new StringBuilder();
         sb.append(QUERY_HELPER_FUNCTIONS_BEGIN);
 
         for (JdbcReaderFactory fac : JdbcReaderFactory.FACTORIES) {
-
             // set helper functions default PostgreSQL version 9.5
-            fac.fillFallbackQuery(SupportedVersion.VERSION_9_5.getVersion());
 
             sb.append(QUERY_HELPER_FUNCTION_TEMPLATE
-                    .replace("%FUNCTION_NAME%", fac.getHelperFunction())
-                    .replace("%FUNCTION_QEURY%", fac.getFallBackQuery())
+                    .replace(HELPER_NAME, fac.getHelperFunction())
+                    .replace(HELPER_QUERY, fac.makeFallbackQuery(version.getVersion()))
                     .replace("?", "schema_oid"));
         }
-        f.set(null, sb.toString());
+        return sb.toString();
     }
 
     private JdbcQueries() {

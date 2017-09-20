@@ -17,6 +17,11 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface CONTEXT {
+        String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
+        String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -25,6 +30,7 @@ public interface UIConsts {
 
     interface MARKER {
         String ERROR = PLUGIN_ID.THIS + ".sql.errormarker"; //$NON-NLS-1$
+        String DANGER_ANNOTATION = PLUGIN_ID.THIS + ".sql.dangerannotation"; //$NON-NLS-1$
     }
 
     interface DECORATOR {
@@ -35,6 +41,11 @@ public interface UIConsts {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
+
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
+        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
+        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -68,7 +79,8 @@ public interface UIConsts {
 
     interface DB_UPDATE_PREF {
         String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
-        String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
+        String CREATE_SCRIPT_IN_PROJECT = "prefCreateScriptInProject"; //$NON-NLS-1$
+        String DELETE_SCRIPT_AFTER_CLOSE = "prefDeleteScriptAfterClose"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
@@ -80,6 +92,10 @@ public interface UIConsts {
 
     interface PG_EDIT_PREF {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
+        String UPDATE = "UPDATE"; //$NON-NLS-1$
+        String RESET = "RESET"; //$NON-NLS-1$
+        String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
     public enum DBSources {
@@ -120,12 +136,20 @@ public interface UIConsts {
          */
     }
 
+    interface PROJ_PATH {
+        String MIGRATION_DIR = "MIGRATION"; //$NON-NLS-1$
+    }
+
     interface NATURE {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     }
 
     interface BUILDER {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
+    }
+
+    interface PROP_TEST {
+        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
     }
 
     interface HELP {
@@ -149,6 +173,7 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
         String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
@@ -164,6 +189,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {

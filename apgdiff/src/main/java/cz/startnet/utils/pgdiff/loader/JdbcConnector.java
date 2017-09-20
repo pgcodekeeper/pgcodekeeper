@@ -30,6 +30,17 @@ public class JdbcConnector {
     private final String url;
     private final String timezone;
 
+    /**
+     * @throws IllegalArgumentException url isn't valid
+     */
+    public static String dbNameFromUrl(String url) {
+        try {
+            return new JdbcConnector(url).dbName;
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex.getLocalizedMessage(), ex);
+        }
+    }
+
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;

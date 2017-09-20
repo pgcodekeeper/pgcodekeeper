@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.SQLException;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -13,6 +12,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewsReader extends JdbcReader {
@@ -24,8 +24,7 @@ public class ViewsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            super.fillFallbackQuery(version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
             return new ViewsReader(this, loader);
         }
     }
@@ -35,7 +34,7 @@ public class ViewsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgView view = getView(result, schema.getName());
         loader.monitor.worked(1);
         if (view != null) {
@@ -43,11 +42,21 @@ public class ViewsReader extends JdbcReader {
         }
     }
 
-    private PgView getView(ResultSetWrapper res, String schemaName) throws SQLException {
+    private PgView getView(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
         PgView v = new PgView(viewName, "");
+
+        // materialized view
+        if ("m".equals(res.getString("kind"))) {
+            v.setIsWithData(res.getBoolean("relispopulated"));
+            String tableSpace = res.getString("table_space");
+            if (tableSpace != null && !tableSpace.isEmpty()) {
+                v.setTablespace(tableSpace);
+            }
+        }
+
         String viewDef = res.getString("definition").trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
@@ -62,9 +71,8 @@ public class ViewsReader extends JdbcReader {
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
 
         // Query columns default values and comments
-        String[] colNamesArr = res.getArray("column_names", String.class);
-        if (colNamesArr != null) {
-            String[] colNames = colNamesArr;
+        String[] colNames = res.getArray("column_names", String.class);
+        if (colNames != null) {
             String[] colComments = res.getArray("column_comments", String.class);
             String[] colDefaults = res.getArray("column_defaults", String.class);
             String[] colACLs = res.getArray("column_acl", String.class);
@@ -96,10 +104,9 @@ public class ViewsReader extends JdbcReader {
         loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
 
         // STORAGE PARAMETRS
-        String[] arr = res.getArray("reloptions", String.class);
-        if (arr != null) {
-            String[] options = arr;
-            ParserAbstract.fillStorageParams(options, v, false);
+        String[] options = res.getArray("reloptions", String.class);
+        if (options != null) {
+            ParserAbstract.fillOptionParams(options, v::addOption, false, false);
         }
 
         // COMMENT
