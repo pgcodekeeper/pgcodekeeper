@@ -92,6 +92,8 @@ public class PgDiffTest {
                     {"drop_column"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
+                    // Tests scenario where new FOREIGN TABLE is added.
+                    {"add_foreign_table"},
                     // Tests scenario where new TABLE with new SEQUENCE is added.
                     {"add_table_with_new_sequence"},
                     // Tests scenario where new TABLE with exist SEQUENCE is added.
@@ -108,6 +110,8 @@ public class PgDiffTest {
                     {"add_table_of_type_options"},
                     // Tests scenario where options of TYPED TABLE is modified.
                     {"modify_table_of_type_options"},
+                    // Tests scenario where FOREIGN TABLE is modified.
+                    {"modify_foreign_table"},
                     // Tests scenario where column of TYPED TABLE with TYPE is modified.
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.

@@ -6,6 +6,9 @@ WITH extension_deps AS (
 )
 
 SELECT c.relname,
+       c.relkind AS kind,
+       c.relispopulated,
+       tabsp.spcname as table_space,
        c.relacl::text,
        c.relowner::bigint,
        pg_get_viewdef(c.oid) AS definition,
@@ -37,8 +40,9 @@ LEFT JOIN
               AND des.objsubid = attr.attnum
           ORDER BY attr.attnum) columnsData
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
+LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
 WHERE relnamespace = ?
-    AND relkind = 'v'
+    AND c.relkind IN ('v','m')
     AND c.oid NOT IN (SELECT objid FROM extension_deps)

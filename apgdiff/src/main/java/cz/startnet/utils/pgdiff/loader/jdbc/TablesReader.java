@@ -47,6 +47,12 @@ public class TablesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         PgTable t = new PgTable(tableName, "");
 
+        t.setServerName(res.getString("server_name"));
+        String[] foptions = res.getArray("ftoptions", String.class);
+        if (foptions != null) {
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
+        }
+
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
         loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
@@ -66,6 +72,7 @@ public class TablesReader extends JdbcReader {
         String[] colCollationSchema = res.getArray("col_collationnspname", String.class);
         String[] colAcl = res.getArray("col_acl", String.class);
         String[] colOptions = res.getArray("col_options", String.class);
+        String[] colFOptions = res.getArray("col_foptions", String.class);
         String[] colStorages = res.getArray("col_storages", String.class);
         String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
 
@@ -91,8 +98,11 @@ public class TablesReader extends JdbcReader {
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
-            if(colOptions[i] != null){
-                ParserAbstract.fillStorageParams(colOptions[i].split(","), column, false);
+            if (colOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
+            }
+            if (colFOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
             }
 
             if(!colStorages[i].equals(colDefaultStorages[i])){
@@ -176,14 +186,14 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        String [] arrOpts = res.getArray("reloptions", String.class);
-        if (arrOpts != null) {
-            ParserAbstract.fillStorageParams(arrOpts, t, false);
+        String [] opts = res.getArray("reloptions", String.class);
+        if (opts != null) {
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
         }
 
-        String[] arrToast = res.getArray("toast_reloptions", String.class);
-        if (arrToast != null) {
-            ParserAbstract.fillStorageParams(arrToast, t, true);
+        String[] toast = res.getArray("toast_reloptions", String.class);
+        if (toast != null) {
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
         }
 
         if (res.getBoolean("has_oids")){
