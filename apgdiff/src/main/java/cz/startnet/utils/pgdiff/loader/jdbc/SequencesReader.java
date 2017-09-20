@@ -70,7 +70,7 @@ public class SequencesReader extends JdbcReader {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if(loader.getVersion() >= SupportedVersion.VERSION_10.getVersion()) {
+        if(SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(res.getString("seqstart"));
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
             s.setCache(res.getString("seqcache"));

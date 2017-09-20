@@ -122,7 +122,7 @@ public class FunctionsReader extends JdbcReader {
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(loader.getVersion())) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
             Long[] protrftypes = res.getArray("protrftypes", Long.class);
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
@@ -167,7 +167,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.checkVersion(loader.getVersion())) {
+        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":

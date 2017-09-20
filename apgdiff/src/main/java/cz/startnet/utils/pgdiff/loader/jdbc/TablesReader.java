@@ -213,7 +213,7 @@ public class TablesReader extends JdbcReader {
         }
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(loader.getVersion())) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
             t.setRowSecurity(res.getBoolean("row_security"));
             t.setForceSecurity(res.getBoolean("force_security"));
         }
