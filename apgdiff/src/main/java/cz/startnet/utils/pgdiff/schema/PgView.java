@@ -130,7 +130,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
         sbSQL.append("CREATE");
-        if (isWithData != null) {
+        if (isMatView()) {
             sbSQL.append(" MATERIALIZED");
         }
         sbSQL.append(" VIEW ");
@@ -171,7 +171,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
-        if (isWithData != null){
+        if (isMatView()){
             sbSQL.append("\nWITH ");
             if (!isWithData){
                 sbSQL.append("NO ");
@@ -224,8 +224,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        String mat = isWithData != null ? "MATERIALIZED " : "";
+        String mat = isMatView() ? "MATERIALIZED " : "";
         return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+
+    @Override
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
+                : sb.append("ALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
+                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner));
     }
 
     @Override
@@ -330,6 +337,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public String getQuery() {
         return query;
+    }
+
+    public boolean isMatView() {
+        return isWithData != null;
     }
 
     public Boolean isWithData() {

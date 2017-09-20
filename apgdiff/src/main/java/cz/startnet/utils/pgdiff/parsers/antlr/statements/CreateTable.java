@@ -71,7 +71,8 @@ public class CreateTable extends ParserAbstract {
                 Define_foreign_optionsContext options = server.define_foreign_options();
                 if (options != null){
                     for (Foreign_optionContext option : options.foreign_option()){
-                        fillOptionParams(option.value.getText(), option.name.getText(), false, table::addOption);
+                        String value = option.value == null ? null : option.value.getText();
+                        fillOptionParams(value, option.name.getText(), false, table::addOption);
                     }
                 }
             }

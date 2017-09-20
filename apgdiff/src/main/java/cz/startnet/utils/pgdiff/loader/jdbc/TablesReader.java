@@ -48,9 +48,9 @@ public class TablesReader extends JdbcReader {
         PgTable t = new PgTable(tableName, "");
 
         t.setServerName(res.getString("server_name"));
-        String[] options = res.getArray("ftoptions", String.class);
-        if (options != null) {
-            ParserAbstract.fillOptionParams(options, t::addOption, false, true);
+        String[] foptions = res.getArray("ftoptions", String.class);
+        if (foptions != null) {
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
         }
 
         // PRIVILEGES, OWNER
@@ -99,7 +99,7 @@ public class TablesReader extends JdbcReader {
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if (colOptions[i] != null) {
-                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, null);
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
             }
             if (colFOptions[i] != null) {
                 ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
@@ -186,14 +186,14 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        String [] arrOpts = res.getArray("reloptions", String.class);
-        if (arrOpts != null) {
-            ParserAbstract.fillOptionParams(options, t::addOption, false, false);
+        String [] opts = res.getArray("reloptions", String.class);
+        if (opts != null) {
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
         }
 
-        String[] arrToast = res.getArray("toast_reloptions", String.class);
-        if (arrToast != null) {
-            ParserAbstract.fillOptionParams(options, t::addOption, true, false);
+        String[] toast = res.getArray("toast_reloptions", String.class);
+        if (toast != null) {
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
         }
 
         if (res.getBoolean("has_oids")){

@@ -27,8 +27,7 @@ public class PgTable extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     private static final String OIDS = "OIDS";
-    private static final String ALTER_TABLE = "\n\nALTER TABLE ";
-    private static final String ALTER_FOREIGN_OPTION = "\n\n{0} OPTIONS ({1} {2} {3});";
+    private static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
 
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<PgColumn> columnsOfType = new ArrayList<>();
@@ -70,14 +69,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             sb.append("\n\n");
         }
         sb.append("ALTER ");
-        if (getServerName() != null) {
+        if (isForeign()) {
             sb.append("FOREIGN ");
         }
         sb.append("TABLE ");
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(PgDiffUtils.quoteName(getName()));
+        sb.append(PgDiffUtils.getQuotedName(getName()));
         return sb.toString();
     }
 
@@ -159,15 +158,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getCreationSQL() {
-        final boolean isForeign = serverName != null;
-
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
         if (!isLogged()) {
             sbSQL.append("UNLOGGED ");
-        } else if (isForeign) {
+        } else if (isForeign()) {
             sbSQL.append("FOREIGN ");
         }
 
@@ -244,7 +241,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        if (isForeign){
+        if (isForeign()){
             sbSQL.append("\nSERVER ").append(serverName);
         }
 
@@ -256,7 +253,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
             sb.append(key);
             if (!value.isEmpty()){
-                sb.append(isForeign? ' ' : '=').append(value);
+                sb.append(isForeign() ? ' ' : '=').append(value);
             }
             sb.append(", ");
         }
@@ -267,7 +264,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         if (sb.length() > 0){
             sb.setLength(sb.length() - 2);
-            sbSQL.append(isForeign ? "\nOPTIONS (" : "\nWITH (").append(sb).append(")");
+            sbSQL.append(isForeign() ? "\nOPTIONS (" : "\nWITH (").append(sb).append(")");
         }
 
         if (tablespace != null && !tablespace.isEmpty()) {
@@ -281,15 +278,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         // since 9.5 PostgreSQL
         if (isRowSecurity) {
-            sbSQL.append(ALTER_TABLE);
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(getAlterTable(true, false));
             sbSQL.append(" ENABLE ROW LEVEL SECURITY;");
         }
 
         // since 9.5 PostgreSQL
         if (isForceSecurity) {
-            sbSQL.append(ALTER_TABLE).append("ONLY ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(getAlterTable(true, true));
             sbSQL.append(" FORCE ROW LEVEL SECURITY;");
         }
 
@@ -341,7 +336,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        return "DROP " + (getServerName() == null ? "" : "FOREIGN ") + "TABLE "
+        return "DROP " + (isForeign() ? "FOREIGN " : "") + "TABLE "
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
@@ -488,10 +483,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        if (newTable.getServerName() == null) {
-            compareOptions(oldTable, newTable, sb);
-        } else {
+        if (isForeign()) {
             compareForeignOptions(oldTable.getOptions(), newTable.getOptions(), sb);
+        } else {
+            compareOptions(oldTable, newTable, sb);
         }
 
         if (oldTable.getHasOids() && !newTable.getHasOids()) {
@@ -515,8 +510,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         // since 9.5 PostgreSQL
         if (oldTable.isLogged != newTable.isLogged) {
-            sb.append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            sb.append(getAlterTable(true, false))
             .append("\n\tSET ")
             .append(newTable.isLogged ? "LOGGED" : "UNLOGGED")
             .append(';');
@@ -524,17 +518,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         // since 9.5 PostgreSQL
         if (oldTable.isRowSecurity != newTable.isRowSecurity) {
-            sb.append(ALTER_TABLE)
-            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            sb.append(getAlterTable(true, false))
             .append(newTable.isRowSecurity ? " ENABLE" : " DISABLE")
             .append(" ROW LEVEL SECURITY;");
         }
 
         // since 9.5 PostgreSQL
         if (oldTable.isForceSecurity != newTable.isForceSecurity) {
-            sb.append(ALTER_TABLE)
-            .append("ONLY ")
-            .append(PgDiffUtils.getQuotedName(newTable.getName()))
+            sb.append(getAlterTable(true, true))
             .append(newTable.isForceSecurity ? "" : " NO")
             .append(" FORCE ROW LEVEL SECURITY;");
         }
@@ -708,6 +699,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public void setTablespace(final String tablespace) {
         this.tablespace = tablespace;
         resetHash();
+    }
+
+    public boolean isForeign() {
+        return serverName != null;
     }
 
     public String getServerName() {

@@ -315,8 +315,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         Map<String, String> oldForeignOptions = oldColumn.getForeignOptions();
         Map<String, String> newForeignOptions = newColumn.getForeignOptions();
 
-        if (!Objects.equals(oldForeignOptions, newForeignOptions)
-                && !oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
+        if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
                 if (newForeignOptions.containsKey(key)) {
                     String newValue =  newForeignOptions.get(key);

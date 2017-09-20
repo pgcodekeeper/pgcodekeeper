@@ -272,7 +272,7 @@ public abstract class ParserAbstract {
     }
 
     public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
-            boolean isToast, Boolean forseQuete){
+            boolean isToast, boolean forсeQuote){
         for (String pair : options) {
             int sep = pair.indexOf('=');
             String option, value;
@@ -283,7 +283,7 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (forseQuete != null && (forseQuete || !PgDiffUtils.isValidId(value, false, false))) {
+            if (forсeQuote || !PgDiffUtils.isValidId(value, false, false)) {
                 // only quote non-ids, do not quote columns
                 // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);

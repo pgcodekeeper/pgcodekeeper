@@ -21,7 +21,7 @@ ALTER FOREIGN TABLE films ALTER COLUMN code OPTIONS (column_name 'number');
 
 ALTER FOREIGN TABLE films ALTER COLUMN title OPTIONS (column_name 'name');
 
-ALTER FOREIGN TABLE films OWNER TO galiev_mr;
+ALTER TABLE films OWNER TO galiev_mr;
 
 CREATE FOREIGN TABLE new_films (
 	code character(5) NOT NULL,
@@ -33,7 +33,7 @@ CREATE FOREIGN TABLE new_films (
 )
 SERVER new_server;
 
-ALTER FOREIGN TABLE new_films OWNER TO galiev_mr;
+ALTER TABLE new_films OWNER TO galiev_mr;
 
 CREATE FOREIGN TABLE old_films (
 	code character(5) NOT NULL,
@@ -45,4 +45,4 @@ CREATE FOREIGN TABLE old_films (
 )
 SERVER film_server;
 
-ALTER FOREIGN TABLE old_films OWNER TO galiev_mr;
+ALTER TABLE old_films OWNER TO galiev_mr;

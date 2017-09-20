@@ -441,16 +441,16 @@ public class DepcyResolver {
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
 
-                StringBuilder sb = new StringBuilder();
                 if (newTable == null) {
                     return true;
                 }
 
+                // пропускаем также при recreate
+                StringBuilder sb = new StringBuilder();
                 if (oldObj.getParent().appendAlterSQL(newTable, sb, new AtomicBoolean())
                         && sb.length() == 0) {
                     return true;
                 }
-
             }
             // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
             // колонки, и если хотя бы одна из них удаляется то не дропать

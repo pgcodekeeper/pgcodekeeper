@@ -15,10 +15,6 @@ public interface PgOptionContainer extends IStatement {
         Map <String, String> oldOptions = oldContainer.getOptions();
         Map <String, String> newOptions = newContainer.getOptions();
 
-        if (Objects.equals(oldOptions, newOptions)) {
-            return;
-        }
-
         StringBuilder setOptions = new StringBuilder();
         StringBuilder resetOptions = new StringBuilder();
 

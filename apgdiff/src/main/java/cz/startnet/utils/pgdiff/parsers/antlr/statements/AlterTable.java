@@ -68,8 +68,8 @@ public class AlterTable extends ParserAbstract {
                 if(col != null){
                     for (Storage_parameter_optionContext option :
                         tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
-                        col.addOption(option.storage_param.getText(),
-                                option.value == null ? "" : option.value.getText());
+                        String value = option.value == null ? "" : option.value.getText();
+                        fillOptionParams(value, option.storage_param.getText(), false, col::addOption);
                     }
                 }
             }
@@ -78,7 +78,8 @@ public class AlterTable extends ParserAbstract {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if (col != null) {
                     for (Foreign_optionContext option : tablAction.define_foreign_options().foreign_option()) {
-                        col.addForeignOption(option.name.getText(), option.value.getText());
+                        String value = option.value == null ? "" : option.value.getText();
+                        fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
                     }
                 }
             }
