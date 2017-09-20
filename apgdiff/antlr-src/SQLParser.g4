@@ -37,6 +37,10 @@ statement
 
 data_statement
   : select_stmt
+  | insert_stmt_for_psql
+  | update_stmt_for_psql
+  | delete_stmt_for_psql
+  | notify_stmt
   ;
 
 script_statement
