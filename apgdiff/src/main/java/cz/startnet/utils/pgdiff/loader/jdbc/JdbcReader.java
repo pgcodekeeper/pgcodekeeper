@@ -17,14 +17,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected final JdbcReaderFactory factory;
     protected final JdbcLoaderBase loader;
-    protected final int currentVersion;
-    protected final String fallbackQuery;
 
-    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         this.factory = factory;
         this.loader = loader;
-        this.currentVersion = currentVersion;
-        this.fallbackQuery = factory.makeFallbackQuery(currentVersion);
     }
 
     public void read() throws SQLException, InterruptedException, WrapperAccessException {
@@ -60,7 +56,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     private void readSchemasSeparately() throws SQLException, InterruptedException, WrapperAccessException {
-        try (PreparedStatement st = loader.connection.prepareStatement(fallbackQuery)) {
+        try (PreparedStatement st = loader.connection.prepareStatement(factory.makeFallbackQuery(loader.version))) {
             for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
                 loader.setCurrentOperation("set search_path query");
                 loader.statement.execute("SET search_path TO " +

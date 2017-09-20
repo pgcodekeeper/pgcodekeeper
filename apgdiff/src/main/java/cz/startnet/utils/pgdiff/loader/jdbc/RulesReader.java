@@ -23,13 +23,13 @@ public class RulesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new RulesReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new RulesReader(this, loader);
         }
     }
 
-    private RulesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private RulesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override

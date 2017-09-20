@@ -61,11 +61,13 @@ public class JdbcLoader extends JdbcLoaderBase {
             try (SchemasContainer schemas = this.schemas) {
                 availableHelpersBits = useServerHelpers ? JdbcReaderFactory.getAvailableHelpersBits(this) : 0;
                 for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
-                    f.getReader(this, version).read();
+                    f.getReader(this).read();
                 }
                 new ExtensionsReader(this, d).read();
 
-                SequencesReader.querySequencesData(d, this);
+                if(!SupportedVersion.VERSION_10.checkVersion(version)) {
+                    SequencesReader.querySequencesData(d, this);
+                }
             }
             connection.commit();
             finishAntlr();

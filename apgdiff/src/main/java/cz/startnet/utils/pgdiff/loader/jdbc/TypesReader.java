@@ -29,13 +29,13 @@ public class TypesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new TypesReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new TypesReader(this, loader);
         }
     }
 
-    private TypesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private TypesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override

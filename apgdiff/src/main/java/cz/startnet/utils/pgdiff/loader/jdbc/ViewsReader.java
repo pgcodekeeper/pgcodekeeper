@@ -24,13 +24,13 @@ public class ViewsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new ViewsReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new ViewsReader(this, loader);
         }
     }
 
-    private ViewsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private ViewsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override

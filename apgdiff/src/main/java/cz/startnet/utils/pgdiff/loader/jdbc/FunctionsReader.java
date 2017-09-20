@@ -22,16 +22,16 @@ public class FunctionsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new FunctionsReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new FunctionsReader(this, loader);
         }
     }
 
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class FunctionsReader extends JdbcReader {
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
             Long[] protrftypes = res.getArray("protrftypes", Long.class);
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
@@ -167,7 +167,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.checkVersion(currentVersion)) {
+        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":

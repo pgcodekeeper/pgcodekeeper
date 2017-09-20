@@ -22,13 +22,13 @@ public class IndicesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new IndicesReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new IndicesReader(this, loader);
         }
     }
 
-    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private IndicesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override

@@ -45,7 +45,7 @@ public abstract class JdbcReaderFactory {
         this.queries = queries;
     }
 
-    public abstract JdbcReader getReader(JdbcLoaderBase loader, int version);
+    public abstract JdbcReader getReader(JdbcLoaderBase loader);
 
     public String makeFallbackQuery (int version) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");

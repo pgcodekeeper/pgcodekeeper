@@ -24,13 +24,13 @@ public class TablesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new TablesReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new TablesReader(this, loader);
         }
     }
 
-    private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private TablesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class TablesReader extends JdbcReader {
         }
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
             t.setRowSecurity(res.getBoolean("row_security"));
             t.setForceSecurity(res.getBoolean("force_security"));
         }
