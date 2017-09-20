@@ -22,6 +22,9 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -506,7 +509,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                             Messages.sqlScriptDialog_exception_during_script_execution,e);
                 }
             });
-            scriptThread.start();
+
+            new ScriptThreadJobWrapper(scriptThread).schedule();
+
             isRunning = true;
             parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
             // case Stop script
@@ -516,6 +521,42 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             scriptThread.interrupt();
             isRunning = false;
+        }
+    }
+
+    private class ScriptThreadJobWrapper extends Job {
+        private final Thread scriptThread;
+
+        ScriptThreadJobWrapper(Thread scriptThread) {
+            super(Messages.SqlEditor_update_ddl);
+            this.scriptThread = scriptThread;
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            try {
+                Log.log(Log.LOG_INFO, "Update DDL starting"); //$NON-NLS-1$
+                monitor.beginTask(Messages.SqlEditor_update_ddl, 100);
+                monitor.worked(50);
+
+                scriptThread.start();
+
+                while(scriptThread.isAlive()) {
+                    if(monitor.isCanceled()) {
+                        ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
+                        Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
+
+                        scriptThread.interrupt();
+                        isRunning = false;
+                        return Status.CANCEL_STATUS;
+                    }
+                }
+
+                monitor.worked(50);
+            } finally {
+                monitor.done();
+            }
+            return Status.OK_STATUS;
         }
     }
 

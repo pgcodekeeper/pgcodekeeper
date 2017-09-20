@@ -210,7 +210,7 @@ public interface UIConsts {
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 
-    String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
+    String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
     List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
             "UTC-12:00", //$NON-NLS-1$

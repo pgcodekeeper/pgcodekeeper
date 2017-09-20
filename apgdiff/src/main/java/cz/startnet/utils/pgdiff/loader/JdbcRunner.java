@@ -24,17 +24,17 @@ public class JdbcRunner {
                 Statement stmnt = connection.createStatement();) {
             stmnt.setEscapeProcessing(false);
 
-            Future<String> queryFuture = Executors.newCachedThreadPool().submit(
-                    new Callable<String>() {
-
-                        @Override
-                        public String call() throws Exception {
-                            stmnt.execute(script);
-                            return JDBC_CONSTS.JDBC_SUCCESS;
-                        }
-                    });
-
             try {
+                Future<String> queryFuture = Executors.newCachedThreadPool().submit(
+                        new Callable<String>() {
+
+                            @Override
+                            public String call() throws Exception {
+                                stmnt.execute(script);
+                                return JDBC_CONSTS.JDBC_SUCCESS;
+                            }
+                        });
+
                 return queryFuture.get();
             } catch (InterruptedException e) {
                 // user hit stop script button

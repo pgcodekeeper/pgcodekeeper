@@ -72,6 +72,8 @@ public final class Messages extends NLS {
     public static String SqlEditor_selected_text_error;
     public static String SqlEditor_tooltip_run_selected;
 
+    public static String SqlEditor_update_ddl;
+
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
 
