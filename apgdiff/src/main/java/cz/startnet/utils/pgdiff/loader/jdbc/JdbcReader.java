@@ -33,7 +33,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             try {
                 readAllUsingHelper();
                 helperSuccess = true;
-            } catch (SQLException ex) {
+            } catch (SQLException | WrapperAccessException ex) {
                 Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
                         + "falling back to old queries: " + factory.helperFunction, ex);
             }

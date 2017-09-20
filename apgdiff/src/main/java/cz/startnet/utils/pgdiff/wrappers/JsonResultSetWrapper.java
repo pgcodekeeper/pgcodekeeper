@@ -2,13 +2,13 @@ package cz.startnet.utils.pgdiff.wrappers;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 public class JsonResultSetWrapper implements ResultSetWrapper {
@@ -23,9 +23,13 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
      */
     private final Map <String, Object> result;
 
-    public JsonResultSetWrapper (String json) throws SQLException {
+    public JsonResultSetWrapper (String json) throws WrapperAccessException {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
-        result = new Gson().fromJson(json, type);
+        try {
+            result = new Gson().fromJson(json, type);
+        } catch(JsonParseException ex) {
+            throw new WrapperAccessException(ex.getLocalizedMessage(), ex);
+        }
     }
 
     private Object get(String columnName) throws WrapperAccessException {
