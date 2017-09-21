@@ -182,16 +182,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             throw new PartInitException(in.getError().getLocalizedMessage(), ex);
         }
 
+        setInput(input);
+        setSite(site);
+        setPartName(in.getName());
+
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(proj.getProject());
-        setPartName(in.getName());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
             askPerspectiveChange(site);
         }
-        setSite(site);
-        setInput(input);
         getSite().setSelectionProvider(sp);
     }
 
@@ -391,7 +392,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     // check that it's our resource
                     if (delta.getFlags() != IResourceDelta.MARKERS &&
                             delta.getResource().getType() == IResource.FILE &&
-                            PgUIDumpLoader.isProjectPath(delta.getProjectRelativePath())) {
+                            PgUIDumpLoader.isInProject(delta)) {
                         schemaChanged[0] = true;
                         return false;
                     }

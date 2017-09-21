@@ -40,6 +40,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.LicensePrefs;
@@ -114,9 +116,8 @@ public class PgDbParser implements IResourceChangeListener {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, files.size());
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.buildFiles(files, mon, funcBodies);
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, funcBodies);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
         fillFunctionBodies(funcBodies);
@@ -260,8 +261,15 @@ public class PgDbParser implements IResourceChangeListener {
     public static String getPathFromInput(IEditorInput in) {
         IResource res = ResourceUtil.getResource(in);
         if (res != null) {
-            return res.getLocation().toOSString();
-        } else if (in instanceof IURIEditorInput) {
+            try {
+                if (res.getProject().hasNature(NATURE.ID)) {
+                    return res.getLocation().toOSString();
+                }
+            } catch (CoreException ex) {
+                Log.log(Log.LOG_WARNING, "Nature error", ex); //$NON-NLS-1$
+            }
+        }
+        if (in instanceof IURIEditorInput) {
             return ((IURIEditorInput) in).getURI().toString();
         } else {
             return null;

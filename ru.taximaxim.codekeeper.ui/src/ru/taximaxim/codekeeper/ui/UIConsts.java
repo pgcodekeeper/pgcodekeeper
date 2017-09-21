@@ -19,6 +19,7 @@ public interface UIConsts {
 
     interface CONTEXT {
         String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
+        String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
     }
 
     interface EDITOR {

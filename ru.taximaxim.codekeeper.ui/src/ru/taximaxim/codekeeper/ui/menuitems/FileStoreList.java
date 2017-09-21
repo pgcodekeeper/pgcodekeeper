@@ -31,6 +31,7 @@ public class FileStoreList extends ContributionItem {
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
         Deque<File> files = DbStorePicker.stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES), false);
 
+        int i = 0;
         for (File file : files) {
             CommandContributionItemParameter paramToProject = new CommandContributionItemParameter(
                     PlatformUI.getWorkbench(), null, COMMAND.GET_CHANGES,
@@ -43,7 +44,7 @@ public class FileStoreList extends ContributionItem {
             param.put(COMMAND.PARAM_FILE_PATH, file.getAbsolutePath());
             paramToProject.parameters = param;
             CommandContributionItem item = new CommandContributionItem(paramToProject);
-            item.fill(menu, index);
+            item.fill(menu, index + (i++));
         }
     }
 

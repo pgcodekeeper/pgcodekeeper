@@ -149,6 +149,13 @@ public abstract class DbSource {
     public static DbSource fromDbObject(PgDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
     }
+
+    /**
+     * Calls {@link #getDbObject()} on the argument.
+     */
+    public static DbSource fromDbObject(DbSource dbSource) {
+        return fromDbObject(dbSource.getDbObject(), dbSource.getOrigin());
+    }
 }
 
 class DbSourceDirTree extends DbSource {

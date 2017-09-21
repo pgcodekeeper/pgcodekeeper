@@ -92,13 +92,17 @@ public final class LicensingInternal {
      * @see {@link MessageFormat}, {@link MessageFormat#format(String, Object...)}
      */
     private static void badLicense(String errorFormat, Object... vals) throws LicenseException {
+        /*
         throw new LicenseException(Messages.LicensingInternal_current_license +
                 MessageFormat.format(errorFormat, vals));
+         */
     }
 
     private static void malformedLicense(Exception ex) throws LicenseException {
+        /*
         throw new LicenseException(Messages.LicensingInternal_malformed_license
                 + ex.getLocalizedMessage(), ex);
+         */
     }
 
     public static void verifyValidity(License license, boolean isGui) throws LicenseException {
