@@ -232,7 +232,7 @@ public abstract class PgStatement implements IStatement {
             sb.append(PgDiffUtils.getQuotedName(getName()));
         }
         sb.append(" OWNER TO ")
-        .append(owner)
+        .append(PgDiffUtils.getQuotedName(owner))
         .append(';');
 
         return sb;
