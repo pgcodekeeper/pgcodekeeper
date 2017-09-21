@@ -393,14 +393,12 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     public void commentOn(Comment_on_statementContext ctx) {
-        String name = null;
-        String schemaName  = null;
-        List<IdentifierContext> ids = null;
-        if (ctx.name != null) {
-            ids = ctx.name.identifier();
-            name = QNameParser.getFirstName(ids);
-            schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+        if (ctx.name == null) {
+            return;
         }
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         String comment = "";
         if (ctx.comment_text != null) {
             comment = ctx.comment_text.getText();
