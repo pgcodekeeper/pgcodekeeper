@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,8 +67,18 @@ public class TreeDiffer implements IRunnableWithProgress {
     }
 
     public Map<String, List<AntlrError>> getErrors() {
-        Map<String, List<AntlrError>> errors = dbSource.getErrors();
-        errors.putAll(dbTarget.getErrors());
+        Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
+        errors.putAll(dbSource.getErrors());
+        dbTarget.getErrors().forEach((k,v) -> {
+            List<AntlrError> list = errors.get(k);
+            if (list == null) {
+                list = v;
+            } else {
+                list = new ArrayList<>(list);
+                list.addAll(v);
+            }
+            errors.put(k, list);
+        });
         return errors;
     }
 

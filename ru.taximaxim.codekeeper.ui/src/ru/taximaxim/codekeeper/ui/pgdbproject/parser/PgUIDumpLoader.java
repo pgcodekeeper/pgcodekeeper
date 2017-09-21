@@ -104,8 +104,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     /**
-     * Loads database schema from a ModelExporter directory tree. The root
-     * directory must contain a listing.lst file for ordered list of files.
+     * Loads database schema from a ModelExporter directory tree.
      *
      * @return database schema
      */

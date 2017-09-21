@@ -5,7 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
-    protected final Map<String, List<AntlrError>> errors = new HashMap<>();
+    protected final Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
 
     public String getOrigin() {
         return origin;
@@ -73,6 +74,10 @@ public abstract class DbSource {
         return dbObject != null;
     }
 
+    public Map<String, List<AntlrError>> getErrors() {
+        return Collections.unmodifiableMap(errors);
+    }
+
     protected DbSource(String origin) {
         this.origin = origin;
     }
@@ -84,6 +89,7 @@ public abstract class DbSource {
             throws LicenseException, IOException {
         return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines);
     }
+
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines) throws LicenseException, IOException {
         PgDiffArguments args = new PgDiffArguments();
@@ -143,10 +149,6 @@ public abstract class DbSource {
     public static DbSource fromDbObject(PgDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
     }
-
-    public Map<String, List<AntlrError>> getErrors() {
-        return errors;
-    }
 }
 
 class DbSourceDirTree extends DbSource {
@@ -169,7 +171,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines), monitor);
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor, errors);
     }
 }
 

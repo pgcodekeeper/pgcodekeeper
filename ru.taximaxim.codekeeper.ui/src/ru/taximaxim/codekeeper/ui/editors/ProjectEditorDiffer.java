@@ -471,9 +471,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     PgDiffUtils.checkCancelled(monitor);
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
                     newDiffer.run(sub.newChild(90));
-                    newDiffer.getErrors().forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(
-                            new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.getFullMessage(k)),
-                            StatusManager.SHOW)));
                     monitor.done();
                 } catch (InvocationTargetException | CoreException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,
@@ -501,6 +498,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+
+                newDiffer.getErrors()
+                .forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(
+                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.getFullMessage(k)),
+                        StatusManager.SHOW)));
             }
         });
         job.setUser(true);
