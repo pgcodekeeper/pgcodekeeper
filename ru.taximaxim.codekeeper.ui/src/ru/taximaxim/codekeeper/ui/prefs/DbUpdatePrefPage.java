@@ -2,10 +2,9 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -16,8 +15,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -26,36 +23,28 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
 IWorkbenchPreferencePage {
 
-    private StringPrefListEditor listEditor;
     private final XmlHistory history;
 
+    private Combo cmbScript;
     private Button booleanFieldEditorCheckBox;
-    private Text txtCommand;
 
     public DbUpdatePrefPage() {
         super(GRID);
@@ -140,72 +129,7 @@ IWorkbenchPreferencePage {
     protected Control createContents(Composite parent) {
         super.createContents(parent);
 
-        createDialogArea(parent);
-
-        Group grpCommandsEdit = new Group(parent, SWT.NONE);
-        GridLayout gridLayout = new GridLayout();
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
-        grpCommandsEdit.setLayout(gridLayout);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.verticalIndent = 20;
-        grpCommandsEdit.setLayoutData(gd);
-        grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
-
-        listEditor = new StringPrefListEditor(grpCommandsEdit, false, false, PREF_PAGE.WIDTH_HINT_PX);
-        updateList();
-
-        return parent;
-    }
-
-    @Override
-    protected void performDefaults() {
-        super.performDefaults();
-        updateList();
-    }
-
-    @Override
-    public boolean performOk() {
-        try {
-            history.setHistory(listEditor.getList());
-        } catch (IOException e) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
-        }
-
-        return super.performOk();
-    }
-
-    private void updateList() {
-        LinkedList<String> list = null;
-        try {
-            list = history.getHistory();
-        } catch (IOException e) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_getting_commands_list, e);
-        }
-        if (list == null) {
-            list = new LinkedList<>();
-        }
-        if (list.isEmpty()) {
-            list.add(UIConsts.DDL_DEFAULT_CMD);
-        }
-        listEditor.setInputList(list);
-    }
-
-    protected Control createDialogArea(final Composite parent) {
         IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-
-        Combo cmbScript;
-
-        DbInfo lastDB;
-
-        IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        if(editor instanceof SQLEditor) {
-            lastDB = ((SQLEditor)editor).getLastDb();
-        } else if(editor instanceof ProjectEditorDiffer) {
-            lastDB = (DbInfo)((ProjectEditorDiffer)editor).getLastDb();
-        } else {
-            lastDB = null;
-        }
 
         GridLayout lay = new GridLayout();
         parent.setLayout(lay);
@@ -230,50 +154,19 @@ IWorkbenchPreferencePage {
 
         cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.setToolTipText(
-                SQLEditor.DB_NAME_PLACEHOLDER + '=' + SQLEditor.getReplacedString(SQLEditor.DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
-                SQLEditor.DB_HOST_PLACEHOLDER + '=' + SQLEditor.getReplacedString(SQLEditor.DB_HOST_PLACEHOLDER, lastDB) + UIConsts._NL +
-                SQLEditor.DB_PORT_PLACEHOLDER + '=' + SQLEditor.getReplacedString(SQLEditor.DB_PORT_PLACEHOLDER, lastDB) + UIConsts._NL +
-                SQLEditor.DB_USER_PLACEHOLDER + '=' + SQLEditor.getReplacedString(SQLEditor.DB_NAME_PLACEHOLDER, lastDB) + UIConsts._NL +
-                SQLEditor.DB_PASS_PLACEHOLDER + '=' + SQLEditor.getReplacedString(SQLEditor.DB_USER_PLACEHOLDER, lastDB));
 
-        List<String> prev = null;
-        try {
-            prev = history.getHistory();
-        } catch (IOException e1) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_loading_command_history, e1);
-        }
-        if (prev == null) {
-            prev = new ArrayList<>();
-        }
-        if (prev.isEmpty()) {
-            prev.add(UIConsts.DDL_DEFAULT_CMD);
-        }
-        for (String el : prev) {
-            cmbScript.add(el);
-        }
-        cmbScript.select(0);
-
-        cmbScript.addModifyListener(new ModifyListener() {
-
+        cmbScript.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void modifyText(ModifyEvent e) {
-                txtCommand.setText(SQLEditor.getReplacedString(cmbScript.getText(), lastDB));
+            public void widgetSelected(SelectionEvent e) {
+                Combo combo = (Combo)e.getSource();
+                String selected = combo.getText();
+                combo.remove(combo.getSelectionIndex());
+                combo.add(selected, 0);
+                combo.select(0);
             }
         });
 
-        l = new Label(notJdbc, SWT.NONE);
-        l.setText(Messages.dbUpdatePrefPage_command_to_execute + SQLEditor.SCRIPT_PLACEHOLDER
-                + Messages.dbUpdatePrefPage_will_be_replaced);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        l.setLayoutData(gd);
-
-        txtCommand = new Text(notJdbc, SWT.BORDER | SWT.READ_ONLY);
-        txtCommand.setText(SQLEditor.getReplacedString(cmbScript.getText(), lastDB));
-        txtCommand.setBackground(parent.getShell().getDisplay()
-                .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        updateList();
 
         mainPrefs.addPropertyChangeListener(new IPropertyChangeListener(){
             @Override
@@ -308,5 +201,45 @@ IWorkbenchPreferencePage {
         }
 
         return parent;
+    }
+
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        updateList();
+    }
+
+    @Override
+    public boolean performOk() {
+        try {
+            if(Arrays.stream(cmbScript.getItems()).noneMatch(cmbScript.getText()::equals)) {
+                cmbScript.add(cmbScript.getText(), 0);
+            }
+
+            history.setHistory(Arrays.asList(cmbScript.getItems()));
+        } catch (IOException e) {
+            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
+        }
+
+        return super.performOk();
+    }
+
+    private void updateList() {
+        LinkedList<String> list = null;
+        try {
+            list = history.getHistory();
+        } catch (IOException e1) {
+            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_loading_command_history, e1);
+        }
+        if (list == null) {
+            list = new LinkedList<>();
+        }
+        if (list.isEmpty()) {
+            list.add(UIConsts.DDL_DEFAULT_CMD);
+        }
+        for (String el : list) {
+            cmbScript.add(el);
+        }
+        cmbScript.select(0);
     }
 }

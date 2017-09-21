@@ -380,7 +380,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.dispose();
     }
 
-    public static String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
+    private String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
         String s = dbInfo;
         if (externalDbInfo != null) {
             if (externalDbInfo.getDbHost() != null) {

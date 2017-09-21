@@ -192,8 +192,6 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_check_function_bodies;
     public static String dbUpdatePrefPage_switch_on_off_using;
     public static String dbUpdatePrefPage_use_command_for_ddl_update;
-    public static String dbUpdatePrefPage_command_to_execute;
-    public static String dbUpdatePrefPage_will_be_replaced;
     public static String dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script;
     public static String dbUpdatePrefPage_error_loading_command_history;
 
