@@ -861,6 +861,10 @@ cascade_restrict
 collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
+    
+indirection_identifier
+    : LEFT_PAREN vex RIGHT_PAREN (DOT identifier)+
+    ;
 
 /*
 ===============================================================================
@@ -1518,6 +1522,7 @@ value_expression_primary
   | EXISTS table_subquery
   | function_call
   | schema_qualified_name
+  | indirection_identifier
   | qualified_asterisk
   | array_expression
   | type_coercion
