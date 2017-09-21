@@ -37,14 +37,18 @@ statement
 
 data_statement
   : select_stmt
+  | insert_stmt_for_psql
+  | update_stmt_for_psql
+  | delete_stmt_for_psql
+  | notify_stmt
   ;
 
-  script_statement
+script_statement
   : START TRANSACTION transaction_mode*
   | COMMIT (WORK | TRANSACTION)?
   ;
 
-  transaction_mode
+transaction_mode
   : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
   | READ WRITE | READ ONLY
   | (NOT)? DEFERRABLE
@@ -69,7 +73,9 @@ schema_create
     | create_language_statement
     | create_event_trigger
     | create_type_statement
-    | create_domain_statement)
+    | create_domain_statement
+    | create_server_statement
+    | create_transform_statement)
 
     | comment_on_statement
     | rule_common
@@ -85,7 +91,8 @@ schema_alter
     | alter_sequence_statement
     | alter_view_statement
     | alter_type_statement
-    | alter_domain_statement)
+    | alter_domain_statement
+    | alter_server_statement)
     ;
 
 schema_drop
@@ -100,7 +107,8 @@ alter_function_statement
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
-    | set_schema)
+    | set_schema
+    | DEPENDS ON EXTENSION identifier)
     ;
 
 alter_schema_statement
@@ -112,7 +120,7 @@ alter_language_statement
     ;
 
 alter_table_statement
-    : TABLE ONLY? name=schema_qualified_name MULTIPLY?(
+    : FOREIGN? TABLE ONLY? name=schema_qualified_name MULTIPLY?(
         (table_action (COMMA table_action)*
         | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
     | set_schema
@@ -129,6 +137,7 @@ table_action
         | ((SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
         | set_attribute_option
+        | define_foreign_options
         | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
         | set_storage ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
@@ -138,11 +147,15 @@ table_action
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name
+    | (DISABLE | ENABLE) ROW LEVEL SECURITY
+    | (NO)? FORCE ROW LEVEL SECURITY
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
+    | SET (LOGGED | UNLOGGED)
     | SET storage_parameter
     | RESET storage_parameter
+    | define_foreign_options
     | INHERIT parent_table=schema_qualified_name
     | NO INHERIT parent_table=schema_qualified_name
     | OF type_name=schema_qualified_name
@@ -184,8 +197,10 @@ table_initialy_immed
 
 function_actions_common
     : (CALLED | RETURNS NULL) ON NULL INPUT
+      | TRANSFORM transform_for_type (COMMA transform_for_type)*
       | (STRICT | IMMUTABLE | VOLATILE | STABLE)
       | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+      | PARALLEL identifier 
       | COST execution_cost=NUMBER_LITERAL
       | ROWS result_rows=NUMBER_LITERAL
       | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=set_statement_value)) | FROM CURRENT)(COMMA value+=set_statement_value)*
@@ -228,7 +243,7 @@ alter_sequence_statement
     ;
 
 alter_view_statement
-    : VIEW (IF EXISTS)? name=schema_qualified_name
+    : MATERIALIZED? VIEW (IF EXISTS)? name=schema_qualified_name
      (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
     | owner_to
@@ -261,6 +276,13 @@ alter_domain_statement
     | set_schema)
     ;
 
+alter_server_statement
+    : SERVER identifier 
+    ((VERSION identifier)? define_foreign_options
+    | owner_to 
+    | rename_to)
+    ;
+
 type_action
     : ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
     | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
@@ -287,7 +309,12 @@ index_rest
 index_sort
     : (USING method=identifier)?
       LEFT_PAREN sort_specifier_list RIGHT_PAREN
+      including_index?
       with_storage_parameter?
+    ;
+    
+including_index
+    : INCLUDE LEFT_PAREN identifier (COMMA identifier)* RIGHT_PAREN 
     ;
     
 index_where 
@@ -360,9 +387,23 @@ create_domain_statement
       | dom_constraint+=domain_constraint)*
     ;
 
+create_server_statement
+    : SERVER identifier (TYPE Character_String_Literal)? (VERSION Character_String_Literal)?
+    FOREIGN DATA WRAPPER identifier
+    define_foreign_options? 
+    ; 
+
 domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
      common_constraint
+    ;
+
+create_transform_statement
+    : (OR REPLACE)? TRANSFORM FOR data_type LANGUAGE identifier 
+    LEFT_PAREN
+        FROM SQL WITH FUNCTION  function_parameters COMMA
+        TO SQL WITH FUNCTION function_parameters
+    RIGHT_PAREN
     ;
 
 set_statement
@@ -542,6 +583,10 @@ create_funct_params
       with_storage_parameter?
     ;
 
+transform_for_type
+    : FOR TYPE type_name=data_type
+    ;
+
 function_ret_table
     :TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
     ;
@@ -604,10 +649,12 @@ schema_definition
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name column_name=column_references?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? MATERIALIZED? VIEW name=schema_qualified_name column_name=column_references?
         (WITH storage_parameter)?
+        table_space?
         AS v_query=select_stmt
         with_check_option?
+        (WITH NO? DATA)?
     ;
         
 with_check_option
@@ -615,7 +662,7 @@ with_check_option
     ;
 
 create_table_statement
-  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name
+  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? FOREIGN? TABLE (IF NOT EXISTS)? name=schema_qualified_name
     define_table
     storage_parameter_oid?
     on_commit?
@@ -632,11 +679,27 @@ define_columns
       (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? 
     RIGHT_PAREN
     (INHERITS parent_table=column_references)?
+    define_server?
   ;
 
 define_type
   : OF type_name=data_type
     list_of_type_column_def?
+  ;
+
+define_server
+  : SERVER server_name=identifier define_foreign_options? 
+  ;
+  
+define_foreign_options
+  : OPTIONS
+    LEFT_PAREN 
+      (foreign_option (COMMA foreign_option)*) 
+    RIGHT_PAREN
+  ;
+  
+foreign_option
+  : (ADD | SET | DROP)? name=identifier value=Character_String_Literal?
   ;
 
 list_of_type_column_def
@@ -694,7 +757,7 @@ all_op
     ;
 
 table_unique_prkey
-    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
+    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters including_index?
     ;
 
 index_parameters
@@ -798,6 +861,10 @@ cascade_restrict
 collate_identifier
     : COLLATE collation=schema_qualified_name
     ;
+    
+indirection_identifier
+    : LEFT_PAREN vex RIGHT_PAREN (DOT identifier)+
+    ;
 
 /*
 ===============================================================================
@@ -818,7 +885,15 @@ drop_rule_statement
     ;
 
 drop_statements
-    :((DATABASE | DOMAIN | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    :(DATABASE 
+    | DOMAIN 
+    | FOREIGN? TABLE
+    | EXTENSION 
+    | SCHEMA 
+    | SEQUENCE 
+    | MATERIALIZED? VIEW 
+    | TYPE
+    | INDEX CONCURRENTLY?) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade
@@ -1294,9 +1369,10 @@ tokens_reserved
   | WINDOW
   | WITH
   ;
-  
+
 tokens_nonkeyword
-  : PLAIN
+  : INCLUDE
+  | PLAIN
   | EXTENDED
   | MAIN
   | SUBTYPE
@@ -1446,6 +1522,7 @@ value_expression_primary
   | EXISTS table_subquery
   | function_call
   | schema_qualified_name
+  | indirection_identifier
   | qualified_asterisk
   | array_expression
   | type_coercion
@@ -1466,7 +1543,7 @@ general_literal
   | datetime_literal
   | truth_value
   ;
-  
+
 datetime_literal
   : identifier Character_String_Literal
   ;

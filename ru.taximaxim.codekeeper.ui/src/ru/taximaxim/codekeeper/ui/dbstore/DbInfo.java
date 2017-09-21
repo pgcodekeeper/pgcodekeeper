@@ -60,7 +60,7 @@ public class DbInfo {
         this.dbport = dbport;
     }
 
-    private DbInfo(String coords) {
+    public DbInfo(String coords) {
         String[] parts = coords.split(DELIM, -1);
 
         try {

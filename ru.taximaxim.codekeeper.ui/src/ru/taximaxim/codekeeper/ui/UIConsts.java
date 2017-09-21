@@ -17,6 +17,11 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface CONTEXT {
+        String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
+        String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
@@ -36,6 +41,11 @@ public interface UIConsts {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
+
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
+        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
+        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -138,6 +148,10 @@ public interface UIConsts {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
     }
 
+    interface PROP_TEST {
+        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
+    }
+
     interface HELP {
         String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
         String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
@@ -159,6 +173,7 @@ public interface UIConsts {
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
         String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
         String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
@@ -174,6 +189,8 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {

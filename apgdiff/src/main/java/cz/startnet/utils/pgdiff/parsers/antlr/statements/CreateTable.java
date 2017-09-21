@@ -7,7 +7,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_serverContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -62,6 +65,18 @@ public class CreateTable extends ParserAbstract {
 
             addTypeAsDepcy(dataTypeCtxOfType, table, getDefSchemaName());
         } else {
+            Define_serverContext server = defineColumnContext.define_server();
+            if (server != null) {
+                table.setServerName(server.server_name.getText());
+                Define_foreign_optionsContext options = server.define_foreign_options();
+                if (options != null){
+                    for (Foreign_optionContext option : options.foreign_option()){
+                        String value = option.value == null ? null : option.value.getText();
+                        fillOptionParams(value, option.name.getText(), false, table::addOption);
+                    }
+                }
+            }
+
             for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
                 if (colCtx.tabl_constraint != null) {
                     table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schema.getName()));
@@ -112,6 +127,11 @@ public class CreateTable extends ParserAbstract {
         if (!explicitOids && oids != null) {
             table.setHasOids(true);
         }
+
+        if (ctx.UNLOGGED() != null) {
+            table.setLogged(false);
+        }
+
         schema.addTable(table);
         return table;
     }
@@ -128,9 +148,9 @@ public class CreateTable extends ParserAbstract {
                     table.setHasOids(true);
                 }
             } else if("toast".equals(QNameParser.getSecondName(optionIds))){
-                fillStorageParams(value, QNameParser.getFirstName(optionIds), true, table);
+                fillOptionParams(value, QNameParser.getFirstName(optionIds), true, table::addOption);
             } else {
-                fillStorageParams(value, optionText, false, table);
+                fillOptionParams(value, optionText, false, table::addOption);
             }
         }
     }

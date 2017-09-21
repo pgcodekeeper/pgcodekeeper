@@ -148,6 +148,21 @@ public class TreeElement {
     }
 
     /**
+     * @return Statement from the corresponding DB, based on client's side. BOTH uses left.
+     */
+    public PgStatement getPgStatementSide(PgDatabase left, PgDatabase right) {
+        switch (side) {
+        case LEFT:
+        case BOTH:
+            return getPgStatement(left);
+        case RIGHT:
+            return getPgStatement(right);
+        default:
+            return null;
+        }
+    }
+
+    /**
      * Ищет элемент в дереве
      */
     public TreeElement findElement(PgStatement st) {

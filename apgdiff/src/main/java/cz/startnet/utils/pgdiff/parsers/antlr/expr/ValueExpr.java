@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
@@ -115,6 +116,7 @@ public class ValueExpr extends AbstractExpr {
             Table_subqueryContext subquery;
             Function_callContext function;
             Schema_qualified_nameContext qname;
+            Indirection_identifierContext indirection;
             @SuppressWarnings("unused")
             Qualified_asteriskContext ast;
             Array_expressionContext array;
@@ -143,6 +145,8 @@ public class ValueExpr extends AbstractExpr {
                 function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
                 ret = addColumnDepcy(qname);
+            } else if ((indirection = primary.indirection_identifier()) != null) {
+                analyze(new Vex(indirection.vex()));
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
             } else if ((array = primary.array_expression()) != null) {

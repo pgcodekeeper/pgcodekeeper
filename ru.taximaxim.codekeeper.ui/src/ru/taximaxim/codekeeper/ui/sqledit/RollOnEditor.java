@@ -54,6 +54,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextService;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -67,6 +68,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -158,6 +160,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         parentComposite = parent;
         super.createPartControl(parent);
         setLineBackground();
+        getSite().getService(IContextService.class).activateContext(CONTEXT.EDITOR);
     }
 
     public void setLineBackground() {
@@ -365,6 +368,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 isRunning = false;
             }
         });
+    }
+
+    public String getEditorText() {
+        return getSourceViewer().getTextWidget().getText();
+    }
+
+    public DbInfo getDbInfo() {
+        return storePicker.getDbInfo();
     }
 
     private void runButtonMethod() {

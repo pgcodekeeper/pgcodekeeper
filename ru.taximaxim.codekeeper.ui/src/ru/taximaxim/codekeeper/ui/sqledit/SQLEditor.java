@@ -145,7 +145,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
-        if (res instanceof IFile) {
+        if (res instanceof IFile && res.getProject().hasNature(NATURE.ID)) {
             parser.getObjFromProjFile((IFile) res, monitor);
             return true;
         }
@@ -167,7 +167,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private boolean isProject(IResource res) throws CoreException {
         return res == null ? false : res.getProject().hasNature(NATURE.ID)
-                && PgUIDumpLoader.isProjectPath(res.getProjectRelativePath());
+                && PgUIDumpLoader.isInProject(res);
     }
 
     PgDbParser getParser() {

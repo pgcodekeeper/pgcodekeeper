@@ -23,6 +23,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -54,6 +55,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
+    protected int version = SupportedVersion.VERSION_9_2.getVersion();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -250,6 +252,16 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             }
         }
     }
+
+    protected void queryCheckVersion() throws SQLException {
+        setCurrentOperation("version checking query");
+        try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_VERSION)) {
+            while (res.next()) {
+                version = res.getInt(VERSION);
+            }
+        }
+    }
+
 
     protected void setupMonitorWork() throws SQLException {
         setCurrentOperation("object count query");
