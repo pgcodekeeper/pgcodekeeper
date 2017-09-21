@@ -333,6 +333,7 @@ class DbSourceJdbc extends DbSource {
     private final String dbName;
     private final boolean forceUnixNewlines;
     private PgDatabase db;
+    private String projectName;
 
     @Override
     public String getDbName() {
@@ -341,6 +342,10 @@ class DbSourceJdbc extends DbSource {
 
     public void setProjectDb(PgDatabase db) {
         this.db = db;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
@@ -356,7 +361,7 @@ class DbSourceJdbc extends DbSource {
             throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
-        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc(db);
+        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc(db, projectName);
     }
 }
 

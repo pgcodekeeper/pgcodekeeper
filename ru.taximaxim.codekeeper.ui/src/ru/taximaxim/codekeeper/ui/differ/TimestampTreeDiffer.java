@@ -15,12 +15,15 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
- * строит дерево сравнения из двух баз
+ * строит дерево сравнения из двух баз с учетом времени модификации объектов
  */
 public class TimestampTreeDiffer extends TreeDiffer {
 
-    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
-        super(dbSource, dbTarget, needTwoWay);
+    private final String projectName;
+
+    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget, String projectName) {
+        super(dbSource, dbTarget, false);
+        this.projectName = projectName;
     }
 
     @Override
@@ -39,14 +42,6 @@ public class TimestampTreeDiffer extends TreeDiffer {
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
         diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
 
-        if (needTwoWay) {
-            Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbTarget.getOrigin() //$NON-NLS-1$
-            + " tgt: " + dbSource.getOrigin()); //$NON-NLS-1$
-
-            pm.newChild(3).subTask(Messages.TreeDiffer_reverting_tree); // 98
-            diffTreeRevert = diffTree.getRevertedCopy();
-        }
-
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
     }
@@ -56,6 +51,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
         try {
             PgDatabase db = dbSource.get(monitor);
             dbTarget.setProjectDb(db);
+            dbTarget.setProjectName(projectName);
             dbTarget.get(monitor);
         } catch (IOException | LicenseException | CoreException ex) {
             Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);

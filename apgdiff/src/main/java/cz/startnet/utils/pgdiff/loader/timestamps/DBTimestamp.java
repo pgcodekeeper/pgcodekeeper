@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
@@ -160,4 +161,39 @@ public class DBTimestamp implements Serializable {
                 .resolve("projects"); //$NON-NLS-1$
     }
 
+    public static List<ObjectTimestamp> compare(DBTimestamp proj, DBTimestamp db) {
+        return proj.getObjects().stream().filter(e -> db.getObjects().contains(e)).collect(Collectors.toList());
+    }
+
+    public static void search() {
+
+        // TODO Auto-generated method stub
+
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

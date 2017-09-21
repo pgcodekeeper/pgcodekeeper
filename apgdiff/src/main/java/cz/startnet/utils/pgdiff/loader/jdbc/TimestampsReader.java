@@ -3,10 +3,14 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_identity_parserContext;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TimestampsReader implements PgCatalogStrings {
@@ -54,14 +58,24 @@ public class TimestampsReader implements PgCatalogStrings {
             time.addObject(schema, name, t, null, lastModified);
             break;
         case RULE:
+            loader.submitAntlrTask(identity, p -> p.object_identity_parser(),
+                    (identityCtx) -> parseIdentity(identityCtx, DbObjType.RULE, lastModified, time));
+            break;
         case TRIGGER:
-            // have text format like "object_name on schema_name.parent_name".
-            // parser?
-            String[] objects = identity.split(" ");
-            String[] parents = objects[objects.length - 1].split(".");
-            time.addObject(parents[0], parents[1], objects[0], t, null, lastModified);
+            loader.submitAntlrTask(identity, p -> p.object_identity_parser(),
+                    (identityCtx) -> parseIdentity(identityCtx, DbObjType.TRIGGER, lastModified, time));
             break;
         default:break;
+        }
+    }
+
+    private void parseIdentity(Object_identity_parserContext identityCtx, DbObjType type, Instant lastModified, DBTimestamp time) {
+        if (identityCtx != null) {
+            String name = identityCtx.name.getText();
+            List<IdentifierContext> parent = identityCtx.parent.identifier();
+            String schema = QNameParser.getSchemaNameCtx(parent).getText();
+            String table = QNameParser.getSecondName(parent);
+            time.addObject(schema, table, name, type, null, lastModified);
         }
     }
 }

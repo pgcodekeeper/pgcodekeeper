@@ -7,6 +7,7 @@ import java.util.List;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -223,6 +224,7 @@ public final class DiffTree {
             } else if(!sLeft.equals(foundRight)) {
                 rv.add(new CompareResult(sLeft, foundRight));
             } else {
+                DBTimestamp.search();
                 // do nothing if both statements exist and are equal
             }
         }

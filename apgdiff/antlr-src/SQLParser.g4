@@ -23,6 +23,10 @@ function_args_parser
   : schema_qualified_name? function_args EOF
   ;
 
+object_identity_parser
+  : name=identifier ON parent=schema_qualified_name EOF
+  ;
+
 vex_eof
   : vex EOF
   ;

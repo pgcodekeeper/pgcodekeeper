@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -18,6 +20,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
@@ -42,10 +45,10 @@ public class JdbcLoader extends JdbcLoaderBase {
 
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
-        return this.getDbFromJdbc(null);
+        return this.getDbFromJdbc(null, null);
     }
 
-    public PgDatabase getDbFromJdbc(PgDatabase db) throws IOException, InterruptedException, LicenseException {
+    public PgDatabase getDbFromJdbc(PgDatabase db, String projectName) throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
@@ -67,10 +70,14 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryRoles();
             setupMonitorWork();
 
+            List<ObjectTimestamp> objects;
             if (isContainsTimestamps) {
-                DBTimestamp dbTimestamp = new TimestampsReader(this).read();
-
-
+                DBTimestamp projTime = DBTimestamp.getDBTimastamp(projectName);
+                DBTimestamp dbTime = new TimestampsReader(this).read();
+                if (projTime != null) {
+                    objects = projTime.getObjects().stream().filter(e ->
+                    dbTime.getObjects().contains(e)).collect(Collectors.toList());
+                }
             }
 
             schemas = new SchemasReader(this, d).read();
