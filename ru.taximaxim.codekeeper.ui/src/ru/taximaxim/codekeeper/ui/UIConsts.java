@@ -98,6 +98,16 @@ public interface UIConsts {
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
+
+    interface USAGE_REPORT_PREF {
+        String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
+        String ASK_USER_USAGEREPORT_ID = "ask_user_for_usage_report_preference"; //$NON-NLS-1$
+        String ECLIPSE_INSTANCE_ID = "eclipse_instance_id"; //$NON-NLS-1$
+        String FIRST_VISIT = "first_visit";
+        String LAST_VISIT = "last_visit";
+        String VISIT_COUNT = "visit_count";
+    }
+
     public enum DBSources {
         SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
         SOURCE_TYPE_DB("db"), //$NON-NLS-1$

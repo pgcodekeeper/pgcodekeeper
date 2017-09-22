@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -173,6 +175,14 @@ public final class PgDiffUtils {
         } catch (NoSuchAlgorithmException ex) {
             Log.log(ex);
             return "MD5_ERROR_" + new Random().nextInt();
+        }
+    }
+
+    public static String checkedEncodeUtf8(String string) {
+        try {
+            return URLEncoder.encode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return string;
         }
     }
 
