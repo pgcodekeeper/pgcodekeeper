@@ -740,7 +740,10 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setChecked(TreeElement el, boolean checked) {
-        el.setSelected(checked);
+        if (elements.contains(el)) {
+            // меняем состояние только элементов в наборе
+            el.setSelected(checked);
+        }
         if (isContainer(el)) {
             setCheckedGrayed(el, null);
         } else {
@@ -808,13 +811,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setSubTreeChecked(TreeElement element, boolean selected) {
-        // Если элемент был проигнорирован, он будет в дереве, но его не будет в
-        // таблице и выбор или снятие галочки не должно затрагивать статус
-        // игнорированного элемента
-        if (elements.contains(element)) {
-            setChecked(element, selected);
-        }
-
+        setChecked(element, selected);
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
         }

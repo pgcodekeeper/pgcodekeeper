@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -16,6 +20,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
@@ -36,6 +41,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
+    protected final Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
 
     public String getOrigin() {
         return origin;
@@ -68,6 +74,10 @@ public abstract class DbSource {
         return dbObject != null;
     }
 
+    public Map<String, List<AntlrError>> getErrors() {
+        return Collections.unmodifiableMap(errors);
+    }
+
     protected DbSource(String origin) {
         this.origin = origin;
     }
@@ -79,6 +89,7 @@ public abstract class DbSource {
             throws LicenseException, IOException {
         return getPgDiffArgs(charset, ApgdiffConsts.UTC, forceUnixNewlines);
     }
+
     static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
             boolean forceUnixNewlines) throws LicenseException, IOException {
         PgDiffArguments args = new PgDiffArguments();
@@ -138,6 +149,13 @@ public abstract class DbSource {
     public static DbSource fromDbObject(PgDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
     }
+
+    /**
+     * Calls {@link #getDbObject()} on the argument.
+     */
+    public static DbSource fromDbObject(DbSource dbSource) {
+        return fromDbObject(dbSource.getDbObject(), dbSource.getOrigin());
+    }
 }
 
 class DbSourceDirTree extends DbSource {
@@ -160,7 +178,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines), monitor);
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor, errors);
     }
 }
 
@@ -170,7 +188,6 @@ class DbSourceProject extends DbSource {
 
     DbSourceProject(PgDbProject proj) {
         super(proj.getProjectName());
-
         this.proj = proj;
     }
 
@@ -188,7 +205,7 @@ class DbSourceProject extends DbSource {
         return PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null);
+                monitor, null, errors);
     }
 }
 
@@ -230,7 +247,9 @@ class DbSourceFile extends DbSource {
         try (PgDumpLoader loader = new PgDumpLoader(filename,
                 getPgDiffArgs(encoding, forceUnixNewlines),
                 monitor, 2)) {
-            return loader.load();
+            PgDatabase db = loader.load();
+            errors.put(filename.getPath(), loader.getErrors());
+            return db;
         }
     }
 

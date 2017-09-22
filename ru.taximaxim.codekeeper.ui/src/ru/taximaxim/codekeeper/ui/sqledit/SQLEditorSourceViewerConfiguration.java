@@ -4,9 +4,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -19,14 +16,12 @@ import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -59,26 +54,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return editor == null ? null : new SQLEditorTextHover(editor);
-    }
-
-    // Отображает всю строку при наведении на левую полосу редактора
-    @Override
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new IAnnotationHover() {
-
-            @Override
-            public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-                IDocument document= sourceViewer.getDocument();
-                try {
-                    IRegion info= document.getLineInformation(lineNumber);
-                    return document.get(info.getOffset(), info.getLength());
-                } catch (BadLocationException x) {
-                    Log.log(x);
-                }
-                return null;
-            }
-        };
+        return editor == null ? null : new SQLEditorTextHover(sourceViewer, editor);
     }
 
     @Override

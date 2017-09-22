@@ -265,7 +265,7 @@ public class DepcyResolver {
         default:
             break;
         }
-        
+
         PgSchema oldSchema = null;
         if (statement instanceof PgStatementWithSearchPath) {
             oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
@@ -440,7 +440,15 @@ public class DepcyResolver {
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
+
                 if (newTable == null) {
+                    return true;
+                }
+
+                // пропускаем также при recreate
+                StringBuilder sb = new StringBuilder();
+                if (oldObj.getParent().appendAlterSQL(newTable, sb, new AtomicBoolean())
+                        && sb.length() == 0) {
                     return true;
                 }
             }

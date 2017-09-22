@@ -3,7 +3,6 @@
 SELECT ccc.relname,
     c.conname,
     c.contype,
-    c.conkey::integer[],
     cf.relname AS foreign_table_name,
     (SELECT nsp.nspname
      FROM pg_catalog.pg_namespace nsp

@@ -14,6 +14,11 @@
             name="%context.name.keeperContext"
             parentId="org.eclipse.ui.contexts.window">
         </context>
+        <context
+            id="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            name="%context.name.keeperEditorContext"
+            parentId="org.eclipse.ui.textEditorScope">
+        </context>
     </extension>
     <extension point="org.eclipse.ui.commands">
         <category
@@ -25,6 +30,39 @@
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Diff"
             id="ru.taximaxim.codekeeper.ui.command.Diff"
             name="%command.commandname.Diff">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.CommitProject"
+            id="ru.taximaxim.codekeeper.ui.command.CommitProject"
+            name="%command.commandname.CommitProject">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.DiffProject"
+            id="ru.taximaxim.codekeeper.ui.command.DiffProject"
+            name="%command.commandname.DiffProject">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddDepcy"
+            id="ru.taximaxim.codekeeper.ui.command.AddDepcy"
+            name="%command.commandname.AddDepcy">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.GetChanges"
+            name="%command.commandname.GetChanges">
+            <commandParameter
+                id="ru.taximaxim.codekeeper.ui.commandParameter.DBCoords"
+                name="DBName"
+                optional="true">
+            </commandParameter>
+            <commandParameter
+                id="ru.taximaxim.codekeeper.ui.commandParameter.FilePath"
+                name="FilePath"
+                optional="true">
+            </commandParameter>
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -62,8 +100,72 @@
             id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
             name="%command.name.improvePerformanceJdbc">
         </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
+            id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+            name="%command.commandname.QuickUpdate">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddFile"
+            id="ru.taximaxim.codekeeper.ui.command.AddFile"
+            name="%command.commandname.AddFile">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDBStore"
+            id="ru.taximaxim.codekeeper.ui.command.OpenDBStore"
+            name="%command.commandname.OpenDBStore">
+        </command>
+    </extension>
+    <extension point="org.eclipse.ui.handlers">
+        <handler
+            class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
+            commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditorId">
+                        <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                        </equals>
+                    </with>
+                    <with variable="activeEditor">
+                        <not>
+                            <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                            </test>
+                        </not>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=group.open">
+            <menu
+                label="%menu.label.showIn"
+                commandId="org.eclipse.ui.navigate.showInQuickMenu"
+                id="ru.taximaxim.codekeeper.showInMenu"
+                mnemonic="%menu.mnemonic.showIn">
+                <dynamic
+                    class="org.eclipse.ui.ExtensionFactory:showInContribution"
+                    id="ru.taximaxim.codekeeper.dynamicShowInMenu">
+                </dynamic>
+                <visibleWhen checkEnabled="false">
+                    <iterate
+                        operator="or"
+                        ifEmpty="false">
+                        <test
+                            property="org.eclipse.core.resources.projectNature"
+                            value="ru.taximaxim.codekeeper.ui.nature">
+                        </test>
+                        <with variable="activeWorkbenchWindow.activePerspective">
+                            <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                            </equals>
+                        </with>
+                    </iterate>
+                </visibleWhen>
+            </menu>
+        </menuContribution>
         <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
@@ -125,9 +227,7 @@
                             </iterate>
                             <iterate>
                                 <not>
-                                    <test
-                                        forcePluginActivation="true"
-                                        property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
+                                    <test property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
                                     </test>
                                 </not>
                             </iterate>
@@ -163,25 +263,55 @@
                 </command>
             </menu>
         </menuContribution>
-        <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.ui.main.menu">
+        <menuContribution locationURI="menu:org.eclipse.ui.main.menu">
             <menu
                 id="ru.taximaxim.codekeeper.ui.mainmenu.pgcodekeeper"
                 label="%menu.label.pgcodekeeper.main"
                 mnemonic="%menu.mnemonic.pgcodekeeper.main">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
+                    icon="icons/app_icon16.png"
+                    label="%command.commandname.CommitProject"
+                    style="push">
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
+                    icon="icons/pgadmin/database.png"
+                    label="%command.commandname.DiffProject"
+                    style="push">
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+                    icon="icons/refresh.png"
+                    label="%command.commandname.GetChanges"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    visible="true">
+                </separator>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+                    icon="icons/quick_update.png"
+                    label="%command.commandname.QuickUpdate"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    visible="true">
+                </separator>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                     label="%command.label.diffWizard"
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-                    label="%command.label.improvePerformanceJdbc"
-                    mnemonic="%command.mnemonic.improvePerformanceJdbc"
-                    style="push">
-                </command>
+                <menu label="%command.label.improvePerformanceJdbc">
+                    <dynamic
+                        class="ru.taximaxim.codekeeper.ui.menuitems.JdbcPerfVersionsDynamic"
+                        id="ru.taximaxim.codekeeper.ui.dynamicJdbcPerf">
+                    </dynamic>
+                </menu>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator1"
                     visible="true">
@@ -193,12 +323,119 @@
                     style="push">
                 </command>
                 <visibleWhen checkEnabled="false">
-                    <with variable="activeWorkbenchWindow.activePerspective">
-                        <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
-                        </equals>
-                    </with>
+                    <or>
+                        <with variable="activeWorkbenchWindow.activePerspective">
+                            <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                            </equals>
+                        </with>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                                </equals>
+                            </or>
+                        </with>
+                        <with variable="selection">
+                            <iterate ifEmpty="false">
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test
+                                        property="org.eclipse.core.resources.projectNature"
+                                        value="ru.taximaxim.codekeeper.ui.nature">
+                                    </test>
+                                </adapt>
+                            </iterate>
+                        </with>
+                    </or>
                 </visibleWhen>
             </menu>
+        </menuContribution>
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
+                    icon="icons/app_icon16.png"
+                    label="%command.commandname.CommitProject"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
+                    icon="icons/pgadmin/database.png"
+                    label="%command.commandname.DiffProject"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+                    icon="icons/refresh.png"
+                    label="%command.commandname.GetChanges"
+                    style="pulldown">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </toolbar>
+        </menuContribution>
+        <menuContribution locationURI="menu:ru.taximaxim.codekeeper.ui.command.GetChanges">
+            <dynamic
+                class="ru.taximaxim.codekeeper.ui.menuitems.DbStoreList"
+                id="ru.taximaxim.codekeeper.ui.dynamic.DbStoreList">
+            </dynamic>
+            <separator
+                name="ru.taximaxim.codekeeper.ui.separator.first"
+                visible="true">
+            </separator>
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.command.AddFile"
+                label="%command.commandname.AddFile"
+                style="push">
+            </command>
+            <dynamic
+                class="ru.taximaxim.codekeeper.ui.menuitems.FileStoreList"
+                id="ru.taximaxim.codekeeper.ui.dynamic.FileStoreList">
+            </dynamic>
+            <separator
+                name="ru.taximaxim.codekeeper.ui.separator.second"
+                visible="true">
+            </separator>
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.command.OpenDBStore"
+                icon="icons/editor_area.png"
+                label="%command.commandname.OpenDBStore"
+                style="push">
+            </command>
+        </menuContribution>
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+                    icon="icons/quick_update.png"
+                    label="%command.commandname.QuickUpdate"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                            </equals>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </toolbar>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
@@ -367,9 +604,8 @@
         <target
             id="ru.taximaxim.codekeeper.ui.SQLEditorTarget"
             name="SQL Editor Target">
-           <context
-                 type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
-           </context>
+            <context type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+            </context>
         </target>
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -446,6 +682,8 @@
                 relationship="stack"
                 relative="org.eclipse.ui.console.ConsoleView">
             </view>
+            <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
+            </showInPart>
         </perspectiveExtension>
     </extension>
     <extension
@@ -463,7 +701,14 @@
             id="ru.taximaxim.codekeeper.ui.BuilderTester"
             namespace="ru.taximaxim.codekeeper.ui.builders"
             properties="isEnabled"
-            type="java.lang.Object">
+            type="org.eclipse.core.resources.IProject">
+        </propertyTester>
+        <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester"
+            id="ru.taximaxim.codekeeper.ui.ChangesJobTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isGetChangesRunning"
+            type="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer">
         </propertyTester>
     </extension>
     <extension
@@ -654,23 +899,23 @@
     </extension>
     <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-              annotationType="ru.taximaxim.codekeeper.ui.sql.dangerannotation"
-              colorPreferenceKey="clcolor"
-              colorPreferenceValue="255, 146, 130"
-              contributesToHeader="true"
-              highlightPreferenceKey="clhighlight"
-              highlightPreferenceValue="true"
-              includeOnPreferencePage="true"
-              label="pgCodeKeeper Dangerous Statement"
-              overviewRulerPreferenceKey="clruler"
-              overviewRulerPreferenceValue="true"
-              symbolicIcon="warning"
-              textPreferenceKey="cltext"
-              textPreferenceValue="false"
-              textStylePreferenceKey="clstyle"
-              textStylePreferenceValue="BOX"
-              verticalRulerPreferenceKey="clvertical"
-              verticalRulerPreferenceValue="true"/>
+            annotationType="ru.taximaxim.codekeeper.ui.sql.dangerannotation"
+            colorPreferenceKey="clcolor"
+            colorPreferenceValue="255, 146, 130"
+            contributesToHeader="true"
+            highlightPreferenceKey="clhighlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="%annotation.specification.label"
+            overviewRulerPreferenceKey="clruler"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="warning"
+            textPreferenceKey="cltext"
+            textPreferenceValue="false"
+            textStylePreferenceKey="clstyle"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="clvertical"
+            verticalRulerPreferenceValue="true" />
     </extension>
     <extension point="org.eclipse.ui.editors.markerUpdaters">
         <updater
@@ -684,5 +929,34 @@
             configId="org.eclipse.ui.intro.universalConfig"
             content="$nl$/intro/pgcodekeeper_intro.xml">
         </configExtension>
+    </extension>
+    <extension
+        point="org.eclipse.ui.bindings"
+        id="ru.taximaxim.codekeeper.ui.bindings"
+        name="ru.taximaxim.codekeeper.ui.bindings.hotKey">
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+F5">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+S">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+D">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+A">
+        </key>
     </extension>
 </plugin>
