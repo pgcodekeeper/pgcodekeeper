@@ -24,7 +24,7 @@ public class UpdateDdl extends AbstractHandler {
         if (part instanceof SQLEditor){
             SQLEditor sqlEditor = (SQLEditor) part;
 
-            if (sqlEditor.getLastDb() != null) {
+            if (sqlEditor.getCurrentDb() != null) {
                 sqlEditor.updateDdl();
             } else {
                 MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);

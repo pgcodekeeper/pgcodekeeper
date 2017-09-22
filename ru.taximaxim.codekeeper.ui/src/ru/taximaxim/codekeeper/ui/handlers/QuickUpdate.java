@@ -20,7 +20,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -60,7 +62,7 @@ public class QuickUpdate extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-        DbInfo dbInfo = editor.getLastDb();
+        DbInfo dbInfo = editor.getCurrentDb();
         if (dbInfo == null){
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
@@ -80,7 +82,16 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_error_charset, e);
             return null;
         }
-        new QuickUpdateJob(editor, file, dbInfo, textSnapshot).schedule();
+
+        QuickUpdateJob quickUpdateJob = new QuickUpdateJob(editor, file, dbInfo, textSnapshot);
+        quickUpdateJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                editor.setLastDb(dbInfo);
+            }
+        });
+        quickUpdateJob.schedule();
+
         return null;
     }
 

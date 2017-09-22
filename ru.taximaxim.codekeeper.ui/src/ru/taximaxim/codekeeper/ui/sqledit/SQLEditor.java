@@ -24,7 +24,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -123,7 +125,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private volatile boolean isRunning;
     private Thread scriptThread;
 
-    private DbInfo lastDB;
+    private DbInfo currentDB;
 
     private volatile boolean updateDdlJobInProcessing;
     private volatile boolean quickUpdateJobInProcessing;
@@ -184,21 +186,39 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public void setLastDb(DbInfo lastDb) {
-        this.lastDB = lastDb;
-    }
-
-    public DbInfo getLastDb() {
-        if (lastDB != null) {
-            return lastDB;
-        }
-
         IEditorInput editorInput = getEditorSite().getPage().getActiveEditor().getEditorInput();
         if(editorInput instanceof IFileEditorInput) {
             PgDbProject proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
-            List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
+            proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.toString());
+        }
+    }
+
+    public DbInfo getLastDb() {
+        IEditorInput editorInput = getEditorSite().getPage().getActiveEditor().getEditorInput();
+        if(editorInput instanceof IFileEditorInput) {
+            PgDbProject proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
+            List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
+
+            if(!lastStore.isEmpty()) {
+                return lastStore.get(0);
+            }
+
+            lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
             return lastStore.isEmpty() ? null : lastStore.get(0);
         } else {
             return null;
+        }
+    }
+
+    public void setCurrentDb(DbInfo currentDB) {
+        this.currentDB = currentDB;
+    }
+
+    public DbInfo getCurrentDb() {
+        if (currentDB != null) {
+            return currentDB;
+        } else {
+            return getLastDb();
         }
     }
 
@@ -447,7 +467,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (!mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE)){
                 Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-                DbInfo dbInfo = getLastDb();
+                DbInfo dbInfo = getCurrentDb();
                 if (dbInfo == null){
                     ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
                     return;
@@ -494,7 +514,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                             Messages.SqlScriptDialog_error_adding_command_history, e);
                 }
                 final List<String> command = new ArrayList<>(Arrays.asList(
-                        getReplacedString(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT), lastDB)
+                        getReplacedString(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT), currentDB)
                         .split(" "))); //$NON-NLS-1$
 
                 launcher = new RunScriptExternal(textRetrieved, command);
@@ -510,7 +530,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 }
             });
 
-            new ScriptThreadJobWrapper(scriptThread).schedule();
+            ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+            scriptThreadJobWrapper.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    setLastDb(currentDB);
+                }
+            });
+            scriptThreadJobWrapper.schedule();
 
             isRunning = true;
             parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));

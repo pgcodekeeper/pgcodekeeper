@@ -39,7 +39,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
                 if(editorPart instanceof SQLEditor) {
                     Object selectedObj = event.getStructuredSelection().getFirstElement();
                     DbInfo selectedDB = selectedObj instanceof DbInfo ? (DbInfo)selectedObj : null;
-                    ((SQLEditor)editorPart).setLastDb(selectedDB);
+                    ((SQLEditor)editorPart).setCurrentDb(selectedDB);
                 }
             }
         });
@@ -70,10 +70,10 @@ class EditorPartListener extends IPartAdapter2 {
     public void partActivated(IWorkbenchPartReference partRef) {
         IWorkbenchPart part = partRef.getPart(false);
         if (part instanceof SQLEditor) {
-            if(((SQLEditor)part).getLastDb() == null) {
+            if(((SQLEditor)part).getCurrentDb() == null) {
                 storePicker.clearSelection();
             } else {
-                StructuredSelection selection = new StructuredSelection(((SQLEditor)part).getLastDb());
+                StructuredSelection selection = new StructuredSelection(((SQLEditor)part).getCurrentDb());
                 storePicker.setSelection(selection);
             }
         }
