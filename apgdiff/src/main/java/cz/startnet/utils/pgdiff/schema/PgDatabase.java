@@ -126,6 +126,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addSchema(final PgSchema schema) {
+        assertUnique(this::getSchema, schema);
         schemas.add(schema);
         schema.setParent(this);
         resetHash();
@@ -158,6 +159,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addExtension(final PgExtension extension) {
+        assertUnique(this::getExtension, extension);
         extensions.add(extension);
         extension.setParent(this);
         resetHash();

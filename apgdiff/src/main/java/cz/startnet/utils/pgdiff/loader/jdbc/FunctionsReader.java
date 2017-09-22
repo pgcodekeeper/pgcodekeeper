@@ -35,20 +35,8 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgFunction function = getFunction(result, schema.getName());
-        if (function != null) {
-            schema.addFunction(function);
-        }
-    }
-
-    /**
-     * Returns function object accordingly to data stored in current res row
-     * (except for aggregate functions).
-     * Defines function body from Postgres pg_get_functiondef() output.
-     * @throws WrapperAccessException
-     */
-    private PgFunction getFunction(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
@@ -86,19 +74,6 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
         }
 
-        // ARGUMENTS
-        // TODO manually assemble function sig instead of parsing?
-        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
-        // Benchmark               Mode  Cnt       Score      Error  Units
-        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
-        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
-        String arguments = res.getString("proarguments");
-        if (!arguments.isEmpty()) {
-            loader.submitAntlrTask('(' + arguments + ')',
-                    p -> p.function_args_parser().function_args(),
-                    ctx -> ParserAbstract.fillArguments(ctx, f, schemaName));
-        }
-
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
 
@@ -112,7 +87,26 @@ public class FunctionsReader extends JdbcReader {
         if (comment != null && !comment.isEmpty()) {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
-        return f;
+
+        // ARGUMENTS
+        // TODO manually assemble function sig instead of parsing?
+        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
+        // Benchmark               Mode  Cnt       Score      Error  Units
+        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
+        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
+        //
+        // This is the last one, because addFunction requires filled function arguments
+        String arguments = res.getString("proarguments");
+        if (!arguments.isEmpty()) {
+            loader.submitAntlrTask('(' + arguments + ')',
+                    p -> p.function_args_parser().function_args(),
+                    ctx -> {
+                        ParserAbstract.fillArguments(ctx, f, schemaName);
+                        schema.addFunction(f);
+                    });
+        } else {
+            schema.addFunction(f);
+        }
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {

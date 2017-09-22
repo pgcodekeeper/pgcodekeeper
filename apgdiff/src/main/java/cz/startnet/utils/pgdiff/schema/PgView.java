@@ -68,6 +68,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
+        assertUnique(this::getRule, rule);
         rules.add(rule);
         rule.setParent(this);
         resetHash();
@@ -98,6 +99,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
+        assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();

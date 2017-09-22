@@ -715,24 +715,28 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void addColumn(final PgColumn column) {
+        assertUnique(this::getColumn, column);
         columns.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addColumnOfType(final PgColumn column) {
+        assertUnique(this::getColumnOfType, column);
         columnsOfType.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addConstraint(final PgConstraint constraint) {
+        assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();
     }
 
     public void addIndex(final PgIndex index) {
+        assertUnique(this::getIndex, index);
         indexes.add(index);
         index.setParent(this);
         resetHash();
@@ -740,6 +744,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
+        assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
@@ -747,6 +752,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
+        assertUnique(this::getRule, rule);
         rules.add(rule);
         rule.setParent(this);
         resetHash();
@@ -754,6 +760,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public boolean containsColumn(final String name) {
         return getColumn(name) != null;
+    }
+
+    public boolean containsColumnOfType(final String name) {
+        return getColumnOfType(name) != null;
     }
 
     public boolean containsConstraint(final String name) {
