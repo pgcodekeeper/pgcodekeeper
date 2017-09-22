@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,15 +10,11 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -28,7 +23,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -44,7 +38,6 @@ IWorkbenchPreferencePage {
     private final XmlHistory history;
 
     private Combo cmbScript;
-    private Button booleanFieldEditorCheckBox;
 
     public DbUpdatePrefPage() {
         super(GRID);
@@ -110,31 +103,13 @@ IWorkbenchPreferencePage {
         BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
         addField(commandLineDdlUpdate);
-
-        try {
-            booleanFieldEditorCheckBox = getBooleanFieldEditorCheckBox(commandLineDdlUpdate);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            Log.log(Log.LOG_INFO, "An exception when getting the checkbox object from the preferences."); //$NON-NLS-1$
-        }
-    }
-
-    private Button getBooleanFieldEditorCheckBox(BooleanFieldEditor booleanFieldEditor)
-            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        Field f = booleanFieldEditor.getClass().getDeclaredField("checkBox");
-        f.setAccessible(true);
-        return (Button) f.get(booleanFieldEditor);
     }
 
     @Override
     protected Control createContents(Composite parent) {
-        super.createContents(parent);
+        Composite parentComposite = (Composite)super.createContents(parent);
 
-        IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-
-        GridLayout lay = new GridLayout();
-        parent.setLayout(lay);
-
-        final Composite notJdbc = new Composite(parent, SWT.NONE);
+        final Composite notJdbc = new Composite(parentComposite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         notJdbc.setLayoutData(gd);
 
@@ -166,65 +141,6 @@ IWorkbenchPreferencePage {
             }
         });
 
-        updateList();
-
-        mainPrefs.addPropertyChangeListener(new IPropertyChangeListener(){
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if(!notJdbc.isDisposed()
-                        && DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE.equals(event.getProperty())) {
-                    boolean isCmd = mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE);
-                    notJdbc.setVisible(isCmd);
-                    ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
-
-                    mainPrefs.setValue(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT, cmbScript.getText());
-
-                    parent.layout();
-                }
-            }
-        });
-        mainPrefs.firePropertyChangeEvent(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
-                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE),
-                mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE));
-
-        if(booleanFieldEditorCheckBox != null) {
-            booleanFieldEditorCheckBox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean isCmd = booleanFieldEditorCheckBox.getSelection();
-                    notJdbc.setVisible(isCmd);
-                    ((GridData)notJdbc.getLayoutData()).exclude = !isCmd;
-
-                    parent.layout();
-                }
-            });
-        }
-
-        return parent;
-    }
-
-    @Override
-    protected void performDefaults() {
-        super.performDefaults();
-        updateList();
-    }
-
-    @Override
-    public boolean performOk() {
-        try {
-            if(Arrays.stream(cmbScript.getItems()).noneMatch(cmbScript.getText()::equals)) {
-                cmbScript.add(cmbScript.getText(), 0);
-            }
-
-            history.setHistory(Arrays.asList(cmbScript.getItems()));
-        } catch (IOException e) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
-        }
-
-        return super.performOk();
-    }
-
-    private void updateList() {
         LinkedList<String> list = null;
         try {
             list = history.getHistory();
@@ -241,5 +157,28 @@ IWorkbenchPreferencePage {
             cmbScript.add(el);
         }
         cmbScript.select(0);
+
+        return parentComposite;
+    }
+
+    @Override
+    public boolean performOk() {
+        try {
+            String[] allItems = cmbScript.getItems();
+            String currentSelectedText = cmbScript.getText();
+
+            if(Arrays.stream(allItems).noneMatch(currentSelectedText::equals)) {
+                cmbScript.add(currentSelectedText, 0);
+            }
+
+            history.setHistory(Arrays.asList(allItems));
+
+            Activator.getDefault().getPreferenceStore().setValue(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT, currentSelectedText);
+
+        } catch (IOException e) {
+            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
+        }
+
+        return super.performOk();
     }
 }
