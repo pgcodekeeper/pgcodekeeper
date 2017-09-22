@@ -6,8 +6,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ObjectCreationException extends RuntimeException {
 
-    private static final String WITHOUT_PARENT = "{0} {1} is already exists"; //$NON-NLS-1$
-    private static final String WITH_PARENT = "{0} {1} for {2} {3} is already exists"; //$NON-NLS-1$
+    private static final String WITHOUT_PARENT = "{0} {1} already exists"; //$NON-NLS-1$
+    private static final String WITH_PARENT = "{0} {1} already exists for {2} {3}"; //$NON-NLS-1$
 
     private static final long serialVersionUID = 5311778753075252457L;
 

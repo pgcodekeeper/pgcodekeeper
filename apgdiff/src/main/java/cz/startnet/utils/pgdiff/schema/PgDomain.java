@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgDomain extends PgStatementWithSearchPath {
@@ -68,9 +67,7 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     public void addConstraint(PgConstraint constraint) {
-        if (getConstraint(constraint.getName()) != null) {
-            throw new ObjectCreationException(constraint, this);
-        }
+        assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();

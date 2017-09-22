@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -716,38 +715,28 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void addColumn(final PgColumn column) {
-        if (containsColumn(column.getName())) {
-            throw new ObjectCreationException(column, this);
-        }
+        assertUnique(this::getColumn, column);
         columns.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addColumnOfType(final PgColumn column) {
-        if (containsColumnOfType(column.getName())) {
-            throw new ObjectCreationException(column, this);
-        }
+        assertUnique(this::getColumnOfType, column);
         columnsOfType.add(column);
         column.setParent(this);
         resetHash();
     }
 
     public void addConstraint(final PgConstraint constraint) {
-        if (getParent() != null && getContainingSchema().getTables().stream()
-                .filter(t -> t.containsConstraint(constraint.getName())).count() > 0) {
-            throw new ObjectCreationException(constraint);
-        }
+        assertUnique(this::getConstraint, constraint);
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();
     }
 
     public void addIndex(final PgIndex index) {
-        if (getParent() != null && getContainingSchema().getTables().stream()
-                .filter(t -> t.containsIndex(index.getName())).count() > 0) {
-            throw new ObjectCreationException(index);
-        }
+        assertUnique(this::getIndex, index);
         indexes.add(index);
         index.setParent(this);
         resetHash();
@@ -755,9 +744,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
-        if (containsTrigger(trigger.getName())) {
-            throw new ObjectCreationException(trigger, this);
-        }
+        assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
@@ -765,9 +752,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
-        if (containsRule(rule.getName())) {
-            throw new ObjectCreationException(rule, this);
-        }
+        assertUnique(this::getRule, rule);
         rules.add(rule);
         rule.setParent(this);
         resetHash();
