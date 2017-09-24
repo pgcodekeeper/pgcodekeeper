@@ -6,6 +6,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -126,8 +127,6 @@ public class DiffTableViewer extends Composite {
 
     private DbSource dbProject, dbRemote;
 
-    private final List<DbObjType> types = new ArrayList<>(8);
-    private final List<DiffSide> sides = new ArrayList<>(3);
     private Map<String, List<String>> prevChecked;
     private final XmlHistory prevCheckedHistory;
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
@@ -235,12 +234,13 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    FilterDialog dialog = new FilterDialog(getShell(), types, sides);
+                    FilterDialog dialog = new FilterDialog(
+                            getShell(), viewerFilter.types, viewerFilter.sides);
                     if(dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
-                                        types.isEmpty() && sides.isEmpty() ?
-                                                FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
+                                        viewerFilter.types.isEmpty() && viewerFilter.sides.isEmpty()
+                                        ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
                 }
@@ -834,11 +834,7 @@ public class DiffTableViewer extends Composite {
             Set<TreeElement> rootTableEntries = new HashSet<>(input.size());
             for (Object o : input) {
                 TreeElement el = (TreeElement) o;
-                el = isSubElement(el) ? el.getParent() : el;
-                if ((types.isEmpty() || types.contains(el.getType()))
-                        && (sides.isEmpty() || sides.contains(el.getSide()))) {
-                    rootTableEntries.add(el);
-                }
+                rootTableEntries.add(isSubElement(el) ? el.getParent() : el);
             }
             return rootTableEntries.toArray();
         }
@@ -1068,6 +1064,8 @@ public class DiffTableViewer extends Composite {
 
     private class TableViewerFilter extends ViewerFilter {
 
+        private final Collection<DbObjType> types = EnumSet.noneOf(DbObjType.class);
+        private final Collection<DiffSide> sides = EnumSet.noneOf(DiffSide.class);
         private String filterName;
         private boolean useRegEx;
         private Pattern regExPattern;
@@ -1092,11 +1090,17 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
+            TreeElement el = (TreeElement) element;
+
+            if (!types.isEmpty() && !types.contains(el.getType())
+                    || !sides.isEmpty() && !sides.contains(el.getSide())) {
+                return false;
+            }
+
             if (filterName == null) {
                 return true;
             }
             Pattern filterRegex = useRegEx ? regExPattern : null;
-            TreeElement el = (TreeElement) element;
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();

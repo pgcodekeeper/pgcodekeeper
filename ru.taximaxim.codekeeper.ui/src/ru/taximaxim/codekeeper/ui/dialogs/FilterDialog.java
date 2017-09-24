@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -35,8 +34,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class FilterDialog extends Dialog {
 
     private CheckboxTableViewer objViewer, chgViewer;
-    private final List<DbObjType> types;
-    private final List<DiffSide> sides;
+    private final Collection<DbObjType> types;
+    private final Collection<DiffSide> sides;
 
     /**
      * Creates a dialog instance. Note that the window will have no visual
@@ -56,7 +55,7 @@ public class FilterDialog extends Dialog {
      * @see DbObjType
      * @see DiffSide
      */
-    public FilterDialog(Shell parentShell, List<DbObjType> types, List<DiffSide> sides) {
+    public FilterDialog(Shell parentShell, Collection<DbObjType> types, Collection<DiffSide> sides) {
         super(parentShell);
         this.types = types;
         this.sides = sides;
@@ -88,7 +87,7 @@ public class FilterDialog extends Dialog {
 
         chgViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
         chgViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        chgViewer.setContentProvider(new ArrayContentProvider());
+        chgViewer.setContentProvider(ArrayContentProvider.getInstance());
         chgViewer.setLabelProvider(new LabelProvider() {
 
             @Override
@@ -135,11 +134,11 @@ public class FilterDialog extends Dialog {
         types.clear();
         sides.clear();
 
-        for (Object obj : Arrays.asList(objViewer.getCheckedElements())) {
+        for (Object obj : objViewer.getCheckedElements()) {
             types.add((DbObjType)obj);
         }
 
-        for (Object chg : Arrays.asList(chgViewer.getCheckedElements())) {
+        for (Object chg : chgViewer.getCheckedElements()) {
             sides.add((DiffSide)chg);
         }
 
