@@ -198,12 +198,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if(editorInput instanceof IFileEditorInput) {
             PgDbProject proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
             List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-
-            if(!lastStore.isEmpty()) {
-                return lastStore.get(0);
-            }
-
-            lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
             return lastStore.isEmpty() ? null : lastStore.get(0);
         } else {
             return null;

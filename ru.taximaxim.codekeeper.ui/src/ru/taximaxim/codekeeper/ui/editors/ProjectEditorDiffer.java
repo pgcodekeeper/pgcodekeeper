@@ -564,6 +564,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
+        proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, getLastDb().toString());
+
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
 
