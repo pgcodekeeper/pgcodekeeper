@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -16,20 +17,24 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
-public class JdbcLoader extends JdbcLoaderBase {
+public class JdbcTimestampLoader extends JdbcLoaderBase {
 
     private boolean useServerHelpers = true;
 
-    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
+    public JdbcTimestampLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
 
-    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
+    public JdbcTimestampLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
             SubMonitor monitor) {
         super(connector, monitor, pgDiffArguments);
     }
@@ -38,7 +43,7 @@ public class JdbcLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase getDbFromJdbc(PgDatabase db, String projectName) throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
@@ -53,9 +58,26 @@ public class JdbcLoader extends JdbcLoaderBase {
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
+            if (SupportedVersion.VERSION_9_3.checkVersion(version) && db != null) {
+                queryCheckTimestamps();
+            }
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
+
+            List<ObjectTimestamp> objects;
+            DBTimestamp projTime = DBTimestamp.getDBTimastamp(projectName);
+            DBTimestamp dbTime = new TimestampsReader(this, timeSchema).read();
+            if (projTime != null) {
+                //              readWithDb();
+                objects = new DBTimestampPair(projTime, dbTime).compare();
+            } else {
+                //            readWithoutDb();
+            }
+
+
+
+
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {

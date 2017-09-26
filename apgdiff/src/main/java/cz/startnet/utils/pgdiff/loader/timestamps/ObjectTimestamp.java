@@ -12,16 +12,36 @@ public class ObjectTimestamp implements Serializable{
 
     private final GenericColumn object;
     private final String hash;
+    private final Long objId;
     private final Instant modificationTime;
 
     public ObjectTimestamp(GenericColumn object, String hash, Instant modificationtime) {
         this.object = object;
         this.hash = hash;
         this.modificationTime = modificationtime;
+        objId = null;
+    }
+
+    public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime) {
+        this.object = object;
+        this.objId = objid;
+        this.modificationTime = modificationtime;
+        hash = null;
+    }
+
+    public ObjectTimestamp(GenericColumn object, String hash, long objid, Instant modificationtime) {
+        this.object = object;
+        this.objId = objid;
+        this.hash = hash;
+        this.modificationTime = modificationtime;
     }
 
     public GenericColumn getObject() {
         return object;
+    }
+
+    public Long getObjId() {
+        return objId;
     }
 
     public String getHash() {

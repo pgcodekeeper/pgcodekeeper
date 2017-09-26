@@ -96,12 +96,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImproveTimestampKeeper"
-            id="ru.taximaxim.codekeeper.ui.command.improveTimestampKeeper"
-            name="%command.name.improveTimestampKeeper">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.QuickUpdate"
             id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
             name="%command.commandname.QuickUpdate">
@@ -316,12 +310,6 @@
                     name="ru.taximaxim.codekeeper.ui.separator1"
                     visible="true">
                 </separator>
-                <command
-                      commandId="ru.taximaxim.codekeeper.ui.command.improveTimestampKeeper"
-                      label="%command.label.improveTimestampKeeper"
-                      mnemonic="%command.mnemonic.improveTimestampKeeper"
-                      style="push">
-                </command>
                 <separator
                       name="ru.taximaxim.codekeeper.ui.separator1"
                       visible="true">

@@ -34,7 +34,6 @@ public final class JdbcQueries {
     public static String QUERY_CHECK_TIMESTAMPS;
 
     public static String QUERY_OBJECTS_TIMESTAMP;
-    public static String QUERY_TIMESTAMPS;
 
     public static String QUERY_HELPER_FUNCTION_TEMPLATE;
     public static String QUERY_HELPER_FUNCTIONS_BEGIN;

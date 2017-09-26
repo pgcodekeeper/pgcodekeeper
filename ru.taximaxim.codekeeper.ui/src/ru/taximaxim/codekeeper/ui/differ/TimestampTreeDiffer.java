@@ -19,11 +19,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class TimestampTreeDiffer extends TreeDiffer {
 
-    private final String projectName;
-
-    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget, String projectName) {
+    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget) {
         super(dbSource, dbTarget, false);
-        this.projectName = projectName;
     }
 
     @Override
@@ -31,29 +28,19 @@ public class TimestampTreeDiffer extends TreeDiffer {
             throws InvocationTargetException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor,
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
-
-        if (dbSource instanceof DbSourceProject && dbTarget instanceof DbSourceJdbc) {
-            loadSequentially((DbSourceProject) dbSource, (DbSourceJdbc) dbTarget, pm);
-        }
-
-        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
-        + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
-
-        pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
-
-        PgDiffUtils.checkCancelled(pm);
-        monitor.done();
-    }
-
-    private void loadSequentially(DbSourceProject dbSource, DbSourceJdbc dbTarget,
-            SubMonitor monitor) throws InterruptedException {
         try {
-            PgDatabase db = dbSource.get(monitor);
-            dbTarget.setProjectDb(db);
-            dbTarget.setProjectName(projectName);
-            dbTarget.get(monitor);
-        } catch (IOException | LicenseException | CoreException ex) {
+            PgDatabase dbSrc = dbSource.get(pm);
+            PgDatabase dbTgt = dbTarget.get(pm);
+            Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
+            + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
+
+            pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
+            diffTree = DiffTree.create(dbSrc, dbTgt, pm);
+
+            PgDiffUtils.checkCancelled(pm);
+            monitor.done();
+
+        }  catch (IOException | LicenseException | CoreException ex) {
             Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);
         }
     }

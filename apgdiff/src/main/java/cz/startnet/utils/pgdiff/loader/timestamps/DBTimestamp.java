@@ -10,13 +10,11 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
@@ -79,8 +77,10 @@ public class DBTimestamp implements Serializable {
     }
 
     public static void updateObjects (PgDatabase db, String project) {
-        DBTimestamp timestamp = deserialise(project);
-
+        DBTimestamp timestamp = getDBTimastamp(project);
+        if (timestamp == null) {
+            timestamp = deserialise(project);
+        }
         if (timestamp != null) {
             Map <GenericColumn, String> statements = new HashMap<>();
             db.getExtensions().forEach(e -> statements.put(
@@ -132,7 +132,6 @@ public class DBTimestamp implements Serializable {
             }
 
             PROJ_TIMESTAMPS.put(project, timestamp);
-
             serialize(project, timestamp);
         }
     }
@@ -141,12 +140,8 @@ public class DBTimestamp implements Serializable {
         return PROJ_TIMESTAMPS.get(project);
     }
 
-    public void addObject (String schema, String object, DbObjType type, String hash, Instant instant) {
-        objects.add(new ObjectTimestamp(new GenericColumn(schema, object, type), hash, instant));
-    }
-
-    public void addObject (String schema, String object, String column, DbObjType type, String hash, Instant instant) {
-        objects.add(new ObjectTimestamp(new GenericColumn(schema, object, column, type), hash, instant));
+    public void addObject (ObjectTimestamp obj) {
+        objects.add(obj);
     }
 
     /**
@@ -161,39 +156,7 @@ public class DBTimestamp implements Serializable {
                 .resolve("projects"); //$NON-NLS-1$
     }
 
-    public static List<ObjectTimestamp> compare(DBTimestamp proj, DBTimestamp db) {
-        return proj.getObjects().stream().filter(e -> db.getObjects().contains(e)).collect(Collectors.toList());
-    }
-
     public static void search() {
 
-        // TODO Auto-generated method stub
-
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

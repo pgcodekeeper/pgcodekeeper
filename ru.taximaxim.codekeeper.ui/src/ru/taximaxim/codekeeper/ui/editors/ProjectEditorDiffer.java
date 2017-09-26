@@ -454,13 +454,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
-        DbSource dbProject = DbSource.fromProject(proj);
+        DbSource dbProj = DbSource.fromProject(proj);
         reset();
         hideNotificationArea();
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer;
-        newDiffer = new TimestampTreeDiffer(dbProject, dbRemote, proj.getProjectName());
+        final TreeDiffer newDiffer = new TimestampTreeDiffer(dbProj, dbRemote);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
@@ -496,7 +495,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
-                            setInput(dbProject, dbRemote, newDiffer.getDiffTree());
+                            setInput(dbProj, dbRemote, newDiffer.getDiffTree());
                         }
                     });
                 }
