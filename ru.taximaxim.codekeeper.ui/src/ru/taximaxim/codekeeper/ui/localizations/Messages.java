@@ -483,11 +483,9 @@ public final class Messages extends NLS {
 
     public static String FeedBackDialog_could_not_send;
 
-    public static String FeedBackDialog_emty_msg;
+    public static String FeedBackDialog_empty_fields_message;
 
-    public static String FeedBackDialog_enter_email;
-
-    public static String FeedBackDialog_enter_msg;
+    public static String FeedBackDialog_empty_fields_title;
 
     public static String FeedBackDialog_failure_instruction;
 
@@ -500,6 +498,8 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_invalid_address;
 
     public static String FeedBackDialog_send;
+
+    public static String FeedBackDialog_subject;
 
     public static String FeedBackDialog_thank_you;
 
