@@ -53,16 +53,6 @@
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.GetChanges"
             name="%command.commandname.GetChanges">
-            <commandParameter
-                id="ru.taximaxim.codekeeper.ui.commandParameter.DBCoords"
-                name="DBName"
-                optional="true">
-            </commandParameter>
-            <commandParameter
-                id="ru.taximaxim.codekeeper.ui.commandParameter.FilePath"
-                name="FilePath"
-                optional="true">
-            </commandParameter>
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -406,7 +396,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
-                    style="pulldown">
+                    style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
                             <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
@@ -414,6 +404,20 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <separator
+                      name="ru.taximaxim.codekeeper.ui.separator.first"
+                      visible="true">
+                </separator>
+                <control
+                      class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreComboProject"
+                      id="ru.taximaxim.codekeeper.ui.DBStoreComboProject">
+                      <visibleWhen checkEnabled="true">
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                            </equals>
+                        </with>
+                      </visibleWhen>
+                </control>
             </toolbar>
         </menuContribution>
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
@@ -457,35 +461,6 @@
                       </visibleWhen>
                 </control>
             </toolbar>
-        </menuContribution>
-        <menuContribution locationURI="menu:ru.taximaxim.codekeeper.ui.command.GetChanges">
-            <dynamic
-                class="ru.taximaxim.codekeeper.ui.menuitems.DbStoreList"
-                id="ru.taximaxim.codekeeper.ui.dynamic.DbStoreList">
-            </dynamic>
-            <separator
-                name="ru.taximaxim.codekeeper.ui.separator.first"
-                visible="true">
-            </separator>
-            <command
-                commandId="ru.taximaxim.codekeeper.ui.command.AddFile"
-                label="%command.commandname.AddFile"
-                style="push">
-            </command>
-            <dynamic
-                class="ru.taximaxim.codekeeper.ui.menuitems.FileStoreList"
-                id="ru.taximaxim.codekeeper.ui.dynamic.FileStoreList">
-            </dynamic>
-            <separator
-                name="ru.taximaxim.codekeeper.ui.separator.second"
-                visible="true">
-            </separator>
-            <command
-                commandId="ru.taximaxim.codekeeper.ui.command.OpenDBStore"
-                icon="icons/editor_area.png"
-                label="%command.commandname.OpenDBStore"
-                style="push">
-            </command>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">

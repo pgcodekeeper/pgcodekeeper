@@ -160,6 +160,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private volatile boolean getChangesJobInProcessing;
 
+    public void setLastRemote(Object lastRemote) {
+        this.lastRemote = lastRemote;
+        proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE,
+                ((lastRemote != null) && (lastRemote instanceof DbInfo)) ? lastRemote.toString() : "");
+    }
+
     public boolean isGetChangesJobInProcessing() {
         return getChangesJobInProcessing;
     }
@@ -564,7 +570,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
-        proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, getLastDb().toString());
+        Object lastDb = getLastDb();
+        proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR,
+                ((lastDb != null) && (lastDb instanceof DbInfo)) ? lastDb.toString() : "");
 
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {

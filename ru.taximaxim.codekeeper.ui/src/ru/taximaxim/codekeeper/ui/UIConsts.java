@@ -43,8 +43,6 @@ public interface UIConsts {
 
         String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
         String UPDATE_DDL = PLUGIN_ID.THIS + ".command.UpdateDdl"; //$NON-NLS-1$
-        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
-        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
         String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
