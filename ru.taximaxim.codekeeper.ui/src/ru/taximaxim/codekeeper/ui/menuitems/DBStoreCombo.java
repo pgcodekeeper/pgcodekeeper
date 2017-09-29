@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.menuitems;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
@@ -16,6 +15,8 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
+import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
@@ -25,21 +26,31 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
     @Override
     protected Control createControl(Composite parent) {
-        storePicker = new DbStorePicker(parent, SWT.NONE, Activator.getDefault().getPreferenceStore(), false, false, false);
+        editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+
+        storePicker = new DbStorePicker(parent, Activator.getDefault().getPreferenceStore(),
+                editorPart instanceof ProjectEditorDiffer, false, false);
 
         editorPartListener = new EditorPartListener(storePicker);
-
-        editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         editorPart.getSite().getPage().addPartListener(editorPartListener);
 
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                Object selectedObj = event.getStructuredSelection().getFirstElement();
+
                 if(editorPart instanceof SQLEditor) {
-                    Object selectedObj = event.getStructuredSelection().getFirstElement();
                     DbInfo selectedDB = selectedObj instanceof DbInfo ? (DbInfo)selectedObj : null;
                     ((SQLEditor)editorPart).setCurrentDb(selectedDB);
+                } else if(editorPart instanceof ProjectEditorDiffer) {
+                    if(selectedObj != null
+                            && (Messages.DbStorePicker_load_from_file.equals(selectedObj.toString()) ||
+                                    "".equals(selectedObj.toString()))) {
+                        return;
+                    }
+
+                    ((ProjectEditorDiffer)editorPart).setLastRemote(selectedObj);
                 }
             }
         });
@@ -57,23 +68,33 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         editorPart.getSite().getPage().removePartListener(editorPartListener);
         storePicker.dispose();
     }
-}
 
-class EditorPartListener extends IPartAdapter2 {
-    private final DbStorePicker storePicker;
+    private class EditorPartListener extends IPartAdapter2 {
+        private final DbStorePicker storePicker;
 
-    public EditorPartListener(DbStorePicker storePicker) {
-        this.storePicker = storePicker;
-    }
+        public EditorPartListener(DbStorePicker storePicker) {
+            this.storePicker = storePicker;
+        }
 
-    @Override
-    public void partActivated(IWorkbenchPartReference partRef) {
-        IWorkbenchPart part = partRef.getPart(false);
-        if (part instanceof SQLEditor) {
-            if(((SQLEditor)part).getCurrentDb() == null) {
+        @Override
+        public void partActivated(IWorkbenchPartReference partRef) {
+            IWorkbenchPart part = partRef.getPart(false);
+
+            Object lastDb = null;
+            if (part instanceof SQLEditor) {
+                lastDb = ((SQLEditor)part).getCurrentDb();
+                storePicker.loadStore(false);
+            } else if (part instanceof ProjectEditorDiffer) {
+                lastDb = ((ProjectEditorDiffer)part).getLastDb();
+                storePicker.loadStore(true);
+            } else {
+                return;
+            }
+
+            if(lastDb == null) {
                 storePicker.clearSelection();
             } else {
-                StructuredSelection selection = new StructuredSelection(((SQLEditor)part).getCurrentDb());
+                StructuredSelection selection = new StructuredSelection(lastDb);
                 storePicker.setSelection(selection);
             }
         }

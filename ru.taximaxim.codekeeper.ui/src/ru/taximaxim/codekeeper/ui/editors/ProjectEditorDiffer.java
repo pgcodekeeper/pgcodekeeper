@@ -321,7 +321,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     @Override
     public void setFocus() {
-        // no imp
+        parent.setFocus();
     }
 
     @Override

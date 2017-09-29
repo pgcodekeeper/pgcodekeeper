@@ -404,24 +404,6 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <separator
-                      name="ru.taximaxim.codekeeper.ui.separator.first"
-                      visible="true">
-                </separator>
-                <control
-                      class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreComboProject"
-                      id="ru.taximaxim.codekeeper.ui.DBStoreComboProject">
-                      <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                      </visibleWhen>
-                </control>
-            </toolbar>
-        </menuContribution>
-        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
-            <toolbar id="ru.taximaxim.codekeeper.ui.toolbar.editor">
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
@@ -454,10 +436,16 @@
                       class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
                       id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
                       <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                            </equals>
-                        </with>
+                          <or>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                            </with>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                          </or>
                       </visibleWhen>
                 </control>
             </toolbar>

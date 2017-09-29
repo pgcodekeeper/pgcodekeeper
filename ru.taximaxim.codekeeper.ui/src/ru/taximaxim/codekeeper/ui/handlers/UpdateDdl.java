@@ -46,7 +46,7 @@ public class UpdateDdl extends AbstractHandler {
 
         boolean isTemporaryMigrationFile = input instanceof FileStoreEditorInput
                 && ((FileStoreEditorInput)input).getURI().getPath().contains(System.getProperty("java.io.tmpdir"))
-                && ((FileStoreEditorInput)input).getURI().getPath().contains("migration for default");
+                && ((FileStoreEditorInput)input).getURI().getPath().contains("migration for");
 
         return editor instanceof SQLEditor && (isMigrationFile || isTemporaryMigrationFile);
     }

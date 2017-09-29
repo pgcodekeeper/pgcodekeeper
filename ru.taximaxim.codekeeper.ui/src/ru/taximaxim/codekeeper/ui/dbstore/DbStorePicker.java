@@ -58,7 +58,7 @@ public class DbStorePicker extends Composite {
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final int MAX_FILES_HISTORY = 10;
 
-    private final boolean useFileSources;
+    private boolean useFileSources;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -66,9 +66,9 @@ public class DbStorePicker extends Composite {
     private final LocalResourceManager lrm;
     private final ComboViewer cmbDbNames;
 
-    public DbStorePicker(Composite parent, int style, final IPreferenceStore prefStore,
+    public DbStorePicker(Composite parent, final IPreferenceStore prefStore,
             boolean useFileSources, boolean useDirSources, boolean useLabel) {
-        super(parent, style);
+        super(parent, SWT.NONE);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -133,6 +133,11 @@ public class DbStorePicker extends Composite {
     }
 
     private void loadStore() {
+        loadStore(null);
+    }
+
+    public void loadStore(boolean useFileSources) {
+        this.useFileSources = useFileSources;
         loadStore(null);
     }
 
