@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.relname,
+SELECT c.oid::bigint,
+       c.relname,
        c.relacl::text,
        c.relowner::bigint,
        pg_get_viewdef(c.oid) AS definition,
