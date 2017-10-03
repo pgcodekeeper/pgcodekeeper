@@ -233,8 +233,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
-                : sb.append("ALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
-                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner));
+                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
+                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
