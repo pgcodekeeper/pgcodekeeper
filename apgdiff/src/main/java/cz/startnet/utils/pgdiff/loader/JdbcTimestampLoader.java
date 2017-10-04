@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.List;
@@ -29,6 +28,9 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 public class JdbcTimestampLoader extends JdbcLoaderBase {
 
     private boolean useServerHelpers = true;
+    private List<ObjectTimestamp> objects;
+    private PgDatabase projDB;
+    private DBTimestampPair pair;
 
     public JdbcTimestampLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
@@ -43,9 +45,24 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
-    public PgDatabase getDbFromJdbc(PgDatabase db, String projectName) throws IOException, InterruptedException, LicenseException {
+    public List<ObjectTimestamp> getObjects() {
+        return objects;
+    }
+
+    public PgDatabase getProjDb() {
+        return projDB;
+    }
+
+    public DBTimestampPair getDbPair() {
+        return pair;
+    }
+
+    public PgDatabase getDbFromJdbc(PgDatabase projDB, String projectName, String schema)
+            throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
+        this.projDB = projDB;
+
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -58,26 +75,14 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
-            if (SupportedVersion.VERSION_9_3.checkVersion(version) && db != null) {
-                queryCheckTimestamps();
-            }
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
 
-            List<ObjectTimestamp> objects;
             DBTimestamp projTime = DBTimestamp.getDBTimastamp(projectName);
-            DBTimestamp dbTime = new TimestampsReader(this, timeSchema).read();
-            if (projTime != null) {
-                //              readWithDb();
-                objects = new DBTimestampPair(projTime, dbTime).compare();
-            } else {
-                //            readWithoutDb();
-            }
-
-
-
-
+            DBTimestamp dbTime = new TimestampsReader(this, schema).read();
+            pair = new DBTimestampPair(projTime, dbTime);
+            objects = pair.compare();
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {
@@ -101,15 +106,5 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
         }
         args.getLicense().verifyDb(d);
         return d;
-    }
-
-    public boolean hasAllHelpers() throws IOException {
-        // just makes new connection for now
-        // smarter solution would be to make the class AutoCloseable
-        try (Connection c = connector.getConnection()) {
-            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
-        } catch (SQLException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
     }
 }

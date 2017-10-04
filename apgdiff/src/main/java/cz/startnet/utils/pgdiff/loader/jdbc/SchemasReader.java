@@ -2,11 +2,15 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -26,7 +30,29 @@ public class SchemasReader implements PgCatalogStrings {
     public SchemasContainer read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("schemas query");
         Map<Long, PgSchema> schemas = new HashMap<>();
-        try (ResultSet result = loader.statement.executeQuery(JdbcQueries.QUERY_SCHEMAS.get(null))) {
+
+        String query = JdbcQueries.QUERY_SCHEMAS.get(null);
+        if (loader instanceof JdbcTimestampLoader) {
+            List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
+            if (!objects.isEmpty()) {
+                PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
+                List<Long> oids = new ArrayList<>();
+                for (ObjectTimestamp obj : objects) {
+                    if (obj.getType() == DbObjType.SCHEMA) {
+                        Long oid = obj.getObjId();
+                        oids.add(oid);
+                        PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
+                        db.addSchema(schema);
+                        schemas.put(oid, schema);
+                    }
+                }
+                if (!oids.isEmpty()) {
+                    query = JdbcReaderFactory.excludeObjects(query, oids);
+                }
+            }
+        }
+
+        try (ResultSet result = loader.statement.executeQuery(query)) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgSchema schema = getSchema(result);

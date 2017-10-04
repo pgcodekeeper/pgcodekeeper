@@ -65,6 +65,10 @@ public abstract class DbSource {
         return dbObject;
     }
 
+    public void set(PgDatabase db) {
+        dbObject = db;
+    }
+
     public boolean isLoaded(){
         return dbObject != null;
     }
@@ -338,6 +342,10 @@ class DbSourceJdbc extends DbSource {
         return dbName;
     }
 
+    public JdbcConnector getJdbcConnector() {
+        return jdbcConnector;
+    }
+
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
             String timezone, boolean forceUnixNewlines) {
         super(dbName);
@@ -346,12 +354,16 @@ class DbSourceJdbc extends DbSource {
         jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, timezone);
     }
 
+    public PgDiffArguments getArgs() throws LicenseException, IOException {
+        return getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
+    }
+
+
     @Override
     public PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, LicenseException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(ApgdiffConsts.UTF_8, forceUnixNewlines);
-        return new JdbcLoader(jdbcConnector, args, monitor).getDbFromJdbc();
+        return new JdbcLoader(jdbcConnector, getArgs(), monitor).getDbFromJdbc();
     }
 }
 

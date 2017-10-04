@@ -50,10 +50,10 @@ public class TimestampsReader implements PgCatalogStrings {
         ObjectTimestamp ot;
         switch (type) {
         case "schema":
-            gc = new GenericColumn(null, name, DbObjType.SCHEMA);
+            gc = new GenericColumn(name, DbObjType.SCHEMA);
             break;
         case "extension":
-            gc = new GenericColumn(null, name, DbObjType.EXTENSION);
+            gc = new GenericColumn(name, DbObjType.EXTENSION);
             break;
         case "type":
             gc = new GenericColumn(schema, name, DbObjType.TYPE);
@@ -64,6 +64,9 @@ public class TimestampsReader implements PgCatalogStrings {
         case "function":
             gc = new GenericColumn(schema, name, DbObjType.FUNCTION);
             break;
+            //        case "index":
+            //            gc = new GenericColumn(schema, name, DbObjType.INDEX);
+            //            break;
         case "table":
         case "foreign table":
             gc = new GenericColumn(schema, name, DbObjType.TABLE);
@@ -95,7 +98,7 @@ public class TimestampsReader implements PgCatalogStrings {
             String name = ctx.name.getText();
             List<IdentifierContext> parent = ctx.parent.identifier();
             String schema = QNameParser.getSchemaNameCtx(parent).getText();
-            String table = QNameParser.getSecondName(parent);
+            String table = QNameParser.getFirstName(parent);
             GenericColumn gc = new GenericColumn(schema, table, name, type);
             time.addObject(new ObjectTimestamp(gc, objId, lastModified));
         }

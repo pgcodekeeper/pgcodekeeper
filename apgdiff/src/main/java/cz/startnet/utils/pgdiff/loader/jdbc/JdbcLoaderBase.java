@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,7 +57,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
-    protected String timeSchema;
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -263,16 +263,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected void queryCheckTimestamps() throws SQLException {
-        setCurrentOperation("timestamp checking query");
-        try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
-            while (res.next()) {
-                timeSchema = res.getString(NAMESPACE_NSPNAME);
-            }
-        }
-    }
-
-
     protected void setupMonitorWork() throws SQLException {
         setCurrentOperation("object count query");
         try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
@@ -301,5 +291,15 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     static boolean isBuiltin(long oid) {
         final int firstBootstrapObjectId = 10000;
         return oid < firstBootstrapObjectId;
+    }
+
+    public boolean hasAllHelpers() throws IOException {
+        // just makes new connection for now
+        // smarter solution would be to make the class AutoCloseable
+        try (Connection c = connector.getConnection()) {
+            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
+        } catch (SQLException ex) {
+            throw new IOException(ex.getLocalizedMessage(), ex);
+        }
     }
 }

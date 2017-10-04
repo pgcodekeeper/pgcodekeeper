@@ -94,6 +94,16 @@ public abstract class JdbcReaderFactory {
         return getAvailableHelperBits(loader.connection);
     }
 
+    public static String excludeObjects (String base, List<Long> oids) {
+        StringBuilder sb = new StringBuilder("SELECT * FROM (");
+        sb.append(base);
+        sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");
+        oids.forEach(o -> sb.append(o).append(','));
+        sb.setLength(sb.length() - 1);
+        sb.append("]));");
+        return sb.toString();
+    }
+
     public static long getAvailableHelperBits(Connection connection) throws SQLException {
         long bits = 0;
         try (PreparedStatement st = connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {

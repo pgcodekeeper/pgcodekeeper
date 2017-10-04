@@ -44,9 +44,8 @@ public class SequencesReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgSequence sequence = getSequence(result, schema.getName());
         loader.monitor.worked(1);
-        if (sequence != null) {
-            schema.addSequence(sequence);
-        }
+        schema.addSequence(sequence);
+
     }
 
     private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
@@ -138,5 +137,10 @@ public class SequencesReader extends JdbcReader {
                 seq.setCycle(res.getBoolean("is_cycled"));
             }
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.SEQUENCE;
     }
 }

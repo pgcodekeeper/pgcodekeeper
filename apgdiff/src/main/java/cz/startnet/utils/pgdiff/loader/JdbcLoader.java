@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 
@@ -79,15 +78,5 @@ public class JdbcLoader extends JdbcLoaderBase {
         }
         args.getLicense().verifyDb(d);
         return d;
-    }
-
-    public boolean hasAllHelpers() throws IOException {
-        // just makes new connection for now
-        // smarter solution would be to make the class AutoCloseable
-        try (Connection c = connector.getConnection()) {
-            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
-        } catch (SQLException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
-        }
     }
 }

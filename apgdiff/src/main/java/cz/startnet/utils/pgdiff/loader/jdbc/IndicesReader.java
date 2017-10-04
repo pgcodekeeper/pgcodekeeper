@@ -37,9 +37,7 @@ public class IndicesReader extends JdbcReader {
         if (table != null) {
             PgIndex index = getIndex(result, schema.getName(), table.getName());
             loader.monitor.worked(1);
-            if (index != null) {
-                table.addIndex(index);
-            }
+            table.addIndex(index);
         }
     }
 
@@ -72,5 +70,10 @@ public class IndicesReader extends JdbcReader {
             }
         }
         return i;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.INDEX;
     }
 }

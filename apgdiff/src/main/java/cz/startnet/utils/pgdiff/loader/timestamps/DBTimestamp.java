@@ -42,6 +42,10 @@ public class DBTimestamp implements Serializable {
         return objects;
     }
 
+    public void addObject (ObjectTimestamp obj) {
+        objects.add(obj);
+    }
+
     public void serialize(String name) {
         serialize(name, this);
     }
@@ -78,13 +82,10 @@ public class DBTimestamp implements Serializable {
 
     public static void updateObjects (PgDatabase db, String project) {
         DBTimestamp timestamp = getDBTimastamp(project);
-        if (timestamp == null) {
-            timestamp = deserialise(project);
-        }
-        if (timestamp != null) {
+        if (!timestamp.getObjects().isEmpty()) {
             Map <GenericColumn, String> statements = new HashMap<>();
             db.getExtensions().forEach(e -> statements.put(
-                    new GenericColumn(null, e.getName(), DbObjType.EXTENSION),
+                    new GenericColumn(e.getName(), DbObjType.EXTENSION),
                     PgDiffUtils.sha(e.getRawStatement())));
             for (PgSchema s : db.getSchemas()) {
                 s.getTypes().forEach(t -> statements.put(
@@ -97,17 +98,23 @@ public class DBTimestamp implements Serializable {
                         new GenericColumn(s.getName(), seq.getName(), DbObjType.SEQUENCE),
                         PgDiffUtils.sha(seq.getRawStatement())));
                 s.getFunctions().forEach(f -> statements.put(
-                        new GenericColumn(f.getName(), f.getName(), DbObjType.FUNCTION),
+                        new GenericColumn(s.getName(), f.getName(), DbObjType.FUNCTION),
                         PgDiffUtils.sha(f.getRawStatement())));
                 for (PgTable t : s.getTables()) {
+                    //  t.getIndexes().forEach(i -> statements.put(
+                    //  new GenericColumn(s.getName(), t.getName(), i.getName(), DbObjType.INDEX),
+                    //  PgDiffUtils.sha(i.getRawStatement())));
                     t.getTriggers().forEach(tr -> statements.put(
                             new GenericColumn(s.getName(), t.getName(), tr.getName(), DbObjType.TRIGGER),
                             PgDiffUtils.sha(tr.getRawStatement())));
                     t.getRules().forEach(r -> statements.put(
                             new GenericColumn(s.getName(), t.getName(), r.getName(), DbObjType.RULE),
                             PgDiffUtils.sha(r.getRawStatement())));
+                    StringBuilder tableHash = new StringBuilder(PgDiffUtils.sha(t.getRawStatement()));
+                    t.getConstraints().forEach(con -> tableHash.append(PgDiffUtils.sha(con.getRawStatement())));
+
                     statements.put(new GenericColumn(s.getName(), t.getName(), DbObjType.TABLE),
-                            PgDiffUtils.sha(t.getRawStatement()));
+                            tableHash.toString());
                 }
                 for (PgView v : s.getViews()) {
                     v.getTriggers().forEach(tr -> statements.put(
@@ -119,7 +126,7 @@ public class DBTimestamp implements Serializable {
                     statements.put(new GenericColumn(s.getName(), v.getName(), DbObjType.TABLE),
                             PgDiffUtils.sha(v.getRawStatement()));
                 }
-                statements.put(new GenericColumn(null, s.getName(), DbObjType.SCHEMA),
+                statements.put(new GenericColumn(s.getName(), DbObjType.SCHEMA),
                         PgDiffUtils.sha(s.getRawStatement()));
             }
 
@@ -137,11 +144,16 @@ public class DBTimestamp implements Serializable {
     }
 
     public static DBTimestamp getDBTimastamp (String project) {
-        return PROJ_TIMESTAMPS.get(project);
-    }
-
-    public void addObject (ObjectTimestamp obj) {
-        objects.add(obj);
+        DBTimestamp db = PROJ_TIMESTAMPS.get(project);
+        if (db == null) {
+            db = deserialise(project);
+            PROJ_TIMESTAMPS.put(project, db);
+        }
+        if (db == null) {
+            db = new DBTimestamp();
+            PROJ_TIMESTAMPS.put(project, db);
+        }
+        return db;
     }
 
     /**
@@ -154,9 +166,5 @@ public class DBTimestamp implements Serializable {
         return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
                 .resolve(".metadata").resolve(".plugins").resolve(FOLDER) //$NON-NLS-1$ //$NON-NLS-2$
                 .resolve("projects"); //$NON-NLS-1$
-    }
-
-    public static void search() {
-
     }
 }

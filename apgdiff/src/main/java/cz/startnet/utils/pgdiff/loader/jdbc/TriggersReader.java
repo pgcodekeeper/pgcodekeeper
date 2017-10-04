@@ -49,10 +49,7 @@ public class TriggersReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
-            PgTrigger trigger = getTrigger(result, schema.getName(), contName);
-            if (trigger != null) {
-                c.addTrigger(trigger);
-            }
+            c.addTrigger(getTrigger(result, schema.getName(), contName));
         }
     }
 
@@ -154,7 +151,7 @@ public class TriggersReader extends JdbcReader {
         String definition = res.getString("definition");
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                (whenCtx) -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
+                whenCtx -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
 
         // COMMENT
         String comment = res.getString("comment");
@@ -162,5 +159,10 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TRIGGER;
     }
 }

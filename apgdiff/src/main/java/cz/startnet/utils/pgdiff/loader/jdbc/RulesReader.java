@@ -37,10 +37,7 @@ public class RulesReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgRuleContainer c = schema.getRuleContainer(contName);
         if (c != null) {
-            PgRule rule = getRule(result, schema.getName(), contName);
-            if (rule != null) {
-                c.addRule(rule);
-            }
+            c.addRule(getRule(result, schema.getName(), contName));
         }
     }
 
@@ -93,5 +90,10 @@ public class RulesReader extends JdbcReader {
             r.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return r;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.RULE;
     }
 }

@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ObjectTimestamp implements Serializable{
 
@@ -13,19 +16,19 @@ public class ObjectTimestamp implements Serializable{
     private final GenericColumn object;
     private final String hash;
     private final Long objId;
-    private final Instant modificationTime;
+    private final Instant time;
 
     public ObjectTimestamp(GenericColumn object, String hash, Instant modificationtime) {
         this.object = object;
         this.hash = hash;
-        this.modificationTime = modificationtime;
+        this.time = modificationtime;
         objId = null;
     }
 
     public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime) {
         this.object = object;
         this.objId = objid;
-        this.modificationTime = modificationtime;
+        this.time = modificationtime;
         hash = null;
     }
 
@@ -33,7 +36,7 @@ public class ObjectTimestamp implements Serializable{
         this.object = object;
         this.objId = objid;
         this.hash = hash;
-        this.modificationTime = modificationtime;
+        this.time = modificationtime;
     }
 
     public GenericColumn getObject() {
@@ -48,8 +51,8 @@ public class ObjectTimestamp implements Serializable{
         return hash;
     }
 
-    public Instant getModificationTime() {
-        return modificationTime;
+    public Instant getTime() {
+        return time;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class ObjectTimestamp implements Serializable{
         final int prime = 31;
         int result = 1;
         result = prime * result + ((object == null) ? 0 : object.hashCode());
-        result = prime * result + ((modificationTime == null) ? 0 : modificationTime.hashCode());
+        result = prime * result + ((time == null) ? 0 : time.hashCode());
         return result;
     }
 
@@ -71,10 +74,30 @@ public class ObjectTimestamp implements Serializable{
         } else if (obj instanceof ObjectTimestamp) {
             ObjectTimestamp t = (ObjectTimestamp) obj;
             eq = Objects.equals(object, t.object)
-                    && Objects.equals(modificationTime, t.modificationTime);
+                    && Objects.equals(time, t.time);
         }
 
         return eq;
     }
 
+    @Override
+    public String toString() {
+        return object + ": " + time;
+    }
+
+    public DbObjType getType() {
+        return object.type;
+    }
+
+    public String getSchema() {
+        return object.schema;
+    }
+
+    public PgStatement getShallowCopy(PgDatabase db) {
+        return object.getStatement(db).shallowCopy();
+    }
+
+    public PgStatement getDeepCopy(PgDatabase db) {
+        return object.getStatement(db).deepCopy();
+    }
 }

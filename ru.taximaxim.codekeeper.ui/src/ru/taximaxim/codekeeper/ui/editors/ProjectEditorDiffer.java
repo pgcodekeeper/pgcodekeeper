@@ -122,7 +122,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.differ.TimestampTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
@@ -459,7 +458,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         hideNotificationArea();
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer newDiffer = new TimestampTreeDiffer(dbProj, dbRemote);
+        TreeDiffer newDiffer = TreeDiffer.getTree(dbProj, dbRemote, false);
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override

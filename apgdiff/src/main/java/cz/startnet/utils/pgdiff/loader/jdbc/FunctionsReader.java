@@ -36,10 +36,7 @@ public class FunctionsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgFunction function = getFunction(result, schema.getName());
-        if (function != null) {
-            schema.addFunction(function);
-        }
+        schema.addFunction(getFunction(result, schema.getName()));
     }
 
     /**
@@ -248,5 +245,10 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.FUNCTION;
     }
 }

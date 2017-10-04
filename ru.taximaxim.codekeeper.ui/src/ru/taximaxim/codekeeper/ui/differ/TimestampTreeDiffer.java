@@ -2,12 +2,18 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
@@ -19,8 +25,12 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class TimestampTreeDiffer extends TreeDiffer {
 
-    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget) {
+    private final String schema;
+
+    public TimestampTreeDiffer(DbSource dbSource, DbSource dbTarget,
+            String schema) {
         super(dbSource, dbTarget, false);
+        this.schema = schema;
     }
 
     @Override
@@ -28,19 +38,32 @@ public class TimestampTreeDiffer extends TreeDiffer {
             throws InvocationTargetException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor,
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
-        try {
+
+        JdbcConnector connector = ((DbSourceJdbc) dbTarget).getJdbcConnector();
+        try (Connection connection = connector.getConnection();
+                Statement statement = connection.createStatement()) {
             PgDatabase dbSrc = dbSource.get(pm);
-            PgDatabase dbTgt = dbTarget.get(pm);
+
+            JdbcTimestampLoader loader = new JdbcTimestampLoader(connector, ((DbSourceJdbc)dbTarget).getArgs(), pm);
+            PgDatabase dbTgt = loader.getDbFromJdbc(dbSrc, dbSource.getOrigin(), schema);
+
+            dbTarget.set(dbTgt);
+
             Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
             + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
 
+            DBTimestampPair pair = loader.getDbPair();
+            pair.clearProject();
+
             pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-            diffTree = DiffTree.create(dbSrc, dbTgt, pm);
+            diffTree = DiffTree.create(dbSrc, dbTgt, pm, pair);
+
+            pair.serializeProject(dbSource.getOrigin());
 
             PgDiffUtils.checkCancelled(pm);
             monitor.done();
 
-        }  catch (IOException | LicenseException | CoreException ex) {
+        } catch (SQLException |LicenseException | CoreException | IOException ex) {
             Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);
         }
     }

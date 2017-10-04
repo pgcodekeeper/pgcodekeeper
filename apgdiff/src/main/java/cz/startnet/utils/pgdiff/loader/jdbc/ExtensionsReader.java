@@ -2,9 +2,13 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -22,13 +26,29 @@ public class ExtensionsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("extensions query");
-        try (ResultSet res = loader.statement.executeQuery(JdbcQueries.QUERY_EXTENSIONS.get(null))) {
+        String query = JdbcQueries.QUERY_EXTENSIONS.get(null);
+        if (loader instanceof JdbcTimestampLoader) {
+            List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
+            if (objects != null) {
+                PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
+                List<Long> oids = new ArrayList<>();
+                for (ObjectTimestamp obj : objects) {
+                    if (obj.getType() == DbObjType.EXTENSION) {
+                        oids.add(obj.getObjId());
+                        db.addExtension((PgExtension)obj.getShallowCopy(projDb));
+                    }
+                }
+                if (!oids.isEmpty()) {
+                    query = JdbcReaderFactory.excludeObjects(query, oids);
+                }
+            }
+        }
+
+        try (ResultSet res = loader.statement.executeQuery(query)) {
             while (res.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);
-                if (extension != null) {
-                    db.addExtension(extension);
-                }
+                db.addExtension(extension);
             }
         }
     }
