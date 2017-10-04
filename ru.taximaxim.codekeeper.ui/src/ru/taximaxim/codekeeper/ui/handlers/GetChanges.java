@@ -18,7 +18,7 @@ public class GetChanges extends AbstractHandler {
 
         if (part instanceof ProjectEditorDiffer){
             ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
-            Object remote = differ.getLastDb();
+            Object remote = differ.getCurrentDb();
 
             if (remote != null) {
                 differ.getChanges(remote);

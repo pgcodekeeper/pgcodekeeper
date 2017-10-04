@@ -23,6 +23,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
     private IEditorPart editorPart;
     private DbStorePicker storePicker;
     private EditorPartListener editorPartListener;
+    private boolean activateComboListener;
 
     @Override
     protected Control createControl(Composite parent) {
@@ -35,8 +36,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         editorPart.getSite().getPage().addPartListener(editorPartListener);
 
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
+
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
+                if (!activateComboListener) {
+                    return;
+                }
+
                 editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
                 Object selectedObj = event.getStructuredSelection().getFirstElement();
 
@@ -46,11 +52,11 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
                 } else if(editorPart instanceof ProjectEditorDiffer) {
                     if(selectedObj != null
                             && (Messages.DbStorePicker_load_from_file.equals(selectedObj.toString()) ||
-                                    "".equals(selectedObj.toString()))) {
+                                    selectedObj.toString().isEmpty())) {
                         return;
                     }
 
-                    ((ProjectEditorDiffer)editorPart).setLastRemote(selectedObj);
+                    ((ProjectEditorDiffer)editorPart).setCurrentDb(selectedObj);
                 }
             }
         });
@@ -85,17 +91,27 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
                 lastDb = ((SQLEditor)part).getCurrentDb();
                 storePicker.loadStore(false);
             } else if (part instanceof ProjectEditorDiffer) {
-                lastDb = ((ProjectEditorDiffer)part).getLastDb();
+                lastDb = ((ProjectEditorDiffer)part).getCurrentDb();
                 storePicker.loadStore(true);
             } else {
                 return;
             }
+
+            activateComboListener = true;
 
             if(lastDb == null) {
                 storePicker.clearSelection();
             } else {
                 StructuredSelection selection = new StructuredSelection(lastDb);
                 storePicker.setSelection(selection);
+            }
+        }
+
+        @Override
+        public void partDeactivated(IWorkbenchPartReference partRef) {
+            IWorkbenchPart part = partRef.getPart(false);
+            if ((part instanceof SQLEditor) || (part instanceof ProjectEditorDiffer)) {
+                activateComboListener = false;
             }
         }
     }

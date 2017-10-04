@@ -115,6 +115,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -141,7 +142,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
 
-    private Object lastRemote;
+    private Object currentRemote;
     private DbSource dbProject, dbRemote;
     private TreeElement diffTree;
 
@@ -159,12 +160,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
     private volatile boolean getChangesJobInProcessing;
-
-    public void setLastRemote(Object lastRemote) {
-        this.lastRemote = lastRemote;
-        proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE,
-                ((lastRemote != null) && (lastRemote instanceof DbInfo)) ? lastRemote.toString() : "");
-    }
 
     public boolean isGetChangesJobInProcessing() {
         return getChangesJobInProcessing;
@@ -449,7 +444,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
         }
 
-        lastRemote = remote;
+        currentRemote = remote;
         setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
         loadChanges(dbRemote);
     }
@@ -548,12 +543,43 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public Object getLastDb() {
-        if (lastRemote != null) {
-            return lastRemote;
+    public void setLastDb(Object lastDb) {
+        if((lastDb != null) && (lastDb instanceof DbInfo)) {
+            try {
+                proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE, lastDb.toString());
+                proj.getPrefs().flush();
+            } catch (BackingStoreException e) {
+                Log.log(Log.LOG_WARNING, "Couldn't flush project properties!", e); //$NON-NLS-1$
+            }
         }
+    }
+
+    public DbInfo getLastDb() {
         List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
         return lastStore.isEmpty() ? null : lastStore.get(0);
+    }
+
+    public void setCurrentDb(Object currentRemote) {
+        this.currentRemote = currentRemote;
+        setLastDb(currentRemote);
+    }
+
+    public Object getCurrentDb() {
+        Object db = (currentRemote != null) ? currentRemote : getLastDb();
+
+        if(db != null
+                && (DbInfo.preferenceToStore(mainPrefs.getString(PREF.DB_STORE)).contains(db)
+                        || DbStorePicker.stringToDumpFileHistory(mainPrefs.getString(PREF.DB_STORE_FILES)).contains(db))) {
+            return db;
+        } else {
+            try {
+                proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE, "");
+                proj.getPrefs().flush();
+            } catch (BackingStoreException e) {
+                Log.log(Log.LOG_WARNING, "Couldn't flush project properties!", e); //$NON-NLS-1$
+            }
+            return null;
+        }
     }
 
     public void diff() {
@@ -570,7 +596,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
-        Object lastDb = getLastDb();
+        Object lastDb = getCurrentDb();
         proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR,
                 ((lastDb != null) && (lastDb instanceof DbInfo)) ? lastDb.toString() : "");
 
@@ -678,8 +704,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
         String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
-        if (lastRemote != null) {
-            name += " for " + getRemoteName(lastRemote); //$NON-NLS-1$
+        if (currentRemote != null) {
+            name += " for " + getRemoteName(currentRemote); //$NON-NLS-1$
         }
         name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
         Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
@@ -879,9 +905,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private static void notifyDbChanged(DbInfo dbinfo, ProjectEditorDiffer editor, boolean update) {
         UiSync.exec(editor.parent, () -> {
-            if (dbinfo.equals(editor.lastRemote)) {
+            if (dbinfo.equals(editor.currentRemote)) {
                 if (update) {
-                    editor.updateRemoteChanged(editor.lastRemote);
+                    editor.updateRemoteChanged(editor.currentRemote);
                 } else {
                     editor.resetRemoteChanged();
                 }

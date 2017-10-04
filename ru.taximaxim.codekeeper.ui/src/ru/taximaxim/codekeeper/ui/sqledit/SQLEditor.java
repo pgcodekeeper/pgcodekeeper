@@ -91,6 +91,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
@@ -209,11 +210,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public DbInfo getCurrentDb() {
-        if (currentDB != null) {
-            return currentDB;
-        } else {
-            return getLastDb();
+        DbInfo db = (currentDB != null) ? currentDB : getLastDb();
+
+        if(DbInfo.preferenceToStore(Activator.getDefault().getPreferenceStore().getString(PREF.DB_STORE))
+                .contains(db)) {
+            return db;
         }
+
+        return null;
     }
 
     @Override
