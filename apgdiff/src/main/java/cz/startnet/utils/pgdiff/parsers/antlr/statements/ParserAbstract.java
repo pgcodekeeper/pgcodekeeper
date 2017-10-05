@@ -118,9 +118,9 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    public static void fillArguments(Function_argsContext function_argsContext,
+    public static void fillArguments(Function_argsContext functionArgsCtx,
             PgFunction function, String defSchemaName) {
-        for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
+        for (Function_argumentsContext argument : functionArgsCtx.function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
             if (argument.argname != null) {
                 arg.setName(argument.argname.getText());
@@ -176,12 +176,12 @@ public abstract class ParserAbstract {
         VexContext exp = null;
         Common_constraintContext common = ctx.common_constraint();
         Check_boolean_expressionContext check;
-        if (common != null && (check = common.check_boolean_expression()) != null){
+        if (common != null && (check = common.check_boolean_expression()) != null) {
             exp = check.expression;
         } else {
             exp = ctx.vex();
         }
-        if (exp != null){
+        if (exp != null) {
             ValueExpr vex = new ValueExpr(schemaName);
             vex.analyze(new Vex(exp));
             constr.addAllDeps(vex.getDepcies());
@@ -204,11 +204,11 @@ public abstract class ParserAbstract {
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
         Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
         if (bool != null) {
-            String constr_name = "";
+            String constrName = "";
             if (constr.name != null) {
-                constr_name = QNameParser.getFirstName(constr.name.identifier());
+                constrName = QNameParser.getFirstName(constr.name.identifier());
             }
-            PgConstraint constraint = new PgConstraint(constr_name,
+            PgConstraint constraint = new PgConstraint(constrName,
                     getFullCtxText(constr));
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
             VexContext exp = bool.expression;
@@ -273,10 +273,11 @@ public abstract class ParserAbstract {
     }
 
     public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
-            boolean isToast, boolean forсeQuote){
+            boolean isToast, boolean forceQuote){
         for (String pair : options) {
             int sep = pair.indexOf('=');
-            String option, value;
+            String option;
+            String value;
             if (sep == -1) {
                 option = pair;
                 value = "";
@@ -284,7 +285,7 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (forсeQuote || !PgDiffUtils.isValidId(value, false, false)) {
+            if (forceQuote || !PgDiffUtils.isValidId(value, false, false)) {
                 // only quote non-ids, do not quote columns
                 // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);

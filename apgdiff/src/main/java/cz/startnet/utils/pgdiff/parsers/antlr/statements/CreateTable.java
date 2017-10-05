@@ -47,7 +47,7 @@ public class CreateTable extends ParserAbstract {
         Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
 
-        if(defineTypeContext != null){
+        if (defineTypeContext != null) {
             Data_typeContext dataTypeCtxOfType = defineTypeContext.type_name;
             String ofType = getFullCtxText(dataTypeCtxOfType);
             table.setOfType(ofType);
@@ -69,8 +69,8 @@ public class CreateTable extends ParserAbstract {
             if (server != null) {
                 table.setServerName(server.server_name.getText());
                 Define_foreign_optionsContext options = server.define_foreign_options();
-                if (options != null){
-                    for (Foreign_optionContext option : options.foreign_option()){
+                if (options != null) {
+                    for (Foreign_optionContext option : options.foreign_option()) {
                         String value = option.value == null ? null : option.value.getText();
                         fillOptionParams(value, option.name.getText(), false, table::addOption);
                     }
@@ -88,7 +88,7 @@ public class CreateTable extends ParserAbstract {
         }
         if (defineColumnContext != null) {
             Column_referencesContext parentTable = defineColumnContext.parent_table;
-            if(parentTable != null){
+            if (parentTable != null) {
                 for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
                     List<IdentifierContext> idsInh = nameInher.identifier();
                     String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
@@ -136,18 +136,18 @@ public class CreateTable extends ParserAbstract {
         return table;
     }
 
-    private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table){
-        for (Storage_parameter_optionContext option : options){
+    private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table) {
+        for (Storage_parameter_optionContext option : options) {
             Schema_qualified_nameContext key = option.schema_qualified_name();
             List <IdentifierContext> optionIds = key.identifier();
             VexContext valueCtx = option.vex();
             String value = valueCtx == null ? "" : valueCtx.getText();
             String optionText = key.getText();
-            if ("OIDS".equalsIgnoreCase(optionText)){
-                if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){
+            if ("OIDS".equalsIgnoreCase(optionText)) {
+                if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)) {
                     table.setHasOids(true);
                 }
-            } else if("toast".equals(QNameParser.getSecondName(optionIds))){
+            } else if("toast".equals(QNameParser.getSecondName(optionIds))) {
                 fillOptionParams(value, QNameParser.getFirstName(optionIds), true, table::addOption);
             } else {
                 fillOptionParams(value, optionText, false, table::addOption);

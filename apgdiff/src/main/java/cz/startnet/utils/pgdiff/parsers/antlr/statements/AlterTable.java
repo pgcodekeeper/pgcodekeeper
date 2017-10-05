@@ -37,13 +37,15 @@ public class AlterTable extends ParserAbstract {
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                PgStatement st = null;
                 String name = nameCtx.getText();
-                if ((st = schema.getTable(name)) != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = schema.getSequence(name)) != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = getSafe(schema::getView, nameCtx)) != null) {
+                PgStatement st = schema.getTable(name);
+                if (st == null) {
+                    st = schema.getSequence(name);
+                }
+                if (st == null) {
+                    st = getSafe(schema::getView, nameCtx);
+                }
+                if (st != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 }
                 continue;
@@ -63,9 +65,9 @@ public class AlterTable extends ParserAbstract {
                 }
             }
 
-            if(tablAction.set_attribute_option() != null){
+            if (tablAction.set_attribute_option() != null) {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if(col != null){
+                if (col != null){
                     for (Storage_parameter_optionContext option :
                         tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
                         String value = option.value == null ? "" : option.value.getText();
@@ -84,9 +86,9 @@ public class AlterTable extends ParserAbstract {
                 }
             }
 
-            if (tablAction.set_storage() != null){
+            if (tablAction.set_storage() != null) {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if(col != null){
+                if (col != null){
                     col.setStorage(tablAction.set_storage().storage_option().getText());
                 }
             }

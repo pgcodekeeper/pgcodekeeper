@@ -28,6 +28,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     private static final String OIDS = "OIDS";
     private static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
+    private static final String ALTER_COLUMN = " ALTER COLUMN ";
+    private static final String ALTER_COLUMN_ON_NL = "\n\tALTER COLUMN ";
+    private static final String FOREIGN = "FOREIGN ";
+    private static final String TABLE = "TABLE ";
 
     private final List<PgColumn> columns = new ArrayList<>();
     private final List<PgColumn> columnsOfType = new ArrayList<>();
@@ -70,9 +74,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
         sb.append("ALTER ");
         if (isForeign()) {
-            sb.append("FOREIGN ");
+            sb.append(FOREIGN);
         }
-        sb.append("TABLE ");
+        sb.append(TABLE);
         if (only) {
             sb.append("ONLY ");
         }
@@ -165,18 +169,18 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         if (!isLogged()) {
             sbSQL.append("UNLOGGED ");
         } else if (isForeign()) {
-            sbSQL.append("FOREIGN ");
+            sbSQL.append(FOREIGN);
         }
 
-        sbSQL.append("TABLE ");
+        sbSQL.append(TABLE);
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         boolean first = true;
-        if(ofType != null){
+        if (ofType != null) {
             sbSQL.append(" OF ")
             .append(ofType);
 
-            if (!columnsOfType.isEmpty()){
+            if (!columnsOfType.isEmpty()) {
                 sbSQL.append(" (\n");
 
                 for (PgColumn column : columnsOfType) {
@@ -204,9 +208,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                 sbSQL.append("\t");
                 sbSQL.append(column.getFullDefinition(false, null, false));
 
-                if(column.getStorage() != null){
+                if (column.getStorage() != null) {
                     sbOption.append(getAlterTable(true, false))
-                    .append(" ALTER COLUMN ")
+                    .append(ALTER_COLUMN)
                     .append(PgDiffUtils.getQuotedName(column.name))
                     .append(" SET STORAGE ")
                     .append(column.getStorage())
@@ -241,18 +245,18 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        if (isForeign()){
+        if (isForeign()) {
             sbSQL.append("\nSERVER ").append(serverName);
         }
 
         StringBuilder sb = new StringBuilder();
 
-        for (Entry <String, String> entry : options.entrySet()){
+        for (Entry <String, String> entry : options.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 
             sb.append(key);
-            if (!value.isEmpty()){
+            if (!value.isEmpty()) {
                 sb.append(isForeign() ? ' ' : '=').append(value);
             }
             sb.append(", ");
@@ -262,7 +266,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             sb.append(OIDS).append('=').append(hasOids).append(", ");
         }
 
-        if (sb.length() > 0){
+        if (sb.length() > 0) {
             sb.setLength(sb.length() - 2);
             sbSQL.append(isForeign() ? "\nOPTIONS (" : "\nWITH (").append(sb).append(")");
         }
@@ -291,7 +295,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
-        if(ofType != null){
+        if (ofType != null) {
             for (PgColumn col : columnsOfType) {
                 col.appendPrivileges(sbSQL);
             }
@@ -303,7 +307,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
         for (PgColumn column : getColumnsWithStatistics()) {
             sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(" ALTER COLUMN ");
+            sbSQL.append(ALTER_COLUMN);
             sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
             sbSQL.append(" SET STATISTICS ");
             sbSQL.append(column.getStatistics());
@@ -315,7 +319,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             appendCommentSql(sbSQL);
         }
 
-        if(ofType != null){
+        if (ofType != null) {
             for (final PgColumn column : columnsOfType) {
                 if (column.getComment() != null && !column.getComment().isEmpty()) {
                     sbSQL.append("\n\n");
@@ -336,7 +340,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        return "DROP " + (isForeign() ? "FOREIGN " : "") + "TABLE "
+        return "DROP " + (isForeign() ? FOREIGN : "") + TABLE
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
@@ -383,11 +387,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                     if (!oldDefault.equals(newDefault)) {
                         if (newDefault.isEmpty()) {
-                            colsSb.append("\n\tALTER COLUMN ")
+                            colsSb.append(ALTER_COLUMN_ON_NL)
                             .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                             .append(" DROP DEFAULT");
                         } else {
-                            colsSb.append("\n\tALTER COLUMN ")
+                            colsSb.append(ALTER_COLUMN_ON_NL)
                             .append(PgDiffUtils.getQuotedName(newCol.getName()))
                             .append(" SET DEFAULT ")
                             .append(newDefault);
@@ -397,11 +401,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                     if (oldCol.getNullValue() != newCol.getNullValue()) {
                         if (newCol.getNullValue()) {
-                            colsSb.append("\n\tALTER COLUMN ")
+                            colsSb.append(ALTER_COLUMN_ON_NL)
                             .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                             .append(" DROP NOT NULL");
                         } else {
-                            colsSb.append("\n\tALTER COLUMN ")
+                            colsSb.append(ALTER_COLUMN_ON_NL)
                             .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                             .append(" SET NOT NULL");
                         }
@@ -411,8 +415,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     String newDefault = (newCol.getDefaultValue() == null) ? ""
                             : newCol.getDefaultValue();
 
-                    if (!newDefault.isEmpty()){
-                        colsSb.append("\n\tALTER COLUMN ")
+                    if (!newDefault.isEmpty()) {
+                        colsSb.append(ALTER_COLUMN_ON_NL)
                         .append(PgDiffUtils.getQuotedName(newCol.getName()))
                         .append(" SET DEFAULT ")
                         .append(newDefault)
@@ -420,7 +424,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     }
 
                     if (!newCol.getNullValue()) {
-                        colsSb.append("\n\tALTER COLUMN ")
+                        colsSb.append(ALTER_COLUMN_ON_NL)
                         .append(PgDiffUtils.getQuotedName(newCol.getName()))
                         .append(" SET NOT NULL")
                         .append(", ");
@@ -436,14 +440,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                             : oldCol.getDefaultValue();
 
                     if (!oldDefault.isEmpty()) {
-                        colsSb.append("\n\tALTER COLUMN ")
+                        colsSb.append(ALTER_COLUMN_ON_NL)
                         .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                         .append(" DROP DEFAULT")
                         .append(", ");
                     }
 
                     if (!oldCol.getNullValue()) {
-                        colsSb.append("\n\tALTER COLUMN ")
+                        colsSb.append(ALTER_COLUMN_ON_NL)
                         .append(PgDiffUtils.getQuotedName(oldCol.getName()))
                         .append(" DROP NOT NULL")
                         .append(", ");
@@ -801,9 +805,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public boolean compare(PgStatement obj) {
         boolean eq = false;
 
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
-        } else if(obj instanceof PgTable) {
+        } else if (obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
 
             eq = Objects.equals(name, table.getName())
@@ -830,9 +834,9 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
-        } else if(obj instanceof PgTable) {
+        } else if (obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
             eq = super.equals(obj)
                     && PgDiffUtils.setlikeEquals(constraints, table.constraints)
@@ -889,10 +893,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         tableDst.setForceSecurity(isForceSecurity());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
-        for(PgColumn colSrc : columns) {
+        for (PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
-        for(PgColumn colSrc : columnsOfType) {
+        for (PgColumn colSrc : columnsOfType) {
             tableDst.addColumnOfType(colSrc.deepCopy());
         }
         tableDst.setComment(getComment());
@@ -911,16 +915,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public PgTable deepCopy() {
         PgTable copy = shallowCopy();
 
-        for(PgConstraint constraint : constraints) {
+        for (PgConstraint constraint : constraints) {
             copy.addConstraint(constraint.deepCopy());
         }
-        for(PgIndex index : indexes) {
+        for (PgIndex index : indexes) {
             copy.addIndex(index.deepCopy());
         }
-        for(PgTrigger trigger : triggers) {
+        for (PgTrigger trigger : triggers) {
             copy.addTrigger(trigger.deepCopy());
         }
-        for(PgRule rule : rules) {
+        for (PgRule rule : rules) {
             copy.addRule(rule.deepCopy());
         }
         return copy;
@@ -928,17 +932,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public PgSchema getContainingSchema() {
-        return (PgSchema)this.getParent();
+        return (PgSchema) this.getParent();
     }
 
     private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isForeign) {
-        Map<String, String> options = isForeign ? column.getForeignOptions() : column.getOptions();
-        if(!options.isEmpty()){
+        Map<String, String> opts = isForeign ? column.getForeignOptions() : column.getOptions();
+        if (!opts.isEmpty()) {
             sbOption.append(getAlterTable(true, false))
-            .append(" ALTER COLUMN ")
+            .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.name))
             .append(isForeign ? " OPTIONS (" : " SET (");
-            for(Entry<String, String> option : options.entrySet()){
+            for (Entry<String, String> option : opts.entrySet()) {
                 sbOption.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
                     sbOption.append(isForeign ? ' ' : '=').append(option.getValue());
@@ -951,7 +955,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public void compareForeignOptions (Map <String, String> oldForeignOptions,
-            Map <String, String> newForeignOptions, StringBuilder sb){
+            Map <String, String> newForeignOptions, StringBuilder sb) {
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
                 if (newForeignOptions.containsKey(key)) {
