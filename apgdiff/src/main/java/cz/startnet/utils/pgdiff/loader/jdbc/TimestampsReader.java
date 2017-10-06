@@ -11,9 +11,12 @@ import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_identity_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TimestampsReader implements PgCatalogStrings {
@@ -62,7 +65,8 @@ public class TimestampsReader implements PgCatalogStrings {
             gc = new GenericColumn(schema, name, DbObjType.SEQUENCE);
             break;
         case "function":
-            gc = new GenericColumn(schema, name, DbObjType.FUNCTION);
+            loader.submitAntlrTask(identity, SQLParser::function_args_parser,
+                    ctx -> parseFunctionName(ctx, lastModified, time, objId));
             break;
             //        case "index":
             //            gc = new GenericColumn(schema, name, DbObjType.INDEX);
@@ -89,6 +93,18 @@ public class TimestampsReader implements PgCatalogStrings {
         if (gc != null) {
             ot = new ObjectTimestamp(gc, objId, lastModified);
             time.addObject(ot);
+        }
+    }
+
+    private void parseFunctionName(Function_args_parserContext ctx, Instant lastModified, DBTimestamp time, Long objId) {
+        if (ctx != null) {
+            List<IdentifierContext> object = ctx.schema_qualified_name().identifier();
+            String schema = QNameParser.getSchemaNameCtx(object).getText();
+            String name = QNameParser.getFirstName(object);
+            PgFunction func = new PgFunction(name, null);
+            ParserAbstract.fillArguments(ctx.function_args(), func, schema);
+            GenericColumn gc = new GenericColumn(schema, func.getName(), DbObjType.FUNCTION);
+            time.addObject(new ObjectTimestamp(gc, objId, lastModified));
         }
     }
 
