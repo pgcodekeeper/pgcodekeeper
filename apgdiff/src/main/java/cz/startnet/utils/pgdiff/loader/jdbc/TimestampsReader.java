@@ -68,9 +68,9 @@ public class TimestampsReader implements PgCatalogStrings {
             loader.submitAntlrTask(identity, SQLParser::function_args_parser,
                     ctx -> parseFunctionName(ctx, lastModified, time, objId));
             break;
-            //        case "index":
-            //            gc = new GenericColumn(schema, name, DbObjType.INDEX);
-            //            break;
+        case "index":
+            gc = new GenericColumn(schema, null, name, DbObjType.INDEX);
+            break;
         case "table":
         case "foreign table":
             gc = new GenericColumn(schema, name, DbObjType.TABLE);

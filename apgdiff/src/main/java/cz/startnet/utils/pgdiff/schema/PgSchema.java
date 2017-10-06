@@ -266,6 +266,16 @@ public class PgSchema extends PgStatement {
         return Collections.unmodifiableList(types);
     }
 
+
+    public String getTableNameByIndex(String name) {
+        for (PgTable t : getTables()) {
+            if (t.getIndex(name) != null) {
+                return t.getName();
+            }
+        }
+        return null;
+    }
+
     public void addDomain(PgDomain dom) {
         domains.add(dom);
         dom.setParent(this);

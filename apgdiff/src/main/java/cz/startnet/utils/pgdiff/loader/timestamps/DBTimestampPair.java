@@ -41,6 +41,7 @@ public class DBTimestampPair {
 
     public void addObject(PgStatement st) {
         DbObjType type = st.getStatementType();
+        PgStatement parent = st.getParent();
         GenericColumn gc = null;
         switch (type) {
         case SCHEMA:
@@ -52,12 +53,13 @@ public class DBTimestampPair {
         case FUNCTION:
         case TABLE:
         case VIEW:
-            gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
+            gc = new GenericColumn(parent.getName(), st.getName(), type);
             break;
-            //case INDEX:
+        case INDEX:
+            gc = new GenericColumn(parent.getParent().getName(), null, st.getName(), type);
+            break;
         case RULE:
         case TRIGGER:
-            PgStatement parent = st.getParent();
             gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
             break;
         default: return;

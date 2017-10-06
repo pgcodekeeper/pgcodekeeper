@@ -100,4 +100,12 @@ public class ObjectTimestamp implements Serializable{
     public PgStatement getDeepCopy(PgDatabase db) {
         return object.getStatement(db).deepCopy();
     }
+
+    public String getColumn() {
+        return object.column;
+    }
+
+    public static PgStatement getObject(PgDatabase db, String schema, String table, String column, DbObjType type) {
+        return new GenericColumn(schema, table, column, type).getStatement(db);
+    }
 }

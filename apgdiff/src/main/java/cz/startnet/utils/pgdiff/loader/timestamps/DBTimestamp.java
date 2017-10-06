@@ -101,9 +101,9 @@ public class DBTimestamp implements Serializable {
                         new GenericColumn(s.getName(), f.getName(), DbObjType.FUNCTION),
                         PgDiffUtils.sha(f.getRawStatement())));
                 for (PgTable t : s.getTables()) {
-                    //  t.getIndexes().forEach(i -> statements.put(
-                    //  new GenericColumn(s.getName(), t.getName(), i.getName(), DbObjType.INDEX),
-                    //  PgDiffUtils.sha(i.getRawStatement())));
+                    t.getIndexes().forEach(i -> statements.put(
+                            new GenericColumn(s.getName(), null, i.getName(), DbObjType.INDEX),
+                            PgDiffUtils.sha(i.getRawStatement())));
                     t.getTriggers().forEach(tr -> statements.put(
                             new GenericColumn(s.getName(), t.getName(), tr.getName(), DbObjType.TRIGGER),
                             PgDiffUtils.sha(tr.getRawStatement())));
