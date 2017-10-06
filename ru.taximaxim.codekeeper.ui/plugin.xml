@@ -97,18 +97,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddFile"
-            id="ru.taximaxim.codekeeper.ui.command.AddFile"
-            name="%command.commandname.AddFile">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDBStore"
-            id="ru.taximaxim.codekeeper.ui.command.OpenDBStore"
-            name="%command.commandname.OpenDBStore">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
             name="%command.commandname.UpdateDdl">
         </command>
@@ -118,18 +106,32 @@
             class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditorId">
-                        <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                        </equals>
-                    </with>
-                    <with variable="activeEditor">
-                        <not>
-                            <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
-                            </test>
-                        </not>
-                    </with>
-                </and>
+                <or>
+                   <and>
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                            </equals>
+                         </with>
+                         <with variable="activeEditor">
+                            <not>
+                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                                </test>
+                            </not>
+                        </with>
+                   </and>
+                   <and>
+                        <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                            </equals>
+                        </with>
+                        <with variable="activeEditor">
+                            <not>
+                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesEditorRunning">
+                                </test>
+                            </not>
+                        </with>
+                    </and>
+                </or>
             </enabledWhen>
         </handler>
         <handler
@@ -310,12 +312,6 @@
                     label="%command.commandname.DiffProject"
                     style="push">
                 </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
-                    label="%command.commandname.GetChanges"
-                    style="push">
-                </command>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator1"
                     visible="true">
@@ -333,7 +329,17 @@
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    name="ru.taximaxim.codekeeper.ui.separator2"
+                    visible="true">
+                </separator>
+                 <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+                    icon="icons/refresh.png"
+                    label="%command.commandname.GetChanges"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator3"
                     visible="true">
                 </separator>
                 <command
@@ -349,7 +355,7 @@
                     style="push">
                 </command>
                 <separator
-                    name="ru.taximaxim.codekeeper.ui.separator1"
+                    name="ru.taximaxim.codekeeper.ui.separator4"
                     visible="true">
                 </separator>
                 <command
@@ -393,18 +399,6 @@
                     </visibleWhen>
                 </command>
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
-                    icon="icons/refresh.png"
-                    label="%command.commandname.GetChanges"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
                     label="%command.commandname.QuickUpdate"
@@ -427,6 +421,24 @@
                             </equals>
                         </with>
                     </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+                    icon="icons/refresh.png"
+                    label="%command.commandname.GetChanges"
+                    style="push">
+                    <visibleWhen checkEnabled="true">
+                          <or>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                            </with>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                          </or>
+                     </visibleWhen>
                 </command>
                 <separator
                       name="ru.taximaxim.codekeeper.ui.separator.first"
@@ -717,6 +729,13 @@
             type="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer">
         </propertyTester>
         <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.ChangesEditorJobTester"
+            id="ru.taximaxim.codekeeper.ui.ChangesEditorJobTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isGetChangesEditorRunning"
+            type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+        </propertyTester>
+        <propertyTester
             class="ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester"
             id="ru.taximaxim.codekeeper.ui.UpdateDdlJobTester"
             namespace="ru.taximaxim.codekeeper.ui"
@@ -957,6 +976,12 @@
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+F5">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+F5">
         </key>

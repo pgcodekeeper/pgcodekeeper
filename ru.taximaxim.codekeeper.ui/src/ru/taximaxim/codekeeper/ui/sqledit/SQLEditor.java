@@ -15,6 +15,7 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -38,31 +39,28 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.IVerticalRuler;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.VerifyKeyListener;
-import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
@@ -168,6 +166,38 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
 
+    public boolean isGetChangesJobInProcessing() {
+        IEditorPart activeEditor = getEditorSite().getPage().getActiveEditor();
+        if(activeEditor == null) {
+            return false;
+        }
+
+        IEditorInput editorInput = activeEditor.getEditorInput();
+        if(editorInput instanceof IFileEditorInput) {
+            IProject proj = ((IFileEditorInput)editorInput).getFile().getProject();
+
+            IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if(workbenchWindow == null) {
+                return false;
+            }
+
+            IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
+            for (IEditorReference ref : workbenchPage.getEditorReferences()) {
+                IEditorPart editor = ref.getEditor(true);
+
+                if ((editor != null) && (editor instanceof ProjectEditorDiffer)) {
+                    ProjectEditorDiffer projEditor = (ProjectEditorDiffer)editor;
+
+                    if (projEditor.getProject().equals(proj)) {
+                        return projEditor.isGetChangesJobInProcessing();
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public boolean isUpdateDdlJobInProcessing() {
         return updateDdlJobInProcessing;
     }
@@ -218,28 +248,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         return null;
-    }
-
-    @Override
-    protected ISourceViewer createSourceViewer(Composite parent,
-            IVerticalRuler ruler, int styles) {
-        Layout gl = new GridLayout();
-        parent.setLayout(gl);
-        parent.setLayoutData(new GridData());
-
-        SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
-        sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-        sw.appendVerifyKeyListener(new VerifyKeyListener() {
-
-            @Override
-            public void verifyKey(VerifyEvent event) {
-                if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == SWT.F5) {
-                    updateDdl();
-                }
-            }
-        });
-
-        return sw;
     }
 
     @Override

@@ -170,6 +170,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.GET_CHANGES_RUNNING);
     }
 
+    public IProject getProject() {
+        return proj.getProject();
+    }
+
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
