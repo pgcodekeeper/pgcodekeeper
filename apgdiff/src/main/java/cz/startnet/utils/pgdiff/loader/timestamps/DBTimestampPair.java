@@ -13,21 +13,17 @@ public class DBTimestampPair {
     private final DBTimestamp dbProject;
     private final DBTimestamp dbRemote;
 
-
     public DBTimestampPair(DBTimestamp dbProject, DBTimestamp dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
     }
 
     public List<ObjectTimestamp> compare() {
-        List<ObjectTimestamp> projectObjects = dbProject.getObjects();
-        List<ObjectTimestamp> remoteObjects = dbRemote.getObjects();
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
-
-        for (ObjectTimestamp pObj : projectObjects) {
+        for (ObjectTimestamp pObj : dbProject.getObjects()) {
             GenericColumn gc = pObj.getObject();
-            for (ObjectTimestamp rObj : remoteObjects) {
+            for (ObjectTimestamp rObj : dbRemote.getObjects()) {
                 if (rObj.getObject().equals(gc)) {
                     equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
                             rObj.getObjId(), rObj.getTime()));
@@ -82,7 +78,7 @@ public class DBTimestampPair {
     }
 
     public void serializeProject(String origin) {
-        dbProject.serialize(origin);
+        DBTimestamp.serialize(origin, dbProject);
     }
 
     public void clearProject() {

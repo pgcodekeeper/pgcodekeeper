@@ -42,12 +42,8 @@ public class DBTimestamp implements Serializable {
         return objects;
     }
 
-    public void addObject (ObjectTimestamp obj) {
+    public void addObject(ObjectTimestamp obj) {
         objects.add(obj);
-    }
-
-    public void serialize(String name) {
-        serialize(name, this);
     }
 
     public static void serialize(String name, DBTimestamp db) {
@@ -82,7 +78,7 @@ public class DBTimestamp implements Serializable {
 
     public static void updateObjects (PgDatabase db, String project) {
         DBTimestamp timestamp = getDBTimastamp(project);
-        if (!timestamp.getObjects().isEmpty()) {
+        if (!timestamp.objects.isEmpty()) {
             Map <GenericColumn, String> statements = new HashMap<>();
             db.getExtensions().forEach(e -> statements.put(
                     new GenericColumn(e.getName(), DbObjType.EXTENSION),
@@ -130,7 +126,7 @@ public class DBTimestamp implements Serializable {
                         PgDiffUtils.sha(s.getRawStatement()));
             }
 
-            for (Iterator<ObjectTimestamp> iterator = timestamp.getObjects().iterator(); iterator.hasNext(); ) {
+            for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
                 ObjectTimestamp obj = iterator.next();
                 GenericColumn name = obj.getObject();
                 if (!statements.containsKey(name) || !(statements.get(name).equals(obj.getHash()))) {
@@ -147,10 +143,9 @@ public class DBTimestamp implements Serializable {
         DBTimestamp db = PROJ_TIMESTAMPS.get(project);
         if (db == null) {
             db = deserialise(project);
-            PROJ_TIMESTAMPS.put(project, db);
-        }
-        if (db == null) {
-            db = new DBTimestamp();
+            if (db == null) {
+                db = new DBTimestamp();
+            }
             PROJ_TIMESTAMPS.put(project, db);
         }
         return db;

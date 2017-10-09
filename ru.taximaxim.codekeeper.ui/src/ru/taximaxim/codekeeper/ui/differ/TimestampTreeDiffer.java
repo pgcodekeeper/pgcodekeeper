@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,8 +33,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
     }
 
     @Override
-    public void run(IProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException {
+    public void run(IProgressMonitor monitor) throws InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor,
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
 

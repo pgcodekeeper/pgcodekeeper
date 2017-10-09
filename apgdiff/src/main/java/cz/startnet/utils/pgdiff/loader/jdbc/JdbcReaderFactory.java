@@ -94,7 +94,7 @@ public abstract class JdbcReaderFactory {
         return getAvailableHelperBits(loader.connection);
     }
 
-    public static String excludeObjects (String base, List<Long> oids) {
+    public static String excludeObjects(String base, List<Long> oids) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(base);
         sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");

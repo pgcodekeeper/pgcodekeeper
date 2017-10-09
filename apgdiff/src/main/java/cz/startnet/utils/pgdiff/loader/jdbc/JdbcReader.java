@@ -97,8 +97,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 PgSchema sc = schema.getValue();
                 if (isTime) {
                     for (ObjectTimestamp obj: objects) {
-                        if (obj.getSchema().equals(sc.getName()) && ((obj.getType() == type)
-                                || (obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT))) {
+                        if (obj.getSchema().equals(sc.getName()) && (obj.getType() == type
+                                || obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT)) {
                             switch (type) {
                             case VIEW:
                                 sc.addView((PgView) obj.getShallowCopy(projDb));
