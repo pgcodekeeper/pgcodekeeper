@@ -547,7 +547,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public void setLastDb(Object lastDb) {
+    private void setLastDb(Object lastDb) {
         if((lastDb != null) && (lastDb instanceof DbInfo)) {
             try {
                 proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE, lastDb.toString());
@@ -558,7 +558,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    public DbInfo getLastDb() {
+    private DbInfo getLastDb() {
         List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
         return lastStore.isEmpty() ? null : lastStore.get(0);
     }
