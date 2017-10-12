@@ -8,7 +8,9 @@ import static ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory.UNRESE
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * {@link #KEYWORDS} list maintenance:<br><br>
@@ -482,6 +484,10 @@ public class Keyword {
 
     public KeywordCategory getCategory() {
         return category;
+    }
+
+    public static List<String> getKeywords() {
+        return KEYWORDS.keySet().stream().sorted().collect(Collectors.toList());
     }
 
     public static void getAllTokensByGroups () {

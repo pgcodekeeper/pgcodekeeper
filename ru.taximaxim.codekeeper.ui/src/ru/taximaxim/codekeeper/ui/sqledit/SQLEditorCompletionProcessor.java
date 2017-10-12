@@ -1,9 +1,11 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
@@ -17,6 +19,7 @@ import org.eclipse.swt.graphics.Image;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -44,19 +47,10 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             --nonid;
         }
         String text = part.substring(nonid + 1, offset);
+        List<String> keywords = Keyword.getKeywords();
 
-        List<ICompletionProposal> result = new ArrayList<>();
-        // SQL TEmplates
-        if (text.isEmpty()) {
-            result.addAll(new SQLEditorTemplateAssistProcessor()
-                    .getAllTemplates(viewer, offset));
-        } else {
-            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
-                    .computeCompletionProposals(viewer, offset);
-            if (templates != null) {
-                result.addAll(Arrays.asList(templates));
-            }
-        }
+        Set<ICompletionProposal> result = new LinkedHashSet<>();
+        Set<ICompletionProposal> partResult = new LinkedHashSet<>();
 
         PgDbParser parser = editor.getParser();
         List<PgObjLocation> loc = parser.getAllObjDefinitions();
@@ -86,6 +80,35 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                         obj.getComment());
                 result.add(new CompletionProposal(obj.getObjName(), offset, 0,
                         obj.getObjLength(), img, displayText, info, obj.getObjName()));
+            }
+        }
+
+        // SQL Templates + Keywords
+        if (text.isEmpty()) {
+            for (String keyword : keywords) {
+                result.add(new CompletionProposal(keyword.toUpperCase(), offset, 0, keyword.length()));
+            }
+
+
+            result.addAll(new SQLEditorTemplateAssistProcessor()
+                    .getAllTemplates(viewer, offset));
+        } else {
+            for (String keyword : keywords) {
+                if (keyword.matches("(?i)" + Pattern.quote(text) + ".*")) {
+                    result.add(new CompletionProposal(keyword.toUpperCase() + ' ',
+                            offset - text.length(), text.length(), keyword.length() + 1));
+                } else if (keyword.matches("(?i).*" + Pattern.quote(text) + ".*")) {
+                    partResult.add(new CompletionProposal(keyword.toUpperCase() + ' ',
+                            offset - text.length(), text.length(), keyword.length() + 1));
+                }
+            }
+
+            result.addAll(partResult);
+
+            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
+                    .computeCompletionProposals(viewer, offset);
+            if (templates != null) {
+                result.addAll(Arrays.asList(templates));
             }
         }
 

@@ -65,6 +65,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         ContentAssistant assistant= new ContentAssistant();
         assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(editor), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
+        assistant.enableAutoInsert(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
