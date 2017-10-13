@@ -103,7 +103,7 @@ schema_drop
     ;
 
 alter_function_statement
-    : FUNCTION function_parameters
+    : FUNCTION function_parameters?
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
@@ -224,6 +224,9 @@ abbreviated_grant_or_revoke
 
     | (EXECUTE | ALL PRIVILEGES?)
         ON FUNCTIONS
+    
+    | (USAGE | CREATE | ALL PRIVILEGES?)
+        ON SCHEMAS
 
     | (USAGE | ALL PRIVILEGES?)
         ON TYPES)
@@ -944,6 +947,7 @@ tokens_nonreserved
   | ASSERTION
   | ASSIGNMENT
   | AT
+  | ATTACH
   | ATTRIBUTE
   | BACKWARD
   | BEFORE
@@ -960,6 +964,7 @@ tokens_nonreserved
   | CLASS
   | CLOSE
   | CLUSTER
+  | COLUMNS
   | COMMENT
   | COMMENTS
   | COMMIT
@@ -990,6 +995,7 @@ tokens_nonreserved
   | DELIMITER
   | DELIMITERS
   | DEPENDS
+  | DETACH
   | DICTIONARY
   | DISABLE
   | DISCARD
@@ -1019,6 +1025,7 @@ tokens_nonreserved
   | FORWARD
   | FUNCTION
   | FUNCTIONS
+  | GENERATED
   | GLOBAL
   | GRANTED
   | HANDLER
@@ -1070,6 +1077,7 @@ tokens_nonreserved
   | MOVE
   | NAME
   | NAMES
+  | NEW
   | NEXT
   | NO
   | NOTHING
@@ -1080,11 +1088,13 @@ tokens_nonreserved
   | OF
   | OFF
   | OIDS
+  | OLD
   | OPERATOR
   | OPTION
   | OPTIONS
   | ORDINALITY
   | OVER
+  | OVERRIDING
   | OWNED
   | OWNER
   | PARALLEL
@@ -1104,6 +1114,7 @@ tokens_nonreserved
   | PROCEDURAL
   | PROCEDURE
   | PROGRAM
+  | PUBLICATION
   | QUOTE
   | RANGE
   | READ
@@ -1111,6 +1122,7 @@ tokens_nonreserved
   | RECHECK
   | RECURSIVE
   | REF
+  | REFERENCING
   | REFRESH
   | REINDEX
   | RELATIVE
@@ -1131,6 +1143,7 @@ tokens_nonreserved
   | RULE
   | SAVEPOINT
   | SCHEMA
+  | SCHEMAS
   | SCROLL
   | SEARCH
   | SECOND
@@ -1158,6 +1171,7 @@ tokens_nonreserved
   | STORAGE
   | STRICT
   | STRIP
+  | SUBSCRIPTION
   | SYSID
   | SYSTEM
   | TABLES
@@ -1248,10 +1262,12 @@ tokens_nonreserved_except_function_type
   | XMLELEMENT
   | XMLEXISTS
   | XMLFOREST
+  | XMLNAMESPACES
   | XMLPARSE
   | XMLPI
   | XMLROOT
   | XMLSERIALIZE
+  | XMLTABLE
   ;
 
 tokens_simple_functions

@@ -60,6 +60,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ASSERTION: [aA] [sS] [sS] [eE] [rR] [tT] [iI] [oO] [nN];
     ASSIGNMENT: [aA] [sS] [sS] [iI] [gG] [nN] [mM] [eE] [nN] [tT];
     AT: [aA] [tT];
+    ATTACH: [aA] [tT] [tT] [aA] [cC] [hH];
     ATTRIBUTE: [aA] [tT] [tT] [rR] [iI] [bB] [uU] [tT] [eE];
     
     BACKWARD: [bB] [aA] [cC] [kK] [wW] [aA] [rR] [dD];
@@ -78,6 +79,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     CLASS: [cC] [lL] [aA] [sS] [sS];
     CLOSE: [cC] [lL] [oO] [sS] [eE];
     CLUSTER: [cC] [lL] [uU] [sS] [tT] [eE] [rR];
+    COLUMNS: [cC] [oO] [lL] [uU] [mM] [nN] [sS];
     COMMENT: [cC] [oO] [mM] [mM] [eE] [nN] [tT];
     COMMENTS: [cC] [oO] [mM] [mM] [eE] [nN] [tT] [sS];
     COMMIT: [cC] [oO] [mM] [mM] [iI] [tT];
@@ -109,6 +111,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     DELIMITER: [dD] [eE] [lL] [iI] [mM] [iI] [tT] [eE] [rR];
     DELIMITERS: [dD] [eE] [lL] [iI] [mM] [iI] [tT] [eE] [rR] [sS];
     DEPENDS: [dD] [eE] [pP] [eE] [nN] [dD] [sS];
+    DETACH: [dD] [eE] [tT] [aA] [cC] [hH];
     DICTIONARY: [dD] [iI] [cC] [tT] [iI] [oO] [nN] [aA] [rR] [yY];
     DISABLE: [dD] [iI] [sS] [aA] [bB] [lL] [eE];
     DISCARD: [dD] [iI] [sS] [cC] [aA] [rR] [dD];
@@ -140,7 +143,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     FORWARD: [fF] [oO] [rR] [wW] [aA] [rR] [dD];
     FUNCTION: [fF] [uU] [nN] [cC] [tT] [iI] [oO] [nN];
     FUNCTIONS: [fF] [uU] [nN] [cC] [tT] [iI] [oO] [nN] [sS];
-    
+    GENERATED: [gG] [eE] [nN] [eE] [rR] [aA] [tT] [eE] [dD];
     GLOBAL: [gG] [lL] [oO] [bB] [aA] [lL];
     GRANTED: [gG] [rR] [aA] [nN] [tT] [eE] [dD];
     
@@ -198,6 +201,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     
     NAME: [nN] [aA] [mM] [eE];
     NAMES: [nN] [aA] [mM] [eE] [sS];
+    NEW: [nN] [eE] [wW];
     NEXT: [nN] [eE] [xX] [tT];
     NO: [nN] [oO];
     NOTHING: [nN] [oO] [tT] [hH] [iI] [nN] [gG];
@@ -209,11 +213,13 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OF: [oO] [fF];
     OFF: [oO] [fF] [fF];
     OIDS: [oO] [iI] [dD] [sS];
+    OLD: [oO] [lL] [dD];
     OPERATOR: [oO] [pP] [eE] [rR] [aA] [tT] [oO] [rR];
     OPTION: [oO] [pP] [tT] [iI] [oO] [nN];
     OPTIONS: [oO] [pP] [tT] [iI] [oO] [nN] [sS];
     ORDINALITY: [oO] [rR] [dD] [iI] [nN] [aA] [lL] [iI] [tT] [yY];
     OVER: [oO] [vV] [eE] [rR];
+    OVERRIDING: [oO] [vV] [eE] [rR] [rR] [iI] [dD] [iI] [nN] [gG];
     OWNED: [oO] [wW] [nN] [eE] [dD];
     OWNER: [oO] [wW] [nN] [eE] [rR];
     
@@ -234,7 +240,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PROCEDURAL: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [aA] [lL];
     PROCEDURE: [pP] [rR] [oO] [cC] [eE] [dD] [uU] [rR] [eE];
     PROGRAM: [pP] [rR] [oO] [gG] [rR] [aA] [mM];
-    
+    PUBLICATION: [pP] [uU] [bB] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
     QUOTE: [qQ] [uU] [oO] [tT] [eE];
     
     RANGE: [rR] [aA] [nN] [gG] [eE];
@@ -243,6 +249,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     RECHECK: [rR] [eE] [cC] [hH] [eE] [cC] [kK];
     RECURSIVE: [rR] [eE] [cC] [uU] [rR] [sS] [iI] [vV] [eE];
     REF: [rR] [eE] [fF];
+    REFERENCING: [rR] [eE] [fF] [eE] [rR] [eE] [nN] [cC] [iI] [nN] [gG];
     REFRESH: [rR] [eE] [fF] [rR] [eE] [sS] [hH];
     REINDEX: [rR] [eE] [iI] [nN] [dD] [eE] [xX];
     RELATIVE: [rR] [eE] [lL] [aA] [tT] [iI] [vV] [eE];
@@ -264,6 +271,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     
     SAVEPOINT: [sS] [aA] [vV] [eE] [pP] [oO] [iI] [nN] [tT];
     SCHEMA: [sS] [cC] [hH] [eE] [mM] [aA];
+    SCHEMAS: [sS] [cC] [hH] [eE] [mM] [aA] [sS];
     SCROLL: [sS] [cC] [rR] [oO] [lL] [lL];
     SEARCH: [sS] [eE] [aA] [rR] [cC] [hH];
     SECOND: [sS] [eE] [cC] [oO] [nN] [dD];
@@ -292,6 +300,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STORAGE: [sS] [tT] [oO] [rR] [aA] [gG] [eE];
     STRICT: [sS] [tT] [rR] [iI] [cC] [tT];
     STRIP: [sS] [tT] [rR] [iI] [pP];
+    SUBSCRIPTION: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT] [iI] [oO] [nN];
     SYSID: [sS] [yY] [sS] [iI] [dD];
     SYSTEM: [sS] [yY] [sS] [tT] [eE] [mM];
     
@@ -408,10 +417,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     XMLELEMENT: [xX] [mM] [lL] [eE] [lL] [eE] [mM] [eE] [nN] [tT];
     XMLEXISTS: [xX] [mM] [lL] [eE] [xX] [iI] [sS] [tT] [sS];
     XMLFOREST: [xX] [mM] [lL] [fF] [oO] [rR] [eE] [sS] [tT];
+    XMLNAMESPACES: [xX] [mM] [lL] [nN] [aA] [mM] [eE] [sS] [pP] [aA] [cC] [eE] [sS];
     XMLPARSE: [xX] [mM] [lL] [pP] [aA] [rR] [sS] [eE];
     XMLPI: [xX] [mM] [lL] [pP] [iI];
     XMLROOT: [xX] [mM] [lL] [rR] [oO] [oO] [tT];
     XMLSERIALIZE: [xX] [mM] [lL] [sS] [eE] [rR] [iI] [aA] [lL] [iI] [zZ] [eE];
+    XMLTABLE: [xX] [mM] [lL] [tT] [aA] [bB] [lL] [eE];
     
     /*
     ==================================================
