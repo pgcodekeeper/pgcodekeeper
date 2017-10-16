@@ -262,6 +262,7 @@ alter_type_statement
       | rename_to
       | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
+      | RENAME VALUE existing_enum_name=Character_String_Literal TO new_enum_name=Character_String_Literal
       | type_action (COMMA type_action)*)
     ;
 
