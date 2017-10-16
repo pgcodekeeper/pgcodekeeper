@@ -210,6 +210,8 @@ public class PgDiffTest {
                     {"modify_function_parallel"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
+                    // Tests scenario where TRIGGER with referencing is added.
+                    {"add_trigger_referencing"},
                     // Tests scenario where TRIGGER is added in reverse add.
                     {"add_trigger_another_schema"},
                     // Tests scenario where TRIGGER is dropped.
