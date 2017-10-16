@@ -139,6 +139,8 @@ public class PgDiffTest {
                     {"modify_inherits"},
                     // Tests scenario where SEQUENCE is added.
                     {"add_sequence"},
+                    // Tests scenario where SEQUENCE with data type is added.
+                    {"add_sequence_with_data_type"},
                     // Tests scenario where SEQUENCE is dropped.
                     {"drop_sequence"},
                     // Tests scenario where INCREMENT BY is modified on SEQUENCE.
@@ -156,6 +158,8 @@ public class PgDiffTest {
                     {"modify_sequence_maxvalue_unset"},
                     // Tests scenario where CACHE is modified on SEQUENCE.
                     {"modify_sequence_cache"},
+                    // Tests scenario where SEQUENCE with data type is modified.
+                    {"modify_sequence_data_type"},
                     // Tests scenario where CYCLE is modified on SEQUENCE.
                     {"modify_sequence_cycle_on"},
                     {"modify_sequence_cycle_off"},
