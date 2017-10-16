@@ -62,6 +62,9 @@ public class CreateIndex extends ParserAbstract {
     public static String parseIndex(Index_restContext rest, String tablespace,
             String schemaName, PgIndex ind){
         StringBuilder sb = new StringBuilder();
+        if (rest.index_sort().method == null) {
+            sb.append("USING btree ");
+        }
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (rest.table_space() != null){
             sb.append(' ').append(getFullCtxText(rest.table_space()));
