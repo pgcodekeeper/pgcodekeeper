@@ -338,7 +338,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         PgIndex idx = new PgIndex("contacts_number_pool_id_idx", "");
         table.addIndex(idx);
         idx.setTableName("contacts");
-        idx.setDefinition("(number_pool_id)");
+        idx.setDefinition("USING btree (number_pool_id)");
 
         return d;
     }
