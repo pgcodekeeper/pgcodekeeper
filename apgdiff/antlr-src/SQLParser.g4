@@ -443,9 +443,14 @@ create_trigger_statement
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
+    (REFERENCING trigger_referencing trigger_referencing?)?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE PROCEDURE func_name=function_call
+    ;
+
+trigger_referencing
+    : (OLD | NEW) TABLE AS? transition_relation_name=identifier
     ;
 
 when_trigger
