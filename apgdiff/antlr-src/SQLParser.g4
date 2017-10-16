@@ -626,7 +626,8 @@ create_sequence_statement
     ;
 
 sequence_body
-    : INCREMENT BY? incr=signed_numerical_literal
+    :   AS type=(SMALLINT | INTEGER | BIGINT)
+        | INCREMENT BY? incr=signed_numerical_literal
         | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
         | START WITH? start_val=signed_numerical_literal

@@ -1,4 +1,5 @@
 SELECT seqrelid AS oid,
+       seqtypid,
        seqstart, 
        seqincrement, 
        seqmax, 

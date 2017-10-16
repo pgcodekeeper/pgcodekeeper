@@ -44,9 +44,7 @@ public class SequencesReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgSequence sequence = getSequence(result, schema.getName());
         loader.monitor.worked(1);
-        if (sequence != null) {
-            schema.addSequence(sequence);
-        }
+        schema.addSequence(sequence);
     }
 
     private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
@@ -70,11 +68,12 @@ public class SequencesReader extends JdbcReader {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if(SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(res.getString("seqstart"));
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
+            s.setDataType((loader.cachedTypesByOid.get(res.getLong("seqtypid")).getFullName(schemaName)));
         }
 
         return s;
