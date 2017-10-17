@@ -734,11 +734,11 @@ table_column_definition
     ;
     
 table_of_type_column_definition
-    : column_name=identifier WITH OPTIONS (colmn_constraint+=constraint_common)*
+    : column_name=identifier (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
 
 like_option
-    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
+    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | IDENTITY | INDEXES | STORAGE | COMMENTS | ALL)
     ;
 /** NULL, DEFAULT - column constraint
 * EXCLUDE, FOREIGN KEY - table_constraint
