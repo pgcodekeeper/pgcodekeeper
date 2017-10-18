@@ -53,6 +53,8 @@ public class PgDiffTest {
                     {"delete_table_option"},
                     // Tests scenario where TABLE is modified by changing of an option.
                     {"modify_table_option"},
+                    // Tests scenario where TABLE with partition is added.
+                    {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
