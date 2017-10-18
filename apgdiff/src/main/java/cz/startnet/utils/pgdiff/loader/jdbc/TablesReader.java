@@ -218,6 +218,11 @@ public class TablesReader extends JdbcReader {
             t.setForceSecurity(res.getBoolean("force_security"));
         }
 
+        // since 10 PostgreSQL
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            t.setPartitionBy(res.getString("partition_by"));
+        }
+
         // persistence: U - unlogged, P - permanent, T - temporary
         switch (res.getString("persistence")) {
         case "u":

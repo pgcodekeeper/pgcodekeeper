@@ -674,6 +674,7 @@ with_check_option
 create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? FOREIGN? TABLE (IF NOT EXISTS)? name=schema_qualified_name
     define_table
+    partition_by?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -696,6 +697,18 @@ define_type
   : OF type_name=data_type
     list_of_type_column_def?
   ;
+  
+partition_by 
+    : PARTITION BY partition_method
+    ;
+    
+partition_method
+    : (RANGE | LIST) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
+    ;
+    
+partition_column
+    :  (identifier | vex) collate_name=collate_identifier? op_class=identifier?
+    ;
 
 define_server
   : SERVER server_name=identifier define_foreign_options? 

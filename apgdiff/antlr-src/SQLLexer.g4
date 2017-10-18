@@ -596,6 +596,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ELEMENT: [eE] [lL] [eE] [mM] [eE] [nN] [tT];
     USAGE: [uU] [sS] [aA] [gG] [eE];
     CONNECT: [cC] [oO] [nN] [nN] [eE] [cC] [tT];
+    LIST: [lL] [iI] [sS] [tT];
 
 fragment UNDERLINE : '_';
 

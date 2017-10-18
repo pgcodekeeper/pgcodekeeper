@@ -123,7 +123,7 @@ FROM
           LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
           LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
           WHERE c.relnamespace = ?
-              AND c.relkind in ('f','r')
+              AND c.relkind IN ('f','r','p')
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,

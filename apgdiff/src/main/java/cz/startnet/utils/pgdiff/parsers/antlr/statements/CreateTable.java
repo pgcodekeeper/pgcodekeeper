@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
@@ -44,62 +45,19 @@ public class CreateTable extends ParserAbstract {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgTable table = new PgTable(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        Define_columnsContext defineColumnContext = ctx.define_table().define_columns();
+        String schemaName = schema.getName();
+        Define_columnsContext defineColumnsContext = ctx.define_table().define_columns();
         Define_typeContext defineTypeContext = ctx.define_table().define_type();
 
-        if(defineTypeContext != null){
-            Data_typeContext dataTypeCtxOfType = defineTypeContext.type_name;
-            String ofType = getFullCtxText(dataTypeCtxOfType);
-            table.setOfType(ofType);
-            List_of_type_column_defContext lstTypeColDefCtx = defineTypeContext.list_of_type_column_def();
-            if(lstTypeColDefCtx != null){
-                for (Table_of_type_column_defContext typeColCtx : lstTypeColDefCtx.table_col_def) {
-                    if (typeColCtx.tabl_constraint != null) {
-                        table.addConstraint(getTableConstraint(typeColCtx.tabl_constraint, schema.getName()));
-                    }
-                    if (typeColCtx.table_of_type_column_definition() != null) {
-                        table.addColumnOfType(getColumnOfType(typeColCtx.table_of_type_column_definition(), getDefSchemaName()));
-                    }
-                }
-            }
-
-            addTypeAsDepcy(dataTypeCtxOfType, table, getDefSchemaName());
+        if (defineTypeContext != null ) {
+            defineType(defineTypeContext, table, schemaName);
         } else {
-            Define_serverContext server = defineColumnContext.define_server();
-            if (server != null) {
-                table.setServerName(server.server_name.getText());
-                Define_foreign_optionsContext options = server.define_foreign_options();
-                if (options != null){
-                    for (Foreign_optionContext option : options.foreign_option()){
-                        String value = option.value == null ? null : option.value.getText();
-                        fillOptionParams(value, option.name.getText(), false, table::addOption);
-                    }
-                }
-            }
-
-            for (Table_column_defContext colCtx : defineColumnContext.table_col_def) {
-                if (colCtx.tabl_constraint != null) {
-                    table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schema.getName()));
-                }
-                if (colCtx.table_column_definition() != null) {
-                    table.addColumn(getColumn(colCtx.table_column_definition(), getDefSchemaName()));
-                }
-            }
+            defineColumns(defineColumnsContext, table, schemaName);
         }
-        if (defineColumnContext != null) {
-            Column_referencesContext parentTable = defineColumnContext.parent_table;
-            if(parentTable != null){
-                for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
-                    List<IdentifierContext> idsInh = nameInher.identifier();
-                    String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
-                    String inhTableName = QNameParser.getFirstName(idsInh);
-                    table.addInherits(inhSchemaName, inhTableName);
-                    GenericColumn gc = new GenericColumn(
-                            inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
-                                    inhTableName, DbObjType.TABLE);
-                    table.addDep(gc);
-                }
-            }
+
+        Partition_byContext part = ctx.partition_by();
+        if (part != null) {
+            table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
         }
 
         if (tablespace != null) {
@@ -134,6 +92,69 @@ public class CreateTable extends ParserAbstract {
 
         schema.addTable(table);
         return table;
+    }
+
+    private void defineColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
+        defineServer(columnsCtx.define_server(), table);
+        for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
+            if (colCtx.tabl_constraint != null) {
+                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
+            } else if (colCtx.table_column_definition() != null) {
+                table.addColumn(getColumn(colCtx.table_column_definition(), getDefSchemaName()));
+            }
+        }
+
+        Column_referencesContext parentTable = columnsCtx.parent_table;
+        if (parentTable != null) {
+            for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
+                addInherit(table, nameInher.identifier());
+            }
+        }
+    }
+
+    private void defineServer(Define_serverContext server, PgTable table) {
+        if (server != null) {
+            table.setServerName(server.server_name.getText());
+            Define_foreign_optionsContext options = server.define_foreign_options();
+            if (options != null){
+                for (Foreign_optionContext option : options.foreign_option()){
+                    String value = option.value == null ? null : option.value.getText();
+                    fillOptionParams(value, option.name.getText(), false, table::addOption);
+                }
+            }
+        }
+    }
+
+    private void defineType(Define_typeContext typeCtx, PgTable table, String schemaName) {
+        Data_typeContext typeName = typeCtx.type_name;
+        String ofType = getFullCtxText(typeName);
+        table.setOfType(ofType);
+        defineTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
+        addTypeAsDepcy(typeName, table, getDefSchemaName());
+    }
+
+    private void defineTypeColumns(List_of_type_column_defContext columns,
+            PgTable table, String schemaName) {
+        if (columns != null) {
+            for (Table_of_type_column_defContext typeColCtx : columns.table_col_def) {
+                if (typeColCtx.tabl_constraint != null) {
+                    table.addConstraint(getTableConstraint(typeColCtx.tabl_constraint, schemaName));
+                }
+                if (typeColCtx.table_of_type_column_definition() != null) {
+                    table.addColumnOfType(getColumnOfType(typeColCtx.table_of_type_column_definition(), getDefSchemaName()));
+                }
+            }
+        }
+    }
+
+    private void addInherit (PgTable table,  List<IdentifierContext> idsInh) {
+        String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
+        String inhTableName = QNameParser.getFirstName(idsInh);
+        table.addInherits(inhSchemaName, inhTableName);
+        GenericColumn gc = new GenericColumn(
+                inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
+                        inhTableName, DbObjType.TABLE);
+        table.addDep(gc);
     }
 
     private void parseOptions(List<Storage_parameter_optionContext> options, PgTable table){

@@ -44,6 +44,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private String tablespace;
     private String ofType;
     private String serverName;
+    private String partitionBy;
 
     @Override
     public DbObjType getStatementType() {
@@ -160,19 +161,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public String getCreationSQL() {
         final StringBuilder sbOption = new StringBuilder();
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE ");
 
-        if (!isLogged()) {
-            sbSQL.append("UNLOGGED ");
-        } else if (isForeign()) {
-            sbSQL.append("FOREIGN ");
-        }
-
-        sbSQL.append("TABLE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        generateName(sbSQL);
 
         boolean first = true;
-        if(ofType != null){
+        if (ofType != null) {
             sbSQL.append(" OF ")
             .append(ofType);
 
@@ -239,6 +232,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                 sbSQL.append(")");
             }
+        }
+
+        if (partitionBy != null) {
+            sbSQL.append("\nPARTITION BY ");
+            sbSQL.append(partitionBy);
         }
 
         if (isForeign()){
@@ -315,7 +313,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             appendCommentSql(sbSQL);
         }
 
-        if(ofType != null){
+        if (ofType != null) {
             for (final PgColumn column : columnsOfType) {
                 if (column.getComment() != null && !column.getComment().isEmpty()) {
                     sbSQL.append("\n\n");
@@ -332,6 +330,19 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         return sbSQL.toString();
+    }
+
+    private void generateName(StringBuilder sbSQL) {
+        sbSQL.append("CREATE ");
+
+        if (!isLogged()) {
+            sbSQL.append("UNLOGGED ");
+        } else if (isForeign()) {
+            sbSQL.append("FOREIGN ");
+        }
+
+        sbSQL.append("TABLE ");
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
     }
 
     @Override
@@ -352,7 +363,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
         PgTable oldTable = this;
 
-        if (!Objects.equals(newTable.getServerName(), oldTable.getServerName())) {
+        if (!Objects.equals(newTable.getServerName(), oldTable.getServerName())
+                || !Objects.equals(newTable.getPartitionBy(), oldTable.getPartitionBy())) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -714,6 +726,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
 
+    public String getPartitionBy() {
+        return partitionBy;
+    }
+
+    public void setPartitionBy(final String partionBy) {
+        this.partitionBy = partionBy;
+        resetHash();
+    }
+
     public void addColumn(final PgColumn column) {
         assertUnique(this::getColumn, column);
         columns.add(column);
@@ -821,7 +842,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(comment, table.getComment())
                     && Objects.equals(options, table.getOptions())
                     && columnsOfType.equals(table.columnsOfType)
-                    && Objects.equals(ofType, table.getOfType());
+                    && Objects.equals(ofType, table.getOfType())
+                    && Objects.equals(partitionBy, table.getPartitionBy());
         }
 
         return eq;
@@ -874,6 +896,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + (isForceSecurity ? itrue : ifalse);
         result = prime * result + ((columnsOfType == null) ? 0 : columnsOfType.hashCode());
         result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
+        result = prime * result + ((partitionBy == null) ? 0 : partitionBy.hashCode());
         return result;
     }
 
@@ -881,6 +904,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setOfType(getOfType());
+        tableDst.setPartitionBy(getPartitionBy());
         tableDst.setTablespace(getTablespace());
         tableDst.setServerName(getServerName());
         tableDst.setHasOids(getHasOids());
