@@ -55,6 +55,22 @@ public class PgSequence extends PgStatementWithSearchPath {
             sbSQL.append("\n\tAS ").append(dataType);
         }
 
+        fillSequenceBody(sbSQL);
+
+        sbSQL.append(';');
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+
+        return sbSQL.toString();
+    }
+
+    public void fillSequenceBody(StringBuilder sbSQL) {
         if (startWith != null) {
             sbSQL.append("\n\tSTART WITH ");
             sbSQL.append(startWith);
@@ -91,18 +107,6 @@ public class PgSequence extends PgStatementWithSearchPath {
         if (cycle) {
             sbSQL.append("\n\tCYCLE");
         }
-
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        return sbSQL.toString();
     }
 
     /**

@@ -21,10 +21,16 @@ public class CreateSequence extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSequence sequence = new PgSequence(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        fillSequence(sequence, ctx.sequence_body());
+        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
+        return sequence;
+    }
+
+    public static void fillSequence(PgSequence sequence, List<Sequence_bodyContext> list) {
         long inc = 1;
         Long maxValue = null;
         Long minValue = null;
-        for (Sequence_bodyContext body : ctx.sequence_body()) {
+        for (Sequence_bodyContext body : list) {
             if (body.type != null) {
                 sequence.setDataType(body.type.getText().toLowerCase());
             } else if (body.cache_val != null) {
@@ -46,8 +52,5 @@ public class CreateSequence extends ParserAbstract {
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue);
-        getSchemaSafe(ids, db.getDefaultSchema()).addSequence(sequence);
-        return sequence;
     }
-
 }

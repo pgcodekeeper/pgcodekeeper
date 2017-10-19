@@ -181,6 +181,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                     sbSQL.append("\t");
                     sbSQL.append(column.getFullDefinition(false, null, true));
+                    writeSequences(column, sbOption);
                 }
 
                 sbSQL.append("\n)");
@@ -208,6 +209,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
                 writeOptions(column, sbOption, false);
                 writeOptions(column, sbOption, true);
+                writeSequences(column, sbOption);
             }
 
             if (!first) {
@@ -330,6 +332,21 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         return sbSQL.toString();
+    }
+
+    private void writeSequences(PgColumn column, StringBuilder sbOption) {
+        PgSequence sequence = column.getSequence();
+        if (sequence != null) {
+            sbOption.append(getAlterTable(true, false))
+            .append(" ALTER COLUMN ")
+            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(" ADD GENERATED ")
+            .append(column.getIdentityType())
+            .append(" AS IDENTITY (");
+            sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getName());
+            sequence.fillSequenceBody(sbOption);
+            sbOption.append("\n);");
+        }
     }
 
     private void generateName(StringBuilder sbSQL) {
@@ -550,6 +567,37 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
 
         return sb.length() > startLength;
+    }
+
+    private void compareSequences(PgColumn oldColumn, PgColumn newColumn, StringBuilder sb) {
+
+        String oldIdentityType = oldColumn.getIdentityType();
+        String newIdentityType = newColumn.getIdentityType();
+
+        if (!Objects.equals(oldIdentityType, newIdentityType)) {
+            sb.append(getAlterTable(true,true))
+            .append("ALTER COLUMN").append(newColumn.getName());
+            if (newIdentityType == null) {
+                sb.append(" DROP IDENTITY;");
+            } else if (oldIdentityType == null) {
+                PgSequence seq = newColumn.getSequence();
+                sb.append(" ADD GENERATED ")
+                .append(newIdentityType)
+                .append(" AS IDENTITY (")
+                .append("\n\tSEQUENCE NAME ")
+                .append(seq.getName());
+                seq.fillSequenceBody(sb);
+                sb.append("\n);");
+            } else {
+                sb.append(" SET GENERATED ").append(newIdentityType).append(';');
+            }
+        }
+
+        if (!Objects.equals(oldColumn.getSequence(), newColumn.getSequence())) {
+            System.err.println("here");
+            oldColumn.getSequence().appendAlterSQL(newColumn.getSequence(), sb, new AtomicBoolean());
+        }
+
     }
 
     /**

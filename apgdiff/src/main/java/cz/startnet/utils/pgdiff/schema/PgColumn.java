@@ -36,6 +36,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private String storage;
     private final Map<String, String> options = new LinkedHashMap<>(0);
     private final Map<String, String> fOptions = new LinkedHashMap<>(0);
+    private PgSequence sequence;
+    private String identityType;
 
     @Override
     public DbObjType getStatementType() {
@@ -168,6 +170,24 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     public String getCollation() {
         return collation;
+    }
+
+    public PgSequence getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(final PgSequence sequence) {
+        this.sequence = sequence;
+        resetHash();
+    }
+
+    public void setIdentityType(final String identityType) {
+        this.identityType = identityType;
+        resetHash();
+    }
+
+    public String getIdentityType() {
+        return identityType;
     }
 
     @Override
@@ -341,6 +361,42 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
             sb.append("\n\n");
             newColumn.appendCommentSql(sb);
         }
+
+        String oldIdentityType = oldColumn.getIdentityType();
+        String newIdentityType = newColumn.getIdentityType();
+
+        if (!Objects.equals(oldIdentityType, newIdentityType)) {
+            sb.append("\n\n").append(getAlterTable())
+            .append(ALTER_COLUMN).append(newColumn.getName());
+
+            if (newIdentityType == null) {
+                sb.append(" DROP IDENTITY;");
+            } else if (oldIdentityType == null) {
+                PgSequence seq = newColumn.getSequence();
+                sb.append(" ADD GENERATED ")
+                .append(newIdentityType)
+                .append(" AS IDENTITY (")
+                .append("\n\tSEQUENCE NAME ")
+                .append(seq.getName());
+                seq.fillSequenceBody(sb);
+                sb.append("\n);");
+            } else {
+                sb.append(" SET GENERATED ").append(newIdentityType).append(';');
+            }
+        }
+
+        PgSequence oldSequence = oldColumn.getSequence();
+        PgSequence newSequence = newColumn.getSequence();
+
+        if (oldSequence != null && newSequence != null &&
+                !Objects.equals(oldSequence, newSequence)) {
+            if (!oldSequence.getName().equals(newSequence.getName())) {
+                sb.append("\n\n").append("ALTER SEQUENCE ").append(oldSequence.getName())
+                .append(" RENAME TO ").append(newSequence.getName()).append(';');
+            }
+
+            oldSequence.appendAlterSQL(newSequence, sb, new AtomicBoolean());
+        }
         return sb.length() > startLength;
     }
 
@@ -348,7 +404,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     public boolean compare(PgStatement obj) {
         boolean eq = false;
 
-        if(this == obj) {
+        if (this == obj) {
             eq = true;
         } else if(obj instanceof PgColumn) {
             PgColumn col = (PgColumn) obj;
@@ -364,6 +420,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes)
                     && Objects.equals(fOptions, col.fOptions)
+                    && Objects.equals(sequence, col.sequence)
+                    && Objects.equals(identityType, col.identityType)
                     && Objects.equals(options, col.options);
         }
         return eq;
@@ -387,6 +445,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
+        result = prime * result + ((identityType == null) ? 0 : identityType.hashCode());
+        result = prime * result + ((sequence == null) ? 0 : sequence.hashCode());
         return result;
     }
 
@@ -394,6 +454,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     public PgColumn shallowCopy() {
         PgColumn colDst = new PgColumn(getName());
         colDst.setDefaultValue(getDefaultValue());
+        colDst.setIdentityType(getIdentityType());
+        colDst.setSequence(getSequence());
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());

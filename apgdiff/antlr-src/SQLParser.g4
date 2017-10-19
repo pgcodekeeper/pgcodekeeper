@@ -139,7 +139,11 @@ table_action
         | set_attribute_option
         | define_foreign_options
         | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
-        | set_storage ))
+        | set_storage 
+        | ADD identity_body
+        | alter_identity+
+        | DROP IDENTITY (IF EXISTS)?
+        ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -162,6 +166,16 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
+    ;
+
+identity_body
+    : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
+    ;
+   
+alter_identity
+    : SET GENERATED (ALWAYS | BY DEFAULT)
+    | SET sequence_body
+    | RESTART (WITH? restart=NUMBER_LITERAL)
     ;
 
 set_attribute_option
@@ -633,6 +647,7 @@ create_sequence_statement
 
 sequence_body
     :   AS type=(SMALLINT | INTEGER | BIGINT)
+        | SEQUENCE NAME name=schema_qualified_name
         | INCREMENT BY? incr=signed_numerical_literal
         | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
@@ -769,6 +784,7 @@ constr_body
        | common_constraint
        | table_unique_prkey
        | DEFAULT default_expr=vex
+       | identity_body
       )
       table_deferrable? table_initialy_immed?
     ;

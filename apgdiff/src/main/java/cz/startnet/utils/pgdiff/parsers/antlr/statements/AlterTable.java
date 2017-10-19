@@ -6,6 +6,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
@@ -16,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
@@ -132,6 +135,27 @@ public class AlterTable extends ParserAbstract {
                     tabl.setRowSecurity(tablAction.ENABLE() != null);
                 }
             }
+
+            // since 10 PostgreSQL
+            Identity_bodyContext identity = tablAction.identity_body();
+            if (identity != null) {
+                String name = null;
+                for (Sequence_bodyContext body : identity.sequence_body()) {
+                    if (body.NAME() != null) {
+                        name = body.name.getText();
+                    }
+                }
+                PgSequence sequence = new PgSequence(name, null);
+                CreateSequence.fillSequence(sequence, identity.sequence_body());
+                String columnName = QNameParser.getFirstName(tablAction.column.identifier());
+                PgColumn column = tabl.getColumn(columnName);
+                if (column == null ) {
+                    column = tabl.getColumnOfType(columnName);
+                }
+                column.setSequence(sequence);
+                column.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
+            }
+
         }
         return null;
     }
