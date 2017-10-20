@@ -58,7 +58,7 @@ public class CreateRule extends ParserAbstract {
                 List<IdentifierContext> funcIds = functparam.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
                 PgFunction func = new PgFunction(functNameCtx.getText(), null);
-                fillArguments(functparam.function_args(), func, getDefSchemaName());
+                fillArguments(functparam.function_args(), func, getDefSchemaName(), true);
 
                 PgSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
                 getSafe(schema::getFunction, func.getSignature(), functNameCtx.getStart())

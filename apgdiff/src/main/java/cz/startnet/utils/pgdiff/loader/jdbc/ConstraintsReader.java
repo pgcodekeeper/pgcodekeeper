@@ -1,10 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -66,15 +68,18 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
-                p -> p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
-                .table_action(0), ctx -> {
-                    Constr_bodyContext body = ctx.tabl_constraint.constr_body();
-                    ParserAbstract.parseConstraintExpr(body, schemaName, c);
-                    c.setDefinition(ParserAbstract.getFullCtxText(body));
-                    c.setNotValid(ctx.not_valid != null);
-                });
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', p -> {
+            Table_actionContext ctx = p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
+                    .table_action(0);
+            Constr_bodyContext body = ctx.tabl_constraint.constr_body();
 
+            c.setDefinition(ParserAbstract.getFullCtxText(body));
+            c.setNotValid(ctx.not_valid != null);
+
+            Map<String, Object> constrBody = new LinkedHashMap<>();
+            constrBody.put(schemaName + "." + tableName + "." + c.getStatementType() + "." + constraintName, body);
+            return constrBody;
+        }, loader::addToObjectsForAnalyze);
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

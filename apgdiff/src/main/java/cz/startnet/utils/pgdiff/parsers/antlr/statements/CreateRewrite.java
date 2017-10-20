@@ -45,42 +45,49 @@ public class CreateRewrite extends ParserAbstract {
         return rule;
     }
 
-    public static String getCondition(Create_rewrite_statementContext ctx, PgRule rule,
+    private static String getCondition(Create_rewrite_statementContext ctx, PgRule rule,
             String schemaName) {
-        if (ctx.WHERE() != null){
-            VexContext exp = ctx.vex();
-            ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
-            vex.addReference("new", null);
-            vex.addReference("old", null);
-            vex.analyze(new Vex(exp));
-            rule.addAllDeps(vex.getDepcies());
-            return getFullCtxText(exp);
+        return (ctx.WHERE() != null) ? getFullCtxText(analyzeRewriteCreateStmtCtx(ctx, rule, schemaName)) : null;
+    }
+
+    public static VexContext analyzeRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
+            String schemaName) {
+        VexContext exp = ctx.vex();
+        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
+        vex.addReference("new", null);
+        vex.addReference("old", null);
+        vex.analyze(new Vex(exp));
+        rule.addAllDeps(vex.getDepcies());
+        return exp;
+    }
+
+    // allows to write a common namespace-setup code with no copy-paste for each cmd type
+    private static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
+            PgDiffArguments args, String schemaName) {
+        for (Rewrite_commandContext cmd : ctx.commands) {
+            analyzeRewriteCommandCtx(cmd, rule, args, schemaName);
+            rule.addCommand(args, getFullCtxText(cmd));
         }
-        return null;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    // allows to write a common namespace-setup code with no copy-paste for each cmd type
-    public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
+    public static void analyzeRewriteCommandCtx(Rewrite_commandContext cmd, PgRule rule,
             PgDiffArguments args, String schemaName) {
-        for (Rewrite_commandContext cmd : ctx.commands) {
-            ParserRuleContext parser = null;
-            AbstractExprWithNmspc analyzer = null;
-            if ((parser = cmd.select_stmt()) != null) {
-                analyzer = new Select(schemaName);
-            } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
-                analyzer = new Insert(schemaName);
-            } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
-                analyzer = new Delete(schemaName);
-            } else if ((parser = cmd.update_stmt_for_psql()) != null) {
-                analyzer = new Update(schemaName);
-            }
-            if (parser != null && analyzer != null) {
-                analyzer.addReference("new", null);
-                analyzer.addReference("old", null);
-                UtilExpr.analyze(parser, analyzer, rule);
-            }
-            rule.addCommand(args, getFullCtxText(cmd));
+        ParserRuleContext parser = null;
+        AbstractExprWithNmspc analyzer = null;
+        if ((parser = cmd.select_stmt()) != null) {
+            analyzer = new Select(schemaName);
+        } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
+            analyzer = new Insert(schemaName);
+        } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
+            analyzer = new Delete(schemaName);
+        } else if ((parser = cmd.update_stmt_for_psql()) != null) {
+            analyzer = new Update(schemaName);
+        }
+        if (parser != null && analyzer != null) {
+            analyzer.addReference("new", null);
+            analyzer.addReference("old", null);
+            UtilExpr.analyze(parser, analyzer, rule);
         }
     }
 }

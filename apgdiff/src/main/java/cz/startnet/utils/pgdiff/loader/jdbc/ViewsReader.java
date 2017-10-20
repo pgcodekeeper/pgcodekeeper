@@ -1,11 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -16,6 +17,8 @@ import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ViewsReader extends JdbcReader {
+
+    public static final String COLUMN_DEFAULT = ".viewColumnDefaultValue";
 
     public static class ViewsReaderFactory extends JdbcReaderFactory {
 
@@ -61,11 +64,15 @@ public class ViewsReader extends JdbcReader {
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
+        String viewKey = schemaName + "." + v.getStatementType() + "." + v.getName();
+        String viewKeyColDef = viewKey + COLUMN_DEFAULT;
+
         loader.submitAntlrTask(viewDef, p -> {
-            Select sel = new Select(schemaName);
-            sel.analyze(p.sql().statement(0).data_statement().select_stmt());
-            return sel.getDepcies();
-        }, v::addAllDeps);
+            Map<String, Object> viewSelectStmt = new LinkedHashMap<>();
+            viewSelectStmt.put(viewKey,
+                    p.sql().statement(0).data_statement().select_stmt());
+            return viewSelectStmt;
+        }, loader::addToObjectsForAnalyze);
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
@@ -83,10 +90,14 @@ public class ViewsReader extends JdbcReader {
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> {
-                        ValueExpr vex = new ValueExpr(schemaName);
-                        vex.analyze(new Vex(p.vex_eof().vex()));
-                        return vex.getDepcies();
-                    }, v::addAllDeps);
+                        Object obj = loader.getObjectsForAnalyze().get(viewKeyColDef);
+                        List<Vex> vexList = (obj != null) ? (List<Vex>)obj : new ArrayList<>() ;
+                        vexList.add(new Vex(p.vex_eof().vex()));
+
+                        Map<String, Object> viewColDef = new LinkedHashMap<>();
+                        viewColDef.put(viewKeyColDef, vexList);
+                        return viewColDef;
+                    }, loader::addToObjectsForAnalyze);
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

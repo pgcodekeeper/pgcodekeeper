@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -101,7 +102,12 @@ public class FunctionsReader extends JdbcReader {
             loader.submitAntlrTask('(' + arguments + ')',
                     p -> p.function_args_parser().function_args(),
                     ctx -> {
-                        ParserAbstract.fillArguments(ctx, f, schemaName);
+                        ParserAbstract.fillArguments(ctx, f, schemaName, false);
+
+                        Map<String, Object> functionArgs = new LinkedHashMap<>();
+                        functionArgs.put(schemaName + "." + f.getStatementType() + "." + f.getName(), ctx);
+                        loader.addToObjectsForAnalyze(functionArgs);
+
                         schema.addFunction(f);
                     });
         } else {

@@ -58,8 +58,7 @@ public class CreateIndex extends ParserAbstract {
         return ind;
     }
 
-
-    public static String parseIndex(Index_restContext rest, String tablespace,
+    private static String parseIndex(Index_restContext rest, String tablespace,
             String schemaName, PgIndex ind){
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
@@ -69,11 +68,15 @@ public class CreateIndex extends ParserAbstract {
             sb.append(" TABLESPACE ").append(tablespace);
         }
         if (rest.index_where() != null){
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(rest.index_where().vex()));
-            ind.addAllDeps(vex.getDepcies());
+            analyzeIndexWhereCtx(rest, schemaName, ind);
             sb.append(' ').append(ParserAbstract.getFullCtxText(rest.index_where()));
         }
         return sb.toString();
+    }
+
+    public static void analyzeIndexWhereCtx(Index_restContext rest, String schemaName, PgIndex ind) {
+        ValueExpr vex = new ValueExpr(schemaName);
+        vex.analyze(new Vex(rest.index_where().vex()));
+        ind.addAllDeps(vex.getDepcies());
     }
 }

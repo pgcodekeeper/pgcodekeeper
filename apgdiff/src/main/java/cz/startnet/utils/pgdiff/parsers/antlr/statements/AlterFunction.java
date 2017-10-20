@@ -25,7 +25,7 @@ public class AlterFunction extends ParserAbstract {
 
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         PgFunction function = new PgFunction(nameCtx.getText(), getFullCtxText(ctx.getParent()));
-        fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
+        fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName(), true);
 
         PgFunction func = getSafe(schema::getFunction, function.getSignature(), nameCtx.getStart());
         fillOwnerTo(ctx.owner_to(), func);
