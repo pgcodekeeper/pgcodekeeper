@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
@@ -22,8 +23,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -74,33 +73,19 @@ public abstract class ParserAbstract {
         return ctx.getStart().getInputStream().getText(interval);
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx, String defSchema) {
-        PgColumn col = new PgColumn(colCtx.column_name.getText());
-        col.setType(getFullCtxText(colCtx.datatype));
-        addTypeAsDepcy(colCtx.datatype, col, getDefSchemaName());
-        if (colCtx.collate_name != null) {
-            col.setCollation(getFullCtxText(colCtx.collate_name.collation));
+
+    protected PgColumn getColumn(String columnName, Data_typeContext datatype,
+            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            String defSchema) {
+        PgColumn col = new PgColumn(columnName);
+        if (datatype != null) {
+            col.setType(getFullCtxText(datatype));
+            addTypeAsDepcy(datatype, col, getDefSchemaName());
         }
-        for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-            if (column_constraint.constr_body().default_expr != null) {
-                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
-
-                ValueExpr vex = new ValueExpr(defSchema);
-                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
-                col.addAllDeps(vex.getDepcies());
-            }
-
-            Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
-            if (comConstr != null && comConstr.null_value != null) {
-                col.setNullValue(comConstr.null_false == null);
-            }
+        if (collate != null) {
+            col.setCollation(getFullCtxText(collate.collation));
         }
-        return col;
-    }
-
-    protected PgColumn getColumnOfType(Table_of_type_column_definitionContext typeColCtx, String defSchema) {
-        PgColumn col = new PgColumn(typeColCtx.column_name.getText());
-        for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
+        for (Constraint_commonContext column_constraint : constraints) {
             if (column_constraint.constr_body().default_expr != null) {
                 col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
 

@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Identity_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -21,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.RegularPgTable;
 
 public class AlterTable extends ParserAbstract {
 
@@ -55,7 +57,10 @@ public class AlterTable extends ParserAbstract {
             // everything else requires a real table, so fail immediately
             tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
-                tabl.addColumn(getColumn(tablAction.table_column_definition(), getDefSchemaName()));
+                Table_column_definitionContext column = tablAction.table_column_definition();
+                tabl.addColumn(getColumn(column.column_name.getText(),
+                        column.datatype, column.collate_name,
+                        column.colmn_constraint, getDefSchemaName()));
             }
             if (tablAction.set_def_column() != null) {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
@@ -107,11 +112,24 @@ public class AlterTable extends ParserAbstract {
                 index.setClusterIndex(true);
             }
 
-            if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
-                tabl.setHasOids(false);
-            } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
-                tabl.setHasOids(true);
+            if (tabl instanceof RegularPgTable) {
+                RegularPgTable regTable = (RegularPgTable)tabl;
+                if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
+                    regTable.setHasOids(false);
+                } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
+                    regTable.setHasOids(true);
+                }
+
+                // since 9.5 PostgreSQL
+                if (tablAction.SECURITY() != null) {
+                    if (tablAction.FORCE() != null) {
+                        regTable.setForceSecurity(tablAction.NO() == null);
+                    } else {
+                        regTable.setRowSecurity(tablAction.ENABLE() != null);
+                    }
+                }
             }
+
             if (tablAction.column != null) {
                 if (tablAction.STATISTICS() != null) {
                     fillStatictics(tabl, tablAction);
@@ -127,15 +145,6 @@ public class AlterTable extends ParserAbstract {
                 createRule(tabl, tablAction);
             }
 
-            // since 9.5 PostgreSQL
-            if (tablAction.SECURITY() != null) {
-                if (tablAction.FORCE() != null) {
-                    tabl.setForceSecurity(tablAction.NO() == null);
-                } else {
-                    tabl.setRowSecurity(tablAction.ENABLE() != null);
-                }
-            }
-
             // since 10 PostgreSQL
             Identity_bodyContext identity = tablAction.identity_body();
             if (identity != null) {
@@ -149,9 +158,6 @@ public class AlterTable extends ParserAbstract {
                 CreateSequence.fillSequence(sequence, identity.sequence_body());
                 String columnName = QNameParser.getFirstName(tablAction.column.identifier());
                 PgColumn column = tabl.getColumn(columnName);
-                if (column == null ) {
-                    column = tabl.getColumnOfType(columnName);
-                }
                 column.setSequence(sequence);
                 column.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
             }

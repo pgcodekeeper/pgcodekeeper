@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
@@ -217,7 +218,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         PgDatabase d = new PgDatabase();
         PgSchema schema = d.getDefaultSchema();
 
-        PgTable table = new PgTable("fax_boxes", "");
+        PgTable table = new SimplePgTable("fax_boxes", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("fax_box_id");
@@ -235,7 +236,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        table = new PgTable("faxes", "");
+        table = new SimplePgTable("faxes", "");
         schema.addTable(table);
 
         col = new PgColumn("fax_id");
@@ -289,7 +290,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
         table.addConstraint(constraint);
 
-        table = new PgTable("extensions", "");
+        table = new SimplePgTable("extensions", "");
         schema.addTable(table);
 
         col = new PgColumn("id");
@@ -320,7 +321,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
 
         schema = d.getSchema(ApgdiffConsts.PUBLIC);
 
-        PgTable table = new PgTable("contacts", "");
+        PgTable table = new SimplePgTable("contacts", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -356,7 +357,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        PgTable table = new PgTable("admins", "");
+        PgTable table = new SimplePgTable("admins", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("aid");
@@ -445,7 +446,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
         PgDatabase d = new PgDatabase();
         PgSchema schema = d.getDefaultSchema();
 
-        PgTable table = new PgTable("call_logs", "");
+        PgTable table = new SimplePgTable("call_logs", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -554,7 +555,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
         schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
         schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
 
-        PgTable table = new PgTable("test_table", "");
+        PgTable table = new SimplePgTable("test_table", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -670,7 +671,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         PgDatabase d = new PgDatabase();
         PgSchema schema = d.getDefaultSchema();
 
-        PgTable table = new PgTable("user_data", "");
+        PgTable table = new SimplePgTable("user_data", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -703,7 +704,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
         schema.addSequence(seq);
         seq.setOwner("postgres");
 
-        table = new PgTable("t_ruleinsert", "");
+        table = new SimplePgTable("t_ruleinsert", "");
         schema.addTable(table);
 
         col = new PgColumn("c1");
@@ -753,7 +754,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
 
         schema.setOwner("postgres");
 
-        PgTable table = new PgTable("acl_role", "");
+        PgTable table = new SimplePgTable("acl_role", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -767,7 +768,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
 
         table.setOwner("postgres");
 
-        table = new PgTable("user", "");
+        table = new SimplePgTable("user", "");
         schema.addTable(table);
 
         col = new PgColumn("id");
@@ -917,7 +918,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
 
         func.setOwner("fordfrog");
 
-        PgTable table = new PgTable("test", "");
+        PgTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -989,7 +990,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
         PgDatabase d = new PgDatabase();
         PgSchema schema = d.getDefaultSchema();
 
-        PgTable table = new PgTable("test", "");
+        PgTable table = new SimplePgTable("test", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -1015,7 +1016,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         PgSchema schema = d.getDefaultSchema();
 
         // table1
-        PgTable table = new PgTable("t_work", "");
+        PgTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -1023,7 +1024,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        PgTable table2 = new PgTable("t_chart", "");
+        PgTable table2 = new SimplePgTable("t_chart", "");
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType("integer");
@@ -1052,7 +1053,7 @@ class PgDB17 extends PgDatabaseObjectCreator {
         PgSchema schema = d.getDefaultSchema();
 
         // table1
-        PgTable table = new PgTable("t_work", "");
+        PgTable table = new SimplePgTable("t_work", "");
         schema.addTable(table);
 
         PgColumn col = new PgColumn("id");
@@ -1060,14 +1061,14 @@ class PgDB17 extends PgDatabaseObjectCreator {
         table.addColumn(col);
 
         // table2
-        PgTable table2 = new PgTable("t_chart", "");
+        PgTable table2 = new SimplePgTable("t_chart", "");
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType("integer");
         table2.addColumn(col);
 
         // table 3
-        PgTable table3 = new PgTable("t_memo", "");
+        PgTable table3 = new SimplePgTable("t_memo", "");
         schema.addTable(table3);
         col = new PgColumn("name");
         col.setType("text");

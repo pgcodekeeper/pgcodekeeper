@@ -11,6 +11,10 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.RegularPgTable;
+import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
+import cz.startnet.utils.pgdiff.schema.SimplePgTable;
+import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -45,9 +49,23 @@ public class TablesReader extends JdbcReader {
     private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
-        PgTable t = new PgTable(tableName, "");
+        PgTable t = null;
 
-        t.setServerName(res.getString("server_name"));
+        String serverName = res.getString("server_name");
+        if (serverName != null) {
+            t = new SimpleForeignPgTable(tableName, "", res.getString("server_name"));
+        }
+
+        Long ofTypeOid = res.getLong("of_type");
+        if (ofTypeOid != 0) {
+            JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
+            String ofType = jdbcOfType.getFullName(schemaName);
+            t = new TypedPgTable(tableName, "", ofType);
+            jdbcOfType.addTypeDepcy(t);
+        } else if (t == null) {
+            t = new SimplePgTable(tableName, "");
+        }
+
         String[] foptions = res.getArray("ftoptions", String.class);
         if (foptions != null) {
             ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
@@ -75,15 +93,6 @@ public class TablesReader extends JdbcReader {
         String[] colFOptions = res.getArray("col_foptions", String.class);
         String[] colStorages = res.getArray("col_storages", String.class);
         String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
-
-        Long ofTypeOid = res.getLong("of_type");
-
-        if(ofTypeOid != 0){
-            JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
-            String ofType = jdbcOfType.getFullName(schemaName);
-            t.setOfType(ofType);
-            jdbcOfType.addTypeDepcy(t);
-        }
 
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1 || !colIsLocal[i]) {
@@ -167,7 +176,7 @@ public class TablesReader extends JdbcReader {
             if(ofTypeOid != 0){
                 if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
                         || !column.getNullValue()){
-                    t.addColumnOfType(column);
+                    t.addColumn(column);
                 }
             } else {
                 t.addColumn(column);
@@ -196,42 +205,44 @@ public class TablesReader extends JdbcReader {
             ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
         }
 
-        if (res.getBoolean("has_oids")){
-            t.setHasOids(true);
-        }
-
         // Table COMMENTS
         String comment = res.getString("table_comment");
         if (comment != null && !comment.isEmpty()) {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        // TableSpace
-        String tableSpace = res.getString("table_space");
-        if (tableSpace != null && !tableSpace.isEmpty()) {
-            t.setTablespace(tableSpace);
-        }
+        if (t instanceof RegularPgTable) {
+            RegularPgTable regTable = (RegularPgTable) t;
+            if (res.getBoolean("has_oids")){
+                regTable.setHasOids(true);
+            }
 
-        // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
-            t.setRowSecurity(res.getBoolean("row_security"));
-            t.setForceSecurity(res.getBoolean("force_security"));
-        }
+            // TableSpace
+            String tableSpace = res.getString("table_space");
+            if (tableSpace != null && !tableSpace.isEmpty()) {
+                regTable.setTablespace(tableSpace);
+            }
 
-        // since 10 PostgreSQL
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-            t.setPartitionBy(res.getString("partition_by"));
-        }
+            // since 9.5 PostgreSQL
+            if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+                regTable.setRowSecurity(res.getBoolean("row_security"));
+                regTable.setForceSecurity(res.getBoolean("force_security"));
+            }
 
-        // persistence: U - unlogged, P - permanent, T - temporary
-        switch (res.getString("persistence")) {
-        case "u":
-            t.setLogged(false);
-            break;
-        default:
-            break;
-        }
+            // since 10 PostgreSQL
+            if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+                t.setPartitionBy(res.getString("partition_by"));
+            }
 
+            // persistence: U - unlogged, P - permanent, T - temporary
+            switch (res.getString("persistence")) {
+            case "u":
+                regTable.setLogged(false);
+                break;
+            default:
+                break;
+            }
+        }
         return t;
     }
 }

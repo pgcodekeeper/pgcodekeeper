@@ -11,7 +11,7 @@ ALTER TYPE testtype
 	ADD ATTRIBUTE field4new numeric, 
 	DROP ATTRIBUTE field4;
 
--- DEPCY: This TABLE is a dependency of CONSTRAINT: testtable_pkey
+-- DEPCY: This TABLE is a dependency of COLUMN: testtable.field4new
 
 CREATE TABLE testtable OF public.testtype (
 	field1 WITH OPTIONS NOT NULL,

@@ -86,12 +86,12 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
      * @return full definition of the column
      */
     public String getFullDefinition(final boolean addDefaults,
-            StringBuilder separateDefault, boolean isTableOfType) {
+            StringBuilder separateDefault) {
         final StringBuilder sbDefinition = new StringBuilder();
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
 
-        if(isTableOfType){
+        if (type == null) {
             sbDefinition.append(" WITH OPTIONS");
         } else {
             sbDefinition.append(' ');
@@ -194,10 +194,14 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     public String getCreationSQL() {
         StringBuilder defaultStatement = new StringBuilder();
         StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getAlterTable())
-        .append("\n\tADD COLUMN ")
-        .append(getFullDefinition(false, defaultStatement, false))
-        .append(';');
+        sbSQL.append(getAlterTable());
+        if (type == null) {
+            sbSQL.append(getTypelessColDef(true));
+        } else {
+            sbSQL.append("\n\tADD COLUMN ")
+            .append(getFullDefinition(false, defaultStatement));
+        }
+        sbSQL.append(';');
         if (defaultStatement.length() > 0) {
             sbSQL.append("\n\n")
             .append(getAlterTable())
@@ -214,14 +218,40 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         return sbSQL.toString();
     }
 
+    private String getTypelessColDef(boolean isCreate) {
+        StringBuilder sb = new StringBuilder();
+        String cName = PgDiffUtils.getQuotedName(name);
+        if (defaultValue != null && !defaultValue.isEmpty()) {
+            sb.append(ALTER_COLUMN).append(cName);
+            if (isCreate) {
+                sb.append(" SET DEFAULT ").append(defaultValue);
+            } else {
+                sb.append(" DROP DEFAULT");
+            }
+            sb.append(",");
+        }
+        if (!nullValue) {
+            sb.append(ALTER_COLUMN).append(cName);
+            sb.append( isCreate ? " SET" : " DROP").append(" NOT NULL,");
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+
+    }
+
     private String getAlterTable() {
         return ALTER_TABLE + PgDiffUtils.getQuotedName(this.getParent().getName());
     }
 
     @Override
     public String getDropSQL() {
-        return getAlterTable() + "\n\tDROP COLUMN "
-                + PgDiffUtils.getQuotedName(getName()) + ';';
+        String drop;
+        if (type == null) {
+            drop = getTypelessColDef(false);
+        } else {
+            drop = "\n\tDROP COLUMN " + PgDiffUtils.getQuotedName(getName());
+        }
+        return getAlterTable() + drop + ';';
     }
 
     @Override
@@ -276,7 +306,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
             .append(';');
         }
 
-        if (!oldColumn.getType().equals(newColumn.getType()) ||
+        if (!Objects.equals(oldColumn.getType(), newColumn.getType()) ||
                 (newColumn.getCollation() != null &&
                 !newColumn.getCollation().equals(oldColumn.getCollation()))) {
             isNeedDepcies.set(true);

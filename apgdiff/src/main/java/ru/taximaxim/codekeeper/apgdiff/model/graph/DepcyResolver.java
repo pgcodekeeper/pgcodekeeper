@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +28,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
+import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -155,7 +158,12 @@ public class DepcyResolver {
                 } else {
                     // объект будет пересоздан ниже в новом состоянии, поэтому
                     // ничего делать не нужно
+                    // пропускаем колонки таблиц из дроп листа
                     if (!inDropsList(oldObjStat)) {
+                        if (oldObjStat.getStatementType() == DbObjType.COLUMN
+                                && inDropsList(oldObjStat.getParent())) {
+                            return;
+                        }
                         addToListWithoutDepcies(
                                 sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
                                         oldObjStat, null);
@@ -410,8 +418,8 @@ public class DepcyResolver {
             // Изначально будем удалять объект
             action = StatementActions.DROP;
 
-            PgStatement newObj;
-            if ((newObj = getObjectFromDB(oldObj, newDb)) != null) {
+            PgStatement newObj = getObjectFromDB(oldObj, newDb);
+            if (newObj != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 action = askAlter(oldObj, newObj, isNeedDepcies);
 
@@ -438,6 +446,7 @@ public class DepcyResolver {
             }
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
+                PgTable oldTable = (PgTable) oldObj.getParent();
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
 
@@ -447,9 +456,27 @@ public class DepcyResolver {
 
                 // пропускаем также при recreate
                 StringBuilder sb = new StringBuilder();
-                if (oldObj.getParent().appendAlterSQL(newTable, sb, new AtomicBoolean())
+                if (oldTable.appendAlterSQL(newTable, sb, new AtomicBoolean())
                         && sb.length() == 0) {
                     return true;
+                }
+
+                // пропускаем колонки типизированных таблиц, если изменился тип
+                if (oldTable instanceof TypedPgTable) {
+                    if (!(newTable instanceof TypedPgTable)) {
+                        return true;
+                    }
+                    if (!Objects.equals(((TypedPgTable)oldTable).getOfType(),
+                            ((TypedPgTable)newTable).getOfType())) {
+                        return true;
+                    }
+
+                    PgType oldType = ((TypedPgTable)oldTable).getType();
+                    PgType newType = ((TypedPgTable)newTable).getType();
+
+                    if (!Objects.equals(newType, oldType)) {
+                        return true;
+                    }
                 }
             }
             // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
@@ -511,6 +538,23 @@ public class DepcyResolver {
                     // columns are integrated into CREATE TABLE
                     return true;
                 }
+
+                // columns are integrated into CREATE TABLE OF TYPE
+                if (newObj.getParent() instanceof TypedPgTable) {
+                    TypedPgTable newTypedTable = (TypedPgTable) newObj.getParent();
+                    TypedPgTable oldTypedTable = (TypedPgTable) oldTable;
+                    if (!Objects.equals(newTypedTable.getOfType(),
+                            oldTypedTable.getOfType())) {
+                        return true;
+                    }
+
+                    PgType oldType = oldTypedTable.getType();
+                    PgType newType = newTypedTable.getType();
+
+                    if (!Objects.equals(newType, oldType)) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
@@ -546,10 +590,7 @@ public class DepcyResolver {
         }
 
         protected boolean notAllowedToAdd(PgStatement statement) {
-            if (statement.getStatementType() == null) {
-                return true;
-            }
-            return false;
+            return statement.getStatementType() == null;
         }
 
         protected void addToList(PgStatement statement) {
