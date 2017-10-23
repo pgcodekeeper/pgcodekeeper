@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -152,12 +152,9 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(definition, p -> {
-            Map<String, Object> triggerStmt = new LinkedHashMap<>();
-            triggerStmt.put(schemaName + "." + tableName + "." + t.getStatementType() + "." + triggerName,
-                    p.sql().statement(0).schema_statement().schema_create().create_trigger_statement().when_trigger());
-            return triggerStmt;
-        }, loader::addToObjectsForAnalyze);
+        loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
+                .schema_create().create_trigger_statement().when_trigger(),
+                (whenCtx) -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
 
         // COMMENT
         String comment = res.getString("comment");

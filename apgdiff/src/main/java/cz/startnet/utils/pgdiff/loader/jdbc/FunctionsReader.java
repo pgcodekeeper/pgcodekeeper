@@ -1,11 +1,15 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -100,16 +104,24 @@ public class FunctionsReader extends JdbcReader {
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()) {
             loader.submitAntlrTask('(' + arguments + ')',
-                    p -> p.function_args_parser().function_args(),
+                    p -> {
+                        Function_argsContext functionArgsCtx = p.function_args_parser().function_args();
+                        ParserAbstract.fillArguments(functionArgsCtx, f, schemaName, false);
+                        // schema.addFunction(f); //
+                        return functionArgsCtx;
+                    },
                     ctx -> {
-                        ParserAbstract.fillArguments(ctx, f, schemaName, false);
-
-                        Map<String, Object> functionArgs = new LinkedHashMap<>();
-                        functionArgs.put(schemaName + "." + f.getStatementType() + "." + f.getName(), ctx);
-                        loader.addToObjectsForAnalyze(functionArgs);
-
-                        schema.addFunction(f);
+                        schema.addFunction(f); //
+                        for (Function_argumentsContext argument : ctx.function_arguments()) {
+                            if (argument.function_def_value() != null) {
+                                VexContext defExpression = argument.function_def_value().def_value;
+                                ValueExpr vex = new ValueExpr(schemaName);
+                                vex.analyze(new Vex(defExpression));
+                                f.addAllDeps(vex.getDepcies());
+                            }
+                        }
                     });
+
         } else {
             schema.addFunction(f);
         }

@@ -1,12 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -84,20 +84,28 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command, p -> {
-            Create_rewrite_statementContext ctx = p.sql().statement(0).schema_statement()
-                    .schema_create().create_rewrite_statement();
+        loader.submitAntlrTask(command,
+                p -> {
+                    Create_rewrite_statementContext ctx = p.sql().statement(0).schema_statement()
+                            .schema_create().create_rewrite_statement();
 
-            r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
+                    r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
 
-            for (Rewrite_commandContext cmd : ctx.commands) {
-                r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
-            }
+                    for (Rewrite_commandContext cmd : ctx.commands) {
+                        r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
+                    }
 
-            Map<String, Object> rewriteStmt = new LinkedHashMap<>();
-            rewriteStmt.put(schemaName + "." + tableName + "." + r.getStatementType() + "." + ruleName, ctx);
-            return rewriteStmt;
-        }, loader::addToObjectsForAnalyze);
+                    return ctx;
+                },
+                ctx -> {
+                    if (ctx.WHERE() != null){
+                        CreateRewrite.analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
+                    }
+
+                    for (Rewrite_commandContext cmd : ctx.commands) {
+                        CreateRewrite.analyzeRewriteCommandCtx(cmd, r, loader.args, schemaName);
+                    }
+                });
 
         // COMMENT
         String comment = res.getString("comment");

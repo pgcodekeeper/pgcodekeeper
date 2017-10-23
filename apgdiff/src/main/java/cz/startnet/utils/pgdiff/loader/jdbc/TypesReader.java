@@ -1,15 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -88,9 +85,6 @@ public class TypesReader extends JdbcReader {
                     + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
         }
 
-        String domainKey = schemaName + "." + d.getStatementType() + "." + d.getName();
-        String domainKeyConstr = domainKey + DOMAIN_CONSTRAINT;
-
         String def = res.getString("dom_defaultbin");
         if (def == null) {
             def = res.getString("typdefault");
@@ -98,12 +92,13 @@ public class TypesReader extends JdbcReader {
                 def = PgDiffUtils.quoteString(def);
             }
         } else {
-            loader.submitAntlrTask(def, p -> {
-                Map<String, Object> domainDefVal = new LinkedHashMap<>();
-                domainDefVal.put(schemaName + "." + d.getStatementType() + "." + d.getName(),
-                        new Vex(p.vex_eof().vex()));
-                return domainDefVal;
-            }, loader::addToObjectsForAnalyze);
+            loader.submitAntlrTask(def,
+                    p -> p.vex_eof().vex(),
+                    ctx -> {
+                        ValueExpr vex = new ValueExpr(schemaName);
+                        vex.analyze(new Vex(ctx));
+                        d.addAllDeps(vex.getDepcies());
+                    });
         }
         d.setDefaultValue(def);
 
@@ -116,25 +111,18 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';', p -> {
-                    Table_actionContext ctx = p.sql().statement(0).schema_statement().schema_alter()
-                            .alter_table_statement().table_action(0);
-                    Constr_bodyContext body = ctx.tabl_constraint.constr_body();
+                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
+                        p -> {
+                            Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter()
+                                    .alter_table_statement().table_action(0);
+                            Constr_bodyContext body = tableActionCtx.tabl_constraint.constr_body();
 
-                    Object obj = loader.getObjectsForAnalyze().get(domainKeyConstr);
-                    List<Map<String, Constr_bodyContext>> constrBodyCtxList = (obj != null) ? (List<Map<String, Constr_bodyContext>>)obj : new ArrayList<>() ;
+                            c.setDefinition(ParserAbstract.getFullCtxText(body));
+                            c.setNotValid(tableActionCtx.not_valid != null);
 
-                    Map<String, Constr_bodyContext> pairConstrBoby = new HashMap<>();
-                    pairConstrBoby.put(c.getName(), body);
-                    constrBodyCtxList.add(pairConstrBoby);
-
-                    c.setDefinition(ParserAbstract.getFullCtxText(body));
-                    c.setNotValid(ctx.not_valid != null);
-
-                    Map<String, Object> domainConstrVal = new LinkedHashMap<>();
-                    domainConstrVal.put(domainKeyConstr, constrBodyCtxList);
-                    return domainConstrVal;
-                }, loader::addToObjectsForAnalyze);
+                            return body;
+                        },
+                        ctx -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

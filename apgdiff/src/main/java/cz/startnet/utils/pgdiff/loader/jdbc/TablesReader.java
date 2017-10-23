@@ -1,10 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -134,12 +134,13 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault, p -> {
-                    Map<String, Object> tableColDef = new LinkedHashMap<>();
-                    tableColDef.put(schemaName + "." + tableName + "." + column.getStatementType() + "." + column.getName(),
-                            new Vex(p.vex_eof().vex()));
-                    return tableColDef;
-                }, loader::addToObjectsForAnalyze);
+                loader.submitAntlrTask(columnDefault,
+                        p -> p.vex_eof().vex(),
+                        ctx -> {
+                            ValueExpr vex = new ValueExpr(schemaName);
+                            vex.analyze(new Vex(ctx));
+                            column.addAllDeps(vex.getDepcies());
+                        });
             }
 
             if (colNotNull[i]) {

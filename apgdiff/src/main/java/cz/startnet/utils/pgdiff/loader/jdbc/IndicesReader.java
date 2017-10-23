@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -52,26 +52,30 @@ public class IndicesReader extends JdbcReader {
         i.setTableName(tableName);
 
         String tablespace = res.getString("table_space");
-        loader.submitAntlrTask(res.getString("definition") + ';', p -> {
-            Index_restContext ctx = p.sql().statement(0).schema_statement()
-                    .schema_create().create_index_statement().index_rest();
+        loader.submitAntlrTask(res.getString("definition") + ';',
+                p -> {
+                    Index_restContext indexRestCtx = p.sql().statement(0).schema_statement()
+                            .schema_create().create_index_statement().index_rest();
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(ParserAbstract.getFullCtxText(ctx.index_sort()));
-            if (ctx.table_space() != null){
-                sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.table_space()));
-            } else if (tablespace != null) {
-                sb.append(" TABLESPACE ").append(tablespace);
-            }
-            if (ctx.index_where() != null){
-                sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.index_where()));
-            }
-            i.setDefinition(sb.toString());
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(ParserAbstract.getFullCtxText(indexRestCtx.index_sort()));
+                    if (indexRestCtx.table_space() != null){
+                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.table_space()));
+                    } else if (tablespace != null) {
+                        sb.append(" TABLESPACE ").append(tablespace);
+                    }
+                    if (indexRestCtx.index_where() != null){
+                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.index_where()));
+                    }
+                    i.setDefinition(sb.toString());
 
-            Map<String, Object> indexRest = new LinkedHashMap<>();
-            indexRest.put(schemaName + "." + tableName + "." + i.getStatementType() + "." + indexName, ctx);
-            return indexRest;
-        }, loader::addToObjectsForAnalyze);
+                    return indexRestCtx;
+                },
+                ctx -> {
+                    if (ctx.index_where() != null) {
+                        CreateIndex.analyzeIndexWhereCtx(ctx, schemaName, i);
+                    }
+                });
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
