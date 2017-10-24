@@ -134,6 +134,8 @@ public class PgDiffTest {
                     {"add_unique_constraint"},
                     // Tests reading of TABLE with INHERITS.
                     {"read_inherits"},
+                    // Tests scenario where TABLE with generated SEQUENCE is added.
+                    {"add_generated_sequence"},
                     // Tests scenario where TABLE with INHERITS is added.
                     {"add_inherits"},
                     // Tests scenario where original and new TABLE contain
@@ -165,6 +167,8 @@ public class PgDiffTest {
                     // Tests scenario where CYCLE is modified on SEQUENCE.
                     {"modify_sequence_cycle_on"},
                     {"modify_sequence_cycle_off"},
+                    // Tests scenario where TABLE with generated SEQUENCE is modified.
+                    {"modify_generated_sequence"},
                     // Tests correct finding of function end.
                     {"modify_function_end_detection"},
                     // Tests scenario where new FUNCTION without args is added.
