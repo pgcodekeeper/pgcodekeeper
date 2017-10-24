@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -58,20 +57,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
 
-    protected final Map<String, Object> objectsForAnalyze = new LinkedHashMap<>();
-
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;
-    }
-
-    public Map<String, Object> getObjectsForAnalyze() {
-        return objectsForAnalyze;
-    }
-
-    public void addToObjectsForAnalyze(Map<String, Object> ctx) {
-        objectsForAnalyze.putAll(ctx);
     }
 
     protected void setCurrentObject(GenericColumn currentObject) {
