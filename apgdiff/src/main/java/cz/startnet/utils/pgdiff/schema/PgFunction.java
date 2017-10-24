@@ -261,19 +261,25 @@ public class PgFunction extends PgStatementWithSearchPath {
         return result;
     }
 
-    public static class Argument {
+    public class Argument {
 
-        private String mode = "IN";
-        private String name;
-        private String dataType;
+        private final String mode;
+        private final String name;
+        private final String dataType;
         private String defaultExpression;
+
+        public Argument(String name, String dataType) {
+            this(null, name, dataType);
+        }
+
+        public Argument(String mode, String name, String dataType) {
+            this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
+            this.name = name;
+            this.dataType = dataType;
+        }
 
         public String getDataType() {
             return dataType;
-        }
-
-        public void setDataType(final String dataType) {
-            this.dataType = dataType;
         }
 
         public String getDefaultExpression() {
@@ -282,22 +288,15 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         public void setDefaultExpression(final String defaultExpression) {
             this.defaultExpression = defaultExpression;
+            resetHash();
         }
 
         public String getMode() {
             return mode;
         }
 
-        public void setMode(final String mode) {
-            this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
-        }
-
         public String getName() {
             return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
         }
 
         public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
@@ -362,10 +361,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
-            Argument argDst = new Argument();
-            argDst.setName(argSrc.getName());
-            argDst.setMode(argSrc.getMode());
-            argDst.setDataType(argSrc.getDataType());
+            Argument argDst = functionDst.new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }

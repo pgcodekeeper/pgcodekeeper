@@ -468,8 +468,7 @@ class PgDB5 extends PgDatabaseObjectCreator {
         func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
         func.setReturns("gtsq");
 
-        PgFunction.Argument arg = new PgFunction.Argument();
-        arg.setDataType("cstring");
+        PgFunction.Argument arg = func.new Argument(null, "cstring");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -478,14 +477,10 @@ class PgDB5 extends PgDatabaseObjectCreator {
         func.setBody("AS $$\r\nbegin\r\n\treturn number1 * number2;\r\nend;\r\n$$\r\n    LANGUAGE plpgsql STRICT");
         func.setReturns("integer");
 
-        arg = new PgFunction.Argument();
-        arg.setName("number1");
-        arg.setDataType("integer");
+        arg = func.new Argument("number1", "integer");
         func.addArgument(arg);
 
-        arg = new PgFunction.Argument();
-        arg.setName("number2");
-        arg.setDataType("integer");
+        arg = func.new Argument("number2", "integer");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -494,14 +489,10 @@ class PgDB5 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$SELECT number1 * number2$_$ LANGUAGE plpgsql");
         func.setReturns("integer");
 
-        arg = new PgFunction.Argument();
-        arg.setName("number1");
-        arg.setDataType("integer");
+        arg = func.new Argument("number1", "integer");
         func.addArgument(arg);
 
-        arg = new PgFunction.Argument();
-        arg.setName("number2");
-        arg.setDataType("integer");
+        arg = func.new Argument("number2", "integer");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -510,14 +501,10 @@ class PgDB5 extends PgDatabaseObjectCreator {
         func.setBody("AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql");
         func.setReturns("integer");
 
-        arg = new PgFunction.Argument();
-        arg.setName("number1");
-        arg.setDataType("integer");
+        arg = func.new Argument("number1", "integer");
         func.addArgument(arg);
 
-        arg = new PgFunction.Argument();
-        arg.setName("number2");
-        arg.setDataType("integer");
+        arg = func.new Argument("number2", "integer");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -526,14 +513,10 @@ class PgDB5 extends PgDatabaseObjectCreator {
         func.setBody("AS '\nSELECT number1 * number2 || ''text''\n' LANGUAGE plpgsql");
         func.setReturns("integer");
 
-        arg = new PgFunction.Argument();
-        arg.setName("number1");
-        arg.setDataType("integer");
+        arg = func.new Argument("number1", "integer");
         func.addArgument(arg);
 
-        arg = new PgFunction.Argument();
-        arg.setName("number2");
-        arg.setDataType("integer");
+        arg = func.new Argument("number2", "integer");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -589,8 +572,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$SELECT textin(timetz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
         func.setReturns("text");
 
-        PgFunction.Argument arg = new PgFunction.Argument();
-        arg.setDataType("time with time zone");
+        PgFunction.Argument arg = func.new Argument(null, "time with time zone");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -599,8 +581,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$SELECT textin(time_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
         func.setReturns("text");
 
-        arg = new PgFunction.Argument();
-        arg.setDataType("time without time zone");
+        arg = func.new Argument(null, "time without time zone");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -609,8 +590,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$SELECT textin(timestamptz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
         func.setReturns("text");
 
-        arg = new PgFunction.Argument();
-        arg.setDataType("timestamp with time zone");
+        arg = func.new Argument(null, "timestamp with time zone");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -619,8 +599,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$SELECT textin(timestamp_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
         func.setReturns("text");
 
-        arg = new PgFunction.Argument();
-        arg.setDataType("timestamp without time zone");
+        arg = func.new Argument(null, "timestamp without time zone");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -653,8 +632,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
         func.setBody("AS $_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$\n    LANGUAGE plpgsql");
         func.setReturns("boolean");
 
-        PgFunction.Argument arg = new PgFunction.Argument();
-        arg.setDataType("integer");
+        PgFunction.Argument arg = func.new Argument(null, "integer");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -870,9 +848,7 @@ class PgDB13 extends PgDatabaseObjectCreator {
         func.setBody("LANGUAGE plpgsql\n    AS $$\nDECLARE\nBEGIN\n  -- aaa\nEND;\n$$");
         func.setReturns("SETOF character varying");
 
-        PgFunction.Argument arg = new PgFunction.Argument();
-        arg.setDataType("character varying[]");
-        arg.setName("tables_in");
+        PgFunction.Argument arg = func.new Argument("tables_in", "character varying[]");
         func.addArgument(arg);
 
         schema.addFunction(func);
@@ -899,9 +875,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
         func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");
         func.setReturns("boolean");
 
-        PgFunction.Argument arg = new PgFunction.Argument();
-        arg.setDataType("character varying");
-        arg.setName("arg");
+        PgFunction.Argument arg = func.new Argument("arg", "character varying");
         func.addArgument(arg);
 
         func.setOwner("fordfrog");

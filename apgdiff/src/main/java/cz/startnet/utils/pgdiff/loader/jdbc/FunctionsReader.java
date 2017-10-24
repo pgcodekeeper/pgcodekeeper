@@ -101,6 +101,33 @@ public class FunctionsReader extends JdbcReader {
         // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
         //
         // This is the last one, because addFunction requires filled function arguments
+        //        String arguments = res.getString("proarguments");
+        //        if (!arguments.isEmpty()) {
+        //            loader.submitAntlrTask('(' + arguments + ')',
+        //                    p -> {
+        //                        Function_argsContext functionArgsCtx = p.function_args_parser().function_args();
+        //                        ParserAbstract.fillArguments(functionArgsCtx, f, schemaName, false);
+        //                        // schema.addFunction(f); //
+        //                        return functionArgsCtx;
+        //                    },
+        //                    ctx -> {
+        //                        schema.addFunction(f); //
+        //                        for (Function_argumentsContext argument : ctx.function_arguments()) {
+        //                            if (argument.function_def_value() != null) {
+        //                                VexContext defExpression = argument.function_def_value().def_value;
+        //                                ValueExpr vex = new ValueExpr(schemaName);
+        //                                vex.analyze(new Vex(defExpression));
+        //                                f.addAllDeps(vex.getDepcies());
+        //                            }
+        //                        }
+        //                    });
+        //
+        //        } else {
+        //            schema.addFunction(f);
+        //        }
+
+
+
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()) {
             loader.submitAntlrTask('(' + arguments + ')',
@@ -125,6 +152,8 @@ public class FunctionsReader extends JdbcReader {
         } else {
             schema.addFunction(f);
         }
+        //        schema.addFunction(f);
+
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {

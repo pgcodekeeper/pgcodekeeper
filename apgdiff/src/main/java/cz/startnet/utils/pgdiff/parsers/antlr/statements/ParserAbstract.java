@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -121,25 +122,25 @@ public abstract class ParserAbstract {
     public static void fillArguments(Function_argsContext function_argsContext,
             PgFunction function, String defSchemaName, boolean doAnalyze) {
         for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
-            PgFunction.Argument arg = new PgFunction.Argument();
-            if (argument.argname != null) {
-                arg.setName(argument.argname.getText());
-            }
-            arg.setDataType(getFullCtxText(argument.argtype_data));
+            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null,
+                            getFullCtxText(argument.argtype_data));
+
             addTypeAsDepcy(argument.data_type(), function, defSchemaName);
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
+
+                //////////
                 if(doAnalyze) {
                     VexContext defExpression = argument.function_def_value().def_value;
                     ValueExpr vex = new ValueExpr(defSchemaName);
                     vex.analyze(new Vex(defExpression));
                     function.addAllDeps(vex.getDepcies());
                 }
+                //////////
             }
-            if (argument.arg_mode != null) {
-                arg.setMode(argument.arg_mode.getText());
-            }
+
             function.addArgument(arg);
         }
     }
