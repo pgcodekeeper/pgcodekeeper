@@ -211,11 +211,12 @@ public class TablesReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        if (res.getBoolean("has_oids")){
+            t.setHasOids(true);
+        }
+
         if (t instanceof RegularPgTable) {
             RegularPgTable regTable = (RegularPgTable) t;
-            if (res.getBoolean("has_oids")){
-                regTable.setHasOids(true);
-            }
 
             // TableSpace
             String tableSpace = res.getString("table_space");

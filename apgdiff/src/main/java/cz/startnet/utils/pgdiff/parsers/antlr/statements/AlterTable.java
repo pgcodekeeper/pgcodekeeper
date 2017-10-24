@@ -112,22 +112,10 @@ public class AlterTable extends ParserAbstract {
                 index.setClusterIndex(true);
             }
 
-            if (tabl instanceof RegularPgTable) {
-                RegularPgTable regTable = (RegularPgTable)tabl;
-                if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
-                    regTable.setHasOids(false);
-                } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
-                    regTable.setHasOids(true);
-                }
-
-                // since 9.5 PostgreSQL
-                if (tablAction.SECURITY() != null) {
-                    if (tablAction.FORCE() != null) {
-                        regTable.setForceSecurity(tablAction.NO() == null);
-                    } else {
-                        regTable.setRowSecurity(tablAction.ENABLE() != null);
-                    }
-                }
+            if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
+                tabl.setHasOids(false);
+            } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
+                tabl.setHasOids(true);
             }
 
             if (tablAction.column != null) {
@@ -143,6 +131,21 @@ public class AlterTable extends ParserAbstract {
             }
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
+            }
+
+
+
+            if (tabl instanceof RegularPgTable) {
+                RegularPgTable regTable = (RegularPgTable)tabl;
+
+                // since 9.5 PostgreSQL
+                if (tablAction.SECURITY() != null) {
+                    if (tablAction.FORCE() != null) {
+                        regTable.setForceSecurity(tablAction.NO() == null);
+                    } else {
+                        regTable.setRowSecurity(tablAction.ENABLE() != null);
+                    }
+                }
             }
 
             // since 10 PostgreSQL

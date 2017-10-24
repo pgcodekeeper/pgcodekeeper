@@ -52,6 +52,13 @@ public abstract class ForeignPgTable extends PgTable {
 
 
     @Override
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        return owner == null ? super.appendOwnerSQL(sb)
+                : sb.append("\n\nALTER FOREIGN TABLE ").append(PgDiffUtils.getQuotedName(getName()))
+                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
+    }
+
+    @Override
     public void compareOptions(PgOptionContainer oldContainer,
             PgOptionContainer newContainer, StringBuilder sb) {
         Map <String, String> oldForeignOptions = oldContainer.getOptions();
@@ -88,14 +95,22 @@ public abstract class ForeignPgTable extends PgTable {
     @Override
     protected void compareTableOptions(PgTable oldTable, PgTable newTable,
             StringBuilder sb) {
-        // no impl
+        if (oldTable.getHasOids() && !newTable.getHasOids()) {
+            sb.append(getAlterTable(true, false))
+            .append(" SET WITHOUT OIDS;");
+        } else if (newTable.getHasOids() && !oldTable.getHasOids()) {
+            sb.append(getAlterTable(true, false))
+            .append(" SET WITH OIDS;");
+        }
     }
 
     @Override
     protected void appendAlterOptions(StringBuilder sbSQL) {
-        // no imp
+        if (hasOids) {
+            sbSQL.append(getAlterTable(true, false));
+            sbSQL.append(" SET WITH ").append(OIDS).append(";");
+        }
     }
-
 
     public String getServerName() {
         return serverName;

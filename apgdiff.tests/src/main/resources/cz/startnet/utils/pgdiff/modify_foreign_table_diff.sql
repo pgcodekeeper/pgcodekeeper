@@ -29,4 +29,4 @@ CREATE FOREIGN TABLE old_films (
 )
 SERVER new_server;
 
-ALTER TABLE old_films OWNER TO galiev_mr;
+ALTER FOREIGN TABLE old_films OWNER TO galiev_mr;

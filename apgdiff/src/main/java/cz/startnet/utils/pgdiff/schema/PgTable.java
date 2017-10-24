@@ -25,6 +25,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public abstract class PgTable extends PgStatementWithSearchPath
 implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
+    protected static final String OIDS = "OIDS";
+
     protected final List<PgColumn> columns = new ArrayList<>();
     protected final List<Inherits> inherits = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
@@ -33,6 +35,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     protected final List<PgTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
     protected String partitionBy;
+    protected boolean hasOids;
 
     @Override
     public DbObjType getStatementType() {
@@ -414,6 +417,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         resetHash();
     }
 
+    public boolean getHasOids() {
+        return hasOids;
+    }
+
+    public void setHasOids(final boolean hasOids) {
+        this.hasOids = hasOids;
+        resetHash();
+    }
+
     public void addColumn(final PgColumn column) {
         assertUnique(this::getColumn, column);
         columns.add(column);
@@ -504,7 +516,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment())
                     && Objects.equals(options, table.getOptions())
-                    && Objects.equals(partitionBy, table.getPartitionBy());
+                    && Objects.equals(partitionBy, table.getPartitionBy())
+                    && hasOids == table.getHasOids();
         }
 
         return eq;
@@ -533,6 +546,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public int computeHash() {
+        final int itrue = 1231;
+        final int ifalse = 1237;
         final int prime = 31;
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
@@ -541,6 +556,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((partitionBy == null) ? 0 : partitionBy.hashCode());
+        result = prime * result + (hasOids ? itrue : ifalse);
         result = prime * result + columns.hashCode();
         result = prime * result + inherits.hashCode();
         result = prime * result + options.hashCode();
@@ -555,6 +571,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     public PgTable shallowCopy() {
         PgTable tableDst = getTableCopy(getName(), getRawStatement());
         tableDst.setPartitionBy(getPartitionBy());
+        tableDst.setHasOids(getHasOids());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);
         for (PgColumn colSrc : columns) {

@@ -15,13 +15,10 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public abstract class RegularPgTable extends PgTable {
 
-    protected static final String OIDS = "OIDS";
-
     protected boolean isLogged = true;
     protected String tablespace;
     protected boolean isRowSecurity;
     protected boolean isForceSecurity;
-    protected boolean hasOids;
 
     public RegularPgTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -38,7 +35,7 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    protected String getAlterTable(boolean nextLine, boolean only){
+    protected String getAlterTable(boolean nextLine, boolean only) {
         StringBuilder sb = new StringBuilder();
         if (nextLine) {
             sb.append("\n\n");
@@ -185,16 +182,6 @@ public abstract class RegularPgTable extends PgTable {
         resetHash();
     }
 
-
-    public boolean getHasOids() {
-        return hasOids;
-    }
-
-    public void setHasOids(final boolean hasOids) {
-        this.hasOids = hasOids;
-        resetHash();
-    }
-
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
@@ -218,8 +205,7 @@ public abstract class RegularPgTable extends PgTable {
             return Objects.equals(tablespace, table.getTablespace())
                     && isLogged == table.isLogged()
                     && isRowSecurity == table.isRowSecurity()
-                    && isForceSecurity == table.isForceSecurity()
-                    && hasOids == table.getHasOids();
+                    && isForceSecurity == table.isForceSecurity();
         }
 
         return false;
@@ -232,7 +218,6 @@ public abstract class RegularPgTable extends PgTable {
         copy.setTablespace(getTablespace());
         copy.setRowSecurity(isRowSecurity());
         copy.setForceSecurity(isForceSecurity());
-        copy.setHasOids(getHasOids());
         return copy;
     }
 
@@ -246,7 +231,6 @@ public abstract class RegularPgTable extends PgTable {
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + (isRowSecurity ? itrue : ifalse);
         result = prime * result + (isForceSecurity ? itrue : ifalse);
-        result = prime * result + (hasOids ? itrue : ifalse);
         return result;
     }
 }
