@@ -124,7 +124,9 @@ alter_table_statement
         (table_action (COMMA table_action)*
         | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
     | set_schema
-    | rename_to)
+    | rename_to
+    | ATTACH PARTITION schema_qualified_name for_values_bound
+    | DETACH PARTITION schema_qualified_name)
     ;
 
 table_action
@@ -698,7 +700,25 @@ create_table_statement
 define_table
    : define_columns 
    | define_type
+   | define_partition
    ;
+   
+define_partition
+    : PARTITION OF parent_table=schema_qualified_name
+    list_of_type_column_def?
+    for_values_bound
+    define_server?
+    ;
+
+for_values_bound
+    : FOR VALUES partition_bound_spec
+    ;
+    
+partition_bound_spec
+    : IN LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
+    | FROM LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
+      TO LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN 
+    ;
 
 define_columns
   : LEFT_PAREN 

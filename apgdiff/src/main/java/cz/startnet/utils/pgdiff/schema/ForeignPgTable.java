@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -14,6 +15,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  */
 public abstract class ForeignPgTable extends PgTable {
+
     protected final String serverName;
 
     protected static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
@@ -45,11 +47,10 @@ public abstract class ForeignPgTable extends PgTable {
 
     @Override
     protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
-        return super.isNeedRecreate(newTable, oldTable) || !(newTable instanceof ForeignPgTable)
-                || !Objects.equals(((ForeignPgTable)oldTable).getServerName(),
-                        ((ForeignPgTable)newTable).getServerName());
+        return !Objects.equals(oldTable.getClass(), newTable.getClass())
+                || !Objects.equals(((ForeignPgTable) oldTable).getServerName(),
+                        ((ForeignPgTable) newTable).getServerName());
     }
-
 
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
@@ -57,6 +58,35 @@ public abstract class ForeignPgTable extends PgTable {
                 : sb.append("\n\nALTER FOREIGN TABLE ").append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
+
+    @Override
+    protected void appendOptions(StringBuilder sbSQL) {
+        fillServer(sbSQL);
+
+        StringBuilder sb = new StringBuilder();
+        for (Entry <String, String> entry : options.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            sb.append(key);
+            if (!value.isEmpty()) {
+                sb.append(' ').append(value);
+            }
+            sb.append(", ");
+        }
+
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 2);
+            sbSQL.append("\nOPTIONS (").append(sb).append(")");
+        }
+
+        sbSQL.append(';');
+    }
+
+    private void fillServer(StringBuilder sbSQL) {
+        sbSQL.append("\nSERVER ").append(serverName);
+    }
+
 
     @Override
     public void compareOptions(PgOptionContainer oldContainer,
@@ -143,16 +173,10 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    public PgTable shallowCopy() {
-        return super.shallowCopy();
-    }
-
-    @Override
     public int computeHash() {
         final int prime = 31;
         int result = super.computeHash();
         result = prime * result + ((serverName == null) ? 0 : serverName.hashCode());
         return result;
     }
-
 }

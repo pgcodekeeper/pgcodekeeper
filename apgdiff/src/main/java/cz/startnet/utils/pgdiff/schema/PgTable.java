@@ -34,7 +34,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     protected final List<PgIndex> indexes = new ArrayList<>();
     protected final List<PgTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
-    protected String partitionBy;
     protected boolean hasOids;
 
     @Override
@@ -124,7 +123,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         appendName(sbSQL);
         appendColumns(sbSQL, sbOption);
         appendInherit(sbSQL);
-        appendPartitionBy(sbSQL);
         appendOptions(sbSQL);
         sbSQL.append(sbOption);
         appendAlterOptions(sbSQL);
@@ -136,10 +134,21 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return sbSQL.toString();
     }
 
+
+    /**
+     * Appends CREATE TABLE statement beginning
+     * <br><br>
+     * Expected:
+     * <br><br>
+     * CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED | FOREIGN ] TABLE [ IF NOT EXISTS ] table_name
+     *
+     * @param sbSQL - StringBuilder for statement
+     */
     protected abstract void appendName(StringBuilder sbSQL);
 
     /**
-     * Fills columns and their options to create table statement
+     * Fills columns and their options to create table statement. Options will
+     * be appends after CREATE TABLE statement. <br>
      * Must be overridden by subclasses
      *
      * @param sbSQL - StringBuilder for columns
@@ -147,6 +156,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     protected abstract void appendColumns(StringBuilder sbSQL, StringBuilder sbOption);
 
+    /**
+     * Fills tables parents, parents are stored in 'inherits' list.<br>
+     * May be overridden by subclasses.
+     * <br><br>
+     * For example:
+     * <br><br>
+     * INHERITS (first_parent, schema_name.second_parent)
+     *
+     * @param sbSQL - StringBuilder for inherits
+     */
     protected void appendInherit(StringBuilder sbSQL) {
         if (!inherits.isEmpty()) {
             sbSQL.append("\nINHERITS (");
@@ -160,16 +179,24 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
     }
 
+    /**
+     * Appends table storage parameters or server options, part of create statement,
+     * must be finished with ';' character;
+     *
+     * @param sbSQL - StringBuilder for options
+     */
     protected abstract void appendOptions(StringBuilder sbSQL);
 
+    /**
+     * Appends <b>TABLE</b> options by alter table statement
+     * <br><br>
+     * For example:
+     * <br><br>
+     * ALTER TABLE table_name SET WITH OID;
+     * <br>
+     * @param sbSQL - StringBuilder for options
+     */
     protected abstract void appendAlterOptions(StringBuilder sbSQL);
-
-    protected void appendPartitionBy(StringBuilder sbSQL) {
-        if (partitionBy != null) {
-            sbSQL.append("\nPARTITION BY ");
-            sbSQL.append(partitionBy);
-        }
-    }
 
     protected void appendColumnsPriliges(StringBuilder sbSQL) {
         for (PgColumn col : columns) {
@@ -249,6 +276,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return sb.length() > startLength;
     }
 
+    /**
+     * Compare <b>TABLE</b> options by alter table statement
+     *
+     * @param oldTable - old table
+     * @param newTable - new table
+     * @param sb - StringBuilder for statements
+     */
+
     protected abstract void compareTableOptions(PgTable oldTable, PgTable newTable, StringBuilder sb);
 
     protected void compareComment(PgTable oldTable, PgTable newTable,
@@ -295,10 +330,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
     }
 
-    protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
-        return !Objects.equals(oldTable.getPartitionBy(), newTable.getPartitionBy());
-    }
+    protected abstract boolean isNeedRecreate(PgTable oldTable, PgTable newTable);
 
+    /**
+     * Compare tables types and generate transform scripts for change tables type
+     *
+     * @param oldTable - old table
+     * @param newTable - new table
+     * @param sb - StringBuilder for statements
+     */
+    //TODO при смене типа на обычную таблицу необходимо пропускать колонки, которые появляются от родителя
     protected abstract void compareTableTypes(PgTable oldTable, PgTable newTable, StringBuilder sb);
 
     /**
@@ -408,15 +449,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return Collections.unmodifiableList(rules);
     }
 
-    public String getPartitionBy() {
-        return partitionBy;
-    }
-
-    public void setPartitionBy(final String partionBy) {
-        this.partitionBy = partionBy;
-        resetHash();
-    }
-
     public boolean getHasOids() {
         return hasOids;
     }
@@ -516,7 +548,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment())
                     && Objects.equals(options, table.getOptions())
-                    && Objects.equals(partitionBy, table.getPartitionBy())
                     && hasOids == table.getHasOids();
         }
 
@@ -555,7 +586,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + ((partitionBy == null) ? 0 : partitionBy.hashCode());
         result = prime * result + (hasOids ? itrue : ifalse);
         result = prime * result + columns.hashCode();
         result = prime * result + inherits.hashCode();
@@ -570,7 +600,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = getTableCopy(getName(), getRawStatement());
-        tableDst.setPartitionBy(getPartitionBy());
         tableDst.setHasOids(getHasOids());
         tableDst.options.putAll(options);
         tableDst.inherits.addAll(inherits);

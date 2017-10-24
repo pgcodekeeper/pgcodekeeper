@@ -19,6 +19,6 @@ FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_constraint c ON ccc.oid = c.conrelid
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
-WHERE ccc.relkind = 'r'
+WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
     AND ccc.relnamespace = ?

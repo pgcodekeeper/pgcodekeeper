@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 
 /**
@@ -74,6 +75,19 @@ public class TypedPgTable extends RegularPgTable {
             sb.append(getAlterTable(true, false))
             .append(" NOT OF")
             .append(';');
+
+            if (newTable instanceof PartitionPgTable) {
+                Inherits newInherits = newTable.getInherits().get(0);
+                sb.append("\n\nALTER TABLE ");
+                sb.append(newInherits.getKey() == null ?
+                        "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
+                .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
+                .append("\n\tATTACH PARTITION ")
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append(' ')
+                .append(((PartitionPgTable)newTable).getPartitionBounds())
+                .append(';');
+            }
         }
     }
 

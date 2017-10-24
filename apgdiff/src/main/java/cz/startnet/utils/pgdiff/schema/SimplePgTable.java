@@ -60,6 +60,17 @@ public class SimplePgTable extends RegularPgTable{
             .append(" OF ")
             .append(newType)
             .append(';');
+        } else if (newTable instanceof PartitionPgTable) {
+            Inherits newInherits = newTable.getInherits().get(0);
+            sb.append("\n\nALTER TABLE ");
+            sb.append(newInherits.getKey() == null ?
+                    "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
+            .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
+            .append("\n\tATTACH PARTITION ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(' ')
+            .append(((PartitionPgTable)newTable).getPartitionBounds())
+            .append(';');
         }
     }
 }

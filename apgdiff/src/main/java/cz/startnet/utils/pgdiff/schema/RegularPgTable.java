@@ -19,6 +19,7 @@ public abstract class RegularPgTable extends PgTable {
     protected String tablespace;
     protected boolean isRowSecurity;
     protected boolean isForceSecurity;
+    protected String partitionBy;
 
     public RegularPgTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -51,6 +52,11 @@ public abstract class RegularPgTable extends PgTable {
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
         StringBuilder sb = new StringBuilder();
+
+        if (partitionBy != null) {
+            sbSQL.append("\nPARTITION BY ");
+            sbSQL.append(partitionBy);
+        }
 
         for (Entry <String, String> entry : options.entrySet()) {
             String key = entry.getKey();
@@ -136,7 +142,9 @@ public abstract class RegularPgTable extends PgTable {
 
     @Override
     protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
-        return super.isNeedRecreate(newTable, oldTable) || !(newTable instanceof RegularPgTable);
+        return  !(newTable instanceof RegularPgTable) ||
+                !Objects.equals(((RegularPgTable)oldTable).getPartitionBy(),
+                        ((RegularPgTable)newTable).getPartitionBy());
     }
 
     protected void fillTablespace(StringBuilder sbSQL) {
@@ -182,6 +190,15 @@ public abstract class RegularPgTable extends PgTable {
         resetHash();
     }
 
+    public String getPartitionBy() {
+        return partitionBy;
+    }
+
+    public void setPartitionBy(final String partionBy) {
+        this.partitionBy = partionBy;
+        resetHash();
+    }
+
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
@@ -205,7 +222,8 @@ public abstract class RegularPgTable extends PgTable {
             return Objects.equals(tablespace, table.getTablespace())
                     && isLogged == table.isLogged()
                     && isRowSecurity == table.isRowSecurity()
-                    && isForceSecurity == table.isForceSecurity();
+                    && isForceSecurity == table.isForceSecurity()
+                    && Objects.equals(partitionBy, table.getPartitionBy());
         }
 
         return false;
@@ -218,6 +236,7 @@ public abstract class RegularPgTable extends PgTable {
         copy.setTablespace(getTablespace());
         copy.setRowSecurity(isRowSecurity());
         copy.setForceSecurity(isForceSecurity());
+        copy.setPartitionBy(getPartitionBy());
         return copy;
     }
 
@@ -231,6 +250,7 @@ public abstract class RegularPgTable extends PgTable {
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + (isRowSecurity ? itrue : ifalse);
         result = prime * result + (isForceSecurity ? itrue : ifalse);
+        result = prime * result + ((partitionBy == null) ? 0 : partitionBy.hashCode());
         return result;
     }
 }

@@ -8,6 +8,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PartitionForeignTable;
+import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -49,20 +51,30 @@ public class TablesReader extends JdbcReader {
     private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
+        String partitionBound = null;
+
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            partitionBound = res.getString("partition_bound");
+        }
         PgTable t = null;
 
-        String serverName = res.getString("server_name");
-        if (serverName != null) {
-            t = new SimpleForeignPgTable(tableName, "", res.getString("server_name"));
-        }
 
+        String serverName = res.getString("server_name");
         Long ofTypeOid = res.getLong("of_type");
-        if (ofTypeOid != 0) {
+        if (serverName != null) {
+            if (partitionBound == null) {
+                t = new SimpleForeignPgTable(tableName, "", serverName);
+            } else {
+                t = new PartitionForeignTable(tableName, "", serverName, partitionBound);
+            }
+        } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName(schemaName);
             t = new TypedPgTable(tableName, "", ofType);
             jdbcOfType.addTypeDepcy(t);
-        } else if (t == null) {
+        } else if (partitionBound != null) {
+            t = new PartitionPgTable(tableName, "", partitionBound);
+        } else {
             t = new SimplePgTable(tableName, "");
         }
 
@@ -232,7 +244,7 @@ public class TablesReader extends JdbcReader {
 
             // since 10 PostgreSQL
             if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-                t.setPartitionBy(res.getString("partition_by"));
+                regTable.setPartitionBy(res.getString("partition_by"));
             }
 
             // persistence: U - unlogged, P - permanent, T - temporary
