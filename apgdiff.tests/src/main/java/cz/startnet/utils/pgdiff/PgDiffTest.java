@@ -164,6 +164,10 @@ public class PgDiffTest {
                     {"modify_sequence_cache"},
                     // Tests scenario where SEQUENCE with data type is modified.
                     {"modify_sequence_data_type"},
+                    // Tests scenario where new PARTITION TABLE is modified.
+                    {"modify_partition_table"},
+                    // Tests scenario where new PARTITION TABLE is converted to TYPED TABLE.
+                    {"chg_table_type"},
                     // Tests scenario where CYCLE is modified on SEQUENCE.
                     {"modify_sequence_cycle_on"},
                     {"modify_sequence_cycle_off"},
