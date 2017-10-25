@@ -60,11 +60,39 @@ public class PartitionPgTable extends RegularPgTable {
     @Override
     protected void compareTableTypes(PgTable oldTable, PgTable newTable,
             StringBuilder sb) {
+        if (!(newTable instanceof PartitionPgTable)) {
+            final Inherits tableName = oldTable.getInherits().get(0);
+            sb.append("\n\nALTER TABLE ");
+            sb.append(tableName.getKey() == null ?
+                    "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+            .append(PgDiffUtils.getQuotedName(tableName.getValue()))
+            .append("\n\tDETACH PARTITION ")
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(';');
+
+            if (newTable instanceof TypedPgTable) {
+                sb.append(newTable.getAlterTable(true, false))
+                .append(" OF ")
+                .append(((TypedPgTable) newTable).getOfType())
+                .append(';');
+            }
+        }
+    }
+
+    @Override
+    protected void compareTableOptions(PgTable oldTable, PgTable newTable,
+            StringBuilder sb) {
+        super.compareTableOptions(oldTable, newTable, sb);
+
         if (newTable instanceof PartitionPgTable) {
+            PartitionPgTable oldPart = (PartitionPgTable) oldTable;
+            PartitionPgTable newPart = (PartitionPgTable) newTable;
+
             Inherits oldInherits = oldTable.getInherits().get(0);
             Inherits newInherits = newTable.getInherits().get(0);
 
-            if (!Objects.equals(oldInherits, newInherits)) {
+            if (!oldPart.getPartitionBounds().equals(newPart.getPartitionBounds())
+                    || !Objects.equals(oldInherits, newInherits)) {
                 sb.append("\n\nALTER TABLE ");
                 sb.append(oldInherits.getKey() == null ?
                         "" : PgDiffUtils.getQuotedName(oldInherits.getKey()) + '.')
@@ -81,22 +109,6 @@ public class PartitionPgTable extends RegularPgTable {
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(' ')
                 .append(((PartitionPgTable)newTable).getPartitionBounds())
-                .append(';');
-            }
-        } else {
-            final Inherits tableName = oldTable.getInherits().get(0);
-            sb.append("\n\nALTER TABLE ");
-            sb.append(tableName.getKey() == null ?
-                    "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
-            .append(PgDiffUtils.getQuotedName(tableName.getValue()))
-            .append("\n\tDETACH PARTITION ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
-
-            if (newTable instanceof TypedPgTable) {
-                sb.append(newTable.getAlterTable(true, false))
-                .append(" OF ")
-                .append(((TypedPgTable) newTable).getOfType())
                 .append(';');
             }
         }
