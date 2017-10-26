@@ -54,7 +54,7 @@ public class AlterTable extends ParserAbstract {
             // everything else requires a real table, so fail immediately
             tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
             if (tablAction.table_column_definition() != null) {
-                tabl.addColumn(getColumn(tablAction.table_column_definition(), getDefSchemaName()));
+                addColumn(tablAction.table_column_definition(), getDefSchemaName(), tabl);
             }
             if (tablAction.set_def_column() != null) {
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));

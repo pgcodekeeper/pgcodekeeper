@@ -58,7 +58,7 @@ public class CreateTable extends ParserAbstract {
                         table.addConstraint(getTableConstraint(typeColCtx.tabl_constraint, schema.getName()));
                     }
                     if (typeColCtx.table_of_type_column_definition() != null) {
-                        table.addColumnOfType(getColumnOfType(typeColCtx.table_of_type_column_definition(), getDefSchemaName()));
+                        getColumnOfType(typeColCtx.table_of_type_column_definition(), getDefSchemaName(), table);
                     }
                 }
             }
@@ -82,7 +82,7 @@ public class CreateTable extends ParserAbstract {
                     table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schema.getName()));
                 }
                 if (colCtx.table_column_definition() != null) {
-                    table.addColumn(getColumn(colCtx.table_column_definition(), getDefSchemaName()));
+                    addColumn(colCtx.table_column_definition(), getDefSchemaName(), table);
                 }
             }
         }
