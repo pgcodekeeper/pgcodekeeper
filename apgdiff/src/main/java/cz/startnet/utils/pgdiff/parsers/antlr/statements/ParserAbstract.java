@@ -142,6 +142,7 @@ public abstract class ParserAbstract {
                 constr.setUnique(false);
                 constr.setPrimaryKey(true);
                 constr.setDefinition("PRIMARY KEY (" + colName + ")");
+                col.setNullValue(false);
             } else {
                 constr.setUnique(true);
                 constr.setPrimaryKey(false);
