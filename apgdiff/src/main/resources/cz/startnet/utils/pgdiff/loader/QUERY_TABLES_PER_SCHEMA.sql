@@ -61,7 +61,7 @@ SELECT  -- GENERAL
 FROM pg_class c
 LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
 LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
-LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.relnamespace
+LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
 LEFT JOIN pg_catalog.pg_class tc ON tc.oid = c.reltoastrelid
 LEFT JOIN (SELECT
