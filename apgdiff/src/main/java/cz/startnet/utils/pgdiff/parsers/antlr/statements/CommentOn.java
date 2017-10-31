@@ -63,7 +63,7 @@ public class CommentOn extends ParserAbstract {
         // function
         if (ctx.FUNCTION() != null) {
             PgFunction func = new PgFunction(name, null);
-            fillArguments(ctx.function_args(), func, getDefSchemaName(), true);
+            fillArguments(ctx.function_args(), func, getDefSchemaName());
             getSafe(schema::getFunction, func.getSignature(), nameCtx.getStart())
             .setComment(db.getArguments(), comment);
             //extension

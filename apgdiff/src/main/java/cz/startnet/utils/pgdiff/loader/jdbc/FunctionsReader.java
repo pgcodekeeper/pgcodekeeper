@@ -1,18 +1,19 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
@@ -53,9 +54,9 @@ public class FunctionsReader extends JdbcReader {
         boolean returnsTable = false;
         StringBuilder returnedTableArguments = new StringBuilder();
         String[] argModes = res.getArray("proargmodes", String.class);
+        String[] argNames = res.getArray("proargnames", String.class);
+        Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
         if (argModes != null && Arrays.asList(argModes).contains("t")) {
-            String[] argNames = res.getArray("proargnames", String.class);
-            Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
             for (int i = 0; i < argModes.length; i++) {
                 String type = argModes[i];
                 if ("t".equals(type)) {
@@ -82,78 +83,114 @@ public class FunctionsReader extends JdbcReader {
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
 
-        // PRIVILEGES
-        String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "(" +
-                res.getString("proarguments_without_default") + ")";
-        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
-
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        // ARGUMENTS
-        // TODO manually assemble function sig instead of parsing?
-        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
-        // Benchmark               Mode  Cnt       Score      Error  Units
-        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
-        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
-        //
-        // This is the last one, because addFunction requires filled function arguments
-        //        String arguments = res.getString("proarguments");
-        //        if (!arguments.isEmpty()) {
-        //            loader.submitAntlrTask('(' + arguments + ')',
-        //                    p -> {
-        //                        Function_argsContext functionArgsCtx = p.function_args_parser().function_args();
-        //                        ParserAbstract.fillArguments(functionArgsCtx, f, schemaName, false);
-        //                        // schema.addFunction(f); //
-        //                        return functionArgsCtx;
-        //                    },
-        //                    ctx -> {
-        //                        schema.addFunction(f); //
-        //                        for (Function_argumentsContext argument : ctx.function_arguments()) {
-        //                            if (argument.function_def_value() != null) {
-        //                                VexContext defExpression = argument.function_def_value().def_value;
-        //                                ValueExpr vex = new ValueExpr(schemaName);
-        //                                vex.analyze(new Vex(defExpression));
-        //                                f.addAllDeps(vex.getDepcies());
-        //                            }
-        //                        }
-        //                    });
-        //
-        //        } else {
-        //            schema.addFunction(f);
-        //        }
+        StringBuilder argsWithoutDefault = new StringBuilder();
 
+        Long[] argtypes = res.getArray("argtypes", Long.class);
 
+        if(argTypeOids != null || argtypes != null) {
+            if (argTypeOids == null) {
+                for (int i = 0; argtypes.length > i; i++) {
+                    Argument a = f.new Argument(argNames != null ? argNames[i] : null,
+                            loader.cachedTypesByOid.get(argtypes[i]).getFullName(schemaName));
 
-        String arguments = res.getString("proarguments");
-        if (!arguments.isEmpty()) {
-            loader.submitAntlrTask('(' + arguments + ')',
-                    p -> {
-                        Function_argsContext functionArgsCtx = p.function_args_parser().function_args();
-                        ParserAbstract.fillArguments(functionArgsCtx, f, schemaName, false);
-                        // schema.addFunction(f); //
-                        return functionArgsCtx;
-                    },
-                    ctx -> {
-                        schema.addFunction(f); //
-                        for (Function_argumentsContext argument : ctx.function_arguments()) {
-                            if (argument.function_def_value() != null) {
-                                VexContext defExpression = argument.function_def_value().def_value;
+                    f.addArgument(a);
+
+                    if (a.getName() != null) {
+                        argsWithoutDefault.append(a.getName()).append(" ");
+                    } else {
+                        argsWithoutDefault.append("");
+                    }
+                    argsWithoutDefault.append(a.getDataType())
+                    .append(argtypes.length - 1  > i ? ", " : "");
+                }
+            } else {
+                int tableModesCount = 0;
+
+                for (int i = 0; argTypeOids.length > i; i++) {
+                    if("t".equals(argModes[i])) {
+                        tableModesCount++;
+                    }
+                }
+
+                for (int i = 0; argTypeOids.length > i; i++) {
+                    String aMode = argModes[i];
+                    if(!"t".equals(aMode)) {
+                        switch(aMode) {
+                        case "i":
+                            aMode = "IN";
+                            break;
+                        case "o":
+                            aMode = "OUT";
+                            break;
+                        case "b":
+                            aMode = "INOUT";
+                            break;
+                        case "v":
+                            aMode = "VARIADIC";
+                            break;
+                        }
+
+                        Argument a = f.new Argument(aMode,
+                                argNames != null ? argNames[i] : null,
+                                        loader.cachedTypesByOid.get(argTypeOids[i]).getFullName(schemaName));
+
+                        f.addArgument(a);
+
+                        if (!"IN".equals(a.getMode())) {
+                            argsWithoutDefault.append(a.getMode()).append(" ");
+                        }
+                        if (a.getName() != null) {
+                            argsWithoutDefault.append(a.getName()).append(" ");
+                        } else {
+                            argsWithoutDefault.append("");
+                        }
+                        argsWithoutDefault.append(a.getDataType())
+                        .append(argTypeOids.length - 1 - tableModesCount > i ? ", " : "");
+                    }
+                }
+            }
+
+            String defaultValuesAsString = res.getString("default_values_as_string");
+            if (defaultValuesAsString != null) {
+                loader.submitAntlrTask(defaultValuesAsString,
+                        p -> p.vex_eof().vex(),
+                        ctx -> {
+                            Deque<String> defultsQueue = new ArrayDeque<>();
+                            for (VexContext vx : ctx) {
+                                defultsQueue.offerLast(ParserAbstract.getFullCtxText(vx));
+                            }
+
+                            for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
+                                if (defultsQueue.isEmpty()) {
+                                    break;
+                                }
+                                Argument a = f.getArguments().get(i);
+                                if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
+                                    a.setDefaultExpression(defultsQueue.pollLast());
+                                }
+                            }
+
+                            for (VexContext vx : ctx) {
                                 ValueExpr vex = new ValueExpr(schemaName);
-                                vex.analyze(new Vex(defExpression));
+                                vex.analyze(new Vex(vx));
                                 f.addAllDeps(vex.getDepcies());
                             }
-                        }
-                    });
-
-        } else {
-            schema.addFunction(f);
+                        });
+            }
         }
-        //        schema.addFunction(f);
 
+        // PRIVILEGES
+        String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "("
+                + argsWithoutDefault.toString() + ")";
+        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
+
+        schema.addFunction(f);
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {

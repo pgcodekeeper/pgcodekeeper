@@ -93,7 +93,7 @@ public class TypesReader extends JdbcReader {
             }
         } else {
             loader.submitAntlrTask(def,
-                    p -> p.vex_eof().vex(),
+                    p -> p.vex_eof().vex().get(0),
                     ctx -> {
                         ValueExpr vex = new ValueExpr(schemaName);
                         vex.analyze(new Vex(ctx));

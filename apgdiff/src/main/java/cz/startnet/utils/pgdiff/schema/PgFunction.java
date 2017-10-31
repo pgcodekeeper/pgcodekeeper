@@ -274,7 +274,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         public Argument(String mode, String name, String dataType) {
             this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
-            this.name = name;
+            this.name = (name != null && name.isEmpty()) ? null : name;
             this.dataType = dataType;
         }
 

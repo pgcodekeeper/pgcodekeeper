@@ -135,7 +135,7 @@ public class TablesReader extends JdbcReader {
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
                 loader.submitAntlrTask(columnDefault,
-                        p -> p.vex_eof().vex(),
+                        p -> p.vex_eof().vex().get(0),
                         ctx -> {
                             ValueExpr vex = new ValueExpr(schemaName);
                             vex.analyze(new Vex(ctx));

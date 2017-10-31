@@ -24,7 +24,7 @@ function_args_parser
   ;
 
 vex_eof
-  : vex EOF
+  : vex (COMMA vex)* EOF
   ;
 
 /******* END Start symbols *******/

@@ -120,7 +120,7 @@ public abstract class ParserAbstract {
     }
 
     public static void fillArguments(Function_argsContext function_argsContext,
-            PgFunction function, String defSchemaName, boolean doAnalyze) {
+            PgFunction function, String defSchemaName) {
         for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
             Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
@@ -130,15 +130,10 @@ public abstract class ParserAbstract {
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-
-                //////////
-                if(doAnalyze) {
-                    VexContext defExpression = argument.function_def_value().def_value;
-                    ValueExpr vex = new ValueExpr(defSchemaName);
-                    vex.analyze(new Vex(defExpression));
-                    function.addAllDeps(vex.getDepcies());
-                }
-                //////////
+                VexContext defExpression = argument.function_def_value().def_value;
+                ValueExpr vex = new ValueExpr(defSchemaName);
+                vex.analyze(new Vex(defExpression));
+                function.addAllDeps(vex.getDepcies());
             }
 
             function.addArgument(arg);

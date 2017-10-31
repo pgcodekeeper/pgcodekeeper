@@ -85,7 +85,7 @@ public class ViewsReader extends JdbcReader {
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault,
-                            p -> p.vex_eof().vex(),
+                            p -> p.vex_eof().vex().get(0),
                             ctx -> {
                                 ValueExpr vex = new ValueExpr(schemaName);
                                 vex.analyze(new Vex(ctx));
