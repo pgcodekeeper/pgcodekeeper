@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -39,15 +40,16 @@ public class ConstraintsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
-            PgConstraint constraint = getConstraint(result, schema.getName(), table.getName());
+            PgConstraint constraint = getConstraint(result, schema, table.getName());
             if (constraint != null) {
                 table.addConstraint(constraint);
             }
         }
     }
 
-    private PgConstraint getConstraint(ResultSetWrapper res, String schemaName, String tableName)
+    private PgConstraint getConstraint(ResultSetWrapper res, PgSchema schema, String tableName)
             throws WrapperAccessException {
+        String schemaName = schema.getName();
         String contype = res.getString("contype");
 
         String constraintName = res.getString("conname");
@@ -67,18 +69,18 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', (PgDatabase)schema.getParent(),
                 p -> {
                     Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
                             .table_action(0);
-                    Constr_bodyContext body = tableActionCtx.tabl_constraint.constr_body();
+                    Constr_bodyContext bodyCtx = tableActionCtx.tabl_constraint.constr_body();
 
-                    c.setDefinition(ParserAbstract.getFullCtxText(body));
+                    c.setDefinition(ParserAbstract.getFullCtxText(bodyCtx));
                     c.setNotValid(tableActionCtx.not_valid != null);
 
-                    return body;
+                    return bodyCtx;
                 },
-                ctx -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
+                (ctx, db) -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

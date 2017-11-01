@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -43,7 +44,7 @@ public class TypesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgStatement typeOrDomain = getTypeDomain(result, schema.getName());
+        PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
                 schema.addDomain((PgDomain) typeOrDomain);
@@ -53,13 +54,13 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgStatement getTypeDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgStatement getTypeDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
         PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
-            st = getDomain(res, schemaName);
+            st = getDomain(res, schema);
         } else {
-            st = getType(res, schemaName, typtype);
+            st = getType(res, schema.getName(), typtype);
         }
         if (st != null) {
             loader.setOwner(st, res.getLong("typowner"));
@@ -72,7 +73,8 @@ public class TypesReader extends JdbcReader {
         return st;
     }
 
-    private PgDomain getDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgDomain getDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
@@ -85,6 +87,8 @@ public class TypesReader extends JdbcReader {
                     + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
         }
 
+        PgDatabase dataBase = (PgDatabase)schema.getParent();
+
         String def = res.getString("dom_defaultbin");
         if (def == null) {
             def = res.getString("typdefault");
@@ -92,9 +96,9 @@ public class TypesReader extends JdbcReader {
                 def = PgDiffUtils.quoteString(def);
             }
         } else {
-            loader.submitAntlrTask(def,
+            loader.submitAntlrTask(def, dataBase,
                     p -> p.vex_eof().vex().get(0),
-                    ctx -> {
+                    (ctx, db) -> {
                         ValueExpr vex = new ValueExpr(schemaName);
                         vex.analyze(new Vex(ctx));
                         d.addAllDeps(vex.getDepcies());
@@ -111,7 +115,7 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
+                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';', dataBase,
                         p -> {
                             Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter()
                                     .alter_table_statement().table_action(0);
@@ -121,8 +125,7 @@ public class TypesReader extends JdbcReader {
                             c.setNotValid(tableActionCtx.not_valid != null);
 
                             return body;
-                        },
-                        ctx -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
+                        }, (ctx, db) -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

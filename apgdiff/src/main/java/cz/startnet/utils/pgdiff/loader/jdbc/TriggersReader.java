@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
@@ -49,14 +50,15 @@ public class TriggersReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
-            PgTrigger trigger = getTrigger(result, schema.getName(), contName);
+            PgTrigger trigger = getTrigger(result, schema, contName);
             if (trigger != null) {
                 c.addTrigger(trigger);
             }
         }
     }
 
-    private PgTrigger getTrigger(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
+    private PgTrigger getTrigger(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName, "");
@@ -152,9 +154,10 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
+        loader.submitAntlrTask(definition, (PgDatabase)schema.getParent(),
+                p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                (whenCtx) -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
+                (ctx, db) -> CreateTrigger.parseWhen(ctx, t, schemaName));
 
         // COMMENT
         String comment = res.getString("comment");

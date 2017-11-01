@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -35,14 +36,15 @@ public class TablesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgTable table = getTable(result, schema.getName());
+        PgTable table = getTable(result, schema);
         loader.monitor.worked(1);
         if (table != null) {
             schema.addTable(table);
         }
     }
 
-    private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgTable getTable(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         PgTable t = new PgTable(tableName, "");
@@ -134,9 +136,9 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault,
+                loader.submitAntlrTask(columnDefault, (PgDatabase)schema.getParent(),
                         p -> p.vex_eof().vex().get(0),
-                        ctx -> {
+                        (ctx, db) -> {
                             ValueExpr vex = new ValueExpr(schemaName);
                             vex.analyze(new Vex(ctx));
                             column.addAllDeps(vex.getDepcies());

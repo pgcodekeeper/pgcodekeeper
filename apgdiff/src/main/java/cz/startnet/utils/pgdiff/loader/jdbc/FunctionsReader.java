@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -158,11 +160,13 @@ public class FunctionsReader extends JdbcReader {
 
             String defaultValuesAsString = res.getString("default_values_as_string");
             if (defaultValuesAsString != null) {
-                loader.submitAntlrTask(defaultValuesAsString,
-                        p -> p.vex_eof().vex(),
-                        ctx -> {
+                loader.submitAntlrTask(defaultValuesAsString, (PgDatabase)schema.getParent(),
+                        p -> p.vex_eof(),
+                        (ctx, db) -> {
+                            List<VexContext> vexCtxList = ctx.vex();
+
                             Deque<String> defultsQueue = new ArrayDeque<>();
-                            for (VexContext vx : ctx) {
+                            for (VexContext vx : vexCtxList) {
                                 defultsQueue.offerLast(ParserAbstract.getFullCtxText(vx));
                             }
 
@@ -176,7 +180,7 @@ public class FunctionsReader extends JdbcReader {
                                 }
                             }
 
-                            for (VexContext vx : ctx) {
+                            for (VexContext vx : vexCtxList) {
                                 ValueExpr vex = new ValueExpr(schemaName);
                                 vex.analyze(new Vex(vx));
                                 f.addAllDeps(vex.getDepcies());

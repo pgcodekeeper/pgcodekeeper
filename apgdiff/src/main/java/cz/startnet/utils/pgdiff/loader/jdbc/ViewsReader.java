@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -35,14 +36,15 @@ public class ViewsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgView view = getView(result, schema.getName());
+        PgView view = getView(result, schema);
         loader.monitor.worked(1);
         if (view != null) {
             schema.addView(view);
         }
     }
 
-    private PgView getView(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgView getView(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
@@ -61,9 +63,11 @@ public class ViewsReader extends JdbcReader {
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
-        loader.submitAntlrTask(viewDef,
+        PgDatabase dataBase = (PgDatabase)schema.getParent();
+
+        loader.submitAntlrTask(viewDef, dataBase,
                 p -> p.sql().statement(0).data_statement().select_stmt(),
-                ctx -> {
+                (ctx, db) -> {
                     Select sel = new Select(schemaName);
                     sel.analyze(ctx);
                     v.addAllDeps(sel.getDepcies());
@@ -84,9 +88,9 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
-                    loader.submitAntlrTask(colDefault,
+                    loader.submitAntlrTask(colDefault, dataBase,
                             p -> p.vex_eof().vex().get(0),
-                            ctx -> {
+                            (ctx, db) -> {
                                 ValueExpr vex = new ValueExpr(schemaName);
                                 vex.analyze(new Vex(ctx));
                                 v.addAllDeps(vex.getDepcies());

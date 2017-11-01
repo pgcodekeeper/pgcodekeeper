@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
@@ -40,14 +41,15 @@ public class RulesReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgRuleContainer c = schema.getRuleContainer(contName);
         if (c != null) {
-            PgRule rule = getRule(result, schema.getName(), contName);
+            PgRule rule = getRule(result, schema, contName);
             if (rule != null) {
                 c.addRule(rule);
             }
         }
     }
 
-    private PgRule getRule(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
+    private PgRule getRule(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String ruleName = res.getString("rulename");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, ruleName, DbObjType.RULE));
 
@@ -84,21 +86,21 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command,
+        loader.submitAntlrTask(command, (PgDatabase)schema.getParent(),
                 p -> {
-                    Create_rewrite_statementContext ctx = p.sql().statement(0).schema_statement()
+                    Create_rewrite_statementContext createRewriteCtx = p.sql().statement(0).schema_statement()
                             .schema_create().create_rewrite_statement();
 
-                    r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
+                    r.setCondition((createRewriteCtx.WHERE() != null) ? ParserAbstract.getFullCtxText(createRewriteCtx.vex()) : null);
 
-                    for (Rewrite_commandContext cmd : ctx.commands) {
+                    for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
                         r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
                     }
 
-                    return ctx;
+                    return createRewriteCtx;
                 },
-                ctx -> {
-                    if (ctx.WHERE() != null){
+                (ctx, db) -> {
+                    if (ctx.WHERE() != null) {
                         CreateRewrite.analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
                     }
 

@@ -14,9 +14,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -46,7 +48,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
-    private final Queue<AntlrTask<?>> antlrTasks = new ArrayDeque<>();
+    private final Queue<AntlrTask<? extends ParserRuleContext, PgDatabase>> antlrTasks = new ArrayDeque<>();
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -270,16 +272,16 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader,
-            Consumer<T> finalizer) {
+    protected <T extends ParserRuleContext> void submitAntlrTask(String sql, PgDatabase dataBase,
+            Function<SQLParser, T> parserCtxReader, BiConsumer<T, PgDatabase> finalizer) {
         String loc = getCurrentLocation();
         Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer));
+        antlrTasks.add(new AntlrTask<>(future, finalizer, dataBase));
     }
 
     protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrTask<?> task;
+        AntlrTask<? extends ParserRuleContext, PgDatabase> task;
         while ((task = antlrTasks.poll()) != null) {
             task.finish();
         }
