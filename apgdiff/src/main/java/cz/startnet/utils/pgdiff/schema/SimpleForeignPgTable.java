@@ -23,9 +23,17 @@ public class SimpleForeignPgTable extends ForeignPgTable {
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
         sbSQL.append(" (\n");
+        StringBuilder inherits = new StringBuilder();
+        StringBuilder options = new StringBuilder();
+
+        int start = sbSQL.length();
         for (PgColumn column : columns) {
-            sbSQL.append("\t");
-            sbSQL.append(column.getFullDefinition(false, null));
+            if (column.isInherit()) {
+                searchColumn(column, inherits);
+            } else {
+                sbSQL.append("\t");
+                sbSQL.append(column.getFullDefinition(false, null));
+            }
 
             if (column.getStorage() != null){
                 sbOption.append(getAlterTable(true, false))
@@ -36,10 +44,10 @@ public class SimpleForeignPgTable extends ForeignPgTable {
                 .append(';');
             }
 
-            writeOptions(column, sbOption, false);
-            writeOptions(column, sbOption, true);
+            writeOptions(column, options, false);
+            writeOptions(column, options, true);
 
-            writeSequences(column, sbOption);
+            writeSequences(column, options);
             sbSQL.append(",\n");
         }
 
@@ -47,6 +55,15 @@ public class SimpleForeignPgTable extends ForeignPgTable {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append('\n');
         }
+
+        if (start != sbSQL.length()) {
+            sbSQL.setLength(sbSQL.length() - 2);
+            sbSQL.append('\n');
+        }
+
+        // saving order
+        sbOption.append(inherits);
+        sbOption.append(options);
 
         sbSQL.append(')');
     }

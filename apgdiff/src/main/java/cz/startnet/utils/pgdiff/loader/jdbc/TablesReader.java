@@ -107,13 +107,11 @@ public class TablesReader extends JdbcReader {
         String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
 
         for (int i = 0; i < colNumbers.length; i++) {
-            if (colNumbers[i] < 1 || !colIsLocal[i]) {
-                // пропускать не локальные (Inherited)  и системные (System) колонки
-                continue;
-            }
 
             PgColumn column = new PgColumn(colNames[i]);
-            if(ofTypeOid == 0){
+            column.setInherit(!colIsLocal[i]);
+
+            if (ofTypeOid == 0 && !column.isInherit()) {
                 column.setType(colTypeName[i]);
             }
 
@@ -126,7 +124,7 @@ public class TablesReader extends JdbcReader {
                 ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
             }
 
-            if(!colStorages[i].equals(colDefaultStorages[i])){
+            if (!colStorages[i].equals(colDefaultStorages[i])) {
                 switch(colStorages[i]) {
                 case "x":
                     column.setStorage("EXTENDED");
@@ -185,9 +183,9 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            if(ofTypeOid != 0){
-                if((column.getDefaultValue()!= null && !column.getDefaultValue().isEmpty())
-                        || !column.getNullValue()){
+            if (ofTypeOid != 0 || column.isInherit()){
+                if ((column.getDefaultValue() != null && !column.getDefaultValue().isEmpty())
+                        || !column.getNullValue()) {
                     t.addColumn(column);
                 }
             } else {

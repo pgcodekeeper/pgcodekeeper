@@ -122,11 +122,11 @@ public class AlterTable extends ParserAbstract {
                 if (tablAction.STATISTICS() != null) {
                     fillStatictics(tabl, tablAction);
                 }
-                if (tablAction.set_def_column() != null && tabl.getInherits().isEmpty()) {
-                    // не добавляем в таблицу сиквенс если она наследует
-                    // некоторые поля из др таблицы
-                    // совместимость с текущей версией экспорта
+                if (tablAction.set_def_column() != null) {
                     fillDefColumn(tabl, tablAction);
+                }
+                if (tablAction.set != null) {
+                    fillNotNull(tabl, tablAction);
                 }
             }
             if (tablAction.RULE() != null) {
@@ -161,12 +161,31 @@ public class AlterTable extends ParserAbstract {
                 CreateSequence.fillSequence(sequence, identity.sequence_body());
                 String columnName = QNameParser.getFirstName(tablAction.column.identifier());
                 PgColumn column = tabl.getColumn(columnName);
+
+                // inherit column
+                if (column == null) {
+                    column = new PgColumn(columnName);
+                    column.setInherit(true);
+                    tabl.addColumn(column);
+                }
                 column.setSequence(sequence);
                 column.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
             }
 
         }
         return null;
+    }
+
+    private void fillNotNull(PgTable table, Table_actionContext tablAction) {
+        String name = QNameParser.getFirstName(tablAction.column.identifier());
+        if (table.getColumn(name) == null) {
+            PgColumn col = new PgColumn(name);
+            col.setInherit(true);
+            col.setNullValue(false);
+            table.addColumn(col);
+        } else {
+            table.getColumn(name).setNullValue(false);
+        }
     }
 
     private void createRule(PgTable tabl, Table_actionContext tablAction) {
@@ -188,6 +207,7 @@ public class AlterTable extends ParserAbstract {
         String name = QNameParser.getFirstName(tablAction.column.identifier());
         if (table.getColumn(name) == null) {
             PgColumn col = new PgColumn(name);
+            col.setInherit(true);
             col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
             table.addColumn(col);
         } else {

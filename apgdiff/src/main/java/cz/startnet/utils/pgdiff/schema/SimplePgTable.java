@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author galiev_mr
  *
  */
-public class SimplePgTable extends RegularPgTable{
+public class SimplePgTable extends RegularPgTable {
 
     public SimplePgTable(String name, String rawStatement) {
         super(name, rawStatement);
@@ -18,10 +18,18 @@ public class SimplePgTable extends RegularPgTable{
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
         sbSQL.append(" (\n");
+        StringBuilder inherits = new StringBuilder();
+        StringBuilder options = new StringBuilder();
 
+        int start = sbSQL.length();
         for (PgColumn column : columns) {
-            sbSQL.append("\t");
-            sbSQL.append(column.getFullDefinition(false, null));
+            if (column.isInherit()) {
+                searchColumn(column, inherits);
+            } else {
+                sbSQL.append("\t");
+                sbSQL.append(column.getFullDefinition(false, null));
+                sbSQL.append(",\n");
+            }
 
             if (column.getStorage() != null) {
                 sbOption.append(getAlterTable(true, false))
@@ -32,16 +40,18 @@ public class SimplePgTable extends RegularPgTable{
                 .append(';');
             }
 
-            writeOptions(column, sbOption, false);
-
-            writeSequences(column, sbOption);
-            sbSQL.append(",\n");
+            writeOptions(column, options, false);
+            writeSequences(column, options);
         }
 
-        if (!columns.isEmpty()) {
+        if (start != sbSQL.length()) {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append('\n');
         }
+
+        // saving order
+        sbOption.append(inherits);
+        sbOption.append(options);
 
         sbSQL.append(')');
     }

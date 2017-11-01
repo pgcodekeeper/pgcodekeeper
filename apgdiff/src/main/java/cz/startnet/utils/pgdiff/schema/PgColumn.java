@@ -38,6 +38,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private final Map<String, String> fOptions = new LinkedHashMap<>(0);
     private PgSequence sequence;
     private String identityType;
+    private boolean isInherit;
 
     @Override
     public DbObjType getStatementType() {
@@ -74,6 +75,15 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     public void addForeignOption(String attribute, String value){
         this.fOptions.put(attribute, value);
+        resetHash();
+    }
+
+    public boolean isInherit() {
+        return isInherit;
+    }
+
+    public void setInherit(boolean isInherit) {
+        this.isInherit = isInherit;
         resetHash();
     }
 
@@ -443,6 +453,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
+                    && isInherit == col.isInherit()
                     && Objects.equals(defaultValue, col.getDefaultValue())
                     && Objects.equals(statistics, col.getStatistics())
                     && Objects.equals(storage, col.getStorage())
@@ -466,6 +477,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + (nullValue ? itrue : ifalse);
+        result = prime * result + (isInherit ? itrue : ifalse);
         result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
         result = prime * result + ((collation == null) ? 0 : collation.hashCode());
@@ -487,6 +499,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         colDst.setIdentityType(getIdentityType());
         colDst.setSequence(getSequence());
         colDst.setNullValue(getNullValue());
+        colDst.setInherit(isInherit());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
         colDst.setCollation(getCollation());

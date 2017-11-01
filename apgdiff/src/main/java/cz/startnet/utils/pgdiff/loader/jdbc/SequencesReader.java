@@ -88,6 +88,11 @@ public class SequencesReader extends JdbcReader {
         if (identityType != null) {
             PgTable table = schema.getTable(refTable);
             PgColumn column = table.getColumn(refColumn);
+            if (column == null) {
+                column = new PgColumn(refColumn);
+                column.setInherit(true);
+                table.addColumn(column);
+            }
             column.setSequence(s);
             column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
         } else {

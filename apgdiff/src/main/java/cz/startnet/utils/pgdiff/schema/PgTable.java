@@ -550,7 +550,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(options, table.getOptions())
                     && hasOids == table.getHasOids();
         }
-
         return eq;
     }
 
@@ -660,6 +659,23 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
             sbOption.setLength(sbOption.length() - 2);
             sbOption.append(");");
+        }
+    }
+
+    protected void searchColumn(PgColumn column, StringBuilder sb) {
+        if (!column.getNullValue()) {
+            sb.append(getAlterTable(true, true))
+            .append(" ALTER COLUMN ")
+            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(" SET NOT NULL;");
+        }
+        if (column.getDefaultValue() != null) {
+            sb.append(getAlterTable(true, true))
+            .append(" ALTER COLUMN ")
+            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(" SET DEFAULT ")
+            .append(column.getDefaultValue())
+            .append(';');
         }
     }
 

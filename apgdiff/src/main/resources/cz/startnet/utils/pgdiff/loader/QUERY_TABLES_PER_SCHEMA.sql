@@ -76,7 +76,20 @@ LEFT JOIN (SELECT
             array_agg(d.description ORDER BY a.attnum) AS col_comments,
             array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids,
             array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name,
-            array_agg(a.attnotnull ORDER BY a.attnum) AS col_notnull,
+            
+             -- skips not null for column, if parents heve not null 
+            array_agg(
+                (CASE WHEN a.attnotnull THEN 
+                    NOT EXISTS (
+                        SELECT 1 FROM pg_catalog.pg_inherits inh 
+                        LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent
+                        WHERE inh.inhrelid = a.attrelid 
+                        AND attr.attnotnull
+                        AND attr.attname = a.attname)
+                    ELSE false
+                    END
+                ) ORDER BY a.attnum) AS col_notnull,
+            
             array_agg(a.attstattarget ORDER BY a.attnum) AS col_statictics,
             array_agg(a.attislocal ORDER BY a.attnum) AS col_local,
             array_agg(a.attacl::text ORDER BY a.attnum) AS col_acl,
@@ -90,6 +103,7 @@ LEFT JOIN (SELECT
       LEFT JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
       LEFT JOIN collations cl ON cl.oid =  a.attcollation
       WHERE a.attisdropped IS FALSE
+            AND a.attnum > 0 
       GROUP BY attrelid) columns ON columns.attrelid = c.oid
 LEFT JOIN (SELECT
         inh.inhrelid,

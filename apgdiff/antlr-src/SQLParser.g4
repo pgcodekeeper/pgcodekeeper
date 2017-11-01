@@ -136,7 +136,7 @@ table_action
       ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
       | (set_def_column
         | drop_def
-        | ((SET | DROP) NOT NULL)
+        | ((set=SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
         | set_attribute_option
         | define_foreign_options
@@ -846,7 +846,7 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN
+    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN NO? INHERIT?
     ;
 
 storage_parameter
