@@ -1,50 +1,25 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
-public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
-IWorkbenchPreferencePage {
-
-    private final XmlHistory history;
-
-    private Combo cmbScript;
+public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
     public DbUpdatePrefPage() {
         super(GRID);
-        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
-                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
 
     @Override
@@ -103,82 +78,14 @@ IWorkbenchPreferencePage {
         BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
         addField(commandLineDdlUpdate);
-    }
 
-    @Override
-    protected Control createContents(Composite parent) {
-        Composite parentComposite = (Composite)super.createContents(parent);
-
-        final Composite notJdbc = new Composite(parentComposite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        notJdbc.setLayoutData(gd);
-
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = gl.marginWidth = 0;
-        notJdbc.setLayout(gl);
-
-        Label l = new Label(notJdbc, SWT.NONE);
-        l.setText(Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script
+        StringFieldEditor cmdUpdate = new StringFieldEditor(DB_UPDATE_PREF.MIGRATION_COMMAND,
+                Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script
                 + SQLEditor.SCRIPT_PLACEHOLDER + ' '
                 + SQLEditor.DB_NAME_PLACEHOLDER + ' '
                 + SQLEditor.DB_HOST_PLACEHOLDER + ' ' + SQLEditor.DB_PORT_PLACEHOLDER + ' '
-                + SQLEditor.DB_USER_PLACEHOLDER + ' ' + SQLEditor.DB_PASS_PLACEHOLDER + ')' + ':');
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        l.setLayoutData(gd);
-
-        cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
-        cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        cmbScript.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Combo combo = (Combo)e.getSource();
-                String selected = combo.getText();
-                combo.remove(combo.getSelectionIndex());
-                combo.add(selected, 0);
-                combo.select(0);
-            }
-        });
-
-        LinkedList<String> list = null;
-        try {
-            list = history.getHistory();
-        } catch (IOException e1) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_loading_command_history, e1);
-        }
-        if (list == null) {
-            list = new LinkedList<>();
-        }
-        if (list.isEmpty()) {
-            list.add(UIConsts.DDL_DEFAULT_CMD);
-        }
-        for (String el : list) {
-            cmbScript.add(el);
-        }
-        cmbScript.select(0);
-
-        return parentComposite;
-    }
-
-    @Override
-    public boolean performOk() {
-        try {
-            String[] allItems = cmbScript.getItems();
-            String currentSelectedText = cmbScript.getText();
-
-            if(Arrays.stream(allItems).noneMatch(currentSelectedText::equals)) {
-                cmbScript.add(currentSelectedText, 0);
-            }
-
-            history.setHistory(Arrays.asList(allItems));
-
-            Activator.getDefault().getPreferenceStore().setValue(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT, currentSelectedText);
-
-        } catch (IOException e) {
-            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
-        }
-
-        return super.performOk();
+                + SQLEditor.DB_USER_PLACEHOLDER + ' ' + SQLEditor.DB_PASS_PLACEHOLDER + ')' + ':',
+                30, getFieldEditorParent());
+        addField(cmdUpdate);
     }
 }

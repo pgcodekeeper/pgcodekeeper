@@ -22,7 +22,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -37,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -238,11 +241,31 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static boolean isInProject(IResource resource) {
-        return isInProject(resource.getProjectRelativePath());
+        try {
+            return resource.getProject().hasNature(NATURE.ID)
+                    && isInProject(resource.getProjectRelativePath());
+        } catch (CoreException ex) {
+            Log.log(ex);
+            return false;
+        }
     }
 
     public static boolean isInProject(IResourceDelta delta) {
         return isInProject(delta.getProjectRelativePath());
+    }
+
+    public static boolean isInProject(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return res == null ? false : isInProject(res);
+    }
+
+    /**
+     * @param editorInput
+     * @return param's {@link IResource} or null if not available or not {@link #isInProject(IPath)}
+     */
+    public static IResource getProjectResource(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return isInProject(res) ? res : null;
     }
 
     /**

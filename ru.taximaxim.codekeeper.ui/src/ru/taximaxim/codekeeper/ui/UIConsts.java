@@ -87,7 +87,6 @@ public interface UIConsts {
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
-        String MIGRATION_COMMAND_SCRIPT = "prefMigrationCommandScript"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {
@@ -147,12 +146,6 @@ public interface UIConsts {
 
     interface BUILDER {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
-    }
-
-    interface PROP_TEST {
-        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
-        String UPDATE_DDL_RUNNING = PLUGIN_ID.THIS + ".isUpdateDdlRunning"; //$NON-NLS-1$
-        String QUICK_UPDATE_RUNNING = PLUGIN_ID.THIS + ".isQuickUpdateRunning"; //$NON-NLS-1$
     }
 
     interface HELP {

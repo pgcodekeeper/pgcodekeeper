@@ -1,18 +1,17 @@
 package ru.taximaxim.codekeeper.ui.propertytests;
 
-import org.eclipse.core.expressions.PropertyTester;
+public class QuickUpdateJobTester extends SingletonJobTester {
 
-import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
-
-public class QuickUpdateJobTester extends PropertyTester {
-    private static final String IS_JOB_RUNNING = "isQuickUpdateRunning"; //$NON-NLS-1$
+    private static final String PROP = "isQuickUpdateRunning"; //$NON-NLS-1$
+    public static final String EVAL_PROP = makeEvalProperty(PROP);
 
     @Override
-    public boolean test(Object receiver, String property, Object[] args,
-            Object expectedValue) {
-        if (IS_JOB_RUNNING.equals(property)) {
-            return ((SQLEditor) receiver).isQuickUpdateJobInProcessing();
-        }
-        return false;
+    public String getProperty() {
+        return PROP;
+    }
+
+    @Override
+    public String getEvalProperty() {
+        return EVAL_PROP;
     }
 }

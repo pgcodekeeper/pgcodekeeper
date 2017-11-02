@@ -106,32 +106,22 @@
             class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
             <enabledWhen>
-                <or>
-                   <and>
-                        <with variable="activeEditorId">
+               <and>
+                    <with variable="activeEditorId">
+                        <or>
                             <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
                             </equals>
-                         </with>
-                         <with variable="activeEditor">
-                            <not>
-                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
-                                </test>
-                            </not>
-                        </with>
-                   </and>
-                   <and>
-                        <with variable="activeEditorId">
                             <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
-                        </with>
-                        <with variable="activeEditor">
-                            <not>
-                                <test property="ru.taximaxim.codekeeper.ui.isGetChangesEditorRunning">
-                                </test>
-                            </not>
-                        </with>
-                    </and>
-                </or>
+                        </or>
+                     </with>
+                     <with variable="activeEditor">
+                        <not>
+                            <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
+                            </test>
+                        </not>
+                    </with>
+               </and>
             </enabledWhen>
         </handler>
         <handler

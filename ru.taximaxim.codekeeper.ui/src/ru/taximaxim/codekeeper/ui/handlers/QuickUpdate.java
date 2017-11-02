@@ -20,13 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -52,9 +47,11 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class QuickUpdate extends AbstractHandler {
@@ -83,14 +80,9 @@ public class QuickUpdate extends AbstractHandler {
             return null;
         }
 
-        QuickUpdateJob quickUpdateJob = new QuickUpdateJob(editor, file, dbInfo, textSnapshot);
-        quickUpdateJob.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                editor.setLastDb(dbInfo);
-            }
-        });
+        QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
         quickUpdateJob.schedule();
+        editor.saveLastDb(dbInfo);
 
         return null;
     }
@@ -98,27 +90,23 @@ public class QuickUpdate extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        IEditorInput input = editor.getEditorInput();
-        return editor instanceof SQLEditor && input instanceof IFileEditorInput
-                && PgUIDumpLoader.isInProject(ResourceUtil.getFile(input));
+        return editor instanceof SQLEditor && PgUIDumpLoader.isInProject(editor.getEditorInput());
     }
 }
 
-class QuickUpdateJob extends Job {
+class QuickUpdateJob extends SingletonEditorJob {
 
     private static final int STEPS = 7;
 
     private final IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-    private final SQLEditor editor;
     private final IFile file;
     private final PgDbProject proj;
     private final DbInfo dbinfo;
     private final byte[] textSnapshot;
     private SubMonitor monitor;
 
-    public QuickUpdateJob(SQLEditor editor, IFile file, DbInfo dbInfo, byte[] textSnapshot) {
-        super(Messages.QuickUpdate_quick_update);
-        this.editor = editor;
+    public QuickUpdateJob(IFile file, DbInfo dbInfo, byte[] textSnapshot, SQLEditor editor) {
+        super(Messages.QuickUpdate_quick_update, editor, QuickUpdateJobTester.EVAL_PROP);
         this.file = file;
         this.proj = new PgDbProject(file.getProject());
         this.dbinfo = dbInfo;
@@ -131,7 +119,6 @@ class QuickUpdateJob extends Job {
             Log.log(Log.LOG_INFO, "QuickUpdate starting"); //$NON-NLS-1$
             this.monitor = SubMonitor.convert(monitor, STEPS);
 
-            editor.setQuickUpdateJobInProcessing(true);
             doRun();
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
@@ -139,7 +126,6 @@ class QuickUpdateJob extends Job {
             return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
-            editor.setQuickUpdateJobInProcessing(false);
         }
         return Status.OK_STATUS;
     }

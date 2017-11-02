@@ -15,7 +15,6 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -25,9 +24,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -51,25 +49,21 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IURIEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.DangerStatement;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -86,27 +80,24 @@ import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROP_TEST;
-import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 
 public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceChangeListener {
+
     public static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     public static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
     public static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
@@ -116,25 +107,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     static final String CONTENT_ASSIST = "ContentAssist"; //$NON-NLS-1$
 
-    private final XmlHistory history;
-
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private SqlEditorPartListener partListener;
 
-    private volatile boolean isRunning;
-    private Thread scriptThread;
-
     private DbInfo currentDB;
-
-    private volatile boolean updateDdlJobInProcessing;
-    private volatile boolean quickUpdateJobInProcessing;
 
     private Composite parentComposite;
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
 
-    private final Listener list = e -> {
+    private final Listener parserListener = e -> {
         if (parentComposite == null) {
             return;
         }
@@ -145,93 +128,29 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                     fOutlinePage.externalRefresh();
                 }
             }
-        });
-    };
-
-    private final Listener parserListener = e -> {
-        if (parentComposite == null) {
-            return;
-        }
-        UiSync.exec(parentComposite, () -> {
-            if (!getSourceViewer().getTextWidget().isDisposed()) {
+            if (getSourceViewer() != null && getSourceViewer().getTextWidget() != null
+                    && !getSourceViewer().getTextWidget().isDisposed()) {
                 setLineBackground();
             }
         });
     };
 
-    public SQLEditor() {
-        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED,
-                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT,
-                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
+    public void saveLastDb(DbInfo lastDb) {
+        saveLastDb(lastDb, getEditorInput());
     }
 
-    public boolean isGetChangesJobInProcessing() {
-        IEditorPart activeEditor = getEditorSite().getPage().getActiveEditor();
-        if(activeEditor == null) {
-            return false;
-        }
-
-        IEditorInput editorInput = activeEditor.getEditorInput();
-        if(editorInput instanceof IFileEditorInput) {
-            IProject proj = ((IFileEditorInput)editorInput).getFile().getProject();
-
-            IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-            if(workbenchWindow == null) {
-                return false;
-            }
-
-            IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
-            for (IEditorReference ref : workbenchPage.getEditorReferences()) {
-                IEditorPart editor = ref.getEditor(true);
-
-                if ((editor != null) && (editor instanceof ProjectEditorDiffer)) {
-                    ProjectEditorDiffer projEditor = (ProjectEditorDiffer)editor;
-
-                    if (projEditor.getProject().equals(proj)) {
-                        return projEditor.isGetChangesJobInProcessing();
-                    }
+    public static void saveLastDb(DbInfo lastDb, IEditorInput inputForProject) {
+        IResource res = ResourceUtil.getResource(inputForProject);
+        if (res != null) {
+            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
+            if (prefs != null) {
+                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.toString());
+                try {
+                    prefs.flush();
+                } catch (BackingStoreException ex) {
+                    Log.log(ex);
                 }
             }
-        }
-
-        return false;
-    }
-
-    public boolean isUpdateDdlJobInProcessing() {
-        return updateDdlJobInProcessing;
-    }
-
-    public void setUpdateDdlJobInProcessing(boolean updateDdlJobInProcessing) {
-        this.updateDdlJobInProcessing = updateDdlJobInProcessing;
-        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.UPDATE_DDL_RUNNING);
-    }
-
-    public boolean isQuickUpdateJobInProcessing() {
-        return quickUpdateJobInProcessing;
-    }
-
-    public void setQuickUpdateJobInProcessing(boolean quickUpdateJobInProcessing) {
-        this.quickUpdateJobInProcessing = quickUpdateJobInProcessing;
-        getSite().getService(IEvaluationService.class).requestEvaluation(PROP_TEST.QUICK_UPDATE_RUNNING);
-    }
-
-    public void setLastDb(DbInfo lastDb) {
-        IEditorInput editorInput = getEditorSite().getPage().getActiveEditor().getEditorInput();
-        if(editorInput instanceof IFileEditorInput) {
-            PgDbProject proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
-            proj.getPrefs().put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.toString());
-        }
-    }
-
-    public DbInfo getLastDb() {
-        IEditorInput editorInput = getEditorSite().getPage().getActiveEditor().getEditorInput();
-        if(editorInput instanceof IFileEditorInput) {
-            PgDbProject proj = new PgDbProject(((IFileEditorInput)editorInput).getFile().getProject());
-            List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-            return lastStore.isEmpty() ? null : lastStore.get(0);
-        } else {
-            return null;
         }
     }
 
@@ -240,13 +159,21 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public DbInfo getCurrentDb() {
-        DbInfo db = (currentDB != null) ? currentDB : getLastDb();
-
-        if(DbInfo.preferenceToStore(Activator.getDefault().getPreferenceStore().getString(PREF.DB_STORE))
-                .contains(db)) {
-            return db;
+        if (currentDB != null) {
+            return currentDB;
         }
 
+        IResource res = ResourceUtil.getResource(getEditorInput());
+        if (res != null) {
+            IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
+            if (prefs != null) {
+                List<DbInfo> lastStore = DbInfo.preferenceToStore(
+                        prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
+                if (!lastStore.isEmpty()) {
+                    return lastStore.get(0);
+                }
+            }
+        }
         return null;
     }
 
@@ -299,7 +226,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.doSave(progressMonitor);
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (!isProject(res)) {
+            if (res == null || !PgUIDumpLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
         } catch (IOException | InterruptedException | LicenseException | CoreException ex) {
@@ -329,21 +256,20 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         } catch (InterruptedException | IOException | LicenseException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
         }
-        parser.addListener(list);
+        parser.addListener(parserListener);
 
         fOutlinePage = new SQLEditorContentOutlinePage(this);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 
-        partListener = new SqlEditorPartListener(this);
+        partListener = new SqlEditorPartListener();
         getSite().getPage().addPartListener(partListener);
-        getParser().addListener(parserListener);
     }
 
     private PgDbParser initParser() throws InterruptedException, IOException, LicenseException, CoreException {
         IEditorInput in = getEditorInput();
 
         IResource res = ResourceUtil.getResource(in);
-        if (isProject(res)) {
+        if (res != null && PgUIDumpLoader.isInProject(res)) {
             return PgDbParser.getParser(res.getProject());
         }
 
@@ -378,15 +304,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return false;
     }
 
-    /**
-     * @param {@link IFileEditorInput} {@link IResource} or null
-     * @throws CoreException
-     */
-    private boolean isProject(IResource res) throws CoreException {
-        return res == null ? false : res.getProject().hasNature(NATURE.ID)
-                && PgUIDumpLoader.isInProject(res);
-    }
-
     PgDbParser getParser() {
         return parser;
     }
@@ -394,11 +311,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     @Override
     public void dispose() {
         getSite().getPage().removePartListener(partListener);
-        getParser().removeListener(parserListener);
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         if (parser != null) {
-            parser.removeListener(list);
+            parser.removeListener(parserListener);
         }
         if (errorTitleImage != null) {
             errorTitleImage.dispose();
@@ -406,8 +322,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         super.dispose();
     }
 
-    private String getReplacedString(String dbInfo, DbInfo externalDbInfo) {
-        String s = dbInfo;
+    private String getReplacedCmd(String cmd, DbInfo externalDbInfo) {
+        String s = cmd;
         if (externalDbInfo != null) {
             if (externalDbInfo.getDbHost() != null) {
                 s = s.replace(DB_HOST_PLACEHOLDER, externalDbInfo.getDbHost());
@@ -431,18 +347,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     private void afterScriptFinished(final String scriptOutput) {
-        UiSync.exec(parentComposite, new Runnable() {
+        UiSync.exec(parentComposite, () -> {
+            if (!parentComposite.isDisposed()) {
+                parentComposite.setCursor(null);
 
-            @Override
-            public void run() {
-                if (!isUpdateDdlJobInProcessing()) {
-                    parentComposite.setCursor(null);
-
-                    if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                        new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
-                    }
+                if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                    new ScriptRunResultDialog(parentComposite.getShell(), scriptOutput).open();
                 }
-                isRunning = false;
             }
         });
     }
@@ -452,116 +363,86 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     }
 
     public void updateDdl() {
-        if (!isRunning) {
-            final String textRetrieved;
-            Point point = getSourceViewer().getSelectedRange();
-            IDocument document = getSourceViewer().getDocument();
-            if (point.y == 0){
-                textRetrieved = document.get();
-            } else {
-                try {
-                    textRetrieved = document.get(point.x, point.y);
-                } catch (BadLocationException ble){
-                    Log.log(Log.LOG_WARNING, ble.getMessage());
-                    ExceptionNotifier.notifyDefault(Messages.SqlEditor_selected_text_error, ble);
-                    return;
-                }
-            }
-            // new runnable to unlock the UI thread
-            Runnable launcher;
-
-            if (!mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE)){
-                Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
-
-                DbInfo dbInfo = getCurrentDb();
-                if (dbInfo == null){
-                    ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
-                    return;
-                }
-
-                final String jdbcHost = dbInfo.getDbHost();
-                final int jdbcPort = dbInfo.getDbPort();
-                final String jdbcUser = dbInfo.getDbUser();
-                final String jdbcPass = dbInfo.getDbPass();
-                final String jdbcDbName = dbInfo.getDbName();
-
-                launcher = new Runnable() {
-
-                    @Override
-                    public void run() {
-                        String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
-                        try{
-                            setUpdateDdlJobInProcessing(true);
-
-                            JdbcConnector connector = new JdbcConnector(
-                                    jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                                    ApgdiffConsts.UTC);
-                            output = new JdbcRunner(connector).runScript(textRetrieved);
-                            if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
-                                output = Messages.SqlEditor_jdbc_success;
-                                ProjectEditorDiffer.notifyDbChanged(dbInfo);
-                            }
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e.getLocalizedMessage(), e);
-                        } finally {
-                            setUpdateDdlJobInProcessing(false);
-
-                            // request UI change: button label changed
-                            afterScriptFinished(output);
-                        }
-                    }
-                };
-            } else {
-                Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
-                try {
-                    history.addHistoryEntry(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT));
-                } catch (IOException e) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.SqlScriptDialog_error_adding_command_history, e);
-                }
-                final List<String> command = new ArrayList<>(Arrays.asList(
-                        getReplacedString(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND_SCRIPT), currentDB)
-                        .split(" "))); //$NON-NLS-1$
-
-                launcher = new RunScriptExternal(textRetrieved, command);
-            }
-            // run thread that calls StdStreamRedirector.launchAndRedirect()
-            scriptThread = new Thread(launcher);
-            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    ExceptionNotifier.notifyDefault(
-                            Messages.sqlScriptDialog_exception_during_script_execution,e);
-                }
-            });
-
-            ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
-            scriptThreadJobWrapper.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    setLastDb(currentDB);
-                }
-            });
-            scriptThreadJobWrapper.schedule();
-
-            isRunning = true;
-            parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
-            // case Stop script
-        } else {
-            ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-            Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
-
-            scriptThread.interrupt();
-            isRunning = false;
+        DbInfo dbInfo = currentDB;
+        if (dbInfo == null){
+            ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
+            return;
         }
+
+        final String textRetrieved;
+        Point point = getSourceViewer().getSelectedRange();
+        IDocument document = getSourceViewer().getDocument();
+        if (point.y == 0){
+            textRetrieved = document.get();
+        } else {
+            try {
+                textRetrieved = document.get(point.x, point.y);
+            } catch (BadLocationException ble){
+                Log.log(Log.LOG_WARNING, ble.getMessage());
+                ExceptionNotifier.notifyDefault(Messages.SqlEditor_selected_text_error, ble);
+                return;
+            }
+        }
+
+        Runnable launcher;
+        if (!mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE)){
+            Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
+
+            final String jdbcHost = dbInfo.getDbHost();
+            final int jdbcPort = dbInfo.getDbPort();
+            final String jdbcUser = dbInfo.getDbUser();
+            final String jdbcPass = dbInfo.getDbPass();
+            final String jdbcDbName = dbInfo.getDbName();
+
+            launcher = () -> {
+                String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
+                try{
+                    JdbcConnector connector = new JdbcConnector(
+                            jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
+                            ApgdiffConsts.UTC);
+                    output = new JdbcRunner(connector).runScript(textRetrieved);
+                    if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
+                        output = Messages.SqlEditor_jdbc_success;
+                        ProjectEditorDiffer.notifyDbChanged(dbInfo);
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException(e.getLocalizedMessage(), e);
+                } finally {
+                    afterScriptFinished(output);
+                }
+            };
+        } else {
+            Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
+            final List<String> command = new ArrayList<>(Arrays.asList(
+                    getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo)
+                    .split(" "))); //$NON-NLS-1$
+
+            launcher = new RunScriptExternal(textRetrieved, command);
+        }
+
+        Thread scriptThread = new Thread(launcher);
+        scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                ExceptionNotifier.notifyDefault(
+                        Messages.sqlScriptDialog_exception_during_script_execution,e);
+            }
+        });
+
+        ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper.schedule();
+
+        saveLastDb(dbInfo);
+        parentComposite.setCursor(parentComposite.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
     }
 
-    private class ScriptThreadJobWrapper extends Job {
+    private class ScriptThreadJobWrapper extends SingletonEditorJob {
+
         private final Thread scriptThread;
 
         ScriptThreadJobWrapper(Thread scriptThread) {
-            super(Messages.SqlEditor_update_ddl);
+            super(Messages.SqlEditor_update_ddl, SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.scriptThread = scriptThread;
         }
 
@@ -569,27 +450,26 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         protected IStatus run(IProgressMonitor monitor) {
             try {
                 Log.log(Log.LOG_INFO, "Update DDL starting"); //$NON-NLS-1$
-                monitor.beginTask(Messages.SqlEditor_update_ddl, 100);
-                monitor.worked(50);
+                SubMonitor.convert(monitor).setTaskName(Messages.SqlEditor_update_ddl);
 
                 scriptThread.start();
 
                 while(scriptThread.isAlive()) {
+                    Thread.sleep(20);
                     if(monitor.isCanceled()) {
                         ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
                         Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
 
                         scriptThread.interrupt();
-                        isRunning = false;
                         return Status.CANCEL_STATUS;
                     }
                 }
-
-                monitor.worked(50);
+                return Status.OK_STATUS;
+            } catch (InterruptedException ex) {
+                return Status.CANCEL_STATUS;
             } finally {
                 monitor.done();
             }
-            return Status.OK_STATUS;
         }
     }
 
@@ -600,12 +480,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (delta != null && file != null) {
             IResourceDelta child = delta.findMember(file.getFullPath());
             if (child != null && (child.getFlags() & IResourceDelta.MARKERS) != 0) {
-                UiSync.exec(parentComposite, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!parentComposite.isDisposed()) {
-                            firePropertyChange(IWorkbenchPart.PROP_TITLE);
-                        }
+                UiSync.exec(parentComposite, () -> {
+                    if (!parentComposite.isDisposed()) {
+                        firePropertyChange(IWorkbenchPart.PROP_TITLE);
                     }
                 });
             }
@@ -707,20 +584,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
     }
 
-    private static class SqlEditorPartListener extends IPartAdapter2 {
-        private final SQLEditor sqlEditor;
-
-        public SqlEditorPartListener(SQLEditor sqlEditor) {
-            this.sqlEditor = sqlEditor;
-        }
+    private class SqlEditorPartListener extends IPartAdapter2 {
 
         @Override
         public void partClosed(IWorkbenchPartReference partRef) {
-            if (partRef.getPart(false) == sqlEditor && !PlatformUI.getWorkbench().isClosing()
-                    && sqlEditor.getEditorInput() instanceof IFileEditorInput) {
-                IFile f = ((IFileEditorInput) sqlEditor.getEditorInput()).getFile();
+            if (partRef.getPart(false) == SQLEditor.this && !PlatformUI.getWorkbench().isClosing()
+                    && getEditorInput() instanceof IFileEditorInput) {
+                IFile f = ((IFileEditorInput) getEditorInput()).getFile();
                 if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
-                    sqlEditor.askDeleteScript(f);
+                    askDeleteScript(f);
                 }
             }
         }
