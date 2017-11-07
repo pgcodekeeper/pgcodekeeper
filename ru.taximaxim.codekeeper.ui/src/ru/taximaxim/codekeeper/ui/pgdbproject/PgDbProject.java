@@ -17,13 +17,18 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 public class PgDbProject {
 
     private final IProject project;
-    private final IEclipsePreferences prefs;
+    private IEclipsePreferences prefs;
 
     public IProject getProject() {
         return project;
     }
 
     public IEclipsePreferences getPrefs() {
+        IEclipsePreferences prefs = this.prefs;
+        if (prefs == null) {
+            prefs = getPrefs(project);
+            this.prefs = prefs;
+        }
         return prefs;
     }
 
@@ -56,7 +61,6 @@ public class PgDbProject {
 
     public PgDbProject(IProject newProject) {
         this.project = newProject;
-        this.prefs = getPrefs(newProject);
     }
 
     public static PgDbProject createPgDbProject(IProject newProject, URI location)
