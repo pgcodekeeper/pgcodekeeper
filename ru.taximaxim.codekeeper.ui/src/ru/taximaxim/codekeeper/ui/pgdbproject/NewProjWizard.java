@@ -135,13 +135,22 @@ implements IExecutableExtension, INewWizard {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
 
+            String charset = pageDb.getCharset();
+            String timezone = pageDb.getTimeZone();
+
             if (!checkMarkerExist()) {
-                String charset = pageDb.getCharset();
-                if (!charset.isEmpty() &&
-                        !ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset().equals(charset)) {
-                    props.setProjectCharset(charset);
+                if (charset.isEmpty()) {
+                    charset = ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
                 }
-                String timezone = pageDb.getTimeZone();
+                getContainer().run(true, true, new InitProjectFromSource(charset,
+                        props.getPathToProject() , getDbSource(props)));
+            }
+            initSuccess = true;
+
+            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+
+            if (!checkMarkerExist()) {
+                props.setProjectCharset(charset);
                 if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                 }
@@ -150,12 +159,7 @@ implements IExecutableExtension, INewWizard {
                 } catch (BackingStoreException e) {
                     Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }
-
-                getContainer().run(true, true, new InitProjectFromSource(props, getDbSource(props)));
             }
-            initSuccess = true;
-
-            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
 
             IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
             workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);

@@ -11,18 +11,21 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class SequencesReader extends JdbcReader {
 
     public static class SequencesReaderFactory extends JdbcReaderFactory {
 
-        public SequencesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public SequencesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
@@ -38,7 +41,7 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgSequence sequence = getSequence(result, schema.getName());
         loader.monitor.worked(1);
         if (sequence != null) {
@@ -46,7 +49,7 @@ public class SequencesReader extends JdbcReader {
         }
     }
 
-    private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
+    private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName, "");
@@ -60,12 +63,20 @@ public class SequencesReader extends JdbcReader {
         loader.setOwner(s, res.getLong(CLASS_RELOWNER));
 
         // PRIVILEGES
-        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclArray"), s.getOwner(), null);
+        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
+
+        if(SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            s.setStartWith(res.getString("seqstart"));
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
+            s.setCache(res.getString("seqcache"));
+            s.setCycle(res.getBoolean("seqcycle"));
+        }
+
         return s;
     }
 

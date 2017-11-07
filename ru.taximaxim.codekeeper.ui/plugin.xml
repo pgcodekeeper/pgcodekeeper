@@ -338,12 +338,12 @@
                     mnemonic="%command.mnemonic.diffWizard"
                     style="push">
                 </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-                    label="%command.label.improvePerformanceJdbc"
-                    mnemonic="%command.mnemonic.improvePerformanceJdbc"
-                    style="push">
-                </command>
+                <menu label="%command.label.improvePerformanceJdbc">
+                    <dynamic
+                        class="ru.taximaxim.codekeeper.ui.menuitems.JdbcPerfVersionsDynamic"
+                        id="ru.taximaxim.codekeeper.ui.dynamicJdbcPerf">
+                    </dynamic>
+                </menu>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator4"
                     visible="true">
@@ -355,10 +355,32 @@
                     style="push">
                 </command>
                 <visibleWhen checkEnabled="false">
-                    <with variable="activeWorkbenchWindow.activePerspective">
-                        <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
-                        </equals>
-                    </with>
+                    <or>
+                        <with variable="activeWorkbenchWindow.activePerspective">
+                            <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                            </equals>
+                        </with>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
+                                </equals>
+                            </or>
+                        </with>
+                        <with variable="selection">
+                            <iterate ifEmpty="false">
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test
+                                        property="org.eclipse.core.resources.projectNature"
+                                        value="ru.taximaxim.codekeeper.ui.nature">
+                                    </test>
+                                </adapt>
+                            </iterate>
+                        </with>
+                    </or>
                 </visibleWhen>
             </menu>
         </menuContribution>

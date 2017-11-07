@@ -81,6 +81,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -176,16 +177,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             throw new PartInitException(in.getError().getLocalizedMessage(), ex);
         }
 
+        setInput(input);
+        setSite(site);
+        setPartName(in.getName());
+
         proj = new PgDbProject(in.getProject());
         sp = new ProjectEditorSelectionProvider(proj.getProject());
-        setPartName(in.getName());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
             askPerspectiveChange(site);
         }
-        setSite(site);
-        setInput(input);
         getSite().setSelectionProvider(sp);
     }
 
@@ -481,6 +483,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+
+                newDiffer.getErrors()
+                .forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(
+                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.getFullMessage(k)),
+                        StatusManager.SHOW)));
             }
         });
         job.setUser(true);

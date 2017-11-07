@@ -1,10 +1,9 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -17,14 +16,16 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
 
     public static class TypesReaderFactory extends JdbcReaderFactory {
 
-        public TypesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public TypesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
@@ -38,7 +39,7 @@ public class TypesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgStatement typeOrDomain = getTypeDomain(result, schema.getName());
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
@@ -49,7 +50,7 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgStatement getTypeDomain(ResultSet res, String schemaName) throws SQLException {
+    private PgStatement getTypeDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
@@ -68,7 +69,7 @@ public class TypesReader extends JdbcReader {
         return st;
     }
 
-    private PgDomain getDomain(ResultSet res, String schemaName) throws SQLException {
+    private PgDomain getDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
@@ -98,11 +99,10 @@ public class TypesReader extends JdbcReader {
 
         d.setNotNull(res.getBoolean("dom_notnull"));
 
-        Array arrConnames = res.getArray("dom_connames");
-        if (arrConnames != null) {
-            String[] connames = (String[]) arrConnames.getArray();
-            String[] condefs = (String[]) res.getArray("dom_condefs").getArray();
-            String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
+        String[] connames = res.getArray("dom_connames", String.class);
+        if (connames != null) {
+            String[] condefs = res.getArray("dom_condefs", String.class);
+            String[] concomments = res.getArray("dom_concomments", String.class);
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
@@ -125,7 +125,7 @@ public class TypesReader extends JdbcReader {
         return d;
     }
 
-    private PgType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
+    private PgType getType(ResultSetWrapper res, String schemaName, String typtype) throws WrapperAccessException {
         String name = res.getString("typname");
         loader.setCurrentObject(new GenericColumn(schemaName, name, DbObjType.TYPE));
         PgType t;
@@ -229,18 +229,17 @@ public class TypesReader extends JdbcReader {
         case "c":
             t = new PgType(name, PgTypeForm.COMPOSITE, "");
 
-            Array arrAttnames = res.getArray("comp_attnames");
-            if (arrAttnames == null) {
+            String[] attnames = res.getArray("comp_attnames", String.class);
+            if (attnames == null) {
                 break;
             }
-            String[] attnames = (String[]) arrAttnames.getArray();
-            String[] atttypes = (String[]) res.getArray("comp_atttypdefns").getArray();
-            Long[] atttypeids = (Long[]) res.getArray("comp_atttypids").getArray();
-            Long[] attcollations = (Long[]) res.getArray("comp_attcollations").getArray();
-            Long[] atttypcollations = (Long[]) res.getArray("comp_atttypcollations").getArray();
-            String[] attcollationnames = (String[]) res.getArray("comp_attcollationnames").getArray();
-            String[] attcollationnspnames = (String[]) res.getArray("comp_attcollationnspnames").getArray();
-            String[] attcomments = (String[]) res.getArray("comp_attcomments").getArray();
+            String[] atttypes = res.getArray("comp_atttypdefns", String.class);
+            Long[] atttypeids = res.getArray("comp_atttypids", Long.class);
+            Long[] attcollations = res.getArray("comp_attcollations", Long.class);
+            Long[] atttypcollations = res.getArray("comp_atttypcollations", Long.class);
+            String[] attcollationnames = res.getArray("comp_attcollationnames", String.class);
+            String[] attcollationnspnames = res.getArray("comp_attcollationnspnames", String.class);
+            String[] attcomments = res.getArray("comp_attcomments", String.class);
 
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
@@ -263,11 +262,10 @@ public class TypesReader extends JdbcReader {
         case "e":
             t = new PgType(name, PgTypeForm.ENUM, "");
 
-            Array arrEnums = res.getArray("enums");
-            if (arrEnums == null) {
+            String[] enums = res.getArray("enums", String.class);
+            if (enums == null) {
                 break;
             }
-            String[] enums = (String[]) arrEnums.getArray();
             for (String enum_ : enums) {
                 t.addEnum(PgDiffUtils.quoteString(enum_));
             }

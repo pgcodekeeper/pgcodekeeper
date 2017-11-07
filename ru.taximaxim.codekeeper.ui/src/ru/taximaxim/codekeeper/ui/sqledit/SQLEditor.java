@@ -81,6 +81,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -288,7 +289,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, LicenseException, CoreException {
-        if (res instanceof IFile) {
+        if (res instanceof IFile && res.getProject().hasNature(NATURE.ID)) {
             parser.getObjFromProjFile((IFile) res, monitor);
             return true;
         }

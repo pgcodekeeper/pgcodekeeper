@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -108,20 +109,20 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     /**
-     * Loads database schema from a ModelExporter directory tree. The root
-     * directory must contain a listing.lst file for ordered list of files.
+     * Loads database schema from a ModelExporter directory tree.
      *
      * @return database schema
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
-            PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+            PgDiffArguments arguments, IProgressMonitor monitor,
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
                     throws InterruptedException, IOException, LicenseException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
-                loadSubdir(iFolder, db, monitor, funcBodies);
+                loadSubdir(iFolder, db, monitor, funcBodies, errors);
             }
         }
 
@@ -138,7 +139,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             for (String dirSub : DIR_LOAD_ORDER) {
                 IFolder iFolder = schemaFolder.getFolder(dirSub);
                 if (iFolder.exists()) {
-                    loadSubdir(iFolder, db, monitor, funcBodies);
+                    loadSubdir(iFolder, db, monitor, funcBodies, errors);
                 }
             }
         }
@@ -147,16 +148,18 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+                    throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db, funcBodies);
+                loadFile((IFile) resource, monitor, db, funcBodies, errors);
             }
         }
     }
 
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies) throws IOException, CoreException, InterruptedException {
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+                    throws IOException, CoreException, InterruptedException {
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
 
@@ -165,6 +168,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
             loader.loadFile(db);
             if (funcBodies != null) {
                 funcBodies.addAll(loader.getFuncBodyReferences());
+            }
+            if (errors != null) {
+                errors.put(file.getFullPath().toOSString(), loader.getErrors());
             }
         }
     }
@@ -210,11 +216,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
                     loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            null, db, funcBodies);
+                            null, db, funcBodies, null);
                 }
             }
 
-            loadFile(file, mon, db, funcBodies);
+            loadFile(file, mon, db, funcBodies, null);
         }
         return db;
     }
