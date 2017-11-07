@@ -70,7 +70,6 @@ public final class Messages extends NLS {
     public static String SqlEditor_script_delete_dialog_message;
     public static String SqlEditor_script_delete_dialog_title;
     public static String SqlEditor_selected_text_error;
-    public static String SqlEditor_tooltip_run_selected;
 
     public static String SqlEditor_update_ddl;
 
@@ -188,17 +187,12 @@ public final class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
-    public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
     public static String dbUpdatePrefPage_check_function_bodies;
     public static String dbUpdatePrefPage_switch_on_off_using;
     public static String dbUpdatePrefPage_use_command_for_ddl_update;
     public static String dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script;
-    public static String dbUpdatePrefPage_error_loading_command_history;
 
     public static String dbUpdatePrefPage_script_add_transaction;
-
-    public static String dbUpdatePrefPage_error_getting_commands_list;
-    public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
     public static String DbStorePicker_choose_dir;
@@ -436,7 +430,6 @@ public final class Messages extends NLS {
 
     public static String ProjectUpdater_old_db_null;
 
-    public static String SqlScriptDialog_error_adding_command_history;
     public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
@@ -444,12 +437,6 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
-
-    public static String StringPrefListEditor_already_resent;
-
-    public static String StringPrefListEditor_enter_string;
-
-    public static String StringPrefListEditor_new_string;
 
     public static String TreeDiffer_unknown_error;
 
