@@ -10,9 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -41,7 +38,6 @@ public class CreateView extends ParserAbstract {
         }
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
-            UtilExpr.analyze(new SelectStmt(ctx.v_query), new Select(schema.getName()), view);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {

@@ -32,3 +32,4 @@ Import-Package: javax.mail;version="[1.4.0,2.0.0)",
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor
+Export-Package: ru.taximaxim.codekeeper.ui

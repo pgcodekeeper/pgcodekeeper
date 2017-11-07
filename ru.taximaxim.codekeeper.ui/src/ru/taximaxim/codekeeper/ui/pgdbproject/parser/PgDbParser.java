@@ -157,7 +157,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         LicensePrefs.setLicense(args);
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromIProject(
                 proj, args, mon, funcBodies, null);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());

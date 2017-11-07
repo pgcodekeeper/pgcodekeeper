@@ -130,10 +130,6 @@ public abstract class ParserAbstract {
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-                VexContext defExpression = argument.function_def_value().def_value;
-                ValueExpr vex = new ValueExpr(defSchemaName);
-                vex.analyze(new Vex(defExpression));
-                function.addAllDeps(vex.getDepcies());
             }
 
             function.addArgument(arg);

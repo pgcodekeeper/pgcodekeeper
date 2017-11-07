@@ -2,11 +2,21 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.Map;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -101,11 +111,11 @@ public class RulesReader extends JdbcReader {
                 },
                 (ctx, db) -> {
                     if (ctx.WHERE() != null) {
-                        CreateRewrite.analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
+                        analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
                     }
 
                     for (Rewrite_commandContext cmd : ctx.commands) {
-                        CreateRewrite.analyzeRewriteCommandCtx(cmd, r, loader.args, schemaName);
+                        analyzeRewriteCommandCtx(cmd, r, schemaName);
                     }
                 });
 
@@ -115,5 +125,37 @@ public class RulesReader extends JdbcReader {
             r.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return r;
+    }
+
+    private static VexContext analyzeRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
+            String schemaName) {
+        VexContext exp = ctx.vex();
+        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
+        vex.addReference("new", null);
+        vex.addReference("old", null);
+        vex.analyze(new Vex(exp));
+        rule.addAllDeps(vex.getDepcies());
+        return exp;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static void analyzeRewriteCommandCtx(Rewrite_commandContext cmd, PgRule rule,
+            String schemaName) {
+        ParserRuleContext parser = null;
+        AbstractExprWithNmspc analyzer = null;
+        if ((parser = cmd.select_stmt()) != null) {
+            analyzer = new Select(schemaName);
+        } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
+            analyzer = new Insert(schemaName);
+        } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
+            analyzer = new Delete(schemaName);
+        } else if ((parser = cmd.update_stmt_for_psql()) != null) {
+            analyzer = new Update(schemaName);
+        }
+        if (parser != null && analyzer != null) {
+            analyzer.addReference("new", null);
+            analyzer.addReference("old", null);
+            UtilExpr.analyze(parser, analyzer, rule);
+        }
     }
 }

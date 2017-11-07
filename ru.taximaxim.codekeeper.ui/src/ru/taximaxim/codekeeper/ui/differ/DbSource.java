@@ -202,7 +202,7 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(filesCount);
 
         IEclipsePreferences pref = proj.getPrefs();
-        return PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+        return PgDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, null, errors);
