@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -29,24 +31,29 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -194,10 +201,7 @@ public class PgDumpLoader implements AutoCloseable {
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                 monitor, monitoringLevel, listeners);
 
-        /////
         dbAnalyze(intoDb, false, false);
-        //        testMethodForCheckDeps("public", intoDb);
-        /////
 
         return intoDb;
     }
@@ -311,53 +315,46 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        /////
         dbAnalyze(db, true, true);
-        testMethodForCheckDeps("public", db);
-        /////
 
         arguments.getLicense().verifyDb(db);
         return db;
     }
 
     private static void dbAnalyze(PgDatabase db, boolean analyzeTriggersRules, boolean analyzeFunctions) {
+        Map<String, Set<ParserRuleContext>> stmtCtxMap = db.getStatementContexts();
+        Set<ParserRuleContext> setCtx = null;
+
         for (PgSchema s : db.getSchemas()) {
             for (PgView v : s.getViews()) {
-                UtilExpr.analyze(new SelectStmt(AntlrParser.makeBasicParser(SQLParser.class, v.getQuery(), null).select_stmt()),
+                setCtx = stmtCtxMap.get(v.getQualifiedName());
+                Create_view_statementContext createViewCtx = (Create_view_statementContext) setCtx.iterator().next();
+                UtilExpr.analyze(new SelectStmt(createViewCtx.select_stmt()),
                         new Select(s.getName()), v);
             }
 
             if (analyzeTriggersRules) {
                 for (PgTable t : s.getTables()) {
                     for (PgRule r : t.getRules()) {
-                        SQLParser p = null;
+                        setCtx = stmtCtxMap.get(r.getQualifiedName());
+                        Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) setCtx.iterator().next();
 
-                        if (r.getCondition() != null) {
-                            p = AntlrParser.makeBasicParser(SQLParser.class, r.getRawStatement().substring(7), null);
-                            ValueExprWithNmspc vex = new ValueExprWithNmspc(s.getName());
-                            vex.addReference("new", null);
-                            vex.addReference("old", null);
-                            vex.analyze(new Vex(p.create_rewrite_statement().vex()));
-                            r.addAllDeps(vex.getDepcies());
-                        }
+                        RulesReader.analyzeRewriteCreateStmtCtx(createRuleCtx, r, s.getName());
 
                         if (!r.getCommands().isEmpty()) {
-                            p = AntlrParser.makeBasicParser(SQLParser.class, r.getRawStatement().substring(7), null);
-                            for (Rewrite_commandContext cmd : p.create_rewrite_statement().commands) {
+                            for (Rewrite_commandContext cmd : createRuleCtx.commands) {
                                 RulesReader.analyzeRewriteCommandCtx(cmd, r, s.getName());
                             }
                         }
                     }
 
                     for (PgTrigger tr : t.getTriggers()) {
-                        String sqlWhen = tr.getWhen();
-                        if (sqlWhen != null) {
-                            SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, sqlWhen, null);
-                            ValueExprWithNmspc vex = new ValueExprWithNmspc(s.getName());
-                            vex.addReference("new", null);
-                            vex.addReference("old", null);
-                            vex.analyze(new Vex(p.when_trigger().when_expr));
-                            tr.addAllDeps(vex.getDepcies());
+                        setCtx = stmtCtxMap.get(tr.getQualifiedName());
+                        Create_trigger_statementContext createTriggerCtx = (Create_trigger_statementContext) setCtx.iterator().next();
+
+                        When_triggerContext whenCtx;
+                        if ((whenCtx = createTriggerCtx.when_trigger()) != null) {
+                            TriggersReader.analyzeWhenCtx(whenCtx, tr, s.getName());
                         }
                     }
                 }
@@ -365,100 +362,21 @@ public class PgDumpLoader implements AutoCloseable {
 
             if (analyzeFunctions) {
                 for (PgFunction f : s.getFunctions()) {
-                    for (Argument a : f.getArguments()) {
-                        String defVal = a.getDefaultExpression();
-                        if (defVal != null) {
-                            SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, defVal, null);
+                    setCtx = stmtCtxMap.get(f.getQualifiedName());
+                    Create_function_statementContext createFunctionCtx = (Create_function_statementContext) setCtx.iterator().next();
+
+                    Function_argsContext functionArgs = createFunctionCtx.function_parameters().function_args();
+                    for (Function_argumentsContext argument : functionArgs.function_arguments()) {
+                        if (argument.function_def_value() != null) {
+                            VexContext defExpression = argument.function_def_value().def_value;
                             ValueExpr vex = new ValueExpr(s.getName());
-                            vex.analyze(new Vex(p.vex_eof().vex().get(0)));
+                            vex.analyze(new Vex(defExpression));
                             f.addAllDeps(vex.getDepcies());
                         }
                     }
                 }
             }
         }
-    }
-
-    private static void testMethodForCheckDeps(String schemaName, PgDatabase db) {
-        PgSchema s = db.getSchema(schemaName);
-
-        if (s == null) {
-            return;
-        }
-
-        StringBuilder sbsb = new StringBuilder();
-        sbsb.append("\nSCHEMA: " + schemaName);
-
-        //        for (PgView v : s.getViews()) {
-        //
-        //            //            sbsb.append("\n  ").append(v.getName())
-        //            //            .append("\n   ").append(v.getQuery())
-        //            //            .append("\n ---   ").append(v.getRawStatement())
-        //            //            .append("\n----------\n");
-        //
-        //            sbsb.append("\n  ").append(v.getName());
-        //            for (GenericColumn dep : v.getDeps()) {
-        //                sbsb.append("\n   - ").append(dep);
-        //            }
-        //            sbsb.append("\n\n");
-        //        }
-
-        //        for (PgFunction f : s.getFunctions()) {
-        //            sbsb.append("\n  ").append(f.getName());
-        //            for (GenericColumn dep : f.getDeps()) {
-        //                sbsb.append("\n   - ").append(dep);
-        //            }
-        //            sbsb.append("\n\n");
-        //        }
-
-        for (PgTable t : s.getTables()) {
-
-            sbsb.append("\n table 't': === ").append(t.getName()).append(" ===")
-            .append("\n t.getRules().size(): ").append(t.getRules().size());
-
-            for (PgRule r : t.getRules()) {
-                sbsb.append("\n  ").append(r.getName());
-                for (GenericColumn dep : r.getDeps()) {
-                    sbsb.append("\n   - ").append(dep);
-                }
-                sbsb.append("\n\n");
-            }
-
-            sbsb.append("\n\n");
-
-        }
-
-        //        for (PgTable t : s.getTables()) {
-        //            PgTriggerContainer tCont = s.getTriggerContainer(t.getName());
-        //
-        //            sbsb.append("\n table 't': === ").append(t.getName()).append(" ===")
-        //            .append("\n t.getTriggers().size(): ").append(t.getTriggers().size())
-        //            .append("\n tCont.getTriggers().size(): ").append(tCont.getTriggers().size());
-        //
-        //            for (PgTrigger tr : tCont.getTriggers()) {
-        //                sbsb.append("\n  ").append(tr.getName());
-        //                for (GenericColumn dep : tr.getDeps()) {
-        //                    sbsb.append("\n   - ").append(dep);
-        //                }
-        //                sbsb.append("\n\n");
-        //            }
-        //
-        //            sbsb.append("\n\n");
-        //
-        //        }
-
-        //        for (PgTable t : s.getTables()) {
-        //            sbsb.append("\n  ").append(t.getName());
-        //            for (PgTrigger tr : t.getTriggers()) {
-        //                sbsb.append("\n  ").append(tr.getName());
-        //                for (GenericColumn dep : tr.getDeps()) {
-        //                    sbsb.append("\n   - ").append(dep);
-        //                }
-        //                sbsb.append("\n\n");
-        //            }
-        //        }
-
-        //        System.err.println(sbsb.toString());
     }
 
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
@@ -492,9 +410,6 @@ public class PgDumpLoader implements AutoCloseable {
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
         load(db);
 
-        // !!!!!!!!!
-        // = UIConsts =
-        // MARKER.ERROR = "ru.taximaxim.codekeeper.ui" + ".sql.errormarker"
         String markerError = "ru.taximaxim.codekeeper.ui.sql.errormarker";
 
         file.deleteMarkers(markerError, false, IResource.DEPTH_ZERO);

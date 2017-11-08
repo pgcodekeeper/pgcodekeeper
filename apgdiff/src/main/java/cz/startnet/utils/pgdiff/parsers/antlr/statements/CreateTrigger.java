@@ -97,16 +97,14 @@ public class CreateTrigger extends ParserAbstract {
                 trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
             }
         }
-        parseWhen(ctx.when_trigger(), trigger, schema.getName());
+
+        When_triggerContext whenCtx;
+        if ((whenCtx = ctx.when_trigger()) != null) {
+            trigger.setWhen(getFullCtxText(whenCtx.when_expr));
+        }
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
         .addTrigger(trigger);
         return trigger;
-    }
-
-    public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger, String schemaName) {
-        if (whenCtx != null) {
-            trigger.setWhen(getFullCtxText(whenCtx.when_expr));
-        }
     }
 }

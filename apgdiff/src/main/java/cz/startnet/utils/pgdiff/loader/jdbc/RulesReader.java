@@ -110,9 +110,7 @@ public class RulesReader extends JdbcReader {
                     return createRewriteCtx;
                 },
                 (ctx, db) -> {
-                    if (ctx.WHERE() != null) {
-                        analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
-                    }
+                    analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
 
                     for (Rewrite_commandContext cmd : ctx.commands) {
                         analyzeRewriteCommandCtx(cmd, r, schemaName);
@@ -127,15 +125,16 @@ public class RulesReader extends JdbcReader {
         return r;
     }
 
-    private static VexContext analyzeRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
+    public static void analyzeRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
             String schemaName) {
-        VexContext exp = ctx.vex();
-        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
-        vex.addReference("new", null);
-        vex.addReference("old", null);
-        vex.analyze(new Vex(exp));
-        rule.addAllDeps(vex.getDepcies());
-        return exp;
+        if (ctx.WHERE() != null) {
+            VexContext exp = ctx.vex();
+            ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
+            vex.addReference("new", null);
+            vex.addReference("old", null);
+            vex.analyze(new Vex(exp));
+            rule.addAllDeps(vex.getDepcies());
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

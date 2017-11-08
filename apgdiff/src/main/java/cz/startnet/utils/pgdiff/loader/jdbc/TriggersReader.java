@@ -5,7 +5,10 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -157,7 +160,12 @@ public class TriggersReader extends JdbcReader {
         loader.submitAntlrTask(definition, (PgDatabase)schema.getParent(),
                 p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                (ctx, db) -> CreateTrigger.parseWhen(ctx, t, schemaName));
+                (ctx, db) -> {
+                    if (ctx != null) {
+                        analyzeWhenCtx(ctx, t, schemaName);
+                        t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
+                    }
+                });
 
         // COMMENT
         String comment = res.getString("comment");
@@ -165,5 +173,13 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
+    }
+
+    public static void analyzeWhenCtx(When_triggerContext whenCtx, PgTrigger trigger, String schemaName) {
+        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
+        vex.addReference("new", null);
+        vex.addReference("old", null);
+        vex.analyze(new Vex(whenCtx.vex()));
+        trigger.addAllDeps(vex.getDepcies());
     }
 }

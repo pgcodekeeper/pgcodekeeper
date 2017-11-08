@@ -1,6 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -56,6 +59,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
@@ -74,7 +78,26 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     private PgStatement safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
-            return p.getObject();
+
+            PgStatement statement = p.getObject();
+            if (statement != null
+                    && (DbObjType.VIEW.equals(statement.getStatementType())
+                            || DbObjType.RULE.equals(statement.getStatementType())
+                            || DbObjType.TRIGGER.equals(statement.getStatementType())
+                            || DbObjType.FUNCTION.equals(statement.getStatementType()))) {
+
+                Map<String, Set<ParserRuleContext>> stmtCtxMap = db.getStatementContexts();
+                Set<ParserRuleContext> setCtx = stmtCtxMap.get(statement.getQualifiedName());
+                if (setCtx == null) {
+                    setCtx = new LinkedHashSet<>();
+                    setCtx.add(ctx);
+                    stmtCtxMap.put(statement.getQualifiedName(), setCtx);
+                } else {
+                    setCtx.add(ctx);
+                }
+            }
+
+            return statement;
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex));
             return null;
