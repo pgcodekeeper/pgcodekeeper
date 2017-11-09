@@ -1,13 +1,13 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.regex.Pattern;
 
-import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -15,6 +15,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -30,13 +31,22 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.framework.Bundle;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class FeedBackDialog extends Dialog {
 
+    private static final String URL = "http://license-service.chelny.taximaxim.ru/feedback"; //$NON-NLS-1$
+    private static final String TEXT_PLAIN = "text/plain"; //$NON-NLS-1$
+    private static final String POST_SUBJECT = "subject"; //$NON-NLS-1$
+    private static final String POST_EMAIL = "email"; //$NON-NLS-1$
+    private static final String POST_BODY = "body"; //$NON-NLS-1$
+    private static final String POST_FILES = "files"; //$NON-NLS-1$
     private static final String STATUS_OK = "{\"status\":\"ok\"}"; //$NON-NLS-1$
+    private static final Pattern PATTERN_WS = Pattern.compile("[\\s]");
 
     private Text txtSubject;
     private Text emailFrom;
@@ -111,6 +121,11 @@ public class FeedBackDialog extends Dialog {
             sendMail(emailFrom.getText(), txtMessage.getText(),
                     txtSubject.getText(), btnCheckLog.getSelection());
             super.okPressed();
+
+            MessageBox mb = new MessageBox(getParentShell(), SWT.ICON_INFORMATION);
+            mb.setText(Messages.FeedBackDialog_feedback_sent);
+            mb.setMessage(Messages.FeedBackDialog_thank_you);
+            mb.open();
         } catch (IOException mex) {
             Log.log(mex);
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
@@ -122,38 +137,60 @@ public class FeedBackDialog extends Dialog {
 
     private void sendMail(String emailFrom, String txtMessage, String subject,
             boolean appendLog) throws IOException {
-
         try (CloseableHttpClient httpClient = HttpClients.createDefault();) {
-            HttpPost uploadFile = new HttpPost("http://license-service.chelny.taximaxim.ru/feedback"); //$NON-NLS-1$
+            HttpPost uploadFile = new HttpPost(URL);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
-            ContentType utf = ContentType.create("text/plain", Consts.UTF_8); //$NON-NLS-1$
-            builder.addTextBody("subject", subject, utf); //$NON-NLS-1$
-            builder.addTextBody("email", emailFrom, utf); //$NON-NLS-1$
-            builder.addTextBody("body", txtMessage, utf); //$NON-NLS-1$
+            StringBuilder sbMessage = new StringBuilder();
+            sbMessage.append(txtMessage);
+            sbMessage.append("\n\n------pgCodeKeeper configuration--------\n"); //$NON-NLS-1$
+            appendCodeKeeperPluginsInformation(sbMessage);
+
+            ContentType utf = ContentType.create(TEXT_PLAIN, StandardCharsets.UTF_8);
+            builder.addTextBody(POST_SUBJECT, subject, utf);
+            builder.addTextBody(POST_EMAIL, emailFrom, utf);
+            builder.addTextBody(POST_BODY, sbMessage.toString(), utf);
 
             if (appendLog) {
-                File log = Platform.getLogFileLocation().toFile();
-                builder.addBinaryBody("files", new FileInputStream(log), //$NON-NLS-1$
+                Path log = Platform.getLogFileLocation().toFile().toPath();
+                byte[] logBytes;
+                try {
+                    logBytes = Files.readAllBytes(log);
+                } catch (NoSuchFileException ex) {
+                    logBytes = ex.toString().getBytes(StandardCharsets.UTF_8);
+                }
+                builder.addBinaryBody(POST_FILES, logBytes,
                         ContentType.APPLICATION_OCTET_STREAM,
-                        log.getName());
+                        log.getFileName().toString());
             }
             HttpEntity multipart = builder.build();
 
             uploadFile.setEntity(multipart);
-            CloseableHttpResponse response = httpClient.execute(uploadFile);
-            HttpEntity responseEntity = response.getEntity();
+            try (CloseableHttpResponse response = httpClient.execute(uploadFile);) {
+                HttpEntity responseEntity = response.getEntity();
+                if (responseEntity == null) {
+                    throw new IOException(MessageFormat.format(
+                            "Bad response received from server:\n{0}", response.toString()));
+                }
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(responseEntity.getContent()));) {
-                if (STATUS_OK.equals(br.readLine())) {
-                    MessageBox mb = new MessageBox(getParentShell(), SWT.ICON_INFORMATION);
-                    mb.setText(Messages.FeedBackDialog_feedback_sent);
-                    mb.setMessage(Messages.FeedBackDialog_thank_you);
-                    mb.open();
-                } else {
-                    throw new IOException("Server return error code"); //$NON-NLS-1$
+                String entity = EntityUtils.toString(responseEntity);
+                if (!STATUS_OK.equals(PATTERN_WS.matcher(entity).replaceAll(""))) {
+                    throw new IOException(MessageFormat.format(
+                            "Bad response received from server:\n{0}", entity));
                 }
             }
         }
+    }
+
+    private static StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {
+        Bundle codeKeeperBundle = Activator.getContext().getBundle();
+        sb.append(codeKeeperBundle.getSymbolicName()).append(' ').append(codeKeeperBundle.getVersion()).append('\n');
+
+        codeKeeperBundle = ru.taximaxim.codekeeper.apgdiff.Activator.getContext().getBundle();
+        sb.append(codeKeeperBundle.getSymbolicName()).append(' ').append(codeKeeperBundle.getVersion()).append('\n');
+
+        codeKeeperBundle = ru.taximaxim.codekeeper.mainapp.Activator.getDefault().getBundle();
+        sb.append(codeKeeperBundle.getSymbolicName()).append(' ').append(codeKeeperBundle.getVersion()).append('\n');
+        return sb;
     }
 }
