@@ -49,10 +49,10 @@ public interface PgOptionContainer extends IStatement {
         }
 
         if (setOptions.length() > 0) {
-            setOptions.setLength(setOptions.length()-2);
+            setOptions.setLength(setOptions.length() - 2);
             sb.append("\n\nALTER ");
             if (oldContainer.getStatementType() == DbObjType.COLUMN) {
-                sb.append("TABLE ")
+                sb.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(oldContainer.getParent().getName()))
                 .append(" ALTER ");
             }
@@ -63,10 +63,10 @@ public interface PgOptionContainer extends IStatement {
         }
 
         if (resetOptions.length() > 0) {
-            resetOptions.setLength(resetOptions.length()-2);
+            resetOptions.setLength(resetOptions.length() - 2);
             sb.append("\n\nALTER ");
             if (oldContainer.getStatementType() == DbObjType.COLUMN) {
-                sb.append("TABLE ")
+                sb.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(oldContainer.getParent().getName()))
                 .append(" ALTER ");
             }

@@ -361,7 +361,12 @@ public class PgType extends PgStatementWithSearchPath {
             } else {
                 sb.append(',');
             }
-            sb.append("\n\t").append(attr.getFullDefinition(false, null));
+            sb.append("\n\t").append(attr.getName()).append(' ').append(attr.getType());
+
+            if (attr.getCollation() != null) {
+                sb.append(" COLLATE ").append(attr.getCollation());
+            }
+
         }
     }
 
@@ -489,8 +494,13 @@ public class PgType extends PgStatementWithSearchPath {
             } else {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
-                .append(attr.getFullDefinition(false, null))
-                .append(", ");
+                .append(attr.getName()).append(' ').append(attr.getType());
+
+                if (attr.getCollation() != null) {
+                    attrSb.append(" COLLATE ").append(attr.getCollation());
+                }
+
+                attrSb.append(", ");
             }
         }
         for (PgColumn attr : oldType.getAttrs()) {

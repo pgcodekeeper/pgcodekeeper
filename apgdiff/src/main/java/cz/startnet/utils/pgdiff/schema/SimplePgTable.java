@@ -18,40 +18,16 @@ public class SimplePgTable extends RegularPgTable {
     @Override
     protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
         sbSQL.append(" (\n");
-        StringBuilder inherits = new StringBuilder();
-        StringBuilder options = new StringBuilder();
 
         int start = sbSQL.length();
         for (PgColumn column : columns) {
-            if (column.isInherit()) {
-                searchColumn(column, inherits);
-            } else {
-                sbSQL.append("\t");
-                sbSQL.append(column.getFullDefinition(false, null));
-                sbSQL.append(",\n");
-            }
-
-            if (column.getStorage() != null) {
-                sbOption.append(getAlterTable(true, false))
-                .append(" ALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(column.name))
-                .append(" SET STORAGE ")
-                .append(column.getStorage())
-                .append(';');
-            }
-
-            writeOptions(column, options, false);
-            writeSequences(column, options);
+            writeColumn(column, sbSQL, sbOption);
         }
 
         if (start != sbSQL.length()) {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append('\n');
         }
-
-        // saving order
-        sbOption.append(inherits);
-        sbOption.append(options);
 
         sbSQL.append(')');
     }

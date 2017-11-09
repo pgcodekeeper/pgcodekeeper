@@ -87,11 +87,14 @@ public abstract class ParserAbstract {
         }
         for (Constraint_commonContext column_constraint : constraints) {
             if (column_constraint.constr_body().default_expr != null) {
-                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                String def = getFullCtxText(column_constraint.constr_body().default_expr);
+                if (def != null && !def.isEmpty()) {
+                    col.setDefaultValue(def);
 
-                ValueExpr vex = new ValueExpr(defSchema);
-                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
-                col.addAllDeps(vex.getDepcies());
+                    ValueExpr vex = new ValueExpr(defSchema);
+                    vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                    col.addAllDeps(vex.getDepcies());
+                }
             }
 
             Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();

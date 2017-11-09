@@ -33,7 +33,7 @@ CREATE TABLE tab_of_type OF public.comp (
 	f3 WITH OPTIONS NOT NULL
 );
 
-ALTER TABLE tab_of_type
+ALTER TABLE ONLY tab_of_type
 	ALTER COLUMN f3 SET NOT NULL;
 
 ALTER TABLE cities_ab

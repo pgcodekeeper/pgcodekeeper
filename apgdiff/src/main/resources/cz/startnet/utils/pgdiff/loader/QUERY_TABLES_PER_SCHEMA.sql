@@ -77,7 +77,7 @@ LEFT JOIN (SELECT
             array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids,
             array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name,
             
-             -- skips not null for column, if parents heve not null 
+             -- skips not null for column, if parents have not null 
             array_agg(
                 (CASE WHEN a.attnotnull THEN 
                     NOT EXISTS (

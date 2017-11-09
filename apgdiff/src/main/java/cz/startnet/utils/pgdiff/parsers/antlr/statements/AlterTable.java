@@ -40,6 +40,7 @@ public class AlterTable extends ParserAbstract {
         PgTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
+
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
                 PgStatement st = null;
@@ -56,46 +57,83 @@ public class AlterTable extends ParserAbstract {
 
             // everything else requires a real table, so fail immediately
             tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
+
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
                 tabl.addColumn(getColumn(column.column_name.getText(),
                         column.datatype, column.collate_name,
                         column.colmn_constraint, getDefSchemaName()));
             }
-            if (tablAction.set_def_column() != null) {
-                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if (col != null) {
-                    ValueExpr vex = new ValueExpr(schema.getName());
-                    vex.analyze(new Vex(tablAction.set_def_column().expression));
-                    col.addAllDeps(vex.getDepcies());
-                }
-            }
 
-            if(tablAction.set_attribute_option() != null){
-                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if(col != null){
+            if (tablAction.column != null) {
+                String columnName = QNameParser.getFirstName(tablAction.column.identifier());
+                PgColumn col = tabl.getColumn(columnName);
+                if (col == null) {
+                    col = new PgColumn(columnName);
+                    col.setInherit(true);
+                    tabl.addColumn(col);
+                }
+
+                // column statistics
+                if (tablAction.STATISTICS() != null) {
+                    col.setStatistics(Integer.valueOf(tablAction.integer.getText()));
+                }
+
+                // column not null constraint
+                if (tablAction.set != null) {
+                    col.setNullValue(false);
+                }
+
+                // column default
+                if (tablAction.set_def_column() != null) {
+                    String def = getFullCtxText(tablAction.set_def_column().expression);
+                    if (def != null && !def.isEmpty()) {
+                        col.setDefaultValue(def);
+                        ValueExpr vex = new ValueExpr(schema.getName());
+                        vex.analyze(new Vex(tablAction.set_def_column().expression));
+                        col.addAllDeps(vex.getDepcies());
+                    }
+                }
+
+                // column options
+                if (tablAction.set_attribute_option() != null){
                     for (Storage_parameter_optionContext option :
                         tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
                         String value = option.value == null ? "" : option.value.getText();
                         fillOptionParams(value, option.storage_param.getText(), false, col::addOption);
                     }
                 }
-            }
 
-            if (tablAction.define_foreign_options() != null) {
-                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if (col != null) {
+                // foreign options
+                if (tablAction.define_foreign_options() != null) {
                     for (Foreign_optionContext option : tablAction.define_foreign_options().foreign_option()) {
                         String value = option.value == null ? "" : option.value.getText();
                         fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
                     }
                 }
-            }
 
-            if (tablAction.set_storage() != null){
-                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
-                if(col != null){
-                    col.setStorage(tablAction.set_storage().storage_option().getText());
+                // column storage
+                if (tablAction.set_storage() != null){
+                    String storage = tablAction.set_storage().storage_option().getText();
+                    if (storage != null && !storage.isEmpty()) {
+                        col.setStorage(storage);
+                    }
+                }
+
+                // since 10 PostgreSQL
+                Identity_bodyContext identity = tablAction.identity_body();
+                if (identity != null) {
+                    String name = null;
+                    for (Sequence_bodyContext body : identity.sequence_body()) {
+                        if (body.NAME() != null) {
+                            name = body.name.getText();
+                        }
+                    }
+                    PgSequence sequence = new PgSequence(name, null);
+                    CreateSequence.fillSequence(sequence, identity.sequence_body());
+
+                    col.setSequence(sequence);
+                    col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
                 }
             }
 
@@ -118,26 +156,12 @@ public class AlterTable extends ParserAbstract {
                 tabl.setHasOids(true);
             }
 
-            if (tablAction.column != null) {
-                if (tablAction.STATISTICS() != null) {
-                    fillStatictics(tabl, tablAction);
-                }
-                if (tablAction.set_def_column() != null) {
-                    fillDefColumn(tabl, tablAction);
-                }
-                if (tablAction.set != null) {
-                    fillNotNull(tabl, tablAction);
-                }
-            }
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
             }
 
-
-
             if (tabl instanceof RegularPgTable) {
                 RegularPgTable regTable = (RegularPgTable)tabl;
-
                 // since 9.5 PostgreSQL
                 if (tablAction.SECURITY() != null) {
                     if (tablAction.FORCE() != null) {
@@ -147,45 +171,8 @@ public class AlterTable extends ParserAbstract {
                     }
                 }
             }
-
-            // since 10 PostgreSQL
-            Identity_bodyContext identity = tablAction.identity_body();
-            if (identity != null) {
-                String name = null;
-                for (Sequence_bodyContext body : identity.sequence_body()) {
-                    if (body.NAME() != null) {
-                        name = body.name.getText();
-                    }
-                }
-                PgSequence sequence = new PgSequence(name, null);
-                CreateSequence.fillSequence(sequence, identity.sequence_body());
-                String columnName = QNameParser.getFirstName(tablAction.column.identifier());
-                PgColumn column = tabl.getColumn(columnName);
-
-                // inherit column
-                if (column == null) {
-                    column = new PgColumn(columnName);
-                    column.setInherit(true);
-                    tabl.addColumn(column);
-                }
-                column.setSequence(sequence);
-                column.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");
-            }
-
         }
         return null;
-    }
-
-    private void fillNotNull(PgTable table, Table_actionContext tablAction) {
-        String name = QNameParser.getFirstName(tablAction.column.identifier());
-        if (table.getColumn(name) == null) {
-            PgColumn col = new PgColumn(name);
-            col.setInherit(true);
-            col.setNullValue(false);
-            table.addColumn(col);
-        } else {
-            table.getColumn(name).setNullValue(false);
-        }
     }
 
     private void createRule(PgTable tabl, Table_actionContext tablAction) {
@@ -200,32 +187,6 @@ public class AlterTable extends ParserAbstract {
                     rule.setEnabledState("ENABLE ALWAYS");
                 }
             }
-        }
-    }
-
-    private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
-        String name = QNameParser.getFirstName(tablAction.column.identifier());
-        if (table.getColumn(name) == null) {
-            PgColumn col = new PgColumn(name);
-            col.setInherit(true);
-            col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
-            table.addColumn(col);
-        } else {
-            table.getColumn(name).setDefaultValue(
-                    getFullCtxText(tablAction.set_def_column().expression));
-        }
-    }
-
-    private void fillStatictics(PgTable table, Table_actionContext tablAction) {
-        String name = QNameParser.getFirstName(tablAction.column.identifier());
-        if (table.getColumn(name) == null) {
-            PgColumn col = new PgColumn(name);
-            String number = tablAction.integer.getText();
-            col.setStatistics(Integer.valueOf(number));
-            table.addColumn(col);
-        } else {
-            table.getColumn(name).setStatistics(
-                    Integer.valueOf(tablAction.integer.getText()));
         }
     }
 }

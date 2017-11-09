@@ -145,7 +145,7 @@ public class TablesReader extends JdbcReader {
 
             // unbox
             long collation = colCollation[i];
-            if (collation != 0 && collation != colTypCollation[i]) {
+            if (collation != 0 && collation != colTypCollation[i] && column.getType() != null) {
                 column.setCollation(PgDiffUtils.getQuotedName(colCollationSchema[i])
                         + '.' + PgDiffUtils.getQuotedName(colCollationName[i]));
             }
@@ -183,11 +183,24 @@ public class TablesReader extends JdbcReader {
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
-            if (ofTypeOid != 0 || column.isInherit()){
-                if ((column.getDefaultValue() != null && !column.getDefaultValue().isEmpty())
-                        || !column.getNullValue()) {
+            if (ofTypeOid != 0 && column.getNullValue()
+                    && column.getDefaultValue() == null) {
+                column.setInherit(true);
+            }
+
+            if (ofTypeOid != 0 || column.isInherit()) {
+                boolean isNotDumpable = column.getDefaultValue() == null
+                        && column.getNullValue()
+                        && column.getStatistics() == null
+                        && column.getCollation() == null
+                        && column.getComment() == null
+                        && column.getStorage() == null
+                        && column.getForeignOptions().isEmpty()
+                        && column.getOptions().isEmpty();
+                if (!isNotDumpable) {
                     t.addColumn(column);
                 }
+
             } else {
                 t.addColumn(column);
             }

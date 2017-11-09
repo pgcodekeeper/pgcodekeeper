@@ -229,7 +229,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         }
     }
 
-    protected void writeSequences(PgColumn column, StringBuilder sbOption) {
+    private void writeSequences(PgColumn column, StringBuilder sbOption) {
         PgSequence sequence = column.getSequence();
         if (sequence != null) {
             sbOption.append(getAlterTable(true, false))
@@ -462,6 +462,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         assertUnique(this::getColumn, column);
         columns.add(column);
         column.setParent(this);
+
+        // first the usual columns in the order of adding,
+        // then sorted alphabetically the inheritance columns
+        Collections.sort(columns, (e1, e2) ->  {
+            if (e1.isInherit() && e2.isInherit()) {
+                return e1.getName().compareTo(e2.getName());
+            } else {
+                return Boolean.compare(!e1.isInherit(), !e2.isInherit());
+            }
+        });
+
         resetHash();
     }
 
@@ -643,23 +654,67 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return (PgSchema)this.getParent();
     }
 
-    protected void writeOptions(PgColumn column, StringBuilder sbOption, boolean isForeign) {
-        Map<String, String> opts = isForeign ? column.getForeignOptions() : column.getOptions();
+    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
+        Map<String, String> opts = column.getOptions();
+        Map<String, String> fOpts = column.getForeignOptions();
+
         if (!opts.isEmpty()) {
-            sbOption.append(getAlterTable(true, false))
+            sbOption.append(getAlterTable(true, isInherit))
             .append(" ALTER COLUMN ")
             .append(PgDiffUtils.getQuotedName(column.name))
-            .append(isForeign ? " OPTIONS (" : " SET (");
-            for(Entry<String, String> option : opts.entrySet()){
+            .append(" SET (");
+
+            for (Entry<String, String> option : opts.entrySet()) {
                 sbOption.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
-                    sbOption.append(isForeign ? ' ' : '=').append(option.getValue());
+                    sbOption.append('=').append(option.getValue());
                 }
                 sbOption.append(", ");
             }
             sbOption.setLength(sbOption.length() - 2);
             sbOption.append(");");
         }
+
+        if (!fOpts.isEmpty()) {
+            sbOption.append(getAlterTable(true, isInherit))
+            .append(" ALTER COLUMN ")
+            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(" OPTIONS (");
+
+            for (Entry<String, String> option : fOpts.entrySet()) {
+                sbOption.append(option.getKey());
+                if (!option.getValue().isEmpty()) {
+                    sbOption.append(' ').append(option.getValue());
+                }
+                sbOption.append(", ");
+            }
+            sbOption.setLength(sbOption.length() - 2);
+            sbOption.append(");");
+        }
+    }
+
+    protected void writeColumn(PgColumn column, StringBuilder sbSQL,
+            StringBuilder sbOption) {
+        boolean isInherit = column.isInherit();
+        if (isInherit) {
+            searchColumn(column, sbOption);
+        } else {
+            sbSQL.append("\t");
+            sbSQL.append(column.getFullDefinition());
+            sbSQL.append(",\n");
+        }
+
+        if (column.getStorage() != null) {
+            sbOption.append(getAlterTable(true, isInherit))
+            .append(" ALTER COLUMN ")
+            .append(PgDiffUtils.getQuotedName(column.name))
+            .append(" SET STORAGE ")
+            .append(column.getStorage())
+            .append(';');
+        }
+
+        writeOptions(column, sbOption, isInherit);
+        writeSequences(column, sbOption);
     }
 
     protected void searchColumn(PgColumn column, StringBuilder sb) {

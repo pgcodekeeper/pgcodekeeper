@@ -27,17 +27,18 @@ public class TypedPgTable extends RegularPgTable {
 
         if (!columns.isEmpty()) {
             sbSQL.append(" (\n");
+
+            int start = sbSQL.length();
             for (PgColumn column : columns) {
-                sbSQL.append("\t");
-                sbSQL.append(column.getFullDefinition(false, null));
-                sbSQL.append(",\n");
-                writeSequences(column, sbOption);
+                writeColumn(column, sbSQL, sbOption);
             }
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append("\n)");
+
+            if (start != sbSQL.length()) {
+                sbSQL.setLength(sbSQL.length() - 2);
+                sbSQL.append("\n)");
+            }
         }
     }
-
 
     public String getOfType() {
         return ofType;
