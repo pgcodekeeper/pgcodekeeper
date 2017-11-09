@@ -1,27 +1,21 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Properties;
+import java.util.regex.Pattern;
 
-import javax.activation.DataHandler;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
-
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -45,19 +39,16 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class FeedBackDialog extends Dialog {
 
-    private static final String EMAIL_TO = "codekeeper@chelny.taximaxim.ru"; //$NON-NLS-1$
-    private static final String LOG_FILE_NAME = "codekeeper.log"; //$NON-NLS-1$
-    private static final String MAIL_HOST = "mail.chelny.taximaxim.ru"; //$NON-NLS-1$
-    private static final String MAIL_PORT = "587"; //$NON-NLS-1$
-    private static final String MAIL_HOST_PROP = "mail.smtp.host"; //$NON-NLS-1$
-    private static final String MAIL_PORT_PROP = "mail.smtp.port"; //$NON-NLS-1$
-    private static final String MAIL_AUTH_PROP = "mail.smtp.auth"; //$NON-NLS-1$
-    private static final String MAIL_TLS_PROP = "mail.smtp.starttls.enable"; //$NON-NLS-1$
-    private static final String MAIL_USER = "pgcodekeeper-feedback@chelny.taximaxim.ru"; //$NON-NLS-1$
-    private static final String MAIL_PASS = "***REMOVED***"; //$NON-NLS-1$
-    private static final String MIME_TEXT = "text/plain"; //$NON-NLS-1$
+    private static final String URL = "http://license-service.chelny.taximaxim.ru/feedback"; //$NON-NLS-1$
+    private static final String TEXT_PLAIN = "text/plain"; //$NON-NLS-1$
+    private static final String POST_SUBJECT = "subject"; //$NON-NLS-1$
+    private static final String POST_EMAIL = "email"; //$NON-NLS-1$
+    private static final String POST_BODY = "body"; //$NON-NLS-1$
+    private static final String POST_FILES = "files"; //$NON-NLS-1$
+    private static final String STATUS_OK = "{\"status\":\"ok\"}"; //$NON-NLS-1$
+    private static final Pattern PATTERN_WS = Pattern.compile("[\\s]");
 
-    private Text userName;
+    private Text txtSubject;
     private Text emailFrom;
     private Text txtMessage;
     private Button btnCheckLog;
@@ -69,7 +60,6 @@ public class FeedBackDialog extends Dialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-
         newShell.setText(Messages.FeedBackDialog_feedback);
     }
 
@@ -79,10 +69,10 @@ public class FeedBackDialog extends Dialog {
         container.setLayout(new GridLayout(2, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(container, SWT.NONE).setText(Messages.name);
+        new Label(container, SWT.NONE).setText(Messages.FeedBackDialog_subject);
 
-        userName = new Text(container, SWT.BORDER);
-        userName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtSubject = new Text(container, SWT.BORDER);
+        txtSubject.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         new Label(container, SWT.NONE).setText(Messages.e_mail);
 
@@ -119,30 +109,24 @@ public class FeedBackDialog extends Dialog {
 
     @Override
     protected void okPressed() {
-        if (txtMessage.getText().isEmpty()) {
+        if (txtMessage.getText().isEmpty() || emailFrom.getText().isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.FeedBackDialog_emty_msg);
-            mb.setMessage(Messages.FeedBackDialog_enter_msg);
+            mb.setText(Messages.FeedBackDialog_empty_fields_title);
+            mb.setMessage(Messages.FeedBackDialog_empty_fields_message);
             mb.open();
             return;
         }
 
         try {
-            sendMail(emailFrom.getText(), Messages.FeedBackDialog_feedback_subject,
-                    txtMessage.getText(), userName.getText(),
-                    btnCheckLog.getSelection(), false);
+            sendMail(emailFrom.getText(), txtMessage.getText(),
+                    txtSubject.getText(), btnCheckLog.getSelection());
             super.okPressed();
 
             MessageBox mb = new MessageBox(getParentShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.FeedBackDialog_feedback_sent);
             mb.setMessage(Messages.FeedBackDialog_thank_you);
             mb.open();
-        } catch (AddressException ae) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.FeedBackDialog_invalid_address);
-            mb.setMessage(Messages.FeedBackDialog_enter_email);
-            mb.open();
-        } catch (MessagingException | IOException mex) {
+        } catch (IOException mex) {
             Log.log(mex);
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.FeedBackDialog_could_not_send);
@@ -151,65 +135,51 @@ public class FeedBackDialog extends Dialog {
         }
     }
 
-    static void sendMail(String emailFrom, String subject, String txtMessage, String user,
-            boolean appendLog, boolean mailDebug) throws MessagingException, IOException {
-        Properties properties = new Properties();
-        properties.setProperty(MAIL_HOST_PROP, MAIL_HOST);
-        properties.setProperty(MAIL_PORT_PROP, MAIL_PORT);
-        properties.setProperty(MAIL_AUTH_PROP, Boolean.TRUE.toString());
-        properties.setProperty(MAIL_TLS_PROP, Boolean.TRUE.toString());
-        Session session = Session.getInstance(properties, new Authenticator() {
+    private void sendMail(String emailFrom, String txtMessage, String subject,
+            boolean appendLog) throws IOException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();) {
+            HttpPost uploadFile = new HttpPost(URL);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(MAIL_USER, MAIL_PASS);
+            StringBuilder sbMessage = new StringBuilder();
+            sbMessage.append(txtMessage);
+            sbMessage.append("\n\n------pgCodeKeeper configuration--------\n"); //$NON-NLS-1$
+            appendCodeKeeperPluginsInformation(sbMessage);
+
+            ContentType utf = ContentType.create(TEXT_PLAIN, StandardCharsets.UTF_8);
+            builder.addTextBody(POST_SUBJECT, subject, utf);
+            builder.addTextBody(POST_EMAIL, emailFrom, utf);
+            builder.addTextBody(POST_BODY, sbMessage.toString(), utf);
+
+            if (appendLog) {
+                Path log = Platform.getLogFileLocation().toFile().toPath();
+                byte[] logBytes;
+                try {
+                    logBytes = Files.readAllBytes(log);
+                } catch (NoSuchFileException ex) {
+                    logBytes = ex.toString().getBytes(StandardCharsets.UTF_8);
+                }
+                builder.addBinaryBody(POST_FILES, logBytes,
+                        ContentType.APPLICATION_OCTET_STREAM,
+                        log.getFileName().toString());
             }
-        });
+            HttpEntity multipart = builder.build();
 
-        if (mailDebug) {
-            session.setDebug(true);
-        }
+            uploadFile.setEntity(multipart);
+            try (CloseableHttpResponse response = httpClient.execute(uploadFile);) {
+                HttpEntity responseEntity = response.getEntity();
+                if (responseEntity == null) {
+                    throw new IOException(MessageFormat.format(
+                            "Bad response received from server:\n{0}", response.toString()));
+                }
 
-        MimeMessage message = new MimeMessage(session);
-
-        InternetAddress internetAddress = new InternetAddress(emailFrom);
-        internetAddress.validate();
-        message.setFrom(internetAddress);
-        message.addRecipient(Message.RecipientType.TO, new InternetAddress(EMAIL_TO));
-        message.setSubject(subject);
-
-        Multipart multipart = new MimeMultipart();
-        BodyPart messageBodyPart = new MimeBodyPart();
-
-        StringBuilder sbText = new StringBuilder();
-        sbText.append(txtMessage);
-        if (!user.isEmpty()) {
-            sbText.append(Messages.FeedBackDialog_best_regards).append(user);
-        }
-
-        sbText.append("\n\n------pgCodeKeeper configuration--------\n"); //$NON-NLS-1$
-        appendCodeKeeperPluginsInformation(sbText);
-
-        messageBodyPart.setText(sbText.toString());
-        multipart.addBodyPart(messageBodyPart);
-
-        if (appendLog) {
-            // TODO check file size
-            byte[] logBytes;
-            try {
-                logBytes = Files.readAllBytes(Platform.getLogFileLocation().toFile().toPath());
-            } catch (NoSuchFileException ex) {
-                logBytes = ex.toString().getBytes(); // ok since toString uses localized message
+                String entity = EntityUtils.toString(responseEntity);
+                if (!STATUS_OK.equals(PATTERN_WS.matcher(entity).replaceAll(""))) {
+                    throw new IOException(MessageFormat.format(
+                            "Bad response received from server:\n{0}", entity));
+                }
             }
-
-            BodyPart fileAttachBodyPart = new MimeBodyPart();
-            fileAttachBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(logBytes, MIME_TEXT)));
-            fileAttachBodyPart.setFileName(LOG_FILE_NAME);
-            multipart.addBodyPart(fileAttachBodyPart);
         }
-
-        message.setContent(multipart);
-        Transport.send(message);
     }
 
     private static StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {
