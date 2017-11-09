@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -46,6 +48,7 @@ public abstract class PgStatement implements IStatement {
         return rawStatement;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -57,8 +60,10 @@ public abstract class PgStatement implements IStatement {
         return name;
     }
 
+    @Override
     public abstract DbObjType getStatementType();
 
+    @Override
     public PgStatement getParent() {
         return parent;
     }
@@ -101,7 +106,7 @@ public abstract class PgStatement implements IStatement {
      * Sets {@link #comment} with newlines as requested in arguments.
      */
     public void setComment(PgDiffArguments args, String comment) {
-        setComment(args.isForceUnixNewlines() ? comment.replace("\r", "") : comment);
+        setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {
@@ -229,7 +234,7 @@ public abstract class PgStatement implements IStatement {
             sb.append(PgDiffUtils.getQuotedName(getName()));
         }
         sb.append(" OWNER TO ")
-        .append(owner)
+        .append(PgDiffUtils.getQuotedName(owner))
         .append(';');
 
         return sb;
@@ -399,5 +404,16 @@ public abstract class PgStatement implements IStatement {
     @Override
     public String toString() {
         return name == null ? "Unnamed object" : name;
+    }
+
+    protected void assertUnique(Function<String, ? extends PgStatement> getter,
+            PgStatement newSt) {
+        PgStatement found = getter.apply(newSt.getName());
+        if (found != null) {
+            PgStatement foundParent = found.getParent();
+            throw foundParent instanceof PgStatementWithSearchPath
+            ? new ObjectCreationException(newSt, foundParent)
+                    : new ObjectCreationException(newSt);
+        }
     }
 }

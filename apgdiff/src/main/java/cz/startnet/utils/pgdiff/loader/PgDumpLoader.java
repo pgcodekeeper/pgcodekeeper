@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -53,16 +54,26 @@ public class PgDumpLoader implements AutoCloseable {
     private final IProgressMonitor monitor;
     private final int monitoringLevel;
 
-    private List<FunctionBodyContainer> funcBodyReferences;
-
     private final List<AntlrError> errors = new ArrayList<>();
 
-    public List<FunctionBodyContainer> getFuncBodyReferences() {
-        return funcBodyReferences;
-    }
+    private boolean loadSchema = true;
+    private boolean loadReferences;
+    private List<FunctionBodyContainer> funcBodyReferences;
 
     public List<AntlrError> getErrors() {
         return errors;
+    }
+
+    public void setLoadSchema(boolean loadSchema) {
+        this.loadSchema = loadSchema;
+    }
+
+    public void setLoadReferences(boolean loadReferences) {
+        this.loadReferences = loadReferences;
+    }
+
+    public List<FunctionBodyContainer> getFuncBodyReferences() {
+        return funcBodyReferences;
     }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
@@ -122,30 +133,27 @@ public class PgDumpLoader implements AutoCloseable {
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException, LicenseException {
-        return load(false);
-    }
-
-    public PgDatabase load(boolean loadReferences)
-            throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
-        load(loadReferences, d);
+        load(d);
         args.getLicense().verifyDb(d);
         return d;
     }
 
-    protected PgDatabase load(boolean loadReferences, PgDatabase intoDb)
-            throws IOException, InterruptedException {
+    protected PgDatabase load(PgDatabase intoDb) throws IOException, InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
-        SQLParserBaseListener listener = loadReferences ? new ReferenceListener(intoDb, inputObjectName)
-                : new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor);
 
-        AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName,
-                listener, monitor, monitoringLevel, errors);
-
-        if (loadReferences) {
-            funcBodyReferences = ((ReferenceListener) listener).getFunctionBodies();
+        List<SQLParserBaseListener> listeners = new ArrayList<>();
+        if (loadSchema) {
+            listeners.add(new CustomSQLParserListener(intoDb, errors, monitor));
         }
+        if (loadReferences) {
+            ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
+            funcBodyReferences = refListener.getFunctionBodies();
+            listeners.add(refListener);
+        }
+        AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+                monitor, monitoringLevel, listeners);
         return intoDb;
     }
 
@@ -163,7 +171,7 @@ public class PgDumpLoader implements AutoCloseable {
      * @throws InterruptedException
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+            PgDiffArguments arguments, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
                     throws InterruptedException, IOException, LicenseException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
@@ -172,7 +180,7 @@ public class PgDumpLoader implements AutoCloseable {
         // step 1
         // read files in schema folder, add schemas to db
         for (ApgdiffConsts.WORK_DIR_NAMES dirEnum : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-            loadSubdir(dir, arguments, dirEnum.name(), db, monitor, funcBodies);
+            loadSubdir(dir, arguments, dirEnum.name(), db, monitor, errors);
         }
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
@@ -187,7 +195,7 @@ public class PgDumpLoader implements AutoCloseable {
             File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
             if (schemaFolder.isDirectory()) {
                 for (String dirSub : DIR_LOAD_ORDER) {
-                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor, funcBodies);
+                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor, errors);
                 }
             }
         }
@@ -196,26 +204,26 @@ public class PgDumpLoader implements AutoCloseable {
         return db;
     }
 
-    private static void loadSubdir(File dir, PgDiffArguments arguments,
-            String sub, PgDatabase db, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+    private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
+            IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
                     throws InterruptedException, IOException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
-            loadFiles (files, arguments, db, monitor, funcBodies);
+            loadFiles(files, arguments, db, monitor, errors);
         }
     }
 
     private static void loadFiles(File[] files, PgDiffArguments arguments,
-            PgDatabase db, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+            PgDatabase db, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
                     throws IOException, InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
-                    loader.load(funcBodies != null, db);
-                    if (funcBodies != null) {
-                        funcBodies.addAll(loader.getFuncBodyReferences());
+                    loader.load(db);
+                    if (errors != null) {
+                        errors.put(f.getPath(), loader.getErrors());
                     }
                 }
             }

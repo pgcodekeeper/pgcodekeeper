@@ -17,8 +17,8 @@ WITH extension_deps AS (
 SELECT  -- GENERAL
     t.typname,
     --(SELECT n.nspname FROM nspnames n WHERE n.oid = t.typnamespace) AS typnspname,
-    t.typowner,
-    t.typacl,
+    t.typowner::bigint,
+    t.typacl::text,
     -- t.typisdefined, -- false == SHELL type; pg_dump ignores those
     t.typtype, -- b/c/d/e/r, p - pseudotype (?)
     d.description,
@@ -46,16 +46,16 @@ SELECT  -- GENERAL
     t.typispreferred,
     pg_catalog.pg_get_expr(t.typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
     t.typdefault, -- if using this, single-quote and escape it
-    t.typelem,
+    t.typelem::bigint,
     t.typdelim, -- don't output if == ','
-    t.typcollation, -- collatable == (collation != 0)
+    t.typcollation::bigint, -- collatable == (collation != 0)
     -- END BASE
 
     -- DOMAIN
     pg_catalog.format_type(t.typbasetype, t.typtypmod) AS dom_basetypefmt,
-    t.typbasetype AS dom_basetype,
+    t.typbasetype::bigint AS dom_basetype,
     -- collation from BASE
-    (SELECT tbase.typcollation FROM pg_catalog.pg_type tbase WHERE tbase.oid = t.typbasetype) AS dom_basecollation,
+    (SELECT tbase.typcollation::bigint FROM pg_catalog.pg_type tbase WHERE tbase.oid = t.typbasetype) AS dom_basecollation,
     (SELECT cl.collname FROM collations cl WHERE cl.oid = t.typcollation) AS dom_collationname, -- don't output if typcollation = dom_basecollation
     (SELECT cl.nspname FROM collations cl WHERE cl.oid = t.typcollation) AS dom_collationnspname,
     -- default from BASE
@@ -63,7 +63,6 @@ SELECT  -- GENERAL
     t.typnotnull AS dom_notnull,
     dom_constraints.connames AS dom_connames,
     dom_constraints.condefs AS dom_condefs,
-    dom_constraints.convalidates AS dom_convalidates,
     dom_constraints.concomments AS dom_concomments,
     -- END DOMAIN
 
@@ -72,12 +71,12 @@ SELECT  -- GENERAL
     -- END ENUM
 
     -- RANGE
-    r.rngsubtype,
+    r.rngsubtype::bigint,
     opc.opcname, -- don't output opclass if opcdefault == true; always qualify
     (SELECT n.nspname FROM nspnames n WHERE n.oid = opc.opcnamespace) AS opcnspname,
     opc.opcdefault,
-    r.rngcollation,
-    (SELECT tsub.typcollation FROM pg_catalog.pg_type tsub WHERE tsub.oid = r.rngsubtype) AS rngsubtypcollation,
+    r.rngcollation::bigint,
+    (SELECT tsub.typcollation::bigint FROM pg_catalog.pg_type tsub WHERE tsub.oid = r.rngsubtype) AS rngsubtypcollation,
     (SELECT cl.collname FROM collations cl WHERE cl.oid = r.rngcollation) AS rngcollationname, -- don't output if rngcollation == rngsubtypcollation
     (SELECT cl.nspname FROM collations cl WHERE cl.oid = r.rngcollation) AS rngcollationnspname, 
     r.rngcanonical,
@@ -105,7 +104,6 @@ LEFT JOIN
          c.contypid,
          array_agg(c.conname ORDER BY c.conname) AS connames,
          array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
-         array_agg(c.convalidated ORDER BY c.conname) AS convalidates,
          array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid
@@ -128,9 +126,9 @@ LEFT JOIN
               a.attrelid,
               a.attname,
               pg_catalog.format_type(a.atttypid, a.atttypmod) AS atttypdefn,
-              a.atttypid,
-              a.attcollation,
-              ta.typcollation AS atttypcollation,
+              a.atttypid::bigint,
+              a.attcollation::bigint,
+              ta.typcollation::bigint AS atttypcollation,
               cl.collname AS attcollationname,
               cl.nspname AS attcollationnspname,
               d.description

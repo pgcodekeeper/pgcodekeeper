@@ -4,9 +4,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -19,7 +16,6 @@ import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
@@ -57,32 +53,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer,
-            String contentType) {
-        return new SQLEditorTextHover(editor);
-    }
-
-    // Отображает всю строку при наведении на левую полосу редактора
-    @Override
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new IAnnotationHover() {
-
-            @Override
-            public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber) {
-                IDocument document= sourceViewer.getDocument();
-                try {
-                    IRegion info= document.getLineInformation(lineNumber);
-                    return document.get(info.getOffset(), info.getLength());
-                } catch (BadLocationException x) {
-                    // do nothing
-                }
-                return null;
-            }
-        };
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+        return editor == null ? null : new SQLEditorTextHover(sourceViewer, editor);
     }
 
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+        if (editor == null) {
+            return null;
+        }
         ContentAssistant assistant= new ContentAssistant();
         assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(editor), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
@@ -121,7 +100,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
-        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
+        if (editor != null) {
+            targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", editor); //$NON-NLS-1$
+        }
         return targets;
     }
 

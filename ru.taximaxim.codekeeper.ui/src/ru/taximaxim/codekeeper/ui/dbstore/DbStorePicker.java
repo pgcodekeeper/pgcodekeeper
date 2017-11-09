@@ -8,8 +8,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -42,6 +40,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -59,11 +58,7 @@ public class DbStorePicker extends Composite {
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final int MAX_FILES_HISTORY = 10;
 
-    private static boolean inSync;
-    private final Set<DbStorePicker> syncedPickers = Collections.newSetFromMap(
-            new WeakHashMap<DbStorePicker, Boolean>());
-
-    private final boolean useFileSources;
+    private boolean useFileSources;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -71,20 +66,22 @@ public class DbStorePicker extends Composite {
     private final LocalResourceManager lrm;
     private final ComboViewer cmbDbNames;
 
-    public DbStorePicker(Composite parent, int style, final IPreferenceStore prefStore,
-            boolean useFileSources, boolean useDirSources) {
-        super(parent, style);
+    public DbStorePicker(Composite parent, final IPreferenceStore prefStore,
+            boolean useFileSources, boolean useDirSources, boolean useLabel) {
+        super(parent, SWT.NONE);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStore;
 
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(useLabel ? 3 : 2, false);
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
-                Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        if(useLabel) {
+            new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
+                    Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        }
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -136,6 +133,11 @@ public class DbStorePicker extends Composite {
     }
 
     private void loadStore() {
+        loadStore(null);
+    }
+
+    public void loadStore(boolean useFileSources) {
+        this.useFileSources = useFileSources;
         loadStore(null);
     }
 
@@ -214,33 +216,6 @@ public class DbStorePicker extends Composite {
         cmbDbNames.addSelectionChangedListener(listener);
     }
 
-    public void addSyncedPicker(DbStorePicker picker) {
-        syncedPickers.add(picker);
-    }
-
-    private void syncPickers(IStructuredSelection newSelection) {
-        if (inSync) {
-            return;
-        }
-        try {
-            inSync = true;
-            boolean isFile = newSelection.getFirstElement() instanceof File;
-            for (DbStorePicker picker : syncedPickers) {
-                if (!picker.cmbDbNames.getControl().isDisposed()) {
-                    if (isFile) {
-                        // updates to the file list do not auto propagate
-                        // force a reload
-                        picker.loadStore(newSelection);
-                    } else {
-                        picker.setSelection(newSelection);
-                    }
-                }
-            }
-        } finally {
-            inSync = false;
-        }
-    }
-
     private class DbStoreSelectionListener implements ISelectionChangedListener {
 
         private ISelection previous = StructuredSelection.EMPTY;
@@ -257,21 +232,11 @@ public class DbStorePicker extends Composite {
             if (selected instanceof DbInfo || selected instanceof File) {
                 previous = sel;
                 revertSelection = false;
-                syncPickers(sel);
             } else if (selected instanceof LoadFileElement) {
                 LoadFileElement loadEl = (LoadFileElement) selected;
-                String pathToDump = loadEl.loadDir ? getDirPath() : getFilePath();
-                if (pathToDump != null) {
-                    File dumpFile = new File(pathToDump);
-                    Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
-                    dumpHistory.addFirst(dumpFile);
-                    while (dumpHistory.size() > MAX_FILES_HISTORY) {
-                        dumpHistory.removeLast();
-                    }
-                    prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
+                File dumpFile = chooseDbSource(getShell(), prefStore, loadEl.loadDir);
+                if (dumpFile != null) {
                     loadStore(new StructuredSelection(dumpFile));
-                    prefStore.setValue(PREF.LAST_OPENED_LOCATION,
-                            loadEl.loadDir ? dumpFile.getAbsolutePath() : dumpFile.getParent());
                     revertSelection = false;
                 } else {
                     revertSelection = true;
@@ -284,24 +249,6 @@ public class DbStorePicker extends Composite {
             if (revertSelection) {
                 cmbDbNames.setSelection(previous);
             }
-        }
-
-        private String getFilePath() {
-            FileDialog dialog = new FileDialog(getShell());
-            dialog.setText(Messages.choose_dump_file_with_changes);
-            dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            dialog.setFilterNames(new String[] {
-                    Messages.DiffPresentationPane_sql_file_filter,
-                    Messages.DiffPresentationPane_any_file_filter});
-            dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-            return dialog.open();
-        }
-
-        private String getDirPath() {
-            DirectoryDialog dialog = new DirectoryDialog(getShell());
-            dialog.setText(Messages.DbStorePicker_choose_dir);
-            dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
-            return dialog.open();
         }
     }
 
@@ -353,12 +300,52 @@ public class DbStorePicker extends Composite {
         }
     }
 
+    public static File chooseDbSource(Shell shell, IPreferenceStore prefStore, boolean dir) {
+        String pathToDump = dir ? getDirPath(shell, prefStore) : getFilePath(shell, prefStore);
+        if (pathToDump == null) {
+            return null;
+        }
+
+        File dumpFile = new File(pathToDump);
+        Deque<File> dumpHistory = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
+        dumpHistory.addFirst(dumpFile);
+        while (dumpHistory.size() > MAX_FILES_HISTORY) {
+            dumpHistory.removeLast();
+        }
+        prefStore.setValue(PREF.DB_STORE_FILES, dumpFileHistoryToPreference(dumpHistory));
+        prefStore.setValue(PREF.LAST_OPENED_LOCATION,
+                dir ? dumpFile.getAbsolutePath() : dumpFile.getParent());
+        return dumpFile;
+    }
+
+    private static String getFilePath(Shell shell, IPreferenceStore prefStore) {
+        FileDialog dialog = new FileDialog(shell);
+        dialog.setText(Messages.choose_dump_file_with_changes);
+        dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+        dialog.setFilterNames(new String[] {
+                Messages.DiffPresentationPane_sql_file_filter,
+                Messages.DiffPresentationPane_any_file_filter});
+        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
+        return dialog.open();
+    }
+
+    private static String getDirPath(Shell shell, IPreferenceStore prefStore) {
+        DirectoryDialog dialog = new DirectoryDialog(shell);
+        dialog.setText(Messages.DbStorePicker_choose_dir);
+        dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
+        return dialog.open();
+    }
+
     public static Deque<File> stringToDumpFileHistory(String preference) {
+        return stringToDumpFileHistory(preference, true);
+    }
+
+    public static Deque<File> stringToDumpFileHistory(String preference, boolean allowDirs) {
         String[] coordStrings = preference.split(DbInfo.DELIM_ENTRY);
         Deque<File> paths = new LinkedList<>();
         for (String path : coordStrings){
             File f = new File(path);
-            if (f.exists() && !paths.contains(f)) {
+            if (f.exists() && !paths.contains(f) && (allowDirs || !f.isDirectory())) {
                 paths.add(f);
             }
         }

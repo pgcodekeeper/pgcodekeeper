@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -134,17 +135,22 @@ implements IExecutableExtension, INewWizard {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
 
-            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
-            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
+            String charset = pageDb.getCharset();
+            String timezone = pageDb.getTimeZone();
 
-            props.openProject();
             if (!checkMarkerExist()) {
-                String charset = pageDb.getCharset();
-                if (!charset.isEmpty() &&
-                        !ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset().equals(charset)) {
-                    props.setProjectCharset(charset);
+                if (charset.isEmpty()) {
+                    charset = ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
                 }
-                String timezone = pageDb.getTimeZone();
+                getContainer().run(true, true, new InitProjectFromSource(charset,
+                        props.getPathToProject() , getDbSource(props)));
+            }
+            initSuccess = true;
+
+            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+
+            if (!checkMarkerExist()) {
+                props.setProjectCharset(charset);
                 if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
                 }
@@ -153,10 +159,10 @@ implements IExecutableExtension, INewWizard {
                 } catch (BackingStoreException e) {
                     Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
                 }
-
-                getContainer().run(true, true, new InitProjectFromSource(props, getDbSource(props)));
             }
-            initSuccess = true;
+
+            IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
+            workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
 
             BasicNewProjectResourceWizard.updatePerspective(config);
             BasicNewResourceWizard.selectAndReveal(props.getProject(),
@@ -302,7 +308,7 @@ class PageDb extends WizardPage {
             }
         });
 
-        storePicker = new DbStorePicker(group, SWT.NONE, mainPrefs, true, false);
+        storePicker = new DbStorePicker(group, mainPrefs, true, false, true);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
@@ -378,8 +384,7 @@ class PageDb extends WizardPage {
                 throws InvocationTargetException, InterruptedException {
 
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), ApgdiffConsts.UTC);
 
             try (Connection conn = connector.getConnection(); Statement s = conn.createStatement()) {
                 ResultSet rs = s.executeQuery(QUERY_TZ);

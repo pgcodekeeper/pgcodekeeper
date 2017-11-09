@@ -5,12 +5,13 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.relowner,
+SELECT c.oid, 
+       c.relowner::bigint,
        c.relname,
        descr.description AS comment,
        d.refobjid::regclass::text referenced_table_name,
        a.attname AS ref_col_name,
-       c.relacl AS aclArray
+       c.relacl::text AS aclarray
 FROM pg_catalog.pg_class c
 LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid
     AND descr.objsubid = 0

@@ -15,15 +15,23 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
-SELECT subselectColumns.relname,
+SELECT subselectColumns.oid,
+       subselectColumns.relname,
+       subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
-       subselectColumns.aclArray,
+       subselectColumns.aclarray,
+       subselectColumns.server_name,
+       subselectColumns.ftoptions,
        subselectColumns.col_numbers,
        subselectColumns.col_names,
+       subselectColumns.col_options,
+       subselectColumns.col_foptions,
+       subselectColumns.col_storages,
+       subselectColumns.col_default_storages,
        subselectColumns.col_defaults,
        subselectColumns.col_comments,
-       subselectColumns.atttypids as col_type_ids,
-       subselectColumns.atttypname as col_type_name,
+       subselectColumns.atttypids AS col_type_ids,
+       subselectColumns.atttypname AS col_type_name,
        subselectColumns.col_notnull,
        subselectColumns.col_collation,
        subselectColumns.col_statictics,
@@ -31,11 +39,11 @@ SELECT subselectColumns.relname,
        subselectColumns.col_typcollation,
        subselectColumns.col_collationname,
        subselectColumns.col_collationnspname,
-       subselectColumns.col_attseq,
        subselectColumns.col_acl,
        comments.description AS table_comment,
-       subselectColumns.spcname as table_space,
-       subselectColumns.relhasoids as has_oids,
+       subselectColumns.spcname AS table_space,
+       subselectColumns.relpersistence AS persistence,
+       subselectColumns.relhasoids AS has_oids,
        subselectInherits.inhrelnames,
        subselectInherits.inhnspnames,
        subselectColumns.reloptions,
@@ -43,12 +51,20 @@ SELECT subselectColumns.relname,
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
+            columnsData.of_type,
             columnsData.relowner,
-            columnsData.aclArray,
+            columnsData.aclarray,
+            columnsData.server_name,
+            columnsData.ftoptions,
             columnsData.spcname,
+            columnsData.relpersistence,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
+            array_agg(columnsData.attoptions ORDER BY columnsData.attnum) AS col_options,
+            array_agg(columnsData.fattoptions ORDER BY columnsData.attnum) AS col_foptions,
+            array_agg(columnsData.attstorage ORDER BY columnsData.attnum) AS col_storages,
+            array_agg(columnsData.typstorage ORDER BY columnsData.attnum) AS col_default_storages,
             array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
             array_agg(columnsData.description ORDER BY columnsData.attnum) AS col_comments,
             array_agg(columnsData.atttypid ORDER BY columnsData.attnum) AS atttypids,
@@ -62,19 +78,25 @@ FROM
             array_agg(columnsData.attcollation ORDER BY columnsData.attnum) AS col_collation,
             array_agg(columnsData.typcollation ORDER BY columnsData.attnum) AS col_typcollation,
             array_agg(columnsData.attcollationname ORDER BY columnsData.attnum) AS col_collationname,
-            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname,
-            array_agg(columnsData.attseq ORDER BY columnsData.attnum) AS col_attseq
+            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname
      FROM
          (SELECT c.oid,
               c.relname,
+              c.reloftype::bigint AS of_type,
               c.relowner::bigint,
-              c.relacl::text AS aclArray,
+              c.relacl::text AS aclarray,
+              ser.srvname AS server_name,
+              ftbl.ftoptions,
               attr.attnum::integer,
               attr.attname,
+              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
+              array_to_string(attr.attfdwoptions, ',') fattoptions,
+              attr.attstorage,
+              t.typstorage,
               c.relhasoids,
               pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
               comments.description,
-              attr.atttypid,
+              attr.atttypid::bigint,
               pg_catalog.format_type(attr.atttypid, attr.atttypmod) AS atttypname,
               attr.attnotnull,
               attr.attstattarget,
@@ -82,12 +104,12 @@ FROM
               attr.attacl::text,
               c.reloptions,
               tc.reloptions AS toast_reloptions,
-              attr.attcollation,
-              t.typcollation,
+              attr.attcollation::bigint,
+              t.typcollation::bigint,
               tabsp.spcname,
+              c.relpersistence,
               (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
-              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname,
-              pg_catalog.pg_get_serial_sequence(quote_ident(c.relname), attr.attname) AS attseq
+              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
           JOIN pg_catalog.pg_attribute attr ON c.oid = attr.attrelid
               AND attr.attisdropped IS FALSE
@@ -98,18 +120,24 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
+          LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
+          LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
           WHERE c.relnamespace = ?
-              AND c.relkind = 'r'
+              AND c.relkind in ('f','r')
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
+              columnsData.of_type,
               columnsData.relowner,
-              columnsData.aclArray,
+              columnsData.aclarray,
+              columnsData.server_name,
+              columnsData.ftoptions,
               columnsData.reloptions,
               columnsData.toast_reloptions,
               columnsData.relhasoids,
-              columnsData.spcname) subselectColumns
+              columnsData.spcname,
+              columnsData.relpersistence) subselectColumns
 LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
     AND comments.objsubid = 0
 LEFT JOIN
@@ -127,3 +155,4 @@ LEFT JOIN
           LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
           ORDER BY inhrelid, inh.inhseqno ) subinh
      GROUP BY subinh.inhrelid ) subselectInherits ON subselectInherits.inhrelid = subselectColumns.oid
+     

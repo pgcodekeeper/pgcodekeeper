@@ -17,10 +17,14 @@ public interface UIConsts {
         String MAIN = PLUGIN_ID.THIS + ".mainperspective"; //$NON-NLS-1$
     }
 
+    interface CONTEXT {
+        String MAIN = PLUGIN_ID.THIS + ".pgCodeKeeper"; //$NON-NLS-1$
+        String EDITOR = PLUGIN_ID.THIS + ".pgCodeKeeperEditorScope"; //$NON-NLS-1$
+    }
+
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
-        String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
     interface MARKER {
@@ -36,6 +40,10 @@ public interface UIConsts {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
+
+        String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
+        String UPDATE_DDL = PLUGIN_ID.THIS + ".command.UpdateDdl"; //$NON-NLS-1$
+        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -55,7 +63,6 @@ public interface UIConsts {
 
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
         //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
@@ -78,14 +85,16 @@ public interface UIConsts {
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
+        String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
+        String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {
-        String PRJ_UPDATE_EDITOR_IS_BACKLIGHT = "prefPrjUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_IS_BACKLIGHT = "prefDbUpdateEditorIsBacklight"; //$NON-NLS-1$
-        String PRJ_UPDATE_EDITOR_BACKLIGHT = "prefPrjUpdateEditorBacklight"; //$NON-NLS-1$
-        String DB_UPDATE_EDITOR_BACKLIGHT = "prefDbUpdateEditorBacklight"; //$NON-NLS-1$
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
+        String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
+        String UPDATE = "UPDATE"; //$NON-NLS-1$
+        String RESET = "RESET"; //$NON-NLS-1$
+        String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
     public enum DBSources {
@@ -117,6 +126,7 @@ public interface UIConsts {
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         /*
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
@@ -155,10 +165,15 @@ public interface UIConsts {
         String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONAPPWIZ = "/icons/app_icon_wiz.png"; //$NON-NLS-1$
         String ICONAPPBIG = "/icons/app_icon128.png"; //$NON-NLS-1$
-        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLGREEN = "/icons/ball_green.png"; //$NON-NLS-1$
-        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
+        String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
+        String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
+
+        // pgadmin icons
+        String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
+        String ICONDATABASE = ICONPGADMIN + "database.png"; //$NON-NLS-1$
 
         // copies of inaccessible Eclipse icons
         String ICONUP = "/icons/search_prev.gif"; //$NON-NLS-1$
@@ -170,6 +185,10 @@ public interface UIConsts {
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
+        String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
+        String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
+        String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
+        String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
@@ -185,7 +204,7 @@ public interface UIConsts {
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 
-    String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
+    String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
     List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
             "UTC-12:00", //$NON-NLS-1$

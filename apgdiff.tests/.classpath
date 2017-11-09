@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.7.13.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/gson-2.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/picocontainer-2.14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/javers-core-1.1.1.jar" sourcepath="lib/javers-core-1.1.1-sources.jar"/>

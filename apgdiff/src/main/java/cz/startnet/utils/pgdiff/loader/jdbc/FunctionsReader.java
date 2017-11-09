@@ -1,23 +1,24 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class FunctionsReader extends JdbcReader {
 
     public static class FunctionsReaderFactory extends JdbcReaderFactory {
 
-        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public FunctionsReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
@@ -34,47 +35,32 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
-        PgFunction function = getFunction(result, schema.getName());
-        if (function != null) {
-            schema.addFunction(function);
-        }
-    }
-
-    /**
-     * Returns function object accordingly to data stored in current res row
-     * (except for aggregate functions).
-     * Defines function body from Postgres pg_get_functiondef() output.
-     */
-    private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException {
+    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
 
-        f.setBody(loader.args, getFunctionBody(res));
+        f.setBody(loader.args, getFunctionBody(res, schemaName));
 
         // RETURN TYPE
-        Array proargmodes = res.getArray("proargmodes");
+
         boolean returnsTable = false;
         StringBuilder returnedTableArguments = new StringBuilder();
-        if (proargmodes != null) {
-            String[] argModes = (String[]) proargmodes.getArray();
-            if (Arrays.asList(argModes).contains("t")) {
-                String[] argNames = (String[]) res.getArray("proargnames").getArray();
-                Long[] argTypeOids = (Long[]) res.getArray("proallargtypes").getArray();
-                for (int i = 0; i < argModes.length; i++) {
-                    String type = argModes[i];
-                    if (type.equals("t")) {
-                        returnsTable = true;
-                        if (returnedTableArguments.length() > 0) {
-                            returnedTableArguments.append(", ");
-                        }
-                        returnedTableArguments.append(argNames[i]).append(" ");
+        String[] argModes = res.getArray("proargmodes", String.class);
+        if (argModes != null && Arrays.asList(argModes).contains("t")) {
+            String[] argNames = res.getArray("proargnames", String.class);
+            Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
+            for (int i = 0; i < argModes.length; i++) {
+                String type = argModes[i];
+                if ("t".equals(type)) {
+                    returnsTable = true;
+                    returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
+                    returnedTableArguments.append(argNames[i]).append(" ");
 
-                        JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
-                        returnedTableArguments.append(returnType.getFullName(schemaName));
-                        returnType.addTypeDepcy(f);
-                    }
+                    JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
+                    returnedTableArguments.append(returnType.getFullName(schemaName));
+                    returnType.addTypeDepcy(f);
                 }
             }
         }
@@ -88,40 +74,60 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
         }
 
-        // ARGUMENTS
-        // TODO manually assemble function sig instead of parsing?
-        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
-        // Benchmark               Mode  Cnt       Score      Error  Units
-        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
-        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
-        String arguments = res.getString("proarguments");
-        if (!arguments.isEmpty()) {
-            loader.submitAntlrTask('(' + arguments + ')',
-                    p -> p.function_args_parser().function_args(),
-                    ctx -> ParserAbstract.fillArguments(ctx, f, schemaName));
-        }
-
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
 
         // PRIVILEGES
         String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "(" +
                 res.getString("proarguments_without_default") + ")";
-        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner(), null);
+        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
 
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
-        return f;
+
+        // ARGUMENTS
+        // TODO manually assemble function sig instead of parsing?
+        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
+        // Benchmark               Mode  Cnt       Score      Error  Units
+        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
+        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
+        //
+        // This is the last one, because addFunction requires filled function arguments
+        String arguments = res.getString("proarguments");
+        if (!arguments.isEmpty()) {
+            loader.submitAntlrTask('(' + arguments + ')',
+                    p -> p.function_args_parser().function_args(),
+                    ctx -> {
+                        ParserAbstract.fillArguments(ctx, f, schemaName);
+                        schema.addFunction(f);
+                    });
+        } else {
+            schema.addFunction(f);
+        }
     }
 
-    private String getFunctionBody(ResultSet res) throws SQLException {
+    private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         StringBuilder body = new StringBuilder();
 
         String lanName = res.getString("lang_name");
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
+
+        // since 9.5 PostgreSQL
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+            Long[] protrftypes = res.getArray("protrftypes", Long.class);
+            if (protrftypes != null) {
+                body.append(" TRANSFORM ");
+                for (Long s : protrftypes) {
+                    body.append("FOR TYPE ")
+                    .append(loader.cachedTypesByOid.get(s).getFullName(schemaName));
+                    body.append(", ");
+                }
+                body.setLength(body.length() - 2);
+            }
+        }
 
         if (res.getBoolean("proiswindow")) {
             body.append(" WINDOW");
@@ -134,6 +140,8 @@ public class FunctionsReader extends JdbcReader {
             break;
         case "s":
             body.append(" STABLE");
+            break;
+        default :
             break;
         }
 
@@ -151,8 +159,24 @@ public class FunctionsReader extends JdbcReader {
             body.append(" LEAKPROOF");
         }
 
+        // since 9.6 PostgreSQL
+        // parallel mode: s - safe, r - restricted, u - unsafe
+        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
+            String parMode = res.getString("proparallel");
+            switch (parMode) {
+            case "s":
+                body.append(" PARALLEL SAFE");
+                break;
+            case "r":
+                body.append(" PARALLEL RESTRICTED");
+                break;
+            default :
+                break;
+            }
+        }
+
         float cost = res.getFloat("procost");
-        if (lanName.equals("internal") || lanName.equals("c")) {
+        if ("internal".equals(lanName) || "c".equals(lanName)) {
             /* default cost is 1 */
             if (cost != 1) {
                 body.append(" COST ").append((int) cost);
@@ -169,13 +193,13 @@ public class FunctionsReader extends JdbcReader {
             body.append(" ROWS ").append((int) rows);
         }
 
-        Array configParams = res.getArray("proconfig");
-        if (configParams != null) {
-            for (String param : (String[]) configParams.getArray()) {
+        String [] proconfig = res.getArray("proconfig", String.class);
+        if (proconfig != null) {
+            for (String param : proconfig) {
                 String[] params = param.split("=");
                 String par = params[0];
                 String val = params[1];
-                if (!par.equals("DateStyle") && !par.equals("search_path")) {
+                if (!"DateStyle".equals(par) && !"search_path".equals(par)) {
                     par = PgDiffUtils.getQuotedName(par);
                     val = PgDiffUtils.quoteString(val);
                 }
@@ -189,7 +213,7 @@ public class FunctionsReader extends JdbcReader {
         String probin = res.getString("probin");
         if (probin != null && !probin.isEmpty()) {
             body.append("\n    AS ").append(PgDiffUtils.quoteString(probin));
-            if (!definition.equals("-")) {
+            if (!"-".equals(definition)) {
                 body.append(", ");
                 if (!definition.contains("\'") && !definition.contains("\\")) {
                     body.append(PgDiffUtils.quoteString(definition));
@@ -198,7 +222,7 @@ public class FunctionsReader extends JdbcReader {
                 }
             }
         } else {
-            if (!definition.equals("-")) {
+            if (!"-".equals(definition)) {
                 body.append("\n    AS ").append(quote).append(definition).append(quote);
             }
         }

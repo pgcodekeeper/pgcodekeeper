@@ -37,8 +37,7 @@ public final class ApgdiffTestUtils {
 
     public static void fillDB(String dbName, InputStream in) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName,
-                ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName, ApgdiffConsts.UTC);
         // dump schemas back
         try (InputStreamReader isr = new InputStreamReader(in, "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)) {
@@ -58,8 +57,7 @@ public final class ApgdiffTestUtils {
 
     public static void dropDB(String dbName) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, TEST.REMOTE_DB,
-                ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
+                TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, TEST.REMOTE_DB, ApgdiffConsts.UTC);
         String res = new JdbcRunner(connector).runScript("DROP DATABASE " + dbName);
         Assert.assertEquals("DB cleanup script returned an error: " + res,
                 JDBC_CONSTS.JDBC_SUCCESS, res);

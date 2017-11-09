@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -29,6 +30,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
@@ -58,94 +60,90 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private final PgDatabase db;
-    private final String parsedObjectName;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
     private String tablespace;
     private String oids;
 
-    public CustomSQLParserListener(PgDatabase database, String parsedObjectName,
-            List<AntlrError> errors, IProgressMonitor monitor) {
+    public CustomSQLParserListener(PgDatabase database, List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
-        this.parsedObjectName = parsedObjectName;
         this.monitor = monitor;
     }
 
-    private PgStatement safeParseStatement(ParserAbstract p) {
+    private PgStatement safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
             return p.getObject();
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex));
             return null;
+        } catch (ObjectCreationException ex) {
+            errors.add(handleCreationException(ex, ctx.getParent()));
+            return null;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
-        }/* catch (Exception ex) {
-            Log.log(Log.LOG_WARNING,
-                    "Exception while analyzing parser tree for: " + parsedObjectName, ex);
-            return null;
-        }*/
+        }
     }
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        safeParseStatement(new CreateTable(ctx, db, tablespace, oids));
+        safeParseStatement(new CreateTable(ctx, db, tablespace, oids), ctx);
     }
 
     @Override
     public void exitCreate_index_statement(Create_index_statementContext ctx) {
-        safeParseStatement(new CreateIndex(ctx, db, tablespace));
+        safeParseStatement(new CreateIndex(ctx, db, tablespace), ctx);
     }
 
     @Override
     public void exitCreate_extension_statement(Create_extension_statementContext ctx) {
-        safeParseStatement(new CreateExtension(ctx, db));
+        safeParseStatement(new CreateExtension(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        safeParseStatement(new CreateTrigger(ctx, db));
+        safeParseStatement(new CreateTrigger(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_rewrite_statement(Create_rewrite_statementContext ctx) {
-        safeParseStatement(new CreateRewrite(ctx, db));
+        safeParseStatement(new CreateRewrite(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_function_statement(Create_function_statementContext ctx) {
-        safeParseStatement(new CreateFunction(ctx, db));
+        safeParseStatement(new CreateFunction(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_sequence_statement(Create_sequence_statementContext ctx) {
-        safeParseStatement(new CreateSequence(ctx, db));
+        safeParseStatement(new CreateSequence(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
-        safeParseStatement(new CreateSchema(ctx, db));
+        safeParseStatement(new CreateSchema(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
-        safeParseStatement(new CreateView(ctx, db));
+        safeParseStatement(new CreateView(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_type_statement(Create_type_statementContext ctx) {
-        safeParseStatement(new CreateType(ctx, db));
+        safeParseStatement(new CreateType(ctx, db), ctx);
     }
 
     @Override
     public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
-        safeParseStatement(new CreateDomain(ctx, db));
+        safeParseStatement(new CreateDomain(ctx, db), ctx);
     }
 
     @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
-        safeParseStatement(new CommentOn(ctx, db));
+        safeParseStatement(new CommentOn(ctx, db), ctx);
     }
 
     @Override
@@ -161,6 +159,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
         switch (confParam.toLowerCase()) {
         case "search_path":
+            // костыль: TRANSFORM объекты создаются в pg_catalog и дампятся pg_dump
+            if ("pg_catalog".equals(confValue)) {
+                break;
+            }
             // allow the exception to terminate entire walker here
             // so that objects aren't created on the wrong search_path
             db.setDefaultSchema(ParserAbstract.getSafe(
@@ -184,53 +186,57 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         default:
             break;
         }
-
     }
 
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
-        safeParseStatement(new CreateRule(ctx, db));
+        safeParseStatement(new CreateRule(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        safeParseStatement(new AlterFunction(ctx, db));
+        safeParseStatement(new AlterFunction(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        safeParseStatement(new AlterSchema(ctx, db));
+        safeParseStatement(new AlterSchema(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        safeParseStatement(new AlterTable(ctx, db));
+        safeParseStatement(new AlterTable(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
-        safeParseStatement(new AlterSequence(ctx, db));
+        safeParseStatement(new AlterSequence(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
-        safeParseStatement(new AlterView(ctx, db));
+        safeParseStatement(new AlterView(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
-        safeParseStatement(new AlterType(ctx, db));
+        safeParseStatement(new AlterType(ctx, db), ctx);
     }
 
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
-        safeParseStatement(new AlterDomain(ctx, db));
+        safeParseStatement(new AlterDomain(ctx, db), ctx);
     }
 
     static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex) {
         Token t = ex.getErrorToken();
-        Log.log(Log.LOG_WARNING,"Cannot find object in database: " + t.getText(), ex);
-        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(),
-                "Cannot find object in database: " + t.getText());
+        Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
+        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
+    }
+
+    static AntlrError handleCreationException(ObjectCreationException ex, ParserRuleContext ctx) {
+        Token t = ctx.getStart();
+        Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
+        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
     }
 }

@@ -1,45 +1,41 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgOptionContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -78,60 +74,48 @@ public abstract class ParserAbstract {
         return ctx.getStart().getInputStream().getText(interval);
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences,
-            String defSchema) {
-        PgColumn col = null;
-        if (colCtx.column_name != null) {
-            col = new PgColumn(colCtx.column_name.getText());
-            col.setType(getFullCtxText(colCtx.datatype));
-            addTypeAsDepcy(colCtx.datatype, col, getDefSchemaName());
-            if (colCtx.collate_name != null) {
-                col.setCollation(getFullCtxText(colCtx.collate_name.collation));
+    protected PgColumn getColumn(Table_column_definitionContext colCtx, String defSchema) {
+        PgColumn col = new PgColumn(colCtx.column_name.getText());
+        col.setType(getFullCtxText(colCtx.datatype));
+        addTypeAsDepcy(colCtx.datatype, col, getDefSchemaName());
+        if (colCtx.collate_name != null) {
+            col.setCollation(getFullCtxText(colCtx.collate_name.collation));
+        }
+        for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
+            if (column_constraint.constr_body().default_expr != null) {
+                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+
+                ValueExpr vex = new ValueExpr(defSchema);
+                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                col.addAllDeps(vex.getDepcies());
             }
-            for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-                if (column_constraint.constr_body().default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
-                    String sequence = getSequence(column_constraint.constr_body().default_expr);
-                    if (sequence != null) {
-                        sequences.add(sequence);
-                    }
 
-                    ValueExpr vex = new ValueExpr(defSchema);
-                    vex.analyze(new Vex(column_constraint.constr_body().default_expr));
-                    col.addAllDeps(vex.getDepcies());
-                }
+            Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+            if (comConstr != null && comConstr.null_value != null) {
+                col.setNullValue(comConstr.null_false == null);
+            }
+        }
+        return col;
+    }
 
-                Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
-                if (comConstr != null && comConstr.null_value != null) {
-                    col.setNullValue(comConstr.null_false == null);
-                }
+    protected PgColumn getColumnOfType(Table_of_type_column_definitionContext typeColCtx, String defSchema) {
+        PgColumn col = new PgColumn(typeColCtx.column_name.getText());
+        for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
+            if (column_constraint.constr_body().default_expr != null) {
+                col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+
+                ValueExpr vex = new ValueExpr(defSchema);
+                vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                col.addAllDeps(vex.getDepcies());
+            }
+
+            Common_constraintContext comConstr = column_constraint.constr_body().common_constraint();
+            if (comConstr != null && comConstr.null_value != null) {
+                col.setNullValue(comConstr.null_false == null);
             }
         }
 
         return col;
-    }
-
-    protected String getSequence(VexContext default_expr) {
-        SeqNameListener name = new SeqNameListener();
-        ParseTreeWalker.DEFAULT.walk(name, default_expr);
-        return name.getSeqName();
-    }
-
-    private static class SeqNameListener extends SQLParserBaseListener {
-
-        private String seqName;
-
-        @Override
-        public void enterFunction_call(Function_callContext ctx) {
-            GeneralLiteralSearch seq = new GeneralLiteralSearch();
-            ParseTreeWalker.DEFAULT.walk(seq, ctx);
-            if (seq.isFound()) {
-                seqName = seq.getSeqName();
-            }
-        }
-        public String getSeqName() {
-            return seqName;
-        }
     }
 
     public static void fillArguments(Function_argsContext function_argsContext,
@@ -145,12 +129,11 @@ public abstract class ParserAbstract {
             addTypeAsDepcy(argument.data_type(), function, defSchemaName);
 
             if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument
-                        .function_def_value().def_value));
-                for (GenericColumn objName : parseDefValues(argument
-                        .function_def_value().def_value, defSchemaName)) {
-                    function.addDep(objName);
-                }
+                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
+                VexContext defExpression = argument.function_def_value().def_value;
+                ValueExpr vex = new ValueExpr(defSchemaName);
+                vex.analyze(new Vex(defExpression));
+                function.addAllDeps(vex.getDepcies());
             }
             if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
@@ -159,31 +142,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    private static List<GenericColumn> parseDefValues(ParserRuleContext defExpression,
-            final String defSchemaName) {
-        final List<GenericColumn> funcSignature = new ArrayList<>();
-        new ParseTreeWalker().walk(new SQLParserBaseListener() {
-            @Override
-            public void enterFunction_call(Function_callContext ctx) {
-                List<IdentifierContext> ids = ctx.schema_qualified_name().identifier();
-                String objName = QNameParser.getFirstName(ids);
-                String schemaName = QNameParser.getSchemaName(ids, defSchemaName);
-                funcSignature.add(new GenericColumn(schemaName, objName, DbObjType.FUNCTION));
-            }
-        }, defExpression);
-        return funcSignature;
-    }
-
-    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
-        List<PgConstraint> result = new ArrayList<>();
-        // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
-        if (colCtx.tabl_constraint != null) {
-            result.add(getTableConstraint(colCtx.tabl_constraint));
-        }
-        return result;
-    }
-
-    protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
+    protected PgConstraint getTableConstraint(Constraint_commonContext ctx, String schemaName) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
         PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
 
@@ -191,23 +150,42 @@ public abstract class ParserAbstract {
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
-            String tableName = QNameParser.getFirstName(ids);
-            String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-            GenericColumn ftable = new GenericColumn(schemaName, tableName, DbObjType.TABLE);
+            String refTableName = QNameParser.getFirstName(ids);
+            String refSchemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+            GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             constr.setForeignTable(ftable);
             constr.addDep(ftable);
 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 String colName = QNameParser.getFirstName(name.identifier());
                 constr.addForeignColumn(colName);
-                constr.addDep(new GenericColumn(schemaName, tableName, colName, DbObjType.COLUMN));
+                constr.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
             }
         }
         if (ctx.constr_body().table_unique_prkey() != null) {
             setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
         }
+
+        parseConstraintExpr(ctx.constr_body(), schemaName, constr);
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
+    }
+
+    public static void parseConstraintExpr(Constr_bodyContext ctx, String schemaName,
+            PgConstraint constr) {
+        VexContext exp = null;
+        Common_constraintContext common = ctx.common_constraint();
+        Check_boolean_expressionContext check;
+        if (common != null && (check = common.check_boolean_expression()) != null){
+            exp = check.expression;
+        } else {
+            exp = ctx.vex();
+        }
+        if (exp != null){
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            constr.addAllDeps(vex.getDepcies());
+        }
     }
 
     /**
@@ -223,8 +201,9 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
-        if (constr.common_constraint().check_boolean_expression() != null) {
+    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
+        Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
+        if (bool != null) {
             String constr_name = "";
             if (constr.name != null) {
                 constr_name = QNameParser.getFirstName(constr.name.identifier());
@@ -232,6 +211,10 @@ public abstract class ParserAbstract {
             PgConstraint constraint = new PgConstraint(constr_name,
                     getFullCtxText(constr));
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
+            VexContext exp = bool.expression;
+            ValueExpr vex = new ValueExpr(schemaName);
+            vex.analyze(new Vex(exp));
+            constraint.addAllDeps(vex.getDepcies());
             return constraint;
         }
         return null;
@@ -246,7 +229,8 @@ public abstract class ParserAbstract {
             String name, Token errToken) {
         T statement = getter.apply(name);
         if (statement == null) {
-            throw new UnresolvedReferenceException(errToken);
+            throw new UnresolvedReferenceException("Cannot find object in database: "
+                    + errToken.getText(), errToken);
         }
         return statement;
     }
@@ -274,13 +258,22 @@ public abstract class ParserAbstract {
         Schema_qualified_name_nontypeContext qname = ctx.predefined_type().schema_qualified_name_nontype();
         if (qname != null) {
             IdentifierContext schemaCtx = qname.identifier();
-            st.addDep(new GenericColumn(schemaCtx == null ? schema : schemaCtx.getText(),
-                    qname.identifier_nontype().getText(), DbObjType.TYPE));
+            String schemaName = schema;
+            if (schemaCtx != null){
+                schemaName = schemaCtx.getText();
+                if ("pg_catalog".equals(schemaName)
+                        || "information_schema".equals(schemaName)) {
+                    return;
+                }
+            }
+
+            st.addDep(new GenericColumn(schemaName, qname.identifier_nontype().getText(),
+                    DbObjType.TYPE));
         }
     }
 
-    public static void fillStorageParams(String[] options, PgOptionContainer optionContainer,
-            boolean isToast) {
+    public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
+            boolean isToast, boolean forсeQuote){
         for (String pair : options) {
             int sep = pair.indexOf('=');
             String option, value;
@@ -291,20 +284,21 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (!PgDiffUtils.isValidId(value, false, false)) {
-                // only quote non-ids; pg_dump behavior
+            if (forсeQuote || !PgDiffUtils.isValidId(value, false, false)) {
+                // only quote non-ids, do not quote columns
+                // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);
             }
-            fillStorageParams (value, option, isToast, optionContainer);
+            fillOptionParams(value, option, isToast, c);
         }
     }
 
-    public static void fillStorageParams (String value, String option, boolean isToast,
-            PgOptionContainer optionContainer){
+    public static void fillOptionParams(String value, String option, boolean isToast,
+            BiConsumer<String, String> c) {
         String quotedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
             quotedOption = "toast."+ option;
         }
-        optionContainer.addOption(quotedOption, value);
+        c.accept(quotedOption, value);
     }
 }

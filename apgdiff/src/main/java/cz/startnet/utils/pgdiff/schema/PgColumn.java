@@ -6,6 +6,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,10 +22,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgColumn extends PgStatementWithSearchPath {
+public class PgColumn extends PgStatementWithSearchPath implements PgOptionContainer {
 
     private static final String ALTER_TABLE = "ALTER TABLE ";
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
+    private static final String ALTER_FOREIGN_OPTION =  "\n\n{0} ALTER COLUMN {1} OPTIONS ({2} {3} {4});";
 
     private Integer statistics;
     private String defaultValue;
@@ -30,6 +34,8 @@ public class PgColumn extends PgStatementWithSearchPath {
     private String collation;
     private boolean nullValue = true;
     private String storage;
+    private final Map<String, String> options = new LinkedHashMap<>(0);
+    private final Map<String, String> fOptions = new LinkedHashMap<>(0);
 
     @Override
     public DbObjType getStatementType() {
@@ -49,6 +55,26 @@ public class PgColumn extends PgStatementWithSearchPath {
         return defaultValue;
     }
 
+    @Override
+    public Map<String, String> getOptions() {
+        return Collections.unmodifiableMap(options);
+    }
+
+    @Override
+    public void addOption(String attribute, String value){
+        this.options.put(attribute, value);
+        resetHash();
+    }
+
+    public Map<String, String> getForeignOptions() {
+        return Collections.unmodifiableMap(fOptions);
+    }
+
+    public void addForeignOption(String attribute, String value){
+        this.fOptions.put(attribute, value);
+        resetHash();
+    }
+
     /**
      * Returns full definition of the column.
      *
@@ -58,15 +84,19 @@ public class PgColumn extends PgStatementWithSearchPath {
      * @return full definition of the column
      */
     public String getFullDefinition(final boolean addDefaults,
-            StringBuilder separateDefault) {
+            StringBuilder separateDefault, boolean isTableOfType) {
         final StringBuilder sbDefinition = new StringBuilder();
-
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
-        sbDefinition.append(' ');
-        sbDefinition.append(type);
-        if (collation != null) {
-            sbDefinition.append(" COLLATE ").append(collation);
+
+        if(isTableOfType){
+            sbDefinition.append(" WITH OPTIONS");
+        } else {
+            sbDefinition.append(' ');
+            sbDefinition.append(type);
+            if (collation != null) {
+                sbDefinition.append(" COLLATE ").append(collation);
+            }
         }
 
         if (defaultValue != null && !defaultValue.isEmpty()) {
@@ -93,6 +123,7 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         return sbDefinition.toString();
     }
+
 
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
@@ -145,7 +176,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getAlterTable())
         .append("\n\tADD COLUMN ")
-        .append(getFullDefinition(false, defaultStatement))
+        .append(getFullDefinition(false, defaultStatement, false))
         .append(';');
         if (defaultStatement.length() > 0) {
             sbSQL.append("\n\n")
@@ -164,7 +195,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     }
 
     private String getAlterTable() {
-        return ALTER_TABLE + this.getParent().getName();
+        return ALTER_TABLE + PgDiffUtils.getQuotedName(this.getParent().getName());
     }
 
     @Override
@@ -204,7 +235,7 @@ public class PgColumn extends PgStatementWithSearchPath {
                 (oldColumn.getStorage() == null ||oldColumn.getStorage().isEmpty()) ?
                         null : oldColumn.getStorage();
         final String newStorage =
-                (newColumn.getStorage() == null || newColumn .getStorage().isEmpty()) ?
+                (newColumn.getStorage() == null || newColumn.getStorage().isEmpty()) ?
                         null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
@@ -214,12 +245,15 @@ public class PgColumn extends PgStatementWithSearchPath {
         }
 
         if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
-            sb.append("\n\n" + ALTER_TABLE
-                    + "ONLY "
-                    + PgDiffUtils.getQuotedName(newColumn.getParent().getName())
-                    + ALTER_COLUMN
-                    + PgDiffUtils.getQuotedName(newColumn.getName())
-                    + " SET STORAGE " + newStorage + ';');
+            sb.append("\n\n")
+            .append(ALTER_TABLE)
+            .append("ONLY ")
+            .append(PgDiffUtils.getQuotedName(newColumn.getParent().getName()))
+            .append(ALTER_COLUMN)
+            .append(PgDiffUtils.getQuotedName(newColumn.getName()))
+            .append(" SET STORAGE ")
+            .append(newStorage)
+            .append(';');
         }
 
         if (!oldColumn.getType().equals(newColumn.getType()) ||
@@ -238,10 +272,9 @@ public class PgColumn extends PgStatementWithSearchPath {
                 .append(newColumn.getCollation());
             }
 
-            //
             PgDiffArguments arg = ((PgDatabase) newCondition.getParent().getParent().getParent()).getArguments();
 
-            if (arg == null || arg.isUsingOnOff()) {
+            if (arg == null || !arg.isUsingTypeCastOff()) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newColumn.getType());
             }
@@ -277,6 +310,32 @@ public class PgColumn extends PgStatementWithSearchPath {
         }
 
         alterPrivileges(newColumn, sb);
+        compareOptions(oldColumn, newColumn, sb);
+
+        Map<String, String> oldForeignOptions = oldColumn.getForeignOptions();
+        Map<String, String> newForeignOptions = newColumn.getForeignOptions();
+
+        if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
+            oldForeignOptions.forEach((key, value) -> {
+                if (newForeignOptions.containsKey(key)) {
+                    String newValue =  newForeignOptions.get(key);
+                    if (!Objects.equals(value, newValue)) {
+                        sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                                newColumn.getName(), "SET", key, newValue));
+                    }
+                } else {
+                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                            newColumn.getName(), "DROP", key, ""));
+                }
+            });
+
+            newForeignOptions.forEach((key, value) -> {
+                if (!oldForeignOptions.containsKey(key)) {
+                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                            newColumn.getName(), "ADD", key, value));
+                }
+            });
+        }
 
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
             sb.append("\n\n");
@@ -303,9 +362,10 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(storage, col.getStorage())
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
-                    && revokes.equals(col.revokes);
+                    && revokes.equals(col.revokes)
+                    && Objects.equals(fOptions, col.fOptions)
+                    && Objects.equals(options, col.options);
         }
-
         return eq;
     }
 
@@ -324,6 +384,9 @@ public class PgColumn extends PgStatementWithSearchPath {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
         return result;
     }
 
@@ -337,6 +400,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         colDst.setCollation(getCollation());
         colDst.setType(getType());
         colDst.setComment(getComment());
+        colDst.options.putAll(options);
+        colDst.fOptions.putAll(fOptions);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv.deepCopy());
         }

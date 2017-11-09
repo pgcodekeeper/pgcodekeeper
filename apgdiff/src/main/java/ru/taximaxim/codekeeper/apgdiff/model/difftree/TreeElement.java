@@ -20,17 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 public class TreeElement {
 
     public enum DiffSide {
-        LEFT("delete"), RIGHT("new"), BOTH("edit");
-        private String changeType;
-
-        private DiffSide(String changeType) {
-            this.changeType = changeType;
-        }
-
-        @Override
-        public String toString() {
-            return changeType;
-        }
+        LEFT, RIGHT, BOTH;
     }
 
     private int hashcode;
@@ -154,6 +144,21 @@ public class TreeElement {
         case COLUMN:     return ((PgTable) parent.getPgStatement(db)).getColumn(name);
         case RULE:       return ((PgRuleContainer) parent.getPgStatement(db)).getRule(name);
         default:         throw new IllegalStateException("Unknown element type: " + type);
+        }
+    }
+
+    /**
+     * @return Statement from the corresponding DB, based on client's side. BOTH uses left.
+     */
+    public PgStatement getPgStatementSide(PgDatabase left, PgDatabase right) {
+        switch (side) {
+        case LEFT:
+        case BOTH:
+            return getPgStatement(left);
+        case RIGHT:
+            return getPgStatement(right);
+        default:
+            return null;
         }
     }
 

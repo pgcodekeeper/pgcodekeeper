@@ -74,8 +74,8 @@ public class DbSourceTest {
                 TEST.REMOTE_USERNAME,
                 TEST.REMOTE_PASSWORD,
                 dbName,
-                ApgdiffConsts.UTF_8,
-                ApgdiffConsts.UTC, true));
+                ApgdiffConsts.UTC,
+                true));
     }
 
     @Test
@@ -139,8 +139,7 @@ public class DbSourceTest {
 
             // testing itself
             performTest(DbSource.fromJdbc(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD,
-                    dbName, ApgdiffConsts.UTF_8, ApgdiffConsts.UTC, true));
+                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName, ApgdiffConsts.UTC, true));
 
             proj.deleteFromWorkspace();
         }
@@ -171,7 +170,7 @@ public class DbSourceTest {
 
     private IProject createProjectInWorkspace(String projectName) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
-        project.create(null);
+        PgDbProject.createPgDbProject(project, null);
 
         assertNotNull("Project location cannot be determined", project.getLocation());
         return project;
