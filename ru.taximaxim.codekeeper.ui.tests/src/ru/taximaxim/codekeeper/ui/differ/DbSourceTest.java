@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
@@ -29,6 +30,7 @@ import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.JdbcTestUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -45,7 +47,7 @@ public class DbSourceTest {
     private static final String dbName = MessageFormat.format(
             TEST.REMOTE_DB_PATTERN,
             String.valueOf(new Random().nextInt(Integer.MAX_VALUE)));
-    private static PgDatabase dbPredefined;
+    private PgDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
 
@@ -53,11 +55,6 @@ public class DbSourceTest {
     public static void initDb() throws IOException, InterruptedException, LicenseException {
         JdbcTestUtils.createDb(dbName);
         ApgdiffTestUtils.fillDB(dbName);
-
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
-        args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = ApgdiffTestUtils.loadTestDump(
-                TEST.RESOURCE_DUMP, JdbcLoaderTest.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -67,8 +64,23 @@ public class DbSourceTest {
         prefs.setValue(PREF.LICENSE_PATH, ApgdiffTestUtils.getTestLicenseUrl().toString());
     }
 
+    @Before
+    public void fillDump() throws IOException, InterruptedException, LicenseException {
+        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
+        dbPredefined = ApgdiffTestUtils.loadTestDump(
+                TEST.RESOURCE_DUMP, JdbcLoaderTest.class, args);
+    }
+
     @Test
     public void testJdbc() throws IOException, LicenseException, InterruptedException, CoreException {
+
+        // doesn't have privileges to change default extension in remote database
+        PgExtension ext = new PgExtension("plpgsql", null);
+        ext.setSchema("pg_catalog");
+        ext.setComment("'PL/pgSQL procedural language'");
+        dbPredefined.addExtension(ext);
+
         performTest(DbSource.fromJdbc(TEST.REMOTE_HOST,
                 TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME,
@@ -123,6 +135,13 @@ public class DbSourceTest {
     public void testJdbcFromProject()
             throws CoreException, IOException, LicenseException, PgCodekeeperUIException,
             URISyntaxException, BackingStoreException, InterruptedException {
+
+        // doesn't have privileges to change default extension in remote database
+        PgExtension ext = new PgExtension("plpgsql", null);
+        ext.setSchema("pg_catalog");
+        ext.setComment("'PL/pgSQL procedural language'");
+        dbPredefined.addExtension(ext);
+
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
             File dir = tempDir.get().toFile();
             // create empty project in temp dir
