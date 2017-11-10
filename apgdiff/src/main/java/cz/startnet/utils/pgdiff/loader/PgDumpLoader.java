@@ -9,8 +9,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,15 +39,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
@@ -56,6 +53,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -201,7 +199,9 @@ public class PgDumpLoader implements AutoCloseable {
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                 monitor, monitoringLevel, listeners);
 
-        dbAnalyze(intoDb, false, false);
+        // !!!!!!!!!
+        // If there isn't run the "dbAnalyze(intoDb, false)" here, few tests will fall.
+        dbAnalyze(intoDb, false);
 
         return intoDb;
     }
@@ -315,65 +315,70 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        dbAnalyze(db, true, true);
+        dbAnalyze(db, true);
 
         arguments.getLicense().verifyDb(db);
         return db;
     }
 
-    private static void dbAnalyze(PgDatabase db, boolean analyzeTriggersRules, boolean analyzeFunctions) {
-        Map<String, Set<ParserRuleContext>> stmtCtxMap = db.getStatementContexts();
-        Set<ParserRuleContext> setCtx = null;
+    // !!!!!!!!!
+    // boolean analyzeFunctionsTriggersRules
+    private static void dbAnalyze(PgDatabase db, boolean analyzeFunctionsTriggersRules) {
+        List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> stmtCtxList = db.getContextsForAnalyze();
 
+        Map<PgStatement, Set<ParserRuleContext>> stmtCtxMap = new HashMap<>();
+        for (SimpleEntry<PgStatement, Set<ParserRuleContext>> entry : stmtCtxList) {
+            stmtCtxMap.put(entry.getKey(), entry.getValue());
+        }
+
+        Set<ParserRuleContext> setCtx = null;
         for (PgSchema s : db.getSchemas()) {
             for (PgView v : s.getViews()) {
-                setCtx = stmtCtxMap.get(v.getQualifiedName());
-                Create_view_statementContext createViewCtx = (Create_view_statementContext) setCtx.iterator().next();
-                UtilExpr.analyze(new SelectStmt(createViewCtx.select_stmt()),
-                        new Select(s.getName()), v);
+                setCtx = stmtCtxMap.get(v);
+
+                if (!setCtx.isEmpty()) {
+                    UtilExpr.analyze(new SelectStmt((Select_stmtContext) setCtx.iterator().next()),
+                            new Select(s.getName()), v);
+                }
             }
 
-            if (analyzeTriggersRules) {
-                for (PgTable t : s.getTables()) {
-                    for (PgRule r : t.getRules()) {
-                        setCtx = stmtCtxMap.get(r.getQualifiedName());
-                        Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) setCtx.iterator().next();
+            if(!analyzeFunctionsTriggersRules) {
+                continue;
+            }
 
-                        RulesReader.analyzeRewriteCreateStmtCtx(createRuleCtx, r, s.getName());
+            for (PgTable t : s.getTables()) {
+                for (PgRule r : t.getRules()) {
+                    setCtx = stmtCtxMap.get(r);
+                    Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) setCtx.iterator().next();
 
-                        if (!r.getCommands().isEmpty()) {
-                            for (Rewrite_commandContext cmd : createRuleCtx.commands) {
-                                RulesReader.analyzeRewriteCommandCtx(cmd, r, s.getName());
-                            }
+                    RulesReader.analyzeRewriteCreateStmtCtx(createRuleCtx, r, s.getName());
+
+                    if (!r.getCommands().isEmpty()) {
+                        for (Rewrite_commandContext cmd : createRuleCtx.commands) {
+                            RulesReader.analyzeRewriteCommandCtx(cmd, r, s.getName());
                         }
                     }
+                }
 
-                    for (PgTrigger tr : t.getTriggers()) {
-                        setCtx = stmtCtxMap.get(tr.getQualifiedName());
-                        Create_trigger_statementContext createTriggerCtx = (Create_trigger_statementContext) setCtx.iterator().next();
-
-                        When_triggerContext whenCtx;
-                        if ((whenCtx = createTriggerCtx.when_trigger()) != null) {
-                            TriggersReader.analyzeWhenCtx(whenCtx, tr, s.getName());
-                        }
+                for (PgTrigger tr : t.getTriggers()) {
+                    setCtx = stmtCtxMap.get(tr);
+                    if (setCtx != null && !setCtx.isEmpty()) {
+                        TriggersReader.analyzeWhenVexCtx((VexContext) setCtx.iterator().next(), tr, s.getName());
                     }
                 }
             }
 
-            if (analyzeFunctions) {
-                for (PgFunction f : s.getFunctions()) {
-                    setCtx = stmtCtxMap.get(f.getQualifiedName());
-                    Create_function_statementContext createFunctionCtx = (Create_function_statementContext) setCtx.iterator().next();
+            for (PgFunction f : s.getFunctions()) {
+                setCtx = stmtCtxMap.get(f);
 
-                    Function_argsContext functionArgs = createFunctionCtx.function_parameters().function_args();
-                    for (Function_argumentsContext argument : functionArgs.function_arguments()) {
-                        if (argument.function_def_value() != null) {
-                            VexContext defExpression = argument.function_def_value().def_value;
-                            ValueExpr vex = new ValueExpr(s.getName());
-                            vex.analyze(new Vex(defExpression));
-                            f.addAllDeps(vex.getDepcies());
-                        }
-                    }
+                if (setCtx != null && !setCtx.isEmpty()) {
+                    ValueExpr vex = new ValueExpr(s.getName());
+
+                    setCtx.stream().map(ctx -> (VexContext)ctx)
+                    .forEach(vCtx -> {
+                        vex.analyze(new Vex(vCtx));
+                        f.addAllDeps(vex.getDepcies());
+                    });
                 }
             }
         }
@@ -410,6 +415,9 @@ public class PgDumpLoader implements AutoCloseable {
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
         load(db);
 
+        // !!!!!!!!!
+        // = UIConsts =
+        // MARKER.ERROR = "ru.taximaxim.codekeeper.ui" + ".sql.errormarker"
         String markerError = "ru.taximaxim.codekeeper.ui.sql.errormarker";
 
         file.deleteMarkers(markerError, false, IResource.DEPTH_ZERO);
@@ -436,6 +444,9 @@ public class PgDumpLoader implements AutoCloseable {
                 }
                 marker.setAttribute(IMarker.CHAR_START, start);
                 marker.setAttribute(IMarker.CHAR_END, stop + 1);
+
+                // !!!!!!!!!
+                // catch (org.eclipse.jface.text.BadLocationException ex)
             } catch (org.eclipse.jface.text.BadLocationException ex) {
                 Log.log(ex);
             }

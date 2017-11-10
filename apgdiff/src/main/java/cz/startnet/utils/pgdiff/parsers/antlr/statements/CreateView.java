@@ -6,6 +6,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
@@ -36,8 +37,10 @@ public class CreateView extends ParserAbstract {
                 view.setTablespace(tablespace.name.getText());
             }
         }
-        if (ctx.v_query != null) {
-            view.setQuery(getFullCtxText(ctx.v_query));
+        Select_stmtContext vQuery = null;
+        if ((vQuery = ctx.v_query) != null) {
+            view.setQuery(getFullCtxText(vQuery));
+            db.addPairToContextsForAnalyze(view, vQuery);
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
@@ -61,6 +64,9 @@ public class CreateView extends ParserAbstract {
             }
         }
         schema.addView(view);
+
+
+
         return view;
     }
 }

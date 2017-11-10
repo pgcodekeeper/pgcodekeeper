@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -98,9 +99,11 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
 
-        When_triggerContext whenCtx;
+        When_triggerContext whenCtx = null;
         if ((whenCtx = ctx.when_trigger()) != null) {
-            trigger.setWhen(getFullCtxText(whenCtx.when_expr));
+            VexContext vex = whenCtx.when_expr;
+            trigger.setWhen(getFullCtxText(vex));
+            db.addPairToContextsForAnalyze(trigger, vex);
         }
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))

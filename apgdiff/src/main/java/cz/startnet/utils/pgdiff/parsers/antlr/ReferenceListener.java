@@ -67,8 +67,10 @@ public class ReferenceListener extends SQLParserBaseListener {
     private final Map<String, List<PgObjLocation>> references;
     private final List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     private final IProgressMonitor monitor;
+    private final PgDatabase db;
 
     public ReferenceListener(PgDatabase db, String filePath, IProgressMonitor monitor) {
+        this.db = db;
         this.definitions = db.getObjDefinitions();
         this.references = db.getObjReferences();
         this.monitor = monitor;
@@ -354,7 +356,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         PgFunction function = new PgFunction(QNameParser.getFirstName(ids),
                 ParserAbstract.getFullCtxText(ctx.getParent()));
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function,
-                getDefSchemaName());
+                getDefSchemaName(), db);
         funcBodies.add(new FunctionBodyContainer(filePath,
                 ctx.funct_body.getStart().getStartIndex(), ctx.funct_body.getStart().getLine(),
                 ParserAbstract.getFullCtxText(ctx.funct_body)));
@@ -406,7 +408,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         DbObjType type = null;
         if (ctx.FUNCTION() != null) {
             PgFunction func = new PgFunction(name, null);
-            ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName());
+            ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName(), db);
             name = func.getSignature();
             type = DbObjType.FUNCTION;
         } else if (ctx.COLUMN() != null) {
@@ -489,7 +491,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 PgFunction func = new PgFunction(
                         QNameParser.getFirstName(functparam.name.identifier()), null);
-                ParserAbstract.fillArguments(functparam.function_args(), func, getDefSchemaName());
+                ParserAbstract.fillArguments(functparam.function_args(), func, getDefSchemaName(), db);
                 addObjReference(getDefSchemaName(), func.getSignature(),
                         DbObjType.FUNCTION, StatementActions.NONE,
                         functparam.name.getStart().getStartIndex(), func.getBareName().length(),
@@ -544,7 +546,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         PgFunction function = new PgFunction(QNameParser.getFirstName(ids),
                 ParserAbstract.getFullCtxText(ctx.getParent()));
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function,
-                getDefSchemaName());
+                getDefSchemaName(), db);
         addObjReference(schemaName, function.getSignature(),
                 DbObjType.FUNCTION, StatementActions.ALTER,
                 ctx.function_parameters().name.getStart().getStartIndex(), function.getBareName().length(),
@@ -741,7 +743,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         PgFunction func = new PgFunction(QNameParser.getFirstName(ids), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func,
-                getDefSchemaName());
+                getDefSchemaName(), db);
         addObjReference(schemaName, func.getSignature(),
                 DbObjType.FUNCTION, StatementActions.DROP,
                 nameCtx.getStart().getStartIndex()+ offset, func.getBareName().length(),

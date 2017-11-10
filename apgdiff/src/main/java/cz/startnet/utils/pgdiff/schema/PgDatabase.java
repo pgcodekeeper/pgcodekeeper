@@ -5,9 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,8 +42,8 @@ public class PgDatabase extends PgStatement {
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
-
-    private final Map<String, Set<ParserRuleContext>> statementContexts = new HashMap<>();
+    // Contains PgStatement's contexts for analysis (for getting dependencies).
+    private final List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -99,8 +102,14 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public Map<String, Set<ParserRuleContext>> getStatementContexts() {
-        return statementContexts;
+    public List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> getContextsForAnalyze() {
+        return contextsForAnalyze;
+    }
+
+    public void addPairToContextsForAnalyze(PgStatement statement, ParserRuleContext ctx) {
+        Set<ParserRuleContext> ctxSet = new HashSet<>();
+        ctxSet.add(ctx);
+        contextsForAnalyze.add(new AbstractMap.SimpleEntry<>(statement, ctxSet));
     }
 
     /**
