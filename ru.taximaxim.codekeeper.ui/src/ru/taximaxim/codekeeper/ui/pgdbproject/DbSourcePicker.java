@@ -114,7 +114,7 @@ class DbSourcePicker extends Composite {
         IContainer[] conts = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(dir.toURI());
         IProject project = null;
         for (IContainer cont : conts) {
-            if (cont instanceof IProject) {
+            if (cont instanceof IProject && ((IProject) cont).isOpen()) {
                 if (project == null) {
                     project = (IProject) cont;
                 } else {

@@ -439,17 +439,15 @@
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
                     style="push">
-                    <visibleWhen checkEnabled="true">
-                          <or>
+                    <visibleWhen>
                             <with variable="activeEditorId">
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
+                                <or>
+                                    <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                    </equals>
+                                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                    </equals>
+                                </or>
                             </with>
-                            <with variable="activeEditorId">
-                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                </equals>
-                            </with>
-                          </or>
                      </visibleWhen>
                 </command>
                 <separator
@@ -738,14 +736,7 @@
             id="ru.taximaxim.codekeeper.ui.ChangesJobTester"
             namespace="ru.taximaxim.codekeeper.ui"
             properties="isGetChangesRunning"
-            type="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer">
-        </propertyTester>
-        <propertyTester
-            class="ru.taximaxim.codekeeper.ui.propertytests.ChangesEditorJobTester"
-            id="ru.taximaxim.codekeeper.ui.ChangesEditorJobTester"
-            namespace="ru.taximaxim.codekeeper.ui"
-            properties="isGetChangesEditorRunning"
-            type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+            type="org.eclipse.ui.IEditorPart">
         </propertyTester>
         <propertyTester
             class="ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester"
