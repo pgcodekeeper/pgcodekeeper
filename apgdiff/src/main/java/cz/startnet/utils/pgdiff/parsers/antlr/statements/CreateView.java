@@ -65,8 +65,6 @@ public class CreateView extends ParserAbstract {
         }
         schema.addView(view);
 
-
-
         return view;
     }
 }

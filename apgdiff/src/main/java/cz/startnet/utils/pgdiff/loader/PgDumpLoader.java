@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -78,6 +79,8 @@ public class PgDumpLoader implements AutoCloseable {
     protected static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
             "DOMAIN", "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX",
             "TRIGGER", "VIEW" };
+
+    private static String markerError;
 
     private final InputStream input;
     private final String inputObjectName;
@@ -282,8 +285,10 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
             PgDiffArguments arguments, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors,
+            String markerError)
                     throws InterruptedException, IOException, LicenseException, CoreException {
+        PgDumpLoader.markerError = markerError;
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
@@ -379,14 +384,16 @@ public class PgDumpLoader implements AutoCloseable {
                     throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db, funcBodies, errors);
+                loadFile((IFile) resource, monitor, db, funcBodies, errors, markerError);
             }
         }
     }
 
     protected static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors,
+            String markerError)
                     throws IOException, CoreException, InterruptedException {
+        PgDumpLoader.markerError = markerError;
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
 
@@ -404,11 +411,6 @@ public class PgDumpLoader implements AutoCloseable {
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
         load(db);
-
-        // !!!!!!!!!
-        // = UIConsts =
-        // MARKER.ERROR = "ru.taximaxim.codekeeper.ui" + ".sql.errormarker"
-        String markerError = "ru.taximaxim.codekeeper.ui.sql.errormarker";
 
         file.deleteMarkers(markerError, false, IResource.DEPTH_ZERO);
         IDocument doc = null;
@@ -434,10 +436,7 @@ public class PgDumpLoader implements AutoCloseable {
                 }
                 marker.setAttribute(IMarker.CHAR_START, start);
                 marker.setAttribute(IMarker.CHAR_END, stop + 1);
-
-                // !!!!!!!!!
-                // catch (org.eclipse.jface.text.BadLocationException ex)
-            } catch (org.eclipse.jface.text.BadLocationException ex) {
+            } catch (BadLocationException ex) {
                 Log.log(ex);
             }
         }

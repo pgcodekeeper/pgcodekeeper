@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -205,7 +206,7 @@ class DbSourceProject extends DbSource {
         return PgDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null, errors);
+                monitor, null, errors, MARKER.ERROR);
     }
 }
 

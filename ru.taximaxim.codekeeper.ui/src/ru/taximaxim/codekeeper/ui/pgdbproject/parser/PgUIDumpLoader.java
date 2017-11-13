@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -97,11 +98,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
                     PgDumpLoader.loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            null, db, funcBodies, null);
+                            null, db, funcBodies, null, MARKER.ERROR);
                 }
             }
 
-            PgDumpLoader.loadFile(file, mon, db, funcBodies, null);
+            PgDumpLoader.loadFile(file, mon, db, funcBodies, null, MARKER.ERROR);
         }
         return db;
     }
