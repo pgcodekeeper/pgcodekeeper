@@ -199,10 +199,6 @@ public class PgDumpLoader implements AutoCloseable {
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                 monitor, monitoringLevel, listeners);
 
-        // !!!!!!!!!
-        // If there isn't run the "dbAnalyze(intoDb, false)" here, few tests will fall.
-        dbAnalyze(intoDb, false);
-
         return intoDb;
     }
 
@@ -315,15 +311,13 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        dbAnalyze(db, true);
+        dbAnalyze(db);
 
         arguments.getLicense().verifyDb(db);
         return db;
     }
 
-    // !!!!!!!!!
-    // boolean analyzeFunctionsTriggersRules
-    private static void dbAnalyze(PgDatabase db, boolean analyzeFunctionsTriggersRules) {
+    public static void dbAnalyze(PgDatabase db) {
         List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> stmtCtxList = db.getContextsForAnalyze();
 
         Map<PgStatement, Set<ParserRuleContext>> stmtCtxMap = new HashMap<>();
@@ -340,10 +334,6 @@ public class PgDumpLoader implements AutoCloseable {
                     UtilExpr.analyze(new SelectStmt((Select_stmtContext) setCtx.iterator().next()),
                             new Select(s.getName()), v);
                 }
-            }
-
-            if(!analyzeFunctionsTriggersRules) {
-                continue;
             }
 
             for (PgTable t : s.getTables()) {

@@ -27,7 +27,9 @@ public final class ApgdiffTestUtils {
             throws IOException, InterruptedException, LicenseException {
         try (PgDumpLoader loader = new PgDumpLoader(c.getResourceAsStream(resource),
                 "test:/" + c.getName() + '/' + resource, args)) {
-            return loader.load();
+            PgDatabase db = loader.load();
+            PgDumpLoader.dbAnalyze(db);
+            return db;
         }
     }
 
