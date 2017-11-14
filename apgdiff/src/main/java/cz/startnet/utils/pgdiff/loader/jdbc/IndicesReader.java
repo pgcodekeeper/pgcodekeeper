@@ -5,7 +5,8 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -75,7 +76,7 @@ public class IndicesReader extends JdbcReader {
                 },
                 (ctx, db) -> {
                     if (ctx.index_where() != null) {
-                        CreateIndex.analyzeIndexWhereCtx(ctx, schemaName, i);
+                        analyzeIndexWhereCtx(ctx, schemaName, i);
                     }
                 });
 
@@ -96,5 +97,11 @@ public class IndicesReader extends JdbcReader {
             }
         }
         return i;
+    }
+
+    public static void analyzeIndexWhereCtx(Index_restContext rest, String schemaName, PgIndex ind) {
+        ValueExpr vex = new ValueExpr(schemaName);
+        vex.analyze(new Vex(rest.index_where().vex()));
+        ind.addAllDeps(vex.getDepcies());
     }
 }
