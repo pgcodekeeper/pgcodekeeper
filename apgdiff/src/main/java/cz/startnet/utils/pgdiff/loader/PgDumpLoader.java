@@ -12,24 +12,12 @@ import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -53,18 +41,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -83,8 +67,6 @@ public class PgDumpLoader implements AutoCloseable {
             "DOMAIN", "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX",
             "TRIGGER", "VIEW" };
 
-    private static String markerError;
-
     private final InputStream input;
     private final String inputObjectName;
     private final PgDiffArguments args;
@@ -97,8 +79,6 @@ public class PgDumpLoader implements AutoCloseable {
     private boolean loadSchema = true;
     private boolean loadReferences;
     private List<FunctionBodyContainer> funcBodyReferences;
-
-    protected IFile file;
 
     public List<AntlrError> getErrors() {
         return errors;
@@ -170,22 +150,13 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     /**
-     * This constructor sets the monitoring level to the default of 1.
-     * @throws CoreException
-     */
-    public PgDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor)
-            throws CoreException {
-        this(ifile.getContents(), ifile.getLocation().toOSString(), args, monitor, 1);
-        file = ifile;
-    }
-
-    /**
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException, LicenseException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
+        dbAnalyze(d);
         args.getLicense().verifyDb(d);
         return d;
     }
@@ -204,7 +175,6 @@ public class PgDumpLoader implements AutoCloseable {
         }
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                 monitor, monitoringLevel, listeners);
-
         return intoDb;
     }
 
@@ -251,6 +221,8 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
+        dbAnalyze(db);
+
         arguments.getLicense().verifyDb(db);
         return db;
     }
@@ -281,176 +253,50 @@ public class PgDumpLoader implements AutoCloseable {
         }
     }
 
-    /**
-     * Loads database schema from a ModelExporter directory tree.
-     *
-     * @return database schema
-     */
-    public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
-            PgDiffArguments arguments, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors,
-            String markerError)
-                    throws InterruptedException, IOException, LicenseException, CoreException {
-        PgDumpLoader.markerError = markerError;
-        PgDatabase db = new PgDatabase(false);
-        db.setArguments(arguments);
-        for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
-            IFolder iFolder = iProject.getFolder(workDirName.name());
-            if (iFolder.exists()) {
-                loadSubdir(iFolder, db, monitor, funcBodies, errors);
-            }
-        }
+    protected static void dbAnalyze(PgDatabase db) {
+        for (SimpleEntry<PgStatement, ParserRuleContext> entry : db.getContextsForAnalyze()) {
+            PgStatement stmt = entry.getKey();
+            ParserRuleContext ctx = entry.getValue();
+            DbObjType stmtType = stmt.getStatementType();
 
-        IFolder schemasCommonDir = iProject.getFolder(WORK_DIR_NAMES.SCHEMA.name());
-        // skip walking SCHEMA folder if it does not exist
-        if (!schemasCommonDir.exists()) {
-            return db;
-        }
-
-        // step 2
-        // read out schemas names, and work in loop on each
-        for (PgSchema schema : db.getSchemas()) {
-            IFolder schemaFolder = schemasCommonDir.getFolder(ModelExporter.getExportedFilename(schema));
-            for (String dirSub : DIR_LOAD_ORDER) {
-                IFolder iFolder = schemaFolder.getFolder(dirSub);
-                if (iFolder.exists()) {
-                    loadSubdir(iFolder, db, monitor, funcBodies, errors);
-                }
-            }
-        }
-
-        dbAnalyze(db);
-
-        arguments.getLicense().verifyDb(db);
-        return db;
-    }
-
-    public static void dbAnalyze(PgDatabase db) {
-        List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> stmtCtxList = db.getContextsForAnalyze();
-
-        Map<PgStatement, Set<ParserRuleContext>> stmtCtxMap = new HashMap<>();
-        for (SimpleEntry<PgStatement, Set<ParserRuleContext>> entry : stmtCtxList) {
-            stmtCtxMap.put(entry.getKey(), entry.getValue());
-        }
-
-        Set<ParserRuleContext> setCtx = null;
-        for (PgSchema s : db.getSchemas()) {
-            for (PgView v : s.getViews()) {
-                setCtx = stmtCtxMap.get(v);
-
-                if (!setCtx.isEmpty()) {
-                    UtilExpr.analyze(new SelectStmt((Select_stmtContext) setCtx.iterator().next()),
-                            new Select(s.getName()), v);
-                }
+            String schemaName = null;
+            if (DbObjType.VIEW.equals(stmtType) || DbObjType.FUNCTION.equals(stmtType)) {
+                schemaName = stmt.getParent().getName();
+            } else {
+                schemaName = stmt.getParent().getParent().getName();
             }
 
-            for (PgTable t : s.getTables()) {
-                for (PgRule r : t.getRules()) {
-                    setCtx = stmtCtxMap.get(r);
-                    Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) setCtx.iterator().next();
+            switch (stmtType) {
+            case VIEW:
+                UtilExpr.analyze(new SelectStmt((Select_stmtContext) ctx),
+                        new Select(schemaName), stmt);
+                break;
+            case RULE:
+                Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) ctx;
+                PgRule rule = (PgRule)stmt;
 
-                    RulesReader.analyzeRewriteCreateStmtCtx(createRuleCtx, r, s.getName());
+                RulesReader.analyzeRewriteCreateStmtCtx(createRuleCtx, rule, schemaName);
 
-                    if (!r.getCommands().isEmpty()) {
-                        for (Rewrite_commandContext cmd : createRuleCtx.commands) {
-                            RulesReader.analyzeRewriteCommandCtx(cmd, r, s.getName());
-                        }
+                if (!rule.getCommands().isEmpty()) {
+                    for (Rewrite_commandContext cmd : createRuleCtx.commands) {
+                        RulesReader.analyzeRewriteCommandCtx(cmd, rule, schemaName);
                     }
                 }
-
-                for (PgTrigger tr : t.getTriggers()) {
-                    setCtx = stmtCtxMap.get(tr);
-                    if (setCtx != null && !setCtx.isEmpty()) {
-                        TriggersReader.analyzeWhenVexCtx((VexContext) setCtx.iterator().next(), tr, s.getName());
-                    }
-                }
-
-                for (PgIndex ind : t.getIndexes()) {
-                    setCtx = stmtCtxMap.get(ind);
-                    if (setCtx != null) {
-                        IndicesReader.analyzeIndexWhereCtx((Index_restContext) setCtx.iterator().next(), s.getName(), ind);
-                    }
-                }
-            }
-
-            for (PgFunction f : s.getFunctions()) {
-                setCtx = stmtCtxMap.get(f);
-
-                if (setCtx != null && !setCtx.isEmpty()) {
-                    ValueExpr vex = new ValueExpr(s.getName());
-
-                    setCtx.stream().map(ctx -> (VexContext)ctx)
-                    .forEach(vCtx -> {
-                        vex.analyze(new Vex(vCtx));
-                        f.addAllDeps(vex.getDepcies());
-                    });
-                }
+                break;
+            case TRIGGER:
+                TriggersReader.analyzeWhenVexCtx((VexContext) ctx, (PgTrigger)stmt, schemaName);
+                break;
+            case INDEX:
+                IndicesReader.analyzeIndexWhereCtx((Index_restContext) ctx, schemaName, (PgIndex)stmt);
+                break;
+            case FUNCTION:
+                ValueExpr vex = new ValueExpr(schemaName);
+                vex.analyze(new Vex((VexContext)ctx));
+                stmt.addAllDeps(vex.getDepcies());
+                break;
+            default:
+                throw new IllegalStateException("The analyze for the case is not defined!"); //$NON-NLS-1$
             }
         }
-    }
-
-    private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
-                    throws InterruptedException, IOException, CoreException {
-        for (IResource resource : folder.members()) {
-            if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db, funcBodies, errors, markerError);
-            }
-        }
-    }
-
-    protected static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors,
-            String markerError)
-                    throws IOException, CoreException, InterruptedException {
-        PgDumpLoader.markerError = markerError;
-        PgDiffArguments arguments = new PgDiffArguments();
-        arguments.setInCharsetName(file.getCharset());
-
-        try (PgDumpLoader loader = new PgDumpLoader(file, arguments, monitor)) {
-            loader.setLoadReferences(funcBodies != null);
-            loader.loadFile(db);
-            if (funcBodies != null) {
-                funcBodies.addAll(loader.getFuncBodyReferences());
-            }
-            if (errors != null) {
-                errors.put(file.getFullPath().toOSString(), loader.getErrors());
-            }
-        }
-    }
-
-    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
-        load(db);
-
-        file.deleteMarkers(markerError, false, IResource.DEPTH_ZERO);
-        IDocument doc = null;
-        for (AntlrError antlrError : getErrors()) {
-            IMarker marker = file.createMarker(markerError);
-            int line = antlrError.getLine();
-            marker.setAttribute(IMarker.LINE_NUMBER, line);
-            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
-            try {
-                int start = antlrError.getStart();
-                int stop = antlrError.getStop();
-                if (start == -1 || stop == -1) {
-                    if (doc == null) {
-                        // load only when this case actually happens
-                        IDocumentProvider provider = new TextFileDocumentProvider();
-                        provider.connect(file);
-                        doc = provider.getDocument(file);
-                    }
-                    int lineOffset = doc.getLineOffset(line - 1);
-                    start = lineOffset + antlrError.getCharPositionInLine();
-                    stop = start;
-                }
-                marker.setAttribute(IMarker.CHAR_START, start);
-                marker.setAttribute(IMarker.CHAR_END, stop + 1);
-            } catch (BadLocationException ex) {
-                Log.log(ex);
-            }
-        }
-
-        return db;
     }
 }

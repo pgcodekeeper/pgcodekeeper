@@ -41,7 +41,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -158,8 +157,8 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         LicensePrefs.setLicense(args);
-        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromIProject(
-                proj, args, mon, funcBodies, null, MARKER.ERROR);
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
+                proj, args, mon, funcBodies, null);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();

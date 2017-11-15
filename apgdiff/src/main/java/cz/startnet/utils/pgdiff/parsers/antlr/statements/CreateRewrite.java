@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap;
+
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
@@ -21,7 +23,7 @@ public class CreateRewrite extends ParserAbstract {
     public PgStatement getObject() {
         PgSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
         PgRule rule = new PgRule(ctx.name.getText(), getFullCtxText(ctx.getParent()));
-        db.addPairToContextsForAnalyze(rule, ctx);
+        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(rule, ctx));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
         if (ctx.INSTEAD() != null){

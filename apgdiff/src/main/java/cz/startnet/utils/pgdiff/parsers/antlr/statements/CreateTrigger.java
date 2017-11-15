@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -103,7 +104,7 @@ public class CreateTrigger extends ParserAbstract {
         if ((whenCtx = ctx.when_trigger()) != null) {
             VexContext vex = whenCtx.when_expr;
             trigger.setWhen(getFullCtxText(vex));
-            db.addPairToContextsForAnalyze(trigger, vex);
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(trigger, vex));
         }
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))

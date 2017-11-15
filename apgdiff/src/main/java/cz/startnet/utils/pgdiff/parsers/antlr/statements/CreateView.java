@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -40,7 +41,7 @@ public class CreateView extends ParserAbstract {
         Select_stmtContext vQuery = null;
         if ((vQuery = ctx.v_query) != null) {
             view.setQuery(getFullCtxText(vQuery));
-            db.addPairToContextsForAnalyze(view, vQuery);
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {

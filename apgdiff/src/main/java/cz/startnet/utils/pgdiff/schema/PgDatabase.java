@@ -5,16 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -43,7 +40,7 @@ public class PgDatabase extends PgStatement {
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
     // Contains PgStatement's contexts for analysis (for getting dependencies).
-    private final List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> contextsForAnalyze = new ArrayList<>();
+    private final List<SimpleEntry<PgStatement, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -102,14 +99,8 @@ public class PgDatabase extends PgStatement {
         return objReferences;
     }
 
-    public List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> getContextsForAnalyze() {
+    public List<SimpleEntry<PgStatement, ParserRuleContext>> getContextsForAnalyze() {
         return contextsForAnalyze;
-    }
-
-    public void addPairToContextsForAnalyze(PgStatement statement, ParserRuleContext ctx) {
-        Set<ParserRuleContext> ctxSet = new HashSet<>();
-        ctxSet.add(ctx);
-        contextsForAnalyze.add(new AbstractMap.SimpleEntry<>(statement, ctxSet));
     }
 
     /**

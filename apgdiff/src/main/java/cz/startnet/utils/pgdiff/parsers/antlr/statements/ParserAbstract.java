@@ -1,13 +1,9 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
+import java.util.AbstractMap;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -136,18 +132,8 @@ public abstract class ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
 
-                List<SimpleEntry<PgStatement, Set<ParserRuleContext>>> stmtCtxList = dataBase.getContextsForAnalyze();
-                Supplier<Stream<SimpleEntry<PgStatement, Set<ParserRuleContext>>>> streamStmtCtxListSupplier = stmtCtxList::stream;
-
-                Predicate<SimpleEntry<PgStatement, Set<ParserRuleContext>>> containsFunction = entry -> entry.getKey().equals(function);
-                VexContext vex = argument.function_def_value().def_value;
-
-                if (streamStmtCtxListSupplier.get().anyMatch(containsFunction::test)) {
-                    streamStmtCtxListSupplier.get().filter(containsFunction::test)
-                    .forEach(entry -> entry.getValue().add(vex));
-                } else {
-                    dataBase.addPairToContextsForAnalyze(function, vex);
-                }
+                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
+                        argument.function_def_value().def_value));
             }
 
             function.addArgument(arg);
