@@ -1451,6 +1451,7 @@ precision_param
 vex
   : vex CAST_EXPRESSION data_type
   | LEFT_PAREN vex RIGHT_PAREN
+  | LEFT_PAREN vex (COMMA vex)+ RIGHT_PAREN
   | vex LEFT_BRACKET vex (COLON vex)? RIGHT_BRACKET
   | vex collate_identifier
   | <assoc=right> (PLUS | MINUS) vex
