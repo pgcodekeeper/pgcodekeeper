@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
@@ -14,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Update;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -64,10 +64,12 @@ public class CreateRewrite extends ParserAbstract {
     public static void setCommands(Create_rewrite_statementContext ctx, PgRule rule,
             PgDiffArguments args, String schemaName) {
         for (Rewrite_commandContext cmd : ctx.commands) {
-            ParserRuleContext parser = null;
+            Object parser = null;
             AbstractExprWithNmspc analyzer = null;
-            if ((parser = cmd.select_stmt()) != null) {
+            Select_stmtContext select = cmd.select_stmt();
+            if (select != null) {
                 analyzer = new Select(schemaName);
+                parser = new SelectStmt(select);
             } else if ((parser = cmd.insert_stmt_for_psql()) != null) {
                 analyzer = new Insert(schemaName);
             } else if ((parser = cmd.delete_stmt_for_psql()) != null) {
@@ -75,7 +77,7 @@ public class CreateRewrite extends ParserAbstract {
             } else if ((parser = cmd.update_stmt_for_psql()) != null) {
                 analyzer = new Update(schemaName);
             }
-            if (parser != null && analyzer != null) {
+            if (analyzer != null) {
                 analyzer.addReference("new", null);
                 analyzer.addReference("old", null);
                 UtilExpr.analyze(parser, analyzer, rule);
