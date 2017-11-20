@@ -14,6 +14,7 @@ SELECT c.relname,
        pg_get_viewdef(c.oid) AS definition,
        d.description AS comment,
        subselect.column_names,
+       subselect.column_type,
        subselect.column_comments,
        subselect.column_defaults,
        subselect.column_acl,
@@ -24,6 +25,7 @@ LEFT JOIN
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS column_names,
             array_agg(columnsData.description ORDER BY columnsData.attnum) AS column_comments,
             array_agg(columnsData.adsrc ORDER BY columnsData.attnum) AS column_defaults,
+            array_agg(columnsData.atttypname ORDER BY columnsData.attnum) AS column_type,
             array_agg(columnsData.attacl ORDER BY columnsData.attnum) AS column_acl
      FROM
          (SELECT attnum,
@@ -31,7 +33,8 @@ LEFT JOIN
                  attr.attname,
                  attr.attacl::text,
                  des.description,
-                 def.adsrc
+                 def.adsrc,
+                 pg_catalog.format_type(attr.atttypid, attr.atttypmod) AS atttypname
           FROM pg_catalog.pg_attribute attr
           LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum
               AND attr.attrelid = def.adrelid
