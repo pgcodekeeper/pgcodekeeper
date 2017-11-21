@@ -5,6 +5,8 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class MockDataWizard extends Wizard implements INewWizard {
 
     private MockDataPage page;
@@ -22,8 +24,8 @@ public class MockDataWizard extends Wizard implements INewWizard {
 
     @Override
     public void addPages() {
-        setWindowTitle("Создать данные");
-        page = new MockDataPage("Создать данные для таблицы", selection);
+        setWindowTitle(Messages.MockDataWizard_create_data);
+        page = new MockDataPage(Messages.MockDataWizard_create_data_table, selection);
         addPage(page);
     }
 }

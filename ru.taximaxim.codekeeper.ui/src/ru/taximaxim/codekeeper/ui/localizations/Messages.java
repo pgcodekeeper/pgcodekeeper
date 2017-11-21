@@ -312,11 +312,10 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_column_type;
 
+    public static String MockDataPage_column;
+
     public static String MockDataPage_column_up;
 
-    public static String MockDataPage_column_wrong_format;
-
-    public static String MockDataPage_date_wrong_format;
 
     public static String MockDataPage_delete_column;
 
@@ -324,7 +323,11 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_empty_table_name;
 
+    public static String MockDataPage_generation_failed;
+
     public static String MockDataPage_incorrect_row_count;
+
+    public static String MockDataPage_invalid_value;
 
     public static String MockDataPage_length;
 
@@ -341,6 +344,10 @@ public final class Messages extends NLS {
     public static String MockDataPage_step;
 
     public static String MockDataPage_table_name;
+
+    public static String MockDataWizard_create_data;
+
+    public static String MockDataWizard_create_data_table;
 
     public static String NavigatorRootActionProvider_open_action;
 
@@ -497,14 +504,12 @@ public final class Messages extends NLS {
 
     public static String yesNoEditingSupport_yes;
 
-    //feedback_dialog
-
-    public static String name;
     public static String e_mail;
     public static String feedback_message;
     public static String add_log;
 
-    public static String FeedBackDialog_best_regards;
+
+    public static String FeedBackDialog_bad_response;
 
     public static String FeedBackDialog_could_not_send;
 
@@ -517,10 +522,6 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_feedback;
 
     public static String FeedBackDialog_feedback_sent;
-
-    public static String FeedBackDialog_feedback_subject;
-
-    public static String FeedBackDialog_invalid_address;
 
     public static String FeedBackDialog_send;
 

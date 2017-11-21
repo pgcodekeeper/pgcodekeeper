@@ -128,7 +128,7 @@ public abstract class PgData<T> {
         this.end = end;
         this.step = step;
         this.currentInc = start;
-        this.generator = type.getGenerators().iterator().next();
+        this.generator = type.getDefaultGenerator();
     }
 
     /**
@@ -141,7 +141,7 @@ public abstract class PgData<T> {
     public abstract T generateValue();
 
     public String generateAsString() {
-        return "" + generateValue();
+        return "" + generateValue(); //$NON-NLS-1$
     }
 
     protected T generateRandom() {
@@ -207,7 +207,8 @@ public abstract class PgData<T> {
         isUnique = data.isUnique();
         isNotNull = data.isNotNull();
         name = data.getName();
-        generator = data.getGenerator();
+        PgDataGenerator gen = data.getGenerator();
+        generator = type.getGenerators().contains(gen) ? gen : type.getDefaultGenerator();
     }
 
     /**
@@ -222,7 +223,7 @@ public abstract class PgData<T> {
     }
 
     public String valueAsString(T value) {
-        return value == null ? "" : value.toString();
+        return value == null ? "" : value.toString(); //$NON-NLS-1$
     }
 
     public abstract T valueFromString(String s);

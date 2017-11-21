@@ -11,7 +11,7 @@ import java.util.Random;
 public class JsonPgData extends PgData<String> {
 
     public JsonPgData() {
-        super(PgDataType.JSON, "'{\"a\": \"b\"}'", null, null);
+        super(PgDataType.JSON, "'{\"a\": \"b\"}'", null, null); //$NON-NLS-1$
     }
 
     @Override
@@ -28,8 +28,8 @@ public class JsonPgData extends PgData<String> {
 
     @Override
     protected String generateRandom(Random ran) {
-        return "'{\"" + genSymbols(ran.nextInt(length) + 1, true, true) + "\": \"" +
-                genSymbols(ran.nextInt(length) + 1, false, true) + "\"}'";
+        return "'{\"" + genSymbols(ran.nextInt(length) + 1, true, true) + "\": \"" + //$NON-NLS-1$ //$NON-NLS-2$
+                genSymbols(ran.nextInt(length) + 1, false, true) + "\"}'"; //$NON-NLS-1$
     }
 
     @Override

@@ -11,7 +11,7 @@ import java.util.Random;
 public class TextPgData extends PgData<String> {
 
     public TextPgData(PgDataType type) {
-        super(type, "text", null, null);
+        super(type, "'text'", null, null); //$NON-NLS-1$
     }
 
     @Override
@@ -28,7 +28,7 @@ public class TextPgData extends PgData<String> {
 
     @Override
     protected String generateRandom(Random ran) {
-        return "'" + genSymbols(ran.nextInt(length) + 1, false, true) + "'";
+        return "'" + genSymbols(ran.nextInt(length) + 1, false, true) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

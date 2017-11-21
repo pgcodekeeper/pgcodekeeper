@@ -138,7 +138,7 @@ public class MockDataPage extends WizardPage {
                 try {
                     c.generateValue();
                 } catch (Exception e) {
-                    err = MessageFormat.format("Could not generate value for column {0}. Reason: {1}",
+                    err = MessageFormat.format(Messages.MockDataPage_generation_failed,
                             c.getName(), e.getLocalizedMessage());
                 }
             }
@@ -217,7 +217,7 @@ public class MockDataPage extends WizardPage {
 
         txtTableName = new Text(container, SWT.BORDER);
         txtTableName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        txtTableName.setText("t1");
+        txtTableName.setText("t1"); //$NON-NLS-1$
 
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_row_count);
 
@@ -343,7 +343,7 @@ public class MockDataPage extends WizardPage {
      */
     private Composite createColumnInfo(Composite parent) {
         Group composite = new Group(parent, SWT.NONE);
-        composite.setText("Column");
+        composite.setText(Messages.MockDataPage_column);
         composite.setLayout(new GridLayout(2, false));
 
         new Label(composite, SWT.NONE).setText(Messages.MockDataPage_column_name);
@@ -385,8 +385,8 @@ public class MockDataPage extends WizardPage {
                     cType.copyFrom(c);
                     columns.set(columns.indexOf(c), cType);
                     updateFields(cType);
-                    viewer.setSelection(new StructuredSelection(cType));
                     viewer.refresh();
+                    viewer.setSelection(new StructuredSelection(cType));
                 }
             }
         });
@@ -468,17 +468,7 @@ public class MockDataPage extends WizardPage {
 
         txtLength = new Text(composite, SWT.BORDER);
         txtLength.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtLength.addModifyListener(e -> {
-            IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-            if (!sel.isEmpty()) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
-                try {
-                    c.setLength(Integer.parseUnsignedInt(txtLength.getText()));
-                } catch (NumberFormatException ex) {
-                    Log.log(Log.LOG_INFO, "Invalid input", ex); //$NON-NLS-1$
-                }
-            }
-        });
+        txtLength.addModifyListener(new DataModifier((c,s) -> c.setLength(Integer.parseUnsignedInt(s))));
 
         return composite;
     }
@@ -665,8 +655,9 @@ public class MockDataPage extends WizardPage {
                 try {
                     String text = ((Text) e.widget).getText();
                     setter.accept(c, text);
+                    setErrorMessage(null);
                 } catch (Exception ex) {
-                    Log.log(Log.LOG_INFO, "Invalid input", ex); //$NON-NLS-1$
+                    setErrorMessage(Messages.MockDataPage_invalid_value + ex.getLocalizedMessage());
                 }
             }
         }

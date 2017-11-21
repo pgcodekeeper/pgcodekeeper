@@ -11,7 +11,7 @@ import java.util.Random;
 public class CustomPgData extends PgData<String> {
 
     public CustomPgData() {
-        super(PgDataType.OTHER, "data", null, null);
+        super(PgDataType.OTHER, "'data'", null, null); //$NON-NLS-1$
     }
 
     @Override

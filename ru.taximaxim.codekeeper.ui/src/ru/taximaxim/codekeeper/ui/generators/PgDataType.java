@@ -13,7 +13,7 @@ public enum PgDataType {
     BOOLEAN     (BooleanPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
     CHARACTER   (TextPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
     DATE        (DatePgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    DOUBLE      (RealPgData::new,    "double precision", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    DOUBLE      (RealPgData::new,    "double precision", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM), //$NON-NLS-1$
     INTEGER     (IntegerPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
     JSON        (JsonPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
     NUMERIC     (RealPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
@@ -21,7 +21,7 @@ public enum PgDataType {
     SMALLINT    (IntegerPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
     TEXT        (TextPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
     // shouldn't get created by any type implicitly, so use an empty type name
-    OTHER       (CustomPgData::new,  "", PgDataGenerator.CONSTANT);
+    OTHER       (CustomPgData::new,  "", PgDataGenerator.CONSTANT); //$NON-NLS-1$
 
     private final Collection<PgDataGenerator> generators;
     private final String type;
@@ -57,6 +57,10 @@ public enum PgDataType {
 
     public Collection<PgDataGenerator> getGenerators() {
         return generators;
+    }
+
+    public PgDataGenerator getDefaultGenerator() {
+        return generators.iterator().next();
     }
 
     /**

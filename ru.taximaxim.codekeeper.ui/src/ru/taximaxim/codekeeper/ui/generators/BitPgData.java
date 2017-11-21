@@ -11,7 +11,7 @@ import java.util.Random;
 public class BitPgData extends PgData<String> {
 
     public BitPgData() {
-        super(PgDataType.BIT, "01", null, null);
+        super(PgDataType.BIT, "B'01'", null, null); //$NON-NLS-1$
     }
 
     @Override
@@ -28,7 +28,7 @@ public class BitPgData extends PgData<String> {
 
     @Override
     protected String generateRandom(Random ran) {
-        return "B'"+ genSymbols(length, true, false) + "'::bit(" + length + ')';
+        return "B'"+ genSymbols(length, true, false) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

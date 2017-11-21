@@ -14,7 +14,7 @@ import java.util.Random;
 public class DatePgData extends PgData<Instant> {
 
     public DatePgData() {
-        super(PgDataType.DATE, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"),
+        super(PgDataType.DATE, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"), //$NON-NLS-1$
                 Instant.ofEpochMilli(1000));
     }
     @Override
@@ -29,6 +29,12 @@ public class DatePgData extends PgData<Instant> {
         default:
             return null;
         }
+    }
+
+    @Override
+    public String generateAsString() {
+        Instant value = generateValue();
+        return value == null ? "null" : ("'" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
