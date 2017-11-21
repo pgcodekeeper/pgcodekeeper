@@ -46,7 +46,7 @@ public class FeedBackDialog extends Dialog {
     private static final String POST_BODY = "body"; //$NON-NLS-1$
     private static final String POST_FILES = "files"; //$NON-NLS-1$
     private static final String STATUS_OK = "{\"status\":\"ok\"}"; //$NON-NLS-1$
-    private static final Pattern PATTERN_WS = Pattern.compile("[\\s]");
+    private static final Pattern PATTERN_WS = Pattern.compile("[\\s]"); //$NON-NLS-1$
 
     private Text txtSubject;
     private Text emailFrom;
@@ -170,13 +170,13 @@ public class FeedBackDialog extends Dialog {
                 HttpEntity responseEntity = response.getEntity();
                 if (responseEntity == null) {
                     throw new IOException(MessageFormat.format(
-                            "Bad response received from server:\n{0}", response.toString()));
+                            Messages.FeedBackDialog_bad_response, response.toString()));
                 }
 
                 String entity = EntityUtils.toString(responseEntity);
-                if (!STATUS_OK.equals(PATTERN_WS.matcher(entity).replaceAll(""))) {
+                if (!STATUS_OK.equals(PATTERN_WS.matcher(entity).replaceAll(""))) { //$NON-NLS-1$
                     throw new IOException(MessageFormat.format(
-                            "Bad response received from server:\n{0}", entity));
+                            Messages.FeedBackDialog_bad_response, entity));
                 }
             }
         }
