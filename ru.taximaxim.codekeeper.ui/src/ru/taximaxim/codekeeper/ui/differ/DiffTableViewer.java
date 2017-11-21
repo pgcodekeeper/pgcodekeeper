@@ -226,7 +226,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
 
-            Button btnTypeFilter = new Button(upperComp, SWT.BORDER );
+            Button btnTypeFilter = new Button(upperComp, SWT.NONE);
             btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(FILE.ICONEMPTYFILTER))));
             btnTypeFilter.setToolTipText(Messages.DiffTableViewer_show_filters);
