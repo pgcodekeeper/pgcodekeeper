@@ -1051,8 +1051,6 @@ public class DiffTableViewer extends Composite {
 
         private final Collection<DbObjType> types = EnumSet.noneOf(DbObjType.class);
         private final Collection<DiffSide> sides = EnumSet.noneOf(DiffSide.class);
-        private final Collection<DbObjType> children = EnumSet.of(DbObjType.CONSTRAINT,
-                DbObjType.INDEX, DbObjType.RULE, DbObjType.TRIGGER);
         private String filterName;
         private boolean useRegEx;
         private Pattern regExPattern;
@@ -1078,8 +1076,9 @@ public class DiffTableViewer extends Composite {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             TreeElement el = (TreeElement) element;
+            boolean isSubElement = isSubElement(el);
 
-            if (!types.isEmpty() && !children.contains(el.getType()) && !types.contains(el.getType())
+            if (!types.isEmpty() && !isSubElement && !types.contains(el.getType())
                     || !sides.isEmpty() && !sides.contains(el.getSide())) {
                 return false;
             }
@@ -1091,7 +1090,7 @@ public class DiffTableViewer extends Composite {
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isSubElement(el) && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
                 return true;
             }
 
