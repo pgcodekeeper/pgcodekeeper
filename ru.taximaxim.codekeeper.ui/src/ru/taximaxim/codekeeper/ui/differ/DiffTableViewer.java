@@ -24,8 +24,6 @@ import java.util.stream.Stream;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
@@ -42,12 +40,10 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
@@ -60,8 +56,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -109,10 +103,11 @@ public class DiffTableViewer extends Composite {
 
     private final boolean viewOnly;
     private final Set<TreeElement> elements = new HashSet<>();
-    private final DiffContentProvider provider = new DiffContentProvider();
+    private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
-    private IStructuredSelection oldSelection, newSelection;
+    private IStructuredSelection oldSelection;
+    private IStructuredSelection newSelection;
 
     private final LocalResourceManager lrm;
     private final Text txtFilterName;
@@ -123,9 +118,14 @@ public class DiffTableViewer extends Composite {
 
     private final CheckboxTreeViewer viewer;
     private final TableViewerFilter viewerFilter = new TableViewerFilter();
-    private TreeViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
+    private TreeViewerColumn columnCheck;
+    private TreeViewerColumn columnType;
+    private TreeViewerColumn columnChange;
+    private TreeViewerColumn columnName;
+    private TreeViewerColumn columnLocation;
 
-    private DbSource dbProject, dbRemote;
+    private DbSource dbProject;
+    private DbSource dbRemote;
 
     private Map<String, List<String>> prevChecked;
     private final XmlHistory prevCheckedHistory;
@@ -211,7 +211,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements, (el) -> !el.isSelected(), true);
+                    setElementsChecked(elements, el -> !el.isSelected(), true);
                 }
             });
 
@@ -252,16 +252,6 @@ public class DiffTableViewer extends Composite {
         gd.widthHint = pc.convertWidthInCharsToPixels(30);
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.diffTableViewer_object_name);
-        txtFilterName.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                // TODO aggregate events with small input lengths for performance
-                // "postModifyListener"
-                viewerFilter.setFilter(txtFilterName.getText());
-                viewer.refresh();
-            }
-        });
 
         useRegEx = new Button(upperComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
@@ -299,13 +289,7 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.setContentProvider(ArrayContentProvider.getInstance());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             cmbPrevChecked.setInput(prevChecked.keySet());
-            cmbPrevChecked.addSelectionChangedListener(new ISelectionChangedListener() {
-
-                @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    setCheckedFromPrevCheckedCombo();
-                }
-            });
+            cmbPrevChecked.addSelectionChangedListener(e -> setCheckedFromPrevCheckedCombo());
 
             Button saveChecked = new Button(upperComp, SWT.PUSH);
             saveChecked.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
@@ -338,13 +322,16 @@ public class DiffTableViewer extends Composite {
         }
         viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle));
 
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        txtFilterName.addModifyListener(e -> {
+            // TODO aggregate events with small input lengths for performance
+            // "postModifyListener"
+            viewerFilter.setFilter(txtFilterName.getText());
+            viewer.refresh();
+        });
 
-            @Override
-            public void selectionChanged(final SelectionChangedEvent event) {
-                oldSelection = newSelection;
-                newSelection = (IStructuredSelection)event.getSelection();
-            }
+        viewer.addSelectionChangedListener(event -> {
+            oldSelection = newSelection;
+            newSelection = (IStructuredSelection)event.getSelection();
         });
 
         viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -366,9 +353,9 @@ public class DiffTableViewer extends Composite {
         // and slow when using native API impl
         viewer.setUseHashlookup(true);
         viewer.setComparator(comparator);
-        viewer.setFilters(new ViewerFilter[] { viewerFilter });
+        viewer.setFilters(viewerFilter);
         initColumns();
-        viewer.setContentProvider(provider);
+        viewer.setContentProvider(contentProvider);
     }
 
     private MenuManager getViewerMenu() {
@@ -415,18 +402,15 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        menuMgr.addMenuListener(new IMenuListener() {
-
-            @Override
-            public void menuAboutToShow(IMenuManager manager) {
-                boolean enable = !viewer.getSelection().isEmpty();
-                for (IContributionItem it : manager.getItems()) {
-                    if (it instanceof ActionContributionItem) {
-                        ((ActionContributionItem) it).getAction().setEnabled(enable);
-                    }
+        menuMgr.addMenuListener(manager -> {
+            boolean enable = !viewer.getSelection().isEmpty();
+            for (IContributionItem it : manager.getItems()) {
+                if (it instanceof ActionContributionItem) {
+                    ((ActionContributionItem) it).getAction().setEnabled(enable);
                 }
             }
         });
+
         return menuMgr;
     }
 
@@ -788,16 +772,16 @@ public class DiffTableViewer extends Composite {
 
     private void setElementsChecked(Collection<?> elements, boolean state,
             boolean checkFilterMatch) {
-        setElementsChecked(elements, (el) -> state, checkFilterMatch);
+        setElementsChecked(elements, el -> state, checkFilterMatch);
     }
 
     private void setElementsChecked(Collection<?> elements, Predicate<TreeElement> state,
             boolean checkFilterMatch) {
-        Stream<TreeElement> stream = elements.stream().map((o) -> (TreeElement) o);
+        Stream<TreeElement> stream = elements.stream().map(o -> (TreeElement) o);
         if (checkFilterMatch) {
-            stream = stream.filter((el) -> viewerFilter.select(viewer, el.getParent(), el));
+            stream = stream.filter(el -> viewerFilter.select(viewer, el.getParent(), el));
         }
-        stream.forEach((el) -> setChecked(el, state.test(el)));
+        stream.forEach(el -> setChecked(el, state.test(el)));
 
         viewerChecksUpdated();
     }
@@ -942,7 +926,8 @@ public class DiffTableViewer extends Composite {
                     (providedExpandedState != null ? providedExpandedState : viewer.getExpandedState(el))) {
                 return false;
             }
-            boolean hasChecked = false, hasUnchecked = false;
+            boolean hasChecked = false;
+            boolean hasUnchecked = false;
             for (TreeElement child : el.getChildren()) {
                 if (elements.contains(child)) {
                     if (child.isSelected()) {
@@ -1091,8 +1076,9 @@ public class DiffTableViewer extends Composite {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             TreeElement el = (TreeElement) element;
+            boolean isSubElement = isSubElement(el);
 
-            if (!types.isEmpty() && !types.contains(el.getType())
+            if (!types.isEmpty() && !isSubElement && !types.contains(el.getType())
                     || !sides.isEmpty() && !sides.contains(el.getSide())) {
                 return false;
             }
@@ -1104,7 +1090,7 @@ public class DiffTableViewer extends Composite {
 
             // show all child, if parent have match
             TreeElement parent = el.getParent();
-            if (isSubElement(el) && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
+            if (isSubElement && getMatchingLocation(parent.getName(), filterName, filterRegex) != null){
                 return true;
             }
 
