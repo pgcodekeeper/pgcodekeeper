@@ -1,12 +1,18 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.util.Random;
+
 /**
  * An implementation of a PostgreSql data generator for JSON type.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class JsonPgData extends PgData {
+public class JsonPgData extends PgData<String> {
+
+    public JsonPgData() {
+        super(PgDataType.JSON, "'{\"a\": \"b\"}'", null, null);
+    }
 
     @Override
     public String generateValue() {
@@ -16,31 +22,23 @@ public class JsonPgData extends PgData {
             return null;
         case RANDOM: return generateRandom();
         default:
-            // throw new Exception("Unsupported format");
             return null;
-        }
-    }
-
-    private String generateRandom() {
-        int len = Integer.parseInt(length);
-        if (!isUnique && !isNotNull && ran.nextDouble() < 0.1) {
-            return null;
-        }
-        while (true) {
-            String object = "'{\"" + genSymbols(ran.nextInt(len) + 1, true, true) + "\": \"" +
-                    genSymbols(ran.nextInt(len) + 1, false, true) + "\"}'";
-            if (!isUnique || objects.add(object)){
-                return object;
-            }
         }
     }
 
     @Override
+    protected String generateRandom(Random ran) {
+        return "'{\"" + genSymbols(ran.nextInt(length) + 1, true, true) + "\": \"" +
+                genSymbols(ran.nextInt(length) + 1, false, true) + "\"}'";
+    }
+
+    @Override
     public int getMaxValues() {
-        int i = Integer.parseInt(length);
-        if (i == 0) {
-            return 0;
-        }
-        return (int) Math.pow(26, i);
+        return length == 0 ? 0 : (int) Math.pow(26, length);
+    }
+
+    @Override
+    public String valueFromString(String s) {
+        return s;
     }
 }

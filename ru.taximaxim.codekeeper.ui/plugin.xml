@@ -680,6 +680,8 @@
             </viewShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newprojwizard">
             </newWizardShortcut>
+            <newWizardShortcut id="ru.taximaxim.codekeeper.ui.mockdatawizard">
+            </newWizardShortcut>
             <perspectiveShortcut id="org.eclipse.egit.ui.GitRepositoryExploring">
             </perspectiveShortcut>
             <perspectiveShortcut id="org.eclipse.jdt.ui.JavaPerspective">

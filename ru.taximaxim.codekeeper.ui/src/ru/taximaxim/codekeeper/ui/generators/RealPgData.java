@@ -1,45 +1,46 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.util.Random;
+
 /**
  * An implementation of a PostgreSql data generator for REAL types.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class RealPgData extends PgData {
+public class RealPgData extends PgData<Double> {
+
+    public RealPgData(PgDataType type) {
+        super(type, 0.0, 1000.0, 1.0);
+    }
 
     @Override
-    public String generateValue() {
+    public Double generateValue() {
         switch (generator) {
         case CONSTANT:
             return start;
         case INCREMENT:
-            String current = currentInc;
-            currentInc = String.valueOf(Double.parseDouble(currentInc) + Double.parseDouble(step));
+            Double current = currentInc;
+            currentInc += step;
             return current;
         case RANDOM: return generateRandom();
         default:
-            // throw new Exception("Unsupported format");
             return null;
         }
     }
 
-    private String generateRandom() {
-        double st = Double.parseDouble(start);
-        double en = Double.parseDouble(end);
-        if (!isUnique && !isNotNull && ran.nextDouble() < 0.1) {
-            return null;
-        }
-        while (true) {
-            String object = String.valueOf((en - st + 1) * ran.nextDouble() + st);
-            if (!isUnique || objects.add(object)){
-                return object;
-            }
-        }
+    @Override
+    protected Double generateRandom(Random ran) {
+        return (end - start + 1) * ran.nextDouble() + start;
     }
 
     @Override
     public int getMaxValues() {
         return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public Double valueFromString(String s) {
+        return Double.valueOf(s);
     }
 }

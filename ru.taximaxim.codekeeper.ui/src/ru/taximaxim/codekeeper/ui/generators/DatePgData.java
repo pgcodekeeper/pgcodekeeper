@@ -1,52 +1,52 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Random;
 
 /**
  * An implementation of a PostgreSql data generator for DATE type.
+ * <br><br>
+ * Here step is stored as {@link Instant#toEpochMilli()} ms of increment.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class DatePgData extends PgData {
+public class DatePgData extends PgData<Instant> {
 
-    private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
+    public DatePgData() {
+        super(PgDataType.DATE, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"),
+                Instant.ofEpochMilli(1000));
+    }
     @Override
-    public String generateValue() {
+    public Instant generateValue() {
         switch (generator) {
         case CONSTANT: return start;
         case INCREMENT:
-            Long current = Timestamp.valueOf(currentInc).getTime();
-            currentInc = format.format(new Date(current + Long.valueOf(step) * 1000));
-            return "'" + format.format(new Date(current))+ "'";
+            Instant current = currentInc;
+            currentInc = current.plusMillis(step.toEpochMilli());
+            return current;
         case RANDOM: return generateRandom();
         default:
-            // throw new Exception("Unsupported format");
             return null;
         }
     }
 
-    private String generateRandom() {
-        Long beginTime = Timestamp.valueOf(start).getTime();
-        Long endTime = Timestamp.valueOf(end).getTime();
-        if (!isUnique && !isNotNull && ran.nextDouble() < 0.1) {
-            return null;
-        }
-        while (true) {
-            String object = "'" + format.format(new Date(beginTime + (long)(Math.random() * (endTime - beginTime + 1)))) + "'";
-            if (!isUnique || objects.add(object)){
-                return object;
-            }
-        }
+    @Override
+    protected Instant generateRandom(Random ran) {
+        return start.plusMillis((long)((end.toEpochMilli() - start.toEpochMilli() + 1)
+                * ran.nextDouble() + start.toEpochMilli()));
     }
 
     @Override
     public int getMaxValues() {
-        Long beginTime = Timestamp.valueOf(start).getTime();
-        Long endTime = Timestamp.valueOf(end).getTime();
-        return (int)((endTime - beginTime + 1) / 1000);
+        long beginTime = start.getEpochSecond();
+        long endTime = end.getEpochSecond();
+        long values = (endTime - beginTime + 1);
+        return values > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) values;
+    }
+
+    @Override
+    public Instant valueFromString(String s) {
+        return Instant.parse(s);
     }
 }

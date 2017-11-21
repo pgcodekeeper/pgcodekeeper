@@ -13,55 +13,73 @@ import java.util.Set;
  * @since 3.11.5
  * @author galiev_mr
  */
-public abstract class PgData {
+public abstract class PgData<T> {
 
+    private final PgDataType type;
     private String name;
-    private PgDataType type;
+    protected T start;
+    protected T end;
+    protected int length = 255;
+    protected T step;
+    protected T currentInc;
+    private boolean isUnique;
+    private boolean isNotNull;
+    protected PgDataGenerator generator;
 
-    protected String start = "1";
-    protected String end = "100";
-    protected String length = "255";
-    protected String step = "1";
-    protected String currentInc = "1";
-    protected boolean isUnique;
-    protected boolean isNotNull;
+    private final Random ran = new Random();
+    protected final Set<T> objects = new HashSet<>();
 
-    protected final Random ran = new Random();
-    protected final Set<String> objects = new HashSet<>();
-
-    protected PgDataGenerator generator = PgDataGenerator.RANDOM;
-
-    public String getStep() {
+    public T getStep() {
         return step;
     }
 
-    public void setStep(String step) {
+    public void setStep(T step) {
         this.step = step;
     }
 
-    public String getEnd() {
+    public String getStepAsString() {
+        return valueAsString(getStep());
+    }
+
+    public void setStepFromString(String step) {
+        setStep(valueFromString(step));
+    }
+
+    public T getEnd() {
         return end;
     }
 
-    public void setEnd(String end) {
+    public void setEnd(T end) {
         this.end = end;
     }
 
-    public String getStart() {
+    public String getEndAsString() {
+        return valueAsString(getEnd());
+    }
+
+    public void setEndFromString(String end) {
+        setEnd(valueFromString(end));
+    }
+
+    public T getStart() {
         return start;
     }
 
-    public void setStart(String start) {
+    public void setStart(T start) {
         this.start = start;
         reset();
     }
 
-    public PgDataType getType() {
-        return type;
+    public String getStartAsString() {
+        return valueAsString(getStart());
     }
 
-    public void setType(PgDataType type) {
-        this.type = type;
+    public void setStartFromString(String start) {
+        setStart(valueFromString(start));
+    }
+
+    public PgDataType getType() {
+        return type;
     }
 
     public String getName() {
@@ -88,11 +106,11 @@ public abstract class PgData {
         this.isNotNull = isNotNull;
     }
 
-    public String getLenght() {
+    public int getLength() {
         return length;
     }
 
-    public void setLength(String length) {
+    public void setLength(int length) {
         this.length = length;
     }
 
@@ -104,6 +122,15 @@ public abstract class PgData {
         this.generator = generator;
     }
 
+    public PgData(PgDataType type, T start, T end, T step) {
+        this.type = type;
+        this.start = start;
+        this.end = end;
+        this.step = step;
+        this.currentInc = start;
+        this.generator = type.getGenerators().iterator().next();
+    }
+
     /**
      * Generates value by generator current state
      *
@@ -111,7 +138,24 @@ public abstract class PgData {
      * @since 3.11.5
      * @author galiev_mr
      */
-    public abstract String generateValue();
+    public abstract T generateValue();
+
+    public String generateAsString() {
+        return "" + generateValue();
+    }
+
+    protected T generateRandom() {
+        if (!isUnique && !isNotNull && ran.nextDouble() < 0.05) {
+            return null;
+        }
+        T object;
+        do {
+            object = generateRandom(ran);
+        } while (isUnique && !objects.add(object));
+        return object;
+    }
+
+    protected abstract T generateRandom(Random ran);
 
     /**
      * Counts the maximum number of unique values ​​based on the current state of the generator
@@ -125,17 +169,17 @@ public abstract class PgData {
     /**
      * Generates chars or bit number flow
      *
-     * @param index Flow length
+     * @param length Flow length
      * @param isOneWord Generation mode, if true flow can not contains whitespace
      * @param isChar Generation mode, if true generates chars, otherwise bit number
      * @return Generated string
      * @since 3.11.5
      * @author galiev_mr
      */
-    protected String genSymbols(int index, boolean isOneWord, boolean isChar) {
-        StringBuilder sb = new StringBuilder();
+    protected String genSymbols(int length, boolean isOneWord, boolean isChar) {
+        StringBuilder sb = new StringBuilder(length);
         boolean isPrev = true;
-        for (int i = 0; i < index; i++) {
+        for (int i = 0; i < length; i++) {
             if (isChar) {
                 if (!isOneWord && !isPrev && ran.nextDouble() < 0.1) {
                     sb.append(' ');
@@ -158,17 +202,12 @@ public abstract class PgData {
      * @since 3.11.5
      * @author galiev_mr
      */
-    public void copy(PgData data) {
-        if (data != null) {
-            start = data.getStart();
-            end = data.getEnd();
-            step = data.getStep();
-            length = data.getLenght();
-            isUnique = data.isUnique();
-            isNotNull = data.isNotNull();
-            name = data.getName();
-            generator = data.getGenerator();
-        }
+    public void copyFrom(PgData<?> data) {
+        length = data.getLength();
+        isUnique = data.isUnique();
+        isNotNull = data.isNotNull();
+        name = data.getName();
+        generator = data.getGenerator();
     }
 
     /**
@@ -182,4 +221,9 @@ public abstract class PgData {
         objects.clear();
     }
 
+    public String valueAsString(T value) {
+        return value == null ? "" : value.toString();
+    }
+
+    public abstract T valueFromString(String s);
 }

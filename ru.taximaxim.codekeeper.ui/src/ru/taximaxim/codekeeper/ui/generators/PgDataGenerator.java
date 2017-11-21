@@ -1,17 +1,10 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+/**
+ * Order here defines the order in UI lists. Add more "interesting" values higher.
+ */
 public enum PgDataGenerator {
-    RANDOM ("RANDOM"),
-    CONSTANT ("CONSTANT"),
-    INCREMENT ("INCREMENT");
-
-    private String type;
-
-    private PgDataGenerator(String type) {
-        this.type = type;
-    }
-
-    public String getValue() {
-        return type;
-    }
+    RANDOM,
+    INCREMENT,
+    CONSTANT;
 }
