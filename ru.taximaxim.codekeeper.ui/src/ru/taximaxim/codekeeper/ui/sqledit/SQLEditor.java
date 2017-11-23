@@ -432,6 +432,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         });
 
         ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
         saveLastDb(dbInfo);

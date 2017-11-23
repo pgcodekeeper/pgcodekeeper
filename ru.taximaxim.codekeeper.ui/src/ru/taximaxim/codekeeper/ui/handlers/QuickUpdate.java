@@ -81,6 +81,7 @@ public class QuickUpdate extends AbstractHandler {
         }
 
         QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
+        quickUpdateJob.setUser(true);
         quickUpdateJob.schedule();
         editor.saveLastDb(dbInfo);
 
