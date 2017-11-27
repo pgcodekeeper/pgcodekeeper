@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -261,7 +262,9 @@ public class PgFunction extends PgStatementWithSearchPath {
         return result;
     }
 
-    public static class Argument {
+    public static class Argument implements Serializable {
+
+        private static final long serialVersionUID = -3491912987790877930L;
 
         private String mode = "IN";
         private String name;

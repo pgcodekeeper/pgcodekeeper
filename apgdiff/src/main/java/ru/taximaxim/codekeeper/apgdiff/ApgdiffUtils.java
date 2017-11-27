@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,15 +34,18 @@ public final class ApgdiffUtils {
      */
     public static void serialize(String path, String name, Serializable object) {
         try {
-            File folder = Paths.get(path).toFile();
-            folder.mkdirs();
-            File f = new File(folder.getAbsolutePath(), name);
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+            Path folderPath = Paths.get(path);
+            Files.createDirectories(folderPath);
+            Path filePath = Paths.get(path, name);
+            if (Files.notExists(filePath)) {
+                Files.createFile(filePath);
+            }
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(filePath))) {
                 oos.writeObject(object);
                 oos.flush();
             }
         } catch (IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while serialize project!", e);
+            Log.log(Log.LOG_DEBUG, "Error while serialize object!", e);
         }
     }
 
@@ -59,13 +60,12 @@ public final class ApgdiffUtils {
         try {
             Path path = Paths.get(filePath);
             if (Files.exists(path)) {
-                File f = path.toFile();
-                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(f))) {
+                try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     return oin.readObject();
                 }
             }
-        } catch (ClassCastException | ClassNotFoundException | IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while deserialize project!", e);
+        } catch (ClassNotFoundException | IOException e) {
+            Log.log(Log.LOG_DEBUG, "Error while deserialize object!", e);
         }
 
         return null;

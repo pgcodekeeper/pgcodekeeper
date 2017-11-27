@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.schema;
+package cz.startnet.utils.pgdiff.schema.system;
 
 import java.io.IOException;
 import java.io.Serializable;

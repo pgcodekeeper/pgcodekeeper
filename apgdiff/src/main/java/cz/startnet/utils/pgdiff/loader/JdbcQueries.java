@@ -52,10 +52,19 @@ public final class JdbcQueries {
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 
+    public static String QUERY_SYSTEM_CONSTRAINTS;
+    public static String QUERY_SYSTEM_FUNCTIONS;
+    public static String QUERY_SYSTEM_INDICES;
+    public static String QUERY_SYSTEM_RELATIONS;
+    public static String QUERY_SYSTEM_RULES;
+    public static String QUERY_SYSTEM_SCHEMAS;
+    public static String QUERY_SYSTEM_TRIGGERS;
+    public static String QUERY_SYSTEM_TYPES;
+
     // SONAR-ON
 
-    private final static String HELPER_NAME = "%FUNCTION_NAME%";
-    private final static String HELPER_QUERY = "%FUNCTION_QUERY%";
+    private static final String HELPER_NAME = "%FUNCTION_NAME%";
+    private static final String HELPER_QUERY = "%FUNCTION_QUERY%";
 
     static {
         for (Field f : JdbcQueries.class.getFields()) {
@@ -65,6 +74,11 @@ public final class JdbcQueries {
             try {
                 if (Map.class.isAssignableFrom(f.getType())) {
                     fillMaps(f);
+                } else if (f.getName().contains("SYSTEM")) {
+                    String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
+                            JdbcQueries.class.getResource("system/" + f.getName() + ".sql")).toPath()),
+                            StandardCharsets.UTF_8);
+                    f.set(null, query);
                 } else if (String.class.isAssignableFrom(f.getType())) {
                     String query = new String(Files.readAllBytes(ApgdiffUtils.getFileFromOsgiRes(
                             JdbcQueries.class.getResource(f.getName() + ".sql")).toPath()),
