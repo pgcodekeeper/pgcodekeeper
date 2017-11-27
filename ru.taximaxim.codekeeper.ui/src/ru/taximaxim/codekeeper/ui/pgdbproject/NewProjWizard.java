@@ -134,28 +134,29 @@ implements IExecutableExtension, INewWizard {
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
+            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
 
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
-                if (!charset.isEmpty() &&
-                        !ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset().equals(charset)) {
+                String timezone = pageDb.getTimeZone();
+                if (!charset.isEmpty() && !ResourcesPlugin.getWorkspace().getRoot()
+                        .getDefaultCharset().equals(charset)) {
                     props.setProjectCharset(charset);
                 }
-                String timezone = pageDb.getTimeZone();
                 if (!timezone.isEmpty() && !ApgdiffConsts.UTC.equals(timezone)) {
                     props.getPrefs().put(PROJ_PREF.TIMEZONE, timezone);
+                    try {
+                        props.getPrefs().flush();
+                    } catch (BackingStoreException e) {
+                        Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                    }
                 }
-                try {
-                    props.getPrefs().flush();
-                } catch (BackingStoreException e) {
-                    Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
-                }
-
-                getContainer().run(true, true, new InitProjectFromSource(props, getDbSource(props)));
+                getContainer().run(true, true, new InitProjectFromSource(
+                        props, getDbSource(props)));
             }
             initSuccess = true;
 
-            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+            props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
             IWorkingSet[] workingSets = pageRepo.getSelectedWorkingSets();
             workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
@@ -304,7 +305,7 @@ class PageDb extends WizardPage {
             }
         });
 
-        storePicker = new DbStorePicker(group, SWT.NONE, mainPrefs, true, false);
+        storePicker = new DbStorePicker(group, mainPrefs, true, false, true);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 

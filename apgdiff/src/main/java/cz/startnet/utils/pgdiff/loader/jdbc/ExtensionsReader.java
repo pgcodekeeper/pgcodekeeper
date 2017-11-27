@@ -22,7 +22,7 @@ public class ExtensionsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("extensions query");
-        try (ResultSet res = loader.statement.executeQuery(JdbcQueries.QUERY_EXTENSIONS)) {
+        try (ResultSet res = loader.statement.executeQuery(JdbcQueries.QUERY_EXTENSIONS.get(null))) {
             while (res.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);

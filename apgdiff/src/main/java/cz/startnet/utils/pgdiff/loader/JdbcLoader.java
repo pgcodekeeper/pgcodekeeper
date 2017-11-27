@@ -52,6 +52,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
+            queryCheckVersion();
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
@@ -64,7 +65,9 @@ public class JdbcLoader extends JdbcLoaderBase {
                 }
                 new ExtensionsReader(this, d).read();
 
-                SequencesReader.querySequencesData(d, this);
+                if(!SupportedVersion.VERSION_10.checkVersion(version)) {
+                    SequencesReader.querySequencesData(d, this);
+                }
             }
             connection.commit();
             finishAntlr();

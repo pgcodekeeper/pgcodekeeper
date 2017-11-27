@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -22,7 +23,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -37,6 +40,7 @@ import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -105,20 +109,20 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     /**
-     * Loads database schema from a ModelExporter directory tree. The root
-     * directory must contain a listing.lst file for ordered list of files.
+     * Loads database schema from a ModelExporter directory tree.
      *
      * @return database schema
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
-            PgDiffArguments arguments, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies)
+            PgDiffArguments arguments, IProgressMonitor monitor,
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
                     throws InterruptedException, IOException, LicenseException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
-                loadSubdir(iFolder, db, monitor, funcBodies);
+                loadSubdir(iFolder, db, monitor, funcBodies, errors);
             }
         }
 
@@ -135,7 +139,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             for (String dirSub : DIR_LOAD_ORDER) {
                 IFolder iFolder = schemaFolder.getFolder(dirSub);
                 if (iFolder.exists()) {
-                    loadSubdir(iFolder, db, monitor, funcBodies);
+                    loadSubdir(iFolder, db, monitor, funcBodies, errors);
                 }
             }
         }
@@ -144,16 +148,18 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+                    throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db, funcBodies);
+                loadFile((IFile) resource, monitor, db, funcBodies, errors);
             }
         }
     }
 
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies) throws IOException, CoreException, InterruptedException {
+            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+                    throws IOException, CoreException, InterruptedException {
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
 
@@ -162,6 +168,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
             loader.loadFile(db);
             if (funcBodies != null) {
                 funcBodies.addAll(loader.getFuncBodyReferences());
+            }
+            if (errors != null) {
+                errors.put(file.getFullPath().toOSString(), loader.getErrors());
             }
         }
     }
@@ -207,11 +216,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
                     loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            null, db, funcBodies);
+                            null, db, funcBodies, null);
                 }
             }
 
-            loadFile(file, mon, db, funcBodies);
+            loadFile(file, mon, db, funcBodies, null);
         }
         return db;
     }
@@ -238,11 +247,31 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static boolean isInProject(IResource resource) {
-        return isInProject(resource.getProjectRelativePath());
+        try {
+            return resource.getProject().hasNature(NATURE.ID)
+                    && isInProject(resource.getProjectRelativePath());
+        } catch (CoreException ex) {
+            Log.log(ex);
+            return false;
+        }
     }
 
     public static boolean isInProject(IResourceDelta delta) {
         return isInProject(delta.getProjectRelativePath());
+    }
+
+    public static boolean isInProject(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return res == null ? false : isInProject(res);
+    }
+
+    /**
+     * @param editorInput
+     * @return param's {@link IResource} or null if not available or not {@link #isInProject(IPath)}
+     */
+    public static IResource getProjectResource(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return isInProject(res) ? res : null;
     }
 
     /**

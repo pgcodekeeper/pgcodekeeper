@@ -26,6 +26,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
     private static final String ALTER_TABLE = "ALTER TABLE ";
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
+    private static final String ALTER_FOREIGN_OPTION =  "\n\n{0} ALTER COLUMN {1} OPTIONS ({2} {3} {4});";
 
     private Integer statistics;
     private String defaultValue;
@@ -33,7 +34,8 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private String collation;
     private boolean nullValue = true;
     private String storage;
-    private final Map<String, String> options = new LinkedHashMap<>();
+    private final Map<String, String> options = new LinkedHashMap<>(0);
+    private final Map<String, String> fOptions = new LinkedHashMap<>(0);
 
     @Override
     public DbObjType getStatementType() {
@@ -64,6 +66,14 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         resetHash();
     }
 
+    public Map<String, String> getForeignOptions() {
+        return Collections.unmodifiableMap(fOptions);
+    }
+
+    public void addForeignOption(String attribute, String value){
+        this.fOptions.put(attribute, value);
+        resetHash();
+    }
 
     /**
      * Returns full definition of the column.
@@ -300,11 +310,31 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         }
 
         alterPrivileges(newColumn, sb);
+        compareOptions(oldColumn, newColumn, sb);
 
-        final Map<String, String> oldOptions = oldColumn.getOptions();
-        final Map<String, String> newOptions = newColumn.getOptions();
-        if(!Objects.equals(oldOptions, newOptions)){
-            PgTable.compareOptions(oldColumn, newColumn, sb);
+        Map<String, String> oldForeignOptions = oldColumn.getForeignOptions();
+        Map<String, String> newForeignOptions = newColumn.getForeignOptions();
+
+        if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
+            oldForeignOptions.forEach((key, value) -> {
+                if (newForeignOptions.containsKey(key)) {
+                    String newValue =  newForeignOptions.get(key);
+                    if (!Objects.equals(value, newValue)) {
+                        sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                                newColumn.getName(), "SET", key, newValue));
+                    }
+                } else {
+                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                            newColumn.getName(), "DROP", key, ""));
+                }
+            });
+
+            newForeignOptions.forEach((key, value) -> {
+                if (!oldForeignOptions.containsKey(key)) {
+                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTable(),
+                            newColumn.getName(), "ADD", key, value));
+                }
+            });
         }
 
         if (!Objects.equals(oldColumn.getComment(), newColumn.getComment())) {
@@ -333,6 +363,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && Objects.equals(comment, col.getComment())
                     && grants.equals(col.grants)
                     && revokes.equals(col.revokes)
+                    && Objects.equals(fOptions, col.fOptions)
                     && Objects.equals(options, col.options);
         }
         return eq;
@@ -355,6 +386,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((options == null) ? 0 : options.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
         return result;
     }
 
@@ -369,6 +401,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         colDst.setType(getType());
         colDst.setComment(getComment());
         colDst.options.putAll(options);
+        colDst.fOptions.putAll(fOptions);
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv.deepCopy());
         }

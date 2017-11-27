@@ -20,11 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -50,18 +47,19 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
-import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
+import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class QuickUpdate extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
-        RollOnEditor editor = (RollOnEditor) HandlerUtil.getActiveEditor(event);
-        // TODO replace with pulldown menu+param
-        DbInfo dbInfo = editor.getDbInfo();
+        SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
+        DbInfo dbInfo = editor.getCurrentDb();
         if (dbInfo == null){
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
@@ -81,20 +79,23 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_error_charset, e);
             return null;
         }
-        new QuickUpdateJob(file, dbInfo, textSnapshot).schedule();
+
+        QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
+        quickUpdateJob.setUser(true);
+        quickUpdateJob.schedule();
+        editor.saveLastDb(dbInfo);
+
         return null;
     }
 
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        IEditorInput input = editor.getEditorInput();
-        return editor instanceof RollOnEditor && input instanceof IFileEditorInput
-                && PgUIDumpLoader.isInProject(ResourceUtil.getFile(input));
+        return editor instanceof SQLEditor && PgUIDumpLoader.isInProject(editor.getEditorInput());
     }
 }
 
-class QuickUpdateJob extends Job {
+class QuickUpdateJob extends SingletonEditorJob {
 
     private static final int STEPS = 7;
 
@@ -105,8 +106,8 @@ class QuickUpdateJob extends Job {
     private final byte[] textSnapshot;
     private SubMonitor monitor;
 
-    public QuickUpdateJob(IFile file, DbInfo dbInfo, byte[] textSnapshot) {
-        super(Messages.QuickUpdate_quick_update);
+    public QuickUpdateJob(IFile file, DbInfo dbInfo, byte[] textSnapshot, SQLEditor editor) {
+        super(Messages.QuickUpdate_quick_update, editor, QuickUpdateJobTester.EVAL_PROP);
         this.file = file;
         this.proj = new PgDbProject(file.getProject());
         this.dbinfo = dbInfo;
@@ -225,8 +226,9 @@ class QuickUpdateJob extends Job {
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
             Collection<PgStatement> listPgObjectsFragment, PgDatabase left, PgDatabase right) {
         // mark schemas only when there are no schema-nested objects
-        boolean markSchemas = ! listPgObjectsFragment.stream().anyMatch(
-                st -> st.getStatementType() != DbObjType.SCHEMA && st.getStatementType() != DbObjType.EXTENSION);
+        boolean markSchemas = listPgObjectsFragment.stream()
+                .map(PgStatement::getStatementType)
+                .allMatch(ty -> ty == DbObjType.SCHEMA || ty == DbObjType.EXTENSION);
 
         Set<TreeElement> checked = new HashSet<>();
         for (PgStatement st : listPgObjectsFragment){

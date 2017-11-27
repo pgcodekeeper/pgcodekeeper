@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -35,7 +36,6 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgOptionContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -229,7 +229,8 @@ public abstract class ParserAbstract {
             String name, Token errToken) {
         T statement = getter.apply(name);
         if (statement == null) {
-            throw new UnresolvedReferenceException(errToken);
+            throw new UnresolvedReferenceException("Cannot find object in database: "
+                    + errToken.getText(), errToken);
         }
         return statement;
     }
@@ -271,8 +272,8 @@ public abstract class ParserAbstract {
         }
     }
 
-    public static void fillStorageParams(String[] options, PgOptionContainer optionContainer,
-            boolean isToast) {
+    public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
+            boolean isToast, boolean forсeQuote){
         for (String pair : options) {
             int sep = pair.indexOf('=');
             String option, value;
@@ -283,22 +284,21 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (optionContainer.getStatementType() != DbObjType.COLUMN
-                    && !PgDiffUtils.isValidId(value, false, false)) {
+            if (forсeQuote || !PgDiffUtils.isValidId(value, false, false)) {
                 // only quote non-ids, do not quote columns
                 // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);
             }
-            fillStorageParams (value, option, isToast, optionContainer);
+            fillOptionParams(value, option, isToast, c);
         }
     }
 
-    public static void fillStorageParams (String value, String option, boolean isToast,
-            PgOptionContainer optionContainer){
+    public static void fillOptionParams(String value, String option, boolean isToast,
+            BiConsumer<String, String> c) {
         String quotedOption = PgDiffUtils.getQuotedName(option);
         if (isToast) {
             quotedOption = "toast."+ option;
         }
-        optionContainer.addOption(quotedOption, value);
+        c.accept(quotedOption, value);
     }
 }
