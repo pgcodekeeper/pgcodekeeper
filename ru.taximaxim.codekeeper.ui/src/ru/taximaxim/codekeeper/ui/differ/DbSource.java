@@ -244,12 +244,16 @@ class DbSourceFile extends DbSource {
             monitor.setWorkRemaining(1000);
         }
 
+        List<AntlrError> errList = null;
         try (PgDumpLoader loader = new PgDumpLoader(filename,
                 getPgDiffArgs(encoding, forceUnixNewlines),
                 monitor, 2)) {
-            PgDatabase db = loader.load();
-            errors.put(filename.getPath(), loader.getErrors());
-            return db;
+            errList = loader.getErrors();
+            return loader.load();
+        } finally {
+            if (errList != null && !errList.isEmpty()) {
+                errors.put(filename.getPath(), errList);
+            }
         }
     }
 

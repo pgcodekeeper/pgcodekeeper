@@ -220,10 +220,13 @@ public class PgDumpLoader implements AutoCloseable {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+                List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                    errList = loader.getErrors();
                     loader.load(db);
-                    if (errors != null) {
-                        errors.put(f.getPath(), loader.getErrors());
+                } finally {
+                    if (errors != null && errList != null && !errList.isEmpty()) {
+                        errors.put(f.getPath(), errList);
                     }
                 }
             }
