@@ -163,7 +163,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://jenkins@storage.chelny.taximaxim.ru/var/ftp/codekeeper/</url>
+                                    <url>scp://storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
                                     <commands>
                                         <command>rm -rf /var/ftp/codekeeper/devel/*</command>
                                     </commands>
@@ -178,7 +178,7 @@
                                 <configuration>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
-                                    <url>scp://jenkins@storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
+                                    <url>scp://storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
                                 </configuration>
                             </execution>
                         </executions>
