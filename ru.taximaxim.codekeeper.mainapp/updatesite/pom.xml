@@ -157,15 +157,15 @@
                         <version>1.0</version>
                         <executions>
                             <execution>
-                                <id>execute-test-commands</id>
+                                <id>clean-repo</id>
                                 <phase>deploy</phase>
                                 <goals>
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                    <url>scp://jenkins@storage.chelny.taximaxim.ru/var/ftp/codekeeper/</url>
                                     <commands>
-                                        <command>rm -rf /home/codekeeper/webroot/${nightly_version_dir}/*</command>
+                                        <command>rm -rf /var/ftp/codekeeper/devel/*</command>
                                     </commands>
                                 </configuration>
                             </execution>
@@ -178,7 +178,7 @@
                                 <configuration>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                    <url>scp://jenkins@storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
                                 </configuration>
                             </execution>
                         </executions>
