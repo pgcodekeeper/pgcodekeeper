@@ -444,7 +444,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         private final Thread scriptThread;
 
         ScriptThreadJobWrapper(Thread scriptThread) {
-            super(Messages.SqlEditor_update_ddl, SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
+            super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
+                    SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.scriptThread = scriptThread;
         }
 
@@ -468,6 +469,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 }
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
+                scriptThread.interrupt();
                 return Status.CANCEL_STATUS;
             } finally {
                 monitor.done();
