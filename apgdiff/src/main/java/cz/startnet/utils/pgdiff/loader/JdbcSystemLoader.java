@@ -10,7 +10,6 @@ import java.util.Arrays;
 
 import org.eclipse.core.runtime.SubMonitor;
 
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
@@ -34,9 +33,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     private static final String NAMESPACE_NAME = "nspname";
     private static final String NAME = "name";
 
-    public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor,
-            PgDiffArguments args) {
-        super(connector, monitor, args);
+    public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor) {
+        super(connector, monitor, null);
     }
 
     public PgSystemStorage getStorageFromJdbc() throws IOException, InterruptedException {
@@ -99,7 +97,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[i]);
                             function.addColumn(argNames[i], returnType.getFullName(schemaName));
                         }
-                        function.setReturnType("table");
                     }
                 } else {
                     function.setReturnType(wrapper.getString("prorettype"));
@@ -112,10 +109,13 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 if (!arguments.isEmpty()) {
                     submitAntlrTask('(' + arguments + ')',
                             p -> p.function_args_parser().function_args(),
-                            ctx -> fillArguments(ctx, function));
+                            ctx -> {
+                                fillArguments(ctx, function);
+                                storage.addObject(function);
+                            });
+                } else {
+                    storage.addObject(function);
                 }
-
-                storage.addObject(function);
             }
         }
     }

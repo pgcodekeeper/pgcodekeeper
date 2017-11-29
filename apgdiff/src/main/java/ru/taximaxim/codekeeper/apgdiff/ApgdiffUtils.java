@@ -28,15 +28,12 @@ public final class ApgdiffUtils {
     /**
      * Serializes object
      *
-     * @param path - path to the folder where the serialized object will be
-     * @param name - file name
+     * @param path - full path to file where the serialized object will be
      * @param object - the object that you want to serialize
      */
-    public static void serialize(String path, String name, Serializable object) {
+    public static void serialize(String path, Serializable object) {
         try {
-            Path folderPath = Paths.get(path);
-            Files.createDirectories(folderPath);
-            Path filePath = Paths.get(path, name);
+            Path filePath = Paths.get(path);
             if (Files.notExists(filePath)) {
                 Files.createFile(filePath);
             }

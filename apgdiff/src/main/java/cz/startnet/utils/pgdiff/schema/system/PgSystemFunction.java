@@ -18,7 +18,7 @@ public class PgSystemFunction extends PgSystemStatement {
     private final List<Argument> orderBy = new ArrayList<>();
 
     /**
-     * Function return type name, if equals table
+     * Function return type name, if null
      * {@link PgSystemStatement#columns columns} contains columns
      */
     private String returnType;

@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -13,7 +14,7 @@ public class PgSystemStorage implements Serializable {
 
     private static final long serialVersionUID = -5150584184929914163L;
 
-    private static final String FILE_NAME = "system_objects";
+    public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
     private final List<PgSystemStatement> objects = new ArrayList<>();
 
@@ -25,9 +26,10 @@ public class PgSystemStorage implements Serializable {
         objects.add(object);
     }
 
-    public static PgSystemStorage getObjectsFromResources() {
+    public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
         try {
-            String path = ApgdiffUtils.getFileFromOsgiRes(PgSystemStorage.class.getResource(FILE_NAME)).toString();
+            String path = ApgdiffUtils.getFileFromOsgiRes(PgSystemStorage.class.getResource(
+                    FILE_NAME + version.getVersion() + ".ser")).toString();
             Object object = ApgdiffUtils.deserialize(path);
 
             if (object != null && object instanceof PgSystemStorage) {
