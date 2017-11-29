@@ -100,6 +100,11 @@
             id="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
             name="%command.commandname.UpdateDdl">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+              name="%command.commandname.CancelDdl">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -159,6 +164,22 @@
                     </with>
                 </and>
             </enabledWhen>
+        </handler>
+        <handler
+              class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
+              commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl">
+           <enabledWhen>
+              <and>
+                 <with variable="activeEditorId">
+                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                    </equals>
+                 </with>
+                 <with variable="activeEditor">
+                    <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                    </test>
+                 </with>
+              </and>
+           </enabledWhen>
         </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
@@ -318,6 +339,12 @@
                     label="%command.commandname.UpdateDdl"
                     style="push">
                 </command>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                      icon="icons/terminate.gif"
+                      label="%command.commandname.CancelDdl"
+                      style="push">
+                </command>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator2"
                     visible="true">
@@ -437,6 +464,19 @@
                             </equals>
                         </with>
                     </visibleWhen>
+                </command>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                      icon="icons/terminate.gif"
+                      label="%command.commandname.CancelDdl"
+                      mode="FORCE_TEXT"
+                      style="push">
+                   <visibleWhen checkEnabled="true">
+                       <with variable="activeEditorId">
+                           <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                           </equals>
+                       </with>
+                   </visibleWhen>
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"

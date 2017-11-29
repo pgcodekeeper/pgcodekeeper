@@ -118,6 +118,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private Image errorTitleImage;
     private PgDbParser parser;
 
+    private ScriptThreadJobWrapper scriptThreadJobWrapper;
+
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
             return;
@@ -363,6 +365,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return getSourceViewer().getTextWidget().getText();
     }
 
+    public void cancelDdl() {
+        scriptThreadJobWrapper.cancel();
+    }
+    
     public void updateDdl() {
         DbInfo dbInfo = currentDB;
         if (dbInfo == null){
@@ -431,7 +437,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
         });
 
-        ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
