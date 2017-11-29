@@ -76,7 +76,7 @@ public interface UIConsts {
 
     interface DB_UPDATE_PREF {
         String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
-        String CREATE_SCRIPT_IN_PROJECT = "prefCreateScriptInProject"; //$NON-NLS-1$
+        String CREATE_SCRIPT_IN_PROJECT = "prefAddScriptToProject"; //$NON-NLS-1$
         String DELETE_SCRIPT_AFTER_CLOSE = "prefDeleteScriptAfterClose"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
