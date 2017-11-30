@@ -10,11 +10,14 @@ import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.reports.EclipseEnvironment;
 
 public class Activator extends AbstractUIPlugin {
 
     private static BundleContext context;
     private static Activator plugin;
+
+    private EclipseEnvironment eclipseEnvironment;
 
     public static BundleContext getContext() {
         return context;
@@ -66,6 +69,13 @@ public class Activator extends AbstractUIPlugin {
         Activator.context = null;
         plugin = null;
         super.stop(bundleContext);
+    }
+
+    public synchronized EclipseEnvironment getEclipseEnvironment() {
+        if (eclipseEnvironment == null) {
+            eclipseEnvironment =  new EclipseEnvironment();
+        }
+        return eclipseEnvironment;
     }
 
     @Override

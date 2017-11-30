@@ -552,6 +552,12 @@
             id="ru.taximaxim.codekeeper.ui.pgProjectEditor"
             name="%page.name.pgProjectEditor">
         </page>
+        <page
+              category="ru.taximaxim.codekeeper.ui.general"
+              class="ru.taximaxim.codekeeper.ui.prefs.UsageReportPreferencePage"
+              id="ru.taximaxim.codekeeper.ui.usageReport"
+              name="%page.name.usageReport">
+        </page>
     </extension>
     <extension point="org.eclipse.ui.importWizards">
         <category
@@ -1034,5 +1040,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+R">
         </key>
+    </extension>
+    <extension
+          point="org.eclipse.ui.startup">
+       <startup
+             class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
+       </startup>
     </extension>
 </plugin>

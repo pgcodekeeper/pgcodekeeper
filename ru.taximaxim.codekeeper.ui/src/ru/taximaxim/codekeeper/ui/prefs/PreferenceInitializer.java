@@ -12,6 +12,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.USAGE_REPORT_PREF;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
@@ -42,6 +43,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
 
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
+
+        store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
+        store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);
+
         setSQLSyntaxColorDefaults(store);
     }
 
