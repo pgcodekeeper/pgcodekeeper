@@ -21,6 +21,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.USAGE_REPORT_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -165,7 +166,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
         try {
             return DATE_FORMAT.format(new Date(Long.parseLong(timeStamp)));
         } catch (NumberFormatException e) {
-
+            Log.log(e);
         }
         return ""; //$NON-NLS-1$
     }

@@ -43,13 +43,12 @@ public class EclipseEnvironment {
     private static final String SHOW_BOX_ON_STARTUP = "showBoxOnStartup"; //$NON-NLS-1$
     private String keyWord;
 
-    // move to keeper preference?
     private final IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(PLUGIN_ID.THIS);
 
-    private String firstVisit;
-    private String lastVisit;
-    private String currentVisit;
-    private long visitCount;
+    private volatile String firstVisit;
+    private volatile String lastVisit;
+    private volatile String currentVisit;
+    private volatile long visitCount;
     private boolean justInitialized = true;
 
     public EclipseEnvironment() {
@@ -109,23 +108,23 @@ public class EclipseEnvironment {
         return builder.toString();
     }
 
-    public synchronized String getCurrentVisit() {
+    public String getCurrentVisit() {
         return currentVisit;
     }
 
-    public synchronized String getFirstVisit() {
+    public String getFirstVisit() {
         return firstVisit;
     }
 
-    public synchronized String getLastVisit() {
+    public String getLastVisit() {
         return lastVisit;
     }
 
-    public synchronized long getVisitCount() {
+    public long getVisitCount() {
         return visitCount;
     }
 
-    public synchronized void startNewVisitSession() {
+    public void startNewVisitSession() {
         // Check if we need to start a new visit session since it might have already been started during initialization
         if (!justInitialized) {
             initVisits();
