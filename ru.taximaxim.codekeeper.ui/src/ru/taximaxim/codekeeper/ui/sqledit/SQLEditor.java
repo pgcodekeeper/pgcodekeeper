@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -368,7 +367,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     public void cancelDdl() {
         scriptThreadJobWrapper.cancel();
     }
-    
+
     public void updateDdl() {
         DbInfo dbInfo = currentDB;
         if (dbInfo == null){
@@ -428,14 +427,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         Thread scriptThread = new Thread(launcher);
-        scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.sqlScriptDialog_exception_during_script_execution,e);
-            }
-        });
+        scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
+                Messages.sqlScriptDialog_exception_during_script_execution,e));
 
         scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
         scriptThreadJobWrapper.setUser(true);

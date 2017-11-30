@@ -458,11 +458,19 @@
                     label="%command.commandname.UpdateDdl"
                     mode="FORCE_TEXT"
                     style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                            </equals>
-                        </with>
+                    <visibleWhen checkEnabled="false">
+                        <and>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                            <with variable="activeEditor">
+                                <not>
+                                    <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                                    </test>
+                                </not>
+                            </with>
+                        </and>
                     </visibleWhen>
                 </command>
                 <command
@@ -471,11 +479,17 @@
                       label="%command.commandname.CancelDdl"
                       mode="FORCE_TEXT"
                       style="push">
-                   <visibleWhen checkEnabled="true">
-                       <with variable="activeEditorId">
-                           <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                           </equals>
-                       </with>
+                   <visibleWhen checkEnabled="false">
+                      <and>
+                         <with variable="activeEditorId">
+                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                            </equals>
+                         </with>
+                         <with variable="activeEditor">
+                            <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                            </test>
+                         </with>
+                      </and>
                    </visibleWhen>
                 </command>
                 <command
@@ -1073,6 +1087,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+R">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+E">
         </key>
     </extension>
 </plugin>
