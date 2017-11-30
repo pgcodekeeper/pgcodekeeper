@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -33,21 +31,17 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         editorPartListener = new EditorPartListener();
         page.addPartListener(editorPartListener);
 
-        storePicker.addListenerToCombo(new ISelectionChangedListener() {
+        storePicker.addListenerToCombo(e -> {
+            IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
 
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IEditorPart editorPart = getWorkbenchWindow().getActivePage().getActiveEditor();
-
-                if(editorPart instanceof SQLEditor) {
-                    ((SQLEditor) editorPart).setCurrentDb(storePicker.getDbInfo());
-                } else if(editorPart instanceof ProjectEditorDiffer) {
-                    Object selection = storePicker.getDbInfo();
-                    if (selection == null) {
-                        selection = storePicker.getPathOfFile();
-                    }
-                    ((ProjectEditorDiffer) editorPart).setCurrentDb(selection);
+            if (editor instanceof SQLEditor) {
+                ((SQLEditor) editor).setCurrentDb(storePicker.getDbInfo());
+            } else if (editor instanceof ProjectEditorDiffer) {
+                Object selection = storePicker.getDbInfo();
+                if (selection == null) {
+                    selection = storePicker.getPathOfFile();
                 }
+                ((ProjectEditorDiffer) editor).setCurrentDb(selection);
             }
         });
 

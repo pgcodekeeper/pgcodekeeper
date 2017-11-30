@@ -105,6 +105,12 @@
               id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
               name="%command.commandname.CancelDdl">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDbStore"
+              id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+              name="%command.commandname.OpenDbStore">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -525,6 +531,24 @@
                         </or>
                     </visibleWhen>
                 </control>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+                    icon="icons/editor_area.png"
+                    label="%command.commandname.OpenDbStore"
+                    style="push">                    
+                    <visibleWhen checkEnabled="true">
+                        <or>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                            </with>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                        </or>
+                    </visibleWhen>
+                </command>
             </toolbar>
         </menuContribution>
     </extension>
