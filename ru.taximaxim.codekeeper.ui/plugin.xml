@@ -746,35 +746,29 @@
             <view
                 id="org.eclipse.ui.navigator.ProjectExplorer"
                 minimized="false"
-                ratio="0.25"
-                relationship="left"
-                relative="org.eclipse.ui.editorss">
+                ratio="0.75"
+                relationship="right"
+                relative="org.eclipse.ui.views.ContentOutline">
             </view>
             <view
-                id="ru.taximaxim.codekeeper.ui.depcyview"
+                id="org.eclipse.ui.views.ProgressView"
                 minimized="false"
-                ratio="0.5"
+                ratio="0.7"
                 relationship="bottom"
                 relative="org.eclipse.ui.navigator.ProjectExplorer">
             </view>
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
-                relationship="stack"
-                relative="ru.taximaxim.codekeeper.ui.depcyview">
-            </view>
-            <view
-                id="org.eclipse.ui.console.ConsoleView"
-                minimized="false"
-                ratio="0.85"
-                relationship="bottom"
+                ratio="0.8"
+                relationship="right"
                 relative="org.eclipse.ui.editorss">
             </view>
             <view
-                id="org.eclipse.ui.views.ProgressView"
+                id="ru.taximaxim.codekeeper.ui.depcyview"
                 minimized="false"
                 relationship="stack"
-                relative="org.eclipse.ui.console.ConsoleView">
+                relative="org.eclipse.ui.views.ProgressView">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>
