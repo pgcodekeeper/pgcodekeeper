@@ -420,32 +420,6 @@
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
-                    icon="icons/app_icon16.png"
-                    label="%command.commandname.CommitProject"
-                    mode="FORCE_TEXT"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
-                    icon="icons/pgadmin/database.png"
-                    label="%command.commandname.DiffProject"
-                    mode="FORCE_TEXT"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
                     label="%command.commandname.QuickUpdate"
@@ -507,8 +481,6 @@
                     <visibleWhen>
                         <with variable="activeEditorId">
                             <or>
-                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                </equals>
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
                             </or>

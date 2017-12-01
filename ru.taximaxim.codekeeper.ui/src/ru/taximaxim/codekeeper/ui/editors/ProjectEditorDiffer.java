@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -148,6 +150,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
+    private IStatusLineManager manager;
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
@@ -187,6 +190,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
+
+        manager = getEditorSite().getActionBars().getStatusLineManager();
 
         parent.setLayout(new GridLayout());
         lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
@@ -235,7 +240,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false);
+        diffTable = new DiffTableViewer(sashOuter, false, manager);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -306,6 +311,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void setFocus() {
         parent.setFocus();
+
+        if (manager != null) {
+            manager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))),
+
+                    MessageFormat.format(Messages.DiffTableViewer_selected_count,
+                            diffTable.getCheckedElementsCount(), diffTable.getElements().size()));
+        }
     }
 
     @Override
