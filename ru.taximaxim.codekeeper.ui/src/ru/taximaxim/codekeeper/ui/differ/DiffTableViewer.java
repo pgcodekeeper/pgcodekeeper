@@ -1,18 +1,15 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -33,17 +30,14 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
@@ -75,11 +69,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -90,11 +81,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class DiffTableViewer extends Composite {
 
-    private static final String PREVCHECKED_HIST_ROOT = "CheckSets"; //$NON-NLS-1$
-    private static final String PREVCHECKED_HIST_SET = "CheckSet"; //$NON-NLS-1$
-    private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
-    private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
-    private static final int PREVCHECKED_HIST_MAX_STORED = 20;
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
 
     private final Image iSideBoth;
@@ -112,7 +98,6 @@ public class DiffTableViewer extends Composite {
     private final LocalResourceManager lrm;
     private final Text txtFilterName;
     private final Button useRegEx;
-    private ComboViewer cmbPrevChecked;
     private final Label lblObjectCount;
     private Label lblCheckedCount;
 
@@ -127,8 +112,6 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
-    private Map<String, List<String>> prevChecked;
-    private final XmlHistory prevCheckedHistory;
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
@@ -163,20 +146,9 @@ public class DiffTableViewer extends Composite {
         // upper composite
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        gl = new GridLayout(viewOnly ? 4 : 14, false);
+        gl = new GridLayout(viewOnly ? 4 : 10, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
-
-        prevCheckedHistory = new XmlHistory.Builder(PREVCHECKED_HIST_MAX_STORED,
-                PREVCHECKED_HIST_FILENAME,
-                PREVCHECKED_HIST_ROOT,
-                PREVCHECKED_HIST_EL).elementSetTag(PREVCHECKED_HIST_SET).build();
-        try {
-            prevChecked = prevCheckedHistory.getMapHistory();
-        } catch (IOException e1) {
-            ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_load_checked_set, e1);
-            prevChecked = new HashMap<>();
-        }
 
         if (!viewOnly) {
             Button btnSelectAll = new Button(upperComp, SWT.PUSH);
@@ -275,44 +247,6 @@ public class DiffTableViewer extends Composite {
         }
         lblObjectCount = new Label(upperComp, SWT.NONE);
 
-        if (!viewOnly) {
-            l = new Label(upperComp, SWT.NONE);
-            l.setText(Messages.diffTableViewer_stored_selections);
-            l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-
-            cmbPrevChecked = new ComboViewer(upperComp, SWT.DROP_DOWN);
-            gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
-            gd.widthHint = pc.convertWidthInCharsToPixels(30);
-            cmbPrevChecked.getCombo().setLayoutData(gd);
-            cmbPrevChecked.getCombo().setToolTipText(
-                    Messages.diffTableViewer_Input_name_for_save_checked_elements);
-            cmbPrevChecked.setContentProvider(ArrayContentProvider.getInstance());
-            cmbPrevChecked.setLabelProvider(new LabelProvider());
-            cmbPrevChecked.setInput(prevChecked.keySet());
-            cmbPrevChecked.addSelectionChangedListener(e -> setCheckedFromPrevCheckedCombo());
-
-            Button saveChecked = new Button(upperComp, SWT.PUSH);
-            saveChecked.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_SAVE_EDIT));
-            saveChecked.setToolTipText(Messages.diffTableViewer_save_checked);
-            saveChecked.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateCheckedSet(true);
-                }
-            });
-
-            Button deleteCheckSet = new Button(upperComp, SWT.PUSH);
-            deleteCheckSet.setImage(Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
-            deleteCheckSet.setToolTipText(Messages.diffTableViewer_delete_checked_set);
-            deleteCheckSet.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateCheckedSet(false);
-                }
-            });
-        }
         updateObjectsLabels();
         // end upper composite
 
@@ -604,33 +538,6 @@ public class DiffTableViewer extends Composite {
         programmaticCheckListeners.add(listener);
     }
 
-    private void setCheckedFromPrevCheckedCombo() {
-        List<String> elementsToCheck = prevChecked.get(cmbPrevChecked.getCombo().getText());
-        if (elementsToCheck == null || elementsToCheck.isEmpty()) {
-            return;
-        }
-        List<TreeElement> prevCheckedList = new ArrayList<>(elementsToCheck.size());
-        for (String elementString : elementsToCheck){
-            int comma = elementString.lastIndexOf(',');
-            String elName;
-            DbObjType elType;
-            try {
-                elName = elementString.substring(0, comma);
-                elType = DbObjType.valueOf(elementString.substring(comma + 1));
-            } catch (IllegalArgumentException | IndexOutOfBoundsException ex) {
-                Log.log(Log.LOG_WARNING,
-                        "Bad checked set entry: " + elementString, ex); //$NON-NLS-1$
-                continue;
-            }
-            for (TreeElement el : elements) {
-                if (el.getType() == elType && el.getQualifiedName().equals(elName)) {
-                    prevCheckedList.add(el);
-                }
-            }
-        }
-        setElementsChecked(prevCheckedList, true, false);
-    }
-
     private void saveCheckedElements2ClipboardAsExpession(){
         boolean first = true;
         StringBuilder sb = new StringBuilder();
@@ -658,27 +565,6 @@ public class DiffTableViewer extends Composite {
             } finally {
                 clip.dispose();
             }
-        }
-    }
-
-    private void updateCheckedSet(boolean addEntry) {
-        String setName = cmbPrevChecked.getCombo().getText();
-        if (!setName.isEmpty()) {
-            List<String> checkedElements = new ArrayList<>();
-            for (TreeElement element : elements) {
-                if (element.isSelected()) {
-                    checkedElements.add(element.getQualifiedName() + ',' + element.getType().name());
-                }
-            }
-            try {
-                prevCheckedHistory.updateCheckedSetHistoryEntries(setName,
-                        checkedElements, addEntry);
-                prevChecked = prevCheckedHistory.getMapHistory();
-            } catch (IOException e) {
-                ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_save_checked_set, e);
-                prevChecked = new HashMap<>();
-            }
-            cmbPrevChecked.setInput(prevChecked.keySet());
         }
     }
 
@@ -717,9 +603,7 @@ public class DiffTableViewer extends Composite {
         this.elements.addAll(elements);
         viewer.setInput(this.elements);
         updateColumnsWidth();
-        if (!viewOnly) {
-            setCheckedFromPrevCheckedCombo();
-        }
+
         updateObjectsLabels();
     }
 
