@@ -118,6 +118,8 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
+    private Button getChanges;
+
     private final IStatusLineManager lineManager;
 
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
@@ -296,7 +298,7 @@ public class DiffTableViewer extends Composite {
             });
 
 
-            Button getChanges = new Button(upperComp, SWT.PUSH);
+            getChanges = new Button(upperComp, SWT.PUSH);
             getChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
                     .getBundle().getResource(FILE.ICONREFRESH))));
             getChanges.setText(Messages.DiffTableViewer_get_changes);
@@ -363,6 +365,10 @@ public class DiffTableViewer extends Composite {
         viewer.setFilters(viewerFilter);
         initColumns();
         viewer.setContentProvider(contentProvider);
+    }
+
+    public void enableGetChanges(boolean enable) {
+        getChanges.setEnabled(enable);
     }
 
     private MenuManager getViewerMenu() {
@@ -1045,6 +1051,10 @@ public class DiffTableViewer extends Composite {
 
             if (!types.isEmpty() && !isSubElement && !types.contains(el.getType())
                     || !sides.isEmpty() && !sides.contains(el.getSide())) {
+                return false;
+            }
+
+            if (isSubElement && !types.isEmpty() && !types.contains(el.getParent().getType())) {
                 return false;
             }
 

@@ -460,6 +460,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
+                    UiSync.exec(parent, () -> {
+                        if (!parent.isDisposed()) {
+                            diffTable.enableGetChanges(false);
+                        }
+                    });
                     SubMonitor sub = SubMonitor.convert(monitor,
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
@@ -489,6 +494,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
+
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        diffTable.enableGetChanges(true);
+                    }
+                });
 
                 newDiffer.getErrors()
                 .forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(

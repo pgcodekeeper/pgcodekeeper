@@ -423,7 +423,6 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
                     label="%command.commandname.QuickUpdate"
-                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -436,19 +435,12 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
                     icon="icons/update_ddl.gif"
                     label="%command.commandname.UpdateDdl"
-                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="false">
                         <and>
                             <with variable="activeEditorId">
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                            </with>
-                            <with variable="activeEditor">
-                                <not>
-                                    <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
-                                    </test>
-                                </not>
                             </with>
                         </and>
                     </visibleWhen>
@@ -457,17 +449,12 @@
                       commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
                       icon="icons/terminate.gif"
                       label="%command.commandname.CancelDdl"
-                      mode="FORCE_TEXT"
                       style="push">
                    <visibleWhen checkEnabled="false">
                       <and>
                          <with variable="activeEditorId">
                             <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
-                         </with>
-                         <with variable="activeEditor">
-                            <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
-                            </test>
                          </with>
                       </and>
                    </visibleWhen>
@@ -476,7 +463,6 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
-                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen>
                         <with variable="activeEditorId">
