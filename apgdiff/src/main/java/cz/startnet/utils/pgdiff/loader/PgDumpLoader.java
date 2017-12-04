@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -30,7 +29,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -41,7 +39,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -50,6 +47,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -287,16 +285,14 @@ public class PgDumpLoader implements AutoCloseable {
                 TriggersReader.analyzeWhenVexCtx((VexContext) ctx, (PgTrigger)stmt, schemaName);
                 break;
             case INDEX:
-                IndicesReader.analyzeIndexWhereCtx((Index_restContext) ctx, schemaName, (PgIndex)stmt);
-                break;
             case FUNCTION:
-                ValueExpr vex = new ValueExpr(schemaName);
-                vex.analyze(new Vex((VexContext)ctx));
-                stmt.addAllDeps(vex.getDepcies());
+                UtilExpr.analyze(new Vex((VexContext)ctx), new ValueExpr(schemaName), stmt);
                 break;
             default:
                 throw new IllegalStateException("The analyze for the case is not defined!"); //$NON-NLS-1$
             }
         }
+
+        SecondAnalyze.goThroughGraphForAnalyze(db);
     }
 }

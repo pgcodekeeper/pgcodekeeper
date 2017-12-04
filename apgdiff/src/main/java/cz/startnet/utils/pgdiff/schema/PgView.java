@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,6 +37,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
+    private final List<Entry<String, String>> columnsOfQuery = new ArrayList<>();
 
 
     @Override
@@ -126,6 +128,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
+    }
+
+    public List<Entry<String, String>> getColumnsOfQuery() {
+        return columnsOfQuery;
+    }
+
+    public void addColumnOfQuery(Entry<String, String>column) {
+        columnsOfQuery.add(column);
     }
 
     @Override
@@ -458,7 +468,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(columnComments, view.getColumnComments())
                     && Objects.equals(options, view.getOptions())
                     && Objects.equals(isWithData, view.isWithData())
-                    && Objects.equals(tablespace, view.getTablespace());;
+                    && Objects.equals(tablespace, view.getTablespace());
         }
 
         return eq;

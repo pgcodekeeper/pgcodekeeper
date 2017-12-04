@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
@@ -67,8 +68,9 @@ public class CreateIndex extends ParserAbstract {
             sb.append(" TABLESPACE ").append(tablespace);
         }
         if (rest.index_where() != null){
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, rest));
-            sb.append(' ').append(ParserAbstract.getFullCtxText(rest.index_where()));
+            Index_whereContext whereCtx = rest.index_where();
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, whereCtx.vex()));
+            sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
         return sb.toString();
     }

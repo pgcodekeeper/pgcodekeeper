@@ -9,7 +9,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
@@ -105,5 +107,121 @@ public class Vex {
 
     public Value_expression_primaryContext primary() {
         return isB ? vexB.value_expression_primary() : vex.value_expression_primary();
+    }
+
+    public TerminalNode plus() {
+        return isB ? vexB.PLUS() : vex.PLUS();
+    }
+
+    public TerminalNode minus() {
+        return isB ? vexB.MINUS() : vex.MINUS();
+    }
+
+    public TerminalNode timeZone() {
+        return isB ? null : vex.ZONE();
+    }
+
+    public TerminalNode colon() {
+        return isB ? vexB.COLON() : vex.COLON();
+    }
+
+    public TerminalNode exp() {
+        return isB ? vexB.EXP() : vex.EXP();
+    }
+
+    public TerminalNode multiply() {
+        return isB ? vexB.MULTIPLY() : vex.MULTIPLY();
+    }
+
+    public TerminalNode divide() {
+        return isB ? vexB.DIVIDE() : vex.DIVIDE();
+    }
+
+    public TerminalNode modular() {
+        return isB ? vexB.MODULAR() : vex.MODULAR();
+    }
+
+    public OpContext op() {
+        return isB ? vexB.op() : vex.op();
+    }
+
+    public TerminalNode between() {
+        return isB ? null : vex.BETWEEN();
+    }
+
+    public TerminalNode like() {
+        return isB ? null : vex.LIKE();
+    }
+
+    public TerminalNode ilike() {
+        return isB ? null : vex.ILIKE();
+    }
+
+    public TerminalNode similar() {
+        return isB ? null : vex.SIMILAR();
+    }
+
+    public TerminalNode lth() {
+        return isB ? vexB.LTH() : vex.LTH();
+    }
+
+    public TerminalNode gth() {
+        return isB ? vexB.GTH() : vex.GTH();
+    }
+
+    public TerminalNode leq() {
+        return isB ? vexB.LEQ() : vex.LEQ();
+    }
+
+    public TerminalNode geq() {
+        return isB ? vexB.GEQ() : vex.GEQ();
+    }
+
+    public TerminalNode equal() {
+        return isB ? vexB.EQUAL() : vex.EQUAL();
+    }
+
+    public TerminalNode notEqual() {
+        return isB ? vexB.NOT_EQUAL() : vex.NOT_EQUAL();
+    }
+
+    public TerminalNode is() {
+        return isB ? vexB.IS() : vex.IS();
+    }
+
+    public Truth_valueContext truthValue() {
+        return isB ? null : vex.truth_value();
+    }
+
+    public TerminalNode nullValue() {
+        return isB ? null : vex.NULL();
+    }
+
+    public TerminalNode distinct() {
+        return isB ? vexB.DISTINCT() : vex.DISTINCT();
+    }
+
+    public TerminalNode document() {
+        return isB ? vexB.DOCUMENT() : vex.DOCUMENT();
+    }
+
+    public TerminalNode isNull() {
+        return isB ? null : vex.ISNULL();
+    }
+
+    public TerminalNode notNull() {
+        return isB ? null : vex.NOTNULL();
+    }
+
+    public TerminalNode not() {
+        return isB ? null : vex.NOT();
+    }
+
+    public TerminalNode and() {
+        return isB ? null : vex.AND();
+    }
+
+    public TerminalNode or() {
+        return isB ? null : vex.OR();
     }
 }

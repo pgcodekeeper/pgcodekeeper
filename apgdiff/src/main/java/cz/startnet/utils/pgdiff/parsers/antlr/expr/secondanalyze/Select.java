@@ -1,5 +1,9 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -30,6 +34,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -49,12 +55,29 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      */
     private boolean lateralAllowed;
 
-    public Select(String schema) {
-        super(schema);
+    private PgView viewInProcessing;
+
+    public Select(String schema, PgDatabase db) {
+        super(schema, db);
+    }
+
+    public Select(String schema, PgDatabase db, PgView viewInProcessing) {
+        this(schema, db);
+        this.viewInProcessing = viewInProcessing;
     }
 
     protected Select(AbstractExpr parent) {
         super(parent);
+
+        if (parent instanceof Select) {
+            viewInProcessing = ((Select)parent).getViewInProcessing();
+        } else if(parent instanceof ValueExpr) {
+            viewInProcessing = ((ValueExpr)parent).getViewInProcessing();
+        }
+    }
+
+    public PgView getViewInProcessing() {
+        return viewInProcessing;
     }
 
     @Override
@@ -62,26 +85,27 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
-    public void analyze(ParserRuleContext ruleCtx) {
+    public List<Entry<String, String>> analyze(ParserRuleContext ruleCtx) {
         if (ruleCtx instanceof Select_stmtContext) {
-            analyze(new SelectStmt((Select_stmtContext) ruleCtx));
+            return analyze(new SelectStmt((Select_stmtContext) ruleCtx));
         } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
-            analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
+            return analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
         } else {
             throw new IllegalStateException("Not a select ctx");
         }
     }
 
     @Override
-    public void analyze(SelectStmt select) {
+    public List<Entry<String, String>> analyze(SelectStmt select) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
         }
 
-        selectOps(select.selectOps());
+        List<Entry<String, String>> ret = selectOps(select.selectOps());
 
         Orderby_clauseContext orderBy = select.orderBy();
+
         List<VexContext> vexs = null;
         if (select.limit() != null || select.offset() != null || select.fetch() != null) {
             vexs = select.vex();
@@ -103,19 +127,22 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
                 addObjectDepcy(tableLock.identifier(), DbObjType.TABLE);
             }
+
         }
+        return ret;
     }
 
-    private void selectOps(SelectOps selectOps) {
+    private List<Entry<String, String>> selectOps(SelectOps selectOps) {
+        List<Entry<String, String>> ret = Collections.emptyList();
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
 
         if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
-            analyze(selectStmt);
+            ret = analyze(selectStmt);
         } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
-            new Select(this).selectOps(selectOps.selectOps(0));
+            ret = selectOps(selectOps.selectOps(0));
             new Select(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
             Values_stmtContext values;
@@ -134,10 +161,26 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     }
                 }
 
-                ValueExpr vex = new ValueExpr(this);
+                ret = new ArrayList<>();
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                    vex.analyze(new Vex(target.vex()));
+                    ValueExpr vexCol = new ValueExpr(this);
+
+                    vexCol.getComplexNamespace().putAll(complexNamespace);
+                    vexCol.getCteConstruction().putAll(cteConstruction);
+
+                    Entry<String, String> columnPair = vexCol.analyze(new Vex(target.vex()));
+
+                    if(target.alias != null && columnPair != null){
+                        columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
+
+                    }
+
+                    viewInProcessing.addColumnOfQuery(columnPair);
+
+                    ret.add(columnPair);
                 }
+
+                ValueExpr vex = new ValueExpr(this);
 
                 if ((primary.set_qualifier() != null && primary.ON() != null)
                         || primary.WHERE() != null || primary.HAVING() != null) {
@@ -182,6 +225,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
+        return ret;
     }
 
     private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
@@ -231,7 +275,8 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 // this greatly simplifies analysis logic here
                 try {
                     lateralAllowed = true;
-                    new ValueExpr(this).analyze(new Vex(joinOn));
+                    ValueExpr vexOn = new ValueExpr(this);
+                    vexOn.analyze(new Vex(joinOn));
                 } finally {
                     lateralAllowed = oldLateral;
                 }
@@ -248,7 +293,10 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    new Select(this).analyze(subquery.select_stmt());
+                    List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
+
+                    getComplexNamespace().put(alias.alias.getText(), columnList);
+
                     addReference(alias.alias.getText(), null);
                 } finally {
                     lateralAllowed = oldLateral;
@@ -257,11 +305,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = true;
-                    GenericColumn func = new ValueExpr(this).function(function);
-                    if (func != null) {
-                        String funcAlias = primary.alias == null ? func.table :
+                    ValueExpr vexFunc = new ValueExpr(this);
+                    Entry<String, String> func = vexFunc.function(function);
+                    if (func.getKey() != null) {
+                        String funcAlias = primary.alias == null ? func.getKey():
                             primary.alias.getText();
                         addReference(funcAlias, null);
+
+                        if (alias != null) {
+                            getComplexNamespace().put(alias.alias.getText(), new ArrayList<>(Arrays.asList(func)));
+                        }
                     }
                 } finally {
                     lateralAllowed = oldLateral;

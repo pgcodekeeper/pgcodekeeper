@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -53,8 +54,8 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      */
     protected final Set<String> cte = new HashSet<>();
 
-    public AbstractExprWithNmspc(String schema) {
-        super(schema);
+    public AbstractExprWithNmspc(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {
@@ -202,19 +203,23 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             // add CTE name to the visible CTEs list after processing the query for normal CTEs
             // and before for recursive ones
             Select withProcessor = new Select(this);
+            List<Entry<String, String>> columnPair;
             boolean duplicate;
             if (recursive) {
                 duplicate = !cte.add(withName);
-                withProcessor.analyze(withSelect);
+                columnPair = withProcessor.analyze(withSelect);
             } else {
-                withProcessor.analyze(withSelect);
+                columnPair = withProcessor.analyze(withSelect);
                 duplicate = !cte.add(withName);
             }
+
+            cteConstruction.put(withName, columnPair);
+
             if (duplicate) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
     }
 
-    public abstract void analyze(T ruleCtx);
+    public abstract List<Entry<String, String>> analyze(T ruleCtx);
 }

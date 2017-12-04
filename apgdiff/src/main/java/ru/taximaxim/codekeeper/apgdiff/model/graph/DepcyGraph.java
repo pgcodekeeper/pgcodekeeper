@@ -62,6 +62,11 @@ public class DepcyGraph {
         create();
     }
 
+    public DepcyGraph(PgDatabase graphSrc, boolean workWithDbCopy) {
+        db = workWithDbCopy ? graphSrc.deepCopy() : graphSrc;
+        create();
+    }
+
     private void create() {
         graph.addVertex(db);
 

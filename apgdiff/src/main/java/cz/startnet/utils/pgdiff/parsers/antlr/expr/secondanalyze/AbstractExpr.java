@@ -1,8 +1,11 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -17,29 +20,58 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractExpr {
 
-    private final String schema;
+    protected final String schema;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
+
+    protected final PgDatabase db;
+
+    /*
+     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
+     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
+     */
+    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
+    /*
+     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
+     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
+     */
+    protected final Map<String, List<Entry<String, String>>> cteConstruction = new HashMap<>();
+
+    public Map<String, List<Entry<String, String>>> getComplexNamespace() {
+        return complexNamespace;
+    }
+
+    public Map<String, List<Entry<String, String>>> getCteConstruction() {
+        return cteConstruction;
+    }
 
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
 
-    public AbstractExpr(String schema) {
+    public AbstractExpr(String schema, PgDatabase db) {
         this.schema = schema;
         parent = null;
         depcies = new LinkedHashSet<>();
+        this.db = db;
     }
 
     protected AbstractExpr(AbstractExpr parent) {
         this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
+        this.db = parent.db;
     }
 
     protected AbstractExprWithNmspc<?> findCte(String cteName) {
@@ -92,29 +124,83 @@ public abstract class AbstractExpr {
     }
 
     /**
-     * @return column name or null if referenced qname is not found
+     * @return column with its type
      */
-    protected void addColumnDepcy(Schema_qualified_nameContext qname) {
+    protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
         String column = QNameParser.getFirstName(ids);
+        Entry<String, String> pair = new SimpleEntry<>(column, "column");
+        String columnParent = null;
 
         // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
             String schema = QNameParser.getThirdName(ids);
-            String table = QNameParser.getSecondName(ids);
+            columnParent = QNameParser.getSecondName(ids);
 
-            Entry<String, GenericColumn> ref = findReference(schema, table, column);
+            Entry<String, GenericColumn> ref = findReference(schema, columnParent, column);
             if (ref == null) {
                 Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + table + ' ' + column);
+                        + schema + ' ' + columnParent + ' ' + column);
             } else {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
-                    depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column, DbObjType.COLUMN));
+                    columnParent = referencedTable.table;
+                    depcies.add(new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN));
                 }
             }
+
+            String type;
+            type = getColumnType(columnParent, column);
+            pair.setValue(type);
         }
+
+        return pair;
     }
+
+    private String getColumnType(String columnParent, String column) {
+        PgSchema s = db.getSchema(schema);
+
+        String type = "columnWithRecursionOrOther";
+
+        if (schema != null && columnParent != null) {
+            PgTable t;
+            PgView v;
+            if ((t = s.getTable(columnParent)) != null) {
+                PgColumn col = t.getColumn(column);
+
+                if (col != null) {
+                    type = col.getType();
+                } else {
+                    List<Inherits> inheritsList = t.getInherits();
+                    if (!inheritsList.isEmpty()) {
+                        for (Inherits inht : inheritsList) {
+                            PgTable tInherits = s.getTable(inht.getValue());
+                            col = tInherits.getColumn(column);
+                            if (col != null) {
+                                type = col.getType();
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else if ((v = s.getView(columnParent)) != null) {
+                for (Entry<String, String> col : v.getColumnsOfQuery()) {
+                    if (column.equals(col.getKey())) {
+                        type = col.getValue();
+                        break;
+                    }
+                }
+            } else if (complexNamespace.containsKey(columnParent)) {
+                type = complexNamespace.get(columnParent).stream()
+                        .filter(entry -> column.equals(entry.getKey()))
+                        .map(entry -> entry.getValue()).findFirst().get();
+            } else {
+                type = "columnUnknown";
+            }
+        }
+        return type;
+    }
+
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
         List<IdentifierContext> ids = table.identifier();
