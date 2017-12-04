@@ -399,8 +399,6 @@
                                 </equals>
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
-                                </equals>
                             </or>
                         </with>
                         <with variable="selection">
@@ -477,16 +475,14 @@
                     class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
                     id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
                     <visibleWhen checkEnabled="true">
-                        <or>
-                            <with variable="activeEditorId">
+                        <with variable="activeEditorId">
+                            <or>
                                 <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
                                 </equals>
-                            </with>
-                            <with variable="activeEditorId">
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                            </with>
-                        </or>
+                            </or>
+                        </with>
                     </visibleWhen>
                 </control>
                 <command
@@ -495,16 +491,14 @@
                     label="%command.commandname.OpenDbStore"
                     style="push">                    
                     <visibleWhen checkEnabled="true">
-                        <or>
-                            <with variable="activeEditorId">
+                        <with variable="activeEditorId">
+                            <or>
                                 <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
                                 </equals>
-                            </with>
-                            <with variable="activeEditorId">
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                            </with>
-                        </or>
+                            </or>
+                        </with>
                     </visibleWhen>
                 </command>
             </toolbar>
