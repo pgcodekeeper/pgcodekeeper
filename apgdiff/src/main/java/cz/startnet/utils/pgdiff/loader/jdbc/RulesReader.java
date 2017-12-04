@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -110,6 +111,8 @@ public class RulesReader extends JdbcReader {
                     return createRewriteCtx;
                 },
                 (ctx, db) -> {
+                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(r, ctx));
+
                     analyzeRewriteCreateStmtCtx(ctx, r, schemaName);
 
                     for (Rewrite_commandContext cmd : ctx.commands) {

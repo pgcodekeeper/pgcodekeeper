@@ -1,11 +1,13 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -99,9 +101,9 @@ public class TypesReader extends JdbcReader {
             loader.submitAntlrTask(def, dataBase,
                     p -> p.vex_eof().vex().get(0),
                     (ctx, db) -> {
-                        ValueExpr vex = new ValueExpr(schemaName);
-                        vex.analyze(new Vex(ctx));
-                        d.addAllDeps(vex.getDepcies());
+                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(d, ctx));
+
+                        UtilExpr.analyze(new Vex(ctx), new ValueExpr(schemaName), d);
                     });
         }
         d.setDefaultValue(def);
@@ -125,7 +127,11 @@ public class TypesReader extends JdbcReader {
                             c.setNotValid(tableActionCtx.not_valid != null);
 
                             return body;
-                        }, (ctx, db) -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
+                        }, (ctx, db) -> {
+                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
+
+                            ParserAbstract.parseConstraintExpr(ctx, schemaName, c);
+                        });
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

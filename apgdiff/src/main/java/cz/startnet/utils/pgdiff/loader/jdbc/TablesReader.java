@@ -1,9 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -139,9 +141,9 @@ public class TablesReader extends JdbcReader {
                 loader.submitAntlrTask(columnDefault, (PgDatabase)schema.getParent(),
                         p -> p.vex_eof().vex().get(0),
                         (ctx, db) -> {
-                            ValueExpr vex = new ValueExpr(schemaName);
-                            vex.analyze(new Vex(ctx));
-                            column.addAllDeps(vex.getDepcies());
+                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx));
+
+                            UtilExpr.analyze(new Vex(ctx), new ValueExpr(schemaName), column);
                         });
             }
 

@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -162,6 +163,8 @@ public class TriggersReader extends JdbcReader {
                 .schema_create().create_trigger_statement().when_trigger(),
                 (ctx, db) -> {
                     if (ctx != null) {
+                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx));
+
                         analyzeWhenVexCtx(ctx.vex(), t, schemaName);
                         t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
                     }

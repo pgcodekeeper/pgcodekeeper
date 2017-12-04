@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -80,7 +81,11 @@ public class ConstraintsReader extends JdbcReader {
 
                     return bodyCtx;
                 },
-                (ctx, db) -> ParserAbstract.parseConstraintExpr(ctx, schemaName, c));
+                (ctx, db) ->  {
+                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
+
+                    ParserAbstract.parseConstraintExpr(ctx, schemaName, c);
+                });
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

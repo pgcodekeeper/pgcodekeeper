@@ -1,10 +1,13 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -76,7 +79,11 @@ public class IndicesReader extends JdbcReader {
                 },
                 (ctx, db) -> {
                     if (ctx.index_where() != null) {
-                        analyzeIndexWhereCtx(ctx, schemaName, i);
+                        VexContext vexCtx = ctx.index_where().vex();
+
+                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(i, vexCtx));
+
+                        UtilExpr.analyze(new Vex(vexCtx), new ValueExpr(schemaName), i);
                     }
                 });
 
@@ -97,11 +104,5 @@ public class IndicesReader extends JdbcReader {
             }
         }
         return i;
-    }
-
-    public static void analyzeIndexWhereCtx(Index_restContext rest, String schemaName, PgIndex ind) {
-        ValueExpr vex = new ValueExpr(schemaName);
-        vex.analyze(new Vex(rest.index_where().vex()));
-        ind.addAllDeps(vex.getDepcies());
     }
 }
