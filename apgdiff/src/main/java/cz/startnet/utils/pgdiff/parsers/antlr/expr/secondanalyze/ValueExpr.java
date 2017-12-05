@@ -295,13 +295,6 @@ public class ValueExpr extends AbstractExpr {
         boolean canFindFunctionSignature = false;
 
         if (name != null) {
-            Data_typeContext type = name.data_type();
-            Schema_qualified_name_nontypeContext funcNameCtx;
-            if (type != null &&
-                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-                addFunctionDepcy(funcNameCtx);
-            }
-
             args = addVexCtxtoList(args, function.vex());
 
             canFindFunctionSignature = true;
@@ -363,6 +356,13 @@ public class ValueExpr extends AbstractExpr {
                     pair = new SimpleEntry<>(funcName, f.getReturns());
                     break;
                 }
+            }
+
+            Data_typeContext type = name.data_type();
+            Schema_qualified_name_nontypeContext funcNameCtx;
+            if (type != null &&
+                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
+                addFunctionDepcy(funcNameCtx, functionSignature);
             }
         }
 

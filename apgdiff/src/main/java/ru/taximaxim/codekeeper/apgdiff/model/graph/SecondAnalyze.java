@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,9 +76,7 @@ public class SecondAnalyze {
                 }
             }
 
-            List<SimpleEntry<PgStatement, ParserRuleContext>> contextsForAnalyze = db.getContextsForAnalyze();
-
-            List<ParserRuleContext> statementContexts = contextsForAnalyze.stream()
+            List<ParserRuleContext> statementContexts = db.getContextsForAnalyze().stream()
                     .filter(entry -> statement.getQualifiedName().equals(entry.getKey().getQualifiedName()))
                     .map(entry -> entry.getValue())
                     .collect(Collectors.toList());

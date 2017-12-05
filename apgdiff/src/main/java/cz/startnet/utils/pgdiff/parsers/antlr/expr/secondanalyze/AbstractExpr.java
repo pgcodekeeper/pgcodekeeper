@@ -102,11 +102,10 @@ public abstract class AbstractExpr {
         return depcy;
     }
 
-    protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx){
+    protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx, String signature){
         IdentifierContext sch = funcNameCtx.schema;
         String funcSchema = sch != null ? sch.getText() : schema;
-        String funcName = funcNameCtx.identifier_nontype().getText();
-        GenericColumn depcy = new GenericColumn(funcSchema, funcName, DbObjType.FUNCTION);
+        GenericColumn depcy = new GenericColumn(funcSchema, signature, DbObjType.FUNCTION);
         depcies.add(depcy);
         return depcy;
     }

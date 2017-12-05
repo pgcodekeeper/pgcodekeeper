@@ -61,7 +61,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             case EXTENSION:
                 return "EXT " + st.getBareName(); //$NON-NLS-1$
             case FUNCTION:
-                return "FUNC " + st.getBareName(); //$NON-NLS-1$
+                return "FUNC " + st.getName(); //$NON-NLS-1$
             case INDEX:
                 return "IDX " + st.getBareName(); //$NON-NLS-1$
             case SCHEMA:
