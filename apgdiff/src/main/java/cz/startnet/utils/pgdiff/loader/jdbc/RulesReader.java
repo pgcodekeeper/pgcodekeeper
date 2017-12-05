@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Delete;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Insert;
@@ -131,12 +130,10 @@ public class RulesReader extends JdbcReader {
     public static void analyzeRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
             String schemaName) {
         if (ctx.WHERE() != null) {
-            VexContext exp = ctx.vex();
             ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
             vex.addReference("new", null);
             vex.addReference("old", null);
-            vex.analyze(new Vex(exp));
-            rule.addAllDeps(vex.getDepcies());
+            UtilExpr.analyze(new Vex(ctx.vex()), vex, rule);
         }
     }
 

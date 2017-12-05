@@ -5,4 +5,4 @@ WHERE c.relnamespace IN
          FROM pg_catalog.pg_namespace nsp
          WHERE nsp.nspname NOT LIKE ('pg_%')
              AND nsp.nspname != 'information_schema')
-             AND c.relkind IN ('r', 'i', 'S', 'v')
+             AND c.relkind IN ('r', 'p', 'f', 'i', 'S', 'v', 'm')

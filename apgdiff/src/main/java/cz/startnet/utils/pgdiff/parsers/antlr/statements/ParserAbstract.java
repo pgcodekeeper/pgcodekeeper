@@ -29,6 +29,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -180,9 +181,7 @@ public abstract class ParserAbstract {
             exp = ctx.vex();
         }
         if (exp != null){
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constr.addAllDeps(vex.getDepcies());
+            UtilExpr.analyze(new Vex(exp), new ValueExpr(schemaName), constr);
         }
     }
 

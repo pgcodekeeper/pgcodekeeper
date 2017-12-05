@@ -7,6 +7,7 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -182,7 +183,6 @@ public class TriggersReader extends JdbcReader {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
         vex.addReference("new", null);
         vex.addReference("old", null);
-        vex.analyze(new Vex(ctx));
-        trigger.addAllDeps(vex.getDepcies());
+        UtilExpr.analyze(new Vex(ctx), vex, trigger);
     }
 }

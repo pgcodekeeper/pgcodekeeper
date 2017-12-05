@@ -24,6 +24,6 @@ LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid
     AND d.objsubid = 0
 JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
 JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid
-WHERE (ccc.relkind = 'r' OR ccc.relkind = 'v')
+WHERE ccc.relkind IN ('r', 'f', 'p', 'v', 'm')
     AND ccc.relnamespace = ?
     AND tgisinternal = FALSE
