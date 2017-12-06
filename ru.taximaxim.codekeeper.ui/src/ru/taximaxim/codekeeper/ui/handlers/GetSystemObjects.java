@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -21,6 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GetSystemObjects extends AbstractHandler {
 
@@ -33,8 +35,8 @@ public class GetSystemObjects extends AbstractHandler {
             if (db != null && db instanceof DbInfo) {
                 DbInfo info = ((DbInfo)db);
                 FileDialog fd = new FileDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
-                fd.setText("Save system objects");
-                fd.setFileName(PgSystemStorage.FILE_NAME + info.getDbName() + ".ser");
+                fd.setText(Messages.GetSystemObjects_save_dialog_title);
+                fd.setFileName(PgSystemStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
                 String select = fd.open();
                 if (select != null) {
                     JdbcConnector jdbcConnector = new JdbcConnector(info.getDbHost(),
@@ -45,6 +47,11 @@ public class GetSystemObjects extends AbstractHandler {
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
 
                         ApgdiffUtils.serialize(select, storage);
+
+                        MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+                        mb.setText(Messages.GetSystemObjects_save_success_title);
+                        mb.setMessage(Messages.GetSystemObjects_save_success_message);
+                        mb.open();
                     } catch (IOException | InterruptedException e) {
                         ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
                     }

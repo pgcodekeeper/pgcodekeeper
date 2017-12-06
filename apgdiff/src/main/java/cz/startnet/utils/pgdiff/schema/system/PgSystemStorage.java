@@ -17,6 +17,8 @@ public class PgSystemStorage implements Serializable {
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
     private final List<PgSystemStatement> objects = new ArrayList<>();
+    private final List<PgSystemOperator> operators = new ArrayList<>();
+    private final List<PgSystemCast> casts = new ArrayList<>();
 
     public List<PgSystemStatement> getObjects() {
         return objects;
@@ -24,6 +26,22 @@ public class PgSystemStorage implements Serializable {
 
     public void addObject(PgSystemStatement object) {
         objects.add(object);
+    }
+
+    public List<PgSystemOperator> getOperators() {
+        return operators;
+    }
+
+    public void addOperator(PgSystemOperator operator) {
+        operators.add(operator);
+    }
+
+    public List<PgSystemCast> getCasts() {
+        return casts;
+    }
+
+    public void addCast(PgSystemCast cast) {
+        casts.add(cast);
     }
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
