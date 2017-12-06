@@ -29,7 +29,7 @@ public class PgSystemStorage implements Serializable {
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
         try {
             String path = ApgdiffUtils.getFileFromOsgiRes(PgSystemStorage.class.getResource(
-                    FILE_NAME + version.getVersion() + ".ser")).toString();
+                    FILE_NAME + version + ".ser")).toString();
             Object object = ApgdiffUtils.deserialize(path);
 
             if (object != null && object instanceof PgSystemStorage) {
