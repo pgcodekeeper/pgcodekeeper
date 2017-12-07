@@ -16,8 +16,10 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemOperator;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -60,6 +62,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             readSubElements(storage, JdbcQueries.QUERY_SYSTEM_INDICES, DbObjType.INDEX);
             readSubElements(storage, JdbcQueries.QUERY_SYSTEM_TRIGGERS, DbObjType.TRIGGER);
             readSubElements(storage, JdbcQueries.QUERY_SYSTEM_RULES, DbObjType.RULE);
+            readOperators(storage);
+            readCasts(storage);
 
             connection.commit();
             finishAntlr();
@@ -204,6 +208,36 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 PgSystemStatement relation = new PgSystemStatement(schemaName, relationName, type);
                 readColumns(wrapper, relation);
                 storage.addObject(relation);
+            }
+        }
+    }
+
+    private void readOperators(PgSystemStorage storage)
+            throws InterruptedException, SQLException, WrapperAccessException {
+        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_OPERATORS)) {
+            while (result.next()) {
+                SQLResultSetWrapper wrapper = new SQLResultSetWrapper(result);
+                PgDiffUtils.checkCancelled(monitor);
+                String name = wrapper.getString(NAME);
+                String schemaName = wrapper.getString(NAMESPACE_NAME);
+                String left = wrapper.getString("left");
+                String right = wrapper.getString("right");
+                String opResult = wrapper.getString("result");
+                storage.addOperator(new PgSystemOperator(name, schemaName, left, right, opResult));
+            }
+        }
+    }
+
+    private void readCasts(PgSystemStorage storage)
+            throws InterruptedException, SQLException, WrapperAccessException {
+        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_CASTS)) {
+            while (result.next()) {
+                SQLResultSetWrapper wrapper = new SQLResultSetWrapper(result);
+                PgDiffUtils.checkCancelled(monitor);
+                String source = wrapper.getString("source");
+                String target = wrapper.getString("target");
+                String type = wrapper.getString("castcontext");
+                storage.addCast(new PgSystemCast(source, target, type));
             }
         }
     }

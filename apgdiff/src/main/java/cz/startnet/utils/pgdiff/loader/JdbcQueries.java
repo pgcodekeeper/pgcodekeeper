@@ -60,6 +60,8 @@ public final class JdbcQueries {
     public static String QUERY_SYSTEM_SCHEMAS;
     public static String QUERY_SYSTEM_TRIGGERS;
     public static String QUERY_SYSTEM_TYPES;
+    public static String QUERY_SYSTEM_OPERATORS;
+    public static String QUERY_SYSTEM_CASTS;
 
     // SONAR-ON
 
