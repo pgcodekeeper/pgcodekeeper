@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
@@ -50,6 +51,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -351,10 +355,34 @@ public class ValueExpr extends AbstractExpr {
 
             String functionSignature = sb.toString();
 
+            boolean userFunction = false;
+
             for(PgFunction f : db.getSchema(schema).getFunctions()) {
                 if (functionSignature.equals(f.getName())) {
                     pair = new SimpleEntry<>(funcName, f.getReturns());
+                    userFunction = true;
                     break;
+                }
+            }
+
+            if(!userFunction) {
+                List<PgSystemStatement> systemFuncStmts = new ArrayList<>();
+
+                // TODO get postgresql version.
+                // Need to get version. I can get it from JdbcLoader, but I can't get it from PgDumpLoader.
+                PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+
+                for (PgSystemStatement systemStmt : storage.getObjects()) {
+                    if (DbObjType.FUNCTION.equals(systemStmt.getType())) {
+                        systemFuncStmts.add(systemStmt);
+                    }
+                }
+
+                for (PgSystemStatement systemStmt : systemFuncStmts) {
+                    if (funcName.equals(systemStmt.getName())) {
+                        PgSystemFunction systemFunc = (PgSystemFunction) systemStmt;
+                        pair = new SimpleEntry<>(funcName, systemFunc.getReturnType());
+                    }
                 }
             }
 

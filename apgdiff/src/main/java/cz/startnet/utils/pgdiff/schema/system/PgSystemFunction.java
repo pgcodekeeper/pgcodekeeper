@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgSystemFunction extends PgSystemStatement {
@@ -99,30 +98,6 @@ public class PgSystemFunction extends PgSystemStatement {
 
         public String getName() {
             return name;
-        }
-
-        public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder();
-
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-                sbString.append(mode);
-                sbString.append(' ');
-            }
-
-            if (name != null && !name.isEmpty() && includeArgName) {
-                sbString.append(PgDiffUtils.getQuotedName(name));
-                sbString.append(' ');
-            }
-
-            sbString.append(dataType);
-
-            if (includeDefaultValue && defaultExpression != null
-                    && !defaultExpression.isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(defaultExpression);
-            }
-
-            return sbString.toString();
         }
 
         @Override
