@@ -392,6 +392,21 @@ public class DiffTableViewer extends Composite {
             });
             menuMgr.add(new Separator());
         }
+        menuMgr.add(new Action(Messages.DiffTableViewer_expand_all) {
+
+            @Override
+            public void run() {
+                viewer.expandAll();
+            }
+        });
+        menuMgr.add(new Action(Messages.DiffTableViewer_collapse_all) {
+
+            @Override
+            public void run() {
+                viewer.collapseAll();
+            }
+        });
+        menuMgr.add(new Separator());
         menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
 
             @Override
