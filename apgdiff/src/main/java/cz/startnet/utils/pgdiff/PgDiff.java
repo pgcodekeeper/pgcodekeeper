@@ -215,7 +215,7 @@ public final class PgDiff {
             if (el.getType() == DbObjType.TABLE && el.getSide() != DiffSide.LEFT) {
                 PgTable oldTbl = null;
                 PgTable newTbl =(PgTable) el.getPgStatement(newDbFull);
-                if (el.getParent().getPgStatement(oldDbFull) != null) {
+                if (el.getSide() == DiffSide.BOTH) {
                     oldTbl =(PgTable) el.getPgStatement(oldDbFull);
                 }
                 DiffTree.addColumns(oldTbl == null ? Collections.emptyList() : oldTbl.getColumns(),
