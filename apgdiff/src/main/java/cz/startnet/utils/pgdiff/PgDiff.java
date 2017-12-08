@@ -85,7 +85,7 @@ public final class PgDiff {
                 return loader.load();
             }
         } else if("parsed".equals(format)) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null);
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();

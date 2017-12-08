@@ -62,7 +62,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (PgUIDumpLoader.isProjectPath(d.getProjectRelativePath())) {
+            if (PgUIDumpLoader.isInProject(d)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     switch (d.getKind()) {

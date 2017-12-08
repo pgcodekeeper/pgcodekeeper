@@ -57,6 +57,8 @@ public class PgDiffTest {
                     {"add_index"},
                     // Tests scenario where INDEX is dropped.
                     {"drop_index"},
+                    // Tests scenario where INDEX with including is added.
+                    {"add_index_with_including"},
                     // Tests scenario where INDEX that TABLE CLUSTER is based
                     // on is dropped.
                     {"drop_index_with_cluster"},
@@ -88,6 +90,8 @@ public class PgDiffTest {
                     {"drop_column"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
+                    // Tests scenario where new FOREIGN TABLE is added.
+                    {"add_foreign_table"},
                     // Tests scenario where new TABLE with new SEQUENCE is added.
                     {"add_table_with_new_sequence"},
                     // Tests scenario where new TABLE with exist SEQUENCE is added.
@@ -104,10 +108,16 @@ public class PgDiffTest {
                     {"add_table_of_type_options"},
                     // Tests scenario where options of TYPED TABLE is modified.
                     {"modify_table_of_type_options"},
+                    // Tests scenario where FOREIGN TABLE is modified.
+                    {"modify_foreign_table"},
                     // Tests scenario where column of TYPED TABLE with TYPE is modified.
                     {"modify_table_of_type_column"},
                     // Tests scenario where TYPED TABLE is dropped.
                     {"drop_table_of_type"},
+                    // Tests scenario where TABLE row security is changed.
+                    {"modify_table_row_security"},
+                    // Tests scenario where TABLE logged status is changed.
+                    {"modify_table_unlogged"},
                     // Tests scenario where TABLE CONSTRAINT is added.
                     {"add_constraint"},
                     // Tests scenario where TABLE EXCLUDE CONSTRAINT is added.
@@ -190,6 +200,8 @@ public class PgDiffTest {
                     // Tests scenario where FUNCTION with same name but
                     // different args is modified.
                     {"modify_function_similar"},
+                    // Tests scenario where FUNCTION with parallel mode is modified
+                    {"modify_function_parallel"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
                     // Tests scenario where TRIGGER is added in reverse add.

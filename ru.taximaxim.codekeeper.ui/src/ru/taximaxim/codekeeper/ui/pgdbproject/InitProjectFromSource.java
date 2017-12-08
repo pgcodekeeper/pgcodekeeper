@@ -48,8 +48,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
      */
-    private void initRepoFromSource(SubMonitor pm)throws InvocationTargetException,
-    InterruptedException, CoreException, IOException {
+    private void initRepoFromSource(SubMonitor pm) throws InterruptedException,
+    CoreException, IOException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db = src.get(taskpm);

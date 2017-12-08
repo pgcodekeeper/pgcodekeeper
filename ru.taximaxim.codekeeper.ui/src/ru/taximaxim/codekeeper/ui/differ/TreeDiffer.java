@@ -3,6 +3,10 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -14,6 +18,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -58,6 +63,22 @@ public class TreeDiffer implements IRunnableWithProgress {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.needTwoWay = needTwoWay;
+    }
+
+    public Map<String, List<AntlrError>> getErrors() {
+        Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
+        errors.putAll(dbSource.getErrors());
+        dbTarget.getErrors().forEach((k,v) -> {
+            List<AntlrError> list = errors.get(k);
+            if (list == null) {
+                list = v;
+            } else {
+                list = new ArrayList<>(list);
+                list.addAll(v);
+            }
+            errors.put(k, list);
+        });
+        return errors;
     }
 
     @Override
