@@ -80,7 +80,8 @@ public class FilterDialog extends Dialog {
         objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
         objViewer.add(new DbObjType[] {DbObjType.SCHEMA, DbObjType.EXTENSION, DbObjType.TYPE,
                 DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.TABLE,
-                DbObjType.VIEW});
+                DbObjType.VIEW, DbObjType.CONSTRAINT, DbObjType.INDEX, DbObjType.TRIGGER,
+                DbObjType.RULE});
 
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

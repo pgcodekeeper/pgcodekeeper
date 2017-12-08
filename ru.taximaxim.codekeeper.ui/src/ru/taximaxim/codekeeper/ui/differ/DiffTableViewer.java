@@ -1049,12 +1049,17 @@ public class DiffTableViewer extends Composite {
             TreeElement el = (TreeElement) element;
             boolean isSubElement = isSubElement(el);
 
-            if (!types.isEmpty() && !isSubElement && !types.contains(el.getType())
-                    || !sides.isEmpty() && !sides.contains(el.getSide())) {
+            if (!types.isEmpty() && !types.contains(el.getType())
+                    && (!isSubElement || !types.contains(el.getParent().getType()))
+                    && (!isContainer(el) || el.getChildren().stream().filter(
+                            e -> types.contains(e.getType())).count() == 0)) {
                 return false;
             }
 
-            if (isSubElement && !types.isEmpty() && !types.contains(el.getParent().getType())) {
+            if (!sides.isEmpty() && !sides.contains(el.getSide())
+                    && (!isSubElement || !sides.contains(el.getParent().getSide()))
+                    && (!isContainer(el) || el.getChildren().stream().filter(
+                            e -> sides.contains(e.getSide())).count() == 0)) {
                 return false;
             }
 
