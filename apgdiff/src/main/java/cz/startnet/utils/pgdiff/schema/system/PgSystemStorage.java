@@ -9,6 +9,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgSystemStorage implements Serializable {
 
@@ -55,6 +56,34 @@ public class PgSystemStorage implements Serializable {
             }
         } catch (URISyntaxException | IOException e) {
             Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
+        }
+
+        return null;
+    }
+
+    public static PgSystemStatement getPgSystemStatement(PgSystemStorage storage, DbObjType objType, String objName) {
+        List<PgSystemStatement> systemStmtsWithObjType = new ArrayList<>();
+
+        for (PgSystemStatement systemStmt : storage.getObjects()) {
+            if (objType.equals(systemStmt.getType())) {
+                systemStmtsWithObjType.add(systemStmt);
+            }
+        }
+
+        for (PgSystemStatement systemStmt : systemStmtsWithObjType) {
+            if (objName.equals(systemStmt.getName())) {
+                return systemStmt;
+            }
+        }
+
+        return null;
+    }
+
+    public static String castFunctionArguments(PgSystemStorage storage, String source, String target) {
+        for (PgSystemCast cast : storage.getCasts()) {
+            if (source.equals(cast.getSource()) && target.equals(cast.getTarget())) {
+                return cast.getType();
+            }
         }
 
         return null;

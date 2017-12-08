@@ -48,8 +48,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
@@ -140,7 +142,7 @@ public class ValueExpr extends AbstractExpr {
                 }
             }
 
-            ret = new SimpleEntry<>(null, dataType.getText());
+            ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(dataType));
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
             ret = new SimpleEntry<>(null, "boolean");
@@ -269,7 +271,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                ret = new SimpleEntry<>(null, coercionDataType.getText());
+                ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(coercionDataType));
             }
         } else {
             doneWork = false;
@@ -289,6 +291,7 @@ public class ValueExpr extends AbstractExpr {
     public Entry<String, String> function(Function_callContext function) {
         Entry<String, String> pair = new SimpleEntry<>(null, "functionCol");
         List<Vex> args = null;
+        List<VexContext> argsCtx = null;
 
         Function_nameContext name = function.function_name();
 
@@ -299,7 +302,8 @@ public class ValueExpr extends AbstractExpr {
         boolean canFindFunctionSignature = false;
 
         if (name != null) {
-            args = addVexCtxtoList(args, function.vex());
+            argsCtx = function.vex();
+            args = addVexCtxtoList(args, argsCtx);
 
             canFindFunctionSignature = true;
 
@@ -309,20 +313,20 @@ public class ValueExpr extends AbstractExpr {
             }
             Filter_clauseContext filter = function.filter_clause();
             if (filter != null) {
-                analyze(new Vex(filter.vex()));
+                pair = analyze(new Vex(filter.vex()));
             }
             Window_definitionContext window = function.window_definition();
             if (window != null) {
                 window(window);
             }
         } else if ((extract = function.extract_function()) != null) {
-            analyze(new Vex(extract.vex()));
+            pair = analyze(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
             args = addVexCtxtoList(args, string.vex());
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
-                analyze(new Vex(vexB));
+                pair = analyze(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
@@ -336,62 +340,96 @@ public class ValueExpr extends AbstractExpr {
         }
 
         if (canFindFunctionSignature) {
-            String funcName = name.getText();
+            pair = setReturnedTypeOfFunction(name, argsType, argsCtx, pair);
 
-            List<String> types = argsType.stream()
-                    .map(entry -> entry.getValue())
-                    .collect(Collectors.toList());
+        }
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(funcName);
-            sb.append("(");
-            for (int i = 0; types.size() > i; i++) {
-                sb.append(types.get(i));
-                if (types.size() != (i+1)) {
-                    sb.append(", ");
-                }
+        return pair;
+    }
+
+    private Entry<String, String> setReturnedTypeOfFunction(Function_nameContext name,
+            List<Entry<String, String>> argsType, List<VexContext> argsCtx, Entry<String, String> pair) {
+        String funcName = name.getText();
+
+        List<String> types = argsType.stream()
+                .map(entry -> entry.getValue())
+                .collect(Collectors.toList());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(funcName);
+        sb.append("(");
+        for (int i = 0; types.size() > i; i++) {
+            sb.append(types.get(i));
+            if (types.size() != (i+1)) {
+                sb.append(", ");
             }
-            sb.append(")");
+        }
+        sb.append(")");
+        String functionSignature = sb.toString();
 
-            String functionSignature = sb.toString();
+        boolean isUserFunction = false;
 
-            boolean userFunction = false;
+        List<PgFunction> userFunctionsList = new ArrayList<>();
+        for(PgFunction f : db.getSchema(schema).getFunctions()) {
+            if (funcName.equals(f.getBareName())
+                    && (types.size() == f.getArguments().size())) {
+                userFunctionsList.add(f);
+            }
+        }
 
-            for(PgFunction f : db.getSchema(schema).getFunctions()) {
+        isUserFunction = !userFunctionsList.isEmpty();
+
+        // TODO get postgresql version.
+        // Need to get version. I can get it from JdbcLoader(READER),
+        // but I can't get it from PgDumpLoader(WRITER).
+        PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+
+        boolean doesItNeedCast = true;
+        if (isUserFunction) {
+            for(PgFunction f : userFunctionsList) {
                 if (functionSignature.equals(f.getName())) {
                     pair = new SimpleEntry<>(funcName, f.getReturns());
-                    userFunction = true;
+                    doesItNeedCast = false;
                     break;
                 }
             }
+        }
 
-            if(!userFunction) {
-                List<PgSystemStatement> systemFuncStmts = new ArrayList<>();
+        if (doesItNeedCast && isUserFunction) {
+            List<String> castArgumentsResult = new ArrayList<>();
+            String negativeResult = "-";
 
-                // TODO get postgresql version.
-                // Need to get version. I can get it from JdbcLoader, but I can't get it from PgDumpLoader.
-                PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            for (PgFunction f : userFunctionsList) {
+                castArgumentsResult.clear();
+                List<Argument> argsOfUserFunction = f.getArguments();
 
-                for (PgSystemStatement systemStmt : storage.getObjects()) {
-                    if (DbObjType.FUNCTION.equals(systemStmt.getType())) {
-                        systemFuncStmts.add(systemStmt);
-                    }
+                for (int i = 0; argsCtx.size() > i; i++) {
+                    String castCtx = PgSystemStorage.castFunctionArguments(storage,
+                            argsOfUserFunction.get(i).getDataType(), types.get(i));
+
+                    castArgumentsResult.add(castCtx != null ? castCtx : negativeResult);
                 }
 
-                for (PgSystemStatement systemStmt : systemFuncStmts) {
-                    if (funcName.equals(systemStmt.getName())) {
-                        PgSystemFunction systemFunc = (PgSystemFunction) systemStmt;
-                        pair = new SimpleEntry<>(funcName, systemFunc.getReturnType());
-                    }
+                if (!castArgumentsResult.contains(negativeResult)) {
+                    pair = new SimpleEntry<>(funcName, f.getReturns());
+                    break;
                 }
             }
+        }
 
-            Data_typeContext type = name.data_type();
-            Schema_qualified_name_nontypeContext funcNameCtx;
-            if (type != null &&
-                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-                addFunctionDepcy(funcNameCtx, functionSignature);
+        if (!isUserFunction) {
+            PgSystemStatement systemStmt = PgSystemStorage.getPgSystemStatement(storage, DbObjType.FUNCTION, funcName);
+            if (systemStmt != null) {
+                PgSystemFunction systemFunc = (PgSystemFunction) systemStmt;
+                pair = new SimpleEntry<>(funcName, systemFunc.getReturnType());
             }
+        }
+
+        Data_typeContext type = name.data_type();
+        Schema_qualified_name_nontypeContext funcNameCtx;
+        if (type != null &&
+                (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
+            addFunctionDepcy(funcNameCtx, functionSignature);
         }
 
         return pair;
@@ -478,7 +516,7 @@ public class ValueExpr extends AbstractExpr {
             if(generalLiteral.Character_String_Literal() != null){
                 ret = "text";
             } else if((dateTime = generalLiteral.datetime_literal()) != null) {
-                ret = dateTime.getText();
+                ret = ParserAbstract.getFullCtxText(dateTime);
             } else if((truthValue = generalLiteral.truth_value()) != null){
                 if(truthValue.TRUE() != null || truthValue.FALSE() != null){
                     ret = "boolean";
