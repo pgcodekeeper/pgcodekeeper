@@ -500,12 +500,6 @@
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.LicensePrefs"
-            id="ru.taximaxim.codekeeper.ui.license"
-            name="%page.name.license">
-        </page>
-        <page
-            category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbstore"
             name="%page.name.dbstore">

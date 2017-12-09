@@ -73,7 +73,6 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
@@ -230,7 +229,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !PgUIDumpLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
-        } catch (IOException | InterruptedException | LicenseException | CoreException ex) {
+        } catch (IOException | InterruptedException | CoreException ex) {
             Log.log(ex);
         }
     }
@@ -254,7 +253,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         try {
             parser = initParser();
-        } catch (InterruptedException | IOException | LicenseException | CoreException ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
         }
         parser.addListener(parserListener);
@@ -266,7 +265,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         getSite().getPage().addPartListener(partListener);
     }
 
-    private PgDbParser initParser() throws InterruptedException, IOException, LicenseException, CoreException {
+    private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
         IEditorInput in = getEditorInput();
 
         IResource res = ResourceUtil.getResource(in);
@@ -288,7 +287,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      * @return true if refresh was triggered successfully
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         if (res instanceof IFile && res.getProject().hasNature(NATURE.ID)) {
             parser.getObjFromProjFile((IFile) res, monitor);
             return true;

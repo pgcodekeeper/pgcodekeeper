@@ -96,6 +96,12 @@ to update all relevant poms and metadatas
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>internal</id>
+            <modules>
+                <module>../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+            </modules>
+        </profile>
     </profiles>
 
     <build>
