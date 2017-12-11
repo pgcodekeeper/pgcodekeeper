@@ -102,7 +102,7 @@ to update all relevant poms and metadatas
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
             </modules>
         </profile>
     </profiles>
