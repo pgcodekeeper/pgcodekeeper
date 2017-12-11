@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -132,11 +131,10 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
-    public PgDatabase load() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
-        args.getLicense().verifyDb(d);
         return d;
     }
 
@@ -172,7 +170,7 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
-                    throws InterruptedException, IOException, LicenseException {
+                    throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         File dir = new File(dirPath);
@@ -200,7 +198,6 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        arguments.getLicense().verifyDb(db);
         return db;
     }
 

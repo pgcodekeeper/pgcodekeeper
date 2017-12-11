@@ -530,12 +530,6 @@
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.LicensePrefs"
-            id="ru.taximaxim.codekeeper.ui.license"
-            name="%page.name.license">
-        </page>
-        <page
-            category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbstore"
             name="%page.name.dbstore">
@@ -581,6 +575,12 @@
             class="ru.taximaxim.codekeeper.ui.prefs.ProjectEditorPrefPage"
             id="ru.taximaxim.codekeeper.ui.pgProjectEditor"
             name="%page.name.pgProjectEditor">
+        </page>
+        <page
+              category="ru.taximaxim.codekeeper.ui.general"
+              class="ru.taximaxim.codekeeper.ui.prefs.UsageReportPreferencePage"
+              id="ru.taximaxim.codekeeper.ui.usageReport"
+              name="%page.name.usageReport">
         </page>
     </extension>
     <extension point="org.eclipse.ui.importWizards">
@@ -1064,5 +1064,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
         </key>
+    </extension>
+    <extension
+          point="org.eclipse.ui.startup">
+       <startup
+             class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
+       </startup>
     </extension>
 </plugin>

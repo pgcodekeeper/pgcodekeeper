@@ -33,7 +33,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -123,7 +122,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             doRun();
         } catch (InterruptedException e) {
             return Status.CANCEL_STATUS;
-        } catch (IOException | LicenseException | CoreException | PgCodekeeperUIException | InvocationTargetException e) {
+        } catch (IOException | CoreException | PgCodekeeperUIException | InvocationTargetException e) {
             return new Status(Status.ERROR, PLUGIN_ID.THIS, Messages.QuickUpdate_error, e);
         } finally {
             monitor.done();
@@ -132,7 +131,7 @@ class QuickUpdateJob extends SingletonEditorJob {
     }
 
     private void doRun() throws IOException, InterruptedException,
-    LicenseException, CoreException, PgCodekeeperUIException, InvocationTargetException {
+    CoreException, PgCodekeeperUIException, InvocationTargetException {
         boolean isSchemaFile = PgUIDumpLoader.isSchemaFile(file.getProjectRelativePath());
         String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
 

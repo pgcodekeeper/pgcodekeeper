@@ -296,17 +296,6 @@ public final class Messages extends NLS {
     public static String ImprovePerformanceJdbcLoader_performance_helpers;
 
     public static String InternalIgnoreList_error_workspace_path;
-    public static String LicensePrefs_browse;
-
-    public static String LicensePrefs_descr;
-
-    public static String LicensePrefs_file;
-
-    public static String LicensePrefs_integrated;
-
-    public static String LicensePrefs_loading_error;
-
-    public static String LicensePrefs_open;
 
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;
@@ -559,6 +548,42 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source_msg;
 
     public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
+
+    // usage report
+    public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String UsageReport_Reporting_Usage;
+    public static String UsageReport_Querying_Enablement;
+
+    public static String UsageReportPreferencePage_Description;
+    public static String UsageReportPreferencePage_AllowReporting;
+
+    public static String UsageReport_DialogTitle;
+    public static String UsageReport_DialogMessage;
+
+    public static String HttpGetMethod_Error_Http;
+    public static String HttpGetMethod_Error_Io;
+    public static String HttpGetMethod_Success;
+
+    public static String UsageReportPreferencePage_ReportedValues;
+    public static String UsageReportPreferencePage_CurrentUsageHit;
+    public static String UsageReportPreferencePage_FirstUsageHit;
+    public static String UsageReportPreferencePage_Components;
+    public static String UsageReportPreferencePage_Version;
+    public static String UsageReportPreferencePage_LastUsageHit;
+    public static String UsageReportPreferencePage_NumberOfUsageHits;
+    public static String UsageReportPreferencePage_OperatingSystem;
+    public static String UsageReportPreferencePage_OperatingSystemVersion;
+    public static String UsageReportPreferencePage_ProductId;
+    public static String UsageReportPreferencePage_ProductVersion;
+
+    public static String UsageReportPreferencePage_JvmName;
+
+    public static String UsageReportPreferencePage_Events;
+    public static String UsageReportPreferencePage_EventComponent;
+    public static String UsageReportPreferencePage_EventVersion;
+    public static String UsageReportPreferencePage_EventAction;
+    public static String UsageReportPreferencePage_EventValue;
 
     // SONAR-ON
 
