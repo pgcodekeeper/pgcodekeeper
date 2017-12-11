@@ -98,6 +98,9 @@ to update all relevant poms and metadatas
         </profile>
         <profile>
             <id>internal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
             </modules>
