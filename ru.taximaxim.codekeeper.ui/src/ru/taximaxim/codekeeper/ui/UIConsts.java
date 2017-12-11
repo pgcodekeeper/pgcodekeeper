@@ -199,6 +199,8 @@ public interface UIConsts {
         String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
         String ICONEMPTYFILTER = "/icons/empty_filter.png"; //$NON-NLS-1$
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
+        String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$
+        String ICONSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {

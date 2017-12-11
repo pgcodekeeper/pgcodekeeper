@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation implements Serializable {
@@ -133,5 +134,25 @@ public class PgObjLocation implements Serializable {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public boolean isDanger() {
+        if (action == StatementActions.DROP && type == DbObjType.TABLE){
+            return true;
+        }
+
+        if (action == StatementActions.ALTER){
+            if (type == DbObjType.TABLE) {
+                if (DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches() ||
+                        DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches()) {
+                    return true;
+                }
+            } else if (type == DbObjType.SEQUENCE &&
+                    DangerStatement.RESTART_WITH.getRegex().matcher(text).matches()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
