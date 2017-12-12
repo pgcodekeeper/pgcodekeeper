@@ -41,7 +41,6 @@ to update all relevant poms and metadatas
         <module>../feature</module>
         <module>../updatesite</module>
         <module>../../ru.taximaxim.codekeeper.ui.help</module>
-        <module>../../org.jboss.tools.usage</module>
         <module>../../ru.taximaxim.codekeeper.cli</module>
         <module>../../ru.taximaxim.codekeeper.cli.tests</module>
     </modules>
@@ -96,6 +95,15 @@ to update all relevant poms and metadatas
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>internal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+            </modules>
         </profile>
     </profiles>
 

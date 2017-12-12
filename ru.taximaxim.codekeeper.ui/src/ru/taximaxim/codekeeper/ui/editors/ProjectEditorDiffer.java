@@ -5,10 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +16,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -78,7 +73,6 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.statushandlers.StatusManager;
@@ -122,6 +116,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
@@ -134,8 +129,6 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
-
-    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss"); //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -653,9 +646,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         }
 
-        IEditorInput file = null;
-        boolean inProj = false;
         try {
+            boolean inProj = false;
             String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
             // if select "YES" with toggle
             if (creationMode.equals(MessageDialogWithToggle.ALWAYS)) {
@@ -670,42 +662,42 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             }
 
-            file = createScriptFile(differ, inProj);
+            String content = differ.getDiffDirect();
+            String filename = generateScriptName();
+            if (inProj) {
+                IEditorInput file = createProjectScriptFile(content, filename);
+                if (loadedRemote instanceof DbInfo) {
+                    SQLEditor.saveLastDb((DbInfo) loadedRemote, file);
+                }
+                getSite().getPage().openEditor(file, EDITOR.SQL);
+            } else {
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename);
+            }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
                     Messages.ProjectEditorDiffer_error_creating_file, ex);
         }
-        if (file != null) {
-            if (inProj && loadedRemote instanceof DbInfo) {
-                SQLEditor.saveLastDb((DbInfo) loadedRemote, file);
-            }
-            getSite().getPage().openEditor(file, EDITOR.SQL);
-        }
     }
 
-    private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
-        String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+    private String generateScriptName() {
+        String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
         if (loadedRemote != null) {
             name += " for " + getRemoteName(loadedRemote); //$NON-NLS-1$
         }
-        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
-        Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
-        if (mode){
-            IProject iProject = proj.getProject();
-            IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
-            if (!folder.exists()){
-                folder.create(IResource.NONE, true, null);
-            }
-            IFile file = folder.getFile(name + ".sql"); //$NON-NLS-1$
-            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes(proj.getProjectCharset()));
-            file.create(source, IResource.NONE, null);
-            return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
-        } else {
-            Path path = Files.createTempFile(name + '_', ".sql"); //$NON-NLS-1$
-            Files.write(path, differ.getDiffDirect().getBytes());
-            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-            return new FileStoreEditorInput(externalFile);
+        return FileUtils.sanitizeFilename(name);
+    }
+
+    private IEditorInput createProjectScriptFile(String content, String filename) throws CoreException, IOException {
+        Log.log(Log.LOG_INFO, "Creating file " + filename); //$NON-NLS-1$
+        IProject iProject = proj.getProject();
+        IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
+        if (!folder.exists()){
+            folder.create(IResource.NONE, true, null);
         }
+        IFile file = folder.getFile(filename + ".sql"); //$NON-NLS-1$
+        InputStream source = new ByteArrayInputStream(content.getBytes(proj.getProjectCharset()));
+        file.create(source, IResource.NONE, null);
+        return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
     }
 
     private void showNotificationArea(boolean visible, String message) {

@@ -112,7 +112,7 @@
             class="ru.taximaxim.codekeeper.ui.handlers.GetChanges"
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges">
             <enabledWhen>
-               <and>
+                <and>
                     <with variable="activeEditorId">
                         <or>
                             <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
@@ -120,14 +120,14 @@
                             <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
                         </or>
-                     </with>
-                     <with variable="activeEditor">
+                    </with>
+                    <with variable="activeEditor">
                         <not>
                             <test property="ru.taximaxim.codekeeper.ui.isGetChangesRunning">
                             </test>
                         </not>
                     </with>
-               </and>
+                </and>
             </enabledWhen>
         </handler>
         <handler
@@ -328,7 +328,7 @@
                     name="ru.taximaxim.codekeeper.ui.separator2"
                     visible="true">
                 </separator>
-                 <command
+                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
@@ -405,6 +405,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
                     icon="icons/app_icon16.png"
                     label="%command.commandname.CommitProject"
+                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -417,6 +418,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
                     icon="icons/pgadmin/database.png"
                     label="%command.commandname.DiffProject"
+                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -429,6 +431,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
                     label="%command.commandname.QuickUpdate"
+                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -441,6 +444,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
                     icon="icons/update_ddl.gif"
                     label="%command.commandname.UpdateDdl"
+                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -453,27 +457,24 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
+                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen>
-                            <with variable="activeEditorId">
-                                <or>
-                                    <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                                    </equals>
-                                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                                    </equals>
-                                </or>
-                            </with>
-                     </visibleWhen>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
                 </command>
-                <separator
-                      name="ru.taximaxim.codekeeper.ui.separator.first"
-                      visible="true">
-                </separator>
                 <control
-                      class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
-                      id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
-                      <visibleWhen checkEnabled="true">
-                          <or>
+                    class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
+                    id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
+                    <visibleWhen checkEnabled="true">
+                        <or>
                             <with variable="activeEditorId">
                                 <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
                                 </equals>
@@ -482,8 +483,8 @@
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
                             </with>
-                          </or>
-                      </visibleWhen>
+                        </or>
+                    </visibleWhen>
                 </control>
             </toolbar>
         </menuContribution>
@@ -511,12 +512,6 @@
             class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
             id="ru.taximaxim.codekeeper.ui.general"
             name="%page.name.keeperPrefPage">
-        </page>
-        <page
-            category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.LicensePrefs"
-            id="ru.taximaxim.codekeeper.ui.license"
-            name="%page.name.license">
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.general"
@@ -566,6 +561,12 @@
             id="ru.taximaxim.codekeeper.ui.pgProjectEditor"
             name="%page.name.pgProjectEditor">
         </page>
+        <page
+              category="ru.taximaxim.codekeeper.ui.general"
+              class="ru.taximaxim.codekeeper.ui.prefs.UsageReportPreferencePage"
+              id="ru.taximaxim.codekeeper.ui.usageReport"
+              name="%page.name.usageReport">
+        </page>
     </extension>
     <extension point="org.eclipse.ui.importWizards">
         <category
@@ -593,6 +594,15 @@
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             name="%category.name.keeperNewWizard">
         </category>
+        <wizard
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.MockDataWizard"
+            icon="icons/editor_area.png"
+            id="ru.taximaxim.codekeeper.ui.mockdatawizard"
+            name="%wizard.name.mockDataWizard"
+            project="false">
+            <selection class="org.eclipse.core.resources.IFile" />
+        </wizard>
     </extension>
     <extension
         id="ru.taximaxim.codekeeper.ui.nature"
@@ -689,6 +699,8 @@
             <viewShortcut id="org.eclipse.ui.views.ProblemView">
             </viewShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newprojwizard">
+            </newWizardShortcut>
+            <newWizardShortcut id="ru.taximaxim.codekeeper.ui.mockdatawizard">
             </newWizardShortcut>
             <perspectiveShortcut id="org.eclipse.egit.ui.GitRepositoryExploring">
             </perspectiveShortcut>
@@ -934,6 +946,16 @@
                 </with>
             </enablement>
         </commonWizard>
+        <commonWizard
+            type="new"
+            wizardId="ru.taximaxim.codekeeper.ui.mockdatawizard">
+            <enablement>
+                <with variable="activeWorkbenchWindow.activePerspective">
+                    <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                    </equals>
+                </with>
+            </enablement>
+        </commonWizard>
     </extension>
     <extension point="org.eclipse.ui.decorators">
         <decorator
@@ -1033,5 +1055,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+R">
         </key>
+    </extension>
+    <extension
+          point="org.eclipse.ui.startup">
+       <startup
+             class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
+       </startup>
     </extension>
 </plugin>

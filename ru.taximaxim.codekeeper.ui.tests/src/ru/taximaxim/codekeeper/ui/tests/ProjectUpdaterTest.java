@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -39,13 +38,13 @@ public class ProjectUpdaterTest {
     private TempDir workingDir, referenceDir;
 
     @Before
-    public void before() throws IOException, InterruptedException, LicenseException {
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+    public void before() throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         dbOld = ApgdiffTestUtils.loadTestDump(
                 "old.sql", ProjectUpdaterTest.class, args);
 
-        args = ApgdiffTestUtils.getArgsLicensed();
+        args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         dbNew = ApgdiffTestUtils.loadTestDump(
                 "new.sql", ProjectUpdaterTest.class, args);

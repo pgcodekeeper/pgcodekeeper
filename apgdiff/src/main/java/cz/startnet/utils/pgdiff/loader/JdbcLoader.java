@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 
@@ -39,7 +38,7 @@ public class JdbcLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
@@ -83,7 +82,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
-        args.getLicense().verifyDb(d);
         return d;
     }
 

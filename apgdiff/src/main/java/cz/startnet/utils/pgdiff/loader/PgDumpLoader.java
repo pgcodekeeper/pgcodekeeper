@@ -44,7 +44,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
@@ -150,12 +149,11 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
-    public PgDatabase load() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
         dbAnalyze(d);
-        args.getLicense().verifyDb(d);
         return d;
     }
 
@@ -191,7 +189,7 @@ public class PgDumpLoader implements AutoCloseable {
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
             PgDiffArguments arguments, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
-                    throws InterruptedException, IOException, LicenseException {
+                    throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         File dir = new File(dirPath);
@@ -220,8 +218,6 @@ public class PgDumpLoader implements AutoCloseable {
         }
 
         dbAnalyze(db);
-
-        arguments.getLicense().verifyDb(db);
         return db;
     }
 
@@ -241,10 +237,13 @@ public class PgDumpLoader implements AutoCloseable {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+                List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                    errList = loader.getErrors();
                     loader.load(db);
-                    if (errors != null) {
-                        errors.put(f.getPath(), loader.getErrors());
+                } finally {
+                    if (errors != null && errList != null && !errList.isEmpty()) {
+                        errors.put(f.getPath(), errList);
                     }
                 }
             }

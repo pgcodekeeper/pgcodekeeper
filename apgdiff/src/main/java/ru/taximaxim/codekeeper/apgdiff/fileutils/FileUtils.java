@@ -5,11 +5,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public final class FileUtils {
 
+    public static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
     public static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
 
     /**
@@ -37,5 +39,10 @@ public final class FileUtils {
         Files.delete(path);
     }
 
-    private FileUtils() {}
+    public static String sanitizeFilename(String name) {
+        return INVALID_FILENAME.matcher(name).replaceAll("");
+    }
+
+    private FileUtils() {
+    }
 }
