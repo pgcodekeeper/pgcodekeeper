@@ -128,7 +128,7 @@ public abstract class AbstractExpr {
     protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
         String column = QNameParser.getFirstName(ids);
-        Entry<String, String> pair = new SimpleEntry<>(column, "column");
+        Entry<String, String> pair = new SimpleEntry<>(column, TypesSetManually.COLUMN);
         String columnParent = null;
 
         // TODO table-less columns are pending full analysis
@@ -159,7 +159,7 @@ public abstract class AbstractExpr {
     private String getColumnType(String columnParent, String column) {
         PgSchema s = db.getSchema(schema);
 
-        String type = "columnWithRecursionOrOther";
+        String type = TypesSetManually.COLUMN_WITH_RECURSIVE_OR_OTHER;
 
         if (schema != null && columnParent != null) {
             PgTable t;
@@ -194,7 +194,7 @@ public abstract class AbstractExpr {
                         .filter(entry -> column.equals(entry.getKey()))
                         .map(entry -> entry.getValue()).findFirst().get();
             } else {
-                type = "columnUnknown";
+                type = TypesSetManually.COLUMN_UNKNOWN;
             }
         }
         return type;
@@ -222,5 +222,27 @@ public abstract class AbstractExpr {
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
+    }
+
+    protected static interface TypesSetManually {
+
+        String UNKNOWN = "unknown";
+        String UNKNOWN_ARRAY = "unknown[]";
+
+        String COLUMN = "column";
+        String COLUMN_UNKNOWN = "columnUnknown";
+        String COLUMN_WITH_RECURSIVE_OR_OTHER = "columnWithRecursionOrOther";
+
+        String FUNCTION_COLUMN = "functionCol";
+
+        String NULL = "NULL";
+        String QUALIFIED_ASTERISK = "qualifiedAsterisk";
+
+        String BOOLEAN = "boolean";
+        String INTEGER = "integer";
+        String DOUBLE_PRECISION = "double precision";
+        String TEXT = "text";
+        String NUMERIC = "numeric";
+
     }
 }

@@ -79,6 +79,10 @@ public class PgSystemStorage implements Serializable {
         return null;
     }
 
+    /**
+     *  Returns the {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type context of the cast}
+     *  between two types.
+     */
     public static String castFunctionArguments(PgSystemStorage storage, String source, String target) {
         for (PgSystemCast cast : storage.getCasts()) {
             if (source.equals(cast.getSource()) && target.equals(cast.getTarget())) {
@@ -86,6 +90,20 @@ public class PgSystemStorage implements Serializable {
             }
         }
 
+        return null;
+    }
+
+    /**
+     *  Returns operation's result type.
+     */
+    public static String castOperatorArguments(PgSystemStorage storage, String leftType, String rightType, String operatorName) {
+        for (PgSystemOperator oper : storage.getOperators()) {
+            if (operatorName.equals(oper.getName())
+                    && leftType.equals(oper.getLeft())
+                    && rightType.equals(oper.getRight())) {
+                return oper.getReturnType();
+            }
+        }
         return null;
     }
 }

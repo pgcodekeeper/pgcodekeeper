@@ -145,19 +145,19 @@ public class ValueExpr extends AbstractExpr {
             ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(dataType));
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
-            ret = new SimpleEntry<>(null, "boolean");
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new Select(this).analyze(selectStmt);
-            ret = new SimpleEntry<>(null, "unknown");
+            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) == null) {
-            ret = new SimpleEntry<>(null, "unknown");
+            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
                 analyze(new Vex(v));
             }
-            ret = new SimpleEntry<>(null, "boolean");
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
             if(vex.colon() == null){
                 ret = operandsList.get(0);
@@ -167,17 +167,21 @@ public class ValueExpr extends AbstractExpr {
             }
         } else if (vex.plus() != null || vex.minus() != null) {
             if(operandsList.size() == 2){
-                ret = cast(operandsList.get(0), operandsList.get(1));
+                ret = cast(operandsList.get(0), operandsList.get(1), vex);
             } else{
                 ret = operandsList.get(0);
             }
         } else if ( (vex.timeZone() != null)
                 || (vex.in() == null && vex.leftParen() != null && vex.rightParen() != null) ) {
-            ret = operandsList.get(0);
+            if (operandsList.size() == 1) {
+                ret = operandsList.get(0);
+            } else {
+                ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
+            }
         } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
-            ret = cast(operandsList.get(0), operandsList.get(1));
+            ret = cast(operandsList.get(0), operandsList.get(1), vex);
         } else if (vex.op() != null) {
-            ret = new SimpleEntry<>(null, "unknown");
+            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
         } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null) )
                 || (vex.is() != null && vex.distinct() != null)
                 || (vex.not() != null && vex.in() == null)
@@ -195,7 +199,7 @@ public class ValueExpr extends AbstractExpr {
                 || vex.notNull() != null
                 || vex.and() != null
                 || vex.or() != null ) {
-            ret = new SimpleEntry<>(null, "boolean");
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
             Case_expressionContext caseExpr;
@@ -212,7 +216,7 @@ public class ValueExpr extends AbstractExpr {
             Unsigned_value_specificationContext unsignedValue;
 
             if(primary.NULL() != null){
-                ret = new SimpleEntry<>(null, "NULL");
+                ret = new SimpleEntry<>(null, TypesSetManually.NULL);
             } else if((unsignedValue = primary.unsigned_value_specification()) != null){
                 ret = new SimpleEntry<>(null, unsigned(unsignedValue));
             } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
@@ -221,7 +225,7 @@ public class ValueExpr extends AbstractExpr {
                 if(colsList.size() == 1) {
                     ret = new SimpleEntry<>(null, colsList.get(0).getValue());
                 } else {
-                    ret = new SimpleEntry<>(null, "unknown");
+                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
                 }
             } else if ((caseExpr = primary.case_expression()) != null) {
                 List<Vex> subOperands = null;
@@ -231,11 +235,11 @@ public class ValueExpr extends AbstractExpr {
                         analyze(v);
                     }
                 }
-                ret = new SimpleEntry<>(null, "boolean");
+                ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
             } else if ((cast = primary.cast_specification()) != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
-                ret.setValue(dataTypeCtx.getText());
+                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
                 addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
@@ -244,12 +248,12 @@ public class ValueExpr extends AbstractExpr {
                     ret.setValue(bracketProcessing(ret.getValue()));
                 } else {
                     new Select(this).analyze(compMod.select_stmt_no_parens());
-                    ret = new SimpleEntry<>(null, "unknown");
+                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
                 }
             } else if (primary.EXISTS() != null &&
                     (subquery = primary.table_subquery()) != null) {
                 new Select(this).analyze(subquery.select_stmt());
-                ret = new SimpleEntry<>(null, "boolean");
+                ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
@@ -258,7 +262,7 @@ public class ValueExpr extends AbstractExpr {
                 analyze(new Vex(indirection.vex()));
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
-                ret = new SimpleEntry<>(null, "qualifiedAsterisk");
+                ret = new SimpleEntry<>(null, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
@@ -266,7 +270,7 @@ public class ValueExpr extends AbstractExpr {
                     ret = analyze(new Vex(arraybVexCtxList.get(0)));
                 } else {
                     new Select(this).analyze(array.array_query().table_subquery().select_stmt());
-                    ret = new SimpleEntry<>(null, "unknown[]");
+                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN_ARRAY);
                 }
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
@@ -289,7 +293,7 @@ public class ValueExpr extends AbstractExpr {
      * @return function reference or null for internal functions
      */
     public Entry<String, String> function(Function_callContext function) {
-        Entry<String, String> pair = new SimpleEntry<>(null, "functionCol");
+        Entry<String, String> pair = new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
         List<Vex> args = null;
         List<VexContext> argsCtx = null;
 
@@ -382,7 +386,7 @@ public class ValueExpr extends AbstractExpr {
         // TODO get postgresql version.
         // Need to get version. I can get it from JdbcLoader(READER),
         // but I can't get it from PgDumpLoader(WRITER).
-        PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+        PgSystemStorage storage = null;
 
         boolean doesItNeedCast = true;
         if (isUserFunction) {
@@ -396,6 +400,8 @@ public class ValueExpr extends AbstractExpr {
         }
 
         if (doesItNeedCast && isUserFunction) {
+            storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+
             List<String> castArgumentsResult = new ArrayList<>();
             String negativeResult = "-";
 
@@ -418,6 +424,10 @@ public class ValueExpr extends AbstractExpr {
         }
 
         if (!isUserFunction) {
+            if (storage == null) {
+                storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            }
+
             PgSystemStatement systemStmt = PgSystemStorage.getPgSystemStatement(storage, DbObjType.FUNCTION, funcName);
             if (systemStmt != null) {
                 PgSystemFunction systemFunc = (PgSystemFunction) systemStmt;
@@ -505,23 +515,23 @@ public class ValueExpr extends AbstractExpr {
 
         if((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null){
             if(unsignedNumeric.NUMBER_LITERAL() != null){
-                ret = "integer";
+                ret = TypesSetManually.INTEGER;
             } else {
-                ret = "double precision";
+                ret = TypesSetManually.DOUBLE_PRECISION;
             }
 
         } else {
             generalLiteral = unsignedValue.general_literal();
 
             if(generalLiteral.Character_String_Literal() != null){
-                ret = "text";
+                ret = TypesSetManually.TEXT;
             } else if((dateTime = generalLiteral.datetime_literal()) != null) {
                 ret = ParserAbstract.getFullCtxText(dateTime);
             } else if((truthValue = generalLiteral.truth_value()) != null){
                 if(truthValue.TRUE() != null || truthValue.FALSE() != null){
-                    ret = "boolean";
+                    ret = TypesSetManually.BOOLEAN;
                 } else {
-                    ret = "text";
+                    ret = TypesSetManually.TEXT;
                 }
             }
         }
@@ -538,49 +548,39 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
+    private Entry<String, String> cast(Entry<String, String> left, Entry<String, String> right, Vex vex) {
+        String leftType = left.getValue();
+        String rightType = right.getValue();
 
-    private Entry<String, String> cast(Entry<String, String> ret1, Entry<String, String> ret2) {
-        String firstType = ret1.getValue();
-        String secondType = ret2.getValue();
+        String operator = null;
+        if (vex.plus() != null) {
+            operator = vex.plus().getText();
+        } else if (vex.minus() != null) {
+            operator = vex.minus().getText();
+        } else if (vex.exp() != null) {
+            operator = vex.exp().getText();
+        } else if (vex.multiply() != null) {
+            operator = vex.multiply().getText();
+        } else if (vex.divide() != null) {
+            operator = vex.divide().getText();
+        } else if (vex.modular() != null) {
+            operator = vex.modular().getText();
+        }
 
-        Entry<String, String> ret =  new SimpleEntry<>(null, "unknown");
+        Entry<String, String> ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
 
-        if(!"unknown".equalsIgnoreCase(firstType) && "unknown".equalsIgnoreCase(secondType)){
-            ret.setValue(firstType);
-        } else if("unknown".equalsIgnoreCase(firstType) && !"unknown".equalsIgnoreCase(secondType)){
-            ret.setValue(secondType);
-        } else if(!"unknown".equalsIgnoreCase(firstType) && !"unknown".equalsIgnoreCase(secondType)){
-            if("double precision".equalsIgnoreCase(firstType)
-                    || "float8".equalsIgnoreCase(firstType)
-                    || "double precision".equalsIgnoreCase(secondType)
-                    || "float8".equalsIgnoreCase(secondType)){
-                ret.setValue("double precision");
-            } else if("real".equalsIgnoreCase(firstType)
-                    || "float4".equalsIgnoreCase(firstType)
-                    || "real".equalsIgnoreCase(secondType)
-                    || "float4".equalsIgnoreCase(secondType)){
-                ret.setValue("real");
-            } else if("bigint".equalsIgnoreCase(firstType)
-                    || "int8".equalsIgnoreCase(firstType)
-                    || "bigint".equalsIgnoreCase(secondType)
-                    || "int8".equalsIgnoreCase(secondType)){
-                ret.setValue("bigint");
-            } else if("integer".equalsIgnoreCase(firstType)
-                    || "int4".equalsIgnoreCase(firstType)
-                    || "int".equalsIgnoreCase(firstType)
-                    || "integer".equalsIgnoreCase(secondType)
-                    || "int4".equalsIgnoreCase(secondType)
-                    || "int".equalsIgnoreCase(secondType)){
-                ret.setValue("integer");
-            } else if("smallint".equalsIgnoreCase(firstType)
-                    || "int2".equalsIgnoreCase(firstType)
-                    || "smallint".equalsIgnoreCase(secondType)
-                    || "int2".equalsIgnoreCase(secondType)){
-                ret.setValue("smallint");
-            } else if("bytea".equalsIgnoreCase(firstType)
-                    || "bytea".equalsIgnoreCase(secondType)){
-                ret.setValue("bytea");
-            }
+        if(!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
+            ret.setValue(leftType);
+        } else if(TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
+            ret.setValue(rightType);
+        } else if(!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
+            // TODO get postgresql version.
+            // Need to get version. I can get it from JdbcLoader(READER),
+            // but I can't get it from PgDumpLoader(WRITER).
+            PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+
+            String type = PgSystemStorage.castOperatorArguments(storage, leftType, rightType, operator);
+            ret.setValue(type != null ? type : TypesSetManually.NUMERIC);
         }
         return ret;
     }
