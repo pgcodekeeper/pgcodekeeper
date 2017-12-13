@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.differ.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -33,9 +34,11 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class FilterDialog extends Dialog {
 
-    private CheckboxTableViewer objViewer, chgViewer;
+    private CheckboxTableViewer objViewer;
+    private CheckboxTableViewer chgViewer;
     private final Collection<DbObjType> types;
     private final Collection<DiffSide> sides;
+    private final CodeFilter filter;
 
     /**
      * Creates a dialog instance. Note that the window will have no visual
@@ -45,18 +48,22 @@ public class FilterDialog extends Dialog {
      * @param parentShell
      *            the parent shell, or <code>null</code> to create a top-level
      *            shell
+     * @param filter
+     *            object, that create filter field
      * @param types
      *            list of object types
      * @param sides
      *            list of change types
      *
-     * @since 3.11.5
-     * @author galiev_mr
+     * @since 4.1.2
+     * @see CodeFilter
      * @see DbObjType
      * @see DiffSide
      */
-    public FilterDialog(Shell parentShell, Collection<DbObjType> types, Collection<DiffSide> sides) {
+    public FilterDialog(Shell parentShell, CodeFilter filter,
+            Collection<DbObjType> types, Collection<DiffSide> sides) {
         super(parentShell);
+        this.filter = filter;
         this.types = types;
         this.sides = sides;
     }
@@ -72,6 +79,8 @@ public class FilterDialog extends Dialog {
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, true));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        filter.createControl(container);
 
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
@@ -118,6 +127,7 @@ public class FilterDialog extends Dialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                filter.clear();
                 objViewer.setAllChecked(false);
                 chgViewer.setAllChecked(false);
             }
@@ -142,6 +152,8 @@ public class FilterDialog extends Dialog {
         for (Object chg : chgViewer.getCheckedElements()) {
             sides.add((DiffSide)chg);
         }
+
+        filter.update();
 
         super.okPressed();
     }

@@ -118,6 +118,8 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
+    private final CodeFilter codeFilter = new CodeFilter();
+
     private Button getChanges;
 
     private final IStatusLineManager lineManager;
@@ -224,12 +226,13 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    FilterDialog dialog = new FilterDialog(
-                            getShell(), viewerFilter.types, viewerFilter.sides);
-                    if(dialog.open() == Dialog.OK) {
+                    FilterDialog dialog = new FilterDialog(getShell(), codeFilter,
+                            viewerFilter.types, viewerFilter.sides);
+                    if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
                                         viewerFilter.types.isEmpty() && viewerFilter.sides.isEmpty()
+                                        && codeFilter.getPattern().isEmpty()
                                         ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
@@ -1060,6 +1063,11 @@ public class DiffTableViewer extends Composite {
                     && (!isSubElement || !sides.contains(el.getParent().getSide()))
                     && (!isContainer(el) || el.getChildren().stream().filter(
                             e -> sides.contains(e.getSide())).count() == 0)) {
+                return false;
+            }
+
+            if (!codeFilter.getPattern().isEmpty() && !codeFilter.findCode(el,
+                    elements, dbProject.getDbObject(), dbRemote.getDbObject())) {
                 return false;
             }
 
