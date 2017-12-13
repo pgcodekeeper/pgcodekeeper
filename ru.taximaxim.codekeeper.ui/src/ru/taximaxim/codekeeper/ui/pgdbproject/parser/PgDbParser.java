@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -262,7 +263,7 @@ public class PgDbParser implements IResourceChangeListener {
             }
         }
         if (in instanceof IURIEditorInput) {
-            return ((IURIEditorInput) in).getURI().toString();
+            return Paths.get(((IURIEditorInput) in).getURI()).toString();
         } else {
             return null;
         }
