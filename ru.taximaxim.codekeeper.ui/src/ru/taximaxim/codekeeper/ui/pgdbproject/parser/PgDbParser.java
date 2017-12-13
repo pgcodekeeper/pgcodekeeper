@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -34,6 +35,7 @@ import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -125,18 +127,23 @@ public class PgDbParser implements IResourceChangeListener {
         for (FunctionBodyContainer funcBody : funcBodies) {
             String body = funcBody.getBody();
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
-            for (PgObjLocation def : getAll(objDefinitions)) {
+            getAllObjDefinitions().forEach(def -> {
                 int index = body.indexOf(def.getObjName());
                 while (index >= 0) {
-                    PgObjLocation loc = new PgObjLocation(def.getObject().schema,
-                            def.getObjName(), null, funcBody.getOffset() + index,
-                            funcBody.getPath(), funcBody.getLineNumber());
-                    loc.setObjType(def.getObjType());
-                    loc.setAction(StatementActions.NONE);
-                    newRefs.add(loc);
+                    int next = index + def.getObjLength();
+                    // check word boundaries, whole words only
+                    if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
+                            (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
+                        PgObjLocation loc = new PgObjLocation(def.getObject().schema,
+                                def.getObjName(), null, funcBody.getOffset() + index,
+                                funcBody.getPath(), funcBody.getLineNumber());
+                        loc.setObjType(def.getObjType());
+                        loc.setAction(StatementActions.NONE);
+                        newRefs.add(loc);
+                    }
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
-            }
+            });
             if (!newRefs.isEmpty()) {
                 List<PgObjLocation> refs = objReferences.get(funcBody.getPath());
                 if (refs != null) {
@@ -182,17 +189,10 @@ public class PgDbParser implements IResourceChangeListener {
         notifyListeners();
     }
 
-    public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
-        List<PgObjLocation> l = objDefinitions.get(obj.getFilePath());
-        if (l != null) {
-            for (PgObjLocation col : l) {
-                if (col.getObject().equals(obj.getObject())
-                        && col.getObjType().equals(obj.getObjType())) {
-                    return col;
-                }
-            }
-        }
-        return null;
+    public Stream<PgObjLocation> getDefinitionsForObj(PgObjLocation obj) {
+        return getAllObjDefinitions()
+                .filter(o -> o.getObject().equals(obj.getObject())
+                        && o.getObjType().equals(obj.getObjType()));
     }
 
     public List<PgObjLocation> getObjsForEditor(IEditorInput in) {
@@ -205,11 +205,11 @@ public class PgDbParser implements IResourceChangeListener {
         return refs == null ? Collections.emptyList() : Collections.unmodifiableList(refs);
     }
 
-    public List<PgObjLocation> getAllObjDefinitions() {
+    public Stream<PgObjLocation> getAllObjDefinitions() {
         return getAll(objDefinitions);
     }
 
-    public List<PgObjLocation> getAllObjReferences() {
+    public Stream<PgObjLocation> getAllObjReferences() {
         return getAll(objReferences);
     }
 
@@ -221,12 +221,9 @@ public class PgDbParser implements IResourceChangeListener {
         return objReferences;
     }
 
-    public static List<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
-        List<PgObjLocation> results = new ArrayList<>();
-        for (List<PgObjLocation> list : refs.values()) {
-            results.addAll(list);
-        }
-        return results;
+    public static Stream<PgObjLocation> getAll(Map<String, List<PgObjLocation>> refs) {
+        return refs.values().stream()
+                .flatMap(List<PgObjLocation>::stream);
     }
 
     public void notifyListeners() {
