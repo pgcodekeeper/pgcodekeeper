@@ -9,7 +9,6 @@ Usage:
  --help                                 : show this help
  --version                              : show version
  --list-charsets                        : show list of Java-supported charsets
- -l (--license) <path>                  : path to license file
  --parse                                : run in parser mode to save database
                                           schema as a directory hierarchy
  -s (--source) <path or JDBC>           : source of schema changes

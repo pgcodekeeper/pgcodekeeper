@@ -1,10 +1,9 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
@@ -12,14 +11,16 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TablesReader extends JdbcReader {
 
     public static class TablesReaderFactory extends JdbcReaderFactory {
 
-        public TablesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public TablesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
@@ -33,7 +34,7 @@ public class TablesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = getTable(result, schema.getName());
         loader.monitor.worked(1);
         if (table != null) {
@@ -41,32 +42,39 @@ public class TablesReader extends JdbcReader {
         }
     }
 
-    private PgTable getTable(ResultSet res, String schemaName) throws SQLException {
+    private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         PgTable t = new PgTable(tableName, "");
+
+        t.setServerName(res.getString("server_name"));
+        String[] foptions = res.getArray("ftoptions", String.class);
+        if (foptions != null) {
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
+        }
 
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
         loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
 
-        Integer[] colNumbers = (Integer[]) res.getArray("col_numbers").getArray();
-        String[] colNames = (String[]) res.getArray("col_names").getArray();
-        Long[] colTypeIds = (Long[]) res.getArray("col_type_ids").getArray();
-        String[] colTypeName = (String[]) res.getArray("col_type_name").getArray();
-        String[] colDefaults = (String[]) res.getArray("col_defaults").getArray();
-        String[] colComments = (String[]) res.getArray("col_comments").getArray();
-        Boolean[] colNotNull = (Boolean[]) res.getArray("col_notnull").getArray();
-        Integer[] colStatictics = (Integer[]) res.getArray("col_statictics").getArray();
-        Boolean[] colIsLocal = (Boolean[]) res.getArray("col_local").getArray();
-        Long[] colCollation = (Long[]) res.getArray("col_collation").getArray();
-        Long[] colTypCollation = (Long[]) res.getArray("col_typcollation").getArray();
-        String[] colCollationName = (String[]) res.getArray("col_collationname").getArray();
-        String[] colCollationSchema = (String[]) res.getArray("col_collationnspname").getArray();
-        String[] colAcl = (String[]) res.getArray("col_acl").getArray();
-        String[] colOptions = (String[]) res.getArray("col_options").getArray();
-        String[] colStorages = (String[]) res.getArray("col_storages").getArray();
-        String[] colDefaultStorages = (String[]) res.getArray("col_default_storages").getArray();
+        Integer[] colNumbers = res.getArray("col_numbers", Integer.class);
+        String[] colNames = res.getArray("col_names", String.class);
+        Long[] colTypeIds = res.getArray("col_type_ids", Long.class);
+        String[] colTypeName = res.getArray("col_type_name", String.class);
+        String[] colDefaults = res.getArray("col_defaults", String.class);
+        String[] colComments = res.getArray("col_comments", String.class);
+        Boolean[] colNotNull = res.getArray("col_notnull", Boolean.class);
+        Integer[] colStatictics = res.getArray("col_statictics", Integer.class);
+        Boolean[] colIsLocal = res.getArray("col_local", Boolean.class);
+        Long[] colCollation = res.getArray("col_collation", Long.class);
+        Long[] colTypCollation = res.getArray("col_typcollation", Long.class);
+        String[] colCollationName = res.getArray("col_collationname", String.class);
+        String[] colCollationSchema = res.getArray("col_collationnspname", String.class);
+        String[] colAcl = res.getArray("col_acl", String.class);
+        String[] colOptions = res.getArray("col_options", String.class);
+        String[] colFOptions = res.getArray("col_foptions", String.class);
+        String[] colStorages = res.getArray("col_storages", String.class);
+        String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
 
         Long ofTypeOid = res.getLong("of_type");
 
@@ -90,8 +98,11 @@ public class TablesReader extends JdbcReader {
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
-            if(colOptions[i] != null){
-                ParserAbstract.fillStorageParams(colOptions[i].split(","), column, false);
+            if (colOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
+            }
+            if (colFOptions[i] != null) {
+                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
             }
 
             if(!colStorages[i].equals(colDefaultStorages[i])){
@@ -164,10 +175,9 @@ public class TablesReader extends JdbcReader {
         }
 
         // INHERITS
-        Array inhrelsarray = res.getArray("inhrelnames");
-        if (inhrelsarray != null) {
-            String[] inhrelnames = (String[]) inhrelsarray.getArray();
-            String[] inhnspnames = (String[]) res.getArray("inhnspnames").getArray();
+        String[] inhrelnames = res.getArray("inhrelnames", String.class);
+        if (inhrelnames != null) {
+            String[] inhnspnames = res.getArray("inhnspnames", String.class);
 
             for (int i = 0; i < inhrelnames.length; ++i) {
                 t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
@@ -176,16 +186,14 @@ public class TablesReader extends JdbcReader {
         }
 
         // STORAGE PARAMETERS
-        Array arr = res.getArray("reloptions");
-        if (arr != null) {
-            String[] options = (String[]) arr.getArray();
-            ParserAbstract.fillStorageParams(options, t, false);
+        String [] opts = res.getArray("reloptions", String.class);
+        if (opts != null) {
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
         }
 
-        arr = res.getArray("toast_reloptions");
-        if (arr != null) {
-            String[] options = (String[]) arr.getArray();
-            ParserAbstract.fillStorageParams(options, t, true);
+        String[] toast = res.getArray("toast_reloptions", String.class);
+        if (toast != null) {
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
         }
 
         if (res.getBoolean("has_oids")){
@@ -203,6 +211,22 @@ public class TablesReader extends JdbcReader {
         if (tableSpace != null && !tableSpace.isEmpty()) {
             t.setTablespace(tableSpace);
         }
+
+        // since 9.5 PostgreSQL
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+            t.setRowSecurity(res.getBoolean("row_security"));
+            t.setForceSecurity(res.getBoolean("force_security"));
+        }
+
+        // persistence: U - unlogged, P - permanent, T - temporary
+        switch (res.getString("persistence")) {
+        case "u":
+            t.setLogged(false);
+            break;
+        default:
+            break;
+        }
+
         return t;
     }
 }

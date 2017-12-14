@@ -1,18 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -37,7 +34,6 @@ public class AlterTable extends ParserAbstract {
         IdentifierContext nameCtx = QNameParser.getFirstNameCtx(ids);
         PgTable tabl = null;
 
-        Map<String, GenericColumn> defaultFunctions = new HashMap<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
@@ -72,13 +68,23 @@ public class AlterTable extends ParserAbstract {
                 if(col != null){
                     for (Storage_parameter_optionContext option :
                         tablAction.set_attribute_option().storage_parameter().storage_parameter_option()){
-                        col.addOption(option.storage_param.getText(),
-                                option.value == null ? "" : option.value.getText());
+                        String value = option.value == null ? "" : option.value.getText();
+                        fillOptionParams(value, option.storage_param.getText(), false, col::addOption);
                     }
                 }
             }
 
-            if(tablAction.set_storage() != null){
+            if (tablAction.define_foreign_options() != null) {
+                PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
+                if (col != null) {
+                    for (Foreign_optionContext option : tablAction.define_foreign_options().foreign_option()) {
+                        String value = option.value == null ? "" : option.value.getText();
+                        fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+                    }
+                }
+            }
+
+            if (tablAction.set_storage() != null){
                 PgColumn col = tabl.getColumn(QNameParser.getFirstName(tablAction.column.identifier()));
                 if(col != null){
                     col.setStorage(tablAction.set_storage().storage_option().getText());
@@ -117,11 +123,14 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.RULE() != null) {
                 createRule(tabl, tablAction);
             }
-        }
-        for (Entry<String, GenericColumn> function : defaultFunctions.entrySet()) {
-            PgColumn col = tabl.getColumn(function.getKey());
-            if (col != null) {
-                col.addDep(function.getValue());
+
+            // since 9.5 PostgreSQL
+            if (tablAction.SECURITY() != null) {
+                if (tablAction.FORCE() != null) {
+                    tabl.setForceSecurity(tablAction.NO() == null);
+                } else {
+                    tabl.setRowSecurity(tablAction.ENABLE() != null);
+                }
             }
         }
         return null;

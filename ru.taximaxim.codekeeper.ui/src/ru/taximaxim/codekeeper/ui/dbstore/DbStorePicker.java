@@ -58,7 +58,7 @@ public class DbStorePicker extends Composite {
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final int MAX_FILES_HISTORY = 10;
 
-    private final boolean useFileSources;
+    private boolean useFileSources;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -66,20 +66,22 @@ public class DbStorePicker extends Composite {
     private final LocalResourceManager lrm;
     private final ComboViewer cmbDbNames;
 
-    public DbStorePicker(Composite parent, int style, final IPreferenceStore prefStore,
-            boolean useFileSources, boolean useDirSources) {
-        super(parent, style);
+    public DbStorePicker(Composite parent, final IPreferenceStore prefStore,
+            boolean useFileSources, boolean useDirSources, boolean useLabel) {
+        super(parent, SWT.NONE);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStore;
 
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(useLabel ? 3 : 2, false);
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
-                Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        if(useLabel) {
+            new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
+                    Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        }
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -131,6 +133,11 @@ public class DbStorePicker extends Composite {
     }
 
     private void loadStore() {
+        loadStore(null);
+    }
+
+    public void loadStore(boolean useFileSources) {
+        this.useFileSources = useFileSources;
         loadStore(null);
     }
 

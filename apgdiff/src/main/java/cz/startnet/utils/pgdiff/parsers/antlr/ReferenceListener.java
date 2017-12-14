@@ -393,26 +393,22 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     public void commentOn(Comment_on_statementContext ctx) {
+        if (ctx.name == null) {
+            return;
+        }
         List<IdentifierContext> ids = ctx.name.identifier();
         String name = QNameParser.getFirstName(ids);
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         String comment = "";
         if (ctx.comment_text != null) {
             comment = ctx.comment_text.getText();
         }
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        // function
-
+        DbObjType type = null;
         if (ctx.FUNCTION() != null) {
             PgFunction func = new PgFunction(name, null);
             ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName());
             name = func.getSignature();
-            addObjReference(schemaName, name,
-                    DbObjType.FUNCTION, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), func.getBareName().length(),
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.FUNCTION, comment);
-            // column
+            type = DbObjType.FUNCTION;
         } else if (ctx.COLUMN() != null) {
             String tableName = QNameParser.getSecondName(ids);
             if (schemaName.equals(tableName)) {
@@ -423,81 +419,38 @@ public class ReferenceListener extends SQLParserBaseListener {
                     ctx.name.getStart().getStartIndex(), 0,
                     ctx.name.getStart().getLine(),
                     ParserAbstract.getFullCtxText(ctx.getParent()));
-            //            setCommentToDefinition(schemaName, tableName, DbObjType.TABLE,
-            //                    comment);
-            // extension
+            // setCommentToDefinition(schemaName, tableName, DbObjType.TABLE, comment);
         } else if (ctx.EXTENSION() != null) {
-            addObjReference(null, name,
-                    DbObjType.EXTENSION,
-                    StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.EXTENSION, comment);
-            // constraint
-        } else if (ctx.CONSTRAINT() != null) {
-            // trigger
+            schemaName = null;
+            type = DbObjType.EXTENSION;
         } else if (ctx.TRIGGER() != null) {
-            addObjReference(null, name,
-                    DbObjType.TRIGGER, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.TRIGGER, comment);
-            // rule
+            schemaName = null;
+            type = DbObjType.TRIGGER;
         } else if (ctx.RULE() != null) {
-            addObjReference(null, name,
-                    DbObjType.RULE, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.RULE, comment);
-            // database
-        } else if (ctx.DATABASE() != null) {
-            // index
+            schemaName = null;
+            type = DbObjType.RULE;
         } else if (ctx.INDEX() != null) {
-            String tableName = QNameParser.getFirstName(ctx.name.identifier());
-            if (schemaName.equals(tableName)) {
-                schemaName = getDefSchemaName();
-            }
-            addObjReference(null, name,
-                    DbObjType.INDEX, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.INDEX, comment);
-            // schema
+            schemaName = null;
+            type = DbObjType.INDEX;
         } else if (ctx.SCHEMA() != null) {
-            addObjReference(null, name,
-                    DbObjType.SCHEMA, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.SCHEMA, comment);
-            // sequence
+            schemaName = null;
+            type = DbObjType.SCHEMA;
         } else if (ctx.SEQUENCE() != null) {
-            addObjReference(schemaName, name,
-                    DbObjType.SEQUENCE, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.SEQUENCE, comment);
-            // table
+            type = DbObjType.SEQUENCE;
         } else if (ctx.TABLE() != null) {
-            addObjReference(schemaName, name,
-                    DbObjType.TABLE, StatementActions.COMMENT,
-                    ctx.name.getStart().getStartIndex(), 0,
-                    ctx.name.getStart().getLine(),
-                    ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.TABLE, comment);
-            // view
+            type = DbObjType.TABLE;
         } else if (ctx.VIEW() != null) {
+            type = DbObjType.VIEW;
+        }
+
+        if (type != null) {
             addObjReference(schemaName, name,
-                    DbObjType.VIEW, StatementActions.COMMENT,
+                    type, StatementActions.COMMENT,
                     ctx.name.getStart().getStartIndex(), 0,
                     ctx.name.getStart().getLine(),
                     ParserAbstract.getFullCtxText(ctx.getParent()));
-            setCommentToDefinition(name, DbObjType.VIEW, comment);
+
+            setCommentToDefinition(name, type, comment);
         }
     }
 
