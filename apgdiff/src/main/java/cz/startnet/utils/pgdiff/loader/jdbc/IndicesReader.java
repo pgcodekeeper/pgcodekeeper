@@ -1,23 +1,24 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
+import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class IndicesReader extends JdbcReader {
 
     public static class IndicesReaderFactory extends JdbcReaderFactory {
 
-        public IndicesReaderFactory(long hasHelperMask, String helperFunction, String fallbackQuery) {
-            super(hasHelperMask, helperFunction, fallbackQuery);
+        public IndicesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
+            super(hasHelperMask, helperFunction, queries);
         }
 
         @Override
@@ -31,7 +32,7 @@ public class IndicesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSet result, PgSchema schema) throws SQLException {
+    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
             PgIndex index = getIndex(result, schema.getName(), table.getName());
@@ -42,7 +43,7 @@ public class IndicesReader extends JdbcReader {
         }
     }
 
-    private PgIndex getIndex(ResultSet res, String schemaName, String tableName) throws SQLException {
+    private PgIndex getIndex(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
         PgIndex i = new PgIndex(indexName, "");
@@ -54,7 +55,7 @@ public class IndicesReader extends JdbcReader {
                         .schema_create().create_index_statement().index_rest(), tablespace,
                         schemaName, i), i::setDefinition);
 
-        i.setClusterIndex(res.getBoolean("isClustered"));
+        i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
 
         // COMMENT
@@ -64,9 +65,8 @@ public class IndicesReader extends JdbcReader {
         }
 
         i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
-        Array colsArray = res.getArray("cols");
-        if (colsArray != null) {
-            String[] cols = (String[]) colsArray.getArray();
+        String[] cols = res.getArray("cols", String.class);
+        if (cols != null) {
             for (String col : cols){
                 i.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
             }

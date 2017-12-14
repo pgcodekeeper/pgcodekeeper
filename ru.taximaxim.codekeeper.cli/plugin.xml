@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="application-standalone"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="ru.taximaxim.codekeeper.cli.ApplicationStandalone">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="product-codekeeper-standalone"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="ru.taximaxim.codekeeper.cli.application-standalone"
+            name="pgCodeKeeper CLI">
+         <property
+               name="appName"
+               value="pgCodeKeeper CLI">
+         </property>
+      </product>
+   </extension>
+</plugin>

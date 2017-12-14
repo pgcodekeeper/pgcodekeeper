@@ -1,104 +1,40 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
-    public SQLEditorHyperLinkDetector() {
-    }
-
     @Override
-    public IHyperlink[] detectHyperlinks(ITextViewer textViewer,
-            IRegion region, boolean canShowMultipleHyperlinks) {
+    public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region,
+            boolean canShowMultipleHyperlinks) {
+        SQLEditor editor = getAdapter(SQLEditor.class);
+        PgDbParser parser = editor.getParser();
+
         int offset = region.getOffset();
-        IProject proj = null;
-        IFile file = null;
-        PgDbParser parser = null;
-        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
-        IEditorInput input = page.getEditorInput();
-        if (input instanceof FileEditorInput) {
-            file = ((FileEditorInput) input).getFile();
-            if (file != null) {
-                proj = file.getProject();
-                if (proj != null) {
-                    parser = PgDbParser.getParser(proj);
-                }
-            }
-        }
-        PgDbParser projParser = null;
-        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        if (input instanceof DepcyFromPSQLOutput) {
-            DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
-            parser = dep.getParser();
-            projParser = PgDbParser.getParser(dep.getProject());
-            funcBodies.addAll(dep.getFuncBodies());
-        }
-
-        if (parser == null) {
-            return null;
-        }
-
-        List<IHyperlink> hyperlinks = new ArrayList<>();
-        List<PgObjLocation> refs = new ArrayList<>();
-        if (file != null) {
-            refs.addAll(parser.getObjsForPath(file.getLocation().toOSString()));
-        } else {
-            Map<String, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
-            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);
-            refs = PgDbParser.getAll(reference);
-        }
+        List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                String message = obj.getObjName();
-                PgObjLocation def = parser.getDefinitionForObj(obj);
-                if (def != null) {
-                    fillHyperLink(input, hyperlinks, obj, def, message,
-                            def.getLineNumber());
-                }
-                if (projParser != null) {
-                    PgObjLocation projDef = projParser.getDefinitionForObj(obj);
-                    if (projDef != null) {
-                        fillHyperLink(input, hyperlinks, obj, projDef, message,
-                                projDef.getLineNumber());
-                    }
+                IHyperlink[] links =  parser.getDefinitionsForObj(obj)
+                        .map(def -> new SQLEditorHyperLink(
+                                new Region(def.getOffset(), def.getObjLength()),
+                                new Region(obj.getOffset(), obj.getObjLength()),
+                                obj.getObjName(), def.getFilePath(), def.getLineNumber()))
+                        .toArray(IHyperlink[]::new);
+                if (links.length != 0) {
+                    return links;
                 }
             }
         }
-
-
-        if (hyperlinks.isEmpty()) {
-            return null;
-        }
-        return hyperlinks.toArray(new IHyperlink[hyperlinks.size()]);
-    }
-
-    private void fillHyperLink(IEditorInput input, List<IHyperlink> hyperlinks,
-            PgObjLocation obj, PgObjLocation objDefinition, String text,
-            int lineNumber) {
-        hyperlinks.add(new SQLEditorHyperLink(new Region(objDefinition
-                .getOffset(), objDefinition.getObjLength()), new Region(obj
-                        .getOffset(), obj.getObjLength()), text, objDefinition
-                .getFilePath(), input, lineNumber));
+        return null;
     }
 }

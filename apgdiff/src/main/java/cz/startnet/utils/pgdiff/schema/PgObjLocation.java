@@ -14,9 +14,9 @@ public class PgObjLocation implements Serializable {
     private final String filePath;
     private final int lineNumber;
 
+    private String text;
     private DbObjType type;
     private String comment = "";
-    private int objLength;
     private StatementActions action;
 
     public StatementActions getAction() {
@@ -39,23 +39,9 @@ public class PgObjLocation implements Serializable {
     public int getOffset() {
         return offset;
     }
-    // непонятно какая длина должна быть)
-    // свитчить по типу в случае с колонкой?
+
     public int getObjLength() {
-        int length = 0;
-        if (type == DbObjType.FUNCTION) {
-            return objLength;
-        }
-        //        if (objName.schema != null) {
-        //            length += objName.schema.length();
-        //        }
-        if (objName.table != null) {
-            length += objName.table.length();
-        }
-        //        if (objName.column != null) {
-        //            length += objName.table.length();
-        //        }
-        return length;
+        return objName.table != null ? objName.table.length() : 0;
     }
 
     public int getLineNumber() {
@@ -72,10 +58,6 @@ public class PgObjLocation implements Serializable {
 
     public void setObjType(DbObjType type) {
         this.type = type;
-    }
-
-    public void setObjNameLength(int length) {
-        this.objLength = length;
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
@@ -124,5 +106,13 @@ public class PgObjLocation implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 }

@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class TreeFlattener {
     private PgDatabase dbSource, dbTarget;
     private IgnoreList ignoreList;
     private String[] dbNames;
+    private Collection<DbObjType> onlyTypes;
 
     private final List<TreeElement> result = new ArrayList<>();
     private final Deque<TreeElement> addSubtreeRoots = new ArrayDeque<>();
@@ -50,6 +52,11 @@ public class TreeFlattener {
         return this;
     }
 
+    public TreeFlattener onlyTypes(Collection<DbObjType> onlyTypes) {
+        this.onlyTypes = onlyTypes;
+        return this;
+    }
+
     public List<TreeElement> flatten(TreeElement root) {
         result.clear();
         addSubtreeRoots.clear();
@@ -80,6 +87,7 @@ public class TreeFlattener {
 
         if ((status == AddStatus.ADD || status == AddStatus.ADD_SUBTREE) &&
                 (!onlySelected || el.isSelected()) &&
+                (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
                 !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
             result.add(el);

@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
@@ -38,7 +37,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             initRepoFromSource(pm);
 
             monitor.done();
-        } catch (IOException | CoreException | LicenseException ex) {
+        } catch (IOException | CoreException ex) {
             throw new InvocationTargetException(ex, MessageFormat.format(
                     Messages.initProjectFromSource_ioexception_while_creating_project,
                     ex.getLocalizedMessage()));
@@ -49,8 +48,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
      */
-    private void initRepoFromSource(SubMonitor pm)throws InvocationTargetException,
-    InterruptedException, CoreException, IOException, LicenseException {
+    private void initRepoFromSource(SubMonitor pm) throws InterruptedException,
+    CoreException, IOException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db = src.get(taskpm);

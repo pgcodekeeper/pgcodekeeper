@@ -4,7 +4,6 @@ import java.nio.file.Paths;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -21,17 +20,15 @@ public class SQLEditorHyperLink implements IHyperlink {
     private final IRegion region;
     private final String label;
     private final IRegion regionHightLight;
-    private final IEditorInput input;
     private final int lineNumber;
 
     public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label,
-            String path, IEditorInput input, int lineNumber) {
+            String path, int lineNumber) {
 
         this.region = region;
         this.regionHightLight = regionHightLight;
         this.location = path;
         this.label = label;
-        this.input = input;
         this.lineNumber = lineNumber;
     }
 
@@ -56,13 +53,8 @@ public class SQLEditorHyperLink implements IHyperlink {
                 .getActivePage();
 
         try {
-            ITextEditor editor;
-            if (input instanceof DepcyFromPSQLOutput) {
-                editor = (ITextEditor) IDE.openEditor(page, input, EDITOR.ROLLON, true);
-            } else {
-                editor = (ITextEditor) IDE.openEditor(
-                        page, Paths.get(location).toUri(), SQLEditor.ID, true);
-            }
+            ITextEditor editor = (ITextEditor) IDE.openEditor(
+                    page, Paths.get(location).toUri(), EDITOR.SQL, true);
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(

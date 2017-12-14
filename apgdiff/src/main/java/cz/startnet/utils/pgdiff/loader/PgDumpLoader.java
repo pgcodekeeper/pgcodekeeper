@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -27,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
@@ -131,11 +131,10 @@ public class PgDumpLoader implements AutoCloseable {
     /**
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
-    public PgDatabase load() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
-        args.getLicense().verifyDb(d);
         return d;
     }
 
@@ -170,8 +169,8 @@ public class PgDumpLoader implements AutoCloseable {
      * @throws InterruptedException
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor)
-                    throws InterruptedException, IOException, LicenseException {
+            PgDiffArguments arguments, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+                    throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         File dir = new File(dirPath);
@@ -179,7 +178,7 @@ public class PgDumpLoader implements AutoCloseable {
         // step 1
         // read files in schema folder, add schemas to db
         for (ApgdiffConsts.WORK_DIR_NAMES dirEnum : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-            loadSubdir(dir, arguments, dirEnum.name(), db, monitor);
+            loadSubdir(dir, arguments, dirEnum.name(), db, monitor, errors);
         }
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
@@ -194,31 +193,38 @@ public class PgDumpLoader implements AutoCloseable {
             File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
             if (schemaFolder.isDirectory()) {
                 for (String dirSub : DIR_LOAD_ORDER) {
-                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor);
+                    loadSubdir(schemaFolder, arguments, dirSub, db, monitor, errors);
                 }
             }
         }
 
-        arguments.getLicense().verifyDb(db);
         return db;
     }
 
-    private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db, IProgressMonitor monitor)
-            throws InterruptedException, IOException {
+    private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
+            IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+                    throws InterruptedException, IOException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
             File[] files = subDir.listFiles();
-            loadFiles(files, arguments, db, monitor);
+            loadFiles(files, arguments, db, monitor, errors);
         }
     }
 
     private static void loadFiles(File[] files, PgDiffArguments arguments,
-            PgDatabase db, IProgressMonitor monitor) throws IOException, InterruptedException {
+            PgDatabase db, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+                    throws IOException, InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
             if (f.isFile() && f.getName().toLowerCase().endsWith(".sql")) {
+                List<AntlrError> errList = null;
                 try (PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor)) {
+                    errList = loader.getErrors();
                     loader.load(db);
+                } finally {
+                    if (errors != null && errList != null && !errList.isEmpty()) {
+                        errors.put(f.getPath(), errList);
+                    }
                 }
             }
         }

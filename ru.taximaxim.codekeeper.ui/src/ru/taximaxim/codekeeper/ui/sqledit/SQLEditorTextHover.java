@@ -1,64 +1,47 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.DefaultTextHover;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.editors.text.EditorsUI;
 
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-//TODO использовать extension интерфейсы
-final class SQLEditorTextHover implements ITextHover {
+
+final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension  {
+
+    private static final String QUICKDIFF = "org.eclipse.ui.workbench.texteditor.quickdiff"; //$NON-NLS-1$
+
+    private final SQLEditor editor;
+
+    public SQLEditorTextHover(ISourceViewer sourceViewer, SQLEditor editor) {
+        super(sourceViewer);
+        this.editor = editor;
+    }
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        IFile file = null;
-        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
-        PgDbParser parser = null;
-        if (page instanceof SQLEditor) {
-            parser = ((SQLEditor)page).getParser();
-        }
-        IEditorInput input = page.getEditorInput();
-        if (input instanceof FileEditorInput) {
-            file = ((FileEditorInput) input).getFile();
-        }
-        if (parser == null) {
-            return new Region(offset, 0);
-        }
-        List<PgObjLocation> refs;
-        if (file != null) {
-            refs = parser.getObjsForPath(file.getLocation().toOSString());
-        } else {
-            refs = parser.getAllObjReferences();
-        }
+        PgDbParser parser = editor.getParser();
+        List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                PgObjLocation loc = parser.getDefinitionForObj(obj);
-                if (loc != null) {
+                Optional<PgObjLocation> loc = parser.getDefinitionsForObj(obj).findAny();
+                if (loc.isPresent()) {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
-                    region.setComment(loc.getComment());
+                    region.setComment(loc.get().getComment());
                     return region;
-                } else {
-                    if (input instanceof DepcyFromPSQLOutput) {
-                        PgDbParser projParser = PgDbParser
-                                .getParser(((DepcyFromPSQLOutput) input)
-                                        .getProject());
-                        loc = projParser.getDefinitionForObj(obj);
-                        if (loc != null) {
-                            SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
-                            region.setComment(loc.getComment());
-                            return region;
-                        }
-                    }
                 }
             }
         }
@@ -66,13 +49,30 @@ final class SQLEditorTextHover implements ITextHover {
     }
 
     @Override
-    public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-        if (hoverRegion != null) {
-            if (hoverRegion.getLength() > -1
-                    && hoverRegion instanceof SQLEditorMyRegion) {
-                SQLEditorMyRegion myRegion = (SQLEditorMyRegion) hoverRegion;
-                return myRegion.getComment();
+    public IInformationControlCreator getHoverControlCreator() {
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new DefaultInformationControl(parent, EditorsUI.getTooltipAffordanceString());
             }
+        };
+    }
+
+    @Override
+    protected boolean isIncluded(Annotation annotation) {
+        // exclude text change annotations
+        return !annotation.getType().startsWith(QUICKDIFF);
+    }
+
+    @Override
+    public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+        @SuppressWarnings("deprecation")
+        String msg = super.getHoverInfo(textViewer, hoverRegion);
+        if (msg != null) {
+            return msg;
+        }
+        if (hoverRegion instanceof SQLEditorMyRegion) {
+            return ((SQLEditorMyRegion) hoverRegion).getComment();
         }
         return "";  //$NON-NLS-1$
     }

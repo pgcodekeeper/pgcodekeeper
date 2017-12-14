@@ -6,23 +6,30 @@ import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
 public class PgDbProject {
 
     private final IProject project;
-    private final IEclipsePreferences prefs;
+    private IEclipsePreferences prefs;
 
     public IProject getProject() {
         return project;
     }
 
     public IEclipsePreferences getPrefs() {
+        IEclipsePreferences prefs = this.prefs;
+        if (prefs == null) {
+            prefs = getPrefs(project);
+            this.prefs = prefs;
+        }
         return prefs;
     }
 
@@ -55,8 +62,6 @@ public class PgDbProject {
 
     public PgDbProject(IProject newProject) {
         this.project = newProject;
-        ProjectScope ps = new ProjectScope(newProject);
-        prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
     }
 
     public static PgDbProject createPgDbProject(IProject newProject, URI location)
@@ -68,7 +73,23 @@ public class PgDbProject {
             desc.setLocationURI(location);
             desc.setNatureIds(new String[] {NATURE.ID});
             newProject.create(desc, null);
+            newProject.open(IResource.BACKGROUND_REFRESH, null);
+            newProject.getNature(NATURE.ID).configure();
         }
         return new PgDbProject(newProject);
+    }
+
+    /**
+     * @return pgCodeKeeper project preferences or null if wrong project
+     */
+    public static IEclipsePreferences getPrefs(IProject proj) {
+        try {
+            if (proj.hasNature(NATURE.ID)) {
+                return new ProjectScope(proj).getNode(PLUGIN_ID.THIS);
+            }
+        } catch (CoreException ex) {
+            Log.log(ex);
+        }
+        return null;
     }
 }

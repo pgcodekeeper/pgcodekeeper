@@ -562,6 +562,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
      * Some sql words/data types are not keywords but we need a token to be able to parse them.
      */
     
+    INCLUDE: [iI] [nN] [cC] [lL] [uU] [dD] [eE];
     PLAIN: [pP] [lL] [aA] [iI]  [nN];
     EXTENDED: [eE] [xX] [tT] [eE] [nN] [dD] [eE] [dD];
     MAIN: [mM] [aA] [iI]  [nN];

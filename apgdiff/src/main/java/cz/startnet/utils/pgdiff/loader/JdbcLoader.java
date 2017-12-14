@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcLoader extends JdbcLoaderBase {
@@ -38,7 +37,7 @@ public class JdbcLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
-    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException, LicenseException {
+    public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
 
@@ -52,6 +51,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
+            queryCheckVersion();
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
@@ -64,7 +64,9 @@ public class JdbcLoader extends JdbcLoaderBase {
                 }
                 new ExtensionsReader(this, d).read();
 
-                SequencesReader.querySequencesData(d, this);
+                if(!SupportedVersion.VERSION_10.checkVersion(version)) {
+                    SequencesReader.querySequencesData(d, this);
+                }
             }
             connection.commit();
             finishAntlr();
@@ -76,7 +78,6 @@ public class JdbcLoader extends JdbcLoaderBase {
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
-        args.getLicense().verifyDb(d);
         return d;
     }
 

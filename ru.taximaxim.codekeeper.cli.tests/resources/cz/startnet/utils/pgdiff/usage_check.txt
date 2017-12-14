@@ -1,0 +1,54 @@
+Usage:
+	pgcodekeeper-cli [option]... SOURCE DEST
+	pgcodekeeper-cli -s SOURCE -t DEST [option]...
+	pgcodekeeper-cli --parse -o OUTDIR [option]... SCHEMA
+
+ SOURCE                                 : source of schema changes
+ DEST                                   : destination for schema changes (diff
+                                          mode only)
+ --help                                 : show this help
+ --version                              : show version
+ --list-charsets                        : show list of Java-supported charsets
+ --parse                                : run in parser mode to save database
+                                          schema as a directory hierarchy
+ -s (--source) <path or JDBC>           : source of schema changes
+ -t (--target) <path or JDBC>           : destination for schema changes (diff
+                                          mode only)
+ -o (--output) <path>                   : script output file or parser output
+                                          directory
+ --in-charset <charset>                 : input charset (default: UTF-8)
+ --out-charset <charset>                : output charset (default: UTF-8)
+ -P (--no-privileges)                   : ignore privileges and owners of
+                                          database objects
+ -L (--keep-newlines)                   : keep newline characters as is (don't
+                                          convert to Unix newlines)
+ -X (--add-transaction)                 : wrap generated script with
+                                          transaction statements
+ -F (--no-check-function-bodies)        : set check_function_bodies to false at
+                                          the beginning of the script
+ -Z (--time-zone) <timezone>            : add SET TIMEZONE statement to the
+                                          script
+ --using-off                            : do not print USING expression for
+                                          ALTER COLUMN TYPE
+ -S (--safe-mode)                       : do not generate scripts containing
+                                          dangerous statements
+                                          see: --allow-danger-ddl
+ -D (--allow-danger-ddl)                : allows dangerous statements in
+ <DANGER_STATEMENT>                       safe-mode scripts
+ -O (--allowed-object) <OBJECT_TYPE>    : build the script using these object
+                                          types only
+                                          hide statements of other objects
+ --stop-not-allowed                     : exit with an error when
+                                          --allowed-object hides a statement
+                                          from the script
+ -I (--ignore-list) <path>              : use an ignore list to include/exclude
+                                          objects from diff
+                                          specify multiple times to use several
+                                          lists
+
+DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH]
+OBJECT_TYPE : [SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | TABLE | CONSTRAINT | INDEX | VIEW | TRIGGER | RULE]
+
+NOTE: use JDBC connection URL to specify live database,
+	see https://jdbc.postgresql.org/documentation/head/connect.html
+

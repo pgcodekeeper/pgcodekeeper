@@ -13,96 +13,8 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
-    <version>3.10.0-SNAPSHOT</version>
+    <version>4.1.2-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
-
-    <properties>
-        <public.current_version_dir>release</public.current_version_dir>
-    </properties>
-
-    <profiles>
-        <profile>
-            <id>deploy-cli</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>upload-repo</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <configuration>
-                                    <fromDir>${project.build.directory}/products/</fromDir>
-                                    <includes>*.zip</includes>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>deploy-cli-public</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>public-version-history-cli</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/</url>
-                                    <commands>
-                                        <command>rm -rf /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
-                                        <command>mkdir /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>public-upload-cli</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier}</url>
-                                    <fromDir>${project.build.directory}/products/</fromDir>
-                                    <includes>*.zip</includes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>public-link-current-cli</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/cli/</url>
-                                    <commands>
-                                        <command>unlink /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
-                                        <command>ln -s /var/www/pgcodekeeper/cli/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/cli/${public.current_version_dir}</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>
@@ -112,41 +24,41 @@
                 <version>3.0.2</version>
                 <executions>
                     <execution>
-                        <id>copy-resources-x86</id>
+                        <id>copy-resources-all</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/win32/win32/x86</outputDirectory>
+                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.basedir}</directory>
                                     <filtering>true</filtering>
                                     <includes>
-                                        <include>*.bat</include>
+                                        <include>pgcodekeeper-cli.*</include>
                                     </includes>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
                     <execution>
-                        <id>copy-resources-x86-64</id>
+                        <id>set-executable</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/win32/win32/x86_64</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>*.bat</include>
-                                    </includes>
-                                </resource>
-                            </resources>
+                            <target>
+                                <chmod file="${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh" perm="0775" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

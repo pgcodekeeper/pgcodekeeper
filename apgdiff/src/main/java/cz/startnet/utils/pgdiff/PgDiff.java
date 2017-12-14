@@ -15,17 +15,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -54,7 +51,7 @@ public final class PgDiff {
      * @throws URISyntaxException
      */
     public static PgDiffScript createDiff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+            throws InterruptedException, IOException, URISyntaxException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase newDatabase = loadDatabaseSchema(
@@ -81,14 +78,14 @@ public final class PgDiff {
      * @throws InterruptedException
      * @throws URISyntaxException
      */
-    static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+    public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
+            throws InterruptedException, IOException, URISyntaxException {
         if("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
             }
         } else if("parsed".equals(format)) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null);
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
         } else if("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();
@@ -148,7 +145,7 @@ public final class PgDiff {
                     + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
         }
 
-        if (!arguments.isCheckFunctionBodies()) {
+        if (arguments.isDisableCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false;");
         }
 
@@ -164,10 +161,18 @@ public final class PgDiff {
             depRes.addCustomDepciesToNew(additionalDepciesTarget);
         }
 
-        // TODO when live DB connection is impelemted, pass the DB names to IgnoreList
+        List<String> dbNames = new ArrayList<>();
+        if ("db".equals(arguments.getNewSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
+        }
+        if ("db".equals(arguments.getOldSrcFormat())) {
+            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
+        }
+
         List<TreeElement> selected = new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
+                .onlyTypes(arguments.getAllowedTypes())
                 .flatten(root);
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);
@@ -195,10 +200,7 @@ public final class PgDiff {
         }
 
         script.printStatements(writer);
-        if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDbFull, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
-            addIgnoredStatements(newDbFull, Messages.Database_NewDatabaseIgnoredStatements, writer);
-        }
+
         return script;
     }
 
@@ -210,56 +212,17 @@ public final class PgDiff {
             List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
-            if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
-                PgTable oldTbl =(PgTable) el.getPgStatement(oldDbFull);
+            if (el.getType() == DbObjType.TABLE && el.getSide() != DiffSide.LEFT) {
+                PgTable oldTbl = null;
                 PgTable newTbl =(PgTable) el.getPgStatement(newDbFull);
-                for (PgColumn oldCol : oldTbl.getColumns()) {
-                    PgColumn newCol = newTbl.getColumn(oldCol.getName());
-                    if (newCol == null) {
-                        TreeElement col = new TreeElement(oldCol.getName(), DbObjType.COLUMN, DiffSide.LEFT);
-                        col.setParent(el);
-                        tempColumns.add(col);
-                    } else {
-                        StringBuilder sb = new StringBuilder();
-                        AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                        if (oldCol.appendAlterSQL(newCol, sb, isNeedDepcies)) {
-                            TreeElement col = new TreeElement(oldCol.getName(), DbObjType.COLUMN, DiffSide.BOTH);
-                            col.setParent(el);
-                            tempColumns.add(col);
-                        }
-                    }
+                if (el.getSide() == DiffSide.BOTH) {
+                    oldTbl =(PgTable) el.getPgStatement(oldDbFull);
                 }
-                for (PgColumn newCol : newTbl.getColumns()) {
-                    if (!oldTbl.containsColumn(newCol.getName())) {
-                        TreeElement col = new TreeElement(newCol.getName(), DbObjType.COLUMN, DiffSide.RIGHT);
-                        col.setParent(el);
-                        tempColumns.add(col);
-                    }
-                }
+                DiffTree.addColumns(oldTbl == null ? Collections.emptyList() : oldTbl.getColumns(),
+                        newTbl.getColumns(), el, tempColumns);
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    /**
-     * Adds ignored Statements to script
-     * @param database database with ignored statements
-     * @param messageText resource for localization message
-     * @param script script to output statements
-     */
-    private static void addIgnoredStatements(PgDatabase database,
-            String messageText, PrintWriter writer) {
-        if (!database.getIgnoredStatements().isEmpty()) {
-            writer.println();
-            writer.print("/*");
-            writer.println(messageText);
-
-            for (final String statement : database.getIgnoredStatements()) {
-                writer.println();
-                writer.println(statement);
-            }
-            writer.println("*/");
-        }
     }
 
     private PgDiff() {

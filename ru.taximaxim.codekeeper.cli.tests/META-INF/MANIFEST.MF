@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CLI Tests
+Bundle-SymbolicName: ru.taximaxim.codekeeper.cli.tests;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Technology, LLC
+Fragment-Host: ru.taximaxim.codekeeper.cli
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.junit;bundle-version="[4.0.0,5.0.0)"

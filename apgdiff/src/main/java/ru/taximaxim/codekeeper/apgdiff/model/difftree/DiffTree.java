@@ -242,6 +242,17 @@ public final class DiffTree {
         return rv;
     }
 
+    @Deprecated
+    public static void addColumns(List<? extends PgStatement> left,
+            List<? extends PgStatement> right, TreeElement parent,
+            List<TreeElement> list) {
+        for (CompareResult col : compareLists(left, right)) {
+            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
+            colEl.setParent(parent);
+            list.add(colEl);
+        }
+    }
+
     private DiffTree() {
     }
 }

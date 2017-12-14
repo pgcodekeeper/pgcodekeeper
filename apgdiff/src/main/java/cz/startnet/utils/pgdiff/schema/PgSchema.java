@@ -267,36 +267,42 @@ public class PgSchema extends PgStatement {
     }
 
     public void addDomain(PgDomain dom) {
+        assertUnique(this::getDomain, dom);
         domains.add(dom);
         dom.setParent(this);
         resetHash();
     }
 
     public void addFunction(final PgFunction function) {
+        assertUnique(this::getFunction, function);
         functions.add(function);
         function.setParent(this);
         resetHash();
     }
 
     public void addSequence(final PgSequence sequence) {
+        assertUnique(this::getSequence, sequence);
         sequences.add(sequence);
         sequence.setParent(this);
         resetHash();
     }
 
     public void addTable(final PgTable table) {
+        assertUnique(this::getTable, table);
         tables.add(table);
         table.setParent(this);
         resetHash();
     }
 
     public void addView(final PgView view) {
+        assertUnique(this::getView, view);
         views.add(view);
         view.setParent(this);
         resetHash();
     }
 
     public void addType(final PgType type) {
+        assertUnique(this::getType, type);
         types.add(type);
         type.setParent(this);
         resetHash();
