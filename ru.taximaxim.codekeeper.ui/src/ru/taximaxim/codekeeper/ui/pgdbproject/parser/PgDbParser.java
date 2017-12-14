@@ -2,16 +2,11 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +46,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -108,62 +104,38 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return p;
     }
 
-    /**
-     * Returns path to %workspace%/.metadata/.plugins/%this_plugin%/projects.<br>
-     *
-     * @return path to folder with serialized projects
-     * @throws URISyntaxException if couldn't get path to the workspace
-     */
-    private static Path getInternalFolder() throws URISyntaxException {
-        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
-                .resolve("projects"); //$NON-NLS-1$
+    private static File getPathToObject(String name) throws URISyntaxException {
+        File file = new File(URIUtil.toURI(Platform.getInstanceLocation().getURL()));
+        file = new File(file, ".metadata"); //$NON-NLS-1$
+        file = new File(file, ".plugins"); //$NON-NLS-1$
+        file = new File(file, PLUGIN_ID.THIS);
+        file = new File(file, "projects"); //$NON-NLS-1$
+        file = new File(file, name + ".ser"); //$NON-NLS-1$
+        return file;
     }
 
-    /**
-     * Serializes current parser to file with given name in workspace.</br>
-     * Handles {@link URISyntaxException} when couldn't get path to the workspace.</br>
-     * Handles {@link IOException} if have serialize error.
-     *
-     * @param name project name
-     */
     public void serialize(String name) {
         try {
-            File folder = getInternalFolder().toFile();
-            folder.mkdirs();
-            File f = new File(folder.getAbsolutePath(), name);
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
-                oos.writeObject(this);
-                oos.flush();
-            }
-        } catch (IOException | URISyntaxException e) {
-            Log.log(Log.LOG_DEBUG, "Error while serialize project!", e);
+            File parser = getPathToObject(name);
+            parser.getParentFile().mkdirs();
+            ApgdiffUtils.serialize(parser.getPath(), this);
+        } catch (URISyntaxException e) {
+            Log.log(Log.LOG_DEBUG, "Error while serialize parser!", e); //$NON-NLS-1$
         }
     }
 
-    /**
-     * Deserializes parser from file with given name in workspace. </br>
-     * Handles {@link ClassCastException} if object of another class. </br>
-     * Handles {@link ClassNotFoundException} if have deserialize error. </br>
-     * Handles {@link IOException} if have error while read file. </br>
-     * Handles {@link URISyntaxException} when couldn't get path to the workspace.
-     *
-     * @param name project name
-     * @return deserialized parser or null if errors has been handled
-     */
     private static PgDbParser deserialize(String name) {
         try {
-            Path path = getInternalFolder();
-            if (Files.exists(path) && Files.exists(path.resolve(name))) {
-                File f = path.resolve(name).toFile();
-                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(f))) {
+            File file = getPathToObject(name);
+            if (file.exists()) {
+                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(file))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
                     parser.listeners = new ArrayList<>();
                     return parser;
                 }
             }
-        } catch (ClassCastException | ClassNotFoundException | IOException | URISyntaxException e) {
-            Log.log(Log.LOG_DEBUG, "Error while deserialize project!", e);
+        } catch (ClassNotFoundException | IOException | ClassCastException | URISyntaxException e) {
+            Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
         }
 
         return null;
