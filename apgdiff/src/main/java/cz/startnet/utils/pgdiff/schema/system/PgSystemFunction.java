@@ -1,17 +1,18 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemFunction extends PgSystemStatement {
+public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
-    private final List<PgSystemArgument> signature = new ArrayList<>();
+    private final List<IArgument> arguments = new ArrayList<>();
 
     /**
      * Order by for aggregate functions
@@ -22,19 +23,20 @@ public class PgSystemFunction extends PgSystemStatement {
      * Function return type name, if null
      * {@link PgSystemStatement#columns columns} contains columns
      */
-    private String returnType;
+    private String returns;
     private boolean setof;
 
     public PgSystemFunction(final String schema, final String name) {
         super(schema, name, DbObjType.FUNCTION);
     }
 
-    public List<PgSystemArgument> getSignature() {
-        return signature;
+    @Override
+    public List<IArgument> getArguments() {
+        return arguments;
     }
 
-    public void addSignaturePart(final PgSystemArgument arg) {
-        signature.add(arg);
+    public void addArgumentPart(final PgSystemArgument arg) {
+        arguments.add(arg);
     }
 
     public boolean isSetof() {
@@ -53,15 +55,16 @@ public class PgSystemFunction extends PgSystemStatement {
         orderBy.add(type);
     }
 
-    public String getReturnType() {
-        return returnType;
+    @Override
+    public String getReturns() {
+        return returns;
     }
 
-    public void setReturnType(String returnType) {
-        this.returnType = returnType;
+    public void setReturns(String returns) {
+        this.returns = returns;
     }
 
-    public static class PgSystemArgument implements Serializable {
+    public static class PgSystemArgument implements IArgument {
 
         private static final long serialVersionUID = -2474167798261721854L;
 
@@ -80,22 +83,27 @@ public class PgSystemFunction extends PgSystemStatement {
             this.dataType = dataType;
         }
 
+        @Override
         public String getDataType() {
             return dataType;
         }
 
+        @Override
         public String getDefaultExpression() {
             return defaultExpression;
         }
 
+        @Override
         public void setDefaultExpression(final String defaultExpression) {
             this.defaultExpression = defaultExpression;
         }
 
+        @Override
         public String getMode() {
             return mode;
         }
 
+        @Override
         public String getName() {
             return name;
         }

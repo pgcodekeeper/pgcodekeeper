@@ -65,6 +65,10 @@ public class Vex {
         return vexAll;
     }
 
+    public String getBinaryOperator() {
+        return isB ? vexB.getChild(1).getText() : vex.getChild(1).getText();
+    }
+
     public TerminalNode castExpression() {
         return isB ? vexB.CAST_EXPRESSION() : vex.CAST_EXPRESSION();
     }

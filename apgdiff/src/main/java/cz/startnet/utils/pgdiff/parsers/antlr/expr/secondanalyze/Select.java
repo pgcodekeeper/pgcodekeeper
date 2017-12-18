@@ -35,7 +35,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -55,29 +54,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      */
     private boolean lateralAllowed;
 
-    private PgView viewInProcessing;
-
     public Select(String schema, PgDatabase db) {
         super(schema, db);
     }
 
-    public Select(String schema, PgDatabase db, PgView viewInProcessing) {
-        this(schema, db);
-        this.viewInProcessing = viewInProcessing;
-    }
-
     protected Select(AbstractExpr parent) {
         super(parent);
-
-        if (parent instanceof Select) {
-            viewInProcessing = ((Select)parent).getViewInProcessing();
-        } else if(parent instanceof ValueExpr) {
-            viewInProcessing = ((ValueExpr)parent).getViewInProcessing();
-        }
-    }
-
-    public PgView getViewInProcessing() {
-        return viewInProcessing;
     }
 
     @Override
@@ -164,18 +146,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 ret = new ArrayList<>();
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
                     ValueExpr vexCol = new ValueExpr(this);
-
-                    vexCol.getComplexNamespace().putAll(complexNamespace);
-                    vexCol.getCteConstruction().putAll(cteConstruction);
-
                     Entry<String, String> columnPair = vexCol.analyze(new Vex(target.vex()));
 
                     if(target.alias != null && columnPair != null){
                         columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
 
                     }
-
-                    viewInProcessing.addColumnOfQuery(columnPair);
 
                     ret.add(columnPair);
                 }
@@ -295,8 +271,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     lateralAllowed = primary.LATERAL() != null;
                     List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
-                    getComplexNamespace().put(alias.alias.getText(), columnList);
-
+                    complexNamespace.put(alias.alias.getText(), columnList);
                     addReference(alias.alias.getText(), null);
                 } finally {
                     lateralAllowed = oldLateral;
@@ -313,7 +288,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         addReference(funcAlias, null);
 
                         if (alias != null) {
-                            getComplexNamespace().put(alias.alias.getText(), new ArrayList<>(Arrays.asList(func)));
+                            complexNamespace.put(alias.alias.getText(), new ArrayList<>(Arrays.asList(func)));
                         }
                     }
                 } finally {

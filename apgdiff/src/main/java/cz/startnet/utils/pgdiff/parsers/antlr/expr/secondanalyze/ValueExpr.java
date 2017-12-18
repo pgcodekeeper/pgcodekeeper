@@ -38,6 +38,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_numeric_literalContext;
@@ -49,10 +50,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -61,12 +62,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ValueExpr extends AbstractExpr {
 
-    private PgView viewInProcessing;
-
-    public ValueExpr(String schema, PgDatabase db, PgView viewInProcessing) {
-        this(schema, db);
-        this.viewInProcessing = viewInProcessing;
-    }
+    // TODO get postgresql version.
+    // Need to get version. I can get it from JdbcLoader(READER),
+    // but I can't get it from PgDumpLoader(WRITER).
+    private PgSystemStorage systemStorage;
 
     public ValueExpr(String schema, PgDatabase db) {
         super(schema, db);
@@ -74,16 +73,6 @@ public class ValueExpr extends AbstractExpr {
 
     protected ValueExpr(AbstractExpr parent) {
         super(parent);
-
-        if (parent instanceof Select) {
-            viewInProcessing = ((Select)parent).getViewInProcessing();
-        } else if(parent instanceof ValueExpr) {
-            viewInProcessing = ((ValueExpr)parent).getViewInProcessing();
-        }
-    }
-
-    public PgView getViewInProcessing() {
-        return viewInProcessing;
     }
 
     private List<Vex> addVexCtxtoList(List<Vex> l, List<VexContext> ctx) {
@@ -167,7 +156,7 @@ public class ValueExpr extends AbstractExpr {
             }
         } else if (vex.plus() != null || vex.minus() != null) {
             if(operandsList.size() == 2){
-                ret = cast(operandsList.get(0), operandsList.get(1), vex);
+                ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
             } else{
                 ret = operandsList.get(0);
             }
@@ -179,9 +168,13 @@ public class ValueExpr extends AbstractExpr {
                 ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
             }
         } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
-            ret = cast(operandsList.get(0), operandsList.get(1), vex);
+            ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
         } else if (vex.op() != null) {
-            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
+            if (operandsList.size() == 1) {
+                ret = operandsList.get(0);
+            } else {
+                ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
+            }
         } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null) )
                 || (vex.is() != null && vex.distinct() != null)
                 || (vex.not() != null && vex.in() == null)
@@ -295,19 +288,15 @@ public class ValueExpr extends AbstractExpr {
     public Entry<String, String> function(Function_callContext function) {
         Entry<String, String> pair = new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
         List<Vex> args = null;
-        List<VexContext> argsCtx = null;
-
         Function_nameContext name = function.function_name();
 
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
-
         boolean canFindFunctionSignature = false;
 
         if (name != null) {
-            argsCtx = function.vex();
-            args = addVexCtxtoList(args, argsCtx);
+            args = addVexCtxtoList(args, function.vex());
 
             canFindFunctionSignature = true;
 
@@ -317,20 +306,20 @@ public class ValueExpr extends AbstractExpr {
             }
             Filter_clauseContext filter = function.filter_clause();
             if (filter != null) {
-                pair = analyze(new Vex(filter.vex()));
+                analyze(new Vex(filter.vex()));
             }
             Window_definitionContext window = function.window_definition();
             if (window != null) {
                 window(window);
             }
         } else if ((extract = function.extract_function()) != null) {
-            pair = analyze(new Vex(extract.vex()));
+            analyze(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
             args = addVexCtxtoList(args, string.vex());
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
-                pair = analyze(new Vex(vexB));
+                analyze(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
             args = addVexCtxtoList(args, xml.vex());
@@ -344,19 +333,39 @@ public class ValueExpr extends AbstractExpr {
         }
 
         if (canFindFunctionSignature) {
-            pair = setReturnedTypeOfFunction(name, argsType, argsCtx, pair);
-
+            pair = setReturnedTypeOfFunction(name, argsType, pair);
         }
 
         return pair;
     }
 
     private Entry<String, String> setReturnedTypeOfFunction(Function_nameContext name,
-            List<Entry<String, String>> argsType, List<VexContext> argsCtx, Entry<String, String> pair) {
+            List<Entry<String, String>> argsType, Entry<String, String> p) {
+        Entry<String, String> pair = p;
+        String schemaName = schema;
         String funcName = name.getText();
 
+        IdentifierContext id;
+        Data_typeContext type = name.data_type();
+        Schema_qualified_name_nontypeContext funcNameCtx = null;
+        Tokens_simple_functionsContext tokensSimpleFunc;
+        if (type != null &&
+                (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
+            funcName = funcNameCtx.identifier_nontype().getText();
+
+            if ((id = funcNameCtx.identifier()) != null) {
+                schemaName = id.getText();
+            }
+        } else if ((tokensSimpleFunc = name.tokens_simple_functions()) != null) {
+            funcName = tokensSimpleFunc.getText();
+
+            if ((id = name.identifier()) != null) {
+                schemaName = id.getText();
+            }
+        }
+
         List<String> types = argsType.stream()
-                .map(entry -> entry.getValue())
+                .map(Entry::getValue)
                 .collect(Collectors.toList());
 
         StringBuilder sb = new StringBuilder();
@@ -371,75 +380,88 @@ public class ValueExpr extends AbstractExpr {
         sb.append(")");
         String functionSignature = sb.toString();
 
-        boolean isUserFunction = false;
+        List<IFunction> userFuncsList = new ArrayList<>();
+        for(PgFunction f : db.getSchema(schemaName).getFunctions()) {
+            long inModeArgCount = f.getArguments().stream()
+                    .filter(arg -> "IN".equals(arg.getMode()))
+                    .count();
 
-        List<PgFunction> userFunctionsList = new ArrayList<>();
-        for(PgFunction f : db.getSchema(schema).getFunctions()) {
             if (funcName.equals(f.getBareName())
-                    && (types.size() == f.getArguments().size())) {
-                userFunctionsList.add(f);
+                    && (types.size() == inModeArgCount)) {
+                userFuncsList.add(f);
             }
         }
 
-        isUserFunction = !userFunctionsList.isEmpty();
-
-        // TODO get postgresql version.
-        // Need to get version. I can get it from JdbcLoader(READER),
-        // but I can't get it from PgDumpLoader(WRITER).
-        PgSystemStorage storage = null;
-
+        boolean isUserFunc = !userFuncsList.isEmpty();
         boolean doesItNeedCast = true;
-        if (isUserFunction) {
-            for(PgFunction f : userFunctionsList) {
+
+        List<PgSystemStatement> systemStmts = new ArrayList<>();
+        List<IFunction> systemFuncsList = new ArrayList<>();
+
+        if (isUserFunc) {
+            for(IFunction f : userFuncsList) {
                 if (functionSignature.equals(f.getName())) {
                     pair = new SimpleEntry<>(funcName, f.getReturns());
                     doesItNeedCast = false;
                     break;
                 }
             }
+        } else {
+            if (systemStorage == null) {
+                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            }
+
+            systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, funcName);
+            if (!systemStmts.isEmpty() && systemStmts.size() == 1) {
+                PgSystemFunction systemFunc = (PgSystemFunction) systemStmts.get(0);
+                pair = new SimpleEntry<>(funcName, systemFunc.getReturns());
+                doesItNeedCast = false;
+            }
         }
 
-        if (doesItNeedCast && isUserFunction) {
-            storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+        if (doesItNeedCast) {
+            if (systemStorage == null) {
+                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            }
 
-            List<String> castArgumentsResult = new ArrayList<>();
-            String negativeResult = "-";
+            if (!isUserFunc) {
+                systemFuncsList = systemStmts.stream()
+                        .map(systemStmt -> (PgSystemFunction)systemStmt)
+                        .filter(systemFunc -> systemFunc.getArguments().size() == types.size())
+                        .collect(Collectors.toList());
+            }
 
-            for (PgFunction f : userFunctionsList) {
-                castArgumentsResult.clear();
-                List<Argument> argsOfUserFunction = f.getArguments();
+            pair = castFiltredFuncs(pair, funcName, types, isUserFunc ? userFuncsList : systemFuncsList);
+        }
 
-                for (int i = 0; argsCtx.size() > i; i++) {
-                    String castCtx = PgSystemStorage.castFunctionArguments(storage,
-                            argsOfUserFunction.get(i).getDataType(), types.get(i));
+        if (type != null && funcNameCtx != null) {
+            addFunctionDepcy(funcNameCtx, functionSignature);
+        }
 
-                    castArgumentsResult.add(castCtx != null ? castCtx : negativeResult);
-                }
+        return pair;
+    }
 
-                if (!castArgumentsResult.contains(negativeResult)) {
-                    pair = new SimpleEntry<>(funcName, f.getReturns());
+    @SuppressWarnings({ "unchecked"})
+    private <T extends IFunction, K extends IArgument> Entry<String, String> castFiltredFuncs(
+            Entry<String, String> pair, String funcName, List<String> types, List<T> functionsList) {
+        for (T f : functionsList) {
+            boolean castWellDone = true;
+            List<K> argsOfFunction = (List<K>) f.getArguments();
+
+            for (int i = 0; types.size() > i; i++) {
+                String castCtx = PgSystemStorage.getCastContext(systemStorage,
+                        argsOfFunction.get(i).getDataType(), types.get(i));
+
+                if (castCtx == null) {
+                    castWellDone = false;
                     break;
                 }
             }
-        }
 
-        if (!isUserFunction) {
-            if (storage == null) {
-                storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            if (castWellDone) {
+                pair = new SimpleEntry<>(funcName, f.getReturns());
+                break;
             }
-
-            PgSystemStatement systemStmt = PgSystemStorage.getPgSystemStatement(storage, DbObjType.FUNCTION, funcName);
-            if (systemStmt != null) {
-                PgSystemFunction systemFunc = (PgSystemFunction) systemStmt;
-                pair = new SimpleEntry<>(funcName, systemFunc.getReturnType());
-            }
-        }
-
-        Data_typeContext type = name.data_type();
-        Schema_qualified_name_nontypeContext funcNameCtx;
-        if (type != null &&
-                (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-            addFunctionDepcy(funcNameCtx, functionSignature);
         }
 
         return pair;
@@ -548,39 +570,23 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private Entry<String, String> cast(Entry<String, String> left, Entry<String, String> right, Vex vex) {
+    private Entry<String, String> cast(Entry<String, String> left, Entry<String, String> right, String operator) {
         String leftType = left.getValue();
         String rightType = right.getValue();
 
-        String operator = null;
-        if (vex.plus() != null) {
-            operator = vex.plus().getText();
-        } else if (vex.minus() != null) {
-            operator = vex.minus().getText();
-        } else if (vex.exp() != null) {
-            operator = vex.exp().getText();
-        } else if (vex.multiply() != null) {
-            operator = vex.multiply().getText();
-        } else if (vex.divide() != null) {
-            operator = vex.divide().getText();
-        } else if (vex.modular() != null) {
-            operator = vex.modular().getText();
-        }
-
         Entry<String, String> ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
 
-        if(!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
-            ret.setValue(leftType);
-        } else if(TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
-            ret.setValue(rightType);
-        } else if(!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
-            // TODO get postgresql version.
-            // Need to get version. I can get it from JdbcLoader(READER),
-            // but I can't get it from PgDumpLoader(WRITER).
-            PgSystemStorage storage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+        if (!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
+            if (systemStorage == null) {
+                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+            }
 
-            String type = PgSystemStorage.castOperatorArguments(storage, leftType, rightType, operator);
-            ret.setValue(type != null ? type : TypesSetManually.NUMERIC);
+            String resultType = leftType.equals(rightType) ? leftType :
+                PgSystemStorage.castOperatorArguments(systemStorage, leftType, rightType, operator);
+
+            if (resultType != null) {
+                ret.setValue(resultType);
+            }
         }
         return ret;
     }

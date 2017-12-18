@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -61,30 +62,21 @@ public class PgSystemStorage implements Serializable {
         return null;
     }
 
-    public static PgSystemStatement getPgSystemStatement(PgSystemStorage storage, DbObjType objType, String objName) {
-        List<PgSystemStatement> systemStmtsWithObjType = new ArrayList<>();
-
-        for (PgSystemStatement systemStmt : storage.getObjects()) {
-            if (objType.equals(systemStmt.getType())) {
-                systemStmtsWithObjType.add(systemStmt);
-            }
-        }
-
-        for (PgSystemStatement systemStmt : systemStmtsWithObjType) {
-            if (objName.equals(systemStmt.getName())) {
-                return systemStmt;
-            }
-        }
-
-        return null;
+    public static List<PgSystemStatement> getPgSystemStatement(PgSystemStorage storage, DbObjType objType, String objName) {
+        return storage.getObjects().stream()
+                .filter(systemStmt -> objType.equals(systemStmt.getType()))
+                .filter(systemStmt -> objName.equals(systemStmt.getName()))
+                .collect(Collectors.toList());
     }
 
     /**
      *  Returns the {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type context of the cast}
      *  between two types.
      */
-    public static String castFunctionArguments(PgSystemStorage storage, String source, String target) {
-        for (PgSystemCast cast : storage.getCasts()) {
+    public static String getCastContext(PgSystemStorage storage, String source, String target) {
+        for (PgSystemCast cast : storage.getCasts().stream()
+                .filter(c -> CastContext.I.equals(c.getType()) || CastContext.A.equals(c.getType()))
+                .collect(Collectors.toList())) {
             if (source.equals(cast.getSource()) && target.equals(cast.getTarget())) {
                 return cast.getType();
             }
@@ -97,13 +89,30 @@ public class PgSystemStorage implements Serializable {
      *  Returns operation's result type.
      */
     public static String castOperatorArguments(PgSystemStorage storage, String leftType, String rightType, String operatorName) {
-        for (PgSystemOperator oper : storage.getOperators()) {
-            if (operatorName.equals(oper.getName())
-                    && leftType.equals(oper.getLeft())
-                    && rightType.equals(oper.getRight())) {
-                return oper.getReturnType();
+        String resultType = null;
+        boolean checkOperator = false;
+
+        String castFromLeftTypeToRight = getCastContext(storage, leftType, rightType);
+        String castFromRightTypeToLeft = getCastContext(storage, rightType ,leftType);
+
+        if (CastContext.I.equals(castFromLeftTypeToRight) && CastContext.A.equals(castFromRightTypeToLeft)) {
+            resultType = rightType;
+            checkOperator = true;
+        } else if (CastContext.A.equals(castFromLeftTypeToRight) && CastContext.I.equals(castFromRightTypeToLeft)) {
+            resultType = leftType;
+            checkOperator = true;
+        }
+
+        if (checkOperator) {
+            for (PgSystemOperator oper : storage.getOperators()) {
+                if (operatorName.equals(oper.getName())
+                        && resultType.equals(oper.getLeft())
+                        && resultType.equals(oper.getRight())) {
+                    return oper.getReturnType();
+                }
             }
         }
-        return null;
+
+        return resultType;
     }
 }

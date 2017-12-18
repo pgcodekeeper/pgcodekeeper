@@ -48,11 +48,26 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * Columns of non-dereferenceable objects are aliases by default and need
      * not to be added to this set.
      */
+    // TODO Necessary to allow aliases for columns of 'SELECT'.
+    // In other words, it necessary have to think, how to make it
+    // to work with such expressions:
+    // SELECT (SELECT a.a) FROM (SELECT 1, 2, 3) a(a, b, c)
+    // SELECT (SELECT a.a) FROM (SELECT 1 z, 2 x, 3 c) a(a, b, c)
+    // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
     protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
      * CTE names that current level of FROM has access to.
+     *
+     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
+     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
      */
-    protected final Set<String> cte = new HashSet<>();
+    protected final Map<String, List<Entry<String, String>>> cte = new HashMap<>();
+
+    /*
+     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
+     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
+     */
+    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
 
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
@@ -64,13 +79,27 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
 
     @Override
     protected AbstractExprWithNmspc<?> findCte(String cteName) {
-        return cte.contains(cteName) ? this : super.findCte(cteName);
+        return cte.containsKey(cteName) ? this : super.findCte(cteName);
     }
 
     @Override
     protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
         return ref == null ? super.findReference(schema, name, column) : ref;
+    }
+
+    @Override
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String schema, String name, String column) {
+        Entry<String, List<Entry<String, String>>> refComplex = null;
+
+        for (Entry<String, List<Entry<String, String>>> entry : complexNamespace.entrySet()) {
+            if (name.equals(entry.getKey())) {
+                refComplex = entry;
+                break;
+            }
+        }
+
+        return refComplex == null ? super.findReferenceComplex(schema, name, column) : refComplex;
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
@@ -203,17 +232,17 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             // add CTE name to the visible CTEs list after processing the query for normal CTEs
             // and before for recursive ones
             Select withProcessor = new Select(this);
-            List<Entry<String, String>> columnPair;
+            List<Entry<String, String>> columnsPairs;
             boolean duplicate;
             if (recursive) {
-                duplicate = !cte.add(withName);
-                columnPair = withProcessor.analyze(withSelect);
+                duplicate = cte.containsKey(withName);
+                columnsPairs = withProcessor.analyze(withSelect);
             } else {
-                columnPair = withProcessor.analyze(withSelect);
-                duplicate = !cte.add(withName);
+                columnsPairs = withProcessor.analyze(withSelect);
+                duplicate = cte.containsKey(withName);
             }
 
-            cteConstruction.put(withName, columnPair);
+            cte.put(withName, columnsPairs);
 
             if (duplicate) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);

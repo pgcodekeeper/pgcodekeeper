@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
@@ -193,7 +194,7 @@ public class FunctionsReader extends JdbcReader {
             if (defultsQueue.isEmpty()) {
                 break;
             }
-            Argument a = f.getArguments().get(i);
+            IArgument a = f.getArguments().get(i);
             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                 a.setDefaultExpression(defultsQueue.pollLast());
             }

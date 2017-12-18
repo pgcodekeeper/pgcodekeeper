@@ -2,10 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -36,25 +34,6 @@ public abstract class AbstractExpr {
     private final Set<GenericColumn> depcies;
 
     protected final PgDatabase db;
-
-    /*
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
-     */
-    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
-    /*
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
-     */
-    protected final Map<String, List<Entry<String, String>>> cteConstruction = new HashMap<>();
-
-    public Map<String, List<Entry<String, String>>> getComplexNamespace() {
-        return complexNamespace;
-    }
-
-    public Map<String, List<Entry<String, String>>> getCteConstruction() {
-        return cteConstruction;
-    }
 
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
@@ -95,6 +74,17 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findReference(schema, name, column);
     }
 
+    /**
+     * @param schema optional schema qualification of name, may be null
+     * @param name alias of the referenced object
+     * @param column optional referenced column alias, may be null
+     * @return a pair of (Alias, ColumnsList) where Alias is the given name.
+     *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
+     */
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String schema, String name, String column) {
+        return parent == null ? null : parent.findReferenceComplex(schema, name, column);
+    }
+
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
         GenericColumn depcy = new GenericColumn(
                 QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
@@ -128,40 +118,55 @@ public abstract class AbstractExpr {
     protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
         String column = QNameParser.getFirstName(ids);
-        Entry<String, String> pair = new SimpleEntry<>(column, TypesSetManually.COLUMN);
+        String columnType = TypesSetManually.COLUMN;
         String columnParent = null;
+        Entry<String, String> pair = new SimpleEntry<>(column, null);
 
         // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
             String schema = QNameParser.getThirdName(ids);
             columnParent = QNameParser.getSecondName(ids);
 
+            GenericColumn genericColumn = new GenericColumn(schema, columnParent, column, DbObjType.COLUMN);
+
             Entry<String, GenericColumn> ref = findReference(schema, columnParent, column);
-            if (ref == null) {
-                Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + columnParent + ' ' + column);
-            } else {
+            if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnParent = referencedTable.table;
-                    depcies.add(new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN));
-                }
-            }
+                    genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
+                    depcies.add(genericColumn);
 
-            String type;
-            type = getColumnType(columnParent, column);
-            pair.setValue(type);
+                    columnType = getColumnType(genericColumn);
+                } else {
+                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(schema, columnParent, column);
+                    if (refComplex != null) {
+                        columnType = refComplex.getValue().stream()
+                                .filter(entry -> column.equals(entry.getKey()))
+                                .map(Entry::getValue)
+                                .findFirst().orElse(TypesSetManually.COLUMN_WITH_RECURSIVE_OR_OTHER_2);
+                    }
+                }
+            } else {
+                Log.log(Log.LOG_WARNING, "Unknown column reference: "
+                        + schema + ' ' + columnParent + ' ' + column);
+            }
         }
+
+        pair.setValue(columnType);
 
         return pair;
     }
 
-    private String getColumnType(String columnParent, String column) {
-        PgSchema s = db.getSchema(schema);
+    private String getColumnType(GenericColumn genericColumn) {
+        String schema = genericColumn.schema;
+        String columnParent = genericColumn.table;
+        String column = genericColumn.column;
 
         String type = TypesSetManually.COLUMN_WITH_RECURSIVE_OR_OTHER;
 
         if (schema != null && columnParent != null) {
+            PgSchema s = db.getSchema(schema);
             PgTable t;
             PgView v;
             if ((t = s.getTable(columnParent)) != null) {
@@ -170,6 +175,8 @@ public abstract class AbstractExpr {
                 if (col != null) {
                     type = col.getType();
                 } else {
+                    // TODO It is necessary to remake it for a new logic
+                    // of 'Inherits' object (recursion should be used for this).
                     List<Inherits> inheritsList = t.getInherits();
                     if (!inheritsList.isEmpty()) {
                         for (Inherits inht : inheritsList) {
@@ -189,10 +196,6 @@ public abstract class AbstractExpr {
                         break;
                     }
                 }
-            } else if (complexNamespace.containsKey(columnParent)) {
-                type = complexNamespace.get(columnParent).stream()
-                        .filter(entry -> column.equals(entry.getKey()))
-                        .map(entry -> entry.getValue()).findFirst().get();
             } else {
                 type = TypesSetManually.COLUMN_UNKNOWN;
             }
@@ -225,13 +228,13 @@ public abstract class AbstractExpr {
     }
 
     protected static interface TypesSetManually {
-
         String UNKNOWN = "unknown";
         String UNKNOWN_ARRAY = "unknown[]";
 
         String COLUMN = "column";
         String COLUMN_UNKNOWN = "columnUnknown";
         String COLUMN_WITH_RECURSIVE_OR_OTHER = "columnWithRecursionOrOther";
+        String COLUMN_WITH_RECURSIVE_OR_OTHER_2 = "columnWithRecursionOrOther_2";
 
         String FUNCTION_COLUMN = "functionCol";
 
@@ -242,7 +245,5 @@ public abstract class AbstractExpr {
         String INTEGER = "integer";
         String DOUBLE_PRECISION = "double precision";
         String TEXT = "text";
-        String NUMERIC = "numeric";
-
     }
 }

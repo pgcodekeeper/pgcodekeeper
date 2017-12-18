@@ -102,7 +102,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                         }
                     }
                 } else {
-                    function.setReturnType(wrapper.getString("prorettype"));
+                    function.setReturns(wrapper.getString("prorettype"));
                 }
 
                 function.setSetof(wrapper.getBoolean("proretset"));
@@ -125,7 +125,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private void fillArguments(Function_argsContext ctx, PgSystemFunction func) {
         for (Function_argumentsContext argument : ctx.function_arguments()) {
-            func.addSignaturePart(getArgument(argument));
+            func.addArgumentPart(getArgument(argument));
         }
         if (ctx.agg_order() != null) {
             for (Function_argumentsContext argument : ctx.agg_order().function_arguments()) {

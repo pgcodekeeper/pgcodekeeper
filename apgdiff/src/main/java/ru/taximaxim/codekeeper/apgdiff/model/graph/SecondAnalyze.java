@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -27,14 +28,11 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
-public class SecondAnalyze {
-
-    private SecondAnalyze() {
-        throw new IllegalAccessError("Utility class");
-    }
+public final class SecondAnalyze {
 
     public static void goThroughGraphForAnalyze(PgDatabase db) {
         DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db, false).getReversedGraph();
@@ -62,23 +60,13 @@ public class SecondAnalyze {
             PgStatement statement = e.getVertex();
 
             String schemaName = null;
-            PgStatement parent = statement.getParent();
-            if (parent != null) {
-                schemaName = statement.getParent().getName();
-                switch (statement.getStatementType()) {
-                case TRIGGER:
-                case INDEX:
-                case RULE:
-                    schemaName = statement.getParent().getParent().getName();
-                    break;
-                default:
-                    break;
-                }
+            if (statement instanceof PgStatementWithSearchPath) {
+                schemaName = ((PgStatementWithSearchPath) statement).getContainingSchema().getName();
             }
 
             List<ParserRuleContext> statementContexts = db.getContextsForAnalyze().stream()
-                    .filter(entry -> statement.getQualifiedName().equals(entry.getKey().getQualifiedName()))
-                    .map(entry -> entry.getValue())
+                    .filter(entry -> statement.equals(entry.getKey()))
+                    .map(Entry::getValue)
                     .collect(Collectors.toList());
 
             if (statementContexts.isEmpty()) {
@@ -87,13 +75,14 @@ public class SecondAnalyze {
 
             switch (statement.getStatementType()) {
             case VIEW:
-                Select select = new Select(schemaName, db, (PgView)statement);
+                PgView view = (PgView)statement;
+                Select select = new Select(schemaName, db);
                 for (ParserRuleContext ctx : statementContexts) {
                     if (ctx instanceof Select_stmtContext) {
-                        select.analyze(ctx);
-                        statement.addAllDeps(select.getDepcies());
+                        view.addColumnsOfQuery(select.analyze(ctx));
+                        view.addAllDeps(select.getDepcies());
                     } else {
-                        UtilExpr.analyze(new Vex((VexContext)ctx), new ValueExpr(schemaName), statement);
+                        UtilExpr.analyze(new Vex((VexContext)ctx), new ValueExpr(schemaName), view);
                     }
                 }
                 break;
@@ -134,5 +123,8 @@ public class SecondAnalyze {
                 break;
             }
         }
+    }
+
+    private SecondAnalyze() {
     }
 }

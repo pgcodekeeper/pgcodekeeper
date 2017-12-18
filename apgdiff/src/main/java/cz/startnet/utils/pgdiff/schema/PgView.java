@@ -131,11 +131,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     public List<Entry<String, String>> getColumnsOfQuery() {
-        return columnsOfQuery;
+        return Collections.unmodifiableList(columnsOfQuery);
     }
 
-    public void addColumnOfQuery(Entry<String, String>column) {
-        columnsOfQuery.add(column);
+    public void addColumnsOfQuery(List<Entry<String, String>> columns) {
+        columnsOfQuery.addAll(columns);
     }
 
     @Override

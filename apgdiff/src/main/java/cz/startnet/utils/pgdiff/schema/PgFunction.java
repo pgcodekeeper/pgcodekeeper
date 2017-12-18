@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgFunction extends PgStatementWithSearchPath {
+public class PgFunction extends PgStatementWithSearchPath implements IFunction {
 
     private String signatureCache;
     private final List<Argument> arguments = new ArrayList<>();
@@ -107,6 +107,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     /**
      * @return the returns
      */
+    @Override
     public String getReturns() {
         return returns;
     }
@@ -181,7 +182,8 @@ public class PgFunction extends PgStatementWithSearchPath {
      *
      * @return {@link #arguments}
      */
-    public List<Argument> getArguments() {
+    @Override
+    public List<IArgument> getArguments() {
         return Collections.unmodifiableList(arguments);
     }
 
@@ -261,7 +263,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         return result;
     }
 
-    public class Argument {
+    public class Argument implements IArgument {
 
         private final String mode;
         private final String name;
@@ -278,23 +280,28 @@ public class PgFunction extends PgStatementWithSearchPath {
             this.dataType = dataType;
         }
 
+        @Override
         public String getDataType() {
             return dataType;
         }
 
+        @Override
         public String getDefaultExpression() {
             return defaultExpression;
         }
 
+        @Override
         public void setDefaultExpression(final String defaultExpression) {
             this.defaultExpression = defaultExpression;
             resetHash();
         }
 
+        @Override
         public String getMode() {
             return mode;
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -393,11 +400,11 @@ public class PgFunction extends PgStatementWithSearchPath {
             return true;
         }
 
-        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
-        Iterator<Argument> iNew = newFunction.getArguments().iterator();
+        Iterator<IArgument> iOld = oldFunction.getArguments().iterator();
+        Iterator<IArgument> iNew = newFunction.getArguments().iterator();
         while (iOld.hasNext() && iNew.hasNext()) {
-            Argument argOld = iOld.next();
-            Argument argNew = iNew.next();
+            IArgument argOld = iOld.next();
+            IArgument argNew = iNew.next();
 
             String oldDef = argOld.getDefaultExpression();
             String newDef = argNew.getDefaultExpression();
