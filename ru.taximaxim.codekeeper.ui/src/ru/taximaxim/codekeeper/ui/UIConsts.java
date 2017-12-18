@@ -25,7 +25,6 @@ public interface UIConsts {
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
         String SQL = PLUGIN_ID.THIS + ".SQLEditor"; //$NON-NLS-1$
-        String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
 
     interface MARKER {
@@ -43,8 +42,7 @@ public interface UIConsts {
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
 
         String GET_CHANGES = PLUGIN_ID.THIS + ".command.GetChanges"; //$NON-NLS-1$
-        String PARAM_FILE_PATH = PLUGIN_ID.THIS + ".commandParameter.FilePath"; //$NON-NLS-1$
-        String PARAM_DB_COORDS = PLUGIN_ID.THIS + ".commandParameter.DBCoords"; //$NON-NLS-1$
+        String UPDATE_DDL = PLUGIN_ID.THIS + ".command.UpdateDdl"; //$NON-NLS-1$
         String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
@@ -65,12 +63,9 @@ public interface UIConsts {
 
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         //String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
         //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
-
-        String LICENSE_PATH = "prefLicensePath"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -88,6 +83,8 @@ public interface UIConsts {
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
+        String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
+        String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {
@@ -96,6 +93,16 @@ public interface UIConsts {
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
+    }
+
+
+    interface USAGE_REPORT_PREF {
+        String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
+        String ASK_USER_USAGEREPORT_ID = "ask_user_for_usage_report_preference"; //$NON-NLS-1$
+        String ECLIPSE_INSTANCE_ID = "eclipse_instance_id"; //$NON-NLS-1$
+        String FIRST_VISIT = "first_visit";
+        String LAST_VISIT = "last_visit";
+        String VISIT_COUNT = "visit_count";
     }
 
     public enum DBSources {
@@ -127,6 +134,7 @@ public interface UIConsts {
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
+        String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         /*
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
@@ -146,10 +154,6 @@ public interface UIConsts {
 
     interface BUILDER {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
-    }
-
-    interface PROP_TEST {
-        String GET_CHANGES_RUNNING = PLUGIN_ID.THIS + ".isGetChangesRunning"; //$NON-NLS-1$
     }
 
     interface HELP {
@@ -208,7 +212,7 @@ public interface UIConsts {
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 
-    String DDL_DEFAULT_CMD = "psql -e -1 --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
+    String DDL_DEFAULT_CMD = "psql -e -1 -w --set ON_ERROR_STOP=1 -X -h %host -p %port -U %user -f %script %db"; //$NON-NLS-1$
 
     List<String> TIME_ZONES = Collections.unmodifiableList(Arrays.asList(
             "UTC-12:00", //$NON-NLS-1$

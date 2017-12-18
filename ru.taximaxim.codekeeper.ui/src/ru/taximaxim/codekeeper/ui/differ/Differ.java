@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -156,7 +155,7 @@ public class Differ implements IRunnableWithProgress {
                 writer.flush();
                 diffReverse = new String(diffOut.toByteArray(), StandardCharsets.UTF_8).trim();
             }
-        } catch (IOException | LicenseException ex) {
+        } catch (IOException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 

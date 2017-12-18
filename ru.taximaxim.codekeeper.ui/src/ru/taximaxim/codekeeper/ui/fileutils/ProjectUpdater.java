@@ -45,17 +45,6 @@ public class ProjectUpdater {
         this.dirExport = proj.getPathToProject();
     }
 
-    public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, Collection<TreeElement> checked,
-            String charset, Path path) {
-        this.dbNew = dbNew;
-        this.dbOld = dbOld;
-
-        this.changedObjects = checked;
-
-        this.encoding = charset;
-        this.dirExport = path;
-    }
-
     public void updatePartial() throws IOException {
         Log.log(Log.LOG_INFO, "Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){

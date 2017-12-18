@@ -25,7 +25,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
@@ -38,38 +37,24 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
  * and TestPartialExportTarget.sql:
  *
  * DELETED (exist in Source only):
- *      (TABLE)         public.rep2_statistics
- *      (CONSTRAINT)    public.rep2_statistics.rep2_statistics_pkey
- *      (SEQUENCE)      public.rep2_statistics_id_statistics_seq
+ *      (TABLE)         public.t2
+ *      (TRIGGER)       public.t2.t2_trigger
+ *      (INDEX)         public.t2.t2_c5_idx
+ *      (CONSTRAINT)    public.t2.constr_t2
  *
- *      (CONSTRAINT)    public.rep2_workpool_data.pk_rep2_workpool_data
+ *      (SEQUENCE)      public.t2_c1_seq
  *
- *      (TRIGGER)       public.tz_worker_group.trd_tz_worker_group (GROUP: table stays)
+ *      (FUNCTION)      public.proc(integer)
+ *      (FUNCTION)      public.proc(integer, timestamp without time zone)
  *
- *      (FUNCTION)      public.autocategorydel(integer)
- *      (FUNCTION)      public.atsqueuedel(integer, integer, integer) (GROUP: 2 same named funcs left)
+ *      (FUNCTION)      public.fun2()
  *
- *      (FUNCTION)      public.test(integer)
- *      (FUNCTION)      public.test()
- *
- *      (TABLE)         public.test_table
- *      (INDEX)         public.test_table.idx_test_table_id
- *      (TRIGGER)       public.test_table.tri_test_table
- *      (CONSTRAINT)    public.test_table.constr_test
- *
- *      (SCHEMA)        audit
- *      (TABLE)         audit.logged_actions
- *      (INDEX)         audit.logged_actions.logged_actions_action_idx
- *      (INDEX)         audit.logged_actions.logged_actions_action_tstamp_idx
- *      (INDEX)         audit.logged_actions.logged_actions_schema_table_idx
- *      (CONSTRAINT)    audit.logged_actions.logged_actions_action_check
- *      (TABLE)         audit.tz_audit_201305
- *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_c_date
- *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_id
- *      (INDEX)         audit.tz_audit_201305.ix_tz_audit_201305_id_obj
- *      (CONSTRAINT)    audit.tz_audit_201305.chk_jdbc_noset
- *      (CONSTRAINT)    audit.tz_audit_201305.chk_tz_audit_201305
- *      (CONSTRAINT)    audit.tz_audit_201305.tz_audit_201305_pkey
+ *      (SCHEMA)        test
+ *      (TABLE)         test.test_table
+ *      (INDEX)         test.test_table.test_table_c1_idx
+ *      (INDEX)         test.test_table.test_table_c2_idx
+ *      (CONSTRAINT)    test.test_table.contr_testtable_c5
+ *      (TABLE)         test.test_table_2
  *
  * MODIFIED:
  *      (TABLE)         public.rep2_workpool_data
@@ -77,15 +62,23 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
  *      (INDEX)         public.table1.idx_table1
  *      (CONSTRAINT)    public.table1.chk_table1 (GROUP: table1 changed as well)
  *      (TABLE)         public.t_auto_mark
- *      (TABLE)         public.tz_worker_group
+ *      (TABLE)         public.t1
+ *      (CONSTRAINT)    public.t1.t1_c2_key
+ *      (TRIGGER)       public.t1.t1_trigger
+ *      (TABLE)         public.t3
+ *      (TABLE)         public.t4
+ *      (CONSTRAINT)    public.t4.t4_c2_key
+ *      (TABLE)         public.t5
+ *      (INDEX)         public.t5.t5_c1_idx
+ *      (FUNCTION)      public.fun1()
  *
  * NEW (exist in Target only):
- *      (FUNCTION)      public.automarkdel_new(integer)
- *      (FUNCTION)      public.automarkdel_new_new(integer) (GROUP: 2 new funcs)
+ *      (FUNCTION)      public.fun3()
+ *      (FUNCTION)      public.fun3(integer)
  *      (SCHEMA)        newschema
- *      (CONSTRAINT)    public.t_auto_mark.chk_t_auto_mark (GROUP: table exists)
- *      (VIEW)          public.v_auto_mark_two
- *      (FUNCTION)      public.automarkdel_new_new(integer, integer) (GROUP: 2 new funcs)
+ *      (CONSTRAINT)    public.t3.constr_t3
+ *      (TRIGGER)       public.t3.t3_trigger
+ *      (VIEW)          public.v1
  *  -->
  *
  * @author ryabinin_av
@@ -105,7 +98,7 @@ public class PartialExporterTest {
         return Arrays.asList(new Object[][]{
             // SONAR-OFF
             {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},
-            {16},{17},{18},{19},{20},{21},{22}
+            {16},{17},{18},{19},{20}
             // SONAR-ON
         });
     }
@@ -130,9 +123,7 @@ public class PartialExporterTest {
             new PartialExportInfoImpl_17(),
             new PartialExportInfoImpl_18(),
             new PartialExportInfoImpl_19(),
-            new PartialExportInfoImpl_20(),
-            new PartialExportInfoImpl_21(),
-            new PartialExportInfoImpl_22()
+            new PartialExportInfoImpl_20()
     };
 
     public PartialExporterTest(int index) {
@@ -140,14 +131,14 @@ public class PartialExporterTest {
     }
 
     @BeforeClass
-    public static void initDiffTree() throws InterruptedException, IOException, LicenseException {
+    public static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbSource = ApgdiffTestUtils.loadTestDump(
                 sourceFilename, PartialExporterTest.class, args);
-        args = ApgdiffTestUtils.getArgsLicensed();
+        args = new PgDiffArguments();
         args.setInCharsetName(UTF_8);
         dbTarget = ApgdiffTestUtils.loadTestDump(
                 targetFilename, PartialExporterTest.class, args);
@@ -268,174 +259,186 @@ abstract class PartialExportInfo {
     };
 }
 
+/**
+ * Select modified constraint
+ */
 class PartialExportInfoImpl_1 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("table1").getChild("chk_table1").setSelected(true);
+        diffTree.getChild("public").getChild("t4").getChild("t4_c2_key").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/table1.sql", "fdf4ae6149a3da69fb0353957560d820");
+        m.put("SCHEMA/public/TABLE/t4.sql", "fdc9260afa675ced60d7aee58cac176d");
         return m;
     }
 }
 
+/**
+ * Select deleted table with constraint
+ */
 class PartialExportInfoImpl_2 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement table = diffTree.getChild("public").getChild("rep2_statistics");
+        TreeElement table = diffTree.getChild("public").getChild("t2");
         table.setSelected(true);
-        table.getChild("rep2_statistics_pkey").setSelected(true);
+        table.getChild("constr_t2").setSelected(true);
 
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/rep2_statistics.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t2.sql"));
     }
 }
 
+/**
+ * Select modified trigger
+ */
 class PartialExportInfoImpl_3 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("tz_worker_group").getChild("trd_tz_worker_group").setSelected(true);
+        diffTree.getChild("public").getChild("t2").getChild("t2_trigger").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/tz_worker_group.sql", "2bd8f91ed57abb962acb959cbd7c49d6");
+        m.put("SCHEMA/public/TABLE/t2.sql", "429093b3c496c98c679a2760453ca6ee");
         return m;
     }
 }
 
+/**
+ * Select deleted function
+ */
 class PartialExportInfoImpl_4 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("autocategorydel(integer)").setSelected(true);
+        diffTree.getChild("public").getChild("fun2()").setSelected(true);
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/autocategorydel.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun2.sql"));
     }
 }
 
+/**
+ * Select modified function
+ */
 class PartialExportInfoImpl_5 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("atsqueuedel(integer, integer, integer)").setSelected(true);
+        diffTree.getChild("public").getChild("fun1()").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/FUNCTION/atsqueuedel.sql", "e7997c7da7a4ca598dbbc7c819577918");
+        m.put("SCHEMA/public/FUNCTION/fun1.sql", "bddfc92535bebcf7dd8d2f8ac707d780");
         return m;
     }
 }
 
+/**
+ * Select modified table
+ */
 class PartialExportInfoImpl_6 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("rep2_workpool_data").setSelected(true);
+        diffTree.getChild("public").getChild("t5").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/rep2_workpool_data.sql", "681794af314d473bf9b496495dc51997");
+        m.put("SCHEMA/public/TABLE/t5.sql", "888e26dfb67d136f4dc04220e2630143");
         return m;
     }
 }
 
+/**
+ * Select new function
+ */
 class PartialExportInfoImpl_7 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("automarkdel_new(integer)").setSelected(true);
+        diffTree.getChild("public").getChild("fun3()").setSelected(true);
     }
 
     @Override
     public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/automarkdel_new.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun3.sql"));
     }
 }
 
+/**
+ * Select new function group
+ */
 class PartialExportInfoImpl_8 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
         TreeElement schema = diffTree.getChild("public");
-        schema.getChild("automarkdel_new_new(integer)").setSelected(true);
+        schema.getChild("fun3()").setSelected(true);
+        schema.getChild("fun3(integer)").setSelected(true);
     }
 
     @Override
     public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/automarkdel_new_new.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/fun3.sql"));
     }
 }
 
+/**
+ * Select new view
+ */
 class PartialExportInfoImpl_9 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("automarkdel_new_new(integer)").setSelected(true);
-        schema.getChild("automarkdel_new_new(integer, integer)").setSelected(true);
+        diffTree.getChild("public").getChild("v1").setSelected(true);
     }
 
     @Override
     public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/automarkdel_new_new.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/VIEW/v1.sql"));
     }
 }
 
+/**
+ * Select new constraint in modified table
+ */
 class PartialExportInfoImpl_10 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("v_auto_mark_two").setSelected(true);
-    }
-
-    @Override
-    public LinkedList<String> newFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/VIEW/v_auto_mark_two.sql"));
-    }
-}
-
-class PartialExportInfoImpl_11 extends PartialExportInfo{
-
-    @Override
-    public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("t_auto_mark").getChild("chk_t_auto_mark").setSelected(true);
+        diffTree.getChild("public").getChild("t3").getChild("constr_t3").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/t_auto_mark.sql", "057e390cbc38830bc600ecf16b12e3d9");
+        m.put("SCHEMA/public/TABLE/t3.sql", "edd4e6c0430a09e405afef599f9c6ac8");
         return m;
     }
 }
 
-class PartialExportInfoImpl_12 extends PartialExportInfo{
+
+/**
+ * Select new schema
+ */
+class PartialExportInfoImpl_11 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
@@ -448,157 +451,164 @@ class PartialExportInfoImpl_12 extends PartialExportInfo{
     }
 }
 
+/**
+ * Select deleted table in another schema
+ */
+class PartialExportInfoImpl_12 extends PartialExportInfo{
+
+    @Override
+    public void setUserSelection() {
+        diffTree.getChild("test").getChild("test_table").setSelected(true);
+    }
+
+    @Override
+    public LinkedList<String> deletedFiles() {
+        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql"));
+    }
+}
+
+/**
+ * Select 2 deleted table
+ */
 class PartialExportInfoImpl_13 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("audit");
-        schema.getChild("logged_actions").setSelected(true);
+        TreeElement schema = diffTree.getChild("test");
+        schema.getChild("test_table").setSelected(true);
+        schema.getChild("test_table_2").setSelected(true);
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/audit/TABLE/logged_actions.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql"));
     }
 }
 
+/**
+ * Select deleted schema
+ */
 class PartialExportInfoImpl_14 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("audit");
-        schema.getChild("logged_actions").setSelected(true);
-        schema.getChild("tz_audit_201305").setSelected(true);
+        diffTree.getChild("test").setSelected(true);
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/audit/TABLE/logged_actions.sql", "SCHEMA/audit/TABLE/tz_audit_201305.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/test/TABLE/test_table.sql", "SCHEMA/test/TABLE/test_table_2.sql", "SCHEMA/test.sql"));
     }
 }
 
+/**
+ * Select deleted function group
+ */
 class PartialExportInfoImpl_15 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        diffTree.getChild("audit").setSelected(true);
+        TreeElement schema = diffTree.getChild("public");
+        schema.getChild("proc(integer)").setSelected(true);
+        schema.getChild("proc(integer, timestamp without time zone)").setSelected(true);
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/audit/TABLE/logged_actions.sql", "SCHEMA/audit/TABLE/tz_audit_201305.sql", "SCHEMA/audit.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/proc.sql"));
     }
 }
 
-
+/**
+ * Select deleted index
+ */
 class PartialExportInfoImpl_16 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test()").setSelected(true);
+        diffTree.getChild("public").getChild("t2").getChild("t2_c5_idx").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/FUNCTION/test.sql", "8d11dce1fb9c245f283e5b58eaa4e1a6");
+        m.put("SCHEMA/public/TABLE/t2.sql", "278235c06e713c6af126d7f166a9cdb9");
         return m;
     }
 }
 
+/**
+ * Select deleted constraint
+ */
 class PartialExportInfoImpl_17 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test()").setSelected(true);
-        schema.getChild("test(integer)").setSelected(true);
+        diffTree.getChild("public").getChild("t2").getChild("constr_t2").setSelected(true);
     }
 
     @Override
-    public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/FUNCTION/test.sql"));
+    public Map<String, String> modifiedFiles() {
+        Map<String, String> m = new HashMap<>(1);
+        m.put("SCHEMA/public/TABLE/t2.sql", "109345146db82013ac3e2970e325ee7a");
+        return m;
     }
 }
 
+/**
+ * Select deleted constraint and trigger from 1 table
+ */
 class PartialExportInfoImpl_18 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
+        TreeElement table = diffTree.getChild("public").getChild("t2");
+        table.getChild("constr_t2").setSelected(true);
+        table.getChild("t2_trigger").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "6339bcf50816b82b64ccbdf98064a99d");
+        m.put("SCHEMA/public/TABLE/t2.sql", "283e944ab17b21a41db185bb9a79cddf");
         return m;
     }
 }
 
+/**
+ * Select deleted constraint, index and trigger from 1 table
+ */
 class PartialExportInfoImpl_19 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test_table").getChild("constr_test").setSelected(true);
+        TreeElement table = diffTree.getChild("public").getChild("t2");
+        table.getChild("constr_t2").setSelected(true);
+        table.getChild("t2_trigger").setSelected(true);
+        table.getChild("t2_c5_idx").setSelected(true);
     }
 
     @Override
     public Map<String, String> modifiedFiles() {
         Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "092c7e4c1c711c261ec0ffde587a7f1e");
+        m.put("SCHEMA/public/TABLE/t2.sql", "9be93036f24351393030d4b633eb5a2c");
         return m;
     }
 }
+
+/**
+ * Select deleted table with constraint, index and trigger
+ */
 
 class PartialExportInfoImpl_20 extends PartialExportInfo{
 
     @Override
     public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test_table").getChild("constr_test").setSelected(true);
-        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
-    }
-
-    @Override
-    public Map<String, String> modifiedFiles() {
-        Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "ba30379ce57af95cb8757e8b13e9339b");
-        return m;
-    }
-}
-
-class PartialExportInfoImpl_21 extends PartialExportInfo{
-
-    @Override
-    public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test_table").getChild("idx_test_table_id").setSelected(true);
-        schema.getChild("test_table").getChild("constr_test").setSelected(true);
-        schema.getChild("test_table").getChild("tri_test_table").setSelected(true);
-    }
-
-    @Override
-    public Map<String, String> modifiedFiles() {
-        Map<String, String> m = new HashMap<>(1);
-        m.put("SCHEMA/public/TABLE/test_table.sql", "6337578a5426a0e53aeda8fc84ac18c2");
-        return m;
-    }
-}
-
-class PartialExportInfoImpl_22 extends PartialExportInfo{
-
-    @Override
-    public void setUserSelection() {
-        TreeElement schema = diffTree.getChild("public");
-        schema.getChild("test_table").setSelected(true);
+        diffTree.getChild("public").getChild("t2").setSelected(true);
     }
 
     @Override
     public LinkedList<String> deletedFiles() {
-        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/test_table.sql"));
+        return new LinkedList<>(Arrays.asList("SCHEMA/public/TABLE/t2.sql"));
     }
 }

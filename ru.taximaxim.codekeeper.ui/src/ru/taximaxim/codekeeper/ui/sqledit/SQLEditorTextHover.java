@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.DefaultTextHover;
@@ -36,10 +37,10 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                PgObjLocation loc = parser.getDefinitionForObj(obj);
-                if (loc != null) {
+                Optional<PgObjLocation> loc = parser.getDefinitionsForObj(obj).findAny();
+                if (loc.isPresent()) {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
-                    region.setComment(loc.getComment());
+                    region.setComment(loc.get().getComment());
                     return region;
                 }
             }

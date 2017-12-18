@@ -183,7 +183,7 @@ alter_identity
 set_attribute_option
     : SET storage_parameter
     ;
-    
+
 set_storage
     : SET STORAGE storage_option
     ;
