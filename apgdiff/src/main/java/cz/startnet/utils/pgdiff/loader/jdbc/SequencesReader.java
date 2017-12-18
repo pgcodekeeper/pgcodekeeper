@@ -29,15 +29,15 @@ public class SequencesReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new SequencesReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new SequencesReader(this, loader);
         }
     }
 
     private static final int DATA_SELECT_LENGTH;
 
-    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private SequencesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override
@@ -68,6 +68,14 @@ public class SequencesReader extends JdbcReader {
         if (comment != null && !comment.isEmpty()) {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
+
+        if(SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            s.setStartWith(res.getString("seqstart"));
+            s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
+            s.setCache(res.getString("seqcache"));
+            s.setCycle(res.getBoolean("seqcycle"));
+        }
+
         return s;
     }
 

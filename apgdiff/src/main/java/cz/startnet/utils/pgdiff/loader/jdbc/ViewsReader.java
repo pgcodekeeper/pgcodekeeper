@@ -24,13 +24,13 @@ public class ViewsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new ViewsReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new ViewsReader(this, loader);
         }
     }
 
-    private ViewsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private ViewsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override
@@ -45,6 +45,16 @@ public class ViewsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
         PgView v = new PgView(viewName, "");
+
+        // materialized view
+        if ("m".equals(res.getString("kind"))) {
+            v.setIsWithData(res.getBoolean("relispopulated"));
+            String tableSpace = res.getString("table_space");
+            if (tableSpace != null && !tableSpace.isEmpty()) {
+                v.setTablespace(tableSpace);
+            }
+        }
+
         String viewDef = res.getString("definition").trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
@@ -92,9 +102,9 @@ public class ViewsReader extends JdbcReader {
         loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
 
         // STORAGE PARAMETRS
-        String[] arr = res.getArray("reloptions", String.class);
-        if (arr != null) {
-            ParserAbstract.fillStorageParams(arr, v, false);
+        String[] options = res.getArray("reloptions", String.class);
+        if (options != null) {
+            ParserAbstract.fillOptionParams(options, v::addOption, false, false);
         }
 
         // COMMENT

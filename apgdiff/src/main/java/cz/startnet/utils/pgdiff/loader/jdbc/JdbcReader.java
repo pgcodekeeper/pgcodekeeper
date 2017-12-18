@@ -31,14 +31,10 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     protected final JdbcReaderFactory factory;
     protected final JdbcLoaderBase loader;
-    protected final int currentVersion;
-    protected final String fallbackQuery;
 
-    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
+    protected JdbcReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         this.factory = factory;
         this.loader = loader;
-        this.currentVersion = currentVersion;
-        this.fallbackQuery = factory.makeFallbackQuery(currentVersion);
     }
 
     public void read() throws SQLException, InterruptedException, WrapperAccessException {
@@ -47,7 +43,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
             try {
                 readAllUsingHelper();
                 helperSuccess = true;
-            } catch (SQLException ex) {
+            } catch (SQLException | WrapperAccessException ex) {
                 Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
                         + "falling back to old queries: " + factory.helperFunction, ex);
             }
@@ -74,7 +70,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
     }
 
     private void readSchemasSeparately() throws SQLException, InterruptedException, WrapperAccessException {
-        String query = fallbackQuery;
+        String query = factory.makeFallbackQuery(loader.version);
         boolean isTime = loader instanceof JdbcTimestampLoader;
         DbObjType type = getType();
         List<ObjectTimestamp> objects = null;
@@ -150,13 +146,13 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 loader.statement.execute("SET search_path TO " +
                         PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
 
-                loader.setCurrentOperation(factory.helperFunction + " query for schema " + sc.getName());
+                loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
                 st.setLong(1, schema.getKey());
                 try (ResultSet result = st.executeQuery()) {
                     while (result.next()) {
                         ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
                         PgDiffUtils.checkCancelled(loader.monitor);
-                        processResult(wrapper, sc);
+                        processResult(wrapper, schema.getValue());
                     }
                 }
             }

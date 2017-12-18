@@ -126,6 +126,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addSchema(final PgSchema schema) {
+        assertUnique(this::getSchema, schema);
         schemas.add(schema);
         schema.setParent(this);
         resetHash();
@@ -158,6 +159,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addExtension(final PgExtension extension) {
+        assertUnique(this::getExtension, extension);
         extensions.add(extension);
         extension.setParent(this);
         resetHash();
@@ -198,25 +200,13 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof PgDatabase) {
+    public boolean compareChildren(PgStatement obj) {
+        if (obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
-
-            eq = // super.equals(obj) && // redundant here
-                    PgDiffUtils.setlikeEquals(extensions, db.extensions)
+            return PgDiffUtils.setlikeEquals(extensions, db.extensions)
                     && PgDiffUtils.setlikeEquals(schemas, db.schemas);
         }
-
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+        return false;
     }
 
     @Override

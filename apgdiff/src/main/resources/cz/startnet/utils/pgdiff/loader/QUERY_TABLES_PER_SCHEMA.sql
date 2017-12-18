@@ -20,9 +20,12 @@ SELECT subselectColumns.oid,
        subselectColumns.of_type::bigint,
        subselectColumns.relowner::bigint,
        subselectColumns.aclarray,
+       subselectColumns.server_name,
+       subselectColumns.ftoptions,
        subselectColumns.col_numbers,
        subselectColumns.col_names,
        subselectColumns.col_options,
+       subselectColumns.col_foptions,
        subselectColumns.col_storages,
        subselectColumns.col_default_storages,
        subselectColumns.col_defaults,
@@ -51,12 +54,15 @@ FROM
             columnsData.of_type,
             columnsData.relowner,
             columnsData.aclarray,
+            columnsData.server_name,
+            columnsData.ftoptions,
             columnsData.spcname,
             columnsData.relpersistence,
             columnsData.relhasoids,
             array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
             array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
             array_agg(columnsData.attoptions ORDER BY columnsData.attnum) AS col_options,
+            array_agg(columnsData.fattoptions ORDER BY columnsData.attnum) AS col_foptions,
             array_agg(columnsData.attstorage ORDER BY columnsData.attnum) AS col_storages,
             array_agg(columnsData.typstorage ORDER BY columnsData.attnum) AS col_default_storages,
             array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
@@ -79,9 +85,12 @@ FROM
               c.reloftype::bigint AS of_type,
               c.relowner::bigint,
               c.relacl::text AS aclarray,
+              ser.srvname AS server_name,
+              ftbl.ftoptions,
               attr.attnum::integer,
               attr.attname,
               array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
+              array_to_string(attr.attfdwoptions, ',') fattoptions,
               attr.attstorage,
               t.typstorage,
               c.relhasoids,
@@ -111,8 +120,10 @@ FROM
           LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
           LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
           LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
+          LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
+          LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
           WHERE c.relnamespace = ?
-              AND c.relkind = 'r'
+              AND c.relkind in ('f','r')
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
@@ -120,6 +131,8 @@ FROM
               columnsData.of_type,
               columnsData.relowner,
               columnsData.aclarray,
+              columnsData.server_name,
+              columnsData.ftoptions,
               columnsData.reloptions,
               columnsData.toast_reloptions,
               columnsData.relhasoids,

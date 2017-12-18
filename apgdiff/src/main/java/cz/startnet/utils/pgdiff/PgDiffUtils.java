@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,14 +39,8 @@ public final class PgDiffUtils {
             return true;
         }
 
-        char c = id.charAt(0);
-        if ((c < 'a' || c > 'z') && (!allowCaps || c < 'A' || c > 'Z') && c != '_') {
-            return false;
-        }
-
-        for (int i = 1; i < id.length(); i++) {
-            c = id.charAt(i);
-            if ((c < 'a' || c > 'z') && (!allowCaps || c < 'A' || c > 'Z') && (c < '0' || c > '9') && c != '_') {
+        for (int i = 0; i < id.length(); i++) {
+            if (!isValidIdChar(id.charAt(i), allowCaps, i != 0)) {
                 return false;
             }
         }
@@ -57,6 +53,17 @@ public final class PgDiffUtils {
         }
 
         return true;
+    }
+
+    public static boolean isValidIdChar(char c) {
+        return isValidIdChar(c, true, true);
+    }
+
+    public static boolean isValidIdChar(char c, boolean allowCaps, boolean allowDigits) {
+        return (c >= 'a' && c <= 'z') ||
+                (allowCaps && c >= 'A' && c <= 'Z') ||
+                (allowDigits && c >= '0' && c <= '9') ||
+                c == '_';
     }
 
     /**
@@ -186,6 +193,14 @@ public final class PgDiffUtils {
      */
     public static String md5(String s) {
         return hash(s, "MD5");
+    }
+
+    public static String checkedEncodeUtf8(String string) {
+        try {
+            return URLEncoder.encode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return string;
+        }
     }
 
     public static String getErrorSubstr(String s, int pos) {

@@ -5,11 +5,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public final class FileUtils {
 
+    public static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
     public static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
 
     /**
@@ -18,8 +20,7 @@ public final class FileUtils {
     public static void deleteRecursive(Path f) throws IOException {
         if (Files.isDirectory(f)) {
             try (Stream<Path> stream = Files.list(f)){
-                Path[] list = stream.toArray(Path[]::new);
-                for(Path sub : list) {
+                for (Path sub : (Iterable<Path>) stream::iterator) {
                     deleteRecursive(sub);
                 }
             } catch (UncheckedIOException wrapEx) {
@@ -37,5 +38,10 @@ public final class FileUtils {
         Files.delete(path);
     }
 
-    private FileUtils() {}
+    public static String sanitizeFilename(String name) {
+        return INVALID_FILENAME.matcher(name).replaceAll("");
+    }
+
+    private FileUtils() {
+    }
 }

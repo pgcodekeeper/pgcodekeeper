@@ -13,7 +13,7 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.updatesite</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.1.2-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <properties>
@@ -38,116 +38,6 @@
 
     <profiles>
         <profile>
-            <id>deploy-site</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>clean-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
-                                    <commands>
-                                        <command>rm -rf /home/codekeeper/webroot/${current_version_dir}/*</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>upload-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
-                                    <fromDir>${project.build.directory}/repository</fromDir>
-                                    <includes>*/**</includes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>version-history-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${current_version_dir}</url>
-                                    <commands>
-                                        <command>rm -rf /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
-                                        <command>mkdir /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
-                                        <command>cp -r /home/codekeeper/webroot/${current_version_dir}/* /home/codekeeper/webroot/${old_version_dirs}/${unqualifiedVersion}.${buildQualifier}</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>deploy-site-public</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>wagon-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>public-version-history-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/</url>
-                                    <commands>
-                                        <command>rm -rf /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</command>
-                                        <command>mkdir /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>public-upload-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>upload</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier}</url>
-                                    <fromDir>${project.build.directory}/repository</fromDir>
-                                    <includes>*/**</includes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>public-link-current-updatesite</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sshexec</goal>
-                                </goals>
-                                <configuration>
-                                    <url>scp://jenkins@10.84.0.21/var/www/pgcodekeeper/update/</url>
-                                    <commands>
-                                        <command>unlink /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
-                                        <command>ln -s /var/www/pgcodekeeper/update/${unqualifiedVersion}.${buildQualifier} /var/www/pgcodekeeper/update/${public.current_version_dir}</command>
-                                    </commands>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>nightly</id>
             <build>
                 <plugins>
@@ -157,15 +47,15 @@
                         <version>1.0</version>
                         <executions>
                             <execution>
-                                <id>execute-test-commands</id>
+                                <id>clean-repo</id>
                                 <phase>deploy</phase>
                                 <goals>
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                    <url>scp://storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
                                     <commands>
-                                        <command>rm -rf /home/codekeeper/webroot/${nightly_version_dir}/*</command>
+                                        <command>rm -rf /var/ftp/codekeeper/devel/*</command>
                                     </commands>
                                 </configuration>
                             </execution>
@@ -178,7 +68,7 @@
                                 <configuration>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
-                                    <url>scp://codekeeper@storage.chelny.taximaxim.ru/home/codekeeper/webroot/${nightly_version_dir}</url>
+                                    <url>scp://storage.chelny.taximaxim.ru/var/ftp/codekeeper/devel/</url>
                                 </configuration>
                             </execution>
                         </executions>

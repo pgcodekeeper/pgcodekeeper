@@ -50,9 +50,9 @@ public class JdbcPerfVersionsDynamic extends ContributionItem {
                 Path p = Files.createTempFile(Messages.ImprovePerformanceJdbcLoader_performance_helpers + '_', ".sql"); //$NON-NLS-1$
                 Files.write(p, JdbcQueries.getHelperFunctions(version).getBytes());
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(
-                        new FileStoreEditorInput(EFS.getLocalFileSystem().fromLocalFile(p.toFile())), EDITOR.ROLLON);
+                        new FileStoreEditorInput(EFS.getLocalFileSystem().fromLocalFile(p.toFile())), EDITOR.SQL);
             } catch (PartInitException | IOException e) {
-                ExceptionNotifier.notifyDefault("Error while creating helper functions!", e);
+                ExceptionNotifier.notifyDefault(Messages.JdbcPerfVersionsDynamic_jdbc_helper_error, e);
             }
         }
     }

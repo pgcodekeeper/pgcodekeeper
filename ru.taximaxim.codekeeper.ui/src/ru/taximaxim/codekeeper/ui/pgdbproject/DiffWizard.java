@@ -120,7 +120,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             Files.write(path, differ.getDiffDirect().getBytes());
             IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new FileStoreEditorInput(externalFile), EDITOR.ROLLON);
+            .openEditor(new FileStoreEditorInput(externalFile), EDITOR.SQL);
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);

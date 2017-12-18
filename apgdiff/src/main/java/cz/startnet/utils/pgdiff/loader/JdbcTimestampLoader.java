@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcTimestampLoader extends JdbcLoaderBase {
@@ -58,7 +57,7 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
     }
 
     public PgDatabase getDbFromJdbc(PgDatabase projDB, String projectName, String schema)
-            throws IOException, InterruptedException, LicenseException {
+            throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
         this.projDB = projDB;
@@ -88,7 +87,7 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
             try (SchemasContainer schemas = this.schemas) {
                 availableHelpersBits = useServerHelpers ? JdbcReaderFactory.getAvailableHelpersBits(this) : 0;
                 for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
-                    f.getReader(this, version).read();
+                    f.getReader(this).read();
                 }
                 new ExtensionsReader(this, d).read();
 
@@ -104,7 +103,6 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
             throw new IOException(MessageFormat.format(Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage(), getCurrentLocation()), e);
         }
-        args.getLicense().verifyDb(d);
         return d;
     }
 }

@@ -23,15 +23,15 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new ConstraintsReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new ConstraintsReader(this, loader);
         }
     }
 
     static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 
-    private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private ConstraintsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override

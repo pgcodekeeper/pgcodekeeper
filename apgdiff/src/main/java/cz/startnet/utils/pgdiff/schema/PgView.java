@@ -34,6 +34,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<ColumnComment> columnComments = new ArrayList<>();
     private final List<PgRule> rules = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
+    private Boolean isWithData;
+    private String tablespace;
 
 
     @Override
@@ -66,6 +68,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addRule(final PgRule rule) {
+        assertUnique(this::getRule, rule);
         rules.add(rule);
         rule.setParent(this);
         resetHash();
@@ -96,6 +99,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public void addTrigger(final PgTrigger trigger) {
+        assertUnique(this::getTrigger, trigger);
         triggers.add(trigger);
         trigger.setParent(this);
         resetHash();
@@ -127,7 +131,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
-        sbSQL.append("CREATE VIEW ");
+        sbSQL.append("CREATE");
+        if (isMatView()) {
+            sbSQL.append(" MATERIALIZED");
+        }
+        sbSQL.append(" VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         StringBuilder sb = new StringBuilder();
@@ -159,9 +167,19 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             sbSQL.append(')');
         }
 
+        if (tablespace != null) {
+            sbSQL.append("\nTABLESPACE ").append(tablespace);
+        }
+
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
-        if (options.containsKey(CHECK_OPTION)){
+        if (isMatView()){
+            sbSQL.append("\nWITH ");
+            if (!isWithData){
+                sbSQL.append("NO ");
+            }
+            sbSQL.append("DATA");
+        } else if (options.containsKey(CHECK_OPTION)){
             String chekOption = options.get(CHECK_OPTION);
             sbSQL.append("\nWITH ");
             if (chekOption != null){
@@ -208,7 +226,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     @Override
     public String getDropSQL() {
-        return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+        String mat = isMatView() ? "MATERIALIZED " : "";
+        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+
+    @Override
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
+                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
+                .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
     @Override
@@ -222,7 +248,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             return false;
         }
         PgView oldView = this;
-        if (PgView.isViewModified(oldView, newView)) {
+        // TODO add alter for materialized view
+        // after merge view columns dependencies branch
+        if (PgView.isViewModified(oldView, newView)
+                || oldView.isWithData() != newView.isWithData()
+                || oldView.getTablespace() != newView.getTablespace()) {
             isNeedDepcies.set(true);
             return true;
         }
@@ -296,7 +326,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        PgTable.compareOptions(oldView, newView, sb);
+        compareOptions(oldView, newView, sb);
 
         return sb.length() > startLength;
     }
@@ -309,6 +339,28 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
 
     public String getQuery() {
         return query;
+    }
+
+    public boolean isMatView() {
+        return isWithData != null;
+    }
+
+    public Boolean isWithData() {
+        return isWithData;
+    }
+
+    public void setIsWithData(final Boolean isWithData) {
+        this.isWithData = isWithData;
+        resetHash();
+    }
+
+    public String getTablespace() {
+        return tablespace;
+    }
+
+    public void setTablespace(final String tablespace) {
+        this.tablespace = tablespace;
+        resetHash();
     }
 
     /**
@@ -404,33 +456,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
                     && Objects.equals(columnComments, view.getColumnComments())
-                    && Objects.equals(options, view.getOptions());
+                    && Objects.equals(options, view.getOptions())
+                    && Objects.equals(isWithData, view.isWithData())
+                    && Objects.equals(tablespace, view.getTablespace());;
         }
 
         return eq;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof PgView) {
+    public boolean compareChildren(PgStatement obj) {
+        if(obj instanceof PgView) {
             PgView view = (PgView) obj;
-
-            eq = super.equals(obj)
-
-                    && PgDiffUtils.setlikeEquals(rules, view.rules)
+            return PgDiffUtils.setlikeEquals(rules, view.rules)
                     && PgDiffUtils.setlikeEquals(triggers, view.triggers);
         }
-
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+        return false;
     }
 
     @Override
@@ -449,6 +490,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         result = prime * result + PgDiffUtils.setlikeHashcode(rules);
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
         result = prime * result + ((options == null) ? 0 : options.hashCode());
+        result = prime * result + ((isWithData == null) ? 0 : isWithData.hashCode());
+        result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         return result;
     }
 
@@ -457,6 +500,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         PgView viewDst = new PgView(getName(), getRawStatement());
         viewDst.setQuery(getQuery());
         viewDst.setComment(getComment());
+        viewDst.setIsWithData(isWithData());
+        viewDst.setTablespace(getTablespace());
         viewDst.setColumnNames(new ArrayList<>(columnNames));
         viewDst.defaultValues.addAll(defaultValues);
         viewDst.columnComments.addAll(columnComments);

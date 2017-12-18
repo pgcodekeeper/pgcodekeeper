@@ -21,34 +21,6 @@ public final class Messages extends NLS {
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 
-    public static String License_caps_full;
-
-    public static String License_caps_none;
-
-    public static String License_descr_template;
-
-    public static String License_version_any;
-
-    public static String LicensingInternal_current_license;
-
-    public static String LicensingInternal_expired;
-
-    public static String LicensingInternal_inactive;
-
-    public static String LicensingInternal_malformed_license;
-
-    public static String LicensingInternal_no_cli;
-
-    public static String LicensingInternal_no_cli_but_no_gui_present;
-
-    public static String LicensingInternal_no_gui;
-
-    public static String LicensingInternal_no_gui_but_module_present;
-
-    public static String LicensingInternal_schema_objects_exceeded;
-
-    public static String PgDiffArguments_no_license_set;
-
     // SONAR-ON
 
     static {

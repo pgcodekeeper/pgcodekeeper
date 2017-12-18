@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -61,7 +60,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
             PgDiffUtils.checkCancelled(pm);
             monitor.done();
 
-        } catch (SQLException |LicenseException | CoreException | IOException ex) {
+        } catch (SQLException | CoreException | IOException ex) {
             Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);
         }
     }

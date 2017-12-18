@@ -22,30 +22,21 @@ public class FunctionsReader extends JdbcReader {
         }
 
         @Override
-        public JdbcReader getReader(JdbcLoaderBase loader, int version) {
-            return new FunctionsReader(this, loader, version);
+        public JdbcReader getReader(JdbcLoaderBase loader) {
+            return new FunctionsReader(this, loader);
         }
     }
 
     private static final float DEFAULT_PROCOST = 100.0f;
     private static final float DEFAULT_PROROWS = 1000.0f;
 
-    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader, int currentVersion) {
-        super(factory, loader, currentVersion);
+    private FunctionsReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
+        super(factory, loader);
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        schema.addFunction(getFunction(result, schema.getName()));
-    }
-
-    /**
-     * Returns function object accordingly to data stored in current res row
-     * (except for aggregate functions).
-     * Defines function body from Postgres pg_get_functiondef() output.
-     * @throws WrapperAccessException
-     */
-    private PgFunction getFunction(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String functionName = res.getString("proname");
         loader.setCurrentObject(new GenericColumn(schemaName, functionName, DbObjType.FUNCTION));
         PgFunction f = new PgFunction(functionName, "");
@@ -83,19 +74,6 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
         }
 
-        // ARGUMENTS
-        // TODO manually assemble function sig instead of parsing?
-        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
-        // Benchmark               Mode  Cnt       Score      Error  Units
-        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
-        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
-        String arguments = res.getString("proarguments");
-        if (!arguments.isEmpty()) {
-            loader.submitAntlrTask('(' + arguments + ')',
-                    p -> p.function_args_parser().function_args(),
-                    ctx -> ParserAbstract.fillArguments(ctx, f, schemaName));
-        }
-
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
 
@@ -109,7 +87,26 @@ public class FunctionsReader extends JdbcReader {
         if (comment != null && !comment.isEmpty()) {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
-        return f;
+
+        // ARGUMENTS
+        // TODO manually assemble function sig instead of parsing?
+        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
+        // Benchmark               Mode  Cnt       Score      Error  Units
+        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
+        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
+        //
+        // This is the last one, because addFunction requires filled function arguments
+        String arguments = res.getString("proarguments");
+        if (!arguments.isEmpty()) {
+            loader.submitAntlrTask('(' + arguments + ')',
+                    p -> p.function_args_parser().function_args(),
+                    ctx -> {
+                        ParserAbstract.fillArguments(ctx, f, schemaName);
+                        schema.addFunction(f);
+                    });
+        } else {
+            schema.addFunction(f);
+        }
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
@@ -119,7 +116,7 @@ public class FunctionsReader extends JdbcReader {
         body.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(lanName));
 
         // since 9.5 PostgreSQL
-        if (SupportedVersion.VERSION_9_5.checkVersion(currentVersion)) {
+        if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
             Long[] protrftypes = res.getArray("protrftypes", Long.class);
             if (protrftypes != null) {
                 body.append(" TRANSFORM ");
@@ -164,7 +161,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.checkVersion(currentVersion)) {
+        if (SupportedVersion.VERSION_9_6.checkVersion(loader.version)) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":

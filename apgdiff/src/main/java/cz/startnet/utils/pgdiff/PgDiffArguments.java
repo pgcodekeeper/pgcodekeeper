@@ -11,14 +11,10 @@ import java.util.Collections;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.licensing.License;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
-import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgDiffArguments {
 
-    private String licensePath;
     private boolean modeParse;
     private String newSrc;
     private String oldSrc;
@@ -38,8 +34,6 @@ public class PgDiffArguments {
     private List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
     private List<String> ignoreLists = new ArrayList<>();
-
-    private License license;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -119,25 +113,6 @@ public class PgDiffArguments {
 
     protected void setAllowedDangers(List<DangerStatement> allowedDangers) {
         this.allowedDangers = allowedDangers;
-    }
-
-    public String getLicensePath() {
-        return licensePath != null ? licensePath : License.getInternalLicenseUrl().toString();
-    }
-
-    public void setLicensePath(String licensePath) {
-        this.licensePath = licensePath;
-    }
-
-    public License getLicense() throws LicenseException {
-        if (license == null) {
-            throw new LicenseException(Messages.PgDiffArguments_no_license_set);
-        }
-        return license;
-    }
-
-    public void setLicense(License license) {
-        this.license = license;
     }
 
     public Collection<String> getIgnoreLists() {
