@@ -65,18 +65,18 @@ public class DbStorePicker extends Composite {
     private final ComboViewer cmbDbNames;
 
     public DbStorePicker(Composite parent, final IPreferenceStore prefStore,
-            boolean useFileSources, boolean useDirSources, boolean notToolbar) {
+            boolean useFileSources, boolean useDirSources, boolean onlyCombo) {
         super(parent, SWT.NONE);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStore;
 
-        GridLayout gl = new GridLayout(notToolbar ? 3 : 1, false);
+        GridLayout gl = new GridLayout(onlyCombo ? 1 : 3, false);
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        if (notToolbar) {
+        if (!onlyCombo) {
             new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
                     Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
         }
@@ -89,7 +89,7 @@ public class DbStorePicker extends Composite {
         gd.widthHint = new PixelConverter(cmbDbNames.getControl()).convertWidthInCharsToPixels(26);
         cmbDbNames.getControl().setLayoutData(gd);
 
-        if (notToolbar) {
+        if (!onlyCombo) {
             Button btnEditStore = new Button(this, SWT.PUSH);
             btnEditStore.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(FILE.ICONEDIT))));

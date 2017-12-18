@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -40,6 +41,9 @@ public class FilterDialog extends Dialog {
     private final Collection<DiffSide> sides;
     private final CodeFilter filter;
 
+    private Text text;
+    private Button btnRegEx;
+
     /**
      * Creates a dialog instance. Note that the window will have no visual
      * representation (no widgets) until it is told to open. By default,
@@ -49,7 +53,7 @@ public class FilterDialog extends Dialog {
      *            the parent shell, or <code>null</code> to create a top-level
      *            shell
      * @param filter
-     *            object, that create filter field
+     *            object, that contains params for code search
      * @param types
      *            list of object types
      * @param sides
@@ -80,7 +84,25 @@ public class FilterDialog extends Dialog {
         container.setLayout(new GridLayout(2, true));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        filter.createControl(container);
+        Composite searchComposite = new Composite(container, SWT.NONE);
+        GridLayout layout = new GridLayout(2, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        searchComposite.setLayout(layout);
+        searchComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+        Label txtFilter = new Label(searchComposite, SWT.NONE);
+        txtFilter.setText(Messages.CodeFilter_search_by_code);
+        txtFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+        text = new Text(searchComposite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        text.setText(filter.getPattern());
+
+        btnRegEx = new Button(searchComposite, SWT.CHECK);
+        btnRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        btnRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        btnRegEx.setSelection(filter.isUseRegex());
 
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
@@ -114,7 +136,7 @@ public class FilterDialog extends Dialog {
         chgViewer.setInput(DiffSide.values());
         chgViewer.setCheckedElements(sides.toArray());
 
-        return container;
+        return searchComposite;
     }
 
     @Override
@@ -127,7 +149,8 @@ public class FilterDialog extends Dialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                filter.clear();
+                text.setText(""); //$NON-NLS-1$
+                btnRegEx.setSelection(false);
                 objViewer.setAllChecked(false);
                 chgViewer.setAllChecked(false);
             }
@@ -153,7 +176,7 @@ public class FilterDialog extends Dialog {
             sides.add((DiffSide)chg);
         }
 
-        filter.update();
+        filter.update(text.getText(), btnRegEx.getSelection());
 
         super.okPressed();
     }

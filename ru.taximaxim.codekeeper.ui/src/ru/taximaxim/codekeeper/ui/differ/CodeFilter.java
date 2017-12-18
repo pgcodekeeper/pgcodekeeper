@@ -5,64 +5,34 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
+/**
+ * Contains information of code search
+ *
+ * @since 4.1.2.
+ * @author galiev_mr
+ *
+ */
 public class CodeFilter {
 
-    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
-
-    private String pattern = EMPTY_STRING;
+    private String pattern = ""; //$NON-NLS-1$
     private boolean useRegEx;
 
-    private Text text;
-    private Button btnRegEx;
-
-    public void createControl(Composite parent) {
-        Composite container = new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        container.setLayout(layout);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-
-        Label txtFilter = new Label(container, SWT.NONE);
-        txtFilter.setText(Messages.CodeFilter_search_by_code);
-        txtFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-
-        text = new Text(container, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        text.setText(pattern);
-
-        btnRegEx = new Button(container, SWT.CHECK);
-        btnRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        btnRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        btnRegEx.setSelection(useRegEx);
-    }
-
-    public void clear() {
-        text.setText(EMPTY_STRING);
-        btnRegEx.setSelection(false);
-    }
-
-    public void update() {
-        pattern = text.getText();
-        useRegEx = btnRegEx.getSelection();
+    public void update(String pattern, boolean useRegEx) {
+        this.pattern = pattern;
+        this.useRegEx = useRegEx;
     }
 
     public String getPattern() {
         return pattern;
+    }
+
+    public boolean isUseRegex() {
+        return useRegEx;
     }
 
     public boolean findCode(TreeElement el, Set<TreeElement> elements,

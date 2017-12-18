@@ -26,7 +26,7 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
         IEditorPart editorPart = page.getActiveEditor();
         storePicker = new DbStorePicker(parent, Activator.getDefault().getPreferenceStore(),
-                editorPart instanceof ProjectEditorDiffer, false, false);
+                editorPart instanceof ProjectEditorDiffer, false, true);
 
         editorPartListener = new EditorPartListener();
         page.addPartListener(editorPartListener);

@@ -347,7 +347,7 @@
                 </command>
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
-                      icon="icons/terminate.gif"
+                      icon="IMG_ELCL_STOP"
                       label="%command.commandname.CancelDdl"
                       style="push">
                 </command>
@@ -445,7 +445,7 @@
                 </command>
                 <command
                       commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
-                      icon="icons/terminate.gif"
+                      icon="IMG_ELCL_STOP"
                       label="%command.commandname.CancelDdl"
                       style="push">
                    <visibleWhen checkEnabled="false">
