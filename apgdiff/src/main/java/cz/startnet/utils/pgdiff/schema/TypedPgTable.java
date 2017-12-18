@@ -112,22 +112,6 @@ public class TypedPgTable extends RegularPgTable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof TypedPgTable) {
-            eq = super.equals(obj);
-        }
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof TypedPgTable && super.compare(obj)) {
             TypedPgTable table = (TypedPgTable) obj;

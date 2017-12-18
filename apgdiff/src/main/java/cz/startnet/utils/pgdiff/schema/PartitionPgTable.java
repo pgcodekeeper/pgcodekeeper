@@ -130,26 +130,10 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PartitionPgTable) {
-            eq = super.equals(obj);
-        }
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionPgTable && super.compare(obj)) {
             PartitionPgTable table = (PartitionPgTable) obj;
-            return getPartitionBounds().equals(table.getPartitionBounds());
+            return partitionBounds.equals(table.getPartitionBounds());
         }
 
         return false;

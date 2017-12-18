@@ -76,26 +76,10 @@ public class PartitionForeignTable extends ForeignPgTable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PartitionForeignTable) {
-            eq = super.equals(obj);
-        }
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionForeignTable && super.compare(obj)) {
             PartitionForeignTable table = (PartitionForeignTable) obj;
-            return getPartitionBounds().equals(table.getPartitionBounds());
+            return partitionBounds.equals(table.getPartitionBounds());
         }
 
         return false;

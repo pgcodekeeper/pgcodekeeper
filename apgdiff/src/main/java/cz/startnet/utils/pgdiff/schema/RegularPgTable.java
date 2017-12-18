@@ -200,22 +200,6 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof RegularPgTable) {
-            eq = super.equals(obj);
-        }
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof RegularPgTable && super.compare(obj)) {
             RegularPgTable table = (RegularPgTable) obj;

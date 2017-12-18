@@ -147,22 +147,6 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-        if (this == obj) {
-            eq = true;
-        } else if (obj instanceof ForeignPgTable) {
-            eq = super.equals(obj);
-        }
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof ForeignPgTable && super.compare(obj)) {
             ForeignPgTable table = (ForeignPgTable) obj;
