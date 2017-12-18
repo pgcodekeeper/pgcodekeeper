@@ -57,8 +57,6 @@ public class TablesReader extends JdbcReader {
             partitionBound = res.getString("partition_bound");
         }
         PgTable t = null;
-
-
         String serverName = res.getString("server_name");
         Long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {

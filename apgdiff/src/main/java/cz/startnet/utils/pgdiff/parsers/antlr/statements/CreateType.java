@@ -38,7 +38,8 @@ public class CreateType extends ParserAbstract {
         } else if (ctx.INPUT() != null) {
             form = PgTypeForm.BASE;
         }
-        PgType type = null, newType = null;
+        PgType type = null;
+        PgType newType = null;
         if (form == PgTypeForm.BASE) {
             type = schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {

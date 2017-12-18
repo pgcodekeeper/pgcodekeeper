@@ -148,26 +148,22 @@ public class DepcyResolver {
             PgStatement newObjStat = getObjectFromDB(newObj, newDb);
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
-            boolean isChanged = oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies);
+            boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
 
             if (isChanged) {
                 if (isNeedDepcies.get()) {
                     // is state alterable (sb.length() > 0)
                     // is checked in the depcy tracker in this case
                     addDropStatements(oldObjStat);
-                } else {
+                } else if (!inDropsList(oldObjStat)
+                        && (oldObjStat.getStatementType() != DbObjType.COLUMN
+                        || !inDropsList(oldObjStat.getParent()))) {
                     // объект будет пересоздан ниже в новом состоянии, поэтому
                     // ничего делать не нужно
                     // пропускаем колонки таблиц из дроп листа
-                    if (!inDropsList(oldObjStat)) {
-                        if (oldObjStat.getStatementType() == DbObjType.COLUMN
-                                && inDropsList(oldObjStat.getParent())) {
-                            return;
-                        }
-                        addToListWithoutDepcies(
-                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
-                                        oldObjStat, null);
-                    }
+                    addToListWithoutDepcies(
+                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                                    oldObjStat, null);
                 }
             }
         }

@@ -86,13 +86,14 @@ public abstract class ParserAbstract {
             col.setCollation(getFullCtxText(collate.collation));
         }
         for (Constraint_commonContext column_constraint : constraints) {
-            if (column_constraint.constr_body().default_expr != null) {
-                String def = getFullCtxText(column_constraint.constr_body().default_expr);
-                if (def != null && !def.isEmpty()) {
+            VexContext exp = column_constraint.constr_body().default_expr;
+            if (exp != null) {
+                String def = getFullCtxText(exp);
+                if (PgDiffUtils.isStringNotEmpty(def)) {
                     col.setDefaultValue(def);
 
                     ValueExpr vex = new ValueExpr(defSchema);
-                    vex.analyze(new Vex(column_constraint.constr_body().default_expr));
+                    vex.analyze(new Vex(exp));
                     col.addAllDeps(vex.getDepcies());
                 }
             }
@@ -106,9 +107,9 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    public static void fillArguments(Function_argsContext function_argsContext,
+    public static void fillArguments(Function_argsContext arguments,
             PgFunction function, String defSchemaName) {
-        for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
+        for (Function_argumentsContext argument : arguments.function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
             if (argument.argname != null) {
                 arg.setName(argument.argname.getText());
@@ -261,7 +262,7 @@ public abstract class ParserAbstract {
     }
 
     public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
-            boolean isToast, boolean forсeQuote){
+            boolean isToast, boolean forceQuote){
         for (String pair : options) {
             int sep = pair.indexOf('=');
             String option, value;
@@ -272,7 +273,7 @@ public abstract class ParserAbstract {
                 option = pair.substring(0, sep);
                 value = pair.substring(sep + 1);
             }
-            if (forсeQuote || !PgDiffUtils.isValidId(value, false, false)) {
+            if (forceQuote || !PgDiffUtils.isValidId(value, false, false)) {
                 // only quote non-ids, do not quote columns
                 // pg_dump behavior
                 value = PgDiffUtils.quoteString(value);

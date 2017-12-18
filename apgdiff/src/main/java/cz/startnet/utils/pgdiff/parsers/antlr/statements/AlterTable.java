@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
@@ -11,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -40,7 +42,6 @@ public class AlterTable extends ParserAbstract {
         PgTable tabl = null;
 
         for (Table_actionContext tablAction : ctx.table_action()) {
-
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
                 PgStatement st = null;
@@ -86,11 +87,12 @@ public class AlterTable extends ParserAbstract {
 
                 // column default
                 if (tablAction.set_def_column() != null) {
-                    String def = getFullCtxText(tablAction.set_def_column().expression);
-                    if (def != null && !def.isEmpty()) {
+                    VexContext exp = tablAction.set_def_column().expression;
+                    String def = getFullCtxText(exp);
+                    if (PgDiffUtils.isStringNotEmpty(def)) {
                         col.setDefaultValue(def);
                         ValueExpr vex = new ValueExpr(schema.getName());
-                        vex.analyze(new Vex(tablAction.set_def_column().expression));
+                        vex.analyze(new Vex(exp));
                         col.addAllDeps(vex.getDepcies());
                     }
                 }
