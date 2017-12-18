@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,15 +17,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -51,19 +47,28 @@ class PgObject extends WizardPage {
 
     private static final String SPLITTER = "\\."; //$NON-NLS-1$
     private static final String POSTFIX = ".sql"; //$NON-NLS-1$
-    private static final String DEFAULT_SCHEMA = "public"; //$NON-NLS-1$
-    private static final String OWNER_TO = "\n\nALTER {0} {1} OWNER TO CURRENT_DB_USER;\n"; //$NON-NLS-1$
     private static final String GROUP_DELIMITER =
             "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
+    private static final String DEFAULT_SCHEMA = "public"; //$NON-NLS-1$
+    private static final String OWNER_TO = "\n\nALTER {0} {1} OWNER TO CURRENT_DB_USER;\n"; //$NON-NLS-1$
+    private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
+
+    private static final String RULE_PATTERN = "CREATE RULE {1} AS\n\tON UPDATE TO {0} DO NOTHING;\n";//$NON-NLS-1$
+    private static final String TRIGGER_PATTERN = "CREATE TRIGGER {1}\n\tBEFORE UPDATE ON {0}" //$NON-NLS-1$
+            + "\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE function_name_placeholder();\n"; //$NON-NLS-1$
+    private static final String CONSTRAINT_PATTERN = "ALTER TABLE {0}\n\tADD CONSTRAINT {1}" //$NON-NLS-1$
+            + " PRIMARY KEY ({2});\n"; //$NON-NLS-1$
+    private static final String INDEX_PATTERN = "CREATE INDEX {2} ON {0} USING btree ({1});\n"; //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     private final IStructuredSelection selection;
     private Text txtName;
-    private ComboViewer viewerProject, viewerType;
+    private ComboViewer viewerProject;
+    private ComboViewer viewerType;
     private Group group;
 
-    private DbObjType currentObj;
+    private DbObjType type;
     private String currentProj;
     private boolean parentIsTable;
 
@@ -75,7 +80,6 @@ class PgObject extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-
         Composite area = new Composite(parent, SWT.NONE);
         area.setLayout(new GridLayout(2, false));
         area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -89,15 +93,7 @@ class PgObject extends WizardPage {
         new Label(area, SWT.NONE).setText(Messages.PgObject_object_name);
         txtName = new Text(area, SWT.BORDER);
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        txtName.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                getWizard().getContainer().updateButtons();
-            }
-        });
-
+        txtName.addModifyListener(e -> getWizard().getContainer().updateButtons());
         createAdditionalFields(area);
         fillProjects();
         fillTypes();
@@ -138,6 +134,7 @@ class PgObject extends WizardPage {
         viewerProject.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         viewerProject.setContentProvider(ArrayContentProvider.getInstance());
         viewerProject.setLabelProvider(new LabelProvider() {
+
             @Override
             public String getText(Object element) {
                 if (element instanceof IProject) {
@@ -147,16 +144,12 @@ class PgObject extends WizardPage {
             }
         });
 
-        viewerProject.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                Object element = viewerProject.getStructuredSelection().getFirstElement();
-                if (element != null) {
-                    currentProj = ((IProject) element).getName();
-                }
-                getWizard().getContainer().updateButtons();
+        viewerProject.addSelectionChangedListener(e -> {
+            Object element = e.getStructuredSelection().getFirstElement();
+            if (element != null) {
+                currentProj = ((IProject) element).getName();
             }
+            getWizard().getContainer().updateButtons();
         });
 
         List<IProject> projectList = new LinkedList<>();
@@ -165,17 +158,19 @@ class PgObject extends WizardPage {
 
         try {
             for (IProject project : projects) {
-                if(project.isOpen() && project.hasNature(NATURE.ID)) {
+                if (project.isOpen() && project.hasNature(NATURE.ID)) {
                     projectList.add(project);
                 }
             }
+
             if (projectList.isEmpty()) {
                 setErrorMessage(Messages.PgObject_cant_find_porojects);
             } else {
                 viewerProject.setInput(projectList);
             }
         } catch (CoreException ex) {
-            Log.log(Log.LOG_ERROR, "Project nature identifier error" + ex.getLocalizedMessage(), ex); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, "Project nature identifier error"
+                    + ex.getLocalizedMessage(), ex);
         }
 
         Object element = selection.getFirstElement();
@@ -186,120 +181,117 @@ class PgObject extends WizardPage {
     }
 
     private void fillTypes() {
-
         viewerType.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         viewerType.setContentProvider(ArrayContentProvider.getInstance());
-        viewerType.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                currentObj = (DbObjType) viewerType.getStructuredSelection().getFirstElement();
-                showGroup();
-                getWizard().getContainer().updateButtons();
+        viewerType.addSelectionChangedListener(e -> {
+            type = (DbObjType) e.getStructuredSelection().getFirstElement();
+            GridData data =  (GridData) group.getLayoutData();
+            if (type == DbObjType.TRIGGER || type == DbObjType.RULE) {
+                data.exclude = false;
+            } else {
+                data.exclude = true;
             }
+            group.setVisible(!data.exclude);
+            group.getParent().layout(false);
+            getWizard().getContainer().updateButtons();
         });
 
-        List<DbObjType> types = new ArrayList<>(DbObjType.values().length - 3);
-
-        for (DbObjType type : DbObjType.values()) {
-            if (type != DbObjType.DATABASE && type != DbObjType.COLUMN
-                    & type != DbObjType.SEQUENCE){
-                types.add(type);
-            }
-        }
-        viewerType.setInput(types);
+        viewerType.setInput(EnumSet.complementOf(EnumSet.of(DbObjType.COLUMN,
+                DbObjType.DATABASE, DbObjType.SEQUENCE)));
 
         String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
-
-        for (DbObjType type : DbObjType.values()) {
-            if (type.toString().equals(lastType)){
-                viewerType.setSelection(new StructuredSelection(type));
-                return;
-            }
-        }
-        viewerType.setSelection(new StructuredSelection(DbObjType.SCHEMA));
-    }
-
-    private void showGroup() {
-        GridData data =  (GridData) group.getLayoutData();
-        if (currentObj == DbObjType.TRIGGER || currentObj == DbObjType.RULE) {
-            data.exclude = false;
-        } else {
-            data.exclude = true;
-        }
-        group.setVisible(!data.exclude);
-        group.getParent().layout(false);
+        viewerType.setSelection(new StructuredSelection(
+                lastType != null ? DbObjType.valueOf(lastType) : DbObjType.SCHEMA));
     }
 
     private boolean parseName() {
+        setErrorMessage(null);
         String name = txtName.getText();
-        String [] names = name.split(SPLITTER);
-        String err = null;
-        setErrorMessage(err);
+
+        if (name.isEmpty()) {
+            setDescription(Messages.PgObject_empty_name);
+            return false;
+        }
+
         if (viewerProject.getStructuredSelection().getFirstElement() == null) {
             setDescription(Messages.PgObject_select_project);
             return false;
-        } else if (name.length() == 0) {
-            setDescription(Messages.PgObject_empty_name);
-            return false;
-        } else {
-            if (currentObj == DbObjType.SCHEMA || currentObj == DbObjType.EXTENSION) {
-                if (names.length == 1) {
-                    setDescription(MessageFormat.format(Messages.PgObject_desc, currentObj,
-                            names[0], currentProj));
-                } else {
-                    err = Messages.PgObject_invalid_format_schema;
-                }
-            } else if (currentObj == DbObjType.CONSTRAINT || currentObj == DbObjType.INDEX) {
-                if (names.length == 3 || names.length == 4) {
-                    String schema = names.length == 3 ? DEFAULT_SCHEMA : names[0];
-                    setDescription(MessageFormat.format(Messages.PgObject_full_desc_with_column,
-                            currentObj, names[names.length - 1], currentProj, schema,
-                            names[names.length - 3], names[names.length - 2]));
-                } else {
-                    err = Messages.PgObject_invalid_format_column;
-                }
-            } else if (currentObj == DbObjType.RULE || currentObj == DbObjType.TRIGGER) {
-                if (names.length == 2 || names.length == 3) {
-                    String schema = names.length == 2 ? DEFAULT_SCHEMA : names[0];
-                    setDescription(MessageFormat.format(Messages.PgObject_full_desc, currentObj,
-                            names[names.length - 1], currentProj, schema,
-                            ((group.isVisible() && parentIsTable) ? Messages.PgObject_in_table : Messages.PgObject_in_view),
-                            names[names.length - 2]));
-                } else {
-                    err = Messages.PgObject_invalid_format_object;
-                }
-            } else {
-                // type, domain, function, table, view
-                if (names.length == 1 || names.length == 2) {
-                    String schema = names.length == 1 ? DEFAULT_SCHEMA : names[0];
-                    setDescription(MessageFormat.format(Messages.PgObject_schema_desc, currentObj,
-                            names[names.length - 1], currentProj, schema));
-                } else {
-                    err = Messages.PgObject_invalid_format_container;
-                }
-            }
         }
+
+        String [] names = name.split(SPLITTER);
+        String err = null;
+
+        switch (type) {
+        case EXTENSION:
+        case SCHEMA:
+            err = parseName(Messages.PgObject_desc,
+                    Messages.PgObject_invalid_format_schema, 1, names);
+            break;
+        case CONSTRAINT:
+        case INDEX:
+            err = parseName(Messages.PgObject_full_desc_with_column,
+                    Messages.PgObject_invalid_format_column, 4, names);
+            break;
+        case RULE:
+        case TRIGGER:
+            err = parseName(Messages.PgObject_full_desc,
+                    Messages.PgObject_invalid_format_object, 3, names);
+            break;
+        default:
+            err = parseName(Messages.PgObject_schema_desc,
+                    Messages.PgObject_invalid_format_container, 2, names);
+            break;
+        }
+
         setErrorMessage(err);
         return err == null;
+    }
+
+    private String parseName(String desc, String error, int count, String... names) {
+        if (names.length != count && names.length != count -1) {
+            return error;
+        }
+
+        boolean isDefault = names.length == count -1;
+        Object[] args = new String[count + 2];
+        args[0] = type.name();
+        args[1] = currentProj;
+        if (isDefault) {
+            args[2] = DEFAULT_SCHEMA;
+        }
+        System.arraycopy(names, 0, args, isDefault ? 3 : 2, names.length);
+        setDescription(MessageFormat.format(desc, args));
+
+        return null;
     }
 
     public boolean createFile () {
         String name = txtName.getText();
         String [] names = name.split(SPLITTER);
         try {
-            mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, currentObj.toString());
-            if (currentObj == DbObjType.SCHEMA || currentObj == DbObjType.EXTENSION) {
-                return getFolder(names[0], currentObj) == null;
-            } else if ((currentObj == DbObjType.CONSTRAINT || currentObj == DbObjType.INDEX)) {
-                return createSubElement(names.length == 3 ? DEFAULT_SCHEMA : names[0],
-                        names[names.length - 3], names[names.length - 2], names[names.length - 1], currentObj);
-            } else if ((currentObj == DbObjType.TRIGGER || currentObj == DbObjType.RULE)) {
-                return createSubElement(names.length == 2 ? DEFAULT_SCHEMA : names[0],
-                        names[names.length - 2], null, names[names.length - 1],  currentObj);
-            } else {
-                return createObject(names.length == 1 ? DEFAULT_SCHEMA : names[0],
-                        names[names.length - 1], currentObj, false) != null;
+            int size = names.length;
+            mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.toString());
+            switch (type) {
+            case EXTENSION:
+                createExtension();
+                break;
+            case SCHEMA:
+                createSchema(name, true);
+                break;
+            case TRIGGER:
+            case RULE:
+                createSubElement(size == 2 ? DEFAULT_SCHEMA : names[0],
+                        names[size - 2], null, names[size - 1]);
+                break;
+            case CONSTRAINT:
+            case INDEX:
+                createSubElement(size == 3 ? DEFAULT_SCHEMA : names[0],
+                        names[size - 3], names[size - 2], names[size - 1]);
+                break;
+            default:
+                createObject(size == 1 ? DEFAULT_SCHEMA : names[0],
+                        names[size - 1], type, true);
+                break;
             }
         } catch (CoreException ex) {
             Log.log(Log.LOG_ERROR, Messages.PgObject_file_creation_error
@@ -307,41 +299,38 @@ class PgObject extends WizardPage {
             setErrorMessage(Messages.PgObject_file_creation_error);
             return false;
         }
+
+        return true;
     }
 
-    private boolean createSubElement(String schema, String parentName, String columnName,
-            String name, DbObjType type) throws CoreException {
+    private void createSubElement(String schema, String parent, String column,
+            String name) throws CoreException {
         DbObjType parentType = DbObjType.TABLE;
-        if (!parentIsTable && type == DbObjType.RULE || type == DbObjType.TRIGGER ) {
+        if (!parentIsTable && type == DbObjType.RULE || type == DbObjType.TRIGGER) {
             parentType = DbObjType.VIEW;
         }
-        IFile file = createObject(schema, parentName, parentType, true);
+        IFile file = createObject(schema, parent, parentType, false);
         StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
 
         if (type == DbObjType.RULE) {
-            sb.append("CREATE RULE ").append(name).append(" AS\n\tON UPDATE TO ") //$NON-NLS-1$ //$NON-NLS-2$
-            .append(parentName).append(" DO NOTHING;\n"); //$NON-NLS-1$
+            sb.append(MessageFormat.format(RULE_PATTERN, parent, name));
         } else if (type == DbObjType.TRIGGER) {
-            sb.append("CREATE TRIGGER ").append(name).append("\n\tBEFORE UPDATE ON ").append(parentName) //$NON-NLS-1$ //$NON-NLS-2$
-            .append("\n\tFOR EACH STATEMENT\n\tEXECUTE PROCEDURE function_name_placeholder();\n"); //$NON-NLS-1$
+            sb.append(MessageFormat.format(TRIGGER_PATTERN, parent, name));
         } else if (type == DbObjType.CONSTRAINT) {
-            sb.append("ALTER TABLE ").append(parentName).append("\n\tADD CONSTRAINT ").append(name) //$NON-NLS-1$ //$NON-NLS-2$
-            .append(" PRIMARY KEY (").append(columnName).append(");\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        } else if (type == DbObjType.INDEX) {
-            sb.append("CREATE INDEX ").append(name).append(" ON ").append(parentName) //$NON-NLS-1$ //$NON-NLS-2$
-            .append(" USING btree (").append(columnName).append(");\n"); //$NON-NLS-1$ //$NON-NLS-2$
+            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parent, name, column));
+        } else {
+            sb.append(MessageFormat.format(INDEX_PATTERN, parent, name, column));
         }
 
         file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
         openFileInEditor(file);
-        return true;
     }
 
-    private IFile createObject(String schema, String name, DbObjType type, boolean isSubElement) throws CoreException {
+    private IFile createObject(String schema, String name, DbObjType type, boolean open) throws CoreException {
         IFolder folder = getFolder(schema, type);
         IFile file = folder.getFile(name + POSTFIX);
         if (type == DbObjType.FUNCTION) {
-            int paren = name.indexOf("("); //$NON-NLS-1$
+            int paren = name.indexOf('(');
             if (paren != -1) {
                 file = folder.getFile(name.substring(0, paren) + POSTFIX);
             }
@@ -353,10 +342,10 @@ class PgObject extends WizardPage {
             sb.append(';');
             break;
         case DOMAIN:
-            sb.append(" AS text;"); //$NON-NLS-1$
+            sb.append(" AS datatype;"); //$NON-NLS-1$
             break;
         case FUNCTION:
-            sb.append(" RETURNS integer\n\tLANGUAGE sql\n    AS $$select 1;$$;"); //$NON-NLS-1$
+            sb.append(" RETURNS void\n\tLANGUAGE sql\n\tAS $$ --function body \n$$;"); //$NON-NLS-1$
             break;
         case TABLE:
             sb.append(" (\n);"); //$NON-NLS-1$
@@ -365,38 +354,39 @@ class PgObject extends WizardPage {
             sb.append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
             break;
         }
+
         sb.append(MessageFormat.format(OWNER_TO, type, name));
+
         stream = new ByteArrayInputStream(sb.toString().getBytes());
         if (!file.exists()) {
             file.create(stream, false, null);
         }
-        if (!isSubElement) {
+        if (open) {
             openFileInEditor(file);
         }
         return file;
     }
 
-    private IFolder getFolder (String name, DbObjType type) throws CoreException {
+    private void createExtension() throws CoreException {
+        String name = txtName.getText();
         Object element = viewerProject.getStructuredSelection().getFirstElement();
-        IFolder projectFolder;
-        if (type == DbObjType.EXTENSION) {
-            projectFolder = ((IProject) element).getFolder(type.toString());
-        } else {
-            projectFolder = ((IProject) element).getFolder(DbObjType.SCHEMA.toString());
+        IFolder folder = ((IProject) element).getFolder(DbObjType.EXTENSION.name());
+        if (!folder.exists()) {
+            folder.create(false, true, null);
         }
+        IFile extFile = folder.getFile(name + POSTFIX);
+        if (!extFile.exists()) {
+            String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, name);
+            extFile.create(new ByteArrayInputStream(code.getBytes()), false, null);
+        }
+        openFileInEditor(extFile);
+    }
+
+    private IFolder createSchema(String name, boolean open) throws CoreException {
+        Object element = viewerProject.getStructuredSelection().getFirstElement();
+        IFolder projectFolder = ((IProject) element).getFolder(DbObjType.SCHEMA.name());
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
-        }
-        if (type == DbObjType.EXTENSION) {
-            IFile extFile = projectFolder.getFile(name + POSTFIX);
-            if (!extFile.exists()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("CREATE EXTENSION ").append(name).append(';'); //$NON-NLS-1$
-                sb.append(MessageFormat.format(OWNER_TO, type, name));
-                extFile.create(new ByteArrayInputStream((sb.toString()).getBytes()), false, null);
-            }
-            openFileInEditor(extFile);
-            return null;
         }
         IFolder schemaFolder = projectFolder.getFolder(name);
         if (!schemaFolder.exists()) {
@@ -405,20 +395,23 @@ class PgObject extends WizardPage {
         IFile file = projectFolder.getFile(name + POSTFIX);
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
-            sb.append("CREATE SCHEMA ").append(name).append(';'); //$NON-NLS-1$
-            sb.append(MessageFormat.format(OWNER_TO, DbObjType.SCHEMA.toString(), name));
-            file.create(new ByteArrayInputStream((sb.toString()).getBytes()), false, null);
+            sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, name));
+            sb.append(MessageFormat.format(OWNER_TO, DbObjType.SCHEMA, name));
+            file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
         }
-        if (type == DbObjType.SCHEMA) {
+        if (open) {
             openFileInEditor(file);
-            return null;
-        } else {
-            IFolder typeFolder = schemaFolder.getFolder(type.toString());
-            if (!typeFolder.exists()) {
-                typeFolder.create(false, true, null);
-            }
-            return typeFolder;
         }
+        return schemaFolder;
+    }
+
+    private IFolder getFolder(String name, DbObjType type) throws CoreException {
+        IFolder schemaFolder = createSchema(name, false);
+        IFolder typeFolder = schemaFolder.getFolder(type.name());
+        if (!typeFolder.exists()) {
+            typeFolder.create(false, true, null);
+        }
+        return typeFolder;
     }
 
     private void openFileInEditor(IFile file) throws PartInitException {

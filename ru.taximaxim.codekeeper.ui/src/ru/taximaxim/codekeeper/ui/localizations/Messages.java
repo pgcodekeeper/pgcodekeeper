@@ -438,10 +438,6 @@ public final class Messages extends NLS {
 
     public static String PgObject_full_desc_with_column;
 
-    public static String PgObject_in_table;
-
-    public static String PgObject_in_view;
-
     public static String PgObject_invalid_format_column;
 
     public static String PgObject_invalid_format_container;
