@@ -39,6 +39,7 @@
                                     <scripts>
                                         <script>file:///${project.basedir}/deploy-github-release.groovy</script>
                                     </scripts>
+                                    <bindPropertiesToSeparateVariables>false</bindPropertiesToSeparateVariables>
                                     <properties>
                                         <cli-version>${unqualifiedVersion}</cli-version>
                                         <cli-archive-file>${project.basedir}/target/products/${archive-filename}-linux.gtk.x86_64.zip</cli-archive-file>
