@@ -35,7 +35,7 @@ public class CreateIndex extends ParserAbstract {
         String name = ctx.name.getText();
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, schema.getName(), ind, db));
+        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, ind, db));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             getSafe(schema::getTable,
@@ -59,7 +59,7 @@ public class CreateIndex extends ParserAbstract {
     }
 
     private static String parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, PgIndex ind, PgDatabase db){
+            PgIndex ind, PgDatabase db){
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (rest.table_space() != null){

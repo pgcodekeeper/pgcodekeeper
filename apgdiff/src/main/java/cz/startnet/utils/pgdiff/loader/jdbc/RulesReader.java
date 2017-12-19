@@ -151,7 +151,7 @@ public class RulesReader extends JdbcReader {
         } else if ((parser = cmd.update_stmt_for_psql()) != null) {
             analyzer = new Update(schemaName);
         }
-        if (parser != null && analyzer != null) {
+        if (analyzer != null) {
             analyzer.addReference("new", null);
             analyzer.addReference("old", null);
             UtilExpr.analyze(parser, analyzer, rule);

@@ -42,6 +42,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -257,10 +258,8 @@ public class PgDumpLoader implements AutoCloseable {
             DbObjType stmtType = stmt.getStatementType();
 
             String schemaName = null;
-            if (DbObjType.VIEW.equals(stmtType) || DbObjType.FUNCTION.equals(stmtType)) {
-                schemaName = stmt.getParent().getName();
-            } else {
-                schemaName = stmt.getParent().getParent().getName();
+            if (stmt instanceof PgStatementWithSearchPath) {
+                schemaName = ((PgStatementWithSearchPath) stmt).getContainingSchema().getName();
             }
 
             switch (stmtType) {

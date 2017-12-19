@@ -200,7 +200,7 @@ public class DepcyGraph {
     private void processDeps(PgStatement st) {
         for (GenericColumn dep : st.getDeps()) {
             PgStatement depSt = dep.getStatement(db);
-            if (depSt != null) {
+            if (depSt != null && !st.equals(depSt)) {
                 graph.addEdge(st, depSt);
             }
         }

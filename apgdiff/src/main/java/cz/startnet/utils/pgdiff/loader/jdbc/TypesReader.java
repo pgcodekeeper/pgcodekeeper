@@ -26,8 +26,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TypesReader extends JdbcReader {
 
-    public static String DOMAIN_CONSTRAINT = ".domainConstraint";
-
     public static class TypesReaderFactory extends JdbcReaderFactory {
 
         public TypesReaderFactory(long hasHelperMask, String helperFunction, Map<SupportedVersion, String> queries) {
@@ -124,7 +122,6 @@ public class TypesReader extends JdbcReader {
                             Constr_bodyContext body = tableActionCtx.tabl_constraint.constr_body();
 
                             c.setDefinition(ParserAbstract.getFullCtxText(body));
-                            c.setNotValid(tableActionCtx.not_valid != null);
 
                             return body;
                         }, (ctx, db) -> {

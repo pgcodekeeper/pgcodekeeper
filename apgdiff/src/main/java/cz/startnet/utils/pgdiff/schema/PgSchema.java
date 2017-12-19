@@ -130,10 +130,7 @@ public class PgSchema extends PgStatement {
      * @return found function or null if no such function has been found
      */
     public PgFunction getFunction(final String signature) {
-        //        System.err.println(" >>> " + signature);
-        for (PgFunction function
-                :
-                    functions) {
+        for (PgFunction function : functions) {
             if (function.getSignature().equals(signature)) {
                 return function;
             }
