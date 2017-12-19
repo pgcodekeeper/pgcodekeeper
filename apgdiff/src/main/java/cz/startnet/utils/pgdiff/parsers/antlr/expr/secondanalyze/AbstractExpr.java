@@ -144,7 +144,7 @@ public abstract class AbstractExpr {
                         columnType = refComplex.getValue().stream()
                                 .filter(entry -> column.equals(entry.getKey()))
                                 .map(Entry::getValue)
-                                .findFirst().orElse(TypesSetManually.COLUMN_WITH_RECURSION_OR_OTHER_2);
+                                .findFirst().orElse(TypesSetManually.COLUMN);
                     }
                 }
             } else {
@@ -163,7 +163,7 @@ public abstract class AbstractExpr {
         String columnParent = genericColumn.table;
         String column = genericColumn.column;
 
-        String type = TypesSetManually.COLUMN_WITH_RECURSION_OR_OTHER;
+        String type = TypesSetManually.COLUMN;
 
         PgSchema s;
         if (schema != null && (s = db.getSchema(schema)) != null && columnParent != null) {
@@ -196,8 +196,6 @@ public abstract class AbstractExpr {
                         break;
                     }
                 }
-            } else {
-                type = TypesSetManually.COLUMN_UNKNOWN;
             }
         }
         return type;
@@ -232,10 +230,6 @@ public abstract class AbstractExpr {
         String UNKNOWN_ARRAY = "unknown[]";
 
         String COLUMN = "column";
-        String COLUMN_UNKNOWN = "columnUnknown";
-        String COLUMN_WITH_RECURSION_OR_OTHER = "columnWithRecursionOrOther";
-        String COLUMN_WITH_RECURSION_OR_OTHER_2 = "columnWithRecursionOrOther_2";
-
         String FUNCTION_COLUMN = "functionCol";
 
         String NULL = "NULL";

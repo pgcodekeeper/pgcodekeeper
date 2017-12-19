@@ -18,6 +18,8 @@ public class PgSystemStorage implements Serializable {
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
+    private static PgSystemStorage systemStorage;
+
     private final List<PgSystemStatement> objects = new ArrayList<>();
     private final List<PgSystemOperator> operators = new ArrayList<>();
     private final List<PgSystemCast> casts = new ArrayList<>();
@@ -47,13 +49,18 @@ public class PgSystemStorage implements Serializable {
     }
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
+        if (systemStorage != null) {
+            return systemStorage;
+        }
+
         try {
             String path = ApgdiffUtils.getFileFromOsgiRes(PgSystemStorage.class.getResource(
                     FILE_NAME + version + ".ser")).toString();
             Object object = ApgdiffUtils.deserialize(path);
 
             if (object != null && object instanceof PgSystemStorage) {
-                return (PgSystemStorage) object;
+                systemStorage = (PgSystemStorage) object;
+                return systemStorage;
             }
         } catch (URISyntaxException | IOException e) {
             Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
@@ -62,10 +69,12 @@ public class PgSystemStorage implements Serializable {
         return null;
     }
 
-    public static List<PgSystemStatement> getPgSystemStatement(PgSystemStorage storage, DbObjType objType, String objName) {
+    public static List<PgSystemStatement> getPgSystemStatement(PgSystemStorage storage,
+            DbObjType objType, String objName, String objSchema) {
         return storage.getObjects().stream()
-                .filter(systemStmt -> objType.equals(systemStmt.getType()))
-                .filter(systemStmt -> objName.equals(systemStmt.getName()))
+                .filter(systemStmt -> objSchema.equals(systemStmt.getSchema())
+                        && objType.equals(systemStmt.getType())
+                        && objName.equals(systemStmt.getName()))
                 .collect(Collectors.toList());
     }
 

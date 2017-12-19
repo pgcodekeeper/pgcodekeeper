@@ -54,6 +54,7 @@ import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
@@ -381,14 +382,15 @@ public class ValueExpr extends AbstractExpr {
         String functionSignature = sb.toString();
 
         List<IFunction> userFuncsList = new ArrayList<>();
-        for(PgFunction f : db.getSchema(schemaName).getFunctions()) {
-            long inModeArgCount = f.getArguments().stream()
-                    .filter(arg -> "IN".equals(arg.getMode()))
-                    .count();
 
-            if (funcName.equals(f.getBareName())
-                    && (types.size() == inModeArgCount)) {
-                userFuncsList.add(f);
+        PgSchema sch = db.getSchema(schemaName);
+        if (sch != null) {
+            for(PgFunction f : sch.getFunctions()) {
+                if (funcName.equals(f.getBareName()) && f.getArguments().stream()
+                        .filter(arg -> "IN".equals(arg.getMode()))
+                        .count() == types.size()) {
+                    userFuncsList.add(f);
+                }
             }
         }
 
@@ -411,7 +413,7 @@ public class ValueExpr extends AbstractExpr {
                 systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
             }
 
-            systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, funcName);
+            systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, funcName, schemaName);
             if (!systemStmts.isEmpty() && systemStmts.size() == 1) {
                 PgSystemFunction systemFunc = (PgSystemFunction) systemStmts.get(0);
                 pair = new SimpleEntry<>(funcName, systemFunc.getReturns());
