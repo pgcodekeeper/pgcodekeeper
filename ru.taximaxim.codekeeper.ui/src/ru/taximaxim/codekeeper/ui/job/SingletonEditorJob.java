@@ -3,7 +3,10 @@ package ru.taximaxim.codekeeper.ui.job;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.services.IEvaluationService;
+
+import ru.taximaxim.codekeeper.ui.UiSync;
 
 public abstract class SingletonEditorJob extends EditorJob {
 
@@ -22,15 +25,17 @@ public abstract class SingletonEditorJob extends EditorJob {
 
             @Override
             public void aboutToRun(IJobChangeEvent event) {
-                getEditorPart().getSite().getService(IEvaluationService.class)
-                .requestEvaluation(evalProperty);
+                IWorkbenchPartSite site = getEditorPart().getSite();
+                UiSync.exec(site.getShell(), () ->
+                site.getService(IEvaluationService.class).requestEvaluation(evalProperty));
             }
 
             @Override
             public void done(IJobChangeEvent event) {
                 done = true;
-                getEditorPart().getSite().getService(IEvaluationService.class)
-                .requestEvaluation(evalProperty);
+                IWorkbenchPartSite site = getEditorPart().getSite();
+                UiSync.exec(site.getShell(), () ->
+                site.getService(IEvaluationService.class).requestEvaluation(evalProperty));
             }
         });
     }

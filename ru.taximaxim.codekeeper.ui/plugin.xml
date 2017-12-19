@@ -94,6 +94,17 @@
             id="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
             name="%command.commandname.UpdateDdl">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+              name="%command.commandname.CancelDdl">
+        </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDbStore"
+              id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+              name="%command.commandname.OpenDbStore">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -153,6 +164,22 @@
                     </with>
                 </and>
             </enabledWhen>
+        </handler>
+        <handler
+              class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
+              commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl">
+           <enabledWhen>
+              <and>
+                 <with variable="activeEditorId">
+                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                    </equals>
+                 </with>
+                 <with variable="activeEditor">
+                    <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                    </test>
+                 </with>
+              </and>
+           </enabledWhen>
         </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
@@ -312,6 +339,12 @@
                     label="%command.commandname.UpdateDdl"
                     style="push">
                 </command>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                      icon="IMG_ELCL_STOP"
+                      label="%command.commandname.CancelDdl"
+                      style="push">
+                </command>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator2"
                     visible="true">
@@ -360,8 +393,6 @@
                                 </equals>
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                                <equals value="ru.taximaxim.codekeeper.ui.RollOnEditor">
-                                </equals>
                             </or>
                         </with>
                         <with variable="selection">
@@ -381,36 +412,9 @@
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="ru.taximaxim.codekeeper.ui.toolbar">
                 <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.CommitProject"
-                    icon="icons/app_icon16.png"
-                    label="%command.commandname.CommitProject"
-                    mode="FORCE_TEXT"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.DiffProject"
-                    icon="icons/pgadmin/database.png"
-                    label="%command.commandname.DiffProject"
-                    mode="FORCE_TEXT"
-                    style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
-                            </equals>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command
                     commandId="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
                     icon="icons/quick_update.png"
                     label="%command.commandname.QuickUpdate"
-                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
@@ -423,22 +427,50 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.UpdateDdl"
                     icon="icons/update_ddl.gif"
                     label="%command.commandname.UpdateDdl"
-                    mode="FORCE_TEXT"
                     style="push">
-                    <visibleWhen checkEnabled="true">
-                        <with variable="activeEditorId">
+                    <visibleWhen checkEnabled="false">
+                        <and>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                        </and>
+                    </visibleWhen>
+                </command>
+                <command
+                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                      icon="IMG_ELCL_STOP"
+                      label="%command.commandname.CancelDdl"
+                      style="push">
+                   <visibleWhen checkEnabled="false">
+                      <and>
+                         <with variable="activeEditorId">
                             <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                             </equals>
-                        </with>
-                    </visibleWhen>
+                         </with>
+                      </and>
+                   </visibleWhen>
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
                     icon="icons/refresh.png"
                     label="%command.commandname.GetChanges"
-                    mode="FORCE_TEXT"
                     style="push">
                     <visibleWhen>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+                    icon="icons/editor_area.png"
+                    label="%command.commandname.OpenDbStore"
+                    style="push">                    
+                    <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
                             <or>
                                 <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
@@ -453,16 +485,14 @@
                     class="ru.taximaxim.codekeeper.ui.menuitems.DBStoreCombo"
                     id="ru.taximaxim.codekeeper.ui.DBStoreCombo">
                     <visibleWhen checkEnabled="true">
-                        <or>
-                            <with variable="activeEditorId">
+                        <with variable="activeEditorId">
+                            <or>
                                 <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
                                 </equals>
-                            </with>
-                            <with variable="activeEditorId">
                                 <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
                                 </equals>
-                            </with>
-                        </or>
+                            </or>
+                        </with>
                     </visibleWhen>
                 </control>
             </toolbar>
@@ -686,35 +716,29 @@
             <view
                 id="org.eclipse.ui.navigator.ProjectExplorer"
                 minimized="false"
-                ratio="0.25"
-                relationship="left"
-                relative="org.eclipse.ui.editorss">
+                ratio="0.75"
+                relationship="right"
+                relative="org.eclipse.ui.views.ContentOutline">
             </view>
             <view
-                id="ru.taximaxim.codekeeper.ui.depcyview"
+                id="org.eclipse.ui.views.ProgressView"
                 minimized="false"
-                ratio="0.5"
+                ratio="0.7"
                 relationship="bottom"
                 relative="org.eclipse.ui.navigator.ProjectExplorer">
             </view>
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
-                relationship="stack"
-                relative="ru.taximaxim.codekeeper.ui.depcyview">
-            </view>
-            <view
-                id="org.eclipse.ui.console.ConsoleView"
-                minimized="false"
-                ratio="0.85"
-                relationship="bottom"
+                ratio="0.8"
+                relationship="right"
                 relative="org.eclipse.ui.editorss">
             </view>
             <view
-                id="org.eclipse.ui.views.ProgressView"
+                id="ru.taximaxim.codekeeper.ui.depcyview"
                 minimized="false"
                 relationship="stack"
-                relative="org.eclipse.ui.console.ConsoleView">
+                relative="org.eclipse.ui.views.ProgressView">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>
@@ -1027,6 +1051,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+R">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+E">
         </key>
     </extension>
     <extension

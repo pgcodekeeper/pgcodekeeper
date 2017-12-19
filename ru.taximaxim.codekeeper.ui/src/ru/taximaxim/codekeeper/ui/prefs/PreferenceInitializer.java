@@ -35,7 +35,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         store.setDefault(DB_UPDATE_PREF.USING_ON_OFF, true);
         store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
-        store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.PROMPT);
+        store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.ALWAYS);
         store.setDefault(DB_UPDATE_PREF.MIGRATION_COMMAND, UIConsts.DDL_DEFAULT_CMD);
 
         store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
