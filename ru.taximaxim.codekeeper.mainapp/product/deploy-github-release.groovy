@@ -12,6 +12,10 @@ AUTH_TOKEN = System.getenv('GITHUB_TOKEN')
 VERSION = pom.properties['cli-version']
 FILE = pom.properties['cli-archive-file']
 
+assert AUTH_TOKEN?.length()
+assert VERSION?.length()
+assert FILE?.length()
+
 CREATE_URL = "https://api.github.com/repos/pgcodekeeper/pgcodekeeper/releases"
 CREATE_JSON = """{
     "tag_name": "v${VERSION}",
