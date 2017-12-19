@@ -6,6 +6,7 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -37,7 +38,10 @@ public class DBTimestampPair {
 
     public void addObject(PgStatement st) {
         DbObjType type = st.getStatementType();
-        PgStatement parent = st.getParent();
+        String schema = null;
+        if (st instanceof PgStatementWithSearchPath) {
+            schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+        }
         GenericColumn gc = null;
         switch (type) {
         case SCHEMA:
@@ -49,14 +53,14 @@ public class DBTimestampPair {
         case FUNCTION:
         case TABLE:
         case VIEW:
-            gc = new GenericColumn(parent.getName(), st.getName(), type);
+            gc = new GenericColumn(schema, st.getName(), type);
             break;
         case INDEX:
-            gc = new GenericColumn(parent.getParent().getName(), null, st.getName(), type);
+            gc = new GenericColumn(schema, null, st.getName(), type);
             break;
         case RULE:
         case TRIGGER:
-            gc = new GenericColumn(parent.getParent().getName(), parent.getName(), st.getName(), type);
+            gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
             break;
         default: return;
         }

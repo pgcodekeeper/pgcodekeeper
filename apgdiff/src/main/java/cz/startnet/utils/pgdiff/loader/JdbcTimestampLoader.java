@@ -26,22 +26,18 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcTimestampLoader extends JdbcLoaderBase {
 
-    private boolean useServerHelpers = true;
     private List<ObjectTimestamp> objects;
     private PgDatabase projDB;
     private DBTimestampPair pair;
-
-    public JdbcTimestampLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, SubMonitor.convert(null));
-    }
+    private String schema;
 
     public JdbcTimestampLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
             SubMonitor monitor) {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public void setUseServerHelpers(boolean useServerHelpers) {
-        this.useServerHelpers = useServerHelpers;
+    public String getSchema() {
+        return schema;
     }
 
     public List<ObjectTimestamp> getObjects() {
@@ -61,7 +57,7 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
         this.projDB = projDB;
-
+        this.schema = schema;
 
         Log.log(Log.LOG_INFO, "Reading db using JDBC.");
         setCurrentOperation("connection setup");
@@ -79,13 +75,13 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
             setupMonitorWork();
 
             DBTimestamp projTime = DBTimestamp.getDBTimastamp(projectName);
-            DBTimestamp dbTime = new TimestampsReader(this, schema).read();
+            DBTimestamp dbTime = new TimestampsReader(this).read();
             pair = new DBTimestampPair(projTime, dbTime);
             objects = pair.compare();
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {
-                availableHelpersBits = useServerHelpers ? JdbcReaderFactory.getAvailableHelpersBits(this) : 0;
+                availableHelpersBits = 0;
                 for (JdbcReaderFactory f : JdbcReaderFactory.FACTORIES) {
                     f.getReader(this).read();
                 }

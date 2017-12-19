@@ -2,12 +2,12 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -32,11 +32,12 @@ public class DBTimestamp implements Serializable {
 
     private static final long serialVersionUID = 6207954672144447111L;
 
+    // FIXME don't bind to UI module
     private static final String FOLDER = "ru.taximaxim.codekeeper.ui";
 
     private final List<ObjectTimestamp> objects = new ArrayList<>();
 
-    private static final Map <String, DBTimestamp> PROJ_TIMESTAMPS = new HashMap<>();
+    private static final Map<String, DBTimestamp> PROJ_TIMESTAMPS = new HashMap<>();
 
     public List<ObjectTimestamp> getObjects() {
         return objects;
@@ -48,24 +49,26 @@ public class DBTimestamp implements Serializable {
 
     public static void serialize(String name, DBTimestamp db) {
         try {
-            File folder = getInternalFolder().toFile();
-            folder.mkdirs();
-            File f = new File(folder.getAbsolutePath(), name + ".time");
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f))) {
+            File folder = getInternalFolder(name);
+            folder.getParentFile().mkdirs();
+            Path filePath = Paths.get(folder.getAbsolutePath());
+            if (Files.notExists(filePath)) {
+                Files.createFile(filePath);
+            }
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(filePath))) {
                 oos.writeObject(db);
                 oos.flush();
             }
         } catch (IOException | URISyntaxException e) {
-            Log.log(Log.LOG_DEBUG, "Error while serialize objects modification time!", e);
+            Log.log(Log.LOG_DEBUG, "Error while serialize objects modification!", e);
         }
     }
 
     public static DBTimestamp deserialise(String project) {
         try {
-            Path path = getInternalFolder();
-            Path filePath = path.resolve(project + ".time");
-            if (path.toFile().exists() && filePath.toFile().exists()) {
-                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
+            File file = getInternalFolder(project);
+            if (file.exists()) {
+                try (ObjectInputStream oin = new ObjectInputStream(new FileInputStream(file))) {
                     return (DBTimestamp) oin.readObject();
                 }
             }
@@ -79,7 +82,7 @@ public class DBTimestamp implements Serializable {
     public static void updateObjects (PgDatabase db, String project) {
         DBTimestamp timestamp = getDBTimastamp(project);
         if (!timestamp.objects.isEmpty()) {
-            Map <GenericColumn, String> statements = new HashMap<>();
+            Map<GenericColumn, String> statements = new HashMap<>();
             db.getExtensions().forEach(e -> statements.put(
                     new GenericColumn(e.getName(), DbObjType.EXTENSION),
                     PgDiffUtils.sha(e.getRawStatement())));
@@ -106,6 +109,7 @@ public class DBTimestamp implements Serializable {
                     t.getRules().forEach(r -> statements.put(
                             new GenericColumn(s.getName(), t.getName(), r.getName(), DbObjType.RULE),
                             PgDiffUtils.sha(r.getRawStatement())));
+                    // constraint hash join to table hash,
                     StringBuilder tableHash = new StringBuilder(PgDiffUtils.sha(t.getRawStatement()));
                     t.getConstraints().forEach(con -> tableHash.append(PgDiffUtils.sha(con.getRawStatement())));
 
@@ -126,6 +130,7 @@ public class DBTimestamp implements Serializable {
                         PgDiffUtils.sha(s.getRawStatement()));
             }
 
+            // removes changed objects
             for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
                 ObjectTimestamp obj = iterator.next();
                 GenericColumn name = obj.getObject();
@@ -152,14 +157,22 @@ public class DBTimestamp implements Serializable {
     }
 
     /**
-     * Returns path to %workspace%/.metadata/.plugins/%this_plugin%/projects.<br>
+     * Returns file with in folder: %workspace%/.metadata/.plugins/%this_plugin%/projects.<br>
      *
+     * @deprecated don't use this path from apgdiff package
+     *
+     * @param name - file name
      * @return path to folder with serialized projects
      * @throws URISyntaxException if couldn't get path to the workspace
      */
-    private static Path getInternalFolder() throws URISyntaxException {
-        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
-                .resolve(".metadata").resolve(".plugins").resolve(FOLDER) //$NON-NLS-1$ //$NON-NLS-2$
-                .resolve("projects"); //$NON-NLS-1$
+    @Deprecated
+    private static File getInternalFolder(String name) throws URISyntaxException {
+        File file = new File(URIUtil.toURI(Platform.getInstanceLocation().getURL()));
+        file = new File(file, ".metadata"); //$NON-NLS-1$
+        file = new File(file, ".plugins"); //$NON-NLS-1$
+        file = new File(file, FOLDER);
+        file = new File(file, "projects"); //$NON-NLS-1$
+        file = new File(file, name + ".time"); //$NON-NLS-1$
+        return file;
     }
 }

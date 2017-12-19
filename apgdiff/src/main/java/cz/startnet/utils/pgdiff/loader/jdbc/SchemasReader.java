@@ -32,6 +32,8 @@ public class SchemasReader implements PgCatalogStrings {
         Map<Long, PgSchema> schemas = new HashMap<>();
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
+
+        // exclude existiting schemas oids from query and put it to map
         if (loader instanceof JdbcTimestampLoader) {
             List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
             if (!objects.isEmpty()) {

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -98,8 +99,7 @@ public abstract class JdbcReaderFactory {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(base);
         sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");
-        oids.forEach(o -> sb.append(o).append(','));
-        sb.setLength(sb.length() - 1);
+        sb.append(oids.stream().map(o -> o.toString()).collect(Collectors.joining(",")));
         sb.append("]));");
         return sb.toString();
     }

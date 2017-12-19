@@ -9,7 +9,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class ObjectTimestamp implements Serializable{
+public class ObjectTimestamp implements Serializable {
 
     private static final long serialVersionUID = 6000537650992667481L;
 

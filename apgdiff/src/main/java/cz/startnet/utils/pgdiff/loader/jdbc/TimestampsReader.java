@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -21,17 +22,16 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TimestampsReader implements PgCatalogStrings {
     private final JdbcLoaderBase loader;
-    private final String schemaName;
 
     private static final String QUERY = "select * from {0}.show_objects";
 
-    public TimestampsReader(JdbcLoaderBase loader, String schemaName) {
+    public TimestampsReader(JdbcLoaderBase loader) {
         this.loader = loader;
-        this.schemaName = schemaName;
     }
 
     public DBTimestamp read() throws SQLException, InterruptedException {
         DBTimestamp time = new DBTimestamp();
+        String schemaName = ((JdbcTimestampLoader)loader).getSchema();
         try (ResultSet result = loader.statement.executeQuery(MessageFormat.format(QUERY, schemaName))) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
@@ -49,35 +49,35 @@ public class TimestampsReader implements PgCatalogStrings {
         String name = res.getString("name");
         Long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
-        GenericColumn gc = null;
-        ObjectTimestamp ot;
+        GenericColumn column = null;
+        ObjectTimestamp object;
         switch (type) {
         case "schema":
-            gc = new GenericColumn(name, DbObjType.SCHEMA);
+            column = new GenericColumn(name, DbObjType.SCHEMA);
             break;
         case "extension":
-            gc = new GenericColumn(name, DbObjType.EXTENSION);
+            column = new GenericColumn(name, DbObjType.EXTENSION);
             break;
         case "type":
-            gc = new GenericColumn(schema, name, DbObjType.TYPE);
+            column = new GenericColumn(schema, name, DbObjType.TYPE);
             break;
         case "sequence":
-            gc = new GenericColumn(schema, name, DbObjType.SEQUENCE);
+            column = new GenericColumn(schema, name, DbObjType.SEQUENCE);
             break;
         case "function":
             loader.submitAntlrTask(identity, SQLParser::function_args_parser,
                     ctx -> parseFunctionName(ctx, lastModified, time, objId));
             break;
         case "index":
-            gc = new GenericColumn(schema, null, name, DbObjType.INDEX);
+            column = new GenericColumn(schema, null, name, DbObjType.INDEX);
             break;
         case "table":
         case "foreign table":
-            gc = new GenericColumn(schema, name, DbObjType.TABLE);
+            column = new GenericColumn(schema, name, DbObjType.TABLE);
             break;
         case "view":
         case "materialized view":
-            gc = new GenericColumn(schema, name, DbObjType.VIEW);
+            column = new GenericColumn(schema, name, DbObjType.VIEW);
             break;
         case "rule":
             loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
@@ -90,9 +90,9 @@ public class TimestampsReader implements PgCatalogStrings {
         default: break;
         }
 
-        if (gc != null) {
-            ot = new ObjectTimestamp(gc, objId, lastModified);
-            time.addObject(ot);
+        if (column != null) {
+            object = new ObjectTimestamp(column, objId, lastModified);
+            time.addObject(object);
         }
     }
 

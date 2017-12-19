@@ -56,6 +56,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
+    protected boolean useServerHelpers = true;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
@@ -71,6 +72,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setCurrentOperation(String operation) {
         currentObject = null;
         currentOperation = operation;
+    }
+
+    public void setUseServerHelpers(boolean useServerHelpers) {
+        this.useServerHelpers = useServerHelpers;
     }
 
     protected String getCurrentLocation() {

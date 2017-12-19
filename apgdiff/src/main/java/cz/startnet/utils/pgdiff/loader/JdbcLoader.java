@@ -21,8 +21,6 @@ import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
-    private boolean useServerHelpers = true;
-
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
         this(connector, pgDiffArguments, SubMonitor.convert(null));
     }
@@ -30,10 +28,6 @@ public class JdbcLoader extends JdbcLoaderBase {
     public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
             SubMonitor monitor) {
         super(connector, monitor, pgDiffArguments);
-    }
-
-    public void setUseServerHelpers(boolean useServerHelpers) {
-        this.useServerHelpers = useServerHelpers;
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
