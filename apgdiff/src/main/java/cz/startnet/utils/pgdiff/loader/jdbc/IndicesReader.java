@@ -7,9 +7,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -83,7 +82,7 @@ public class IndicesReader extends JdbcReader {
 
                         db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(i, vexCtx));
 
-                        UtilExpr.analyze(new Vex(vexCtx), new ValueExpr(schemaName), i);
+                        UtilAnalyzeExpr.analyze(vexCtx, new ValueExpr(schemaName), i);
                     }
                 });
 

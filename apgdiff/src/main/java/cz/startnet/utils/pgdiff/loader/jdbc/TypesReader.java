@@ -7,9 +7,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -101,7 +100,7 @@ public class TypesReader extends JdbcReader {
                     (ctx, db) -> {
                         db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(d, ctx));
 
-                        UtilExpr.analyze(new Vex(ctx), new ValueExpr(schemaName), d);
+                        UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), d);
                     });
         }
         d.setDefaultValue(def);

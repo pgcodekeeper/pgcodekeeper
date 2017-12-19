@@ -1,22 +1,14 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.AbstractMap;
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
@@ -165,11 +157,11 @@ public class FunctionsReader extends JdbcReader {
             String defaultValuesAsString = res.getString("default_values_as_string");
             if (defaultValuesAsString != null) {
                 loader.submitAntlrTask(defaultValuesAsString, (PgDatabase)schema.getParent(),
-                        p -> p.vex_eof(),
+                        SQLParser::vex_eof,
                         (ctx, db) -> {
                             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(f, ctx));
 
-                            functionDefaultsAnalyze(ctx, f, schemaName);
+                            UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
                         });
             }
         }
@@ -180,30 +172,6 @@ public class FunctionsReader extends JdbcReader {
         loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
 
         schema.addFunction(f);
-    }
-
-    public static void functionDefaultsAnalyze(Vex_eofContext ctx, PgFunction f, String schemaName) {
-        List<VexContext> vexCtxList = ctx.vex();
-
-        Deque<String> defultsQueue = new ArrayDeque<>();
-        for (VexContext vx : vexCtxList) {
-            defultsQueue.offerLast(ParserAbstract.getFullCtxText(vx));
-        }
-
-        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
-            if (defultsQueue.isEmpty()) {
-                break;
-            }
-            IArgument a = f.getArguments().get(i);
-            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
-                a.setDefaultExpression(defultsQueue.pollLast());
-            }
-        }
-
-        ValueExpr vex = new ValueExpr(schemaName);
-        for (VexContext vx : vexCtxList) {
-            UtilExpr.analyze(new Vex(vx), vex, f);
-        }
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {

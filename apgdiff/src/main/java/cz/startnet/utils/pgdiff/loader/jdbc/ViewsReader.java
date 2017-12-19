@@ -6,10 +6,9 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -73,7 +72,7 @@ public class ViewsReader extends JdbcReader {
                 (ctx, db) -> {
                     db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
-                    UtilExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
+                    UtilAnalyzeExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
                 });
 
         // OWNER
@@ -96,7 +95,7 @@ public class ViewsReader extends JdbcReader {
                             (ctx, db) -> {
                                 db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
-                                UtilExpr.analyze(new Vex(ctx), new ValueExpr(schemaName), v);
+                                UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), v);
                             });
                 }
                 String colComment = colComments[i];

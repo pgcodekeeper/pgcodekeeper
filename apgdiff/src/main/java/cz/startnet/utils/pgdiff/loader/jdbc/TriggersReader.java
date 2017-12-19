@@ -6,10 +6,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -166,7 +163,7 @@ public class TriggersReader extends JdbcReader {
                     if (ctx != null) {
                         db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx));
 
-                        analyzeWhenVexCtx(ctx.vex(), t, schemaName);
+                        UtilAnalyzeExpr.analyzeTriggersWhenVexCtx(ctx.vex(), t, schemaName);
                         t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
                     }
                 });
@@ -177,12 +174,5 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
-    }
-
-    public static void analyzeWhenVexCtx(VexContext ctx, PgTrigger trigger, String schemaName) {
-        ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
-        vex.addReference("new", null);
-        vex.addReference("old", null);
-        UtilExpr.analyze(new Vex(ctx), vex, trigger);
     }
 }

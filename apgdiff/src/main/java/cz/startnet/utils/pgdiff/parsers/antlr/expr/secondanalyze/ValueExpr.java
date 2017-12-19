@@ -333,13 +333,13 @@ public class ValueExpr extends AbstractExpr {
         }
 
         if (canFindFunctionSignature) {
-            pair = setReturnedTypeOfFunction(name, argsType, pair);
+            pair = getReturnedTypeOfFunction(name, argsType, pair);
         }
 
         return pair;
     }
 
-    private Entry<String, String> setReturnedTypeOfFunction(Function_nameContext name,
+    private Entry<String, String> getReturnedTypeOfFunction(Function_nameContext name,
             List<Entry<String, String>> argsType, Entry<String, String> p) {
         Entry<String, String> pair = p;
         String schemaName = schema;
