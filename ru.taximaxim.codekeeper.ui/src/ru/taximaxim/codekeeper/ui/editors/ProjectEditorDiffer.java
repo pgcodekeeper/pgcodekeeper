@@ -145,6 +145,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Button btnDismissRefresh;
+    private Button btnGetChanges;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
@@ -239,7 +240,62 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false, manager);
+        diffTable = new DiffTableViewer(sashOuter, false, manager) {
+
+            @Override
+            public void createRightSide(Composite container) {
+                GridLayout layout = new GridLayout(4, false);
+                layout.marginHeight = 0;
+                layout.marginWidth = 0;
+                container.setLayout(layout);
+
+                Label l = new Label(container, SWT.NONE);
+                l.setEnabled(false);
+                l.setText(Messages.DiffTableViewer_apply_to);
+                l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+
+                Button btnCommit = new Button(container, SWT.PUSH);
+                btnCommit.setText(Messages.DiffTableViewer_to_project);
+                btnCommit.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONAPPSMALL))));
+                btnCommit.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        try {
+                            commit();
+                        } catch (PgCodekeeperException ex) {
+                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
+                        }
+                    }
+                });
+
+                Button btnDiff = new Button(container, SWT.PUSH);
+                btnDiff.setText(Messages.DiffTableViewer_to_database);
+                btnDiff.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONDATABASE))));
+                btnDiff.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        diff();
+                    }
+                });
+
+                btnGetChanges = new Button(container, SWT.PUSH);
+                btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONREFRESH))));
+                btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                btnGetChanges.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        getChanges();
+                    }
+                });
+            }
+        };
+
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -452,11 +508,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    UiSync.exec(parent, () -> {
-                        if (!parent.isDisposed()) {
-                            diffTable.enableGetChanges(false);
-                        }
-                    });
                     SubMonitor sub = SubMonitor.convert(monitor,
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
@@ -477,7 +528,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
+            public void aboutToRun(IJobChangeEvent event) {
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        btnGetChanges.setEnabled(false);
+                    }
+                });
+            }
+
+
+            @Override
             public void done(IJobChangeEvent event) {
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        btnGetChanges.setEnabled(true);
+                    }
+                });
+
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
@@ -486,12 +553,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                         }
                     });
                 }
-
-                UiSync.exec(parent, () -> {
-                    if (!parent.isDisposed()) {
-                        diffTable.enableGetChanges(true);
-                    }
-                });
 
                 newDiffer.getErrors()
                 .forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(

@@ -91,12 +91,9 @@ public class CodeFilter {
     private boolean checkCode(String code) {
         if (regExPattern != null) {
             Matcher matcher = regExPattern.matcher(code);
-            if (matcher.find()) {
-                return true;
-            }
-        } else if (code.indexOf(pattern.toLowerCase()) > -1) {
-            return true;
+            return matcher.find();
         }
-        return false;
+
+        return code.indexOf(pattern.toLowerCase()) > -1;
     }
 }

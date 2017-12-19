@@ -61,11 +61,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
@@ -75,9 +72,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -120,8 +115,6 @@ public class DiffTableViewer extends Composite {
 
     private final CodeFilter codeFilter = new CodeFilter();
 
-    private Button getChanges;
-
     private final IStatusLineManager lineManager;
 
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
@@ -160,13 +153,7 @@ public class DiffTableViewer extends Composite {
         Composite upperComp = new Composite(this, SWT.NONE);
         upperComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        int objectCount = viewOnly ? 4 : 10;
-
-        // if manager != null remove 2 labels, add 3 button
-        if (lineManager != null) {
-            objectCount += 1;
-        }
-        gl = new GridLayout(objectCount, false);
+        gl = new GridLayout(viewOnly ? 3 : 8, false);
         gl.marginWidth = gl.marginHeight = 0;
         upperComp.setLayout(gl);
 
@@ -259,70 +246,20 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        Label l = new Label(upperComp, SWT.NONE);
-        l.setEnabled(false);
-
+        Composite container = new Composite(upperComp, SWT.NONE);
+        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         if (lineManager != null) {
-            l.setText(Messages.DiffTableViewer_apply_to);
-            l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-
-            Button commitChanges = new Button(upperComp, SWT.PUSH);
-            commitChanges.setText(Messages.DiffTableViewer_to_project);
-            commitChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(FILE.ICONAPPSMALL))));
-            commitChanges.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                    if (editor instanceof ProjectEditorDiffer) {
-                        try {
-                            ((ProjectEditorDiffer) editor).commit();
-                        } catch (PgCodekeeperException ex) {
-                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
-                        }
-                    }
-                }
-            });
-
-            Button diffChanges = new Button(upperComp, SWT.PUSH);
-            diffChanges.setText(Messages.DiffTableViewer_to_database);
-            diffChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(FILE.ICONDATABASE))));
-            diffChanges.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                    if (editor instanceof ProjectEditorDiffer) {
-                        ((ProjectEditorDiffer) editor).diff();
-                    }
-                }
-            });
-
-
-            getChanges = new Button(upperComp, SWT.PUSH);
-            getChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
-                    .getBundle().getResource(FILE.ICONREFRESH))));
-            getChanges.setText(Messages.DiffTableViewer_get_changes);
-            getChanges.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                    if (editor instanceof ProjectEditorDiffer) {
-                        ((ProjectEditorDiffer) editor).getChanges();
-                    }
-                }
-            });
-
+            createRightSide(container);
         } else {
+            container.setLayout(new GridLayout(viewOnly ? 2 : 3, false));
+            Label l = new Label(container, SWT.NONE);
+            l.setEnabled(false);
             l.setText("|"); //$NON-NLS-1$
 
             if (!viewOnly) {
-                lblCheckedCount = new Label(upperComp, SWT.NONE);
+                lblCheckedCount = new Label(container, SWT.NONE);
             }
-            lblObjectCount = new Label(upperComp, SWT.NONE);
+            lblObjectCount = new Label(container, SWT.NONE);
         }
 
         updateObjectsLabels();
@@ -370,8 +307,8 @@ public class DiffTableViewer extends Composite {
         viewer.setContentProvider(contentProvider);
     }
 
-    public void enableGetChanges(boolean enable) {
-        getChanges.setEnabled(enable);
+    public void createRightSide(Composite parent) {
+        // will be overridden by subclasses if needed
     }
 
     private MenuManager getViewerMenu() {
