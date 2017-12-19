@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -299,7 +300,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IURIEditorInput uri = (IURIEditorInput) in;
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, uri.getURI().toString(), monitor);
+            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
             return true;
         }
         return false;

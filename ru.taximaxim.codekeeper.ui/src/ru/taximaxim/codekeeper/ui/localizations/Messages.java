@@ -238,10 +238,12 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_sql_file_filter;
 
+    public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_expand_all;
     public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reset_sorting;

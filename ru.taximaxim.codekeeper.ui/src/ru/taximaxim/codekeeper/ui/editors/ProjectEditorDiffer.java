@@ -23,10 +23,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -398,7 +396,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             handlerCloseProject(event);
             break;
         case IResourceChangeEvent.POST_CHANGE:
-            handleChangeProject(event);
+            handleChangeProject(event.getDelta());
             break;
         default:
             break;
@@ -406,7 +404,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private void handlerCloseProject(IResourceChangeEvent event) {
-        if (event.getResource().getName().equals(getEditorInput().getName())) {
+        if (event.getResource().getProject().equals(proj.getProject())) {
             UiSync.exec(parent, new Runnable(){
 
                 @Override
@@ -419,34 +417,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    private void handleChangeProject(IResourceChangeEvent event) {
-        IResourceDelta rootDelta = event.getDelta();
-
-        ApgdiffConsts.WORK_DIR_NAMES[] dirs = ApgdiffConsts.WORK_DIR_NAMES.values();
-        final IPath[] projDirs = new IPath[dirs.length];
-        for (int i = 0; i < dirs.length; ++i) {
-            projDirs[i] = proj.getProject().getFullPath().append(dirs[i].name());
-        }
-
+    private void handleChangeProject(IResourceDelta rootDelta) {
         final boolean[] schemaChanged = new boolean[1];
         try {
-            rootDelta.accept(new IResourceDeltaVisitor() {
-
-                @Override
-                public boolean visit(IResourceDelta delta) throws CoreException {
-                    if (schemaChanged[0]) {
-                        return false;
-                    }
-                    // something other than just markers has changed
-                    // check that it's our resource
-                    if (delta.getFlags() != IResourceDelta.MARKERS &&
-                            delta.getResource().getType() == IResource.FILE &&
-                            PgUIDumpLoader.isInProject(delta)) {
-                        schemaChanged[0] = true;
-                        return false;
-                    }
-                    return true;
+            rootDelta.accept(delta -> {
+                if (schemaChanged[0]) {
+                    return false;
                 }
+                // something other than just markers has changed
+                // check that it's our resource
+                if (delta.getFlags() != IResourceDelta.MARKERS &&
+                        PgUIDumpLoader.isInProject(delta) &&
+                        delta.getResource().getType() == IResource.FILE &&
+                        delta.getResource().getProject().equals(proj.getProject())) {
+                    schemaChanged[0] = true;
+                    return false;
+                }
+                return true;
             });
         } catch (CoreException ex) {
             Log.log(ex);
