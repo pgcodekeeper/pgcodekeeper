@@ -21,10 +21,21 @@ public class CodeFilter {
 
     private String pattern = ""; //$NON-NLS-1$
     private boolean useRegEx;
+    private Pattern regExPattern;
 
     public void update(String pattern, boolean useRegEx) {
         this.pattern = pattern;
         this.useRegEx = useRegEx;
+        if (useRegEx) {
+            try {
+                regExPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException e) {
+                regExPattern = null;
+            }
+        } else {
+            regExPattern = null;
+        }
+
     }
 
     public String getPattern() {
@@ -37,46 +48,36 @@ public class CodeFilter {
 
     public boolean findCode(TreeElement el, Set<TreeElement> elements,
             PgDatabase dbProject, PgDatabase dbRemote) {
-        Pattern regExPattern = null;
 
-        if (useRegEx) {
-            try {
-                regExPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-            } catch (PatternSyntaxException e) {
-                regExPattern = null;
-            }
-        }
-
-        if (el.getSide() != DiffSide.RIGHT && checkSide(el, regExPattern, dbProject, elements)) {
+        if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements)) {
             return true;
         }
 
         if (el.getSide() != DiffSide.LEFT) {
-            return checkSide(el, regExPattern, dbRemote, elements);
+            return checkSide(el, dbRemote, elements);
         }
 
         return false;
     }
 
-    private boolean checkSide(TreeElement el, Pattern regExPattern, PgDatabase db, Set<TreeElement> elements) {
+    private boolean checkSide(TreeElement el, PgDatabase db, Set<TreeElement> elements) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
-            if (checkCode(regExPattern, getCode(statement))) {
+            if (checkCode(getCode(statement))) {
                 return true;
             }
 
             if (DiffTableViewer.isSubElement(el)) {
-                PgStatement parent = el.getParent().getPgStatement(db);
+                PgStatement parent = statement.getParent();
                 if (parent != null) {
-                    return checkCode(regExPattern, getCode(parent));
+                    return checkCode(getCode(parent));
                 }
             }
 
             if (DiffTableViewer.isContainer(el)) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
-                        .filter(s -> s != null && checkCode(regExPattern, getCode(s)))
-                        .count() > 0;
+                        .anyMatch(s -> s != null && checkCode(getCode(s)));
             }
         }
 
@@ -87,8 +88,8 @@ public class CodeFilter {
         return statement.getCreationSQL().toLowerCase();
     }
 
-    private boolean checkCode(Pattern regExPattern, String code) {
-        if (useRegEx && regExPattern != null) {
+    private boolean checkCode(String code) {
+        if (regExPattern != null) {
             Matcher matcher = regExPattern.matcher(code);
             if (matcher.find()) {
                 return true;

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -311,14 +310,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void setFocus() {
         parent.setFocus();
-
-        if (manager != null) {
-            manager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONAPPSMALL))),
-
-                    MessageFormat.format(Messages.DiffTableViewer_selected_count,
-                            diffTable.getCheckedElementsCount(), diffTable.getElements().size()));
-        }
+        diffTable.updateObjectsLabels();
     }
 
     @Override

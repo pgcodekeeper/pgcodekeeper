@@ -717,7 +717,7 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private void updateObjectsLabels() {
+    public void updateObjectsLabels() {
         int count = elements.size();
         int checked = getCheckedElementsCount();
         if (lineManager != null) {
@@ -1054,26 +1054,27 @@ public class DiffTableViewer extends Composite {
 
             if (!types.isEmpty() && !types.contains(el.getType())
                     && (!isSubElement || !types.contains(el.getParent().getType()))
-                    && (!isContainer(el) || el.getChildren().stream().filter(
-                            e -> types.contains(e.getType())).count() == 0)) {
+                    && (!isContainer(el) || !el.getChildren().stream()
+                            .anyMatch(e -> types.contains(e.getType())))) {
                 return false;
             }
 
             if (!sides.isEmpty() && !sides.contains(el.getSide())
                     && (!isSubElement || !sides.contains(el.getParent().getSide()))
-                    && (!isContainer(el) || el.getChildren().stream().filter(
-                            e -> sides.contains(e.getSide())).count() == 0)) {
+                    && (!isContainer(el) || !el.getChildren().stream()
+                            .anyMatch(e -> sides.contains(e.getSide())))) {
                 return false;
             }
 
-            if (!codeFilter.getPattern().isEmpty() && !codeFilter.findCode(el,
-                    elements, dbProject.getDbObject(), dbRemote.getDbObject())) {
+            if (filterName != null && !findName(el, isSubElement)) {
                 return false;
             }
 
-            if (filterName == null) {
-                return true;
-            }
+            return (codeFilter.getPattern().isEmpty() || codeFilter.findCode(el,
+                    elements, dbProject.getDbObject(), dbRemote.getDbObject()));
+        }
+
+        private boolean findName(TreeElement el, boolean isSubElement) {
             Pattern filterRegex = useRegEx ? regExPattern : null;
 
             // show all child, if parent have match
