@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -60,6 +61,7 @@ public class ProjectUpdaterTest {
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI());
+        proj.getProject().getNature(NATURE.ID).deconfigure();
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
         new ProjectUpdater(dbNew, null, null, proj).updateFull();
@@ -69,6 +71,7 @@ public class ProjectUpdaterTest {
             fail("ProjectUpdate fail: expected bases to differ");
         }
         proj.getProject().close(null);
+        proj.getProject().delete(false, true, null);
     }
 
     @After

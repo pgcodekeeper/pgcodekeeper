@@ -17,11 +17,9 @@ import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
 
-public class SQLEditorTemplateAssistProcessor extends
-        TemplateCompletionProcessor {
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
-    public SQLEditorTemplateAssistProcessor() {
-    }
+public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
 
     @Override
     protected Template[] getTemplates(String contextTypeId) {
@@ -54,7 +52,7 @@ public class SQLEditorTemplateAssistProcessor extends
         try {
             while (i > 0) {
                 char ch = document.getChar(i - 1);
-                if (!Character.isJavaIdentifierPart(ch)) {
+                if (!PgDiffUtils.isValidIdChar(ch)) {
                     break;
                 }
                 i--;
@@ -89,8 +87,7 @@ public class SQLEditorTemplateAssistProcessor extends
         context.setVariable("selection", selection.getText()); // name of the selection variables {line, word_selection //$NON-NLS-1$
         Template[] templates = getTemplates(context.getContextType().getId());
         List<ICompletionProposal> matches = new ArrayList<>();
-        for (int i = 0; i < templates.length; i++) {
-            Template template = templates[i];
+        for (Template template : templates) {
             try {
                 context.getContextType().validate(template.getPattern());
             } catch (TemplateException e) {
@@ -108,7 +105,7 @@ public class SQLEditorTemplateAssistProcessor extends
         }
         return matches.toArray(new ICompletionProposal[matches.size()]);
     }
-    
+
     public List<ICompletionProposal> getAllTemplates(ITextViewer viewer,
             int offset) {
         List<ICompletionProposal> result = new ArrayList<>();
@@ -118,7 +115,7 @@ public class SQLEditorTemplateAssistProcessor extends
         Template[] templates = getTemplates(context.getContextType().getId());
         for (Template template : templates) {
             result.add(createProposal(template, context, (IRegion) region,
-                getRelevance(template, prefix)));
+                    getRelevance(template, prefix)));
         }
         return result;
     }

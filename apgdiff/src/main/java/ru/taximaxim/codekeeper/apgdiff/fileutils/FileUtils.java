@@ -20,8 +20,7 @@ public final class FileUtils {
     public static void deleteRecursive(Path f) throws IOException {
         if (Files.isDirectory(f)) {
             try (Stream<Path> stream = Files.list(f)){
-                Path[] list = stream.toArray(Path[]::new);
-                for(Path sub : list) {
+                for (Path sub : (Iterable<Path>) stream::iterator) {
                     deleteRecursive(sub);
                 }
             } catch (UncheckedIOException wrapEx) {

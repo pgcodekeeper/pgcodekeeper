@@ -15,6 +15,38 @@
     <artifactId>ru.taximaxim.codekeeper.standalone.product</artifactId>
     <version>4.1.2-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
+    
+    <properties>
+        <cli-archive-file>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</cli-archive-file>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>deploy-cli-github</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>groovy-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>deploy-github-release.groovy</source>
+                                    <properties>
+                                        <cli-version>${unqualifiedVersion}</cli-version>
+                                    </properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -57,7 +89,9 @@
                         </goals>
                         <configuration>
                             <target>
-                                <chmod file="${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh" perm="0775" />
+                                <chmod
+                                    file="${project.basedir}/target/products/ru.taximaxim.codekeeper.standalone.product/linux/gtk/x86_64/pgcodekeeper-cli.sh"
+                                    perm="0775" />
                             </target>
                         </configuration>
                     </execution>
@@ -81,7 +115,7 @@
                     <products>
                         <product>
                             <id>ru.taximaxim.codekeeper.standalone.product</id>
-                            <archiveFileName>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
+                            <archiveFileName>${cli-archive-file}</archiveFileName>
                         </product>
                     </products>
                 </configuration>

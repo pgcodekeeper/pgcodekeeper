@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -27,6 +28,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
@@ -76,16 +78,12 @@ public class DbSourceTest {
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // testing itself
-            PgDbProject proj = new PgDbProject(project);
-            proj.openProject();
-
-            assertEquals("Project name differs", dir.getName(), proj.getProjectName());
-
-            performTest(DbSource.fromProject(proj));
-
-            proj.deleteFromWorkspace();
+            assertEquals("Project name differs", dir.getName(), project.getName());
+            performTest(DbSource.fromProject(new PgDbProject(project)));
+            project.delete(false, true, null);
         }
     }
 
@@ -109,6 +107,7 @@ public class DbSourceTest {
     private IProject createProjectInWorkspace(String projectName) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
         PgDbProject.createPgDbProject(project, null);
+        project.getNature(NATURE.ID).deconfigure();
 
         assertNotNull("Project location cannot be determined", project.getLocation());
         return project;
