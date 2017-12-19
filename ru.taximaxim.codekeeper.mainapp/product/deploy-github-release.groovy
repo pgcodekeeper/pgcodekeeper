@@ -9,8 +9,8 @@ Required parameters:
 */
 
 AUTH_TOKEN = System.getenv('GITHUB_TOKEN')
-VERSION = pom.properties['cli-version']
-FILE = pom.properties['cli-archive-file']
+VERSION = properties['cli-version']
+FILE = properties['cli-archive-file']
 
 assert AUTH_TOKEN?.length()
 assert VERSION?.length()

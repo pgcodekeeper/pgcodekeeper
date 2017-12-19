@@ -37,7 +37,7 @@
                                 </goals>
                                 <configuration>
                                     <scripts>
-                                        <script>file:/${project.basedir}/deploy-github-release.groovy</script>
+                                        <script>file:///${project.basedir}/deploy-github-release.groovy</script>
                                     </scripts>
                                     <properties>
                                         <cli-version>${unqualifiedVersion}</cli-version>
