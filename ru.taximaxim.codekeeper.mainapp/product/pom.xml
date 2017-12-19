@@ -17,7 +17,7 @@
     <packaging>eclipse-repository</packaging>
     
     <properties>
-        <cli-archive-file>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</cli-archive-file>
+        <archive-filename>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archive-filename>
     </properties>
 
     <profiles>
@@ -38,6 +38,7 @@
                                     <source>deploy-github-release.groovy</source>
                                     <properties>
                                         <cli-version>${unqualifiedVersion}</cli-version>
+                                        <cli-archive-file>${project.basedir}/target/products/${archive-filename}-linux.gtk.x86_64.zip</cli-archive-file>
                                     </properties>
                                 </configuration>
                             </execution>
@@ -115,7 +116,7 @@
                     <products>
                         <product>
                             <id>ru.taximaxim.codekeeper.standalone.product</id>
-                            <archiveFileName>${cli-archive-file}</archiveFileName>
+                            <archiveFileName>${archive-filename}</archiveFileName>
                         </product>
                     </products>
                 </configuration>
