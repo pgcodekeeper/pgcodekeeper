@@ -86,12 +86,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ImprovePerformanceJdbcLoader"
-            id="ru.taximaxim.codekeeper.ui.command.ImprovePerformanceJdbc"
-            name="%command.name.improvePerformanceJdbc">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.QuickUpdate"
             name="%command.commandname.QuickUpdate">
         </command>
