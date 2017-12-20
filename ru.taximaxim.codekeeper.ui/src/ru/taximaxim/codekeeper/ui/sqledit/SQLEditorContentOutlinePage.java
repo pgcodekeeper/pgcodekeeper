@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
@@ -83,7 +84,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     public void setActionBars(IActionBars actionBars) {
         super.setActionBars(actionBars);
 
-        Action sortAction = new Action("Sort", Action.AS_CHECK_BOX) {
+        Action sortAction = new Action(Messages.SQLEditorContentOutlinePage_sort_alphabetically,
+                Action.AS_CHECK_BOX) {
 
             @Override
             public void run() {
@@ -100,7 +102,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         sortAction.setImageDescriptor(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONSORT)));
 
-        Action hideAction = new Action("Hide non-dangerous statements", Action.AS_CHECK_BOX) {
+        Action hideAction = new Action(Messages.SQLEditorContentOutlinePage_hide_non_dangerous,
+                Action.AS_CHECK_BOX) {
 
             @Override
             public void run() {

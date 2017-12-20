@@ -6,9 +6,7 @@ import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation implements Serializable {
-    /**
-     *
-     */
+
     private static final long serialVersionUID = -7110926210150404390L;
     private final GenericColumn objName;
     private final int offset;
@@ -141,15 +139,13 @@ public class PgObjLocation implements Serializable {
             return true;
         }
 
-        if (action == StatementActions.ALTER){
+        if (action == StatementActions.ALTER) {
             if (type == DbObjType.TABLE) {
-                if (DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches() ||
-                        DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches()) {
-                    return true;
-                }
-            } else if (type == DbObjType.SEQUENCE &&
-                    DangerStatement.RESTART_WITH.getRegex().matcher(text).matches()) {
-                return true;
+                return DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches()
+                        || DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches();
+            } else {
+                return type == DbObjType.SEQUENCE &&
+                        DangerStatement.RESTART_WITH.getRegex().matcher(text).matches();
             }
         }
 
