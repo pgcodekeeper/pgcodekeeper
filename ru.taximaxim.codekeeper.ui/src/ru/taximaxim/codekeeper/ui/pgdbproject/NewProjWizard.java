@@ -305,7 +305,7 @@ class PageDb extends WizardPage {
             }
         });
 
-        storePicker = new DbStorePicker(group, mainPrefs, true, false, true);
+        storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 

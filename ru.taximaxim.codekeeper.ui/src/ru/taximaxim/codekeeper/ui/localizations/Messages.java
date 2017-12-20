@@ -155,6 +155,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+    public static String CodeFilter_search_by_code;
+
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
@@ -236,15 +238,24 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_sql_file_filter;
 
+    public static String DiffTableViewer_collapse_all;
+    public static String DiffTableViewer_apply_to;
+
     public static String DiffTableViewer_copy_as_regex;
 
-    public static String DiffTableViewer_error_load_checked_set;
-    public static String DiffTableViewer_error_save_checked_set;
+    public static String DiffTableViewer_expand_all;
+    public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
 
+    public static String DiffTableViewer_selected_count;
+
     public static String DiffTableViewer_show_filters;
+
+    public static String DiffTableViewer_to_database;
+
+    public static String DiffTableViewer_to_project;
 
     public static String DiffWizard_db_tz;
 
