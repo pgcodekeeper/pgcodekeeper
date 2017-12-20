@@ -34,6 +34,10 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SQLEditorContentOutlinePage_hide_non_dangerous;
+
+    public static String SQLEditorContentOutlinePage_sort_alphabetically;
+
     public static String SQLEditorStatementTypes_consts;
 
     public static String SQLEditorStatementTypes_funcs;
