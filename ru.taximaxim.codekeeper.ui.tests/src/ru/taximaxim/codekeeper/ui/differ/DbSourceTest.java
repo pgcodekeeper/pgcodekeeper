@@ -10,88 +10,48 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Random;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.TEST;
-import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
-import cz.startnet.utils.pgdiff.loader.JdbcTestUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgExtension;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempDir;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
 
-    private static final String dbName = MessageFormat.format(
-            TEST.REMOTE_DB_PATTERN,
-            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)));
-    private PgDatabase dbPredefined;
+    private static final String DUMP = "test_dump.sql";
+
+    private static PgDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
 
     @BeforeClass
-    public static void initDb() throws IOException, InterruptedException, LicenseException {
-        JdbcTestUtils.createDb(dbName);
-        ApgdiffTestUtils.fillDB(dbName);
+    public static void initDb() throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
+        dbPredefined = ApgdiffTestUtils.loadTestDump(DUMP, DbSourceTest.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
         assertTrue("Workspace does not exist: " + workspacePath.getAbsolutePath(), workspacePath.exists());
-
-        IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-        prefs.setValue(PREF.LICENSE_PATH, ApgdiffTestUtils.getTestLicenseUrl().toString());
-    }
-
-    @Before
-    public void fillDump() throws IOException, InterruptedException, LicenseException {
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
-        args.setInCharsetName(ApgdiffConsts.UTF_8);
-        dbPredefined = ApgdiffTestUtils.loadTestDump(
-                TEST.RESOURCE_DUMP, JdbcLoaderTest.class, args);
     }
 
     @Test
-    public void testJdbc() throws IOException, LicenseException, InterruptedException, CoreException {
-
-        // doesn't have privileges to change default extension in remote database
-        PgExtension ext = new PgExtension("plpgsql", null);
-        ext.setSchema("pg_catalog");
-        ext.setComment("'PL/pgSQL procedural language'");
-        dbPredefined.addExtension(ext);
-
-        performTest(DbSource.fromJdbc(TEST.REMOTE_HOST,
-                TEST.REMOTE_PORT,
-                TEST.REMOTE_USERNAME,
-                TEST.REMOTE_PASSWORD,
-                dbName,
-                ApgdiffConsts.UTC,
-                true));
-    }
-
-    @Test
-    public void testDirTree() throws IOException, LicenseException, InterruptedException, CoreException {
+    public void testDirTree() throws IOException, InterruptedException, CoreException {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             File dir = exportDir.get().toFile();
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
@@ -101,16 +61,16 @@ public class DbSourceTest {
     }
 
     @Test
-    public void testFile() throws IOException, LicenseException, URISyntaxException, InterruptedException,
+    public void testFile() throws IOException, URISyntaxException, InterruptedException,
     CoreException {
-        URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
+        URL urla = DbSourceTest.class.getResource(DUMP);
 
         performTest(DbSource.fromFile(true, ApgdiffUtils.getFileFromOsgiRes(urla), ApgdiffConsts.UTF_8));
     }
 
     @Test
-    public void testProject() throws CoreException, IOException, LicenseException,
-    PgCodekeeperUIException, InterruptedException{
+    public void testProject() throws CoreException, IOException, PgCodekeeperUIException,
+    InterruptedException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
             File dir = tempDir.get().toFile();
             // create empty project in temp dir
@@ -118,60 +78,17 @@ public class DbSourceTest {
 
             // populate project with data
             new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // testing itself
-            PgDbProject proj = new PgDbProject(project);
-            proj.openProject();
-
-            assertEquals("Project name differs", dir.getName(), proj.getProjectName());
-
-            performTest(DbSource.fromProject(proj));
-
-            proj.deleteFromWorkspace();
+            assertEquals("Project name differs", dir.getName(), project.getName());
+            performTest(DbSource.fromProject(new PgDbProject(project)));
+            project.delete(false, true, null);
         }
-    }
-
-    @Test
-    public void testJdbcFromProject()
-            throws CoreException, IOException, LicenseException, PgCodekeeperUIException,
-            URISyntaxException, BackingStoreException, InterruptedException {
-
-        // doesn't have privileges to change default extension in remote database
-        PgExtension ext = new PgExtension("plpgsql", null);
-        ext.setSchema("pg_catalog");
-        ext.setComment("'PL/pgSQL procedural language'");
-        dbPredefined.addExtension(ext);
-
-        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
-            File dir = tempDir.get().toFile();
-            // create empty project in temp dir
-            IProject project = createProjectInWorkspace(dir.getName());
-
-            // populate project with data
-            new ModelExporter(dir, dbPredefined, ApgdiffConsts.UTF_8).exportFull();
-
-            // set required settings
-            PgDbProject proj = new PgDbProject(project);
-            proj.openProject();
-
-            assertEquals("Project name differs", dir.getName(), proj.getProjectName());
-
-            // testing itself
-            performTest(DbSource.fromJdbc(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                    TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName, ApgdiffConsts.UTC, true));
-
-            proj.deleteFromWorkspace();
-        }
-    }
-
-    @AfterClass
-    public static void complete() throws IOException {
-        // ApgdiffTestUtils.dropContents(dbName);
-        ApgdiffTestUtils.dropDB(dbName);
     }
 
     private void performTest(DbSource source)
-            throws IOException, InterruptedException, LicenseException, CoreException {
+            throws IOException, InterruptedException, CoreException {
         assertFalse("DB source should not be loaded", source.isLoaded());
 
         try{
@@ -190,6 +107,7 @@ public class DbSourceTest {
     private IProject createProjectInWorkspace(String projectName) throws CoreException{
         IProject project = workspaceRoot.getProject(projectName);
         PgDbProject.createPgDbProject(project, null);
+        project.getNature(NATURE.ID).deconfigure();
 
         assertNotNull("Project location cannot be determined", project.getLocation());
         return project;

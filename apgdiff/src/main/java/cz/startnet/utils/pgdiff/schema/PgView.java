@@ -465,26 +465,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof PgView) {
+    public boolean compareChildren(PgStatement obj) {
+        if(obj instanceof PgView) {
             PgView view = (PgView) obj;
-
-            eq = super.equals(obj)
-
-                    && PgDiffUtils.setlikeEquals(rules, view.rules)
+            return PgDiffUtils.setlikeEquals(rules, view.rules)
                     && PgDiffUtils.setlikeEquals(triggers, view.triggers);
         }
-
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+        return false;
     }
 
     @Override

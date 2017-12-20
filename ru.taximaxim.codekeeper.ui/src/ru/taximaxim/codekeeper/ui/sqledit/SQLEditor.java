@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +73,6 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.TempFile;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
@@ -117,6 +116,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
+
+    private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -230,7 +231,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !PgUIDumpLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
-        } catch (IOException | InterruptedException | LicenseException | CoreException ex) {
+        } catch (IOException | InterruptedException | CoreException ex) {
             Log.log(ex);
         }
     }
@@ -254,7 +255,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         try {
             parser = initParser();
-        } catch (InterruptedException | IOException | LicenseException | CoreException ex) {
+        } catch (InterruptedException | IOException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
         }
         parser.addListener(parserListener);
@@ -266,7 +267,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         getSite().getPage().addPartListener(partListener);
     }
 
-    private PgDbParser initParser() throws InterruptedException, IOException, LicenseException, CoreException {
+    private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
         IEditorInput in = getEditorInput();
 
         IResource res = ResourceUtil.getResource(in);
@@ -288,7 +289,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      * @return true if refresh was triggered successfully
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
-            throws InterruptedException, IOException, LicenseException, CoreException {
+            throws InterruptedException, IOException, CoreException {
         if (res instanceof IFile && res.getProject().hasNature(NATURE.ID)) {
             parser.getObjFromProjFile((IFile) res, monitor);
             return true;
@@ -299,7 +300,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IURIEditorInput uri = (IURIEditorInput) in;
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, uri.getURI().toString(), monitor);
+            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
             return true;
         }
         return false;
@@ -363,6 +364,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return getSourceViewer().getTextWidget().getText();
     }
 
+    public void cancelDdl() {
+        scriptThreadJobWrapper.cancel();
+    }
+
     public void updateDdl() {
         DbInfo dbInfo = currentDB;
         if (dbInfo == null){
@@ -422,16 +427,11 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         Thread scriptThread = new Thread(launcher);
-        scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+        scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
+                Messages.sqlScriptDialog_exception_during_script_execution,e));
 
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.sqlScriptDialog_exception_during_script_execution,e);
-            }
-        });
-
-        ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
         saveLastDb(dbInfo);
@@ -443,7 +443,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         private final Thread scriptThread;
 
         ScriptThreadJobWrapper(Thread scriptThread) {
-            super(Messages.SqlEditor_update_ddl, SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
+            super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
+                    SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
             this.scriptThread = scriptThread;
         }
 
@@ -467,6 +468,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 }
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
+                scriptThread.interrupt();
                 return Status.CANCEL_STATUS;
             } finally {
                 monitor.done();

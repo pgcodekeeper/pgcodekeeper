@@ -167,7 +167,7 @@ table_action
 set_attribute_option
     : SET storage_parameter
     ;
-    
+
 set_storage
     : SET STORAGE storage_option
     ;

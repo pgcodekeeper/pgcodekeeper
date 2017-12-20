@@ -15,14 +15,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import cz.startnet.utils.pgdiff.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -47,36 +46,13 @@ public class PgDiffDepciesTest {
             // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
             // view v2
             {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
-            // долгий тест накатывает перемещение объектов из одной
-            // схемы в другую, пользователь выбирает все измененные
-            // объекты для наката
-            {"move_object_between_schemas", "move_object_between_schemas"},
-            // тестирует накат только измененных колонок, пользователь выбирает таблицу
-            {"multi_alter_table", "multi_alter_table_usr_t_house"},
-            // пользователь выбирает только v_house
-            {"multi_alter_table", "multi_alter_table_usr_v_house"},
-            // пользователь выбирает только v_house_w
-            {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
-            // пользователь выбирает только функцию update_house_reached
-            {"multi_alter_table", "multi_alter_table_usr_func"},
-            // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
-            {"multi_alter_table", "multi_alter_table_usr_all"},
-            // накат триггера и функции из разных схем, пользователь выбрал только функцию
-            {"trigger_before_insert", "trigger_before_insert_usr_funct"},
-            // пользователь выбрал только триггер
-            {"trigger_before_insert", "trigger_before_insert_usr_trig"},
-            // пользователь выбрал триггер и функцию
-            {"trigger_before_insert", "trigger_before_insert_usr_all"},
             // изменяется тип колонки, пользователь выбирает таблицу
             {"trig_upd_col","trig_upd_col__usr_tbl"},
-            // задача из редмайна по номеру, пользователь выбирает все объекты
-            {"err6049", "err6049"},
-            {"err7095", "err7095"},
             // удаляется исходная таблица, пользователь выбрал на удаление t1
             {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
             // удаляется исходная таблица, пользователь выбрал t2
-            // TODO здесь не нужно создавать колонку, она путем удаления
-            // наследования создастся
+            // TODO здесь не нужно создавать колонку, она создастся путем удаления
+            // наследования
             {"table_inherits_del_t1", "table_inherits_del_t1_usr_t2"},
             // Таблица перестает наследовать,
             // TODO здесь ошибка не должно
@@ -86,7 +62,7 @@ public class PgDiffDepciesTest {
             // меняеются колонки в наследующей таблице и добавляется
             // сиквенс, пользователь выбра таблицу
             // TODO если в этом тесте удалить из исходной базы seq1,
-            // то он не появится в скрипте, потому, что нет свзяи от
+            // то он не появится в скрипте, потому, что нет связи от
             // сиквенса к таблице по кр мере со стороны парсера
             {"inherit_table", "inherit_table_usr"},
             // колонка меняет тип на новый, пользователь выбрал только тип
@@ -95,6 +71,8 @@ public class PgDiffDepciesTest {
             {"chg_col_type", "chg_col_type_usr_t1"},
             // колонка меняет тип на новый, пользователь выбрал таблицу и тип
             {"chg_col_type", "chg_col_type_usr_all"},
+            // Удаляется индекс и внешний ключ, пользователь выбрал индекс
+            {"drop_index", "drop_index_usr_ind"},
             // тип изменяется как альтер, пользователь выбрал его
             {"alter_type", "alter_type_usr"},
             // тип изменяется через drop create, пользователь выбирает его
@@ -102,8 +80,58 @@ public class PgDiffDepciesTest {
             // удаляется таблица с содержимым индексом и триггером,
             // пользователь выбрал только таблицу
             {"drop_tbl", "drop_tbl_usr_tbl"},
-            // выбраны все объекты сложное вью with запросом, также с coalesce
-            {"compl_view", "compl_view"}
+            // к таблице добавляется триггер и функция,
+            // пользователь выбрал только функцию
+            {"add_table_and_trigger", "add_table_and_trigger_usr_function"},
+            // к таблице добавляется триггер и функция,
+            // пользователь выбрал только триггер
+            {"add_table_and_trigger", "add_table_and_trigger_usr_trigger"},
+            // к таблице добавляется триггер и функция,
+            // пользователь выбрал все
+            {"add_table_and_trigger", "add_table_and_trigger"},
+            // перенос объектов из одной схемы в другую,
+            // пользователь выбрал все объекты
+            // TODO ошибки при частичном выборе, к примеру при выборе таблицы не подтягивается
+            // тип и последовательность, исправляется переработкой алгоритма работой с колонками
+            {"move_obj_to_schema", "move_obj_to_schema"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал таблицу t1
+            {"change_view","change_view_usr_t1"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал таблицу t2
+            {"change_view","change_view_usr_t2"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал таблицу t3
+            {"change_view","change_view_usr_t3"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v2
+            {"change_view","change_view_usr_v2"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v3
+            {"change_view","change_view_usr_v3"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v4
+            {"change_view","change_view_usr_v4"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v5
+            {"change_view","change_view_usr_v5"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v6
+            {"change_view","change_view_usr_v6"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v8
+            {"change_view","change_view_usr_v8"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал вьюху v8 и таблицу t1
+            // задача 6049
+            {"change_view","change_view_usr_v8_t1"},
+            // изменение таблиц и вьюх, зависящих от них
+            // пользователь выбрал все объекты
+            {"change_view","change_view"},
+            // пересоздание вьюхи с комментарием
+            // пользователь выбрал таблицу
+            // задача 7095
+            {"chg_view_with_comment", "chg_view_with_comment_usr_table"}
         });
     }
 
@@ -139,11 +167,11 @@ public class PgDiffDepciesTest {
     }
 
     @Test(timeout = 120000)
-    public void runDiff() throws IOException, InterruptedException, LicenseException {
+    public void runDiff() throws IOException, InterruptedException {
 
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+        final PgDiffArguments args = new PgDiffArguments();
         PgDatabase oldDatabase = ApgdiffTestUtils.loadTestDump(
                 getUsrSelName(FILES_POSTFIX.ORIGINAL_SQL), PgDiffDepciesTest.class, args);
         PgDatabase newDatabase = ApgdiffTestUtils.loadTestDump(

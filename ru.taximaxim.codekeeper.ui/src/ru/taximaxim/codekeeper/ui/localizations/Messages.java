@@ -34,6 +34,10 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SQLEditorContentOutlinePage_hide_non_dangerous;
+
+    public static String SQLEditorContentOutlinePage_sort_alphabetically;
+
     public static String SQLEditorStatementTypes_consts;
 
     public static String SQLEditorStatementTypes_funcs;
@@ -155,6 +159,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+    public static String CodeFilter_search_by_code;
+
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
@@ -236,15 +242,24 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_sql_file_filter;
 
+    public static String DiffTableViewer_collapse_all;
+    public static String DiffTableViewer_apply_to;
+
     public static String DiffTableViewer_copy_as_regex;
 
-    public static String DiffTableViewer_error_load_checked_set;
-    public static String DiffTableViewer_error_save_checked_set;
+    public static String DiffTableViewer_expand_all;
+    public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
 
+    public static String DiffTableViewer_selected_count;
+
     public static String DiffTableViewer_show_filters;
+
+    public static String DiffTableViewer_to_database;
+
+    public static String DiffTableViewer_to_project;
 
     public static String DiffWizard_db_tz;
 
@@ -289,19 +304,55 @@ public final class Messages extends NLS {
     public static String ImprovePerformanceJdbcLoader_performance_helpers;
 
     public static String InternalIgnoreList_error_workspace_path;
-    public static String LicensePrefs_browse;
-
-    public static String LicensePrefs_descr;
-
-    public static String LicensePrefs_file;
-
-    public static String LicensePrefs_integrated;
-
-    public static String LicensePrefs_loading_error;
-
-    public static String LicensePrefs_open;
 
     public static String ManualDepciesDialog_set_add_depcies;
+    public static String MockDataPage_add_column;
+
+    public static String MockDataPage_column_down;
+
+    public static String MockDataPage_column_generator;
+
+    public static String MockDataPage_column_name;
+
+    public static String MockDataPage_column_type;
+
+    public static String MockDataPage_column;
+
+    public static String MockDataPage_column_up;
+
+
+    public static String MockDataPage_delete_column;
+
+    public static String MockDataPage_description;
+
+    public static String MockDataPage_empty_table_name;
+
+    public static String MockDataPage_generation_failed;
+
+    public static String MockDataPage_incorrect_row_count;
+
+    public static String MockDataPage_invalid_value;
+
+    public static String MockDataPage_length;
+
+    public static String MockDataPage_maximum_value;
+
+    public static String MockDataPage_range_end;
+
+    public static String MockDataPage_range_start;
+
+    public static String MockDataPage_row_count;
+
+    public static String MockDataPage_schema_name;
+
+    public static String MockDataPage_step;
+
+    public static String MockDataPage_table_name;
+
+    public static String MockDataWizard_create_data;
+
+    public static String MockDataWizard_create_data_table;
+
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
@@ -457,14 +508,12 @@ public final class Messages extends NLS {
 
     public static String yesNoEditingSupport_yes;
 
-    //feedback_dialog
-
-    public static String name;
     public static String e_mail;
     public static String feedback_message;
     public static String add_log;
 
-    public static String FeedBackDialog_best_regards;
+
+    public static String FeedBackDialog_bad_response;
 
     public static String FeedBackDialog_could_not_send;
 
@@ -477,10 +526,6 @@ public final class Messages extends NLS {
     public static String FeedBackDialog_feedback;
 
     public static String FeedBackDialog_feedback_sent;
-
-    public static String FeedBackDialog_feedback_subject;
-
-    public static String FeedBackDialog_invalid_address;
 
     public static String FeedBackDialog_send;
 
@@ -511,6 +556,42 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source_msg;
 
     public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
+
+    // usage report
+    public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String UsageReport_Reporting_Usage;
+    public static String UsageReport_Querying_Enablement;
+
+    public static String UsageReportPreferencePage_Description;
+    public static String UsageReportPreferencePage_AllowReporting;
+
+    public static String UsageReport_DialogTitle;
+    public static String UsageReport_DialogMessage;
+
+    public static String HttpGetMethod_Error_Http;
+    public static String HttpGetMethod_Error_Io;
+    public static String HttpGetMethod_Success;
+
+    public static String UsageReportPreferencePage_ReportedValues;
+    public static String UsageReportPreferencePage_CurrentUsageHit;
+    public static String UsageReportPreferencePage_FirstUsageHit;
+    public static String UsageReportPreferencePage_Components;
+    public static String UsageReportPreferencePage_Version;
+    public static String UsageReportPreferencePage_LastUsageHit;
+    public static String UsageReportPreferencePage_NumberOfUsageHits;
+    public static String UsageReportPreferencePage_OperatingSystem;
+    public static String UsageReportPreferencePage_OperatingSystemVersion;
+    public static String UsageReportPreferencePage_ProductId;
+    public static String UsageReportPreferencePage_ProductVersion;
+
+    public static String UsageReportPreferencePage_JvmName;
+
+    public static String UsageReportPreferencePage_Events;
+    public static String UsageReportPreferencePage_EventComponent;
+    public static String UsageReportPreferencePage_EventVersion;
+    public static String UsageReportPreferencePage_EventAction;
+    public static String UsageReportPreferencePage_EventValue;
 
     // SONAR-ON
 

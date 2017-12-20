@@ -19,7 +19,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -174,7 +173,7 @@ public class TreeDiffer implements IRunnableWithProgress {
                 s.get(SubMonitor.convert(mpm, Messages.TreeDiffer_loading_schema, 1));
             } catch (InterruptedException ex) {
                 return Status.CANCEL_STATUS;
-            } catch (IOException | LicenseException | CoreException ex) {
+            } catch (IOException | CoreException ex) {
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.TreeDiffer_schema_load_error, ex);
             } finally {
                 mpm.done();

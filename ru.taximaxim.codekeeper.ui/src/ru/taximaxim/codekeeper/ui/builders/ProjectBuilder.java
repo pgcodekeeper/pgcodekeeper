@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
@@ -49,7 +48,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             }
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
-        } catch (IOException | LicenseException | IllegalStateException ex) {
+        } catch (IOException | IllegalStateException ex) {
             throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
         } finally {
             // update decorators if any kind of build was run
@@ -60,7 +59,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     }
 
     private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)
-            throws CoreException, InterruptedException, IOException, LicenseException {
+            throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
             if (PgUIDumpLoader.isInProject(d)) {

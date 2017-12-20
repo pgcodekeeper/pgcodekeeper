@@ -5,10 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +16,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -28,10 +23,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,6 +33,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -78,7 +72,6 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.statushandlers.StatusManager;
@@ -122,6 +115,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
@@ -134,8 +128,6 @@ import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
-
-    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss"); //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -151,10 +143,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite contNotifications;
     private Label lblNotificationText;
     private Button btnDismissRefresh;
+    private Button btnGetChanges;
 
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
+    private IStatusLineManager manager;
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
@@ -194,6 +188,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
+
+        manager = getEditorSite().getActionBars().getStatusLineManager();
 
         parent.setLayout(new GridLayout());
         lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
@@ -242,7 +238,62 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false);
+        diffTable = new DiffTableViewer(sashOuter, false, manager) {
+
+            @Override
+            public void createRightSide(Composite container) {
+                GridLayout layout = new GridLayout(4, false);
+                layout.marginHeight = 0;
+                layout.marginWidth = 0;
+                container.setLayout(layout);
+
+                Label l = new Label(container, SWT.NONE);
+                l.setEnabled(false);
+                l.setText(Messages.DiffTableViewer_apply_to);
+                l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+
+                Button btnCommit = new Button(container, SWT.PUSH);
+                btnCommit.setText(Messages.DiffTableViewer_to_project);
+                btnCommit.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONAPPSMALL))));
+                btnCommit.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        try {
+                            commit();
+                        } catch (PgCodekeeperException ex) {
+                            ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
+                        }
+                    }
+                });
+
+                Button btnDiff = new Button(container, SWT.PUSH);
+                btnDiff.setText(Messages.DiffTableViewer_to_database);
+                btnDiff.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONDATABASE))));
+                btnDiff.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        diff();
+                    }
+                });
+
+                btnGetChanges = new Button(container, SWT.PUSH);
+                btnGetChanges.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                        .getBundle().getResource(FILE.ICONREFRESH))));
+                btnGetChanges.setText(Messages.DiffTableViewer_get_changes);
+                btnGetChanges.addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        getChanges();
+                    }
+                });
+            }
+        };
+
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -313,6 +364,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void setFocus() {
         parent.setFocus();
+        diffTable.updateObjectsLabels();
     }
 
     @Override
@@ -344,7 +396,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             handlerCloseProject(event);
             break;
         case IResourceChangeEvent.POST_CHANGE:
-            handleChangeProject(event);
+            handleChangeProject(event.getDelta());
             break;
         default:
             break;
@@ -352,7 +404,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private void handlerCloseProject(IResourceChangeEvent event) {
-        if (event.getResource().getName().equals(getEditorInput().getName())) {
+        if (event.getResource().getProject().equals(proj.getProject())) {
             UiSync.exec(parent, new Runnable(){
 
                 @Override
@@ -365,34 +417,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
     }
 
-    private void handleChangeProject(IResourceChangeEvent event) {
-        IResourceDelta rootDelta = event.getDelta();
-
-        ApgdiffConsts.WORK_DIR_NAMES[] dirs = ApgdiffConsts.WORK_DIR_NAMES.values();
-        final IPath[] projDirs = new IPath[dirs.length];
-        for (int i = 0; i < dirs.length; ++i) {
-            projDirs[i] = proj.getProject().getFullPath().append(dirs[i].name());
-        }
-
+    private void handleChangeProject(IResourceDelta rootDelta) {
         final boolean[] schemaChanged = new boolean[1];
         try {
-            rootDelta.accept(new IResourceDeltaVisitor() {
-
-                @Override
-                public boolean visit(IResourceDelta delta) throws CoreException {
-                    if (schemaChanged[0]) {
-                        return false;
-                    }
-                    // something other than just markers has changed
-                    // check that it's our resource
-                    if (delta.getFlags() != IResourceDelta.MARKERS &&
-                            delta.getResource().getType() == IResource.FILE &&
-                            PgUIDumpLoader.isInProject(delta)) {
-                        schemaChanged[0] = true;
-                        return false;
-                    }
-                    return true;
+            rootDelta.accept(delta -> {
+                if (schemaChanged[0]) {
+                    return false;
                 }
+                // something other than just markers has changed
+                // check that it's our resource
+                if (delta.getFlags() != IResourceDelta.MARKERS &&
+                        PgUIDumpLoader.isInProject(delta) &&
+                        delta.getResource().getType() == IResource.FILE &&
+                        delta.getResource().getProject().equals(proj.getProject())) {
+                    schemaChanged[0] = true;
+                    return false;
+                }
+                return true;
             });
         } catch (CoreException ex) {
             Log.log(ex);
@@ -474,7 +515,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
+            public void aboutToRun(IJobChangeEvent event) {
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        btnGetChanges.setEnabled(false);
+                    }
+                });
+            }
+
+
+            @Override
             public void done(IJobChangeEvent event) {
+                UiSync.exec(parent, () -> {
+                    if (!parent.isDisposed()) {
+                        btnGetChanges.setEnabled(true);
+                    }
+                });
+
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
@@ -653,9 +710,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             }
         }
 
-        IEditorInput file = null;
-        boolean inProj = false;
         try {
+            boolean inProj = false;
             String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
             // if select "YES" with toggle
             if (creationMode.equals(MessageDialogWithToggle.ALWAYS)) {
@@ -670,42 +726,42 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 }
             }
 
-            file = createScriptFile(differ, inProj);
+            String content = differ.getDiffDirect();
+            String filename = generateScriptName();
+            if (inProj) {
+                IEditorInput file = createProjectScriptFile(content, filename);
+                if (loadedRemote instanceof DbInfo) {
+                    SQLEditor.saveLastDb((DbInfo) loadedRemote, file);
+                }
+                getSite().getPage().openEditor(file, EDITOR.SQL);
+            } else {
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename);
+            }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
                     Messages.ProjectEditorDiffer_error_creating_file, ex);
         }
-        if (file != null) {
-            if (inProj && loadedRemote instanceof DbInfo) {
-                SQLEditor.saveLastDb((DbInfo) loadedRemote, file);
-            }
-            getSite().getPage().openEditor(file, EDITOR.SQL);
-        }
     }
 
-    private IEditorInput createScriptFile(Differ differ, boolean mode) throws CoreException, IOException {
-        String name = FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
+    private String generateScriptName() {
+        String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " migration"; //$NON-NLS-1$
         if (loadedRemote != null) {
             name += " for " + getRemoteName(loadedRemote); //$NON-NLS-1$
         }
-        name = FileUtils.INVALID_FILENAME.matcher(name).replaceAll(""); //$NON-NLS-1$
-        Log.log(Log.LOG_INFO, "Creating file " + name); //$NON-NLS-1$
-        if (mode){
-            IProject iProject = proj.getProject();
-            IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
-            if (!folder.exists()){
-                folder.create(IResource.NONE, true, null);
-            }
-            IFile file = folder.getFile(name + ".sql"); //$NON-NLS-1$
-            InputStream source = new ByteArrayInputStream(differ.getDiffDirect().getBytes(proj.getProjectCharset()));
-            file.create(source, IResource.NONE, null);
-            return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
-        } else {
-            Path path = Files.createTempFile(name + '_', ".sql"); //$NON-NLS-1$
-            Files.write(path, differ.getDiffDirect().getBytes());
-            IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
-            return new FileStoreEditorInput(externalFile);
+        return FileUtils.sanitizeFilename(name);
+    }
+
+    private IEditorInput createProjectScriptFile(String content, String filename) throws CoreException, IOException {
+        Log.log(Log.LOG_INFO, "Creating file " + filename); //$NON-NLS-1$
+        IProject iProject = proj.getProject();
+        IFolder folder = iProject.getFolder(PROJ_PATH.MIGRATION_DIR);
+        if (!folder.exists()){
+            folder.create(IResource.NONE, true, null);
         }
+        IFile file = folder.getFile(filename + ".sql"); //$NON-NLS-1$
+        InputStream source = new ByteArrayInputStream(content.getBytes(proj.getProjectCharset()));
+        file.create(source, IResource.NONE, null);
+        return new FileEditorInput(iProject.getFile(file.getProjectRelativePath()));
     }
 
     private void showNotificationArea(boolean visible, String message) {

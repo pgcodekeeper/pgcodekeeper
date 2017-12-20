@@ -52,7 +52,7 @@ class DbSourcePicker extends Composite {
         sourceComp.setLayout(new GridLayout(2, false));
         sourceComp.setText(groupTitle);
 
-        storePicker = new DbStorePicker(sourceComp, mainPrefs, true, true, true);
+        storePicker = new DbStorePicker(sourceComp, mainPrefs, true, true, false);
         storePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         storePicker.addListenerToCombo(new ISelectionChangedListener() {
 
@@ -114,7 +114,7 @@ class DbSourcePicker extends Composite {
         IContainer[] conts = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(dir.toURI());
         IProject project = null;
         for (IContainer cont : conts) {
-            if (cont instanceof IProject) {
+            if (cont instanceof IProject && ((IProject) cont).isOpen()) {
                 if (project == null) {
                     project = (IProject) cont;
                 } else {
