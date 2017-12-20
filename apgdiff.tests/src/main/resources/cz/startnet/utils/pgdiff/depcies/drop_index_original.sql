@@ -56,7 +56,7 @@ CREATE TABLE testtable_2 (
 --
 
 ALTER TABLE ONLY testtable_2
-    ADD CONSTRAINT testtable_2_c2_fkey FOREIGN KEY (c2) REFERENCES testtable(c1);
+    ADD CONSTRAINT testtable_2_c2_fkey FOREIGN KEY (field2) REFERENCES testtable(field1);
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
