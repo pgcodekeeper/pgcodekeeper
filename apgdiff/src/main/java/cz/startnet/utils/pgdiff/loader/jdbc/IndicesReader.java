@@ -65,12 +65,7 @@ public class IndicesReader extends JdbcReader {
         }
 
         i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
-        String[] cols = res.getArray("cols", String.class);
-        if (cols != null) {
-            for (String col : cols){
-                i.addDep(new GenericColumn(schemaName, tableName, col, DbObjType.COLUMN));
-            }
-        }
+
         return i;
     }
 }
