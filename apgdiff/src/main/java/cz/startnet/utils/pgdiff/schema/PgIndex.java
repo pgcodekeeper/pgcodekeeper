@@ -5,7 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -22,6 +25,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String tableName;
     private boolean unique;
     private boolean clusterIndex;
+    private final Set<String> columns = new HashSet<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -74,6 +78,14 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     public boolean isClusterIndex() {
         return clusterIndex;
+    }
+
+    public void addColumn(String column) {
+        columns.add(column);
+    }
+
+    public Set<String> getColumns(){
+        return Collections.unmodifiableSet(columns);
     }
 
     @Override
@@ -189,6 +201,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
         indexDst.deps.addAll(deps);
+        indexDst.columns.addAll(columns);
         return indexDst;
     }
 

@@ -297,21 +297,31 @@ public abstract class PgStatement implements IStatement {
     public abstract boolean compare(PgStatement obj);
 
     /**
-     * Compares this object and all its children with another statement.<br>
-     * This default version falls back to {@link #compare(PgStatement)}.
-     * Override for any object with nested children!
-     * Overriding classes should still call this method via <code>super</code>
-     * to get correct parent comparison and {@link #compare(PgStatement)} call.
+     * Deep part of {@link #equals(Object)}.
+     * Compares all object's child PgStatements for equality.
+     */
+    public boolean compareChildren(PgStatement obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Null PgStatement!");
+        }
+        return true;
+    }
+
+    /**
+     * Compares this object and all its children with another statement.
      * <hr><br>
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(Object obj){
-        if (obj instanceof PgStatement) {
-            return this.compare((PgStatement) obj)
-                    && this.parentNamesEquals((PgStatement) obj);
+    public final boolean equals(Object obj){
+        if (this == obj) {
+            return true;
+        } else if (obj instanceof PgStatement) {
+            PgStatement st = (PgStatement) obj;
+            return this.parentNamesEquals(st)
+                    && this.compare(st)
+                    && this.compareChildren(st);
         }
-
         return false;
     }
 
@@ -329,10 +339,7 @@ public abstract class PgStatement implements IStatement {
             p = p.getParent();
             p2 = p2.getParent();
         }
-        if (p == null && p2 == null) {
-            return true;
-        }
-        return false;
+        return p == null && p2 == null;
     }
 
     /**
@@ -341,13 +348,12 @@ public abstract class PgStatement implements IStatement {
      * {@link #parentNamesEquals(PgStatement)} and {@link #equals(Object)}<br>
      * Caches the hashcode value until recalculation is requested via {@link #resetHash()}.
      * Always request recalculation when you change the hashed fields.<br>
-     * Override only with bare <code>super</code> call.
      * Do actual hashing in {@link #computeHash()}.
      * <hr><br>
      * {@inheritDoc}
      */
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         int h = hash;
         if (h == 0) {
             h = computeHash();

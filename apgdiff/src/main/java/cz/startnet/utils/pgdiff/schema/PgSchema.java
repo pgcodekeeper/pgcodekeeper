@@ -353,30 +353,17 @@ public class PgSchema extends PgStatement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        boolean eq = false;
-
-        if(this == obj) {
-            eq = true;
-        } else if(obj instanceof PgSchema) {
+    public boolean compareChildren(PgStatement obj) {
+        if (obj instanceof PgSchema) {
             PgSchema schema = (PgSchema) obj;
-
-            eq = super.equals(obj)
-
-                    && PgDiffUtils.setlikeEquals(domains, schema.domains)
+            return PgDiffUtils.setlikeEquals(domains, schema.domains)
                     && PgDiffUtils.setlikeEquals(sequences, schema.sequences)
                     && PgDiffUtils.setlikeEquals(functions, schema.functions)
                     && PgDiffUtils.setlikeEquals(views, schema.views)
                     && PgDiffUtils.setlikeEquals(tables, schema.tables)
                     && PgDiffUtils.setlikeEquals(types, schema.types);
         }
-
-        return eq;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+        return false;
     }
 
     @Override

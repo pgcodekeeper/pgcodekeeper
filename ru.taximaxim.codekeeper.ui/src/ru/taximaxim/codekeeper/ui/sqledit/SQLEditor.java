@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,6 +116,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
+
+    private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -298,7 +300,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             IURIEditorInput uri = (IURIEditorInput) in;
             IDocument document = getDocumentProvider().getDocument(getEditorInput());
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            parser.fillRefsFromInputStream(stream, uri.getURI().toString(), monitor);
+            parser.fillRefsFromInputStream(stream, Paths.get(uri.getURI()).toString(), monitor);
             return true;
         }
         return false;
@@ -362,6 +364,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         return getSourceViewer().getTextWidget().getText();
     }
 
+    public void cancelDdl() {
+        scriptThreadJobWrapper.cancel();
+    }
+
     public void updateDdl() {
         DbInfo dbInfo = currentDB;
         if (dbInfo == null){
@@ -421,16 +427,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         Thread scriptThread = new Thread(launcher);
-        scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+        scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
+                Messages.sqlScriptDialog_exception_during_script_execution,e));
 
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.sqlScriptDialog_exception_during_script_execution,e);
-            }
-        });
-
-        ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 

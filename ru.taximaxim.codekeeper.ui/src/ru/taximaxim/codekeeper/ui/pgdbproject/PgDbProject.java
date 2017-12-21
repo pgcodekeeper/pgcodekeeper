@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -72,6 +73,8 @@ public class PgDbProject {
             desc.setLocationURI(location);
             desc.setNatureIds(new String[] {NATURE.ID});
             newProject.create(desc, null);
+            newProject.open(IResource.BACKGROUND_REFRESH, null);
+            newProject.getNature(NATURE.ID).configure();
         }
         return new PgDbProject(newProject);
     }
