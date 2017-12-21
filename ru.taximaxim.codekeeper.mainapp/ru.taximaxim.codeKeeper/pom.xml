@@ -32,17 +32,17 @@ to update all relevant poms and metadatas
     <packaging>pom</packaging>
     <modules>
         <module>..</module>
-        <module>../product</module>
-        <module>../productinfocenter</module>
         <module>../../apgdiff</module>
+        <module>../../apgdiff.tests</module>
         <module>../../ru.taximaxim.codekeeper.ui</module>
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
-        <module>../../apgdiff.tests</module>
-        <module>../feature</module>
-        <module>../updatesite</module>
-        <module>../../ru.taximaxim.codekeeper.ui.help</module>
         <module>../../ru.taximaxim.codekeeper.cli</module>
         <module>../../ru.taximaxim.codekeeper.cli.tests</module>
+        <module>../../ru.taximaxim.codekeeper.ui.help</module>
+        <module>../feature</module>
+        <module>../updatesite</module>
+        <module>../product</module>
+        <module>../productinfocenter</module>
     </modules>
 
     <prerequisites>
