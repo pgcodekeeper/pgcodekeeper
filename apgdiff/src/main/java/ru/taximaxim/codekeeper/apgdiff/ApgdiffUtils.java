@@ -25,25 +25,33 @@ public final class ApgdiffUtils {
                         url : FileLocator.toFileURL(url)));
     }
 
+
+    public static void serialize(String path, Serializable object) {
+        serialize(Paths.get(path), object);
+    }
+
     /**
      * Serializes object
      *
      * @param path - full path to file where the serialized object will be
      * @param object - the object that you want to serialize
      */
-    public static void serialize(String path, Serializable object) {
+    public static void serialize(Path path, Serializable object) {
         try {
-            Path filePath = Paths.get(path);
-            if (Files.notExists(filePath)) {
-                Files.createFile(filePath);
+            if (Files.notExists(path)) {
+                Files.createFile(path);
             }
-            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(filePath))) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
                 oos.writeObject(object);
                 oos.flush();
             }
         } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while serialize object!", e);
         }
+    }
+
+    public static Object deserialize(String filePath) {
+        return deserialize(Paths.get(filePath));
     }
 
     /**
@@ -53,9 +61,8 @@ public final class ApgdiffUtils {
      *
      * @return deserialized object or null if not found
      */
-    public static Object deserialize(String filePath) {
+    public static Object deserialize(Path path) {
         try {
-            Path path = Paths.get(filePath);
             if (Files.exists(path)) {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     return oin.readObject();
@@ -67,6 +74,7 @@ public final class ApgdiffUtils {
 
         return null;
     }
+
 
     private ApgdiffUtils() {
     }
