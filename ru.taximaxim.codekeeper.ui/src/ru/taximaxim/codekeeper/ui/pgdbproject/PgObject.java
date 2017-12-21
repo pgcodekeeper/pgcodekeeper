@@ -201,7 +201,7 @@ class PgObject extends WizardPage {
 
         String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
         viewerType.setSelection(new StructuredSelection(
-                lastType != null ? DbObjType.valueOf(lastType) : DbObjType.SCHEMA));
+                lastType.isEmpty() ? DbObjType.SCHEMA : DbObjType.valueOf(lastType)));
     }
 
     private boolean parseName() {
