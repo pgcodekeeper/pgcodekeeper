@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -24,16 +24,16 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private String definition;
     private boolean unique;
     private boolean isPrimaryKey;
-    private final List<String> columns = new ArrayList<>();
+    private final Set<String> columns = new HashSet<>();
     private GenericColumn refTable;
-    private final List<String> refs = new ArrayList<>();
+    private final Set<String> refs = new HashSet<>();
     private boolean notValid;
 
     /**
      * Список колонок на которых установлен PrimaryKey или Unique
      */
-    public List<String> getColumns() {
-        return Collections.unmodifiableList(columns);
+    public Set<String> getColumns() {
+        return Collections.unmodifiableSet(columns);
     }
 
     /**
@@ -43,8 +43,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
         columns.add(genericColumn);
     }
 
-    public List<String> getForeignColumns(){
-        return Collections.unmodifiableList(refs);
+    public Set<String> getForeignColumns() {
+        return Collections.unmodifiableSet(refs);
     }
 
     public void addForeignColumn(String referencedColumn) {

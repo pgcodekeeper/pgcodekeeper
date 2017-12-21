@@ -119,7 +119,8 @@ class PgImport extends WizardPage {
     public boolean createProject () {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(txtName.getText());
         try {
-            PgDbProject.createPgDbProject(project, Paths.get(txtPath.getText()).toUri());
+            Path p = Paths.get(txtPath.getText());
+            PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
             addToWorkingSet(project);
         } catch (CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.PgImport_import_error, e);

@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -34,10 +36,10 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -72,17 +74,28 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
-        load(db);
+        try {
+            load(db);
+            return db;
+        } finally {
+            updateMarkers();
+        }
+    }
 
-        file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
+    private void updateMarkers() {
+        try {
+            file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
+        } catch (CoreException ex) {
+            Log.log(ex);
+        }
         IDocument doc = null;
         for (AntlrError antlrError : getErrors()) {
-            IMarker marker = file.createMarker(MARKER.ERROR);
-            int line = antlrError.getLine();
-            marker.setAttribute(IMarker.LINE_NUMBER, line);
-            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
             try {
+                IMarker marker = file.createMarker(MARKER.ERROR);
+                int line = antlrError.getLine();
+                marker.setAttribute(IMarker.LINE_NUMBER, line);
+                marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+                marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
                 int start = antlrError.getStart();
                 int stop = antlrError.getStop();
                 if (start == -1 || stop == -1) {
@@ -98,11 +111,10 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
                 marker.setAttribute(IMarker.CHAR_START, start);
                 marker.setAttribute(IMarker.CHAR_END, stop + 1);
-            } catch (BadLocationException ex) {
+            } catch (BadLocationException | CoreException ex) {
                 Log.log(ex);
             }
         }
-        return db;
     }
 
     /**
@@ -113,7 +125,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
             PgDiffArguments arguments, IProgressMonitor monitor,
             List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
-                    throws InterruptedException, IOException, LicenseException, CoreException {
+                    throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
@@ -140,7 +152,6 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        arguments.getLicense().verifyDb(db);
         return db;
     }
 
@@ -160,14 +171,17 @@ public class PgUIDumpLoader extends PgDumpLoader {
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
 
+        List<AntlrError> errList = null;
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
+            errList = loader.getErrors();
             loader.setLoadReferences(funcBodies != null);
             loader.loadFile(db);
             if (funcBodies != null) {
                 funcBodies.addAll(loader.getFuncBodyReferences());
             }
-            if (errors != null) {
-                errors.put(file.getFullPath().toOSString(), loader.getErrors());
+        } finally {
+            if (errors != null && errList != null && !errList.isEmpty()) {
+                errors.put(file.getFullPath().toOSString(), errList);
             }
         }
     }
@@ -244,11 +258,31 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static boolean isInProject(IResource resource) {
-        return isInProject(resource.getProjectRelativePath());
+        try {
+            return resource.getProject().hasNature(NATURE.ID)
+                    && isInProject(resource.getProjectRelativePath());
+        } catch (CoreException ex) {
+            Log.log(ex);
+            return false;
+        }
     }
 
     public static boolean isInProject(IResourceDelta delta) {
         return isInProject(delta.getProjectRelativePath());
+    }
+
+    public static boolean isInProject(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return res == null ? false : isInProject(res);
+    }
+
+    /**
+     * @param editorInput
+     * @return param's {@link IResource} or null if not available or not {@link #isInProject(IPath)}
+     */
+    public static IResource getProjectResource(IEditorInput editorInput) {
+        IResource res = ResourceUtil.getResource(editorInput);
+        return isInProject(res) ? res : null;
     }
 
     /**

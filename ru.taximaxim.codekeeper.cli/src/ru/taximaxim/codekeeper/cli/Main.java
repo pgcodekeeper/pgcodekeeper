@@ -24,8 +24,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.licensing.License;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
 
@@ -48,23 +46,20 @@ public final class Main {
             if (!arguments.parse(writer, args)) {
                 return true;
             }
-            License l = new License(arguments.getLicensePath());
-            l.verify(false);
-            arguments.setLicense(l);
             if(arguments.isModeParse()) {
                 parse(arguments);
                 return true;
             } else {
                 return diff(writer, arguments);
             }
-        } catch (CmdLineException | LicenseException | NotAllowedObjectException ex) {
+        } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;
         }
     }
 
     private static boolean diff(PrintWriter writer, PgDiffArguments arguments)
-            throws InterruptedException, IOException, LicenseException, URISyntaxException {
+            throws InterruptedException, IOException, URISyntaxException {
         PgDiffScript script;
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
             script = PgDiff.createDiff(encodedWriter != null ? encodedWriter : writer, arguments);
@@ -95,7 +90,7 @@ public final class Main {
     }
 
     private static void parse(PgDiffArguments arguments)
-            throws IOException, InterruptedException, LicenseException, URISyntaxException {
+            throws IOException, InterruptedException, URISyntaxException {
         PgDatabase d = PgDiff.loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
         new ModelExporter(new File(arguments.getOutputTarget()),

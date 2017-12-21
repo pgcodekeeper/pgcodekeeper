@@ -2,12 +2,11 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
 
+import cz.startnet.utils.pgdiff.DangerStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation implements Serializable {
-    /**
-     *
-     */
+
     private static final long serialVersionUID = -7110926210150404390L;
     private final GenericColumn objName;
     private final int offset;
@@ -17,7 +16,6 @@ public class PgObjLocation implements Serializable {
     private String text;
     private DbObjType type;
     private String comment = "";
-    private int objLength;
     private StatementActions action;
 
     public StatementActions getAction() {
@@ -40,23 +38,9 @@ public class PgObjLocation implements Serializable {
     public int getOffset() {
         return offset;
     }
-    // непонятно какая длина должна быть)
-    // свитчить по типу в случае с колонкой?
+
     public int getObjLength() {
-        int length = 0;
-        if (type == DbObjType.FUNCTION) {
-            return objLength;
-        }
-        //        if (objName.schema != null) {
-        //            length += objName.schema.length();
-        //        }
-        if (objName.table != null) {
-            length += objName.table.length();
-        }
-        //        if (objName.column != null) {
-        //            length += objName.table.length();
-        //        }
-        return length;
+        return objName.table != null ? objName.table.length() : 0;
     }
 
     public int getLineNumber() {
@@ -73,10 +57,6 @@ public class PgObjLocation implements Serializable {
 
     public void setObjType(DbObjType type) {
         this.type = type;
-    }
-
-    public void setObjNameLength(int length) {
-        this.objLength = length;
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
@@ -133,5 +113,23 @@ public class PgObjLocation implements Serializable {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public boolean isDanger() {
+        if (action == StatementActions.DROP && type == DbObjType.TABLE){
+            return true;
+        }
+
+        if (action == StatementActions.ALTER) {
+            if (type == DbObjType.TABLE) {
+                return DangerStatement.ALTER_COLUMN.getRegex().matcher(text).matches()
+                        || DangerStatement.DROP_COLUMN.getRegex().matcher(text).matches();
+            } else {
+                return type == DbObjType.SEQUENCE &&
+                        DangerStatement.RESTART_WITH.getRegex().matcher(text).matches();
+            }
+        }
+
+        return false;
     }
 }
