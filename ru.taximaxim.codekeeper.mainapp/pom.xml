@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
+    
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.taximaxim.codeKeeper</groupId>
+        <artifactId>ru.taximaxim.codeKeeper</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>ru.taximaxim.codeKeeper/</relativePath>
+    </parent>
   
-  <parent>
     <groupId>ru.taximaxim.codeKeeper</groupId>
-    <artifactId>ru.taximaxim.codeKeeper</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <relativePath>ru.taximaxim.codeKeeper/</relativePath>
-  </parent>
-  
-  <groupId>ru.taximaxim.codeKeeper</groupId>
-  <artifactId>ru.taximaxim.codekeeper.mainapp</artifactId>
-  <version>4.1.3-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
+    <artifactId>ru.taximaxim.codekeeper.mainapp</artifactId>
+    <version>4.1.3-SNAPSHOT</version>
+    <packaging>eclipse-plugin</packaging>
+
+    <profiles>
+        <profile>
+            <id>internal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>ru.taximaxim.codeKeeper</groupId>
+                    <artifactId>ru.taximaxim.codekeeper.internal.tests</artifactId>
+                    <version>1.0.0-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
