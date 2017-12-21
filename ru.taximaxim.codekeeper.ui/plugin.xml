@@ -713,32 +713,38 @@
             </perspectiveShortcut>
             <perspectiveShortcut id="org.eclipse.team.ui.TeamSynchronizingPerspective">
             </perspectiveShortcut>
-            <view
+           <view
                 id="org.eclipse.ui.navigator.ProjectExplorer"
                 minimized="false"
-                ratio="0.75"
-                relationship="right"
-                relative="org.eclipse.ui.views.ContentOutline">
+                ratio="0.25"
+                relationship="left"
+                relative="org.eclipse.ui.editorss">
             </view>
             <view
                 id="org.eclipse.ui.views.ProgressView"
                 minimized="false"
-                ratio="0.7"
+                ratio="0.65"
                 relationship="bottom"
                 relative="org.eclipse.ui.navigator.ProjectExplorer">
-            </view>
-            <view
-                id="org.eclipse.ui.views.ContentOutline"
-                minimized="false"
-                ratio="0.8"
-                relationship="right"
-                relative="org.eclipse.ui.editorss">
             </view>
             <view
                 id="ru.taximaxim.codekeeper.ui.depcyview"
                 minimized="false"
                 relationship="stack"
                 relative="org.eclipse.ui.views.ProgressView">
+            </view>
+            <view
+                id="org.eclipse.ui.views.ContentOutline"
+                minimized="false"
+                relationship="stack"
+                relative="org.eclipse.ui.views.ProgressView">
+            </view>            
+            <view
+                id="org.eclipse.ui.views.ContentOutline"
+                minimized="false"
+                ratio="0.80"
+                relationship="right"
+                relative="org.eclipse.ui.editorss">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>
