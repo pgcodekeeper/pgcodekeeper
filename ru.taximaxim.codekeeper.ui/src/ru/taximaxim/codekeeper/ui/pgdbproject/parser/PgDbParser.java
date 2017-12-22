@@ -124,8 +124,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
                     PgDbParser parser = (PgDbParser) oin.readObject();
                     parser.listeners = new ArrayList<>();
-                    pnew.getObjDefinitions().putAll(parser.getObjDefinitions());
-                    pnew.getObjReferences().putAll(parser.getObjReferences());
+                    pnew.objReferences.clear();
+                    pnew.objReferences.putAll(parser.getObjDefinitions());
+                    pnew.objDefinitions.clear();
+                    pnew.objDefinitions.putAll(parser.getObjReferences());
                     pnew.notifyListeners();
                     return true;
                 }
