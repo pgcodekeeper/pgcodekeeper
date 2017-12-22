@@ -60,7 +60,6 @@ to update all relevant poms and metadatas
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
         <sonar.java.source>1.8</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
-        <sonar.jacoco.reportPaths>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPaths>
         <sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
     </properties>
 
@@ -74,10 +73,8 @@ to update all relevant poms and metadatas
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.7.9</version>
                         <configuration>
-                        <!-- путь сломан для корневого пома, и для глубины модулей >1
-                             но рут-пом не содержит кода и не выполняет Jacoco, модулей вложенных в модули не предвидится
-                             works for me -->
-                            <destFile>${project.parent.basedir}/target/jacoco.exec</destFile>
+                            <!-- задать при запуске мавена -->
+                            <destFile>${sonar.jacoco.reportPaths}</destFile>
                             <append>true</append>
                         </configuration>
                         <executions>
