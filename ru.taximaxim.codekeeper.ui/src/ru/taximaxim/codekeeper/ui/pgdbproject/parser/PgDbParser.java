@@ -2,6 +2,11 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,8 +29,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -42,18 +49,21 @@ import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class PgDbParser implements IResourceChangeListener {
+public class PgDbParser implements IResourceChangeListener, Serializable {
+
+    private static final long serialVersionUID = 8342974188310510735L;
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
-    private final List<Listener> listeners = new ArrayList<>();
+    private transient List<Listener> listeners = new ArrayList<>();
 
     public void addListener(Listener e) {
         listeners.add(e);
@@ -89,6 +99,52 @@ public class PgDbParser implements IResourceChangeListener {
             }
         }
         return p;
+    }
+
+    private static Path getPathToObject(String name) throws URISyntaxException {
+        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
+                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
+                .resolve("projects").resolve(name + ".ser"); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    public void serialize(String name) {
+        try {
+            Path path = getPathToObject(name);
+            Files.createDirectories(path.getParent());
+            ApgdiffUtils.serialize(path, this);
+        } catch (URISyntaxException | IOException e) {
+            Log.log(Log.LOG_DEBUG, "Error while serialize parser!", e); //$NON-NLS-1$
+        }
+    }
+
+    public static boolean deserialize(String name, PgDbParser pnew) {
+        try {
+            Path path = getPathToObject(name);
+            if (Files.exists(path)) {
+                try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
+                    PgDbParser parser = (PgDbParser) oin.readObject();
+                    parser.listeners = new ArrayList<>();
+                    pnew.objReferences.clear();
+                    pnew.objReferences.putAll(parser.getObjDefinitions());
+                    pnew.objDefinitions.clear();
+                    pnew.objDefinitions.putAll(parser.getObjReferences());
+                    pnew.notifyListeners();
+                    return true;
+                }
+            }
+        } catch (ClassNotFoundException | IOException | ClassCastException | URISyntaxException e) {
+            Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
+        }
+        return false;
+    }
+
+    public static void clean(String name) {
+        try {
+            Path path = getPathToObject(name);
+            Files.deleteIfExists(path);
+        } catch (URISyntaxException | IOException e) {
+            Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
+        }
     }
 
     private static void startBuildJob(IProject proj) {
