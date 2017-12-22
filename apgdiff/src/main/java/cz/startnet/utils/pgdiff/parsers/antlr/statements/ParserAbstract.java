@@ -129,7 +129,10 @@ public abstract class ParserAbstract {
             constr.addDep(ftable);
             constr.addForeignColumn(fColumn);
             constr.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
-            constr.setDefinition("FOREIGN KEY (" + colName + ") REFERENCES " + ftable.table + "(" + fColumn +")");
+            constr.setDefinition("FOREIGN KEY ("
+                    + PgDiffUtils.getQuotedName(colName)
+                    + ") REFERENCES " + PgDiffUtils.getQuotedName(ftable.table)
+                    + '(' + PgDiffUtils.getQuotedName(fColumn) +')');
         } else if (prkey != null) {
             String genName = prkey.PRIMARY() == null ?
                     table.getName() + '_' + colName + "_key"
@@ -141,12 +144,12 @@ public abstract class ParserAbstract {
             if (prkey.PRIMARY() != null) {
                 constr.setUnique(false);
                 constr.setPrimaryKey(true);
-                constr.setDefinition("PRIMARY KEY (" + colName + ")");
+                constr.setDefinition("PRIMARY KEY (" + PgDiffUtils.getQuotedName(colName) + ')');
                 col.setNullValue(false);
             } else {
                 constr.setUnique(true);
                 constr.setPrimaryKey(false);
-                constr.setDefinition("UNIQUE (" + colName + ")");
+                constr.setDefinition("UNIQUE (" + PgDiffUtils.getQuotedName(colName) + ')');
             }
 
             constr.addColumn(colName);
