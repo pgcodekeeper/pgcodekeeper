@@ -58,7 +58,7 @@ to update all relevant poms and metadatas
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
         <sonar.java.source>1.8</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
-        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.jacoco.reportPaths>${session.executionRootDirectory}/target/jacoco.exec</sonar.jacoco.reportPaths>
         <sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
     </properties>
 
@@ -72,7 +72,7 @@ to update all relevant poms and metadatas
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.7.9</version>
                         <configuration>
-                            <destFile>${project.basedir}/../target/jacoco.exec</destFile>
+                            <destFile>${sonar.jacoco.reportPaths}</destFile>
                             <append>true</append>
                         </configuration>
                         <executions>
