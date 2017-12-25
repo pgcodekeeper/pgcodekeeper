@@ -89,7 +89,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String schema, String name, String column) {
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name, String column) {
         Entry<String, List<Entry<String, String>>> refComplex = null;
 
         for (Entry<String, List<Entry<String, String>>> entry : complexNamespace.entrySet()) {
@@ -99,7 +99,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             }
         }
 
-        return refComplex == null ? super.findReferenceComplex(schema, name, column) : refComplex;
+        return refComplex == null ? super.findReferenceComplex(name, column) : refComplex;
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
@@ -237,12 +237,11 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             if (recursive) {
                 duplicate = cte.containsKey(withName);
                 columnsPairs = withProcessor.analyze(withSelect);
+                cte.put(withName, columnsPairs);
             } else {
                 columnsPairs = withProcessor.analyze(withSelect);
-                duplicate = cte.containsKey(withName);
+                duplicate = cte.put(withName, columnsPairs) != null;
             }
-
-            cte.put(withName, columnsPairs);
 
             if (duplicate) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);

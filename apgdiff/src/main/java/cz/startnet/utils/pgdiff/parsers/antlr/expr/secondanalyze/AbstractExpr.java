@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -24,11 +25,16 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class AbstractExpr {
 
+    // TODO get postgresql version.
+    // Need to get version. I can get it from JdbcLoader(READER),
+    // but I can't get it from PgDumpLoader(WRITER).
+    protected final PgSystemStorage systemStorage;
     protected final String schema;
     private final AbstractExpr parent;
     private final Set<GenericColumn> depcies;
@@ -44,6 +50,7 @@ public abstract class AbstractExpr {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
+        systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
     }
 
     protected AbstractExpr(AbstractExpr parent) {
@@ -51,6 +58,7 @@ public abstract class AbstractExpr {
         this.parent = parent;
         depcies = parent.depcies;
         this.db = parent.db;
+        this.systemStorage = parent.systemStorage;
     }
 
     protected AbstractExprWithNmspc<?> findCte(String cteName) {
@@ -81,8 +89,8 @@ public abstract class AbstractExpr {
      * @return a pair of (Alias, ColumnsList) where Alias is the given name.
      *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
      */
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String schema, String name, String column) {
-        return parent == null ? null : parent.findReferenceComplex(schema, name, column);
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name, String column) {
+        return parent == null ? null : parent.findReferenceComplex(name, column);
     }
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
@@ -139,12 +147,12 @@ public abstract class AbstractExpr {
 
                     columnType = getColumnType(genericColumn);
                 } else {
-                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(schema, columnParent, column);
+                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent, column);
                     if (refComplex != null) {
                         columnType = refComplex.getValue().stream()
                                 .filter(entry -> column.equals(entry.getKey()))
                                 .map(Entry::getValue)
-                                .findFirst().orElse(TypesSetManually.COLUMN);
+                                .findAny().orElse(TypesSetManually.COLUMN);
                     }
                 }
             } else {
@@ -225,8 +233,9 @@ public abstract class AbstractExpr {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
     }
 
-    protected static interface TypesSetManually {
-        String UNKNOWN = "unknown";
+    public static interface TypesSetManually {
+        String UNKNOWN = "unknown_unknown";
+        String EMPTY = "empty";
         String UNKNOWN_ARRAY = "unknown[]";
 
         String COLUMN = "column";

@@ -15,11 +15,11 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.AbstractExpr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemOperator;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -220,10 +220,26 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 PgDiffUtils.checkCancelled(monitor);
                 String name = wrapper.getString(NAME);
                 String schemaName = wrapper.getString(NAMESPACE_NAME);
-                String left = wrapper.getString("left");
-                String right = wrapper.getString("right");
-                String opResult = wrapper.getString("result");
-                storage.addOperator(new PgSystemOperator(name, schemaName, left, right, opResult));
+                long leftType = wrapper.getLong("left");
+                long rightType = wrapper.getLong("right");
+                String left = TypesSetManually.EMPTY;
+                String right = TypesSetManually.EMPTY;
+                if (leftType > 0) {
+                    left = cachedTypesByOid.get(leftType).getFullName(schemaName);
+                }
+                if (rightType > 0) {
+                    right = cachedTypesByOid.get(rightType).getFullName(schemaName);
+                }
+
+                PgSystemFunction operator = new PgSystemFunction(schemaName, name);
+                PgSystemFunction.PgSystemArgument firstArg = new PgSystemArgument(null, left);
+                PgSystemFunction.PgSystemArgument secondArg = new PgSystemArgument(null, right);
+                operator.addArgumentPart(firstArg);
+                operator.addArgumentPart(secondArg);
+
+                operator.setReturns(cachedTypesByOid.get(wrapper.getLong("result")).getFullName(schemaName));
+
+                storage.addObject(operator);
             }
         }
     }

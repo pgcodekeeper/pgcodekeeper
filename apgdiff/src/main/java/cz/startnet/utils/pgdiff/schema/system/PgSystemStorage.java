@@ -18,10 +18,7 @@ public class PgSystemStorage implements Serializable {
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
-    private static PgSystemStorage systemStorage;
-
     private final List<PgSystemStatement> objects = new ArrayList<>();
-    private final List<PgSystemOperator> operators = new ArrayList<>();
     private final List<PgSystemCast> casts = new ArrayList<>();
 
     public List<PgSystemStatement> getObjects() {
@@ -30,14 +27,6 @@ public class PgSystemStorage implements Serializable {
 
     public void addObject(PgSystemStatement object) {
         objects.add(object);
-    }
-
-    public List<PgSystemOperator> getOperators() {
-        return operators;
-    }
-
-    public void addOperator(PgSystemOperator operator) {
-        operators.add(operator);
     }
 
     public List<PgSystemCast> getCasts() {
@@ -49,18 +38,13 @@ public class PgSystemStorage implements Serializable {
     }
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
-        if (systemStorage != null) {
-            return systemStorage;
-        }
-
         try {
             String path = ApgdiffUtils.getFileFromOsgiRes(PgSystemStorage.class.getResource(
                     FILE_NAME + version + ".ser")).toString();
             Object object = ApgdiffUtils.deserialize(path);
 
             if (object != null && object instanceof PgSystemStorage) {
-                systemStorage = (PgSystemStorage) object;
-                return systemStorage;
+                return (PgSystemStorage) object;
             }
         } catch (URISyntaxException | IOException e) {
             Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
@@ -70,10 +54,9 @@ public class PgSystemStorage implements Serializable {
     }
 
     public static List<PgSystemStatement> getPgSystemStatement(PgSystemStorage storage,
-            DbObjType objType, String objName, String objSchema) {
+            DbObjType objType, String objName) {
         return storage.getObjects().stream()
-                .filter(systemStmt -> objSchema.equals(systemStmt.getSchema())
-                        && objType.equals(systemStmt.getType())
+                .filter(systemStmt -> objType.equals(systemStmt.getType())
                         && objName.equals(systemStmt.getName()))
                 .collect(Collectors.toList());
     }
@@ -98,26 +81,33 @@ public class PgSystemStorage implements Serializable {
      *  Returns operation's result type.
      */
     public static String castOperatorArguments(PgSystemStorage storage, String leftType, String rightType, String operatorName) {
+        String leftTypeForCheck = leftType;
+        String rightTypeForCheck = rightType;
+
         String resultType = null;
-        boolean checkOperator = false;
+        boolean compareWithSystemOperator = true;
 
-        String castFromLeftTypeToRight = getCastContext(storage, leftType, rightType);
-        String castFromRightTypeToLeft = getCastContext(storage, rightType ,leftType);
-
-        if (CastContext.I.equals(castFromLeftTypeToRight) && CastContext.A.equals(castFromRightTypeToLeft)) {
-            resultType = rightType;
-            checkOperator = true;
-        } else if (CastContext.A.equals(castFromLeftTypeToRight) && CastContext.I.equals(castFromRightTypeToLeft)) {
-            resultType = leftType;
-            checkOperator = true;
+        if (leftType.equals(rightType)) {
+            leftTypeForCheck = rightType;
+        } else {
+            if (CastContext.I.equals(getCastContext(storage, leftType, rightType))) {
+                leftTypeForCheck = rightType;
+            } else if (CastContext.I.equals(getCastContext(storage, rightType ,leftType))) {
+                rightTypeForCheck = leftType;
+            } else {
+                compareWithSystemOperator = false;
+            }
         }
 
-        if (checkOperator) {
-            for (PgSystemOperator oper : storage.getOperators()) {
+        if (compareWithSystemOperator) {
+            for (PgSystemFunction oper : storage.getObjects().stream()
+                    .filter(sysStmt -> DbObjType.FUNCTION.equals(sysStmt.getType()))
+                    .map(sysStmt -> (PgSystemFunction)sysStmt)
+                    .collect(Collectors.toList())) {
                 if (operatorName.equals(oper.getName())
-                        && resultType.equals(oper.getLeft())
-                        && resultType.equals(oper.getRight())) {
-                    return oper.getReturnType();
+                        && leftTypeForCheck.equals(oper.getArguments().get(0).getDataType())
+                        && rightTypeForCheck.equals(oper.getArguments().get(1).getDataType())) {
+                    return oper.getReturns();
                 }
             }
         }

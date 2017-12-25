@@ -271,8 +271,9 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     lateralAllowed = primary.LATERAL() != null;
                     List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
-                    complexNamespace.put(alias.alias.getText(), columnList);
-                    addReference(alias.alias.getText(), null);
+                    String tableSubQueryAlias = alias.alias.getText();
+                    complexNamespace.put(tableSubQueryAlias, columnList);
+                    addReference(tableSubQueryAlias, null);
                 } finally {
                     lateralAllowed = oldLateral;
                 }
@@ -286,10 +287,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         String funcAlias = primary.alias == null ? func.getKey():
                             primary.alias.getText();
                         addReference(funcAlias, null);
-
-                        if (alias != null) {
-                            complexNamespace.put(alias.alias.getText(), new ArrayList<>(Arrays.asList(func)));
-                        }
+                        complexNamespace.put(funcAlias, new ArrayList<>(Arrays.asList(func)));
                     }
                 } finally {
                     lateralAllowed = oldLateral;

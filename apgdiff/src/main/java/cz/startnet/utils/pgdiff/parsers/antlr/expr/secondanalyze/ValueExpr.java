@@ -2,13 +2,17 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
@@ -28,6 +32,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
@@ -62,11 +67,6 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ValueExpr extends AbstractExpr {
-
-    // TODO get postgresql version.
-    // Need to get version. I can get it from JdbcLoader(READER),
-    // but I can't get it from PgDumpLoader(WRITER).
-    private PgSystemStorage systemStorage;
 
     public ValueExpr(String schema, PgDatabase db) {
         super(schema, db);
@@ -157,7 +157,8 @@ public class ValueExpr extends AbstractExpr {
             }
         } else if (vex.plus() != null || vex.minus() != null) {
             if(operandsList.size() == 2){
-                ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
+                ret = getReturnedTypeOfOperation(vex.getVexCtx(),
+                        Arrays.asList(operandsList.get(0).getValue(), operandsList.get(1).getValue()));
             } else{
                 ret = operandsList.get(0);
             }
@@ -169,12 +170,21 @@ public class ValueExpr extends AbstractExpr {
                 ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
             }
         } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
-            ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
+            ret = getReturnedTypeOfOperation(vex.getVexCtx(),
+                    Arrays.asList(operandsList.get(0).getValue(), operandsList.get(1).getValue()));
+
         } else if (vex.op() != null) {
             if (operandsList.size() == 1) {
-                ret = operandsList.get(0);
+                if (vex.isChildOpIsPrefix()) {
+                    ret = getReturnedTypeOfOperation(vex.getVexCtx(),
+                            Arrays.asList(TypesSetManually.EMPTY, operandsList.get(0).getValue()));
+                } else {
+                    ret = getReturnedTypeOfOperation(vex.getVexCtx(),
+                            Arrays.asList(operandsList.get(0).getValue(), TypesSetManually.EMPTY));
+                }
             } else {
-                ret = cast(operandsList.get(0), operandsList.get(1), vex.getBinaryOperator());
+                ret = getReturnedTypeOfOperation(vex.getVexCtx(),
+                        Arrays.asList(operandsList.get(0).getValue(), operandsList.get(1).getValue()));
             }
         } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null) )
                 || (vex.is() != null && vex.distinct() != null)
@@ -203,7 +213,6 @@ public class ValueExpr extends AbstractExpr {
             Function_callContext function;
             Schema_qualified_nameContext qname;
             Indirection_identifierContext indirection;
-            @SuppressWarnings("unused")
             Qualified_asteriskContext ast;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;
@@ -287,7 +296,6 @@ public class ValueExpr extends AbstractExpr {
      * @return function reference or null for internal functions
      */
     public Entry<String, String> function(Function_callContext function) {
-        Entry<String, String> pair = new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
         List<Vex> args = null;
         Function_nameContext name = function.function_name();
 
@@ -333,140 +341,215 @@ public class ValueExpr extends AbstractExpr {
             }
         }
 
+        Entry<String, String> pair;
         if (canFindFunctionSignature) {
-            pair = getReturnedTypeOfFunction(name, argsType, pair);
+            pair = getReturnedTypeOfOperation(name, argsType.stream()
+                    .map(Entry::getValue)
+                    .collect(Collectors.toList()));
+        } else {
+            pair = new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
         }
 
         return pair;
     }
 
-    private Entry<String, String> getReturnedTypeOfFunction(Function_nameContext name,
-            List<Entry<String, String>> argsType, Entry<String, String> p) {
-        Entry<String, String> pair = p;
+    public String getChildOperator(ParserRuleContext operationNameCtx) {
+        VexContext vex = null;
+        Vex_bContext vexB = null;
+        boolean isB = false;
+
+        if (operationNameCtx instanceof VexContext) {
+            isB = false;
+            vex = ((VexContext)operationNameCtx);
+        } else {
+            isB = true;
+            vexB = ((Vex_bContext)operationNameCtx);
+        }
+
+        OpContext op = isB ? vexB.op() : vex.op();
+
+        if (op != null) {
+            return op.OP_CHARS().getText();
+        } else {
+            return isB ? vexB.getChild(1).getText() : vex.getChild(1).getText();
+        }
+    }
+
+    private Entry<String, String> getReturnedTypeOfOperation(ParserRuleContext operationNameCtx,
+            List<String> argsTypes) {
+        boolean isItFunction;
+
+        Entry<String, String> pair = null;
         String schemaName = schema;
-        String funcName = name.getText();
-
-        IdentifierContext id;
-        Data_typeContext type = name.data_type();
-        Schema_qualified_name_nontypeContext funcNameCtx = null;
-        Tokens_simple_functionsContext tokensSimpleFunc;
-        if (type != null &&
-                (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-            funcName = funcNameCtx.identifier_nontype().getText();
-
-            if ((id = funcNameCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else if ((tokensSimpleFunc = name.tokens_simple_functions()) != null) {
-            funcName = tokensSimpleFunc.getText();
-
-            if ((id = name.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        }
-
-        List<String> types = argsType.stream()
-                .map(Entry::getValue)
-                .collect(Collectors.toList());
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(funcName);
-        sb.append("(");
-        for (int i = 0; types.size() > i; i++) {
-            sb.append(types.get(i));
-            if (types.size() != (i+1)) {
-                sb.append(", ");
-            }
-        }
-        sb.append(")");
-        String functionSignature = sb.toString();
-
-        List<IFunction> userFuncsList = new ArrayList<>();
-
-        PgSchema sch = db.getSchema(schemaName);
-        if (sch != null) {
-            for(PgFunction f : sch.getFunctions()) {
-                if (funcName.equals(f.getBareName()) && f.getArguments().stream()
-                        .filter(arg -> "IN".equals(arg.getMode()))
-                        .count() == types.size()) {
-                    userFuncsList.add(f);
-                }
-            }
-        }
-
-        boolean isUserFunc = !userFuncsList.isEmpty();
+        PgSchema schema = db.getSchema(schemaName);
+        String operationName = null;
+        List<IFunction> userOpersList = new ArrayList<>();
         boolean doesItNeedCast = true;
-
         List<PgSystemStatement> systemStmts = new ArrayList<>();
-        List<IFunction> systemFuncsList = new ArrayList<>();
 
-        if (isUserFunc) {
-            for(IFunction f : userFuncsList) {
-                if (functionSignature.equals(f.getName())) {
-                    pair = new SimpleEntry<>(funcName, f.getReturns());
-                    doesItNeedCast = false;
-                    break;
+        Function_nameContext name = null;
+        Data_typeContext dataTypeCtx = null;
+        Schema_qualified_name_nontypeContext funcNameCtx = null;
+        String functionSignature = null;
+        List<IFunction> systemOpersList = new ArrayList<>();
+
+        if (operationNameCtx instanceof Function_nameContext) {
+            isItFunction = true;
+            name = (Function_nameContext)operationNameCtx;
+            operationName = name.getText();
+
+            IdentifierContext id;
+            dataTypeCtx = name.data_type();
+            Tokens_simple_functionsContext tokensSimpleFunc;
+            if (dataTypeCtx != null &&
+                    (funcNameCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
+                operationName = funcNameCtx.identifier_nontype().getText();
+
+                if ((id = funcNameCtx.identifier()) != null) {
+                    schemaName = id.getText();
                 }
+            } else if ((tokensSimpleFunc = name.tokens_simple_functions()) != null) {
+                operationName = tokensSimpleFunc.getText();
+
+                if ((id = name.identifier()) != null) {
+                    schemaName = id.getText();
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(operationName);
+            sb.append("(");
+            for (int i = 0; argsTypes.size() > i; i++) {
+                sb.append(argsTypes.get(i));
+                if (argsTypes.size() != (i+1)) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(")");
+            functionSignature = sb.toString();
+        } else {
+            isItFunction = false;
+            operationName = getChildOperator(operationNameCtx);
+        }
+
+        if (schema != null) {
+            if (isItFunction) {
+                for(PgFunction f : schema.getFunctions()) {
+                    if (operationName.equals(f.getBareName())
+                            && getInInoutFuncArgs(f).size() == argsTypes.size()) {
+                        userOpersList.add(f);
+                    }
+                }
+            } else {
+                systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, operationName);
+                if (!systemStmts.isEmpty()) {
+                    userOpersList = systemStmts.stream().map(sysStmt -> (PgSystemFunction)sysStmt)
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+
+        boolean isUserOper = !userOpersList.isEmpty();
+
+        if (isUserOper) {
+            if (isItFunction) {
+                for(IFunction f : userOpersList) {
+                    if (functionSignature.equals(f.getName())) {
+                        pair = new SimpleEntry<>(operationName, f.getReturns());
+                        doesItNeedCast = false;
+                        break;
+                    }
+                }
+            } else {
+                // TODO What we have to do here with user defined operators?
             }
         } else {
-            if (systemStorage == null) {
-                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
-            }
-
-            systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, funcName, schemaName);
+            systemStmts = PgSystemStorage.getPgSystemStatement(systemStorage, DbObjType.FUNCTION, operationName);
             if (!systemStmts.isEmpty() && systemStmts.size() == 1) {
-                PgSystemFunction systemFunc = (PgSystemFunction) systemStmts.get(0);
-                pair = new SimpleEntry<>(funcName, systemFunc.getReturns());
+                PgSystemFunction systemFuncOper = (PgSystemFunction) systemStmts.get(0);
+                pair = new SimpleEntry<>(operationName, systemFuncOper.getReturns());
                 doesItNeedCast = false;
             }
         }
 
         if (doesItNeedCast) {
-            if (systemStorage == null) {
-                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
-            }
-
-            if (!isUserFunc) {
-                systemFuncsList = systemStmts.stream()
+            if (!isUserOper) {
+                systemOpersList = systemStmts.stream()
                         .map(systemStmt -> (PgSystemFunction)systemStmt)
-                        .filter(systemFunc -> systemFunc.getArguments().size() == types.size())
+                        .filter(systemFunc -> systemFunc.getArguments().size() == argsTypes.size())
                         .collect(Collectors.toList());
             }
 
-            pair = castFiltredFuncs(pair, funcName, types, isUserFunc ? userFuncsList : systemFuncsList);
+            pair = castFiltredOpers(isItFunction, operationName, argsTypes, isUserOper ? userOpersList : systemOpersList);
         }
 
-        if (type != null && funcNameCtx != null) {
+        if (dataTypeCtx != null && funcNameCtx != null) {
             addFunctionDepcy(funcNameCtx, functionSignature);
         }
 
-        return pair;
+        return pair != null ? pair : new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
     }
 
-    @SuppressWarnings({ "unchecked"})
-    private <T extends IFunction, K extends IArgument> Entry<String, String> castFiltredFuncs(
-            Entry<String, String> pair, String funcName, List<String> types, List<T> functionsList) {
-        for (T f : functionsList) {
-            boolean castWellDone = true;
-            List<K> argsOfFunction = (List<K>) f.getArguments();
+    private Entry<String, String> castFiltredOpers(boolean isItFunction, String funcName,
+            List<String> targetTypes, List<IFunction> functionsList) {
+        IFunction resultFunction = null;
 
-            for (int i = 0; types.size() > i; i++) {
+        if (!isItFunction) {
+            String resultType = PgSystemStorage.castOperatorArguments(systemStorage, targetTypes.get(0), targetTypes.get(1), funcName);
+            if (resultType != null) {
+                return new SimpleEntry<>(funcName, resultType);
+            }
+        }
+
+        Map<Integer, Integer> storeOfFunctArgsMatches = new HashMap<>();
+
+        for (int i = 0; functionsList.size() > i; i++) {
+            IFunction f = functionsList.get(i);
+            boolean castWellDone = true;
+            List<IArgument> argsOfSourceFunction = getInInoutFuncArgs(f);
+
+            for (int k = 0; argsOfSourceFunction.size() > k; k++) {
+                String sourceType = argsOfSourceFunction.get(k).getDataType();
+                String targetType = targetTypes.get(k);
+
+                if (sourceType.equals(targetType)) {
+                    Integer funcIdx = storeOfFunctArgsMatches.get(i);
+                    storeOfFunctArgsMatches.put(i, (funcIdx != null) ? funcIdx+1 : 1);
+                    continue;
+                }
+
                 String castCtx = PgSystemStorage.getCastContext(systemStorage,
-                        argsOfFunction.get(i).getDataType(), types.get(i));
+                        sourceType, targetType);
 
                 if (castCtx == null) {
                     castWellDone = false;
+                    storeOfFunctArgsMatches.remove(i);
                     break;
                 }
             }
 
-            if (castWellDone) {
-                pair = new SimpleEntry<>(funcName, f.getReturns());
-                break;
+            if (castWellDone && storeOfFunctArgsMatches.get(i) == null) {
+                resultFunction = f;
             }
         }
 
-        return pair;
+        if (!storeOfFunctArgsMatches.isEmpty()) {
+            Entry<Integer, Integer> entryWithMaxMatches = null;
+            for (Entry<Integer, Integer> entry : storeOfFunctArgsMatches.entrySet()) {
+                if (entryWithMaxMatches == null || entry.getValue().compareTo(entryWithMaxMatches.getValue()) > 0) {
+                    entryWithMaxMatches = entry;
+                }
+            }
+            resultFunction = functionsList.get(entryWithMaxMatches.getKey());
+        }
+
+        return resultFunction != null ? new SimpleEntry<>(funcName, resultFunction.getReturns()) : null;
+    }
+
+    private List<IArgument> getInInoutFuncArgs(IFunction func) {
+        return func.getArguments().stream()
+                .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()))
+                .collect(Collectors.toList());
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
@@ -562,34 +645,12 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    private String bracketProcessing(Object obj) {
-        String type = (String) obj;
+    private String bracketProcessing(String type) {
         if(type.endsWith("[]")){
             Log.log(Log.LOG_WARNING, "The type '" + type + "' had brackets!");
             return type.substring(0, type.indexOf("[]"));
         } else {
             return type;
         }
-    }
-
-    private Entry<String, String> cast(Entry<String, String> left, Entry<String, String> right, String operator) {
-        String leftType = left.getValue();
-        String rightType = right.getValue();
-
-        Entry<String, String> ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
-
-        if (!TypesSetManually.UNKNOWN.equalsIgnoreCase(leftType) && !TypesSetManually.UNKNOWN.equalsIgnoreCase(rightType)){
-            if (systemStorage == null) {
-                systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
-            }
-
-            String resultType = leftType.equals(rightType) ? leftType :
-                PgSystemStorage.castOperatorArguments(systemStorage, leftType, rightType, operator);
-
-            if (resultType != null) {
-                ret.setValue(resultType);
-            }
-        }
-        return ret;
     }
 }

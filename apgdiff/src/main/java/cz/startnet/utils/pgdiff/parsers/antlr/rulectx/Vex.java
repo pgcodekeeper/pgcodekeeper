@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
@@ -65,8 +66,12 @@ public class Vex {
         return vexAll;
     }
 
-    public String getBinaryOperator() {
-        return isB ? vexB.getChild(1).getText() : vex.getChild(1).getText();
+    public ParserRuleContext getVexCtx() {
+        return isB ? vexB : vex;
+    }
+
+    public boolean isChildOpIsPrefix() {
+        return isB ? vexB.getChild(0) instanceof OpContext : vex.getChild(0) instanceof OpContext;
     }
 
     public TerminalNode castExpression() {
