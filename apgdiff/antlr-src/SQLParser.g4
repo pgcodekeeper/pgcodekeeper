@@ -167,7 +167,7 @@ table_action
 set_attribute_option
     : SET storage_parameter
     ;
-    
+
 set_storage
     : SET STORAGE storage_option
     ;
@@ -770,7 +770,7 @@ common_constraint
     ;
 
 table_references
-    : REFERENCES reftable=schema_qualified_name column_references?
+    : REFERENCES reftable=schema_qualified_name column_references
             (match_all | (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*
     ;
 

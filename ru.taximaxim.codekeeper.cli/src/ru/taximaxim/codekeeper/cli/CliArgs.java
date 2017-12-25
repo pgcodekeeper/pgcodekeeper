@@ -60,10 +60,6 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--list-charsets", help=true, usage="show list of Java-supported charsets")
     private boolean zlistCharsets;
 
-    @Option(name="-l", aliases="--license", metaVar="<path>",
-            usage="path to license file")
-    private String licensePath;
-
     @Option(name="--parse", depends="-o",
             usage="run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
@@ -174,11 +170,6 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<DangerStatement> getAllowedDangers() {
         return Collections.unmodifiableCollection(allowedDangers);
-    }
-
-    @Override
-    public String getLicensePath() {
-        return licensePath != null ? licensePath : super.getLicensePath();
     }
 
     @Override

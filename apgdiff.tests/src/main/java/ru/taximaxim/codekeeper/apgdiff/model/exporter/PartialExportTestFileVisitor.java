@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private final boolean isInSource;
 
     public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo,
-            Map<String, String> modifiedFiles, LinkedList<String> newFiles, LinkedList<String> deletedFiles,
+            Map<String, String> modifiedFiles, List<String> newFiles, List<String> deletedFiles,
             boolean isInSource) {
         super();
         this.pathToBeCompared = pathToBeCompared;

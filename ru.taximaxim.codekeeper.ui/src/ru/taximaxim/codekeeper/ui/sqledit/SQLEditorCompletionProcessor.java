@@ -1,11 +1,11 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
@@ -17,6 +17,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
@@ -43,7 +44,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             return null;
         }
         int nonid = offset - 1;
-        while (nonid > 0 && Character.isJavaIdentifierPart(part.charAt(nonid))) {
+        while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
             --nonid;
         }
         String text = part.substring(nonid + 1, offset);
@@ -53,35 +54,28 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         Set<ICompletionProposal> partResult = new LinkedHashSet<>();
 
         PgDbParser parser = editor.getParser();
-        List<PgObjLocation> loc = parser.getAllObjDefinitions();
-        Collections.sort(loc, (o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()));
-
-        for (PgObjLocation obj : loc) {
-            if (obj.getObjType() == DbObjType.SEQUENCE || obj.getObjType() == DbObjType.INDEX) {
-                continue;
-            }
-
+        Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
+        loc
+        .filter(o -> text.isEmpty() || o.getObjName().startsWith(text))
+        .filter(o -> o.getObjType() != DbObjType.SEQUENCE && o.getObjType() != DbObjType.INDEX)
+        .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
+        .forEach(obj -> {
             Image img = Activator.getDbObjImage(obj.getObjType());
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {
                 displayText += " - " + obj.getComment(); //$NON-NLS-1$
             }
+            IContextInformation info = new ContextInformation(
+                    obj.getObjName(), obj.getComment());
             if (!text.isEmpty()) {
-                if (obj.getObjName().startsWith(text)) {
-                    IContextInformation info = new ContextInformation(
-                            obj.getObjName(), obj.getComment());
-                    result.add(new CompletionProposal(obj.getObjName(), offset
-                            - text.length(), text.length(),
-                            obj.getObjLength(), img, displayText, info,
-                            obj.getObjName()));
-                }
+                result.add(new CompletionProposal(obj.getObjName(), offset - text.length(),
+                        text.length(), obj.getObjLength(), img, displayText, info,
+                        obj.getObjName()));
             } else {
-                IContextInformation info = new ContextInformation(obj.getObjName(),
-                        obj.getComment());
                 result.add(new CompletionProposal(obj.getObjName(), offset, 0,
                         obj.getObjLength(), img, displayText, info, obj.getObjName()));
             }
-        }
+        });
 
         // SQL Templates + Keywords
         if (text.isEmpty()) {

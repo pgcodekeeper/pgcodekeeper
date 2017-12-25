@@ -80,7 +80,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, true);
+        dtvTop = new DiffTableViewer(gTop, true, null);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
@@ -98,7 +98,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, false);
+            dtvBottom = new DiffTableViewer(gBottom, false, null);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;

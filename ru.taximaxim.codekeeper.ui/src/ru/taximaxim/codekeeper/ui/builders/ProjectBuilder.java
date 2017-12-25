@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
@@ -42,14 +41,17 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
-                parser.getFullDBFromPgDbProject(proj, monitor);
+                if (!PgDbParser.deserialize(proj.getName(), parser)) {
+                    parser.getFullDBFromPgDbProject(proj, monitor);
+                }
                 break;
             default:
                 throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
             }
+            parser.serialize(proj.getName());
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
-        } catch (IOException | LicenseException | IllegalStateException ex) {
+        } catch (IOException | IllegalStateException ex) {
             throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
         } finally {
             // update decorators if any kind of build was run
@@ -59,8 +61,13 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         return new IProject[] { proj };
     }
 
+    @Override
+    protected void clean(IProgressMonitor monitor) throws CoreException {
+        PgDbParser.clean(this.getProject().getName());
+    }
+
     private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)
-            throws CoreException, InterruptedException, IOException, LicenseException {
+            throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
             if (PgUIDumpLoader.isInProject(d)) {

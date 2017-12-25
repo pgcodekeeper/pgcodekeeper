@@ -29,8 +29,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -58,7 +56,7 @@ public class DbStorePicker extends Composite {
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
     private static final int MAX_FILES_HISTORY = 10;
 
-    private final boolean useFileSources;
+    private boolean useFileSources;
     private final boolean useDirSources;
     private final IPreferenceStore prefStore;
     private final List<File> projects = new ArrayList<>();
@@ -66,20 +64,22 @@ public class DbStorePicker extends Composite {
     private final LocalResourceManager lrm;
     private final ComboViewer cmbDbNames;
 
-    public DbStorePicker(Composite parent, int style, final IPreferenceStore prefStore,
-            boolean useFileSources, boolean useDirSources) {
-        super(parent, style);
+    public DbStorePicker(Composite parent, final IPreferenceStore prefStore,
+            boolean useFileSources, boolean useDirSources, boolean onlyCombo) {
+        super(parent, SWT.NONE);
         this.useFileSources = useFileSources;
         this.useDirSources = useDirSources;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.prefStore = prefStore;
 
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(onlyCombo ? 1 : 3, false);
         gl.marginWidth = gl.marginHeight = 0;
         setLayout(gl);
 
-        new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
-                Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        if (!onlyCombo) {
+            new Label(this, SWT.NONE).setText(useFileSources || useDirSources ?
+                    Messages.DbStorePicker_db_schema_source : Messages.DbStorePicker_db_connection);
+        }
 
         cmbDbNames = new ComboViewer(this, SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbDbNames.setContentProvider(ArrayContentProvider.getInstance());
@@ -89,38 +89,45 @@ public class DbStorePicker extends Composite {
         gd.widthHint = new PixelConverter(cmbDbNames.getControl()).convertWidthInCharsToPixels(26);
         cmbDbNames.getControl().setLayoutData(gd);
 
-        Button btnEditStore = new Button(this, SWT.PUSH);
-        btnEditStore.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONEDIT))));
-        btnEditStore.addSelectionListener(new SelectionAdapter() {
+        if (!onlyCombo) {
+            Button btnEditStore = new Button(this, SWT.PUSH);
+            btnEditStore.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(FILE.ICONEDIT))));
+            btnEditStore.addSelectionListener(new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                PreferenceDialog prefDialog = PreferencesUtil.createPreferenceDialogOn(
-                        getShell(), PREF_PAGE.DB_STORE, null, null);
-                if (prefDialog.open() == PreferenceDialog.OK) {
-                    loadStore();
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    PreferenceDialog prefDialog = PreferencesUtil.createPreferenceDialogOn(
+                            getShell(), PREF_PAGE.DB_STORE, null, null);
+                    if (prefDialog.open() == PreferenceDialog.OK) {
+                        loadStore();
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        final DbStoreChangeListener dbStoreChangeListener = new DbStoreChangeListener();
+        final IPropertyChangeListener dbStoreChangeListener = (PropertyChangeEvent event) -> {
+            if (PREF.DB_STORE.equals(event.getProperty())
+                    && !Objects.equals(event.getNewValue(), event.getOldValue())) {
+                UiSync.exec(DbStorePicker.this, () ->  {
+                    if (!isDisposed()) {
+                        loadStore();
+                    }
+                });
+            }
+        };
+
         prefStore.addPropertyChangeListener(dbStoreChangeListener);
-        cmbDbNames.getControl().addDisposeListener(new DisposeListener() {
-
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                prefStore.removePropertyChangeListener(dbStoreChangeListener);
-            }
-        });
+        cmbDbNames.getControl().addDisposeListener(e -> prefStore
+                .removePropertyChangeListener(dbStoreChangeListener));
 
         if (useDirSources) {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
-            IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-            for (int i = 0; i < MAX_FILES_HISTORY && i < projects.length; ++i) {
+            IProject[] projs = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+            for (int i = 0; i < MAX_FILES_HISTORY && i < projs.length; ++i) {
                 try {
-                    if (projects[i].isOpen() && projects[i].hasNature(NATURE.ID)) {
-                        this.projects.add(projects[i].getLocation().toFile());
+                    if (projs[i].isOpen() && projs[i].hasNature(NATURE.ID)) {
+                        this.projects.add(projs[i].getLocation().toFile());
                     }
                 } catch (CoreException ex) {
                     Log.log(ex);
@@ -131,6 +138,11 @@ public class DbStorePicker extends Composite {
     }
 
     private void loadStore() {
+        loadStore(null);
+    }
+
+    public void loadStore(boolean useFileSources) {
+        this.useFileSources = useFileSources;
         loadStore(null);
     }
 
@@ -241,25 +253,6 @@ public class DbStorePicker extends Composite {
 
             if (revertSelection) {
                 cmbDbNames.setSelection(previous);
-            }
-        }
-    }
-
-    private class DbStoreChangeListener implements IPropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-            if (PREF.DB_STORE.equals(event.getProperty())
-                    && !Objects.equals(event.getNewValue(), event.getOldValue())) {
-                UiSync.exec(DbStorePicker.this, new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (!isDisposed()) {
-                            loadStore();
-                        }
-                    }
-                });
             }
         }
     }

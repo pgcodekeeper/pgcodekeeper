@@ -38,7 +38,8 @@ public class CreateType extends ParserAbstract {
         } else if (ctx.INPUT() != null) {
             form = PgTypeForm.BASE;
         }
-        PgType type = null, newType = null;
+        PgType type = null;
+        PgType newType = null;
         if (form == PgTypeForm.BASE) {
             type = schema.getType(name);
             if (type != null && type.getForm() != PgTypeForm.SHELL) {
@@ -51,7 +52,7 @@ public class CreateType extends ParserAbstract {
         }
 
         for (Table_column_definitionContext attr : ctx.attrs) {
-            type.addAttr(getColumn(attr, getDefSchemaName()));
+            type.addAttr(getColumn(attr));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
         for (Token enume : ctx.enums) {

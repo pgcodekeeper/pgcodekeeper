@@ -20,12 +20,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.apgdiff.licensing.LicenseException;
 
 /**
  * Tests for PgDiff class.
@@ -218,6 +216,8 @@ public class PgDiffTest {
                     {"modify_trigger"},
                     // Tests scenario where CONSTRAINT TRIGGER is added.
                     {"add_constraint_trigger"},
+                    // Tests scenario where COLUMN CONSTRAINT is compared.
+                    {"compare_column_constraints"},
                     // Tests scenario where VIEW is added.
                     {"add_view"},
                     // Tests scenario where VIEW is dropped.
@@ -366,8 +366,8 @@ public class PgDiffTest {
     }
 
     @Test
-    public void runDiff() throws IOException, InterruptedException, LicenseException {
-        PgDiffArguments args = ApgdiffTestUtils.getArgsLicensed();
+    public void runDiff() throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
         PgDatabase dbOld = ApgdiffTestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTest.class, args);
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(

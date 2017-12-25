@@ -21,21 +21,20 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
-    // TODO: нужен метод который будет проверять валидность идентификатора с
-    // точки зрения SQL а не Java
     private static final class WordDetector implements IWordDetector {
         @Override
         public boolean isWordPart(char c) {
-            return Character.isJavaIdentifierPart(c);
+            return PgDiffUtils.isValidIdChar(c);
         }
 
         @Override
         public boolean isWordStart(char c) {
-            return !Character.isWhitespace(c);
+            return PgDiffUtils.isValidIdChar(c, true, false);
         }
     }
 

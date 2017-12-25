@@ -119,7 +119,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             Files.write(path, differ.getDiffDirect().getBytes());
             IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-            .openEditor(new FileStoreEditorInput(externalFile), EDITOR.ROLLON);
+            .openEditor(new FileStoreEditorInput(externalFile), EDITOR.SQL);
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -252,7 +252,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false);
+        diffTable = new DiffTableViewer(container, false, null);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 480;
         gd.heightHint = 360;
