@@ -1,5 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.stream.Stream;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -8,14 +12,20 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
     private final SQLEditor sqlEditor;
+    private boolean filterDangerous;
+    private boolean sortStatements;
 
     public SQLEditorContentOutlinePage(SQLEditor sqlEditor) {
         this.sqlEditor = sqlEditor;
@@ -70,6 +80,50 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         }
     }
 
+    @Override
+    public void setActionBars(IActionBars actionBars) {
+        super.setActionBars(actionBars);
+
+        Action sortAction = new Action(Messages.SQLEditorContentOutlinePage_sort_alphabetically,
+                Action.AS_CHECK_BOX) {
+
+            @Override
+            public void run() {
+                setState(!sortStatements);
+            }
+
+            private void setState(boolean state) {
+                sortStatements = state;
+                setChecked(state);
+                getTreeViewer().refresh(false);
+            }
+        };
+
+        sortAction.setImageDescriptor(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONSORT)));
+
+        Action hideAction = new Action(Messages.SQLEditorContentOutlinePage_hide_non_dangerous,
+                Action.AS_CHECK_BOX) {
+
+            @Override
+            public void run() {
+                setState(!filterDangerous);
+            }
+
+            private void setState(boolean state) {
+                filterDangerous = state;
+                setChecked(state);
+                getTreeViewer().refresh(false);
+            }
+        };
+
+        hideAction.setImageDescriptor(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONALERT)));
+
+        actionBars.getToolBarManager().add(sortAction);
+        actionBars.getToolBarManager().add(hideAction);
+    }
+
     private class OutlineContentProvider implements ITreeContentProvider {
 
         @Override
@@ -84,9 +138,17 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return sqlEditor.getParser().getObjsForEditor(sqlEditor.getEditorInput())
-                    .stream().filter(e -> e.getAction() != StatementActions.NONE)
-                    .map(Segments::new).toArray();
+            Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
+                    sqlEditor.getEditorInput()).stream().filter(
+                            e -> e.getAction() != StatementActions.NONE);
+            if (filterDangerous) {
+                stream = stream.filter(PgObjLocation::isDanger);
+            }
+            if (sortStatements) {
+                stream = stream.sorted((a,b) -> a.getObjName().compareTo(b.getObjName()));
+            }
+
+            return stream.map(Segments::new).toArray();
         }
 
         @Override

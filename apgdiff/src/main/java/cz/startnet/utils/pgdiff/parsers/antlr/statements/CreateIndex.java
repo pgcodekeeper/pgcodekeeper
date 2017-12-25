@@ -44,23 +44,12 @@ public class CreateIndex extends ParserAbstract {
 
         ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(), DbObjType.TABLE));
 
-        // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
-        for (Sort_specifierContext sort_ctx : ctx.index_rest().index_sort().sort_specifier_list().sort_specifier()){
-            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
-            if (vexPrimary != null) {
-                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
-                if (colName != null) {
-                    ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(),
-                            colName.getText(), DbObjType.COLUMN));
-                }
-            }
-        }
         return ind;
     }
 
-
     public static String parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, PgIndex ind){
+            String schemaName, PgIndex ind) {
+        parseColumns(rest, schemaName, ind);
         StringBuilder sb = new StringBuilder();
         if (rest.index_sort().method == null) {
             sb.append("USING btree ");
@@ -72,11 +61,27 @@ public class CreateIndex extends ParserAbstract {
             sb.append(" TABLESPACE ").append(tablespace);
         }
         if (rest.index_where() != null){
+            // не считывает ссылки на колонки
             ValueExpr vex = new ValueExpr(schemaName);
             vex.analyze(new Vex(rest.index_where().vex()));
             ind.addAllDeps(vex.getDepcies());
             sb.append(' ').append(ParserAbstract.getFullCtxText(rest.index_where()));
         }
         return sb.toString();
+    }
+
+    // Костыль, т.к нужно улучшить парсер для vex в плане вычитки колонок
+    private static void parseColumns(Index_restContext rest, String schemaName, PgIndex ind) {
+        for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list().sort_specifier()){
+            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
+            if (vexPrimary != null) {
+                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
+                if (colName != null) {
+                    ind.addDep(new GenericColumn(schemaName, ind.getTableName(),
+                            colName.getText(), DbObjType.COLUMN));
+                }
+            }
+            ind.addColumn(sort_ctx.key.getText());
+        }
     }
 }

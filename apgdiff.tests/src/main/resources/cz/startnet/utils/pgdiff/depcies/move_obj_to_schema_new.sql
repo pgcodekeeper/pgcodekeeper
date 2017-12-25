@@ -80,7 +80,7 @@ CREATE FUNCTION emp_stamp() RETURNS trigger
 $$;
 
 
-ALTER FUNCTION public.emp_stamp() OWNER TO galiev_mr;
+ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;
 
 --
 -- Name: increment(integer); Type: FUNCTION; Schema: public; Owner: galiev_mr
@@ -95,7 +95,7 @@ CREATE FUNCTION increment(i integer) RETURNS integer
 $$;
 
 
-ALTER FUNCTION public.increment(i integer) OWNER TO galiev_mr;
+ALTER FUNCTION test.increment(i integer) OWNER TO galiev_mr;
 
 SET default_tablespace = '';
 

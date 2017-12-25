@@ -103,9 +103,9 @@ public class CreateTable extends ParserAbstract {
                 table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                table.addColumn(getColumn(column.column_name.getText(),
+                getColumn(column.column_name.getText(),
                         column.datatype, column.collate_name,
-                        column.colmn_constraint, getDefSchemaName()));
+                        column.colmn_constraint, getDefSchemaName(), table);
             }
         }
 
@@ -126,9 +126,9 @@ public class CreateTable extends ParserAbstract {
                 }
                 if (colCtx.table_of_type_column_definition() != null) {
                     Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                    table.addColumn(getColumn(column.column_name.getText(),
+                    getColumn(column.column_name.getText(),
                             null, null, column.colmn_constraint,
-                            getDefSchemaName()));
+                            getDefSchemaName(), table);
                 }
             }
         }
@@ -223,11 +223,11 @@ public class CreateTable extends ParserAbstract {
             VexContext valueCtx = option.vex();
             String value = valueCtx == null ? "" : valueCtx.getText();
             String optionText = key.getText();
-            if ("OIDS".equalsIgnoreCase(optionText)){
-                if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)){
+            if ("OIDS".equalsIgnoreCase(optionText)) {
+                if ("TRUE".equalsIgnoreCase(value) || "'TRUE'".equalsIgnoreCase(value)) {
                     table.setHasOids(true);
                 }
-            } else if("toast".equals(QNameParser.getSecondName(optionIds))){
+            } else if("toast".equals(QNameParser.getSecondName(optionIds))) {
                 fillOptionParams(value, QNameParser.getFirstName(optionIds), true, table::addOption);
             } else {
                 fillOptionParams(value, optionText, false, table::addOption);

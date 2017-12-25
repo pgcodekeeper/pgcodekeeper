@@ -44,13 +44,15 @@ public class AlterTable extends ParserAbstract {
         for (Table_actionContext tablAction : ctx.table_action()) {
             // for owners try to get any relation, fail if the last attempt fails
             if (tablAction.owner_to() != null) {
-                PgStatement st = null;
                 String name = nameCtx.getText();
-                if ((st = schema.getTable(name)) != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = schema.getSequence(name)) != null) {
-                    fillOwnerTo(tablAction.owner_to(), st);
-                } else if ((st = getSafe(schema::getView, nameCtx)) != null) {
+                PgStatement st = schema.getTable(name);
+                if (st == null) {
+                    st = schema.getSequence(name);
+                }
+                if (st == null) {
+                    st = getSafe(schema::getView, nameCtx);
+                }
+                if (st != null) {
                     fillOwnerTo(tablAction.owner_to(), st);
                 }
                 continue;
@@ -61,9 +63,9 @@ public class AlterTable extends ParserAbstract {
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
-                tabl.addColumn(getColumn(column.column_name.getText(),
+                getColumn(column.column_name.getText(),
                         column.datatype, column.collate_name,
-                        column.colmn_constraint, getDefSchemaName()));
+                        column.colmn_constraint, getDefSchemaName(), tabl);
             }
 
             if (tablAction.column != null) {
