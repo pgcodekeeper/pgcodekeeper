@@ -156,8 +156,13 @@ public abstract class AbstractExpr {
                     }
                 }
             } else {
-                Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + columnParent + ' ' + column);
+                PgSchema s;
+                if ((s = db.getSchema(schema)) != null && s.getType(column) != null) {
+                    columnType = column;
+                } else {
+                    Log.log(Log.LOG_WARNING, "Unknown column reference: "
+                            + schema + ' ' + columnParent + ' ' + column);
+                }
             }
         }
 
@@ -231,22 +236,5 @@ public abstract class AbstractExpr {
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
-    }
-
-    public static interface TypesSetManually {
-        String UNKNOWN = "unknown_unknown";
-        String EMPTY = "empty";
-        String UNKNOWN_ARRAY = "unknown[]";
-
-        String COLUMN = "column";
-        String FUNCTION_COLUMN = "functionCol";
-
-        String NULL = "NULL";
-        String QUALIFIED_ASTERISK = "qualifiedAsterisk";
-
-        String BOOLEAN = "boolean";
-        String INTEGER = "integer";
-        String DOUBLE_PRECISION = "double precision";
-        String TEXT = "text";
     }
 }

@@ -278,7 +278,22 @@ public class ValueExpr extends AbstractExpr {
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(coercionDataType));
+
+                Predefined_typeContext predefinedType;
+                if ((predefinedType = coercionDataType.predefined_type()) != null) {
+                } else {
+                    predefinedType = coercionDataType.value;
+                }
+
+                String type;
+                Schema_qualified_name_nontypeContext qName;
+                if ((qName = predefinedType.schema_qualified_name_nontype()) != null) {
+                    type = qName.identifier_nontype().getText();
+                } else {
+                    type = ParserAbstract.getFullCtxText(coercionDataType);
+                }
+
+                ret = new SimpleEntry<>(null, type);
             }
         } else {
             doneWork = false;
@@ -337,7 +352,11 @@ public class ValueExpr extends AbstractExpr {
         List<Entry<String, String>> argsType = new ArrayList<>();
         if (args != null) {
             for (Vex v : args) {
-                argsType.add(analyze(v));
+                Entry<String, String> argType = analyze(v);
+                if(TypesSetManually.COLUMN.equals(argType.getValue())) {
+                    argType.setValue(ParserAbstract.getFullCtxText(v.getVexCtx()));
+                }
+                argsType.add(argType);
             }
         }
 
