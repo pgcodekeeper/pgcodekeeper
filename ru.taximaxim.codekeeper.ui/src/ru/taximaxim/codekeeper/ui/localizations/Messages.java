@@ -343,8 +343,6 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_row_count;
 
-    public static String MockDataPage_schema_name;
-
     public static String MockDataPage_step;
 
     public static String MockDataPage_table_name;
