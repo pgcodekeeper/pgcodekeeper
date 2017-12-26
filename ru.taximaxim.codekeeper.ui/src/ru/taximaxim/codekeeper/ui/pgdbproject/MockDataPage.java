@@ -149,7 +149,7 @@ public class MockDataPage extends WizardPage {
                 if (c.isUnique() && c.getGenerator() == PgDataGenerator.RANDOM
                         && c.getMaxValues() < rowCount) {
                     err = Messages.MockDataPage_maximum_value
-                            + c.getName() + ": " + c.getMaxValues(); //$NON-NLS-1$
+                            + ' ' + c.getName() + ": " + c.getMaxValues(); //$NON-NLS-1$
                 }
             }
         }
