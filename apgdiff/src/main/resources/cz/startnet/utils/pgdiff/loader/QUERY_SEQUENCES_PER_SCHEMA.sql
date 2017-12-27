@@ -9,7 +9,8 @@ SELECT c.oid,
        c.relowner::bigint,
        c.relname,
        descr.description AS comment,
-       d.refobjid::regclass::text referenced_table_name,
+       (SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=d.refobjid) referenced_table_name,
+       --d.refobjid::regclass::text referenced_table_name,
        a.attname AS ref_col_name,
        c.relacl::text AS aclarray
 FROM pg_catalog.pg_class c

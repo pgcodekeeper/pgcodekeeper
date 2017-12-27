@@ -58,6 +58,28 @@ public class PgPrivilege extends PgStatement {
                 .toString();
     }
 
+    public static void appendDefaultPriviligies(PgStatement newObj, StringBuilder sb) {
+        DbObjType type = newObj.getStatementType();
+        String owner = newObj.getOwner();
+        String name = newObj.getName();
+        String column = "";
+
+        if (type ==DbObjType.COLUMN) {
+            PgStatement parent = newObj.getParent();
+            owner = parent.getOwner();
+            column = '(' + name + ')';
+            name = parent.getName();
+            type = DbObjType.TABLE;
+        }
+
+        PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC", "");
+        sb.append('\n').append(priv.getCreationSQL());
+        priv = new PgPrivilege(true, "ALL" + column+ " ON " + type + ' ' + name + " FROM " + owner, "");
+        sb.append('\n').append(priv.getCreationSQL());
+        priv = new PgPrivilege(false, "ALL" + column+ " ON " + type + ' ' + name + " TO " + owner, "");
+        sb.append('\n').append(priv.getCreationSQL());
+    }
+
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         return false;
