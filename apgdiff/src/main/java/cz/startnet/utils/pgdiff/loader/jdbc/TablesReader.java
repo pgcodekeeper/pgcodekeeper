@@ -58,7 +58,7 @@ public class TablesReader extends JdbcReader {
         }
         PgTable t = null;
         String serverName = res.getString("server_name");
-        Long ofTypeOid = res.getLong("of_type");
+        long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
             if (partitionBound == null) {
                 t = new SimpleForeignPgTable(tableName, "", serverName);

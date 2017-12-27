@@ -715,10 +715,14 @@ for_values_bound
     ;
     
 partition_bound_spec
-    : IN LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
-    | FROM LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN
-      TO LEFT_PAREN Character_String_Literal (COMMA Character_String_Literal)* RIGHT_PAREN 
+    : IN LEFT_PAREN (unsigned_value_specification | NULL) (COMMA unsigned_value_specification | NULL)* RIGHT_PAREN
+    | FROM partition_bound_part TO partition_bound_part
     ;
+
+partition_bound_part
+    : LEFT_PAREN (unsigned_value_specification | MINVALUE | MAXVALUE) 
+    (COMMA unsigned_value_specification | MINVALUE | MAXVALUE)* RIGHT_PAREN
+    ;   
 
 define_columns
   : LEFT_PAREN 
@@ -846,7 +850,7 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN NO? INHERIT?
+    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO? INHERIT)?
     ;
 
 storage_parameter

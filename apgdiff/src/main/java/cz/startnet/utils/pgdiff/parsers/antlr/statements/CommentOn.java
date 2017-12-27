@@ -6,7 +6,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -54,13 +53,7 @@ public class CommentOn extends ParserAbstract {
                     view.addColumnComment(db.getArguments(), name, comment);
                 }
             } else {
-                PgColumn column = table.getColumn(nameCtx.getText());
-                if (column == null) {
-                    column = new PgColumn(nameCtx.getText());
-                    column.setInherit(true);
-                    table.addColumn(column);
-                }
-                column.setComment(db.getArguments(), comment);
+                getColumnSafe(table, nameCtx).setComment(db.getArguments(), comment);
             }
             return null;
         }

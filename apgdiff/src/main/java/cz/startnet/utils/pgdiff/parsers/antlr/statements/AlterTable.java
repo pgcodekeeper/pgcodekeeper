@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
@@ -69,13 +68,7 @@ public class AlterTable extends ParserAbstract {
             }
 
             if (tablAction.column != null) {
-                String columnName = QNameParser.getFirstName(tablAction.column.identifier());
-                PgColumn col = tabl.getColumn(columnName);
-                if (col == null) {
-                    col = new PgColumn(columnName);
-                    col.setInherit(true);
-                    tabl.addColumn(col);
-                }
+                PgColumn col = getColumnSafe(tabl, QNameParser.getFirstNameCtx(tablAction.column.identifier()));
 
                 // column statistics
                 if (tablAction.STATISTICS() != null) {
@@ -90,13 +83,10 @@ public class AlterTable extends ParserAbstract {
                 // column default
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
-                    String def = getFullCtxText(exp);
-                    if (PgDiffUtils.isStringNotEmpty(def)) {
-                        col.setDefaultValue(def);
-                        ValueExpr vex = new ValueExpr(schema.getName());
-                        vex.analyze(new Vex(exp));
-                        col.addAllDeps(vex.getDepcies());
-                    }
+                    col.setDefaultValue(getFullCtxText(exp));
+                    ValueExpr vex = new ValueExpr(schema.getName());
+                    vex.analyze(new Vex(exp));
+                    col.addAllDeps(vex.getDepcies());
                 }
 
                 // column options
@@ -118,10 +108,7 @@ public class AlterTable extends ParserAbstract {
 
                 // column storage
                 if (tablAction.set_storage() != null){
-                    String storage = tablAction.set_storage().storage_option().getText();
-                    if (storage != null && !storage.isEmpty()) {
-                        col.setStorage(storage);
-                    }
+                    col.setStorage(tablAction.set_storage().storage_option().getText());
                 }
 
                 // since 10 PostgreSQL

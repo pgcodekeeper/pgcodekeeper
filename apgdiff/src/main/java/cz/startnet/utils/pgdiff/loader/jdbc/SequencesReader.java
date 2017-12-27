@@ -44,6 +44,7 @@ public class SequencesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        loader.monitor.worked(1);
         String sequenceName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName, "");
@@ -82,8 +83,6 @@ public class SequencesReader extends JdbcReader {
                 s.setDataType(res.getString("data_type"));
             }
         }
-
-        loader.monitor.worked(1);
 
         if (identityType != null) {
             PgTable table = schema.getTable(refTable);
