@@ -156,13 +156,8 @@ public abstract class AbstractExpr {
                     }
                 }
             } else {
-                PgSchema s;
-                if ((s = db.getSchema(schema)) != null && s.getType(column) != null) {
-                    columnType = column;
-                } else {
-                    Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                            + schema + ' ' + columnParent + ' ' + column);
-                }
+                Log.log(Log.LOG_WARNING, "Unknown column reference: "
+                        + schema + ' ' + columnParent + ' ' + column);
             }
         }
 

@@ -121,6 +121,17 @@ public abstract class ParserAbstract {
         return col;
     }
 
+    public static String parseSignature(String name, Function_argsContext argsContext) {
+        PgFunction function = new PgFunction(name, null);
+        for (Function_argumentsContext argument : argsContext.function_arguments()) {
+            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null,
+                            getFullCtxText(argument.argtype_data));
+            function.addArgument(arg);
+        }
+        return function.getSignature();
+    }
+
     public static void fillArguments(Function_argsContext function_argsContext,
             PgFunction function, String defSchemaName, PgDatabase dataBase) {
         for (Function_argumentsContext argument : function_argsContext.function_arguments()) {

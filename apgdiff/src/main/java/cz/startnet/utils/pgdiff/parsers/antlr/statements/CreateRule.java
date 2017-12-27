@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -57,11 +56,11 @@ public class CreateRule extends ParserAbstract {
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 List<IdentifierContext> funcIds = functparam.name.identifier();
                 IdentifierContext functNameCtx = QNameParser.getFirstNameCtx(funcIds);
-                PgFunction func = new PgFunction(functNameCtx.getText(), null);
-                fillArguments(functparam.function_args(), func, getDefSchemaName(), db);
 
                 PgSchema schema = getSchemaSafe(funcIds, db.getDefaultSchema());
-                getSafe(schema::getFunction, func.getSignature(), functNameCtx.getStart())
+                getSafe(schema::getFunction,
+                        parseSignature(functNameCtx.getText(), functparam.function_args()),
+                        functNameCtx.getStart())
                 .addPrivilege(new PgPrivilege(revoke, getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
             }
         } else if (ctx.body_rule.on_large_object() != null) {

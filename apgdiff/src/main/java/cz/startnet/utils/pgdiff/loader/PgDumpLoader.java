@@ -42,7 +42,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
@@ -257,15 +256,7 @@ public class PgDumpLoader implements AutoCloseable {
 
             String schemaName = null;
             if (stmt instanceof PgStatementWithSearchPath) {
-                PgSchema schema = ((PgStatementWithSearchPath) stmt).getContainingSchema();
-                if (schema != null) {
-                    schemaName = schema.getName();
-                } else {
-                    Log.log(Log.LOG_WARNING, "PgSchema is null for : "
-                            + stmt.getStatementType() + ' ' + stmt.getName());
-
-                    continue;
-                }
+                schemaName = ((PgStatementWithSearchPath) stmt).getContainingSchema().getName();
             }
 
             switch (stmtType) {

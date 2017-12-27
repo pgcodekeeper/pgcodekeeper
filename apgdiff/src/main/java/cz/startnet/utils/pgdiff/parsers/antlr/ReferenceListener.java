@@ -48,7 +48,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -339,15 +338,13 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void createFunction(Create_function_statementContext ctx) {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgFunction function = new PgFunction(QNameParser.getFirstName(ids),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function,
-                getDefSchemaName(), db);
+
         funcBodies.add(new FunctionBodyContainer(filePath,
                 ctx.funct_body.getStart().getStartIndex(), ctx.funct_body.getStart().getLine(),
                 ParserAbstract.getFullCtxText(ctx.funct_body)));
 
-        fillObjDefinition(schemaName, function.getBareName(),
+        fillObjDefinition(schemaName,
+                ParserAbstract.parseSignature(QNameParser.getFirstName(ids), ctx.function_parameters().function_args()),
                 DbObjType.FUNCTION,
                 ctx.function_parameters().name.getStart().getStartIndex(), ctx.function_parameters().name.getStart().getLine());
     }
@@ -389,9 +386,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         DbObjType type = null;
         if (ctx.FUNCTION() != null) {
-            PgFunction func = new PgFunction(name, null);
-            ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName(), db);
-            name = func.getBareName();
+            name = ParserAbstract.parseSignature(name, ctx.function_args());
             type = DbObjType.FUNCTION;
         } else if (ctx.COLUMN() != null) {
             String tableName = QNameParser.getSecondName(ids);
@@ -468,10 +463,9 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                PgFunction func = new PgFunction(
-                        QNameParser.getFirstName(functparam.name.identifier()), null);
-                ParserAbstract.fillArguments(functparam.function_args(), func, getDefSchemaName(), db);
-                addObjReference(getDefSchemaName(), func.getBareName(),
+                addObjReference(getDefSchemaName(),
+                        ParserAbstract.parseSignature(QNameParser.getFirstName(functparam.name.identifier()),
+                                functparam.function_args()),
                         DbObjType.FUNCTION, StatementActions.NONE,
                         functparam.name.getStart().getStartIndex(), functparam.name.getStart().getLine(),
                         ParserAbstract.getFullCtxText(ctx.getParent()));
@@ -519,11 +513,9 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void alterFunction(Alter_function_statementContext ctx) {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
         String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        PgFunction function = new PgFunction(QNameParser.getFirstName(ids),
-                ParserAbstract.getFullCtxText(ctx.getParent()));
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function,
-                getDefSchemaName(), db);
-        addObjReference(schemaName, function.getBareName(),
+
+        addObjReference(schemaName,
+                ParserAbstract.parseSignature(QNameParser.getFirstName(ids), ctx.function_parameters().function_args()),
                 DbObjType.FUNCTION, StatementActions.ALTER,
                 ctx.function_parameters().name.getStart().getStartIndex(), ctx.function_parameters().name.getStart().getLine(),
                 ParserAbstract.getFullCtxText(ctx.getParent()));
@@ -702,10 +694,9 @@ public class ReferenceListener extends SQLParserBaseListener {
                     nameCtx.getStart().getStartIndex(), nameCtx.getStart().getLine(),
                     ParserAbstract.getFullCtxText(ctx.getParent()));
         }
-        PgFunction func = new PgFunction(QNameParser.getFirstName(ids), "");
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func,
-                getDefSchemaName(), db);
-        addObjReference(schemaName, func.getBareName(),
+
+        addObjReference(schemaName,
+                ParserAbstract.parseSignature(QNameParser.getFirstName(ids), ctx.function_parameters().function_args()),
                 DbObjType.FUNCTION, StatementActions.DROP,
                 nameCtx.getStart().getStartIndex()+ offset, nameCtx.getStart().getLine(),
                 ParserAbstract.getFullCtxText(ctx.getParent()));

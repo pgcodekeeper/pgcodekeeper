@@ -213,6 +213,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             }
         } else if (isCte) {
             addReference(firstName, null);
+            complexNamespace.put(firstName, cte.get(firstName));
         } else {
             addRawTableReference(depcy);
         }
@@ -235,7 +236,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             List<Entry<String, String>> columnsPairs;
             boolean duplicate;
             if (recursive) {
-                duplicate = cte.containsKey(withName);
+                duplicate = cte.put(withName, null) != null;
                 columnsPairs = withProcessor.analyze(withSelect);
                 cte.put(withName, columnsPairs);
             } else {
