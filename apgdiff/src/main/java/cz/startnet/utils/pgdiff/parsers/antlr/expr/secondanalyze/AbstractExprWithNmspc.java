@@ -78,8 +78,9 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected AbstractExprWithNmspc<?> findCte(String cteName) {
-        return cte.containsKey(cteName) ? this : super.findCte(cteName);
+    protected List<Entry<String, String>> findCte(String cteName) {
+        List<Entry<String, String>> pair = cte.get(cteName);
+        return pair != null ? pair : super.findCte(cteName);
     }
 
     @Override
@@ -197,23 +198,26 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         List<IdentifierContext> ids = name.identifier();
         String firstName = QNameParser.getFirstName(ids);
 
-        boolean isCte = ids.size() == 1 && hasCte(firstName);
+        List<Entry<String, String>> cteList = null;
+        if (ids.size() == 1) {
+            cteList = findCte(firstName);
+        }
         GenericColumn depcy = null;
-        if (!isCte) {
+        if (cteList == null) {
             depcy = addObjectDepcy(ids, DbObjType.TABLE);
         }
 
         if (alias != null) {
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
-            if (!added && !isCte && columnAliases != null && !columnAliases.isEmpty()) {
+            if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {
                 for (IdentifierContext columnAlias : columnAliases) {
                     addColumnReference(aliasName, columnAlias.getText());
                 }
             }
-        } else if (isCte) {
+        } else if (cteList != null) {
             addReference(firstName, null);
-            complexNamespace.put(firstName, cte.get(firstName));
+            complexNamespace.put(firstName, cteList);
         } else {
             addRawTableReference(depcy);
         }

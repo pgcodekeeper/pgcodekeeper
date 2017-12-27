@@ -61,7 +61,7 @@ public abstract class AbstractExpr {
         this.systemStorage = parent.systemStorage;
     }
 
-    protected AbstractExprWithNmspc<?> findCte(String cteName) {
+    protected List<Entry<String, String>> findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
     }
 

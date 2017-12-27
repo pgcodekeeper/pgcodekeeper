@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -20,7 +20,7 @@ public class PgSystemStorage implements Serializable {
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
-    private static final Map<SupportedVersion, PgSystemStorage> systemStorageVersions = new HashMap<>();
+    private static final ConcurrentMap<SupportedVersion, PgSystemStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
 
     private final List<PgSystemStatement> objects = new ArrayList<>();
     private final List<PgSystemCast> casts = new ArrayList<>();
@@ -42,8 +42,8 @@ public class PgSystemStorage implements Serializable {
     }
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
-        PgSystemStorage systemStorage;
-        if ((systemStorage = systemStorageVersions.get(version)) != null) {
+        PgSystemStorage systemStorage = STORAGE_CACHE.get(version);
+        if (systemStorage != null) {
             return systemStorage;
         }
 
@@ -54,8 +54,8 @@ public class PgSystemStorage implements Serializable {
 
             if (object != null && object instanceof PgSystemStorage) {
                 systemStorage = (PgSystemStorage) object;
-                systemStorageVersions.put(version, systemStorage);
-                return systemStorage;
+                PgSystemStorage other = STORAGE_CACHE.putIfAbsent(version, systemStorage);
+                return other == null ? systemStorage : other;
             }
         } catch (URISyntaxException | IOException e) {
             Log.log(Log.LOG_ERROR, "Error while reading systems objects from resources");
