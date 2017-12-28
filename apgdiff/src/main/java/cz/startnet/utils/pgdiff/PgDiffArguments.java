@@ -195,4 +195,29 @@ public class PgDiffArguments {
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
     }
+
+    public PgDiffArguments copy() {
+        PgDiffArguments arguments = new PgDiffArguments();
+        arguments.modeParse = modeParse;
+        arguments.newSrc = newSrc;
+        arguments.oldSrc = oldSrc;
+        arguments.newSrcFormat = newSrcFormat;
+        arguments.oldSrcFormat = oldSrcFormat;
+        arguments.outputTarget = outputTarget;
+        arguments.inCharsetName = inCharsetName;
+        arguments.outCharsetName = outCharsetName;
+        arguments.ignorePrivileges = ignorePrivileges;
+        arguments.keepNewlines = keepNewlines;
+        arguments.addTransaction = addTransaction;
+        arguments.disableCheckFunctionBodies = disableCheckFunctionBodies;
+        arguments.timeZone = timeZone;
+        arguments.usingTypeCastOff = usingTypeCastOff;
+        arguments.concurrentlyMode = concurrentlyMode;
+        arguments.safeMode = safeMode;
+        arguments.allowedDangers = allowedDangers;
+        arguments.allowedTypes = allowedTypes;
+        arguments.stopNotAllowed = stopNotAllowed;
+        arguments.ignoreLists = ignoreLists;
+        return arguments;
+    }
 }

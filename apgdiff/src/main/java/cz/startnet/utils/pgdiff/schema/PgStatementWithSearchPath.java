@@ -8,7 +8,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 /**
  * The superclass for general pgsql statement with search_path. That is any but
  * SCHEMA and EXTENSION.
- * 
+ *
  * @author Alexander Levsha
  */
 public abstract class PgStatementWithSearchPath extends PgStatement {
@@ -23,4 +23,8 @@ public abstract class PgStatementWithSearchPath extends PgStatement {
     }
 
     public abstract PgSchema getContainingSchema();
+
+    public PgDatabase getDatabase() {
+        return (PgDatabase)getContainingSchema().getParent();
+    }
 }

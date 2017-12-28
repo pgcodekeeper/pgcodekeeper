@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.NotAllowedObjectException;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -73,11 +72,8 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
-                    String sql = type == DbObjType.INDEX ? 
-                            ((PgIndex)oldObj).getCreationSQL(arguments.isConcurrentlyMode())
-                            : oldObj.getCreationSQL();
 
-                    script.addCreate(oldObj, null, sql, true);
+                    script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     break;
                 case DROP:
                     currentSearchPath = setSearchPath(currentSearchPath, oldObj,
