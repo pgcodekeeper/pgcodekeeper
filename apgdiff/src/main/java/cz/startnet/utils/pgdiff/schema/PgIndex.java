@@ -38,6 +38,10 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
+        return getCreationSQL(false);
+    }
+
+    public String getCreationSQL(boolean isConcurrently) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
@@ -46,6 +50,9 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
 
         sbSQL.append("INDEX ");
+        if (isConcurrently) {
+            sbSQL.append("CONCURRENTLY ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));

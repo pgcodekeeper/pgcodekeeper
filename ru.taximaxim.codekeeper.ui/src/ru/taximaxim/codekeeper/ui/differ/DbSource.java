@@ -96,6 +96,7 @@ public abstract class DbSource {
         args.setAddTransaction(mainPS.getBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setDisableCheckFunctionBodies(!mainPS.getBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
         args.setUsingTypeCastOff(mainPS.getBoolean(DB_UPDATE_PREF.USING_ON_OFF));
+        args.setConcurrentlyMode(mainPS.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
         args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
