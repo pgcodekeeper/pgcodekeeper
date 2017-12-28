@@ -274,7 +274,7 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("Please specify both SOURCE and DEST.");
             }
             if (isAddTransaction() && isConcurrentlyMode()) {
-                badArgs("-C (--concurrently-mode) and -X (--add-transaction) arguments can not be used at the same time. Please choose one of them.");
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)");
             }
             setOldSrcFormat(parsePath(getOldSrc()));
         }

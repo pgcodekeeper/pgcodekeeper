@@ -169,9 +169,9 @@ public class Differ implements IRunnableWithProgress {
     }
 
     // TODO костыль, сохраняет текущие аргументы, подменяет их новыми, при закрытии возвращает старые аргументы
-    private class Getter implements AutoCloseable {
-        Consumer<PgDiffArguments> consumer;
-        PgDiffArguments oldArgs;
+    private static final class Getter implements AutoCloseable {
+        private final Consumer<PgDiffArguments> consumer;
+        private final PgDiffArguments oldArgs;
 
         public Getter(PgDatabase db) {
             oldArgs = db.getArguments();
