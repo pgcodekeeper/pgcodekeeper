@@ -28,9 +28,11 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private final SQLEditor editor;
+    private final List<String> keywords;
 
     public SQLEditorCompletionProcessor(SQLEditor editor) {
         this.editor = editor;
+        keywords = Keyword.getKeywords();
     }
 
     @Override
@@ -48,7 +50,6 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             --nonid;
         }
         String text = part.substring(nonid + 1, offset);
-        List<String> keywords = Keyword.getKeywords();
 
         Set<ICompletionProposal> result = new LinkedHashSet<>();
         Set<ICompletionProposal> partResult = new LinkedHashSet<>();
@@ -79,10 +80,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
         // SQL Templates + Keywords
         if (text.isEmpty()) {
-            for (String keyword : keywords) {
-                result.add(new CompletionProposal(keyword.toUpperCase(), offset, 0, keyword.length()));
-            }
-
+            keywords.forEach(k -> result.add(new CompletionProposal(k.toUpperCase(),
+                    offset, 0, k.length())));
 
             result.addAll(new SQLEditorTemplateAssistProcessor()
                     .getAllTemplates(viewer, offset));
