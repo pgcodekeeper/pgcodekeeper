@@ -1,62 +1,39 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemStatement implements Serializable {
+public abstract class PgSystemStatement implements IStatement, Serializable {
 
     private static final long serialVersionUID = -3372437548966681543L;
 
-    /**
-     * Contains object schema name, null for schemas
-     */
-    private final String schema;
-    private final String name;
-    private final DbObjType type;
+    protected final String name;
+    protected final DbObjType type;
+    protected PgSystemStatement parent;
 
-    /**
-     * Contains columns names and types
-     */
-    private final Map<String, String> columns = new LinkedHashMap<>();
-
-    public PgSystemStatement(String schema, String name, DbObjType type) {
-        this.schema = schema;
+    public PgSystemStatement(String name, DbObjType type) {
         this.name = name;
         this.type = type;
     }
 
-    /**
-     * Create object with type equals schema by given name
-     *
-     * @param schemaName Schema name
-     */
-    public PgSystemStatement(String schemaName) {
-        this.schema = null;
-        this.name = schemaName;
-        this.type = DbObjType.SCHEMA;
-    }
-
-
+    @Override
     public String getName() {
         return name;
     }
 
-    public String getSchema() {
-        return schema;
-    }
-
-    public DbObjType getType() {
+    @Override
+    public DbObjType getStatementType() {
         return type;
     }
 
-    public Map<String, String> getColumns() {
-        return columns;
+    public void setParent(PgSystemStatement parent) {
+        this.parent = parent;
     }
 
-    public void addColumn(String name, String type) {
-        columns.put(name, type);
+    @Override
+    public IStatement getParent() {
+        return parent;
     }
 }

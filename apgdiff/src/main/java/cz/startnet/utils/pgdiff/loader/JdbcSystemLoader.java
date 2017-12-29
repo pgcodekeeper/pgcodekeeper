@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStatement;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.SQLResultSetWrapper;
@@ -54,14 +54,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
             queryTypesForCache();
 
-            readSchemas(storage);
             readTypes(storage);
             readRelations(storage);
             readFunctions(storage);
-            readSubElements(storage, JdbcQueries.QUERY_SYSTEM_CONSTRAINTS, DbObjType.CONSTRAINT);
-            readSubElements(storage, JdbcQueries.QUERY_SYSTEM_INDICES, DbObjType.INDEX);
-            readSubElements(storage, JdbcQueries.QUERY_SYSTEM_TRIGGERS, DbObjType.TRIGGER);
-            readSubElements(storage, JdbcQueries.QUERY_SYSTEM_RULES, DbObjType.RULE);
             readOperators(storage);
             readCasts(storage);
 
@@ -88,7 +83,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String functionName = wrapper.getString(NAME);
                 String schemaName = wrapper.getString(NAMESPACE_NAME);
 
-                PgSystemFunction function = new PgSystemFunction(schemaName, functionName);
+                PgSystemFunction function = new PgSystemFunction(functionName);
 
                 String[] argModes = wrapper.getArray("proargmodes", String.class);
                 if (argModes != null && Arrays.asList(argModes).contains("t")) {
@@ -114,10 +109,10 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                             p -> p.function_args_parser().function_args(),
                             (ctx, db) -> {
                                 fillArguments(ctx, function);
-                                storage.addObject(function);
+                                storage.getSchema(schemaName).addFunction(function);
                             });
                 } else {
-                    storage.addObject(function);
+                    storage.getSchema(schemaName).addFunction(function);
                 }
             }
         }
@@ -168,16 +163,13 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     continue;
                 }
 
-                String typeName = result.getString(NAME);
-                String schemaName = result.getString(NAMESPACE_NAME);
-
-                PgSystemStatement relation = new PgSystemStatement(schemaName, typeName, type);
+                PgSystemRelation relation = new PgSystemRelation(result.getString(NAME), type);
 
                 if ("c".equals(typtype)) {
                     readColumns(wrapper, relation);
                 }
 
-                storage.addObject(relation);
+                storage.getSchema(result.getString(NAMESPACE_NAME)).addRelation(relation);
             }
         }
     }
@@ -189,7 +181,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
                 PgDiffUtils.checkCancelled(monitor);
                 String relationName = result.getString(NAME);
-                String schemaName = result.getString(NAMESPACE_NAME);
                 DbObjType type;
 
                 switch (result.getString("relkind")) {
@@ -205,9 +196,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     break;
                 }
 
-                PgSystemStatement relation = new PgSystemStatement(schemaName, relationName, type);
+                PgSystemRelation relation = new PgSystemRelation(relationName, type);
                 readColumns(wrapper, relation);
-                storage.addObject(relation);
+                storage.getSchema(result.getString(NAMESPACE_NAME)).addRelation(relation);
             }
         }
     }
@@ -231,7 +222,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     right = cachedTypesByOid.get(rightType).getFullName(schemaName);
                 }
 
-                PgSystemFunction operator = new PgSystemFunction(schemaName, name);
+                PgSystemFunction operator = new PgSystemFunction(name);
                 PgSystemFunction.PgSystemArgument firstArg = new PgSystemArgument(null, left);
                 PgSystemFunction.PgSystemArgument secondArg = new PgSystemArgument(null, right);
                 operator.addArgumentPart(firstArg);
@@ -239,7 +230,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 operator.setReturns(cachedTypesByOid.get(wrapper.getLong("result")).getFullName(schemaName));
 
-                storage.addObject(operator);
+                storage.getSchema(schemaName).addFunction(operator);
             }
         }
     }
@@ -258,31 +249,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         }
     }
 
-    private void readSchemas(PgSystemStorage storage)
-            throws InterruptedException, SQLException, WrapperAccessException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_SCHEMAS)) {
-            while (result.next()) {
-                PgDiffUtils.checkCancelled(monitor);
-                String schemaName = new SQLResultSetWrapper(result).getString(NAMESPACE_NAME);
-                storage.addObject(new PgSystemStatement(schemaName));
-            }
-        }
-    }
-
-    private void readSubElements(PgSystemStorage storage, String query, DbObjType type)
-            throws InterruptedException, SQLException, WrapperAccessException {
-        try (ResultSet result = statement.executeQuery(query)) {
-            while (result.next()) {
-                ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
-                PgDiffUtils.checkCancelled(monitor);
-                String objectName = wrapper.getString(NAME);
-                String schemaName = wrapper.getString(NAMESPACE_NAME);
-                storage.addObject(new PgSystemStatement(schemaName, objectName, type));
-            }
-        }
-    }
-
-    private void readColumns(ResultSetWrapper wrapper, PgSystemStatement relation)
+    private void readColumns(ResultSetWrapper wrapper, PgSystemRelation relation)
             throws WrapperAccessException {
         String[] colNames = wrapper.getArray("col_names", String.class);
         String[] colTypes = wrapper.getArray("col_types", String.class);

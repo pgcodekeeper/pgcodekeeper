@@ -38,10 +38,10 @@ public final class DiffTree {
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
             // functions
             if(schemaLeft != null) {
-                leftSub = schemaLeft.getFunctions();
+                leftSub = (List<PgStatement>)schemaLeft.getFunctions();
             }
             if(schemaRight != null) {
-                rightSub = schemaRight.getFunctions();
+                rightSub =(List<PgStatement>)schemaRight.getFunctions();
             }
 
             for (CompareResult func : compareLists(leftSub, rightSub)) {

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -19,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgSchema extends PgStatement {
+public class PgSchema extends PgStatement implements ISchema {
 
     private final List<PgDomain> domains = new ArrayList<>();
     private final List<PgFunction> functions = new ArrayList<>();
@@ -144,8 +145,14 @@ public class PgSchema extends PgStatement {
      *
      * @return {@link #functions}
      */
-    public List<PgFunction> getFunctions() {
+    @Override
+    public List<? extends IFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
+    }
+
+    @Override
+    public Stream<IStatement> getRelations() {
+        return Stream.concat(getTables().stream(), Stream.concat(getViews().stream(), getTypes().stream()));
     }
 
     /**

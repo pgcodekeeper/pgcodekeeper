@@ -2,8 +2,8 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.List;
 
-public interface IFunction {
-    String getName();
+public interface IFunction extends IStatement {
+    String getBareName();
     String getReturns();
     List<IArgument> getArguments();
 }

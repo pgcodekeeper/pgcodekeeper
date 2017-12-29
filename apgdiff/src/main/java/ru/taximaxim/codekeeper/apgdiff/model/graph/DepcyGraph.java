@@ -9,6 +9,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -75,9 +76,9 @@ public class DepcyGraph {
             graph.addVertex(schema);
             graph.addEdge(schema, db);
 
-            for(PgFunction func : schema.getFunctions()) {
-                graph.addVertex(func);
-                graph.addEdge(func, schema);
+            for(IFunction func : schema.getFunctions()) {
+                graph.addVertex((PgFunction)func);
+                graph.addEdge((PgFunction)func, schema);
             }
 
             for(PgSequence seq : schema.getSequences()) {
@@ -149,8 +150,8 @@ public class DepcyGraph {
         for(PgSchema schema : db.getSchemas()) {
             processDeps(schema);
 
-            for(PgFunction func : schema.getFunctions()) {
-                processDeps(func);
+            for(IFunction func : schema.getFunctions()) {
+                processDeps((PgFunction)func);
             }
             for(PgSequence seq : schema.getSequences()) {
                 processDeps(seq);

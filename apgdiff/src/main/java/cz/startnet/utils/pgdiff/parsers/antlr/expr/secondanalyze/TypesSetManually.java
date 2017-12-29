@@ -13,6 +13,6 @@ public interface TypesSetManually {
 
     String BOOLEAN = "boolean";
     String INTEGER = "integer";
-    String DOUBLE_PRECISION = "double precision";
+    String NUMERIC = "numeric";
     String TEXT = "text";
 }

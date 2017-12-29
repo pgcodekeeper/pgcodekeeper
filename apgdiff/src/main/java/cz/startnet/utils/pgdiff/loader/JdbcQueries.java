@@ -52,13 +52,8 @@ public final class JdbcQueries {
     public static String QUERY_SEQUENCES_ACCESS;
     public static String QUERY_SEQUENCES_DATA;
 
-    public static String QUERY_SYSTEM_CONSTRAINTS;
     public static String QUERY_SYSTEM_FUNCTIONS;
-    public static String QUERY_SYSTEM_INDICES;
     public static String QUERY_SYSTEM_RELATIONS;
-    public static String QUERY_SYSTEM_RULES;
-    public static String QUERY_SYSTEM_SCHEMAS;
-    public static String QUERY_SYSTEM_TRIGGERS;
     public static String QUERY_SYSTEM_TYPES;
     public static String QUERY_SYSTEM_OPERATORS;
     public static String QUERY_SYSTEM_CASTS;

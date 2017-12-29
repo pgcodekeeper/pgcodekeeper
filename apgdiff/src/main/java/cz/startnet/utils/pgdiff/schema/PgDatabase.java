@@ -261,8 +261,8 @@ public class PgDatabase extends PgStatement {
             for (PgSequence sequence : schema.getSequences()) {
                 mapQname(statements, sequence);
             }
-            for (PgFunction function : schema.getFunctions()) {
-                mapQname(statements, function);
+            for (IFunction function : schema.getFunctions()) {
+                mapQname(statements, (PgFunction)function);
             }
             for (PgTable table : schema.getTables()) {
                 mapQname(statements, table);

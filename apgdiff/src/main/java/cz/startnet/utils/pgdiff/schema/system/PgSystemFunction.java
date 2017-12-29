@@ -1,14 +1,17 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemFunction extends PgSystemStatement implements IFunction {
+public class PgSystemFunction extends PgSystemStatement implements IFunction, Serializable {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
@@ -18,16 +21,29 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
      * Order by for aggregate functions
      */
     private final List<PgSystemArgument> orderBy = new ArrayList<>();
+    private final Map<String, String> columns = new LinkedHashMap<>();
 
     /**
-     * Function return type name, if null
-     * {@link PgSystemStatement#columns columns} contains columns
+     * Function return type name, if null columns contains columns
      */
     private String returns;
     private boolean setof;
 
-    public PgSystemFunction(final String schema, final String name) {
-        super(schema, name, DbObjType.FUNCTION);
+    public PgSystemFunction(final String name) {
+        super(name, DbObjType.FUNCTION);
+    }
+
+    public Map<String, String> getColumns() {
+        return columns;
+    }
+
+    public void addColumn(String name, String type) {
+        columns.put(name, type);
+    }
+
+    @Override
+    public String getBareName() {
+        return name;
     }
 
     @Override

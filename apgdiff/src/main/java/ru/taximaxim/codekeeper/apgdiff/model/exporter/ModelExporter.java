@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -320,9 +321,9 @@ public class ModelExporter {
 
         // prepare the overloaded function list as if there are no changes
         if (oldParentSchema != null) {
-            for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
+            for (IFunction oldFunc : oldParentSchema.getFunctions()) {
                 if (oldFunc.getBareName().equals(st.getBareName())) {
-                    funcsToDump.add(oldFunc);
+                    funcsToDump.add((PgFunction)oldFunc);
                 }
             }
         }
@@ -704,7 +705,7 @@ public class ModelExporter {
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<PgFunction> funcs, File parentDir) throws IOException {
+    private void dumpFunctions(List<? extends IFunction> funcs, File parentDir) throws IOException {
         if (funcs.isEmpty()) {
             return;
         }
@@ -712,14 +713,14 @@ public class ModelExporter {
         File funcDir = mkdirObjects(parentDir, "FUNCTION");
 
         Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for(PgFunction f : funcs) {
-            String fileName = getExportedFilenameSql(f);
+        for(IFunction f : funcs) {
+            String fileName = getExportedFilenameSql((PgFunction)f);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {
-                groupedDump = new StringBuilder(getDumpSql(f));
+                groupedDump = new StringBuilder(getDumpSql((PgFunction)f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql((PgFunction)f, false));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
