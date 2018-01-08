@@ -6,10 +6,10 @@ package cz.startnet.utils.pgdiff.schema;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionForeignTable extends ForeignPgTable {
+public class PartitionForeignPgTable extends ForeignPgTable {
     private String partitionBounds;
 
-    public PartitionForeignTable(String name, String rawStatement,
+    public PartitionForeignPgTable(String name, String rawStatement,
             String serverName, String partitionBound) {
         super(name, rawStatement, serverName);
         setPartitionBounds(partitionBound);
@@ -18,7 +18,7 @@ public class PartitionForeignTable extends ForeignPgTable {
     @Override
     protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
         return super.isNeedRecreate(oldTable, newTable)
-                || !((PartitionForeignTable)oldTable).getPartitionBounds().equals(((PartitionForeignTable)newTable).getPartitionBounds())
+                || !((PartitionForeignPgTable)oldTable).getPartitionBounds().equals(((PartitionForeignPgTable)newTable).getPartitionBounds())
                 || !oldTable.getInherits().equals(newTable.getInherits());
     }
 
@@ -59,8 +59,7 @@ public class PartitionForeignTable extends ForeignPgTable {
 
     @Override
     protected void appendInherit(StringBuilder sbSQL) {
-        // partition foreign table not support INHERITS syntax, but this field fills
-        // from jdbc reader
+        // PgTable.inherits stores PARTITION OF table in this implementation
     }
 
     @Override
@@ -71,14 +70,14 @@ public class PartitionForeignTable extends ForeignPgTable {
 
     @Override
     protected PgTable getTableCopy(String name, String rawStatement) {
-        return new PartitionForeignTable(name, rawStatement,
+        return new PartitionForeignPgTable(name, rawStatement,
                 getServerName(), getPartitionBounds());
     }
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PartitionForeignTable && super.compare(obj)) {
-            PartitionForeignTable table = (PartitionForeignTable) obj;
+        if (obj instanceof PartitionForeignPgTable && super.compare(obj)) {
+            PartitionForeignPgTable table = (PartitionForeignPgTable) obj;
             return partitionBounds.equals(table.getPartitionBounds());
         }
 

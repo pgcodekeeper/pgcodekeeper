@@ -8,7 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PartitionForeignTable;
+import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -63,7 +63,7 @@ public class TablesReader extends JdbcReader {
             if (partitionBound == null) {
                 t = new SimpleForeignPgTable(tableName, "", serverName);
             } else {
-                t = new PartitionForeignTable(tableName, "", serverName, partitionBound);
+                t = new PartitionForeignPgTable(tableName, "", serverName, partitionBound);
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);

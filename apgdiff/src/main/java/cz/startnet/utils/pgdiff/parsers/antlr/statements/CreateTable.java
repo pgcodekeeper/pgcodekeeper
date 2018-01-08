@@ -25,8 +25,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_def
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
+import cz.startnet.utils.pgdiff.schema.ForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PartitionForeignTable;
+import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -75,29 +76,31 @@ public class CreateTable extends ParserAbstract {
         if (typeCtx != null) {
             table = defineType(typeCtx, tableName, rawStatement, schemaName);
         } else if (colCtx != null) {
-            if (colCtx.define_server() != null) {
-                table = defineServer(colCtx.define_server(), tableName, rawStatement, null, schemaName);
+            if (ctx.FOREIGN() != null) {
+                Define_serverContext srvCtx = colCtx.define_server();
+                table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
+                        tableName, rawStatement, srvCtx.server_name.getText()));
             } else {
-                table = new SimplePgTable(tableName, rawStatement);
-                fillRegularTable((RegularPgTable)table);
+                table = fillRegularTable(new SimplePgTable(tableName, rawStatement));
             }
-            defineColumns(colCtx, table, schemaName);
+            fillColumns(colCtx, table, schemaName);
         } else {
-            if (partCtx.define_server() != null) {
-                table = defineServer(partCtx.define_server(), tableName, rawStatement, partCtx, schemaName);
+            String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
+            if (ctx.FOREIGN() != null) {
+                Define_serverContext srvCtx = partCtx.define_server();
+                table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
+                        tableName, rawStatement, srvCtx.server_name.getText(), partBound));
             } else {
-                table = new PartitionPgTable(tableName, rawStatement,
-                        ParserAbstract.getFullCtxText(partCtx.for_values_bound()));
-                defineTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
-                addInherit(table, partCtx.parent_table.identifier());
-                fillRegularTable((RegularPgTable)table);
+                table = fillRegularTable(new PartitionPgTable(tableName, rawStatement, partBound));
             }
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            addInherit(table, partCtx.parent_table.identifier());
         }
 
         return table;
     }
 
-    private void defineColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
+    private void fillColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
                 table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
@@ -117,35 +120,36 @@ public class CreateTable extends ParserAbstract {
         }
     }
 
-    private void defineTypeColumns(List_of_type_column_defContext columns,
+    private void fillTypeColumns(List_of_type_column_defContext columns,
             PgTable table, String schemaName) {
-        if (columns != null) {
-            for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
-                if (colCtx.tabl_constraint != null) {
-                    table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
-                }
-                if (colCtx.table_of_type_column_definition() != null) {
-                    Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                    getColumn(column.column_name.getText(),
-                            null, null, column.colmn_constraint,
-                            getDefSchemaName(), table);
-                }
+        if (columns == null) {
+            return;
+        }
+        for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
+            if (colCtx.tabl_constraint != null) {
+                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
+            }
+            if (colCtx.table_of_type_column_definition() != null) {
+                Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
+                getColumn(column.column_name.getText(),
+                        null, null, column.colmn_constraint,
+                        getDefSchemaName(), table);
             }
         }
     }
 
-    private PgTable defineServer(Define_serverContext server, String tableName,
-            String rawStatement, Define_partitionContext part, String schemaName) {
-        PgTable table = null;
-        String serverName = server.server_name.getText();
-        if (part != null) {
-            table = new PartitionForeignTable(tableName, rawStatement, serverName,
-                    ParserAbstract.getFullCtxText(part.for_values_bound()));
-            defineTypeColumns(part.list_of_type_column_def(), table, schemaName);
-            addInherit(table, part.parent_table.identifier());
-        } else {
-            table = new SimpleForeignPgTable(tableName, rawStatement, serverName);
-        }
+    private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
+            String rawStatement, String schemaName) {
+        Data_typeContext typeName = typeCtx.type_name;
+        String ofType = getFullCtxText(typeName);
+        TypedPgTable table = new TypedPgTable(tableName, rawStatement, ofType);
+        fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
+        addTypeAsDepcy(typeName, table, getDefSchemaName());
+        fillRegularTable(table);
+        return table;
+    }
+
+    private ForeignPgTable fillForeignTable(Define_serverContext server, ForeignPgTable table) {
         Define_foreign_optionsContext options = server.define_foreign_options();
         if (options != null){
             for (Foreign_optionContext option : options.foreign_option()){
@@ -156,18 +160,7 @@ public class CreateTable extends ParserAbstract {
         return table;
     }
 
-    private PgTable defineType(Define_typeContext typeCtx, String tableName,
-            String rawStatement, String schemaName) {
-        Data_typeContext typeName = typeCtx.type_name;
-        String ofType = getFullCtxText(typeName);
-        TypedPgTable table = new TypedPgTable(tableName, rawStatement, ofType);
-        defineTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
-        addTypeAsDepcy(typeName, table, getDefSchemaName());
-        fillRegularTable(table);
-        return table;
-    }
-
-    private void fillRegularTable(RegularPgTable table) {
+    private RegularPgTable fillRegularTable(RegularPgTable table) {
         if (tablespace != null) {
             table.setTablespace(tablespace);
         }
@@ -203,10 +196,10 @@ public class CreateTable extends ParserAbstract {
         if (part != null) {
             table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
         }
-
+        return table;
     }
 
-    private void addInherit (PgTable table,  List<IdentifierContext> idsInh) {
+    private void addInherit(PgTable table,  List<IdentifierContext> idsInh) {
         String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);

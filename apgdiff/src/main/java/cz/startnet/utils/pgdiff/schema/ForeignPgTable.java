@@ -61,7 +61,7 @@ public abstract class ForeignPgTable extends PgTable {
 
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
-        fillServer(sbSQL);
+        sbSQL.append("\nSERVER ").append(serverName);
 
         StringBuilder sb = new StringBuilder();
         for (Entry <String, String> entry : options.entrySet()) {
@@ -82,11 +82,6 @@ public abstract class ForeignPgTable extends PgTable {
 
         sbSQL.append(';');
     }
-
-    private void fillServer(StringBuilder sbSQL) {
-        sbSQL.append("\nSERVER ").append(serverName);
-    }
-
 
     @Override
     public void compareOptions(PgOptionContainer oldContainer,

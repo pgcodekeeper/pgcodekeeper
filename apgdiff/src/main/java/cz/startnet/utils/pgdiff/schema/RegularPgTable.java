@@ -78,7 +78,10 @@ public abstract class RegularPgTable extends PgTable {
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
 
-        fillTablespace(sbSQL);
+        if (tablespace != null && !tablespace.isEmpty()) {
+            sbSQL.append("\nTABLESPACE ");
+            sbSQL.append(tablespace);
+        }
         sbSQL.append(';');
     }
 
@@ -145,13 +148,6 @@ public abstract class RegularPgTable extends PgTable {
         return  !(newTable instanceof RegularPgTable) ||
                 !Objects.equals(((RegularPgTable)oldTable).getPartitionBy(),
                         ((RegularPgTable)newTable).getPartitionBy());
-    }
-
-    protected void fillTablespace(StringBuilder sbSQL) {
-        if (tablespace != null && !tablespace.isEmpty()) {
-            sbSQL.append("\nTABLESPACE ");
-            sbSQL.append(tablespace);
-        }
     }
 
     public boolean isLogged() {

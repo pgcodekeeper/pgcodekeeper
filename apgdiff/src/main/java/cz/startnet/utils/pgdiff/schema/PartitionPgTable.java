@@ -57,7 +57,7 @@ public class PartitionPgTable extends RegularPgTable {
 
     @Override
     protected void appendInherit(StringBuilder sbSQL) {
-        // partition table not support default INHERITS syntax
+        // PgTable.inherits stores PARTITION OF table in this implementation
     }
 
     @Override

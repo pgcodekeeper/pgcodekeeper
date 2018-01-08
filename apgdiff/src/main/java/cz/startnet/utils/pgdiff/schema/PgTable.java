@@ -30,11 +30,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     protected final List<PgColumn> columns = new ArrayList<>();
     protected final List<Inherits> inherits = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
+    protected boolean hasOids;
     protected final List<PgConstraint> constraints = new ArrayList<>();
     protected final List<PgIndex> indexes = new ArrayList<>();
     protected final List<PgTrigger> triggers = new ArrayList<>();
     protected final List<PgRule> rules = new ArrayList<>();
-    protected boolean hasOids;
 
     @Override
     public DbObjType getStatementType() {
@@ -205,14 +205,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     }
 
     protected void appendColumnsStatistics(StringBuilder sbSQL) {
-        for (PgColumn column : getColumnsWithStatistics()) {
+        columns.stream().filter(c -> c.getStatistics() != null)
+        .forEach(column -> {
             sbSQL.append(getAlterTable(true, true));
             sbSQL.append(" ALTER COLUMN ");
             sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
             sbSQL.append(" SET STATISTICS ");
             sbSQL.append(column.getStatistics());
             sbSQL.append(';');
-        }
+        });
     }
 
     protected void appendComments(StringBuilder sbSQL) {
@@ -526,21 +527,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return getRule(name) != null;
     }
 
-    /**
-     * Returns list of columns that have statistics defined.
-     */
-    private List<PgColumn> getColumnsWithStatistics() {
-        final List<PgColumn> list = new ArrayList<>();
-
-        for (PgColumn column : columns) {
-            if (column.getStatistics() != null) {
-                list.add(column);
-            }
-        }
-
-        return list;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -550,16 +536,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         } else if(obj instanceof PgTable) {
             PgTable table = (PgTable) obj;
 
-            eq = Objects.equals(table.getClass(), getClass())
+            eq = getClass().equals(table.getClass())
                     && Objects.equals(name, table.getName())
-                    && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
+                    && inherits.equals(table.inherits)
+                    && options.equals(table.options)
+                    && hasOids == table.getHasOids()
                     && grants.equals(table.grants)
                     && revokes.equals(table.revokes)
                     && Objects.equals(owner, table.getOwner())
-                    && Objects.equals(comment, table.getComment())
-                    && Objects.equals(options, table.getOptions())
-                    && hasOids == table.getHasOids();
+                    && Objects.equals(comment, table.getComment());
         }
         return eq;
     }
@@ -582,15 +568,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         final int ifalse = 1237;
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + (hasOids ? itrue : ifalse);
         result = prime * result + columns.hashCode();
         result = prime * result + inherits.hashCode();
         result = prime * result + options.hashCode();
+        result = prime * result + (hasOids ? itrue : ifalse);
+        result = prime * result + grants.hashCode();
+        result = prime * result + revokes.hashCode();
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
         result = prime * result + PgDiffUtils.setlikeHashcode(indexes);
         result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
@@ -601,13 +587,12 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = getTableCopy(getName(), getRawStatement());
-        tableDst.setHasOids(getHasOids());
-        tableDst.options.putAll(options);
-        tableDst.inherits.addAll(inherits);
         for (PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.deepCopy());
         }
-        tableDst.setComment(getComment());
+        tableDst.inherits.addAll(inherits);
+        tableDst.options.putAll(options);
+        tableDst.setHasOids(getHasOids());
         for (PgPrivilege priv : revokes) {
             tableDst.addPrivilege(priv.deepCopy());
         }
@@ -615,6 +600,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             tableDst.addPrivilege(priv.deepCopy());
         }
         tableDst.setOwner(getOwner());
+        tableDst.setComment(getComment());
         tableDst.deps.addAll(deps);
         return tableDst;
     }
@@ -736,7 +722,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             return value;
         }
         public Inherits(String key, String value) {
-            super();
             this.key = key;
             this.value = value;
         }
