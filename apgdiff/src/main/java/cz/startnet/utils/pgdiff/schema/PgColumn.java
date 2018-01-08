@@ -28,11 +28,11 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
     private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     private static final String ALTER_FOREIGN_OPTION =  "{0} OPTIONS ({1} {2} {3});";
 
-    private Integer statistics;
-    private String defaultValue;
     private String type;
     private String collation;
     private boolean nullValue = true;
+    private String defaultValue;
+    private Integer statistics;
     private String storage;
     private final Map<String, String> options = new LinkedHashMap<>(0);
     private final Map<String, String> fOptions = new LinkedHashMap<>(0);
@@ -529,17 +529,17 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                     && Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()
-                    && isInherit == col.isInherit()
                     && Objects.equals(defaultValue, col.getDefaultValue())
                     && Objects.equals(statistics, col.getStatistics())
                     && Objects.equals(storage, col.getStorage())
-                    && Objects.equals(comment, col.getComment())
-                    && grants.equals(col.grants)
-                    && revokes.equals(col.revokes)
-                    && Objects.equals(fOptions, col.fOptions)
+                    && options.equals(col.options)
+                    && fOptions.equals(col.fOptions)
                     && Objects.equals(sequence, col.sequence)
                     && Objects.equals(identityType, col.identityType)
-                    && Objects.equals(options, col.options);
+                    && isInherit == col.isInherit()
+                    && grants.equals(col.grants)
+                    && revokes.equals(col.revokes)
+                    && Objects.equals(comment, col.getComment());
         }
         return eq;
     }
@@ -550,45 +550,45 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
-        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
         result = prime * result + (nullValue ? itrue : ifalse);
-        result = prime * result + (isInherit ? itrue : ifalse);
+        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
-        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((options == null) ? 0 : options.hashCode());
+        result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
+        result = prime * result + ((sequence == null) ? 0 : sequence.hashCode());
+        result = prime * result + ((identityType == null) ? 0 : identityType.hashCode());
+        result = prime * result + (isInherit ? itrue : ifalse);
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((options == null) ? 0 : options.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((fOptions == null) ? 0 : fOptions.hashCode());
-        result = prime * result + ((identityType == null) ? 0 : identityType.hashCode());
-        result = prime * result + ((sequence == null) ? 0 : sequence.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 
     @Override
     public PgColumn shallowCopy() {
         PgColumn colDst = new PgColumn(getName());
-        colDst.setDefaultValue(getDefaultValue());
-        colDst.setIdentityType(getIdentityType());
-        colDst.setSequence(getSequence());
+        colDst.setType(getType());
+        colDst.setCollation(getCollation());
         colDst.setNullValue(getNullValue());
-        colDst.setInherit(isInherit());
+        colDst.setDefaultValue(getDefaultValue());
         colDst.setStatistics(getStatistics());
         colDst.setStorage(getStorage());
-        colDst.setCollation(getCollation());
-        colDst.setType(getType());
-        colDst.setComment(getComment());
         colDst.options.putAll(options);
         colDst.fOptions.putAll(fOptions);
+        colDst.setIdentityType(getIdentityType());
+        colDst.setSequence(getSequence());
+        colDst.setInherit(isInherit());
         for (PgPrivilege priv : grants) {
             colDst.addPrivilege(priv.deepCopy());
         }
         for (PgPrivilege priv : revokes) {
             colDst.addPrivilege(priv.deepCopy());
         }
+        colDst.setComment(getComment());
         colDst.deps.addAll(deps);
         return colDst;
     }
