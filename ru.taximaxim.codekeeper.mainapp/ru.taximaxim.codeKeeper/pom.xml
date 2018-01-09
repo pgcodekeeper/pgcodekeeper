@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 <!--
@@ -32,17 +34,17 @@ to update all relevant poms and metadatas
     <packaging>pom</packaging>
     <modules>
         <module>..</module>
-        <module>../product</module>
-        <module>../productinfocenter</module>
         <module>../../apgdiff</module>
+        <module>../../apgdiff.tests</module>
         <module>../../ru.taximaxim.codekeeper.ui</module>
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
-        <module>../../apgdiff.tests</module>
-        <module>../feature</module>
-        <module>../updatesite</module>
-        <module>../../ru.taximaxim.codekeeper.ui.help</module>
         <module>../../ru.taximaxim.codekeeper.cli</module>
         <module>../../ru.taximaxim.codekeeper.cli.tests</module>
+        <module>../../ru.taximaxim.codekeeper.ui.help</module>
+        <module>../feature</module>
+        <module>../updatesite</module>
+        <module>../product</module>
+        <module>../productinfocenter</module>
     </modules>
 
     <prerequisites>
@@ -58,7 +60,6 @@ to update all relevant poms and metadatas
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
         <sonar.java.source>1.8</sonar.java.source>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
-        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
     </properties>
 
@@ -72,7 +73,8 @@ to update all relevant poms and metadatas
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.7.9</version>
                         <configuration>
-                            <destFile>${project.basedir}/../target/jacoco.exec</destFile>
+                            <!-- задать при запуске мавена -->
+                            <destFile>${sonar.jacoco.reportPaths}</destFile>
                             <append>true</append>
                         </configuration>
                         <executions>
@@ -150,7 +152,7 @@ to update all relevant poms and metadatas
                     </environments>
                 </configuration>
             </plugin>
-
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>

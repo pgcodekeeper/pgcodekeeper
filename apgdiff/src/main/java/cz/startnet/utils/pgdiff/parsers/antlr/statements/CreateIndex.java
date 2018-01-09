@@ -54,7 +54,9 @@ public class CreateIndex extends ParserAbstract {
                             colName.getText(), DbObjType.COLUMN));
                 }
             }
+            ind.addColumn(sort_ctx.key.getText());
         }
+
         return ind;
     }
 
