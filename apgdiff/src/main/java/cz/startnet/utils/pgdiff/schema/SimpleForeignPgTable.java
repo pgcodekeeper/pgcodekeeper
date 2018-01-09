@@ -14,8 +14,8 @@ public class SimpleForeignPgTable extends ForeignPgTable {
     }
 
     @Override
-    protected PgTable getTableCopy(String name, String rawStatement) {
-        return new SimpleForeignPgTable(name, rawStatement, serverName);
+    protected PgTable getTableCopy() {
+        return new SimpleForeignPgTable(name, getRawStatement(), serverName);
     }
 
     @Override
@@ -34,11 +34,4 @@ public class SimpleForeignPgTable extends ForeignPgTable {
 
         sbSQL.append(')');
     }
-
-    @Override
-    protected void compareTableTypes(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
-        // untransformable
-    }
-
 }

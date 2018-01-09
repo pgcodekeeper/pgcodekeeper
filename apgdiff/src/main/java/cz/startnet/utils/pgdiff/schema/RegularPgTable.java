@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author galiev_mr
  *
  */
-
 public abstract class RegularPgTable extends PgTable {
 
     protected boolean isLogged = true;
@@ -70,7 +69,7 @@ public abstract class RegularPgTable extends PgTable {
         }
 
         if (hasOids) {
-            sb.append(OIDS).append('=').append(hasOids).append(", ");
+            sb.append("OIDS=").append(hasOids).append(", ");
         }
 
         if (sb.length() > 0){
@@ -101,19 +100,11 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable oldTable, PgTable newTable, StringBuilder sb) {
-        RegularPgTable oldRegTable = (RegularPgTable) oldTable;
+    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+        super.compareTableOptions(newTable, sb);
+
         RegularPgTable newRegTable = (RegularPgTable) newTable;
-
-        if (oldRegTable.getHasOids() && !newRegTable.getHasOids()) {
-            sb.append(getAlterTable(true, false))
-            .append(" SET WITHOUT OIDS;");
-        } else if (newRegTable.getHasOids() && !oldRegTable.getHasOids()) {
-            sb.append(getAlterTable(true, false))
-            .append(" SET WITH OIDS;");
-        }
-
-        if (!Objects.equals(oldRegTable.getTablespace(), newRegTable.getTablespace())) {
+        if (!Objects.equals(tablespace, newRegTable.getTablespace())) {
             sb.append(getAlterTable(true, false))
             .append("\n\tSET TABLESPACE ")
             .append(newRegTable.getTablespace())
@@ -121,7 +112,7 @@ public abstract class RegularPgTable extends PgTable {
         }
 
         // since 9.5 PostgreSQL
-        if (oldRegTable.isLogged != newRegTable.isLogged) {
+        if (isLogged != newRegTable.isLogged) {
             sb.append(getAlterTable(true, false))
             .append("\n\tSET ")
             .append(newRegTable.isLogged ? "LOGGED" : "UNLOGGED")
@@ -129,14 +120,14 @@ public abstract class RegularPgTable extends PgTable {
         }
 
         // since 9.5 PostgreSQL
-        if (oldRegTable.isRowSecurity != newRegTable.isRowSecurity) {
+        if (isRowSecurity != newRegTable.isRowSecurity) {
             sb.append(getAlterTable(true, false))
             .append(newRegTable.isRowSecurity ? " ENABLE" : " DISABLE")
             .append(" ROW LEVEL SECURITY;");
         }
 
         // since 9.5 PostgreSQL
-        if (oldRegTable.isForceSecurity != newRegTable.isForceSecurity) {
+        if (isForceSecurity != newRegTable.isForceSecurity) {
             sb.append(getAlterTable(true, true))
             .append(newRegTable.isForceSecurity ? "" : " NO")
             .append(" FORCE ROW LEVEL SECURITY;");
@@ -144,9 +135,9 @@ public abstract class RegularPgTable extends PgTable {
     }
 
     @Override
-    protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
+    protected boolean isNeedRecreate(PgTable newTable) {
         return  !(newTable instanceof RegularPgTable) ||
-                !Objects.equals(((RegularPgTable)oldTable).getPartitionBy(),
+                !Objects.equals(getPartitionBy(),
                         ((RegularPgTable)newTable).getPartitionBy());
     }
 

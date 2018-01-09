@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 
 /**
  * Typed table object
@@ -14,11 +13,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
  */
 public class TypedPgTable extends RegularPgTable {
 
-    protected String ofType;
+    private final String ofType;
 
     public TypedPgTable(String name, String rawStatement, String ofType) {
         super(name, rawStatement);
-        setOfType(ofType);
+        this.ofType = ofType;
     }
 
     @Override
@@ -44,29 +43,11 @@ public class TypedPgTable extends RegularPgTable {
         return ofType;
     }
 
-    public void setOfType(String ofType) {
-        this.ofType = ofType;
-        resetHash();
-    }
-
     @Override
-    protected boolean isNeedRecreate(PgTable newTable, PgTable oldTable) {
-        if (super.isNeedRecreate(newTable, oldTable)) {
-            return true;
-        }
-
-        return !Objects.equals(newTable.getClass(), oldTable.getClass())
-                || !Objects.equals(((TypedPgTable)newTable).getType(),
-                        ((TypedPgTable) oldTable).getType());
-    }
-
-    @Override
-    protected void compareTableTypes(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
+    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
-            String oldType  = ((TypedPgTable)oldTable).getOfType();
             String newType  = ((TypedPgTable)newTable).getOfType();
-            if (!Objects.equals(oldType, newType)) {
+            if (!Objects.equals(ofType, newType)) {
                 sb.append(getAlterTable(true, false))
                 .append(" OF ")
                 .append(newType)
@@ -93,22 +74,8 @@ public class TypedPgTable extends RegularPgTable {
     }
 
     @Override
-    protected PgTable getTableCopy(String name, String rawStatement) {
-        return new TypedPgTable(name, rawStatement, getOfType());
-    }
-
-    public PgType getType() {
-        QNameParser parser = new QNameParser(ofType);
-        PgSchema schema = getContainingSchema();
-        String schemaName = parser.getSchemaName(schema.getName());
-        String typeName = parser.getFirstName();
-
-        PgSchema schemaType = ((PgDatabase) schema.getParent()).getSchema(schemaName);
-        if (schemaType != null) {
-            return schemaType.getType(typeName);
-        }
-
-        return null;
+    protected PgTable getTableCopy() {
+        return new TypedPgTable(name, getRawStatement(), getOfType());
     }
 
     @Override
@@ -119,13 +86,6 @@ public class TypedPgTable extends RegularPgTable {
         }
 
         return false;
-    }
-
-    @Override
-    public PgTable shallowCopy() {
-        TypedPgTable copy = (TypedPgTable) super.shallowCopy();
-        copy.setOfType(getOfType());
-        return copy;
     }
 
     @Override

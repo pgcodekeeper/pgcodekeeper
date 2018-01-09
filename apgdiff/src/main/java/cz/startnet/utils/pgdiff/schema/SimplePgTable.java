@@ -33,13 +33,12 @@ public class SimplePgTable extends RegularPgTable {
     }
 
     @Override
-    protected PgTable getTableCopy(String name, String rawStatement) {
-        return new SimplePgTable(name, rawStatement);
+    protected PgTable getTableCopy() {
+        return new SimplePgTable(name, getRawStatement());
     }
 
     @Override
-    protected void compareTableTypes(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
+    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
         if (newTable instanceof TypedPgTable) {
             String newType  = ((TypedPgTable)newTable).getOfType();
             sb.append(getAlterTable(true, false))

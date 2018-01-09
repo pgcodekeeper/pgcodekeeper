@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,9 +27,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
-import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -456,24 +453,6 @@ public class DepcyResolver {
                         && sb.length() == 0) {
                     return true;
                 }
-
-                // пропускаем колонки типизированных таблиц, если изменился тип
-                if (oldTable instanceof TypedPgTable) {
-                    if (!(newTable instanceof TypedPgTable)) {
-                        return true;
-                    }
-                    if (!Objects.equals(((TypedPgTable)oldTable).getOfType(),
-                            ((TypedPgTable)newTable).getOfType())) {
-                        return true;
-                    }
-
-                    PgType oldType = ((TypedPgTable)oldTable).getType();
-                    PgType newType = ((TypedPgTable)newTable).getType();
-
-                    if (!Objects.equals(newType, oldType)) {
-                        return true;
-                    }
-                }
             }
             // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
             // колонки, и если хотя бы одна из них удаляется то не дропать
@@ -533,23 +512,6 @@ public class DepcyResolver {
                 if (oldTable == null) {
                     // columns are integrated into CREATE TABLE
                     return true;
-                }
-
-                // columns are integrated into CREATE TABLE OF TYPE
-                if (newObj.getParent() instanceof TypedPgTable) {
-                    TypedPgTable newTypedTable = (TypedPgTable) newObj.getParent();
-                    TypedPgTable oldTypedTable = (TypedPgTable) oldTable;
-                    if (!Objects.equals(newTypedTable.getOfType(),
-                            oldTypedTable.getOfType())) {
-                        return true;
-                    }
-
-                    PgType oldType = oldTypedTable.getType();
-                    PgType newType = newTypedTable.getType();
-
-                    if (!Objects.equals(newType, oldType)) {
-                        return true;
-                    }
                 }
             }
             return false;

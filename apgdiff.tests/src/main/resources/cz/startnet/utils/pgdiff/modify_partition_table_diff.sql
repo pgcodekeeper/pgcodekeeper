@@ -16,7 +16,7 @@ DROP TABLE cities_mz;
 
 DROP FOREIGN TABLE f_cities_e;
 
-ALTER FOREIGN TABLE ftable SET WITHOUT OIDS;
+ALTER FOREIGN TABLE ONLY ftable SET WITHOUT OIDS;
 
 -- DEPCY: This CONSTRAINT depends on the TABLE: tab_of_type
 

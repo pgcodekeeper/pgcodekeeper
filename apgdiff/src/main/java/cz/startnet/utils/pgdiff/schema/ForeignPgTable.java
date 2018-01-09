@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @since 4.1.1
  * @author galiev_mr
- *
  */
 public abstract class ForeignPgTable extends PgTable {
 
@@ -23,7 +22,6 @@ public abstract class ForeignPgTable extends PgTable {
     public ForeignPgTable(String name, String rawStatement, String serverName) {
         super(name, rawStatement);
         this.serverName = serverName;
-        resetHash();
     }
 
     @Override
@@ -46,10 +44,9 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    protected boolean isNeedRecreate(PgTable oldTable, PgTable newTable) {
-        return !Objects.equals(oldTable.getClass(), newTable.getClass())
-                || !Objects.equals(((ForeignPgTable) oldTable).getServerName(),
-                        ((ForeignPgTable) newTable).getServerName());
+    protected boolean isNeedRecreate(PgTable newTable) {
+        return !this.getClass().equals(newTable.getClass())
+                || !Objects.equals(serverName, ((ForeignPgTable)newTable).getServerName());
     }
 
     @Override
@@ -84,15 +81,14 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    public void compareOptions(PgOptionContainer oldContainer,
-            PgOptionContainer newContainer, StringBuilder sb) {
-        Map <String, String> oldForeignOptions = oldContainer.getOptions();
+    public void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {
+        Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
-                if (newForeignOptions.containsKey(key)) {
-                    String newValue =  newForeignOptions.get(key);
-                    if (!Objects.equals(value, newValue)) {
+                String newValue = newForeignOptions.get(key);
+                if (newValue != null) {
+                    if (!value.equals(newValue)) {
                         sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
                                 getAlterTable(true, false), "SET", key, newValue));
                     }
@@ -118,23 +114,16 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
-        if (oldTable.getHasOids() && !newTable.getHasOids()) {
-            sb.append(getAlterTable(true, false))
-            .append(" SET WITHOUT OIDS;");
-        } else if (newTable.getHasOids() && !oldTable.getHasOids()) {
-            sb.append(getAlterTable(true, false))
-            .append(" SET WITH OIDS;");
+    protected void appendAlterOptions(StringBuilder sbSQL) {
+        if (hasOids) {
+            sbSQL.append(getAlterTable(true, true));
+            sbSQL.append(" SET WITH OIDS;");
         }
     }
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
-        if (hasOids) {
-            sbSQL.append(getAlterTable(true, false));
-            sbSQL.append(" SET WITH ").append(OIDS).append(";");
-        }
+    protected void compareTableTypes(PgTable newTable,  StringBuilder sb) {
+        // untransformable
     }
 
     public String getServerName() {

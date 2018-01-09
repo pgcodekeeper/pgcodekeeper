@@ -275,7 +275,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
 
         alterPrivileges(newColumn, sb);
 
-        compareOptions(oldColumn, newColumn, sb);
+        compareOptions(newColumn, sb);
         compareForeignOptions(oldColumn.getForeignOptions(), newColumn.getForeignOptions(), sb);
         compareStats(oldColumn.getStatistics(), newColumn.getStatistics(), sb);
         compareIdentity(oldColumn.getIdentityType(), newColumn.getIdentityType(),

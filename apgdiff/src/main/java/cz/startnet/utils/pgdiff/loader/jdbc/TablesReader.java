@@ -56,7 +56,7 @@ public class TablesReader extends JdbcReader {
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             partitionBound = res.getString("partition_bound");
         }
-        PgTable t = null;
+        PgTable t;
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
@@ -86,6 +86,76 @@ public class TablesReader extends JdbcReader {
         loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
 
         Integer[] colNumbers = res.getArray("col_numbers", Integer.class);
+        if (colNumbers != null) {
+            readColumns(res, t, ofTypeOid, schemaName);
+        }
+
+        // INHERITS
+        String[] inhrelnames = res.getArray("inhrelnames", String.class);
+        if (inhrelnames != null) {
+            String[] inhnspnames = res.getArray("inhnspnames", String.class);
+
+            for (int i = 0; i < inhrelnames.length; ++i) {
+                t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
+                t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
+            }
+        }
+
+        // STORAGE PARAMETERS
+        String [] opts = res.getArray("reloptions", String.class);
+        if (opts != null) {
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
+        }
+
+        String[] toast = res.getArray("toast_reloptions", String.class);
+        if (toast != null) {
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
+        }
+
+        // Table COMMENTS
+        String comment = res.getString("table_comment");
+        if (comment != null && !comment.isEmpty()) {
+            t.setComment(loader.args, PgDiffUtils.quoteString(comment));
+        }
+
+        if (res.getBoolean("has_oids")){
+            t.setHasOids(true);
+        }
+
+        if (t instanceof RegularPgTable) {
+            RegularPgTable regTable = (RegularPgTable) t;
+
+            // TableSpace
+            String tableSpace = res.getString("table_space");
+            if (tableSpace != null && !tableSpace.isEmpty()) {
+                regTable.setTablespace(tableSpace);
+            }
+
+            // since 9.5 PostgreSQL
+            if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
+                regTable.setRowSecurity(res.getBoolean("row_security"));
+                regTable.setForceSecurity(res.getBoolean("force_security"));
+            }
+
+            // since 10 PostgreSQL
+            if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+                regTable.setPartitionBy(res.getString("partition_by"));
+            }
+
+            // persistence: U - unlogged, P - permanent, T - temporary
+            switch (res.getString("persistence")) {
+            case "u":
+                regTable.setLogged(false);
+                break;
+            default:
+                break;
+            }
+        }
+        return t;
+    }
+
+    private void readColumns(ResultSetWrapper res, PgTable t, long ofTypeOid,
+            String schemaName) throws WrapperAccessException {
         String[] colNames = res.getArray("col_names", String.class);
         Long[] colTypeIds = res.getArray("col_type_ids", Long.class);
         String[] colTypeName = res.getArray("col_type_name", String.class);
@@ -104,8 +174,7 @@ public class TablesReader extends JdbcReader {
         String[] colStorages = res.getArray("col_storages", String.class);
         String[] colDefaultStorages = res.getArray("col_default_storages", String.class);
 
-        for (int i = 0; i < colNumbers.length; i++) {
-
+        for (int i = 0; i < colNames.length; i++) {
             PgColumn column = new PgColumn(colNames[i]);
             column.setInherit(!colIsLocal[i]);
 
@@ -177,7 +246,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(column, PgDiffUtils.getQuotedName(tableName),
+                loader.setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()),
                         columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
             }
 
@@ -203,68 +272,5 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
-
-        // INHERITS
-        String[] inhrelnames = res.getArray("inhrelnames", String.class);
-        if (inhrelnames != null) {
-            String[] inhnspnames = res.getArray("inhnspnames", String.class);
-
-            for (int i = 0; i < inhrelnames.length; ++i) {
-                t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
-                t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
-            }
-        }
-
-        // STORAGE PARAMETERS
-        String [] opts = res.getArray("reloptions", String.class);
-        if (opts != null) {
-            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
-        }
-
-        String[] toast = res.getArray("toast_reloptions", String.class);
-        if (toast != null) {
-            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
-        }
-
-        // Table COMMENTS
-        String comment = res.getString("table_comment");
-        if (comment != null && !comment.isEmpty()) {
-            t.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
-        if (res.getBoolean("has_oids")){
-            t.setHasOids(true);
-        }
-
-        if (t instanceof RegularPgTable) {
-            RegularPgTable regTable = (RegularPgTable) t;
-
-            // TableSpace
-            String tableSpace = res.getString("table_space");
-            if (tableSpace != null && !tableSpace.isEmpty()) {
-                regTable.setTablespace(tableSpace);
-            }
-
-            // since 9.5 PostgreSQL
-            if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
-                regTable.setRowSecurity(res.getBoolean("row_security"));
-                regTable.setForceSecurity(res.getBoolean("force_security"));
-            }
-
-            // since 10 PostgreSQL
-            if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-                regTable.setPartitionBy(res.getString("partition_by"));
-            }
-
-            // persistence: U - unlogged, P - permanent, T - temporary
-            switch (res.getString("persistence")) {
-            case "u":
-                regTable.setLogged(false);
-                break;
-            default:
-                break;
-            }
-        }
-        return t;
     }
 }

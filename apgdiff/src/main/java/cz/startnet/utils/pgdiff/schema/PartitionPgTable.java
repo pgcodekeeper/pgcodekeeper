@@ -12,20 +12,15 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PartitionPgTable extends RegularPgTable {
 
-    private String partitionBounds;
+    private final String partitionBounds;
 
-    public PartitionPgTable(String name, String rawStatement, String partitionBound) {
+    public PartitionPgTable(String name, String rawStatement, String partitionBounds) {
         super(name, rawStatement);
-        setPartitionBounds(partitionBound);
+        this.partitionBounds = partitionBounds;
     }
 
     public String getPartitionBounds() {
         return partitionBounds;
-    }
-
-    public void setPartitionBounds(final String partitionBounds) {
-        this.partitionBounds = partitionBounds;
-        resetHash();
     }
 
     @Override
@@ -61,10 +56,9 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableTypes(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
+    protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
         if (!(newTable instanceof PartitionPgTable)) {
-            final Inherits tableName = oldTable.getInherits().get(0);
+            final Inherits tableName = inherits.get(0);
             sb.append("\n\nALTER TABLE ");
             sb.append(tableName.getKey() == null ?
                     "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
@@ -83,18 +77,16 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareTableOptions(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
-        super.compareTableOptions(oldTable, newTable, sb);
+    protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
+        super.compareTableOptions(newTable, sb);
 
         if (newTable instanceof PartitionPgTable) {
-            PartitionPgTable oldPart = (PartitionPgTable) oldTable;
-            PartitionPgTable newPart = (PartitionPgTable) newTable;
+            String newBounds = ((PartitionPgTable) newTable).getPartitionBounds();
 
-            Inherits oldInherits = oldTable.getInherits().get(0);
+            Inherits oldInherits = inherits.get(0);
             Inherits newInherits = newTable.getInherits().get(0);
 
-            if (!oldPart.getPartitionBounds().equals(newPart.getPartitionBounds())
+            if (!Objects.equals(partitionBounds, newBounds)
                     || !Objects.equals(oldInherits, newInherits)) {
                 sb.append("\n\nALTER TABLE ");
                 sb.append(oldInherits.getKey() == null ?
@@ -118,22 +110,20 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    protected void compareInherits(PgTable oldTable, PgTable newTable,
-            StringBuilder sb) {
+    protected void compareInherits(PgTable newTable, StringBuilder sb) {
         //not support default syntax
     }
 
-
     @Override
-    protected PgTable getTableCopy(String name, String rawStatement) {
-        return new PartitionPgTable(name, rawStatement, getPartitionBounds());
+    protected PgTable getTableCopy() {
+        return new PartitionPgTable(name, getRawStatement(), partitionBounds);
     }
 
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionPgTable && super.compare(obj)) {
             PartitionPgTable table = (PartitionPgTable) obj;
-            return partitionBounds.equals(table.getPartitionBounds());
+            return Objects.equals(partitionBounds, table.partitionBounds);
         }
 
         return false;
