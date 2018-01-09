@@ -424,12 +424,10 @@ public class ValueExpr<T> extends AbstractExpr {
                     pair.setValue(resultFunction.getReturns());
                 } else {
                     foundFuncs = systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream()
-                            .filter(f -> f.getBareName().equals(functionNameForStream));
+                            .filter(f -> f.getBareName().equals(functionNameForStream)
+                                    && f.getArguments().size() == sourceArgsTypes.size());
 
-                    resultFunction = castFiltredFuncsOpers(sourceArgsTypes,
-                            foundFuncs
-                            .filter(sysFuncs -> sysFuncs.getArguments().size() == sourceArgsTypes.size())
-                            .collect(Collectors.toList()));
+                    resultFunction = castFiltredFuncsOpers(sourceArgsTypes, foundFuncs.collect(Collectors.toList()));
 
                     if(resultFunction != null) {
                         pair.setValue(resultFunction.getReturns());
@@ -493,6 +491,9 @@ public class ValueExpr<T> extends AbstractExpr {
         String operatorName = vex.getChildOperator();
         Entry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
 
+        // TODO When the user's operators will be also process by codeKeeper,
+        // this line should be replaced by this:
+        // "ISchema foundSchema = findSchema(schema)"
         ISchema foundSchema = findSchema(PgSystemStorage.SCHEMA_PG_CATALOG);
         Stream<? extends IFunction> foundFuncs = foundSchema.getFunctions().stream().filter(f -> f.getBareName().equals(operatorName));
 
@@ -504,6 +505,9 @@ public class ValueExpr<T> extends AbstractExpr {
         if (resultFunction != null) {
             pair.setValue(resultFunction.getReturns());
         } else {
+            // TODO When the user's operators will be also process by codeKeeper,
+            // this line should be replaced by this:
+            // "foundSchema = findSchema(PgSystemStorage.SCHEMA_PG_CATALOG)"
             foundSchema = findSchema(schema);
             foundFuncs = foundSchema.getFunctions().stream().filter(f -> f.getBareName().equals(operatorName));
 
@@ -525,11 +529,6 @@ public class ValueExpr<T> extends AbstractExpr {
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()))
                 .collect(Collectors.toList());
     }
-
-    //    private <T extends IFunction> Stream<T> schemaHasObjsWithSameName(ISchema sc, String objName,
-    //            BiFunction<ISchema, String, Stream<T>> getter) {
-    //        return getter.apply(sc, objName);
-    //    }
 
     private ISchema findSchema(String schemaName) {
         if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
