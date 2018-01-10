@@ -17,10 +17,14 @@ public class PartitionForeignPgTable extends ForeignPgTable {
         this.partitionBounds = partitionBounds;
     }
 
+    public String getPartitionBounds() {
+        return partitionBounds;
+    }
+
     @Override
     protected boolean isNeedRecreate(PgTable newTable) {
         return super.isNeedRecreate(newTable)
-                || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).partitionBounds))
+                || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).getPartitionBounds()))
                 || !inherits.equals(newTable.inherits);
     }
 
@@ -65,7 +69,7 @@ public class PartitionForeignPgTable extends ForeignPgTable {
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionForeignPgTable && super.compare(obj)) {
             PartitionForeignPgTable table = (PartitionForeignPgTable) obj;
-            return Objects.equals(partitionBounds, table.partitionBounds);
+            return Objects.equals(partitionBounds, table.getPartitionBounds());
         }
 
         return false;

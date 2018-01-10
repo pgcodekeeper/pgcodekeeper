@@ -39,7 +39,6 @@ SELECT  -- GENERAL
     c.reloftype::bigint AS of_type,
     
     --columns
-   columns.col_numbers,
    columns.col_names,
    columns.col_options,
    columns.col_foptions,
@@ -66,7 +65,6 @@ LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
 LEFT JOIN pg_catalog.pg_class tc ON tc.oid = c.reltoastrelid
 LEFT JOIN (SELECT
             a.attrelid,
-            array_agg(a.attnum ORDER BY a.attnum) AS col_numbers,
             array_agg(a.attname ORDER BY a.attnum) AS col_names,
             array_agg(array_to_string(a.attoptions, ',') ORDER BY a.attnum) AS col_options,
             array_agg(array_to_string(a.attfdwoptions, ',') ORDER BY a.attnum) AS col_foptions,

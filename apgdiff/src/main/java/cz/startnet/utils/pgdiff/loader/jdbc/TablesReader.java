@@ -85,10 +85,7 @@ public class TablesReader extends JdbcReader {
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
         loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
 
-        Integer[] colNumbers = res.getArray("col_numbers", Integer.class);
-        if (colNumbers != null) {
-            readColumns(res, t, ofTypeOid, schemaName);
-        }
+        readColumns(res, t, ofTypeOid, schemaName);
 
         // INHERITS
         String[] inhrelnames = res.getArray("inhrelnames", String.class);
@@ -157,6 +154,10 @@ public class TablesReader extends JdbcReader {
     private void readColumns(ResultSetWrapper res, PgTable t, long ofTypeOid,
             String schemaName) throws WrapperAccessException {
         String[] colNames = res.getArray("col_names", String.class);
+        if (colNames == null) {
+            return;
+        }
+
         Long[] colTypeIds = res.getArray("col_type_ids", Long.class);
         String[] colTypeName = res.getArray("col_type_name", String.class);
         String[] colDefaults = res.getArray("col_defaults", String.class);

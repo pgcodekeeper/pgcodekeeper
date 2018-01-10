@@ -134,7 +134,7 @@ public abstract class ForeignPgTable extends PgTable {
     public boolean compare(PgStatement obj) {
         if (obj instanceof ForeignPgTable && super.compare(obj)) {
             ForeignPgTable table = (ForeignPgTable) obj;
-            return getServerName().equals(table.getServerName());
+            return Objects.equals(serverName, table.getServerName());
         }
 
         return false;

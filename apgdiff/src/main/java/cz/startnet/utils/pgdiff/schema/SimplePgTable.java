@@ -37,7 +37,9 @@ public class SimplePgTable extends RegularPgTable {
 
     @Override
     protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
-        ((RegularPgTable)newTable).convertTable(sb);
+        if (newTable instanceof RegularPgTable) {
+            ((RegularPgTable)newTable).convertTable(sb);
+        }
     }
 
     @Override

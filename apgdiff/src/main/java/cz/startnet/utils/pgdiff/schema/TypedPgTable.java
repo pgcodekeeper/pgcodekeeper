@@ -56,7 +56,9 @@ public class TypedPgTable extends RegularPgTable {
             .append(" NOT OF")
             .append(';');
 
-            ((RegularPgTable)newTable).convertTable(sb);
+            if (newTable instanceof RegularPgTable) {
+                ((RegularPgTable)newTable).convertTable(sb);
+            }
         }
     }
 

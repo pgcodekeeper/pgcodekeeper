@@ -67,7 +67,9 @@ public class PartitionPgTable extends RegularPgTable {
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
-            ((RegularPgTable)newTable).convertTable(sb);
+            if (newTable instanceof RegularPgTable) {
+                ((RegularPgTable)newTable).convertTable(sb);
+            }
         }
     }
 

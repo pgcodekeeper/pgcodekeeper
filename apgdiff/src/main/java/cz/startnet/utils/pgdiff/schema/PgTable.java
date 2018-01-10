@@ -283,7 +283,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      * @param sb - StringBuilder for statements
      */
     protected void compareTableOptions(PgTable newTable, StringBuilder sb) {
-        if (!Objects.equals(hasOids, newTable.getHasOids())) {
+        if (hasOids != newTable.getHasOids()) {
             sb.append(getAlterTable(true, true))
             .append(" SET ")
             .append(newTable.getHasOids() ? "WITH" : "WITHOUT")

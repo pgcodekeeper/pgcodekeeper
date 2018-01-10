@@ -456,19 +456,15 @@ public class DepcyResolver {
                     return true;
                 }
 
-                // пропускаем колонки типизированных таблиц, если изменился тип
-                if (oldTable instanceof TypedPgTable) {
-                    if (!(newTable instanceof TypedPgTable)) {
-                        return true;
-                    }
-                    if (!Objects.equals(((TypedPgTable)oldTable).getOfType(),
-                            ((TypedPgTable)newTable).getOfType())) {
-                        return true;
-                    }
-                }
-
                 // пропускать колонки при смене типа таблицы
                 if (!oldTable.getClass().equals(newTable.getClass())) {
+                    return true;
+                }
+
+                // пропускаем колонки типизированных таблиц, если изменился тип
+                if (oldTable instanceof TypedPgTable &&
+                        !Objects.equals(((TypedPgTable)oldTable).getOfType(),
+                                ((TypedPgTable)newTable).getOfType())) {
                     return true;
                 }
             }
