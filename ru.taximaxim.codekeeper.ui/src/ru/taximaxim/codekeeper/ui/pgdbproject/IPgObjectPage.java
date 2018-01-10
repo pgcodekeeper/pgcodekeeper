@@ -17,11 +17,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 
 public interface IPgObjectPage extends IWizardPage {
 
-    static final String SPLITTER = "\\."; //$NON-NLS-1$
     static final String POSTFIX = ".sql"; //$NON-NLS-1$
     static final String GROUP_DELIMITER =
             "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
-    static final String DEFAULT_SCHEMA = "public"; //$NON-NLS-1$
     static final String OWNER_TO = "\n\nALTER {0} {1} OWNER TO CURRENT_DB_USER;\n"; //$NON-NLS-1$
     static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
 

@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -67,7 +67,7 @@ public class NewObjectWizard extends Wizard implements INewWizard {
     @Override
     public boolean canFinish() {
         IWizardPage page = (getContainer().getCurrentPage());
-        if (page == null) {
+        if (page == null || !(page instanceof IPgObjectPage)) {
             return false;
         }
 
@@ -130,25 +130,25 @@ public class NewObjectWizard extends Wizard implements INewWizard {
                 }
             });
 
-            List<IProject> projectList = new LinkedList<>();
+            List<IProject> projectList = new ArrayList<>();
             IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
             IProject[] projects = workspaceRoot.getProjects();
 
-            try {
-                for (IProject project : projects) {
+            for (IProject project : projects) {
+                try {
                     if (project.isOpen() && project.hasNature(NATURE.ID)) {
                         projectList.add(project);
                     }
+                } catch (CoreException ex) {
+                    Log.log(Log.LOG_ERROR, "Project nature identifier error" //$NON-NLS-1$
+                            + ex.getLocalizedMessage(), ex);
                 }
+            }
 
-                if (projectList.isEmpty()) {
-                    setErrorMessage(Messages.PgObject_cant_find_projects);
-                } else {
-                    viewerProject.setInput(projectList);
-                }
-            } catch (CoreException ex) {
-                Log.log(Log.LOG_ERROR, "Project nature identifier error" //$NON-NLS-1$
-                        + ex.getLocalizedMessage(), ex);
+            if (projectList.isEmpty()) {
+                setErrorMessage(Messages.PgObject_cant_find_projects);
+            } else {
+                viewerProject.setInput(projectList);
             }
 
             viewerProject.addSelectionChangedListener(e -> {
@@ -288,7 +288,7 @@ public class NewObjectWizard extends Wizard implements INewWizard {
         }
 
         private void createAdditionalFields(Composite area) {
-            group = new Group(area, SWT.SHADOW_IN);
+            group = new Group(area, SWT.NONE);
             group.setText(Messages.PgObject_parent_type);
             group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
             group.setLayout(new GridLayout(2, true));
