@@ -305,21 +305,6 @@ public abstract class ParserAbstract {
         return schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
     }
 
-    public static PgColumn getColumnSafe(PgTable table, IdentifierContext nameCtx) {
-        if (table.getInherits().isEmpty()) {
-            return getSafe(table::getColumn, nameCtx);
-        }
-        String name = nameCtx.getText();
-        PgColumn column = table.getColumn(name);
-        if (column == null) {
-            column = new PgColumn(nameCtx.getText());
-            column.setInherit(true);
-            table.addColumn(column);
-        }
-
-        return column;
-    }
-
     /**
      * Заполняет владельца
      * @param ctx контекст парсера с владельцем

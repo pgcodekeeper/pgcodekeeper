@@ -67,13 +67,20 @@ public class PartitionPgTable extends RegularPgTable {
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
-            if (newTable instanceof TypedPgTable) {
-                sb.append(newTable.getAlterTable(true, false))
-                .append(" OF ")
-                .append(((TypedPgTable) newTable).getOfType())
-                .append(';');
-            }
+            ((RegularPgTable)newTable).convertTable(sb);
         }
+    }
+
+    @Override
+    protected void convertTable(StringBuilder sb) {
+        Inherits newInherits = getInherits().get(0);
+        sb.append("\n\nALTER TABLE ");
+        sb.append(newInherits.getKey() == null ?
+                "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
+        .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
+        .append("\n\tATTACH PARTITION ")
+        .append(PgDiffUtils.getQuotedName(getName()))
+        .append(' ').append(getPartitionBounds()).append(';');
     }
 
     @Override

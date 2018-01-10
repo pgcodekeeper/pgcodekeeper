@@ -68,7 +68,19 @@ public class AlterTable extends ParserAbstract {
             }
 
             if (tablAction.column != null) {
-                PgColumn col = getColumnSafe(tabl, QNameParser.getFirstNameCtx(tablAction.column.identifier()));
+                PgColumn col;
+                if (tabl.getInherits().isEmpty()) {
+                    col = getSafe(tabl::getColumn,
+                            QNameParser.getFirstNameCtx(tablAction.column.identifier()));
+                } else {
+                    String colName = QNameParser.getFirstName(tablAction.column.identifier());
+                    col = tabl.getColumn(colName);
+                    if (col == null) {
+                        col = new PgColumn(colName);
+                        col.setInherit(true);
+                        tabl.addColumn(col);
+                    }
+                }
 
                 // column statistics
                 if (tablAction.STATISTICS() != null) {

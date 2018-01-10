@@ -134,6 +134,8 @@ public abstract class RegularPgTable extends PgTable {
         }
     }
 
+    protected abstract void convertTable(StringBuilder sb);
+
     @Override
     protected boolean isNeedRecreate(PgTable newTable) {
         return  !(newTable instanceof RegularPgTable) ||

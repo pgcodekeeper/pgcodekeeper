@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 /**
  * Simple table object
  *
@@ -39,23 +37,11 @@ public class SimplePgTable extends RegularPgTable {
 
     @Override
     protected void compareTableTypes(PgTable newTable, StringBuilder sb) {
-        if (newTable instanceof TypedPgTable) {
-            String newType  = ((TypedPgTable)newTable).getOfType();
-            sb.append(getAlterTable(true, false))
-            .append(" OF ")
-            .append(newType)
-            .append(';');
-        } else if (newTable instanceof PartitionPgTable) {
-            Inherits newInherits = newTable.getInherits().get(0);
-            sb.append("\n\nALTER TABLE ");
-            sb.append(newInherits.getKey() == null ?
-                    "" : PgDiffUtils.getQuotedName(newInherits.getKey()) + '.')
-            .append(PgDiffUtils.getQuotedName(newInherits.getValue()))
-            .append("\n\tATTACH PARTITION ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(' ')
-            .append(((PartitionPgTable)newTable).getPartitionBounds())
-            .append(';');
-        }
+        ((RegularPgTable)newTable).convertTable(sb);
+    }
+
+    @Override
+    protected void convertTable(StringBuilder sb) {
+        // no implements
     }
 }
