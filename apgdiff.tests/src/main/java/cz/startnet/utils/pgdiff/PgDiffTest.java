@@ -354,6 +354,12 @@ public class PgDiffTest {
                     {"drop_rule"},
                     {"modify_constraint_validate"},
                     {"modify_rule_enable"},
+                    // Tests scenario where typed TABLE type is changed.
+                    {"modify_typed_table_type"},
+                    // Tests scenario where partition TABLE type is changed.
+                    {"modify_partition_table_type"},
+                    // Tests scenario where foreign TABLE type is changed.
+                    {"modify_foreign_table_type"},
                 });
     }
 

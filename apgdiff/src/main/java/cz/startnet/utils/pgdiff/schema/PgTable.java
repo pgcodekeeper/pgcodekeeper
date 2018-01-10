@@ -339,7 +339,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    //TODO при смене типа на обычную таблицу необходимо пропускать колонки, которые появляются от родителя
     protected abstract void compareTableTypes(PgTable newTable, StringBuilder sb);
 
     /**
