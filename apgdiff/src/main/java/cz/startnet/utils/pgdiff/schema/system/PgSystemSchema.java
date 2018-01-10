@@ -13,15 +13,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class PgSystemSchema extends PgSystemStatement implements ISchema, Serializable {
 
     private static final long serialVersionUID = -5092245933861789744L;
-    private final List<PgSystemStatement> relations = new ArrayList<>();
-    private final List<PgSystemFunction> functions = new ArrayList<>();
+    private final List<IStatement> relations = new ArrayList<>();
+    private final List<IFunction> functions = new ArrayList<>();
 
     public PgSystemSchema(String name) {
         super(name, DbObjType.SCHEMA);
     }
 
     @Override
-    public Stream<? extends IStatement> getRelations() {
+    public Stream<IStatement> getRelations() {
         return relations.stream();
     }
 
@@ -36,7 +36,7 @@ public class PgSystemSchema extends PgSystemStatement implements ISchema, Serial
     }
 
     @Override
-    public List<? extends IFunction> getFunctions() {
+    public List<IFunction> getFunctions() {
         return functions;
     }
 }

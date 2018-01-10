@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -65,7 +66,7 @@ public class TreeElement {
         this.side = side;
     }
 
-    public TreeElement(PgStatement statement, DiffSide side) {
+    public TreeElement(IStatement statement, DiffSide side) {
         this.name = statement.getName();
         this.side = side;
         this.type = statement.getStatementType();

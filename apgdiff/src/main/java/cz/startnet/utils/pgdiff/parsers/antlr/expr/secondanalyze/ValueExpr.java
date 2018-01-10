@@ -56,9 +56,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -347,7 +345,7 @@ public class ValueExpr<T> extends AbstractExpr {
     private Entry<String, String> getReturnedTypeOfFunction(Function_nameContext name,
             List<String> sourceArgsTypes) {
         String schemaName = null;
-        String functionName = null;
+        String functionName;
         Data_typeContext dataTypeCtx = name.data_type();
         Schema_qualified_name_nontypeContext funcNameCtx = null;
 
@@ -372,67 +370,45 @@ public class ValueExpr<T> extends AbstractExpr {
 
         Entry<String, String> pair = new SimpleEntry<>(functionName, TypesSetManually.FUNCTION_COLUMN);
 
-        ISchema foundSchema = findSchema(schemaName);
-        String functionNameForStream = functionName;
-        Stream<? extends IFunction> foundFuncs = foundSchema.getFunctions().stream()
-                .filter(f -> f.getBareName().equals(functionNameForStream));
+        Stream<IFunction> foundFuncs = findFunctions(schemaName, functionName);
 
-        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
-                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            IFunction resultFunction = castFiltredFuncsOpers(sourceArgsTypes,
-                    foundFuncs
-                    .filter(sysFuncs -> sysFuncs.getArguments().size() == sourceArgsTypes.size())
-                    .collect(Collectors.toList()));
+        StringBuilder sb = new StringBuilder();
+        sb.append(functionName);
+        sb.append("(");
+        for (int i = 0; sourceArgsTypes.size() > i; i++) {
+            sb.append(sourceArgsTypes.get(i));
+            if (sourceArgsTypes.size() != (i+1)) {
+                sb.append(", ");
+            }
+        }
+        sb.append(")");
+        String functionSignature = sb.toString();
 
-            if(resultFunction != null) {
-                pair.setValue(resultFunction.getReturns());
+        boolean doesItNeedCast = true;
+        List<IFunction> targetFuncs = new ArrayList<>();
+        IFunction resultFunction = null;
+
+        for (IFunction func : (Iterable<IFunction>) foundFuncs
+                .filter(f -> getInInoutFuncArgs(f).size() == sourceArgsTypes.size())::iterator) {
+            if (functionSignature.equals(func.getName())) {
+                pair.setValue(func.getReturns());
+                doesItNeedCast = false;
+                resultFunction = func;
+                break;
+            } else {
+                targetFuncs.add(func);
             }
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(functionName);
-            sb.append("(");
-            for (int i = 0; sourceArgsTypes.size() > i; i++) {
-                sb.append(sourceArgsTypes.get(i));
-                if (sourceArgsTypes.size() != (i+1)) {
-                    sb.append(", ");
-                }
-            }
-            sb.append(")");
-            String functionSignature = sb.toString();
+        }
+
+        if (doesItNeedCast) {
+            resultFunction = castFiltredFuncsOpers(sourceArgsTypes, targetFuncs);
+        }
+
+        if(resultFunction != null) {
+            pair.setValue(resultFunction.getReturns());
 
             if (dataTypeCtx != null && funcNameCtx != null) {
-                addFunctionDepcy(funcNameCtx, functionSignature);
-            }
-
-            boolean doesItNeedCast = true;
-            List<IFunction> targetUserFuncs = new ArrayList<>();
-            for(IFunction f : foundFuncs
-                    .filter(f -> getInInoutFuncArgs(f).size() == sourceArgsTypes.size())
-                    .collect(Collectors.toList())) {
-                if (functionSignature.equals(((PgFunction)f).getName())) {
-                    pair.setValue(f.getReturns());
-                    doesItNeedCast = false;
-                    break;
-                } else {
-                    targetUserFuncs.add(f);
-                }
-            }
-
-            if (doesItNeedCast) {
-                IFunction resultFunction = castFiltredFuncsOpers(sourceArgsTypes, targetUserFuncs);
-                if(resultFunction != null) {
-                    pair.setValue(resultFunction.getReturns());
-                } else {
-                    foundFuncs = systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream()
-                            .filter(f -> f.getBareName().equals(functionNameForStream)
-                                    && f.getArguments().size() == sourceArgsTypes.size());
-
-                    resultFunction = castFiltredFuncsOpers(sourceArgsTypes, foundFuncs.collect(Collectors.toList()));
-
-                    if(resultFunction != null) {
-                        pair.setValue(resultFunction.getReturns());
-                    }
-                }
+                addFunctionDepcy(funcNameCtx, resultFunction.getName());
             }
         }
 
@@ -492,33 +468,16 @@ public class ValueExpr<T> extends AbstractExpr {
         Entry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
 
         // TODO When the user's operators will be also process by codeKeeper,
-        // this line should be replaced by this:
-        // "ISchema foundSchema = findSchema(schema)"
-        ISchema foundSchema = findSchema(PgSystemStorage.SCHEMA_PG_CATALOG);
-        Stream<? extends IFunction> foundFuncs = foundSchema.getFunctions().stream().filter(f -> f.getBareName().equals(operatorName));
+        // put here schema name instead of 'null'.
+        Stream<IFunction> foundOperFuncs = findFunctions(null, operatorName);
 
-        IFunction resultFunction = castFiltredFuncsOpers(sourceArgsTypes,
-                foundFuncs
+        IFunction resultOperFunction = castFiltredFuncsOpers(sourceArgsTypes,
+                foundOperFuncs
                 .filter(systemFunc -> systemFunc.getArguments().size() == sourceArgsTypes.size())
                 .collect(Collectors.toList()));
 
-        if (resultFunction != null) {
-            pair.setValue(resultFunction.getReturns());
-        } else {
-            // TODO When the user's operators will be also process by codeKeeper,
-            // this line should be replaced by this:
-            // "foundSchema = findSchema(PgSystemStorage.SCHEMA_PG_CATALOG)"
-            foundSchema = findSchema(schema);
-            foundFuncs = foundSchema.getFunctions().stream().filter(f -> f.getBareName().equals(operatorName));
-
-            resultFunction = castFiltredFuncsOpers(sourceArgsTypes,
-                    foundFuncs
-                    .filter(systemFunc -> systemFunc.getArguments().size() == sourceArgsTypes.size())
-                    .collect(Collectors.toList()));
-
-            if (resultFunction != null) {
-                pair.setValue(resultFunction.getReturns());
-            }
+        if (resultOperFunction != null) {
+            pair.setValue(resultOperFunction.getReturns());
         }
 
         return pair;
@@ -530,14 +489,20 @@ public class ValueExpr<T> extends AbstractExpr {
                 .collect(Collectors.toList());
     }
 
-    private ISchema findSchema(String schemaName) {
+    private Stream<IFunction> findFunctions(String schemaName, String objectName) {
         if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            return systemStorage.getSchema(schemaName);
+            return systemStorage.getSchema(schemaName).getFunctions().stream()
+                    .filter(f -> f.getBareName().equals(objectName));
         } else if (schemaName != null) {
-            return db.getSchema(schemaName);
+            return db.getSchema(schemaName).getFunctions().stream()
+                    .filter(f -> f.getBareName().equals(objectName));
         }
-        return db.getSchema(schema);
+
+        return Stream.concat(db.getSchema(schema).getFunctions().stream()
+                .filter(f -> f.getBareName().equals(objectName)),
+                systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream()
+                .filter(f -> f.getBareName().equals(objectName)));
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {

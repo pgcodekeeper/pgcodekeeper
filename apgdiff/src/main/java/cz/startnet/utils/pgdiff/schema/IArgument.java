@@ -7,5 +7,6 @@ public interface IArgument extends Serializable {
     String getMode();
     String getName();
     String getDefaultExpression();
+    String getDeclaration(boolean includeDefaultValue, boolean includeArgName);
     void setDefaultExpression(String defaultExpression);
 }

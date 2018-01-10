@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.AbstractArgument;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -16,6 +17,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction, Se
     private static final long serialVersionUID = -7905948011960006249L;
 
     private final List<IArgument> arguments = new ArrayList<>();
+    private String signatureCache;
 
     /**
      * Order by for aggregate functions
@@ -80,77 +82,67 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction, Se
         this.returns = returns;
     }
 
-    public static class PgSystemArgument implements IArgument {
+    /**
+     * Alias for {@link #getSignature()} which provides a unique function ID.
+     *
+     * Use {@link #getBareName()} to get just the function name.
+     */
+    @Override
+    public String getName() {
+        return getSignature();
+    }
+
+    /**
+     * Returns function signature. It consists of unquoted name and argument
+     * data types.
+     *
+     * @return function signature
+     */
+    public String getSignature() {
+        if (signatureCache == null) {
+            signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
+        }
+        return signatureCache;
+    }
+
+    public StringBuilder appendFunctionSignature(StringBuilder sb,
+            boolean includeDefaultValues, boolean includeArgNames) {
+        boolean cache = !includeDefaultValues && !includeArgNames;
+        if (cache && signatureCache != null) {
+            return sb.append(signatureCache);
+        }
+        final int sigStart = sb.length();
+
+        sb.append(PgDiffUtils.getQuotedName(name)).append('(');
+        boolean addComma = false;
+        for (final IArgument argument : arguments) {
+            if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {
+                continue;
+            }
+            if (addComma) {
+                sb.append(", ");
+            }
+            sb.append(argument.getDeclaration(includeDefaultValues, includeArgNames));
+            addComma = true;
+        }
+        sb.append(')');
+
+        if (cache) {
+            signatureCache = sb.substring(sigStart, sb.length());
+        }
+        return sb;
+    }
+
+    public static class PgSystemArgument extends AbstractArgument {
 
         private static final long serialVersionUID = -2474167798261721854L;
 
-        private final String mode;
-        private final String name;
-        private final String dataType;
-        private String defaultExpression;
-
         public PgSystemArgument(String name, String dataType) {
-            this(null, name, dataType);
+            super(name, dataType);
         }
 
         public PgSystemArgument(String mode, String name, String dataType) {
-            this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
-            this.name = (name != null && name.isEmpty()) ? null : name;
-            this.dataType = dataType;
-        }
-
-        @Override
-        public String getDataType() {
-            return dataType;
-        }
-
-        @Override
-        public String getDefaultExpression() {
-            return defaultExpression;
-        }
-
-        @Override
-        public void setDefaultExpression(final String defaultExpression) {
-            this.defaultExpression = defaultExpression;
-        }
-
-        @Override
-        public String getMode() {
-            return mode;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-
-            if(this == obj) {
-                eq = true;
-            } else if(obj instanceof PgSystemArgument) {
-                final PgSystemArgument arg = (PgSystemArgument) obj;
-                eq = Objects.equals(dataType, arg.getDataType())
-                        && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                        && Objects.equals(mode, arg.getMode())
-                        && Objects.equals(name, arg.getName());
-            }
-
-            return eq;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-            result = prime * result
-                    + ((defaultExpression == null) ? 0 : defaultExpression.hashCode());
-            result = prime * result + ((mode == null) ? 0 : mode.hashCode());
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            return result;
+            super(mode, name, dataType);
         }
     }
 }
