@@ -1,3 +1,3 @@
 ALTER TABLE testtable RESET (fillfactor);
 
-ALTER TABLE testtable SET WITHOUT OIDS;
+ALTER TABLE ONLY testtable SET WITHOUT OIDS;

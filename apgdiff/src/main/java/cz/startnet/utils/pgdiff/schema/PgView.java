@@ -326,7 +326,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
             }
         }
 
-        compareOptions(oldView, newView, sb);
+        compareOptions(newView, sb);
 
         return sb.length() > startLength;
     }

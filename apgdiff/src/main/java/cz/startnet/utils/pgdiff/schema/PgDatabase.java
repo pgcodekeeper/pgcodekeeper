@@ -160,6 +160,12 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
+    public void sortColumns() {
+        for (PgSchema schema : schemas) {
+            schema.getTables().forEach(t -> t.sortColumns());
+        }
+    }
+
     @Override
     public String getCreationSQL() {
         return null;
