@@ -1,9 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -31,7 +31,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     public SQLEditorCompletionProcessor(SQLEditor editor) {
         this.editor = editor;
-        keywords = Keyword.getKeywords();
+        keywords = Keyword.KEYWORDS.keySet().stream().sorted().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     @Override
@@ -50,8 +50,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
         String text = part.substring(nonid + 1, offset);
 
-        Set<ICompletionProposal> result = new LinkedHashSet<>();
-        Set<ICompletionProposal> partResult = new LinkedHashSet<>();
+        List<ICompletionProposal> result = new LinkedList<>();
+        List<ICompletionProposal> partResult = new LinkedList<>();
 
         PgDbParser parser = editor.getParser();
         Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
@@ -84,12 +84,15 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         } else {
             String textUpper = text.toUpperCase();
             for (String keyword : keywords) {
-                if (keyword.startsWith(textUpper)) {
-                    result.add(new CompletionProposal(keyword + ' ',
-                            offset - text.length(), text.length(), keyword.length() + 1));
-                } else if (keyword.contains(textUpper)) {
-                    partResult.add(new CompletionProposal(keyword + ' ',
-                            offset - text.length(), text.length(), keyword.length() + 1));
+                int location = keyword.indexOf(textUpper);
+                if (location != -1) {
+                    CompletionProposal proposal = new CompletionProposal(keyword + ' ',
+                            offset - text.length(), text.length(), keyword.length() + 1);
+                    if (location  == 0) {
+                        result.add(proposal);
+                    } else {
+                        partResult.add(proposal);
+                    }
                 }
             }
 
