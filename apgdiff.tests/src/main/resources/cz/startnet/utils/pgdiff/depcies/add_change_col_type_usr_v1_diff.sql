@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP VIEW v1;
 
 ALTER TABLE t2

@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE TYPE comp AS (
 	f1 integer,
 	f2 text,

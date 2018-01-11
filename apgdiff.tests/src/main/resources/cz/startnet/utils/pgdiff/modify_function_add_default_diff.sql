@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE OR REPLACE FUNCTION multiply_numbers(number1 integer = 2, number2 integer = 2) RETURNS integer
     AS $$
 begin

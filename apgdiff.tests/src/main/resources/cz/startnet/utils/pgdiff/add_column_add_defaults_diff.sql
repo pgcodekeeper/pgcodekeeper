@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE table1
 	ADD COLUMN col2 integer;
 

@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE TYPE typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU.utf8"
