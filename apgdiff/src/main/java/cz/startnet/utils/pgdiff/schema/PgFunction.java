@@ -265,6 +265,8 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
 
     public class Argument extends AbstractArgument {
 
+        private static final long serialVersionUID = -4612717362596320139L;
+
         public Argument(String name, String dataType) {
             super(name, dataType);
         }

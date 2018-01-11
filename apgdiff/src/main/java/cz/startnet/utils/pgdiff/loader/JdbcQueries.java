@@ -54,7 +54,6 @@ public final class JdbcQueries {
 
     public static String QUERY_SYSTEM_FUNCTIONS;
     public static String QUERY_SYSTEM_RELATIONS;
-    public static String QUERY_SYSTEM_TYPES;
     public static String QUERY_SYSTEM_OPERATORS;
     public static String QUERY_SYSTEM_CASTS;
 

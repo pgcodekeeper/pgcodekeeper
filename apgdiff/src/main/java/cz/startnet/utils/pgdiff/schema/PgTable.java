@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -24,7 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgTable extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     private static final String OIDS = "OIDS";
     private static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
@@ -132,6 +134,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<PgColumn> getColumnsOfType() {
         return Collections.unmodifiableList(columnsOfType);
+    }
+
+    @Override
+    public Stream<Entry<String, String>> getRelationColumns() {
+        if (ofType == null) {
+            return columns.stream()
+                    .map(c -> new SimpleEntry<>(c.getName(), c.getType()));
+        }
+
+        return Stream.empty();
     }
 
     /**

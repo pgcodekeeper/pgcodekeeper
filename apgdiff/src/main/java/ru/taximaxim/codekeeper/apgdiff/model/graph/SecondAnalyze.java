@@ -75,7 +75,7 @@ public final class SecondAnalyze {
                 Select select = new Select(schemaName, db);
                 for (ParserRuleContext ctx : statementContexts) {
                     if (ctx instanceof Select_stmtContext) {
-                        view.addColumnsOfQuery(select.analyze(ctx));
+                        view.addRelationColumns(select.analyze(ctx));
                         view.addAllDeps(select.getDepcies());
                     } else {
                         UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), view);

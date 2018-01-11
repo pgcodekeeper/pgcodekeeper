@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -24,7 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgView extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     private static final String CHECK_OPTION = "check_option";
     private String query;
@@ -37,7 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
-    private final List<Entry<String, String>> columnsOfQuery = new ArrayList<>();
+    private final List<Entry<String, String>> relationColumns = new ArrayList<>();
 
 
     @Override
@@ -130,12 +131,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
         return Collections.unmodifiableList(columnNames);
     }
 
-    public List<Entry<String, String>> getColumnsOfQuery() {
-        return Collections.unmodifiableList(columnsOfQuery);
+    @Override
+    public Stream<Entry<String, String>> getRelationColumns() {
+        return relationColumns.stream();
     }
 
-    public void addColumnsOfQuery(List<Entry<String, String>> columns) {
-        columnsOfQuery.addAll(columns);
+    public void addRelationColumns(List<Entry<String, String>> relationColumns) {
+        this.relationColumns.addAll(relationColumns);
     }
 
     @Override

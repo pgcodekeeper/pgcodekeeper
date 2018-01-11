@@ -1,8 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.Serializable;
-
-public interface IArgument extends Serializable {
+public interface IArgument {
     String getDataType();
     String getMode();
     String getName();

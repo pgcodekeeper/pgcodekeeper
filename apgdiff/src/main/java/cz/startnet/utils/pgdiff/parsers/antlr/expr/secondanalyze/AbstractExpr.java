@@ -198,7 +198,8 @@ public abstract class AbstractExpr {
                     }
                 }
             } else if ((v = s.getView(columnParent)) != null) {
-                for (Entry<String, String> col : v.getColumnsOfQuery()) {
+                for (Entry<String, String> col : (Iterable <Entry<String, String>>)
+                        v.getRelationColumns()::iterator) {
                     if (column.equals(col.getKey())) {
                         type = col.getValue();
                         break;
@@ -208,7 +209,6 @@ public abstract class AbstractExpr {
         }
         return type;
     }
-
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
         List<IdentifierContext> ids = table.identifier();

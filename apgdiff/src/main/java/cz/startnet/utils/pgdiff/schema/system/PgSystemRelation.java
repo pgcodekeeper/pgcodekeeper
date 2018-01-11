@@ -1,28 +1,33 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemRelation extends PgSystemStatement {
+public class PgSystemRelation extends PgSystemStatement implements IRelation {
 
     private static final long serialVersionUID = -3372437548966681543L;
 
     /**
      * Contains columns names and types
      */
-    private final Map<String, String> columns = new LinkedHashMap<>();
+    private final List<Entry<String, String>> columns = new ArrayList<>();
 
     public PgSystemRelation(String name, DbObjType type) {
         super(name, type);
     }
 
-    public Map<String, String> getColumns() {
-        return columns;
+    @Override
+    public Stream<Entry<String, String>> getRelationColumns() {
+        return columns.stream();
     }
 
     public void addColumn(String name, String type) {
-        columns.put(name, type);
+        columns.add(new SimpleEntry<>(name, type));
     }
 }

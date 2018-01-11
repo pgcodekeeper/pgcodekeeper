@@ -54,7 +54,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
             queryTypesForCache();
 
-            readTypes(storage);
             readRelations(storage);
             readFunctions(storage);
             readOperators(storage);
@@ -139,39 +138,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
         }
 
         return arg;
-    }
-
-    private void readTypes(PgSystemStorage storage)
-            throws InterruptedException, SQLException, WrapperAccessException {
-        try (ResultSet result = statement.executeQuery(JdbcQueries.QUERY_SYSTEM_TYPES)) {
-            while (result.next()) {
-                ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
-                PgDiffUtils.checkCancelled(monitor);
-                DbObjType type;
-                String typtype = result.getString("typtype");
-                switch (typtype) {
-                case "d":
-                    type = DbObjType.DOMAIN;
-                    break;
-                case "b":
-                case "e":
-                case "r":
-                case "c":
-                    type = DbObjType.TYPE;
-                    break;
-                default:
-                    continue;
-                }
-
-                PgSystemRelation relation = new PgSystemRelation(result.getString(NAME), type);
-
-                if ("c".equals(typtype)) {
-                    readColumns(wrapper, relation);
-                }
-
-                storage.getSchema(result.getString(NAMESPACE_NAME)).addRelation(relation);
-            }
-        }
     }
 
     private void readRelations(PgSystemStorage storage)

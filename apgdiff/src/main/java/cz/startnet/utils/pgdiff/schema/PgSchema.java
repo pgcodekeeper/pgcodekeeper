@@ -151,8 +151,8 @@ public class PgSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public Stream<IStatement> getRelations() {
-        return Stream.concat(getTables().stream(), Stream.concat(getViews().stream(), getTypes().stream()));
+    public Stream<IRelation> getRelations() {
+        return Stream.concat(getTables().stream(), getViews().stream());
     }
 
     /**

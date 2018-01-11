@@ -1,11 +1,12 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 
-public abstract class AbstractArgument implements IArgument {
+@SuppressWarnings("serial")
+public abstract class AbstractArgument implements IArgument, Serializable {
     private final String mode;
     private final String name;
     private final String dataType;
@@ -77,8 +78,8 @@ public abstract class AbstractArgument implements IArgument {
 
         if(this == obj) {
             eq = true;
-        } else if(obj instanceof Argument) {
-            final Argument arg = (Argument) obj;
+        } else if(obj instanceof AbstractArgument) {
+            final AbstractArgument arg = (AbstractArgument) obj;
             eq = Objects.equals(dataType, arg.getDataType())
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
                     && Objects.equals(mode, arg.getMode())

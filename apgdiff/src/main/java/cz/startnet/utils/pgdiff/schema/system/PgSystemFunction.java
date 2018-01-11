@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,12 +11,12 @@ import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgSystemFunction extends PgSystemStatement implements IFunction, Serializable {
+public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
     private final List<IArgument> arguments = new ArrayList<>();
-    private String signatureCache;
+    private transient String signatureCache;
 
     /**
      * Order by for aggregate functions
@@ -100,15 +99,15 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction, Se
      */
     public String getSignature() {
         if (signatureCache == null) {
-            signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
+            signatureCache = appendFunctionSignature().toString();
         }
         return signatureCache;
     }
 
-    public StringBuilder appendFunctionSignature(StringBuilder sb,
-            boolean includeDefaultValues, boolean includeArgNames) {
-        boolean cache = !includeDefaultValues && !includeArgNames;
-        if (cache && signatureCache != null) {
+    public StringBuilder appendFunctionSignature() {
+        StringBuilder sb = new StringBuilder();
+
+        if (signatureCache != null) {
             return sb.append(signatureCache);
         }
         final int sigStart = sb.length();
@@ -116,26 +115,25 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction, Se
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
         for (final IArgument argument : arguments) {
-            if (!includeArgNames && "OUT".equalsIgnoreCase(argument.getMode())) {
+            if ("OUT".equalsIgnoreCase(argument.getMode())) {
                 continue;
             }
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(includeDefaultValues, includeArgNames));
+            sb.append(argument.getDeclaration(false, false));
             addComma = true;
         }
         sb.append(')');
 
-        if (cache) {
-            signatureCache = sb.substring(sigStart, sb.length());
-        }
+        signatureCache = sb.substring(sigStart, sb.length());
+
         return sb;
     }
 
     public static class PgSystemArgument extends AbstractArgument {
 
-        private static final long serialVersionUID = -2474167798261721854L;
+        private static final long serialVersionUID = -4230871703844831688L;
 
         public PgSystemArgument(String name, String dataType) {
             super(name, dataType);
