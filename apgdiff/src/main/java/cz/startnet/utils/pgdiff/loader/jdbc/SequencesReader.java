@@ -13,9 +13,11 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -41,43 +43,60 @@ public class SequencesReader extends JdbcReader {
     }
 
     @Override
-    protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgSequence sequence = getSequence(result, schema.getName());
+    protected void processResult(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
         loader.monitor.worked(1);
-        if (sequence != null) {
-            schema.addSequence(sequence);
-        }
-    }
-
-    private PgSequence getSequence(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
         String sequenceName = res.getString(CLASS_RELNAME);
-        loader.setCurrentObject(new GenericColumn(schemaName, sequenceName, DbObjType.SEQUENCE));
+        loader.setCurrentObject(new GenericColumn(schema.getName(), sequenceName, DbObjType.SEQUENCE));
         PgSequence s = new PgSequence(sequenceName, "");
 
         String refTable = res.getString("referenced_table_name");
-        if (refTable != null) {
+        String refColumn = res.getString("ref_col_name");
+
+        String identityType = null;
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            identityType = res.getString("attidentity");
+        }
+
+        if (refTable != null && identityType == null) {
             s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
                     + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
         }
 
-        loader.setOwner(s, res.getLong(CLASS_RELOWNER));
+        if (identityType == null) {
+            loader.setOwner(s, res.getLong(CLASS_RELOWNER));
+            // PRIVILEGES
+            loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
+        }
 
-        // PRIVILEGES
-        loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()) {
             s.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if(SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             s.setStartWith(res.getString("seqstart"));
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
+            if (identityType == null) {
+                s.setDataType(res.getString("data_type"));
+            }
         }
 
-        return s;
+        if (identityType != null) {
+            PgTable table = schema.getTable(refTable);
+            PgColumn column = table.getColumn(refColumn);
+            if (column == null) {
+                column = new PgColumn(refColumn);
+                column.setInherit(true);
+                table.addColumn(column);
+            }
+            column.setSequence(s);
+            column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
+        } else {
+            schema.addSequence(s);
+        }
     }
 
     static {

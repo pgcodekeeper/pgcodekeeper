@@ -599,6 +599,14 @@
             name="%wizard.name.keeperNewWizard"
             project="true">
         </wizard>
+        <wizard
+              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+              class="ru.taximaxim.codekeeper.ui.pgdbproject.NewObjectWizard"
+              icon="icons/pgadmin/database.png"
+              id="ru.taximaxim.codekeeper.ui.newobjwizard"
+              name="%wizard.name.newPgSqlObject"
+              project="true">
+        </wizard>
         <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             name="%category.name.keeperNewWizard">
@@ -702,6 +710,8 @@
             <viewShortcut id="org.eclipse.ui.views.ProblemView">
             </viewShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newprojwizard">
+            </newWizardShortcut>
+             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newobjwizard">
             </newWizardShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.mockdatawizard">
             </newWizardShortcut>
@@ -948,6 +958,18 @@
                     </equals>
                 </with>
             </enablement>
+        </commonWizard>
+        <commonWizard
+              type="new"
+              wizardId="ru.taximaxim.codekeeper.ui.newobjwizard">
+           <enablement>
+              <with
+                    variable="activeWorkbenchWindow.activePerspective">
+                 <equals
+                       value="ru.taximaxim.codekeeper.ui.mainperspective">
+                 </equals>
+              </with>
+           </enablement>
         </commonWizard>
         <commonWizard
             type="new"

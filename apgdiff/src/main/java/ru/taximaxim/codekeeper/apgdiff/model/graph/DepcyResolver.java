@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
+import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -145,21 +147,22 @@ public class DepcyResolver {
             PgStatement newObjStat = getObjectFromDB(newObj, newDb);
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
-            boolean isChanged = oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies);
+            boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
 
             if (isChanged) {
                 if (isNeedDepcies.get()) {
                     // is state alterable (sb.length() > 0)
                     // is checked in the depcy tracker in this case
                     addDropStatements(oldObjStat);
-                } else {
+                } else if (!inDropsList(oldObjStat)
+                        && (oldObjStat.getStatementType() != DbObjType.COLUMN
+                        || !inDropsList(oldObjStat.getParent()))) {
                     // объект будет пересоздан ниже в новом состоянии, поэтому
                     // ничего делать не нужно
-                    if (!inDropsList(oldObjStat)) {
-                        addToListWithoutDepcies(
-                                sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
-                                        oldObjStat, null);
-                    }
+                    // пропускаем колонки таблиц из дроп листа
+                    addToListWithoutDepcies(
+                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                                    oldObjStat, null);
                 }
             }
         }
@@ -410,8 +413,8 @@ public class DepcyResolver {
             // Изначально будем удалять объект
             action = StatementActions.DROP;
 
-            PgStatement newObj;
-            if ((newObj = getObjectFromDB(oldObj, newDb)) != null) {
+            PgStatement newObj = getObjectFromDB(oldObj, newDb);
+            if (newObj != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 action = askAlter(oldObj, newObj, isNeedDepcies);
 
@@ -438,6 +441,7 @@ public class DepcyResolver {
             }
             // Колонки пропускаются при удалении таблицы
             if (oldObj.getStatementType() == DbObjType.COLUMN) {
+                PgTable oldTable = (PgTable) oldObj.getParent();
                 PgStatement newTable = getObjectFromDB(oldObj.getParent(),
                         newDb);
 
@@ -447,8 +451,20 @@ public class DepcyResolver {
 
                 // пропускаем также при recreate
                 StringBuilder sb = new StringBuilder();
-                if (oldObj.getParent().appendAlterSQL(newTable, sb, new AtomicBoolean())
+                if (oldTable.appendAlterSQL(newTable, sb, new AtomicBoolean())
                         && sb.length() == 0) {
+                    return true;
+                }
+
+                // пропускать колонки при смене типа таблицы
+                if (!oldTable.getClass().equals(newTable.getClass())) {
+                    return true;
+                }
+
+                // пропускаем колонки типизированных таблиц, если изменился тип
+                if (oldTable instanceof TypedPgTable &&
+                        !Objects.equals(((TypedPgTable)oldTable).getOfType(),
+                                ((TypedPgTable)newTable).getOfType())) {
                     return true;
                 }
             }
@@ -511,6 +527,22 @@ public class DepcyResolver {
                     // columns are integrated into CREATE TABLE
                     return true;
                 }
+
+                PgTable newTable = (PgTable)newObj.getParent();
+                // columns are integrated into CREATE TABLE OF TYPE
+                if (newTable instanceof TypedPgTable) {
+                    TypedPgTable newTypedTable = (TypedPgTable) newTable;
+                    TypedPgTable oldTypedTable = (TypedPgTable) oldTable;
+                    if (!Objects.equals(newTypedTable.getOfType(),
+                            oldTypedTable.getOfType())) {
+                        return true;
+                    }
+                }
+
+                // пропускать колонки при смене типа таблицы
+                if (!oldTable.getClass().equals(newTable.getClass())) {
+                    return true;
+                }
             }
             return false;
         }
@@ -546,10 +578,7 @@ public class DepcyResolver {
         }
 
         protected boolean notAllowedToAdd(PgStatement statement) {
-            if (statement.getStatementType() == null) {
-                return true;
-            }
-            return false;
+            return statement.getStatementType() == null;
         }
 
         protected void addToList(PgStatement statement) {

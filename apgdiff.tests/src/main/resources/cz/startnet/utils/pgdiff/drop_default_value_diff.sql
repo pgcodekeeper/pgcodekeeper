@@ -1,3 +1,3 @@
 
-ALTER TABLE testtable
+ALTER TABLE ONLY testtable
 	ALTER COLUMN field4 DROP DEFAULT;

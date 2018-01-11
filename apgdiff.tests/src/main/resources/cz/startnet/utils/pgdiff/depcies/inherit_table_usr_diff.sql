@@ -12,5 +12,5 @@ ALTER SEQUENCE seq2 OWNER TO botov_av;
 ALTER TABLE t2
 	ADD COLUMN c4 integer;
 
-ALTER TABLE t2
+ALTER TABLE ONLY t2
 	ALTER COLUMN c4 SET DEFAULT nextval('seq2'::regclass);
