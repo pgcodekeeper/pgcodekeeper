@@ -2,6 +2,8 @@ CREATE EXTENSION postgres_fdw SCHEMA public;
 
 COMMENT ON EXTENSION postgres_fdw IS 'foreign-data wrapper for remote PostgreSQL servers';
 
+SET search_path = public, pg_catalog;
+
 CREATE FOREIGN TABLE films (
 	code character(5) NOT NULL,
 	title character varying(40) NOT NULL,

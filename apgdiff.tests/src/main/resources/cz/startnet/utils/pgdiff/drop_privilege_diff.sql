@@ -1,6 +1,8 @@
 REVOKE ALL ON SCHEMA test_schema FROM botov_av;
 REVOKE ALL ON SCHEMA test_schema FROM maindb;
 
+SET search_path = public, pg_catalog;
+
 REVOKE ALL ON TYPE typ_composite FROM botov_av;
 REVOKE ALL ON TYPE typ_composite FROM PUBLIC;
 REVOKE ALL ON TYPE typ_composite FROM maindb;

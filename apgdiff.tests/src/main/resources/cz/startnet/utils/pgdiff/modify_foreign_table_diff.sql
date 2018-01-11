@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER FOREIGN TABLE new_films
 	DROP COLUMN len;
 

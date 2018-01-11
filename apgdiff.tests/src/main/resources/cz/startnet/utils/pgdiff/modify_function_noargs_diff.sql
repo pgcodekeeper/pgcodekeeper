@@ -1,3 +1,4 @@
+SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION return_one() RETURNS integer
     AS $$

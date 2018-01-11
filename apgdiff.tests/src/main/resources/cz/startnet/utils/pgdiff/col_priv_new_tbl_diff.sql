@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE TABLE t1 (
 	c1 integer,
 	c2 text

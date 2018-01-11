@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE testtable
 	ADD CONSTRAINT testtable2_c_excl EXCLUDE USING gist (c WITH &&);
 

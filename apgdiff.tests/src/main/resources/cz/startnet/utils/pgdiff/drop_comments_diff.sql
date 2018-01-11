@@ -1,5 +1,7 @@
 COMMENT ON DATABASE current_database() IS NULL;
 
+SET search_path = public, pg_catalog;
+
 COMMENT ON COLUMN typ_composite.key IS NULL;
 
 COMMENT ON TYPE typ_composite IS NULL;

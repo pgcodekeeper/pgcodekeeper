@@ -1,4 +1,3 @@
-
 DROP EXTENSION testext1;
 
 CREATE SCHEMA other;
