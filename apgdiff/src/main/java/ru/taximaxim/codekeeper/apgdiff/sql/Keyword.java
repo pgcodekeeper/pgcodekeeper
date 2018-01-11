@@ -487,7 +487,7 @@ public class Keyword {
     }
 
     public static List<String> getKeywords() {
-        return KEYWORDS.keySet().stream().sorted().collect(Collectors.toList());
+        return KEYWORDS.keySet().stream().sorted().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     public static void getAllTokensByGroups () {

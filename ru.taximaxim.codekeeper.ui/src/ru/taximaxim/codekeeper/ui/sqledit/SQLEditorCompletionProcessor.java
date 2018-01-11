@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -80,18 +79,16 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
         // SQL Templates + Keywords
         if (text.isEmpty()) {
-            keywords.forEach(k -> result.add(new CompletionProposal(k.toUpperCase(),
-                    offset, 0, k.length())));
-
-            result.addAll(new SQLEditorTemplateAssistProcessor()
-                    .getAllTemplates(viewer, offset));
+            keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
+            result.addAll(new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset));
         } else {
+            String textUpper = text.toUpperCase();
             for (String keyword : keywords) {
-                if (keyword.matches("(?i)" + Pattern.quote(text) + ".*")) {
-                    result.add(new CompletionProposal(keyword.toUpperCase() + ' ',
+                if (keyword.startsWith(textUpper)) {
+                    result.add(new CompletionProposal(keyword + ' ',
                             offset - text.length(), text.length(), keyword.length() + 1));
-                } else if (keyword.matches("(?i).*" + Pattern.quote(text) + ".*")) {
-                    partResult.add(new CompletionProposal(keyword.toUpperCase() + ' ',
+                } else if (keyword.contains(textUpper)) {
+                    partResult.add(new CompletionProposal(keyword + ' ',
                             offset - text.length(), text.length(), keyword.length() + 1));
                 }
             }
