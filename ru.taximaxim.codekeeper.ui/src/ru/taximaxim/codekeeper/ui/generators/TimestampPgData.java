@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 
@@ -58,11 +59,11 @@ public class TimestampPgData extends PgData<Instant> {
 
     @Override
     public String getStepAsString() {
-        return Long.toString(step.getEpochSecond());
+        return Duration.ofMillis(step.toEpochMilli()).toString();
     }
 
     @Override
     public void setStepFromString(String step) {
-        setStep(Instant.ofEpochMilli(Long.parseLong(step) * 1000));
+        setStep(Instant.ofEpochMilli(Duration.parse(step).toMillis()));
     }
 }
