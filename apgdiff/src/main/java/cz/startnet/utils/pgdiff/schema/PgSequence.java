@@ -25,6 +25,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     private String startWith;
     private boolean cycle;
     private String ownedBy;
+    private String dataType = "bigint";
 
     @Override
     public DbObjType getStatementType() {
@@ -50,6 +51,26 @@ public class PgSequence extends PgStatementWithSearchPath {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
+        if (!"bigint".equals(dataType)) {
+            sbSQL.append("\n\tAS ").append(dataType);
+        }
+
+        fillSequenceBody(sbSQL);
+
+        sbSQL.append(';');
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+
+        return sbSQL.toString();
+    }
+
+    public void fillSequenceBody(StringBuilder sbSQL) {
         if (startWith != null) {
             sbSQL.append("\n\tSTART WITH ");
             sbSQL.append(startWith);
@@ -86,18 +107,6 @@ public class PgSequence extends PgStatementWithSearchPath {
         if (cycle) {
             sbSQL.append("\n\tCYCLE");
         }
-
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\n");
-            appendCommentSql(sbSQL);
-        }
-
-        return sbSQL.toString();
     }
 
     /**
@@ -149,6 +158,14 @@ public class PgSequence extends PgStatementWithSearchPath {
         PgSequence oldSequence = this;
         StringBuilder sbSQL = new StringBuilder();
         sbSQL.setLength(0);
+
+        final String oldType = oldSequence.getDataType();
+        final String newType = newSequence.getDataType();
+
+        if (!oldType.equals(newType)) {
+            sbSQL.append("\n\tAS ");
+            sbSQL.append(newType);
+        }
 
         final String oldIncrement = oldSequence.getIncrement();
         final String newIncrement = newSequence.getIncrement();
@@ -226,7 +243,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
 
     public void setMinMaxInc(long inc, Long max, Long min) {
-        this.increment = "" + inc;
+        this.increment = Long.toString(inc);
         if (max == null || (inc > 0 && max == Long.MAX_VALUE) || (inc < 0 && max == -1)) {
             this.maxValue = null;
         } else {
@@ -260,6 +277,15 @@ public class PgSequence extends PgStatementWithSearchPath {
         return startWith;
     }
 
+    public void setDataType(final String dataType) {
+        this.dataType = dataType;
+        resetHash();
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
     public String getOwnedBy() {
         return ownedBy;
     }
@@ -288,7 +314,8 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && grants.equals(seq.grants)
                     && revokes.equals(seq.revokes)
                     && Objects.equals(owner, seq.getOwner())
-                    && Objects.equals(comment, seq.getComment());
+                    && Objects.equals(comment, seq.getComment())
+                    && Objects.equals(dataType, seq.getDataType());
         }
 
         return eq;
@@ -312,6 +339,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         result = prime * result + ((startWith == null) ? 0 : startWith.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
         return result;
     }
 
@@ -323,6 +351,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         sequenceDst.increment = getIncrement();
         sequenceDst.maxValue = getMaxValue();
         sequenceDst.minValue = getMinValue();
+        sequenceDst.dataType = getDataType();
         sequenceDst.setOwnedBy(getOwnedBy());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());

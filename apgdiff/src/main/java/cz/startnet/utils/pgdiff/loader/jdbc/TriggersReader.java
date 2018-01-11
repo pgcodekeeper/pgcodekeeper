@@ -83,7 +83,7 @@ public class TriggersReader extends JdbcReader {
         }
         if ((firingConditions & TRIGGER_TYPE_BEFORE) != 0) {
             t.setType(TgTypes.BEFORE);
-        } else if ((firingConditions & TRIGGER_TYPE_INSTEAD) != 0){
+        } else if ((firingConditions & TRIGGER_TYPE_INSTEAD) != 0) {
             t.setType(TgTypes.INSTEAD_OF);
         } else {
             t.setType(TgTypes.AFTER);
@@ -126,10 +126,10 @@ public class TriggersReader extends JdbcReader {
             t.setConstraint(true);
 
             String refRelName = res.getString("refrelname");
-            if (refRelName != null){
+            if (refRelName != null) {
                 String refSchemaName = res.getString("refnspname");
                 StringBuilder sb = new StringBuilder();
-                if (!refSchemaName.equals(schemaName)){
+                if (!refSchemaName.equals(schemaName)) {
                     sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
                 }
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
@@ -142,9 +142,15 @@ public class TriggersReader extends JdbcReader {
             boolean tginitdeferred = res.getBoolean("tginitdeferred");
             if (SupportedVersion.VERSION_9_5.checkVersion(loader.version)) {
                 t.setImmediate(tginitdeferred);
-            } else if (tginitdeferred){
+            } else if (tginitdeferred) {
                 t.setImmediate(true);
             }
+        }
+
+        //after Postgresql 10
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+            t.setOldTable(res.getString("tgoldtable"));
+            t.setNewTable(res.getString("tgnewtable"));
         }
 
         String[] arrCols = res.getArray("cols", String.class);

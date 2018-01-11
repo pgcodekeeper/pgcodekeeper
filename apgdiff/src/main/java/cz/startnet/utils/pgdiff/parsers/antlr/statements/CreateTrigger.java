@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -82,6 +83,15 @@ public class CreateTrigger extends ParserAbstract {
 
                 trigger.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));
                 trigger.setRefTableName(sb.toString());
+            }
+        }
+
+        for (Trigger_referencingContext ref : ctx.trigger_referencing()) {
+            String name = ref.transition_relation_name.getText();
+            if (ref.NEW() != null) {
+                trigger.setNewTable(name);
+            } else {
+                trigger.setOldTable(name);
             }
         }
 

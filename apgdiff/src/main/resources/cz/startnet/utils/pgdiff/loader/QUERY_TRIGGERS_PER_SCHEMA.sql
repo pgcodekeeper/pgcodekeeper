@@ -1,6 +1,7 @@
 -- extension owned triggers are skipped by table != null check in java code
 
-SELECT ccc.relname,
+SELECT t.oid::bigint,
+       ccc.relname,
        p.proname,
        nsp.nspname,
        t.tgname,

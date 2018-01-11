@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
@@ -24,7 +25,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -76,16 +76,6 @@ public abstract class ParserAbstract {
         Interval interval = new Interval(ctx.getStart().getStartIndex(),
                 ctx.getStop().getStopIndex());
         return ctx.getStart().getInputStream().getText(interval);
-    }
-
-
-    protected void addColumn(Table_column_definitionContext colCtx, String defSchema,
-            PgTable table) {
-        PgColumn col = getColumn(colCtx);
-        for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
-            addTableConstraint(column_constraint, col, table, defSchema);
-        }
-        table.addColumn(col);
     }
 
     private void addTableConstraint(Constraint_commonContext ctx,
@@ -168,6 +158,24 @@ public abstract class ParserAbstract {
         }
     }
 
+    protected void getColumn(String columnName, Data_typeContext datatype,
+            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            String defSchema, PgTable table) {
+        PgColumn col = new PgColumn(columnName);
+        if (datatype != null) {
+            col.setType(getFullCtxText(datatype));
+            addTypeAsDepcy(datatype, col, getDefSchemaName());
+        }
+        if (collate != null) {
+            col.setCollation(getFullCtxText(collate.collation));
+        }
+        for (Constraint_commonContext column_constraint : constraints) {
+            addTableConstraint(column_constraint, col, table, defSchema);
+        }
+        table.addColumn(col);
+    }
+
+
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
         PgColumn col = new PgColumn(colCtx.column_name.getText());
         col.setType(getFullCtxText(colCtx.datatype));
@@ -176,15 +184,6 @@ public abstract class ParserAbstract {
             col.setCollation(getFullCtxText(colCtx.collate_name.collation));
         }
         return col;
-    }
-
-    protected void getColumnOfType(Table_of_type_column_definitionContext typeColCtx,
-            String defSchema, PgTable table) {
-        PgColumn col = new PgColumn(typeColCtx.column_name.getText());
-        for (Constraint_commonContext column_constraint : typeColCtx.colmn_constraint) {
-            addTableConstraint(column_constraint, col, table, defSchema);
-        }
-        table.addColumnOfType(col);
     }
 
     public static String parseSignature(String name, Function_argsContext argsContext) {
@@ -198,13 +197,12 @@ public abstract class ParserAbstract {
         return function.getSignature();
     }
 
-    public static void fillArguments(Function_argsContext function_argsContext,
+    public static void fillArguments(Function_argsContext functionArgsContext,
             PgFunction function, String defSchemaName, PgDatabase dataBase) {
-        for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
+        for (Function_argumentsContext argument : functionArgsContext.function_arguments()) {
             Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
                     argument.argname != null ? argument.argname.getText() : null,
                             getFullCtxText(argument.argtype_data));
-
             addTypeAsDepcy(argument.data_type(), function, defSchemaName);
 
             if (argument.function_def_value() != null) {

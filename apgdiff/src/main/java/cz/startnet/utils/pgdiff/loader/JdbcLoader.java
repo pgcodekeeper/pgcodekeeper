@@ -72,6 +72,8 @@ public class JdbcLoader extends JdbcLoaderBase {
             connection.commit();
             finishAntlr();
 
+            d.sortColumns();
+
             SecondAnalyze.goThroughGraphForAnalyze(d);
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");

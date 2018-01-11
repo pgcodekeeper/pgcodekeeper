@@ -15,144 +15,102 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
-SELECT subselectColumns.oid,
-       subselectColumns.relname,
-       subselectColumns.of_type::bigint,
-       subselectColumns.relowner::bigint,
-       subselectColumns.aclarray,
-       subselectColumns.server_name,
-       subselectColumns.ftoptions,
-       subselectColumns.col_numbers,
-       subselectColumns.col_names,
-       subselectColumns.col_options,
-       subselectColumns.col_foptions,
-       subselectColumns.col_storages,
-       subselectColumns.col_default_storages,
-       subselectColumns.col_defaults,
-       subselectColumns.col_comments,
-       subselectColumns.atttypids AS col_type_ids,
-       subselectColumns.atttypname AS col_type_name,
-       subselectColumns.col_notnull,
-       subselectColumns.col_collation,
-       subselectColumns.col_statictics,
-       subselectColumns.col_local,
-       subselectColumns.col_typcollation,
-       subselectColumns.col_collationname,
-       subselectColumns.col_collationnspname,
-       subselectColumns.col_acl,
-       comments.description AS table_comment,
-       subselectColumns.spcname AS table_space,
-       subselectColumns.relpersistence AS persistence,
-       subselectColumns.relhasoids AS has_oids,
-       subselectInherits.inhrelnames,
-       subselectInherits.inhnspnames,
-       subselectColumns.reloptions,
-       subselectColumns.toast_reloptions
-FROM
-    (SELECT columnsData.oid,
-            columnsData.relname,
-            columnsData.of_type,
-            columnsData.relowner,
-            columnsData.aclarray,
-            columnsData.server_name,
-            columnsData.ftoptions,
-            columnsData.spcname,
-            columnsData.relpersistence,
-            columnsData.relhasoids,
-            array_agg(columnsData.attnum ORDER BY columnsData.attnum) AS col_numbers,
-            array_agg(columnsData.attname ORDER BY columnsData.attnum) AS col_names,
-            array_agg(columnsData.attoptions ORDER BY columnsData.attnum) AS col_options,
-            array_agg(columnsData.fattoptions ORDER BY columnsData.attnum) AS col_foptions,
-            array_agg(columnsData.attstorage ORDER BY columnsData.attnum) AS col_storages,
-            array_agg(columnsData.typstorage ORDER BY columnsData.attnum) AS col_default_storages,
-            array_agg(columnsData.defaults ORDER BY columnsData.attnum) AS col_defaults,
-            array_agg(columnsData.description ORDER BY columnsData.attnum) AS col_comments,
-            array_agg(columnsData.atttypid ORDER BY columnsData.attnum) AS atttypids,
-            array_agg(columnsData.atttypname ORDER BY columnsData.attnum) AS atttypname,
-            array_agg(columnsData.attnotnull ORDER BY columnsData.attnum) AS col_notnull,
-            array_agg(columnsData.attstattarget ORDER BY columnsData.attnum) AS col_statictics,
-            array_agg(columnsData.attislocal ORDER BY columnsData.attnum) AS col_local,
-            array_agg(columnsData.attacl ORDER BY columnsData.attnum) AS col_acl,
-            columnsData.reloptions,
-            columnsData.toast_reloptions,
-            array_agg(columnsData.attcollation ORDER BY columnsData.attnum) AS col_collation,
-            array_agg(columnsData.typcollation ORDER BY columnsData.attnum) AS col_typcollation,
-            array_agg(columnsData.attcollationname ORDER BY columnsData.attnum) AS col_collationname,
-            array_agg(columnsData.attcollationnspname ORDER BY columnsData.attnum) AS col_collationnspname
-     FROM
-         (SELECT c.oid,
-              c.relname,
-              c.reloftype::bigint AS of_type,
-              c.relowner::bigint,
-              c.relacl::text AS aclarray,
-              ser.srvname AS server_name,
-              ftbl.ftoptions,
-              attr.attnum::integer,
-              attr.attname,
-              array_to_string(attr.attoptions, ',') attoptions, -- костыль: нельзя агрегировать массивы разной длины
-              array_to_string(attr.attfdwoptions, ',') fattoptions,
-              attr.attstorage,
-              t.typstorage,
-              c.relhasoids,
-              pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) AS defaults,
-              comments.description,
-              attr.atttypid::bigint,
-              pg_catalog.format_type(attr.atttypid, attr.atttypmod) AS atttypname,
-              attr.attnotnull,
-              attr.attstattarget,
-              attr.attislocal,
-              attr.attacl::text,
-              c.reloptions,
-              tc.reloptions AS toast_reloptions,
-              attr.attcollation::bigint,
-              t.typcollation::bigint,
-              tabsp.spcname,
-              c.relpersistence,
-              (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
-              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
-          FROM pg_catalog.pg_class c
-          JOIN pg_catalog.pg_attribute attr ON c.oid = attr.attrelid
-              AND attr.attisdropped IS FALSE
-          LEFT JOIN pg_catalog.pg_attrdef attrdef ON attrdef.adnum = attr.attnum
-              AND attr.attrelid = attrdef.adrelid
-          LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = attr.attrelid
-              AND comments.objsubid = attr.attnum
-          LEFT JOIN pg_tablespace tabsp ON tabsp.oid = c.reltablespace
-          LEFT JOIN pg_class tc ON (c.reltoastrelid = tc.oid)
-          LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
-          LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
-          LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
-          WHERE c.relnamespace = ?
-              AND c.relkind in ('f','r')
-              AND c.oid NOT IN (SELECT objid FROM extension_deps)
-          ORDER BY attr.attnum) columnsData
-     GROUP BY columnsData.oid,
-              columnsData.relname,
-              columnsData.of_type,
-              columnsData.relowner,
-              columnsData.aclarray,
-              columnsData.server_name,
-              columnsData.ftoptions,
-              columnsData.reloptions,
-              columnsData.toast_reloptions,
-              columnsData.relhasoids,
-              columnsData.spcname,
-              columnsData.relpersistence) subselectColumns
-LEFT JOIN pg_catalog.pg_description comments ON comments.objoid = subselectColumns.oid
-    AND comments.objsubid = 0
-LEFT JOIN
-    (SELECT
-        array_agg(subinh.inhrelname ORDER BY subinh.inhrelid, subinh.inhseqno) AS inhrelnames,
-        array_agg(subinh.inhnspname ORDER BY subinh.inhrelid, subinh.inhseqno) AS inhnspnames,
-        subinh.inhrelid
-     FROM
-         (SELECT inhrelid,
-             inhrel.relname as inhrelname,
-             inhns.nspname as inhnspname,
-             inh.inhseqno
-          FROM pg_catalog.pg_inherits inh
-          LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
-          LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
-          ORDER BY inhrelid, inh.inhseqno ) subinh
-     GROUP BY subinh.inhrelid ) subselectInherits ON subselectInherits.inhrelid = subselectColumns.oid
-     
+SELECT  -- GENERAL
+    c.oid,
+    c.relname,
+    c.relowner::bigint,
+    c.relacl::text AS aclarray,
+    c.relpersistence AS persistence,
+    c.relhasoids AS has_oids,
+    c.reloptions,
+    tc.reloptions AS toast_reloptions,
+    tabsp.spcname AS table_space,
+    d.description AS table_comment,
+    
+    -- inherits tables
+    parents.inhrelnames,
+    parents.inhnspnames,
+    
+    -- foreign table
+    ftbl.ftoptions, 
+    ser.srvname AS server_name,
+    
+    --typed table
+    c.reloftype::bigint AS of_type,
+    
+    --columns
+   columns.col_names,
+   columns.col_options,
+   columns.col_foptions,
+   columns.col_storages,
+   columns.col_default_storages,
+   columns.col_defaults,
+   columns.col_comments,
+   columns.col_type_ids,
+   columns.col_type_name,
+   columns.col_notnull,
+   columns.col_statictics,
+   columns.col_local,
+   columns.col_acl,
+   columns.col_collation,
+   columns.col_typcollation,
+   columns.col_collationname,
+   columns.col_collationnspname
+    
+FROM pg_class c
+LEFT JOIN pg_catalog.pg_foreign_table ftbl ON ftbl.ftrelid = c.relfilenode
+LEFT JOIN pg_catalog.pg_foreign_server ser ON ser.oid = ftbl.ftserver
+LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
+LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
+LEFT JOIN pg_catalog.pg_class tc ON tc.oid = c.reltoastrelid
+LEFT JOIN (SELECT
+            a.attrelid,
+            array_agg(a.attname ORDER BY a.attnum) AS col_names,
+            array_agg(array_to_string(a.attoptions, ',') ORDER BY a.attnum) AS col_options,
+            array_agg(array_to_string(a.attfdwoptions, ',') ORDER BY a.attnum) AS col_foptions,
+            array_agg(a.attstorage ORDER BY a.attnum) AS col_storages,
+            array_agg(t.typstorage ORDER BY a.attnum) AS col_default_storages,
+            array_agg(pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) ORDER BY a.attnum) AS col_defaults,
+            array_agg(d.description ORDER BY a.attnum) AS col_comments,
+            array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids,
+            array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name,
+            
+             -- skips not null for column, if parents have not null 
+            array_agg(
+                (CASE WHEN a.attnotnull THEN 
+                    NOT EXISTS (
+                        SELECT 1 FROM pg_catalog.pg_inherits inh 
+                        LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent
+                        WHERE inh.inhrelid = a.attrelid 
+                        AND attr.attnotnull
+                        AND attr.attname = a.attname)
+                    ELSE false
+                    END
+                ) ORDER BY a.attnum) AS col_notnull,
+            
+            array_agg(a.attstattarget ORDER BY a.attnum) AS col_statictics,
+            array_agg(a.attislocal ORDER BY a.attnum) AS col_local,
+            array_agg(a.attacl::text ORDER BY a.attnum) AS col_acl,
+            array_agg(a.attcollation::bigint ORDER BY a.attnum) AS col_collation,
+            array_agg(t.typcollation::bigint ORDER BY a.attnum) AS col_typcollation,
+            array_agg(cl.collname ORDER BY a.attnum) AS col_collationname,
+            array_agg(cl.nspname ORDER BY a.attnum) AS col_collationnspname
+      FROM pg_catalog.pg_attribute a
+      LEFT JOIN pg_catalog.pg_attrdef attrdef ON attrdef.adnum = a.attnum AND a.attrelid = attrdef.adrelid
+      LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
+      LEFT JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
+      LEFT JOIN collations cl ON cl.oid =  a.attcollation
+      WHERE a.attisdropped IS FALSE
+            AND a.attnum > 0 
+      GROUP BY attrelid) columns ON columns.attrelid = c.oid
+LEFT JOIN (SELECT
+        inh.inhrelid,
+        array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames,
+        array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames
+     FROM pg_catalog.pg_inherits inh
+     LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
+     LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
+     GROUP BY inh.inhrelid) parents ON parents.inhrelid = c.oid
+ WHERE c.relnamespace = ?
+       AND c.relkind IN ('f','r','p')
+       AND c.oid NOT IN (SELECT objid FROM extension_deps)
