@@ -13,7 +13,7 @@ import java.util.List;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgDiffArguments {
+public class PgDiffArguments implements Cloneable {
 
     private boolean modeParse;
     private String newSrc;
@@ -196,28 +196,13 @@ public class PgDiffArguments {
         this.concurrentlyMode = concurrentlyMode;
     }
 
-    public PgDiffArguments copy() {
-        PgDiffArguments arguments = new PgDiffArguments();
-        arguments.modeParse = modeParse;
-        arguments.newSrc = newSrc;
-        arguments.oldSrc = oldSrc;
-        arguments.newSrcFormat = newSrcFormat;
-        arguments.oldSrcFormat = oldSrcFormat;
-        arguments.outputTarget = outputTarget;
-        arguments.inCharsetName = inCharsetName;
-        arguments.outCharsetName = outCharsetName;
-        arguments.ignorePrivileges = ignorePrivileges;
-        arguments.keepNewlines = keepNewlines;
-        arguments.addTransaction = addTransaction;
-        arguments.disableCheckFunctionBodies = disableCheckFunctionBodies;
-        arguments.timeZone = timeZone;
-        arguments.usingTypeCastOff = usingTypeCastOff;
-        arguments.concurrentlyMode = concurrentlyMode;
-        arguments.safeMode = safeMode;
-        arguments.allowedDangers = allowedDangers;
-        arguments.allowedTypes = allowedTypes;
-        arguments.stopNotAllowed = stopNotAllowed;
-        arguments.ignoreLists = ignoreLists;
-        return arguments;
+    @Override
+    public PgDiffArguments clone() {
+        try {
+            return (PgDiffArguments) super.clone();
+        } catch (CloneNotSupportedException e) {
+            // never happens
+            throw new InternalError();
+        }
     }
 }

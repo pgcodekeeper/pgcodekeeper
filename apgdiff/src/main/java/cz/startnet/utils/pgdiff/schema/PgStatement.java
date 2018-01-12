@@ -68,6 +68,8 @@ public abstract class PgStatement implements IStatement {
         return parent;
     }
 
+    public abstract PgDatabase getDatabase();
+
     public void dropParent() {
         parent = null;
     }

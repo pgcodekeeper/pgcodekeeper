@@ -176,7 +176,7 @@ public class Differ implements IRunnableWithProgress {
         public Getter(PgDatabase db) {
             oldArgs = db.getArguments();
             consumer = (db::setArguments);
-            PgDiffArguments newArgs = oldArgs.copy();
+            PgDiffArguments newArgs = oldArgs.clone();
             IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
             newArgs.setConcurrentlyMode(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
             db.setArguments(newArgs);
