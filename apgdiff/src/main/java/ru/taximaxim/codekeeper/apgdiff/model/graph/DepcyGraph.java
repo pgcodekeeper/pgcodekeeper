@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -208,15 +209,19 @@ public class DepcyGraph {
      * are populated so we have to defer their lookup until here.
      */
     private void createFkeyToUnique(PgConstraint con) {
-        List<String> refs = con.getForeignColumns();
+        Set<String> refs = con.getForeignColumns();
         GenericColumn refTable = con.getForeignTable();
         if (!refs.isEmpty() && refTable != null) {
             PgTable table = (PgTable) refTable.getStatement(db);
             if (table != null) {
-                // TODO UNIQUE INDEX can be used here too
                 for (PgConstraint refCon : table.getConstraints()) {
                     if ((refCon.isPrimaryKey() || refCon.isUnique()) && refs.equals(refCon.getColumns())) {
                         graph.addEdge(con, refCon);
+                    }
+                }
+                for (PgIndex refInd : table.getIndexes()) {
+                    if (refInd.isUnique() && refs.equals(refInd.getColumns())) {
+                        graph.addEdge(con, refInd);
                     }
                 }
             }

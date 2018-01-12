@@ -1,4 +1,6 @@
-ALTER TABLE new_films
+SET search_path = public, pg_catalog;
+
+ALTER FOREIGN TABLE new_films
 	DROP COLUMN len;
 
 ALTER FOREIGN TABLE films OPTIONS (SET table_name 'all_films');
@@ -11,13 +13,16 @@ ALTER FOREIGN TABLE new_films OPTIONS (ADD schema_name 'public');
 
 DROP FOREIGN TABLE old_films;
 
-ALTER TABLE films ALTER COLUMN code SET (n_distinct_inherited=0.5, n_distinct=-1);
+ALTER TABLE ONLY films ALTER COLUMN code SET (n_distinct_inherited=0.5, n_distinct=-1);
 
-ALTER TABLE films ALTER COLUMN code OPTIONS (SET column_name 'num');
+ALTER FOREIGN TABLE films
+	ALTER COLUMN code OPTIONS (SET column_name 'num');
 
-ALTER TABLE films ALTER COLUMN title OPTIONS (DROP column_name );
+ALTER FOREIGN TABLE films
+	ALTER COLUMN title OPTIONS (DROP column_name );
 
-ALTER TABLE films ALTER COLUMN kind OPTIONS (ADD column_name 'film kind');
+ALTER FOREIGN TABLE films
+	ALTER COLUMN kind OPTIONS (ADD column_name 'film kind');
 
 CREATE FOREIGN TABLE old_films (
 	code character(5) NOT NULL,
@@ -29,4 +34,4 @@ CREATE FOREIGN TABLE old_films (
 )
 SERVER new_server;
 
-ALTER TABLE old_films OWNER TO galiev_mr;
+ALTER FOREIGN TABLE old_films OWNER TO galiev_mr;

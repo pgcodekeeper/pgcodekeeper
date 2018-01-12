@@ -63,6 +63,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             }
             connection.commit();
             finishAntlr();
+            d.sortColumns();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;

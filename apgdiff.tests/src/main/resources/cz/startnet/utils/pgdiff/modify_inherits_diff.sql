@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE parenttable
 	DROP COLUMN id;
 

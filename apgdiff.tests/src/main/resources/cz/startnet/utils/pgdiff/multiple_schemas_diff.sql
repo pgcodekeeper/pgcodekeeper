@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP TABLE testtable2;
 
 SET search_path = testschema1, pg_catalog;

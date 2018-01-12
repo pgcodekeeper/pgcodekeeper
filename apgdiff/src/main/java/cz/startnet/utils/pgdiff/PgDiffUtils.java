@@ -276,6 +276,11 @@ public final class PgDiffUtils {
         return h;
     }
 
+
+    public static boolean isStringNotEmpty(String input) {
+        return input != null && !input.isEmpty();
+    }
+
     private PgDiffUtils() {
     }
 }

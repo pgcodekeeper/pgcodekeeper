@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This FUNCTION depends on the TYPE: typ_composite
 
 DROP FUNCTION add(typ_composite, integer);

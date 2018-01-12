@@ -41,11 +41,14 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
-                parser.getFullDBFromPgDbProject(proj, monitor);
+                if (!PgDbParser.deserialize(proj.getName(), parser)) {
+                    parser.getFullDBFromPgDbProject(proj, monitor);
+                }
                 break;
             default:
                 throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$
             }
+            parser.serialize(proj.getName());
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
         } catch (IOException | IllegalStateException ex) {
@@ -56,6 +59,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             SubMonitor.done(monitor);
         }
         return new IProject[] { proj };
+    }
+
+    @Override
+    protected void clean(IProgressMonitor monitor) throws CoreException {
+        PgDbParser.clean(this.getProject().getName());
     }
 
     private void buildIncrement(IResourceDelta delta, PgDbParser parser, IProgressMonitor monitor)

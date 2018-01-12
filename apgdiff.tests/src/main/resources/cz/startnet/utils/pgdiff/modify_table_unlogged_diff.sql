@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE UNLOGGED TABLE testtable3 (
 	id integer,
 	name character varying(100) NOT NULL

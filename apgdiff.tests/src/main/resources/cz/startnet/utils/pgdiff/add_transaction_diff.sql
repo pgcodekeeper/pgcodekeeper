@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 START TRANSACTION;
 
 DROP SCHEMA testschema1 CASCADE;

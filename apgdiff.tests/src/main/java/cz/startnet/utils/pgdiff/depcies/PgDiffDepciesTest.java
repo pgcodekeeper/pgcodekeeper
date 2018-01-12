@@ -71,6 +71,8 @@ public class PgDiffDepciesTest {
             {"chg_col_type", "chg_col_type_usr_t1"},
             // колонка меняет тип на новый, пользователь выбрал таблицу и тип
             {"chg_col_type", "chg_col_type_usr_all"},
+            // Удаляется индекс и внешний ключ, пользователь выбрал индекс
+            {"drop_index", "drop_index_usr_ind"},
             // тип изменяется как альтер, пользователь выбрал его
             {"alter_type", "alter_type_usr"},
             // тип изменяется через drop create, пользователь выбирает его

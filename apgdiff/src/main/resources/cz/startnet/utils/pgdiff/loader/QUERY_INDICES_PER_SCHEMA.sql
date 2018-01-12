@@ -7,11 +7,7 @@ SELECT  cls.oid::bigint,
     ind.indisclustered as isclustered,
     des.description AS comment,
     t.spcname AS table_space,
-    pg_get_indexdef(cls.oid) AS definition,
-    (SELECT array_agg(attr.attname)
-        FROM pg_catalog.pg_attribute attr
-        WHERE attr.attrelid = ind.indrelid 
-            AND attr.attnum = any(ind.indkey)) AS cols
+    pg_get_indexdef(cls.oid) AS definition
 FROM pg_catalog.pg_index ind
 JOIN pg_catalog.pg_class cls ON cls.oid = ind.indexrelid
 JOIN pg_catalog.pg_class clsrel ON clsrel.oid = ind.indrelid

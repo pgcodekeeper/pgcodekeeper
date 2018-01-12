@@ -51,6 +51,8 @@ public class PgDiffTest {
                     {"delete_table_option"},
                     // Tests scenario where TABLE is modified by changing of an option.
                     {"modify_table_option"},
+                    // Tests scenario where TABLE with partition is added.
+                    {"add_table_with_partition"},
                     // Tests scenario where WITH OIDS is dropped from TABLE.
                     {"drop_with_oids"},
                     // Tests scenario where INDEX is added.
@@ -130,6 +132,8 @@ public class PgDiffTest {
                     {"add_unique_constraint"},
                     // Tests reading of TABLE with INHERITS.
                     {"read_inherits"},
+                    // Tests scenario where TABLE with generated SEQUENCE is added.
+                    {"add_generated_sequence"},
                     // Tests scenario where TABLE with INHERITS is added.
                     {"add_inherits"},
                     // Tests scenario where original and new TABLE contain
@@ -137,6 +141,8 @@ public class PgDiffTest {
                     {"modify_inherits"},
                     // Tests scenario where SEQUENCE is added.
                     {"add_sequence"},
+                    // Tests scenario where SEQUENCE with data type is added.
+                    {"add_sequence_with_data_type"},
                     // Tests scenario where SEQUENCE is dropped.
                     {"drop_sequence"},
                     // Tests scenario where INCREMENT BY is modified on SEQUENCE.
@@ -154,9 +160,17 @@ public class PgDiffTest {
                     {"modify_sequence_maxvalue_unset"},
                     // Tests scenario where CACHE is modified on SEQUENCE.
                     {"modify_sequence_cache"},
+                    // Tests scenario where SEQUENCE with data type is modified.
+                    {"modify_sequence_data_type"},
+                    // Tests scenario where new PARTITION TABLE is modified.
+                    {"modify_partition_table"},
+                    // Tests scenario where new PARTITION TABLE is converted to TYPED TABLE.
+                    {"chg_table_type"},
                     // Tests scenario where CYCLE is modified on SEQUENCE.
                     {"modify_sequence_cycle_on"},
                     {"modify_sequence_cycle_off"},
+                    // Tests scenario where TABLE with generated SEQUENCE is modified.
+                    {"modify_generated_sequence"},
                     // Tests correct finding of function end.
                     {"modify_function_end_detection"},
                     // Tests scenario where new FUNCTION without args is added.
@@ -204,6 +218,8 @@ public class PgDiffTest {
                     {"modify_function_parallel"},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger"},
+                    // Tests scenario where TRIGGER with referencing is added.
+                    {"add_trigger_referencing"},
                     // Tests scenario where TRIGGER is added in reverse add.
                     {"add_trigger_another_schema"},
                     // Tests scenario where TRIGGER is dropped.
@@ -216,6 +232,8 @@ public class PgDiffTest {
                     {"modify_trigger"},
                     // Tests scenario where CONSTRAINT TRIGGER is added.
                     {"add_constraint_trigger"},
+                    // Tests scenario where COLUMN CONSTRAINT is compared.
+                    {"compare_column_constraints"},
                     // Tests scenario where VIEW is added.
                     {"add_view"},
                     // Tests scenario where VIEW is dropped.
@@ -336,6 +354,12 @@ public class PgDiffTest {
                     {"drop_rule"},
                     {"modify_constraint_validate"},
                     {"modify_rule_enable"},
+                    // Tests scenario where typed TABLE type is changed.
+                    {"modify_typed_table_type"},
+                    // Tests scenario where partition TABLE type is changed.
+                    {"modify_partition_table_type"},
+                    // Tests scenario where foreign TABLE type is changed.
+                    {"modify_foreign_table_type"},
                 });
     }
 

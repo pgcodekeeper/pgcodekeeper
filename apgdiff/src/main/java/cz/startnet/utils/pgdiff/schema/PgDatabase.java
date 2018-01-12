@@ -58,11 +58,6 @@ public class PgDatabase extends PgStatement {
         if (createDefaultObjects) {
             addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
             defaultSchema = schemas.get(0);
-
-            PgExtension ext = new PgExtension("plpgsql", null);
-            ext.setSchema("pg_catalog");
-            ext.setComment("'PL/pgSQL procedural language'");
-            addExtension(ext);
         }
     }
 
@@ -92,6 +87,11 @@ public class PgDatabase extends PgStatement {
 
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
+    }
+
+    @Override
+    public PgDatabase getDatabase() {
+        return this;
     }
 
     /**
@@ -163,6 +163,12 @@ public class PgDatabase extends PgStatement {
         extensions.add(extension);
         extension.setParent(this);
         resetHash();
+    }
+
+    public void sortColumns() {
+        for (PgSchema schema : schemas) {
+            schema.getTables().forEach(t -> t.sortColumns());
+        }
     }
 
     @Override

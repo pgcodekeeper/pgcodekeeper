@@ -34,6 +34,10 @@ public final class Messages extends NLS {
 
     // ui
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SQLEditorContentOutlinePage_hide_non_dangerous;
+
+    public static String SQLEditorContentOutlinePage_sort_alphabetically;
+
     public static String SQLEditorStatementTypes_consts;
 
     public static String SQLEditorStatementTypes_funcs;
@@ -155,6 +159,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+    public static String CodeFilter_search_by_code;
+
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
@@ -209,6 +215,10 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
+    public static String DbUpdatePrefPage_impossible_transaction_and_concurrently;
+
+    public static String DbUpdatePrefPage_print_index_with_concurrently;
+
     public static String dbUpdatePrefPage_create_script_project_directory;
 
     public static String dbUpdatePrefPage_status_alway_create;
@@ -236,15 +246,24 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_sql_file_filter;
 
+    public static String DiffTableViewer_collapse_all;
+    public static String DiffTableViewer_apply_to;
+
     public static String DiffTableViewer_copy_as_regex;
 
-    public static String DiffTableViewer_error_load_checked_set;
-    public static String DiffTableViewer_error_save_checked_set;
+    public static String DiffTableViewer_expand_all;
+    public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
 
+    public static String DiffTableViewer_selected_count;
+
     public static String DiffTableViewer_show_filters;
+
+    public static String DiffTableViewer_to_database;
+
+    public static String DiffTableViewer_to_project;
 
     public static String DiffWizard_db_tz;
 
@@ -327,8 +346,6 @@ public final class Messages extends NLS {
     public static String MockDataPage_range_start;
 
     public static String MockDataPage_row_count;
-
-    public static String MockDataPage_schema_name;
 
     public static String MockDataPage_step;
 
@@ -423,6 +440,42 @@ public final class Messages extends NLS {
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
+
+    public static String PgObject_cant_find_projects;
+
+    public static String PgObject_column_name;
+
+    public static String PgObject_create_object;
+
+    public static String PgObject_empty_name;
+
+    public static String PgObject_enter_column;
+
+    public static String PgObject_enter_parent;
+
+    public static String PgObject_enter_schema;
+
+    public static String PgObject_file_creation_error;
+
+    public static String PgObject_object_name;
+
+    public static String PgObject_object_type;
+
+    public static String PgObject_parent_name;
+
+    public static String PgObject_parent_type;
+
+    public static String PgObject_project_name;
+
+    public static String PgObject_schema_name;
+
+    public static String PgObject_select_project;
+
+    public static String PgObject_table;
+
+    public static String PgObject_view;
+
+    public static String PgObject_wizard_title;
 
     public static String PrefListEditor_cannot_add;
 

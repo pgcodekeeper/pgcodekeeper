@@ -5,6 +5,8 @@ REVOKE ALL ON SCHEMA test_schema FROM botov_av;
 GRANT ALL ON SCHEMA test_schema TO botov_av;
 GRANT ALL ON SCHEMA test_schema TO maindb;
 
+SET search_path = public, pg_catalog;
+
 -- TYPE typ_composite GRANT
 
 REVOKE ALL ON TYPE typ_composite FROM PUBLIC;

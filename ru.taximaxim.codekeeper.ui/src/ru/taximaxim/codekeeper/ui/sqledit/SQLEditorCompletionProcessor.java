@@ -1,8 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -18,6 +19,7 @@ import org.eclipse.swt.graphics.Image;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -25,9 +27,11 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private final SQLEditor editor;
+    private final List<String> keywords;
 
     public SQLEditorCompletionProcessor(SQLEditor editor) {
         this.editor = editor;
+        keywords = Keyword.KEYWORDS.keySet().stream().sorted().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     @Override
@@ -46,18 +50,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
         String text = part.substring(nonid + 1, offset);
 
-        List<ICompletionProposal> result = new ArrayList<>();
-        // SQL TEmplates
-        if (text.isEmpty()) {
-            result.addAll(new SQLEditorTemplateAssistProcessor()
-                    .getAllTemplates(viewer, offset));
-        } else {
-            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
-                    .computeCompletionProposals(viewer, offset);
-            if (templates != null) {
-                result.addAll(Arrays.asList(templates));
-            }
-        }
+        List<ICompletionProposal> result = new LinkedList<>();
+        List<ICompletionProposal> partResult = new LinkedList<>();
 
         PgDbParser parser = editor.getParser();
         Stream<PgObjLocation> loc = parser.getAllObjDefinitions();
@@ -82,6 +76,34 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                         obj.getObjLength(), img, displayText, info, obj.getObjName()));
             }
         });
+
+        // SQL Templates + Keywords
+        if (text.isEmpty()) {
+            keywords.forEach(k -> result.add(new CompletionProposal(k, offset, 0, k.length())));
+            result.addAll(new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset));
+        } else {
+            String textUpper = text.toUpperCase();
+            for (String keyword : keywords) {
+                int location = keyword.indexOf(textUpper);
+                if (location != -1) {
+                    CompletionProposal proposal = new CompletionProposal(keyword + ' ',
+                            offset - text.length(), text.length(), keyword.length() + 1);
+                    if (location  == 0) {
+                        result.add(proposal);
+                    } else {
+                        partResult.add(proposal);
+                    }
+                }
+            }
+
+            result.addAll(partResult);
+
+            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
+                    .computeCompletionProposals(viewer, offset);
+            if (templates != null) {
+                result.addAll(Arrays.asList(templates));
+            }
+        }
 
         return result.toArray(new ICompletionProposal[result.size()]);
     }

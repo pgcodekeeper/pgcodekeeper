@@ -17,9 +17,9 @@ SELECT ccc.oid::bigint,
     d.description,
     pg_get_constraintdef(c.oid) as definition
 FROM pg_catalog.pg_class ccc
-RIGHT JOIN pg_catalog.pg_constraint c ON ccc.oid = c.conrelid
+RIGHT JOIN pg_catalog.pg_constraint c ON (ccc.oid = c.conrelid AND c.coninhcount = 0)
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
-WHERE ccc.relkind = 'r'
+WHERE ccc.relkind IN ('r', 'p', 'f')
     AND c.contype != 't'
     AND ccc.relnamespace = ?

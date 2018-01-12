@@ -148,7 +148,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      */
     protected void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnName) {
-        if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
+
+        // skip "empty" acl strings, such as "{}"
+        if (aclItemsArrayAsString == null || args.isIgnorePrivileges()
+                || aclItemsArrayAsString.length() <= "{}".length()) {
             return;
         }
         String stType = null;

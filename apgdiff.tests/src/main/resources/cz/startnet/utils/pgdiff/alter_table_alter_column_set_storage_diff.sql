@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- WARNING: Column testtable.field1 in new table has no STORAGE set but in old table storage was set. Unable to determine STORAGE type.
 
 -- WARNING: Column testtable.field2 in new table has no STORAGE set but in old table storage was set. Unable to determine STORAGE type.

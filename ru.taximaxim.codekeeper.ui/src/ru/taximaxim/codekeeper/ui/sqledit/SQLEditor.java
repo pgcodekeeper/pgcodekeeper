@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -117,6 +116,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
     private SQLEditorContentOutlinePage fOutlinePage;
     private Image errorTitleImage;
     private PgDbParser parser;
+
+    private ScriptThreadJobWrapper scriptThreadJobWrapper;
 
     private final Listener parserListener = e -> {
         if (parentComposite == null) {
@@ -230,7 +231,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !PgUIDumpLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
-        } catch (IOException | InterruptedException | CoreException ex) {
+        } catch (Exception ex) {
             Log.log(ex);
         }
     }
@@ -254,8 +255,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         try {
             parser = initParser();
+        } catch (PartInitException ex) {
+            throw ex;
         } catch (InterruptedException | IOException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
+        } catch (Exception ex) {
+            // do not destroy UI and create empty parser, if have unexpected error
+            Log.log(ex);
+            parser = new PgDbParser();
         }
         parser.addListener(parserListener);
 
@@ -311,8 +318,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public void dispose() {
-        getSite().getPage().removePartListener(partListener);
-
+        if (partListener != null) {
+            getSite().getPage().removePartListener(partListener);
+        }
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         if (parser != null) {
             parser.removeListener(parserListener);
@@ -361,6 +369,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     public String getEditorText() {
         return getSourceViewer().getTextWidget().getText();
+    }
+
+    public void cancelDdl() {
+        scriptThreadJobWrapper.cancel();
     }
 
     public void updateDdl() {
@@ -422,16 +434,10 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         }
 
         Thread scriptThread = new Thread(launcher);
-        scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+        scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
+                Messages.sqlScriptDialog_exception_during_script_execution,e));
 
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                ExceptionNotifier.notifyDefault(
-                        Messages.sqlScriptDialog_exception_during_script_execution,e);
-            }
-        });
-
-        ScriptThreadJobWrapper scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 

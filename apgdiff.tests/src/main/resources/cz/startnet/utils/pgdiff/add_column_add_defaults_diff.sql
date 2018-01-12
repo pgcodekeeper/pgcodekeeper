@@ -1,5 +1,16 @@
-ALTER TABLE table1
-	ADD COLUMN col2 integer NOT NULL;
+SET search_path = public, pg_catalog;
 
 ALTER TABLE table1
-	ADD COLUMN col3 integer DEFAULT 5 NOT NULL;
+	ADD COLUMN col2 integer;
+
+ALTER TABLE ONLY table1
+	ALTER COLUMN col2 SET NOT NULL;
+
+ALTER TABLE table1
+	ADD COLUMN col3 integer;
+
+ALTER TABLE ONLY table1
+	ALTER COLUMN col3 SET DEFAULT 5;
+
+ALTER TABLE ONLY table1
+	ALTER COLUMN col3 SET NOT NULL;

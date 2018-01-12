@@ -9,7 +9,8 @@ SELECT c.oid::bigint,
        c.relowner::bigint,
        c.relname,
        descr.description AS comment,
-       d.refobjid::regclass::text referenced_table_name,
+       (SELECT t.relname FROM pg_catalog.pg_class t WHERE t.oid=d.refobjid) referenced_table_name,
+       --d.refobjid::regclass::text referenced_table_name,
        a.attname AS ref_col_name,
        c.relacl::text AS aclarray
 FROM pg_catalog.pg_class c
@@ -17,7 +18,7 @@ LEFT JOIN pg_catalog.pg_description descr ON c.oid = descr.objoid
     AND descr.objsubid = 0
 LEFT JOIN pg_catalog.pg_depend d ON d.objid = c.oid
     AND d.refobjsubid != 0
-    AND d.deptype = 'a'
+    AND d.deptype IN ('i', 'a')
 LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
     AND a.attnum = d.refobjsubid
     AND a.attisdropped IS FALSE

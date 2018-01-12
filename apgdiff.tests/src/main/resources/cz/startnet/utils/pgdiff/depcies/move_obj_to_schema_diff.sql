@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP RULE notify_me ON emp;
 
 DROP TRIGGER emp_stamp ON emp;
@@ -56,6 +58,8 @@ CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
     END;
 $$;
 
+ALTER FUNCTION emp_stamp() OWNER TO galiev_mr;
+
 CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
@@ -63,6 +67,8 @@ CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer
                 RETURN i + 1;
         END;
 $$;
+
+ALTER FUNCTION increment(i integer) OWNER TO galiev_mr;
 
 CREATE TABLE emp (
 	id integer DEFAULT nextval('emp_id_seq'::regclass) NOT NULL,

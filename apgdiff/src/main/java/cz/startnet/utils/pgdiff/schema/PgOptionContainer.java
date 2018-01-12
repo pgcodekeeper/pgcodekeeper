@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Map;
-import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -11,8 +10,8 @@ public interface PgOptionContainer extends IStatement {
     void addOption(String key, String value);
     Map<String, String> getOptions();
 
-    default void compareOptions(PgOptionContainer oldContainer, PgOptionContainer newContainer, StringBuilder sb) {
-        Map <String, String> oldOptions = oldContainer.getOptions();
+    default void compareOptions(PgOptionContainer newContainer, StringBuilder sb) {
+        Map <String, String> oldOptions = getOptions();
         Map <String, String> newOptions = newContainer.getOptions();
 
         StringBuilder setOptions = new StringBuilder();
@@ -20,9 +19,9 @@ public interface PgOptionContainer extends IStatement {
 
         if (!oldOptions.isEmpty() || !newOptions.isEmpty()) {
             oldOptions.forEach((key, value) -> {
-                if (newOptions.containsKey(key)) {
-                    String newValue =  newOptions.get(key);
-                    if (!Objects.equals(value, newValue)) {
+                String newValue = newOptions.get(key);
+                if (newValue != null) {
+                    if (!value.equals(newValue)) {
                         setOptions.append(key);
                         if (!newValue.isEmpty()) {
                             setOptions.append('=');
@@ -49,30 +48,30 @@ public interface PgOptionContainer extends IStatement {
         }
 
         if (setOptions.length() > 0) {
-            setOptions.setLength(setOptions.length()-2);
+            setOptions.setLength(setOptions.length() - 2);
             sb.append("\n\nALTER ");
-            if (oldContainer.getStatementType() == DbObjType.COLUMN) {
-                sb.append("TABLE ")
-                .append(PgDiffUtils.getQuotedName(oldContainer.getParent().getName()))
+            if (getStatementType() == DbObjType.COLUMN) {
+                sb.append("TABLE ONLY ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             }
-            sb.append(oldContainer.getStatementType())
+            sb.append(getStatementType())
             .append(' ')
-            .append(PgDiffUtils.getQuotedName(oldContainer.getName()))
+            .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET (").append(setOptions).append(");");
         }
 
         if (resetOptions.length() > 0) {
-            resetOptions.setLength(resetOptions.length()-2);
+            resetOptions.setLength(resetOptions.length() - 2);
             sb.append("\n\nALTER ");
-            if (oldContainer.getStatementType() == DbObjType.COLUMN) {
-                sb.append("TABLE ")
-                .append(PgDiffUtils.getQuotedName(oldContainer.getParent().getName()))
+            if (getStatementType() == DbObjType.COLUMN) {
+                sb.append("TABLE ONLY ")
+                .append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             }
-            sb.append(oldContainer.getStatementType())
+            sb.append(getStatementType())
             .append(' ')
-            .append(PgDiffUtils.getQuotedName(oldContainer.getName()))
+            .append(PgDiffUtils.getQuotedName(getName()))
             .append(" RESET (").append(resetOptions).append(");");
         }
     }

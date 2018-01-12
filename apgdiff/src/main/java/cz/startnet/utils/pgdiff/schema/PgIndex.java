@@ -5,9 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -22,6 +26,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String tableName;
     private boolean unique;
     private boolean clusterIndex;
+    private final Set<String> columns = new HashSet<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -42,6 +47,10 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
 
         sbSQL.append("INDEX ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isConcurrentlyMode()) {
+            sbSQL.append("CONCURRENTLY ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
@@ -74,6 +83,14 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     public boolean isClusterIndex() {
         return clusterIndex;
+    }
+
+    public void addColumn(String column) {
+        columns.add(column);
+    }
+
+    public Set<String> getColumns(){
+        return Collections.unmodifiableSet(columns);
     }
 
     @Override
@@ -189,6 +206,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setClusterIndex(isClusterIndex());
         indexDst.setComment(getComment());
         indexDst.deps.addAll(deps);
+        indexDst.columns.addAll(columns);
         return indexDst;
     }
 

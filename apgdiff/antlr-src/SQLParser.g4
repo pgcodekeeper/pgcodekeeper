@@ -107,7 +107,7 @@ schema_drop
     ;
 
 alter_function_statement
-    : FUNCTION function_parameters
+    : FUNCTION function_parameters?
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ RESTRICT?
     | rename_to
     | owner_to
@@ -128,7 +128,9 @@ alter_table_statement
         (table_action (COMMA table_action)*
         | RENAME COLUMN? column=schema_qualified_name TO new_column=schema_qualified_name)
     | set_schema
-    | rename_to)
+    | rename_to
+    | ATTACH PARTITION schema_qualified_name for_values_bound
+    | DETACH PARTITION schema_qualified_name)
     ;
 
 table_action
@@ -138,12 +140,16 @@ table_action
       ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=vex)?
       | (set_def_column
         | drop_def
-        | ((SET | DROP) NOT NULL)
+        | ((set=SET | DROP) NOT NULL)
         | SET STATISTICS integer=NUMBER_LITERAL
         | set_attribute_option
         | define_foreign_options
         | RESET LEFT_PAREN storage_parameter RIGHT_PAREN
-        | set_storage ))
+        | set_storage 
+        | ADD identity_body
+        | alter_identity+
+        | DROP IDENTITY (IF EXISTS)?
+        ))
     | ADD tabl_constraint=constraint_common (NOT not_valid=VALID)?
     | validate_constraint
     | drop_constraint
@@ -166,6 +172,16 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
+    ;
+
+identity_body
+    : GENERATED (ALWAYS | BY DEFAULT) AS IDENTITY (LEFT_PAREN sequence_body+ RIGHT_PAREN)?
+    ;
+   
+alter_identity
+    : SET GENERATED (ALWAYS | BY DEFAULT)
+    | SET sequence_body
+    | RESTART (WITH? restart=NUMBER_LITERAL)
     ;
 
 set_attribute_option
@@ -228,6 +244,9 @@ abbreviated_grant_or_revoke
 
     | (EXECUTE | ALL PRIVILEGES?)
         ON FUNCTIONS
+    
+    | (USAGE | CREATE | ALL PRIVILEGES?)
+        ON SCHEMAS
 
     | (USAGE | ALL PRIVILEGES?)
         ON TYPES)
@@ -263,6 +282,7 @@ alter_type_statement
       | rename_to
       | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
+      | RENAME VALUE existing_enum_name=Character_String_Literal TO new_enum_name=Character_String_Literal
       | type_action (COMMA type_action)*)
     ;
 
@@ -443,9 +463,14 @@ create_trigger_statement
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
+    (REFERENCING trigger_referencing trigger_referencing?)?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     when_trigger?
     EXECUTE PROCEDURE func_name=function_call
+    ;
+
+trigger_referencing
+    : (OLD | NEW) TABLE AS? transition_relation_name=identifier
     ;
 
 when_trigger
@@ -627,7 +652,9 @@ create_sequence_statement
     ;
 
 sequence_body
-    : INCREMENT BY? incr=signed_numerical_literal
+    :   AS type=(SMALLINT | INTEGER | BIGINT)
+        | SEQUENCE NAME name=schema_qualified_name
+        | INCREMENT BY? incr=signed_numerical_literal
         | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
         | START WITH? start_val=signed_numerical_literal
@@ -668,6 +695,7 @@ with_check_option
 create_table_statement
   : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? FOREIGN? TABLE (IF NOT EXISTS)? name=schema_qualified_name
     define_table
+    partition_by?
     storage_parameter_oid?
     on_commit?
     table_space?
@@ -676,7 +704,29 @@ create_table_statement
 define_table
    : define_columns 
    | define_type
+   | define_partition
    ;
+   
+define_partition
+    : PARTITION OF parent_table=schema_qualified_name
+    list_of_type_column_def?
+    for_values_bound
+    define_server?
+    ;
+
+for_values_bound
+    : FOR VALUES partition_bound_spec
+    ;
+    
+partition_bound_spec
+    : IN LEFT_PAREN (unsigned_value_specification | NULL) (COMMA unsigned_value_specification | NULL)* RIGHT_PAREN
+    | FROM partition_bound_part TO partition_bound_part
+    ;
+
+partition_bound_part
+    : LEFT_PAREN (unsigned_value_specification | MINVALUE | MAXVALUE) 
+    (COMMA unsigned_value_specification | MINVALUE | MAXVALUE)* RIGHT_PAREN
+    ;   
 
 define_columns
   : LEFT_PAREN 
@@ -690,6 +740,18 @@ define_type
   : OF type_name=data_type
     list_of_type_column_def?
   ;
+  
+partition_by 
+    : PARTITION BY partition_method
+    ;
+    
+partition_method
+    : (RANGE | LIST) LEFT_PAREN partition_column (COMMA partition_column)* RIGHT_PAREN
+    ;
+    
+partition_column
+    :  (identifier | vex) collate_name=collate_identifier? op_class=identifier?
+    ;
 
 define_server
   : SERVER server_name=identifier define_foreign_options? 
@@ -728,11 +790,11 @@ table_column_definition
     ;
     
 table_of_type_column_definition
-    : column_name=identifier WITH OPTIONS (colmn_constraint+=constraint_common)*
+    : column_name=identifier (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
 
 like_option
-    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
+    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | IDENTITY | INDEXES | STORAGE | COMMENTS | ALL)
     ;
 /** NULL, DEFAULT - column constraint
 * EXCLUDE, FOREIGN KEY - table_constraint
@@ -750,6 +812,7 @@ constr_body
        | common_constraint
        | table_unique_prkey
        | DEFAULT default_expr=vex
+       | identity_body
       )
       table_deferrable? table_initialy_immed?
     ;
@@ -774,7 +837,7 @@ common_constraint
     ;
 
 table_references
-    : REFERENCES reftable=schema_qualified_name column_references?
+    : REFERENCES reftable=schema_qualified_name column_references
             (match_all | (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*
     ;
 
@@ -791,7 +854,7 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN
+    : CHECK LEFT_PAREN expression=vex RIGHT_PAREN (NO? INHERIT)?
     ;
 
 storage_parameter
@@ -948,6 +1011,7 @@ tokens_nonreserved
   | ASSERTION
   | ASSIGNMENT
   | AT
+  | ATTACH
   | ATTRIBUTE
   | BACKWARD
   | BEFORE
@@ -964,6 +1028,7 @@ tokens_nonreserved
   | CLASS
   | CLOSE
   | CLUSTER
+  | COLUMNS
   | COMMENT
   | COMMENTS
   | COMMIT
@@ -994,6 +1059,7 @@ tokens_nonreserved
   | DELIMITER
   | DELIMITERS
   | DEPENDS
+  | DETACH
   | DICTIONARY
   | DISABLE
   | DISCARD
@@ -1023,6 +1089,7 @@ tokens_nonreserved
   | FORWARD
   | FUNCTION
   | FUNCTIONS
+  | GENERATED
   | GLOBAL
   | GRANTED
   | HANDLER
@@ -1074,6 +1141,7 @@ tokens_nonreserved
   | MOVE
   | NAME
   | NAMES
+  | NEW
   | NEXT
   | NO
   | NOTHING
@@ -1084,11 +1152,13 @@ tokens_nonreserved
   | OF
   | OFF
   | OIDS
+  | OLD
   | OPERATOR
   | OPTION
   | OPTIONS
   | ORDINALITY
   | OVER
+  | OVERRIDING
   | OWNED
   | OWNER
   | PARALLEL
@@ -1108,6 +1178,7 @@ tokens_nonreserved
   | PROCEDURAL
   | PROCEDURE
   | PROGRAM
+  | PUBLICATION
   | QUOTE
   | RANGE
   | READ
@@ -1115,6 +1186,7 @@ tokens_nonreserved
   | RECHECK
   | RECURSIVE
   | REF
+  | REFERENCING
   | REFRESH
   | REINDEX
   | RELATIVE
@@ -1135,6 +1207,7 @@ tokens_nonreserved
   | RULE
   | SAVEPOINT
   | SCHEMA
+  | SCHEMAS
   | SCROLL
   | SEARCH
   | SECOND
@@ -1162,6 +1235,7 @@ tokens_nonreserved
   | STORAGE
   | STRICT
   | STRIP
+  | SUBSCRIPTION
   | SYSID
   | SYSTEM
   | TABLES
@@ -1252,10 +1326,12 @@ tokens_nonreserved_except_function_type
   | XMLELEMENT
   | XMLEXISTS
   | XMLFOREST
+  | XMLNAMESPACES
   | XMLPARSE
   | XMLPI
   | XMLROOT
   | XMLSERIALIZE
+  | XMLTABLE
   ;
 
 tokens_simple_functions
