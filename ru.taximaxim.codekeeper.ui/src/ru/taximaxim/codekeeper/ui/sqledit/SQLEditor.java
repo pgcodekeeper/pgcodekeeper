@@ -312,7 +312,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public void dispose() {
-        getSite().getPage().removePartListener(partListener);
+        if (partListener != null) {
+            getSite().getPage().removePartListener(partListener);
+        }
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         if (parser != null) {

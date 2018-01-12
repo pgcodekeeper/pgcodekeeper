@@ -207,6 +207,9 @@ public abstract class PgStatement implements IStatement {
         grantsChanged = grantsChanged || grants.size() != newGrants.size();
         if (grantsChanged || !revokes.equals(newObj.getRevokes())) {
             newObj.appendPrivileges(sb);
+            if (newObj.revokes.isEmpty() && newObj.grants.isEmpty()) {
+                PgPrivilege.appendDefaultPrivileges(newObj, sb);
+            }
         }
     }
 
