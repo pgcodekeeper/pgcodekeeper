@@ -63,11 +63,17 @@ public class MockDataPage extends WizardPage {
     private String parsedTableName;
     private String parsedSchemaName;
 
-    private Text txtSchemaName;
     private Text txtTableName;
-    private ComboViewer cmbType, cmbGeneration;
-    private Button btnIsUnique, btnIsNotNull;
-    private Text txtColumnName, txtStart, txtEnd, txtStep, txtLength, txtRowCount;
+    private ComboViewer cmbType;
+    private ComboViewer cmbGeneration;
+    private Button btnIsUnique;
+    private Button btnIsNotNull;
+    private Text txtColumnName;
+    private Text txtStart;
+    private Text txtEnd;
+    private Text txtStep;
+    private Text txtLength;
+    private Text txtRowCount;
 
     private TableViewer viewer;
     private boolean inViewerSelection;
@@ -77,8 +83,6 @@ public class MockDataPage extends WizardPage {
      *
      * @param pageName Page name
      * @param selection Current user selection
-     * @since 3.11.5
-     * @author galiev_mr
      */
     public MockDataPage(String pageName, IStructuredSelection selection) {
         super(pageName);
@@ -91,8 +95,6 @@ public class MockDataPage extends WizardPage {
      * Generates file with insert query and open them in project editor
      *
      * @return true if file successfully created and opened, false otherwise
-     * @since 3.11.5
-     * @author galiev_mr
      * @see #generateInsert()
      */
     boolean createFile() {
@@ -116,8 +118,6 @@ public class MockDataPage extends WizardPage {
     /**
      * Checks fields filling validation
      *
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private boolean isValid() {
         String err = null;
@@ -149,7 +149,7 @@ public class MockDataPage extends WizardPage {
                 if (c.isUnique() && c.getGenerator() == PgDataGenerator.RANDOM
                         && c.getMaxValues() < rowCount) {
                     err = Messages.MockDataPage_maximum_value
-                            + c.getName() + ": " + c.getMaxValues(); //$NON-NLS-1$
+                            + ' ' + c.getName() + ": " + c.getMaxValues(); //$NON-NLS-1$
                 }
             }
         }
@@ -161,18 +161,11 @@ public class MockDataPage extends WizardPage {
     /**
      * Generates insert query from columns list
      *
-     * @since 3.11.5
-     * @author galiev_mr
      * @see PgData #generateValue()
      */
     private String generateInsert() {
         StringBuilder sb = new StringBuilder();
-        String schemaName = txtSchemaName.getText();
         sb.append("INSERT INTO "); //$NON-NLS-1$
-        if (!schemaName.isEmpty()) {
-            sb.append(schemaName)
-            .append('.');
-        }
         sb.append(txtTableName.getText());
         sb.append(" ("); //$NON-NLS-1$
 
@@ -205,19 +198,14 @@ public class MockDataPage extends WizardPage {
         container.setLayout(new GridLayout(5, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(container, SWT.NONE).setText(Messages.MockDataPage_schema_name);
-
-        txtSchemaName = new Text(container, SWT.BORDER);
-        txtSchemaName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-
-        final Composite columnInfo = createColumnInfo(container);
-        columnInfo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 5));
-
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_table_name);
 
         txtTableName = new Text(container, SWT.BORDER);
         txtTableName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-        txtTableName.setText("t1"); //$NON-NLS-1$
+        txtTableName.setText(parsedTableName == null ? "t1" : (parsedSchemaName + '.' + parsedTableName)); //$NON-NLS-1$
+
+        final Composite columnInfo = createColumnInfo(container);
+        columnInfo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
 
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_row_count);
 
@@ -314,6 +302,7 @@ public class MockDataPage extends WizardPage {
                 if (!empty) {
                     PgData<?> c = (PgData<?>) sel.getFirstElement();
                     showColumnInfo(c);
+                    updateFields(c);
                     if (columns.size() == 1) {
                         btnUp.setEnabled(false);
                         btnDown.setEnabled(false);
@@ -337,9 +326,7 @@ public class MockDataPage extends WizardPage {
      * Creates right block with information about the column
      *
      * @param parent Parent composite
-     * @since 3.11.5
      * @return Upper composite of the right block
-     * @author galiev_mr
      */
     private Composite createColumnInfo(Composite parent) {
         Group composite = new Group(parent, SWT.NONE);
@@ -477,8 +464,6 @@ public class MockDataPage extends WizardPage {
      * Fills the block with information about the column
      *
      * @param c Selected column wrapper
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void showColumnInfo(PgData<?> c) {
         txtColumnName.setText(c.getName());
@@ -497,8 +482,6 @@ public class MockDataPage extends WizardPage {
      * Enable and disable fields when changing the generator and type
      *
      * @param c Selected column wrapper
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void updateFields(PgData<?> c) {
         PgDataType type = c.getType();
@@ -522,8 +505,6 @@ public class MockDataPage extends WizardPage {
      * Creates columns for the top level viewer
      *
      * @param viewer Parent viewer
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void addColumns(TableViewer viewer) {
         TableViewerColumn name = new TableViewerColumn(viewer, SWT.LEFT);
@@ -584,8 +565,6 @@ public class MockDataPage extends WizardPage {
      * otherwise create 1 column
      *
      * @param selection Current selection
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
@@ -614,8 +593,6 @@ public class MockDataPage extends WizardPage {
      * Gets table constraint data and adds them to columns data
      *
      * @param constraint Table constraint
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void parseConstraints(PgConstraint constraint) {
         if (constraint.isUnique() || constraint.isPrimaryKey()) {
@@ -629,8 +606,6 @@ public class MockDataPage extends WizardPage {
      * Gets column data and adds them to list
      *
      * @param column Table column
-     * @since 3.11.5
-     * @author galiev_mr
      */
     private void parseColumns(PgColumn column) {
         PgData<?> c = PgDataType.dataForType(column.getType());

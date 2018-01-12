@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE testtable
 	ALTER COLUMN field1 TYPE integer USING field1::integer; /* TYPE change - table: testtable original: smallint new: integer */
 

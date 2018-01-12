@@ -6,6 +6,8 @@ CREATE SCHEMA newschema;
 
 ALTER SCHEMA newschema OWNER TO galiev_mr;
 
+SET search_path = public, pg_catalog;
+
 CREATE VIEW v1 AS
 	SELECT t1.c1,
     t3.c2,

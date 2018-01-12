@@ -1,1 +1,3 @@
-ALTER TABLE testtable SET WITHOUT OIDS;
+SET search_path = public, pg_catalog;
+
+ALTER TABLE ONLY testtable SET WITHOUT OIDS;

@@ -50,6 +50,15 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private final List<String> updateColumns = new ArrayList<>();
     private String when;
 
+    /**
+     * REFERENCING old table name
+     */
+    private String oldTable;
+    /**
+     * REFERENCING new table name
+     */
+    private String newTable;
+
     @Override
     public DbObjType getStatementType() {
         return DbObjType.TRIGGER;
@@ -133,13 +142,27 @@ public class PgTrigger extends PgStatementWithSearchPath {
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
 
-        if (constraint){
+        if (constraint) {
             if (refTableName != null){
                 sbSQL.append("\n\tFROM ").append(refTableName);
             }
             if (isImmediate != null){
                 sbSQL.append("\n\tDEFERRABLE INITIALLY ")
                 .append(isImmediate ? "IMMEDIATE" : "DEFERRED");
+            }
+        }
+
+        if (oldTable != null || newTable != null) {
+            sbSQL.append("\n\tREFERENCING ");
+            if (newTable != null) {
+                sbSQL.append("NEW TABLE AS ");
+                sbSQL.append(newTable);
+                sbSQL.append(' ');
+            }
+            if (oldTable != null) {
+                sbSQL.append("OLD TABLE AS ");
+                sbSQL.append(oldTable);
+                sbSQL.append(' ');
             }
         }
 
@@ -300,6 +323,24 @@ public class PgTrigger extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    public void setOldTable(String oldTable) {
+        this.oldTable = oldTable;
+        resetHash();
+    }
+
+    public String getOldTable() {
+        return oldTable;
+    }
+
+    public void setNewTable(String newTable) {
+        this.newTable = newTable;
+        resetHash();
+    }
+
+    public String getNewTable() {
+        return newTable;
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -329,6 +370,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 && (constraint == trigger.isConstraint())
                 && Objects.equals(tableName, trigger.getTableName())
                 && Objects.equals(when, trigger.getWhen())
+                && Objects.equals(newTable, trigger.getNewTable())
+                && Objects.equals(oldTable, trigger.getOldTable())
                 && PgDiffUtils.setlikeEquals(updateColumns, trigger.updateColumns);
     }
 
@@ -353,6 +396,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + (constraint ? itrue : ifalse);
         result = prime * result + (isImmediate == null ? 0 : isImmediate.hashCode());
         result = prime * result + (refTableName == null ? 0 : refTableName.hashCode());
+        result = prime * result + (newTable == null ? 0 : newTable.hashCode());
+        result = prime * result + (oldTable == null ? 0 : oldTable.hashCode());
         return result;
     }
 
@@ -371,6 +416,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         triggerDst.setWhen(getWhen());
         triggerDst.setImmediate(isImmediate());
         triggerDst.setRefTableName(getRefTableName());
+        triggerDst.setNewTable(getNewTable());
+        triggerDst.setOldTable(getOldTable());
         triggerDst.setComment(getComment());
         triggerDst.updateColumns.addAll(updateColumns);
         triggerDst.deps.addAll(deps);

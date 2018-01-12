@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP VIEW v8;
 
 -- DEPCY: This TABLE is a dependency of VIEW: v8

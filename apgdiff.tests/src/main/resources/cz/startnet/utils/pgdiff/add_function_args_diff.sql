@@ -1,3 +1,4 @@
+SET search_path = public, pg_catalog;
 
 CREATE OR REPLACE FUNCTION power_number(input integer) RETURNS integer
     AS $$

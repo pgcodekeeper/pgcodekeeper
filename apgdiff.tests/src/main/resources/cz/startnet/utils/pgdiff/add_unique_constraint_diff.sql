@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER SEQUENCE inventoryitemsupplier_seq
 	RESTART WITH 1;
 

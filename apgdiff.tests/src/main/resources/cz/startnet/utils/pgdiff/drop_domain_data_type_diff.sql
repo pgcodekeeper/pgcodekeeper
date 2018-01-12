@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP DOMAIN dom5;
 
 CREATE DOMAIN dom5 AS text NOT NULL
