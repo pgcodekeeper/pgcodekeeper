@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,10 +102,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
             }
         }
-    }
-
-    public List<String> getErrors() {
-        return Collections.unmodifiableList(errors);
     }
 
     protected void addError(final String message) {
