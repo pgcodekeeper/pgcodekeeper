@@ -201,8 +201,7 @@ public class PgDiffArguments implements Cloneable {
         try {
             return (PgDiffArguments) super.clone();
         } catch (CloneNotSupportedException e) {
-            // never happens
-            throw new InternalError();
+            throw new RuntimeException("Impossible error", e);
         }
     }
 }
