@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgPrivilege extends PgStatement {
@@ -58,25 +59,30 @@ public class PgPrivilege extends PgStatement {
                 .toString();
     }
 
-    public static void appendDefaultPriviligies(PgStatement newObj, StringBuilder sb) {
+    public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
-        String owner = newObj.getOwner();
         String name = newObj.getName();
         String column = "";
+        String owner;
 
-        if (type ==DbObjType.COLUMN) {
+        if (type == DbObjType.COLUMN) {
             PgStatement parent = newObj.getParent();
-            owner = parent.getOwner();
-            column = '(' + name + ')';
-            name = parent.getName();
+            owner = PgDiffUtils.getQuotedName(parent.getOwner());
+            column = '(' + PgDiffUtils.getQuotedName(name) + ')';
+            name = PgDiffUtils.getQuotedName(parent.getName());
             type = DbObjType.TABLE;
+        } else {
+            if (type != DbObjType.FUNCTION) {
+                name = PgDiffUtils.getQuotedName(name);
+            }
+            owner =  PgDiffUtils.getQuotedName(newObj.getOwner());
         }
 
         PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC", "");
         sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(true, "ALL" + column+ " ON " + type + ' ' + name + " FROM " + owner, "");
+        priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM " + owner, "");
         sb.append('\n').append(priv.getCreationSQL());
-        priv = new PgPrivilege(false, "ALL" + column+ " ON " + type + ' ' + name + " TO " + owner, "");
+        priv = new PgPrivilege(false, "ALL" + column + " ON " + type + ' ' + name + " TO " + owner, "");
         sb.append('\n').append(priv.getCreationSQL());
     }
 
