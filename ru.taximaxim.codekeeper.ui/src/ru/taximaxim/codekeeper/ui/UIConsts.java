@@ -85,6 +85,7 @@ public interface UIConsts {
         String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$;
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$;
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$;
+        String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$;
     }
 
     interface PG_EDIT_PREF {

@@ -70,6 +70,7 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
+
                     script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     break;
                 case DROP:

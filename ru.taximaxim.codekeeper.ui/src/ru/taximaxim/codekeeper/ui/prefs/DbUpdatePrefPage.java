@@ -8,6 +8,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -17,6 +18,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+
+    BooleanFieldEditor printConcurrently;
+    BooleanFieldEditor transaction;
 
     public DbUpdatePrefPage() {
         super(GRID);
@@ -59,7 +63,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
         addField(showScriptOutputSeparately);
 
-        BooleanFieldEditor transaction = new BooleanFieldEditor(
+        transaction = new BooleanFieldEditor(
                 DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.dbUpdatePrefPage_script_add_transaction,
                 getFieldEditorParent());
@@ -75,6 +79,11 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent());
         addField(usingOnOff);
 
+        printConcurrently = new BooleanFieldEditor(
+                DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.DbUpdatePrefPage_print_index_with_concurrently, getFieldEditorParent());
+        addField(printConcurrently);
+
         BooleanFieldEditor commandLineDdlUpdate = new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent());
         addField(commandLineDdlUpdate);
@@ -87,5 +96,17 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 + SQLEditor.DB_USER_PLACEHOLDER + ' ' + SQLEditor.DB_PASS_PLACEHOLDER + ')' + ':',
                 30, getFieldEditorParent());
         addField(cmdUpdate);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (printConcurrently.getBooleanValue() && transaction.getBooleanValue()) {
+            setErrorMessage(Messages.DbUpdatePrefPage_impossible_transaction_and_concurrently);
+            setValid(false);
+        } else {
+            setErrorMessage(null);
+            setValid(true);
+        }
+        super.propertyChange(event);
     }
 }

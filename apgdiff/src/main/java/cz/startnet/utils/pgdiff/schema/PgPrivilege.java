@@ -131,4 +131,9 @@ public class PgPrivilege extends PgStatement {
     public String toString() {
         return getCreationSQL();
     }
+
+    @Override
+    public PgDatabase getDatabase() {
+        return null;
+    }
 }
