@@ -64,6 +64,7 @@ public class Keyword {
         keywords.put("assignment", new Keyword("assignment", UNRESERVED_KEYWORD));
         keywords.put("asymmetric", new Keyword("asymmetric", RESERVED_KEYWORD));
         keywords.put("at", new Keyword("at", UNRESERVED_KEYWORD));
+        keywords.put("attach", new Keyword("attach", UNRESERVED_KEYWORD));
         keywords.put("attribute", new Keyword("attribute", UNRESERVED_KEYWORD));
         keywords.put("authorization", new Keyword("authorization", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("backward", new Keyword("backward", UNRESERVED_KEYWORD));
@@ -96,6 +97,7 @@ public class Keyword {
         keywords.put("collate", new Keyword("collate", RESERVED_KEYWORD));
         keywords.put("collation", new Keyword("collation", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("column", new Keyword("column", RESERVED_KEYWORD));
+        keywords.put("columns", new Keyword("columns", UNRESERVED_KEYWORD));
         keywords.put("comment", new Keyword("comment", UNRESERVED_KEYWORD));
         keywords.put("comments", new Keyword("comments", UNRESERVED_KEYWORD));
         keywords.put("commit", new Keyword("commit", UNRESERVED_KEYWORD));
@@ -142,6 +144,7 @@ public class Keyword {
         keywords.put("delimiters", new Keyword("delimiters", UNRESERVED_KEYWORD));
         keywords.put("depends", new Keyword("depends", UNRESERVED_KEYWORD));
         keywords.put("desc", new Keyword("desc", RESERVED_KEYWORD));
+        keywords.put("detach", new Keyword("detach", UNRESERVED_KEYWORD));
         keywords.put("dictionary", new Keyword("dictionary", UNRESERVED_KEYWORD));
         keywords.put("disable", new Keyword("disable", UNRESERVED_KEYWORD));
         keywords.put("discard", new Keyword("discard", UNRESERVED_KEYWORD));
@@ -186,6 +189,7 @@ public class Keyword {
         keywords.put("full", new Keyword("full", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("function", new Keyword("function", UNRESERVED_KEYWORD));
         keywords.put("functions", new Keyword("functions", UNRESERVED_KEYWORD));
+        keywords.put("generated", new Keyword("generated", UNRESERVED_KEYWORD));
         keywords.put("global", new Keyword("global", UNRESERVED_KEYWORD));
         keywords.put("grant", new Keyword("grant", RESERVED_KEYWORD));
         keywords.put("granted", new Keyword("granted", UNRESERVED_KEYWORD));
@@ -266,6 +270,7 @@ public class Keyword {
         keywords.put("national", new Keyword("national", COL_NAME_KEYWORD));
         keywords.put("natural", new Keyword("natural", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("nchar", new Keyword("nchar", COL_NAME_KEYWORD));
+        keywords.put("new", new Keyword("new", UNRESERVED_KEYWORD));
         keywords.put("next", new Keyword("next", UNRESERVED_KEYWORD));
         keywords.put("no", new Keyword("no", UNRESERVED_KEYWORD));
         keywords.put("none", new Keyword("none", COL_NAME_KEYWORD));
@@ -283,6 +288,7 @@ public class Keyword {
         keywords.put("off", new Keyword("off", UNRESERVED_KEYWORD));
         keywords.put("offset", new Keyword("offset", RESERVED_KEYWORD));
         keywords.put("oids", new Keyword("oids", UNRESERVED_KEYWORD));
+        keywords.put("old", new Keyword("old", UNRESERVED_KEYWORD));
         keywords.put("on", new Keyword("on", RESERVED_KEYWORD));
         keywords.put("only", new Keyword("only", RESERVED_KEYWORD));
         keywords.put("operator", new Keyword("operator", UNRESERVED_KEYWORD));
@@ -296,6 +302,7 @@ public class Keyword {
         keywords.put("over", new Keyword("over", UNRESERVED_KEYWORD));
         keywords.put("overlaps", new Keyword("overlaps", TYPE_FUNC_NAME_KEYWORD));
         keywords.put("overlay", new Keyword("overlay", COL_NAME_KEYWORD));
+        keywords.put("overriding", new Keyword("overriding", UNRESERVED_KEYWORD));
         keywords.put("owned", new Keyword("owned", UNRESERVED_KEYWORD));
         keywords.put("owner", new Keyword("owner", UNRESERVED_KEYWORD));
         keywords.put("parallel", new Keyword("parallel", UNRESERVED_KEYWORD));
@@ -319,6 +326,7 @@ public class Keyword {
         keywords.put("procedural", new Keyword("procedural", UNRESERVED_KEYWORD));
         keywords.put("procedure", new Keyword("procedure", UNRESERVED_KEYWORD));
         keywords.put("program", new Keyword("program", UNRESERVED_KEYWORD));
+        keywords.put("publication", new Keyword("publication", UNRESERVED_KEYWORD));
         keywords.put("quote", new Keyword("quote", UNRESERVED_KEYWORD));
         keywords.put("range", new Keyword("range", UNRESERVED_KEYWORD));
         keywords.put("read", new Keyword("read", UNRESERVED_KEYWORD));
@@ -328,6 +336,7 @@ public class Keyword {
         keywords.put("recursive", new Keyword("recursive", UNRESERVED_KEYWORD));
         keywords.put("ref", new Keyword("ref", UNRESERVED_KEYWORD));
         keywords.put("references", new Keyword("references", RESERVED_KEYWORD));
+        keywords.put("referencing", new Keyword("referencing", UNRESERVED_KEYWORD));
         keywords.put("refresh", new Keyword("refresh", UNRESERVED_KEYWORD));
         keywords.put("reindex", new Keyword("reindex", UNRESERVED_KEYWORD));
         keywords.put("relative", new Keyword("relative", UNRESERVED_KEYWORD));
@@ -351,6 +360,7 @@ public class Keyword {
         keywords.put("rule", new Keyword("rule", UNRESERVED_KEYWORD));
         keywords.put("savepoint", new Keyword("savepoint", UNRESERVED_KEYWORD));
         keywords.put("schema", new Keyword("schema", UNRESERVED_KEYWORD));
+        keywords.put("schemas", new Keyword("schemas", UNRESERVED_KEYWORD));
         keywords.put("scroll", new Keyword("scroll", UNRESERVED_KEYWORD));
         keywords.put("search", new Keyword("search", UNRESERVED_KEYWORD));
         keywords.put("second", new Keyword("second", UNRESERVED_KEYWORD));
@@ -384,6 +394,7 @@ public class Keyword {
         keywords.put("storage", new Keyword("storage", UNRESERVED_KEYWORD));
         keywords.put("strict", new Keyword("strict", UNRESERVED_KEYWORD));
         keywords.put("strip", new Keyword("strip", UNRESERVED_KEYWORD));
+        keywords.put("subscription", new Keyword("subscription", UNRESERVED_KEYWORD));
         keywords.put("substring", new Keyword("substring", COL_NAME_KEYWORD));
         keywords.put("symmetric", new Keyword("symmetric", RESERVED_KEYWORD));
         keywords.put("sysid", new Keyword("sysid", UNRESERVED_KEYWORD));
@@ -453,10 +464,12 @@ public class Keyword {
         keywords.put("xmlelement", new Keyword("xmlelement", COL_NAME_KEYWORD));
         keywords.put("xmlexists", new Keyword("xmlexists", COL_NAME_KEYWORD));
         keywords.put("xmlforest", new Keyword("xmlforest", COL_NAME_KEYWORD));
+        keywords.put("xmlnamespaces", new Keyword("xmlnamespaces", COL_NAME_KEYWORD));
         keywords.put("xmlparse", new Keyword("xmlparse", COL_NAME_KEYWORD));
         keywords.put("xmlpi", new Keyword("xmlpi", COL_NAME_KEYWORD));
         keywords.put("xmlroot", new Keyword("xmlroot", COL_NAME_KEYWORD));
         keywords.put("xmlserialize", new Keyword("xmlserialize", COL_NAME_KEYWORD));
+        keywords.put("xmltable", new Keyword("xmltable", COL_NAME_KEYWORD));
         keywords.put("year", new Keyword("year", UNRESERVED_KEYWORD));
         keywords.put("yes", new Keyword("yes", UNRESERVED_KEYWORD));
         keywords.put("zone", new Keyword("zone", UNRESERVED_KEYWORD));

@@ -1,29 +1,33 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
-import java.time.Instant;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Random;
 
 /**
  * An implementation of a PostgreSql data generator for DATE type.
  * <br><br>
- * Here step is stored as {@link Instant#toEpochMilli()} ms of increment.
+ * Here step is stored as {@link LocalDate#ofEpochDay()} days of increment.
  *
- * @since 3.11.5
+ * @since 4.1.3
  * @author galiev_mr
  */
-public class DatePgData extends PgData<Instant> {
+public class DatePgData extends PgData<LocalDate> {
 
     public DatePgData() {
-        super(PgDataType.DATE, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"), //$NON-NLS-1$
-                Instant.ofEpochMilli(1000));
+        super(PgDataType.DATE,
+                LocalDate.ofEpochDay(0),
+                LocalDate.of(2070, 1, 1),
+                LocalDate.ofEpochDay(1));
     }
+
     @Override
-    public Instant generateValue() {
+    public LocalDate generateValue() {
         switch (generator) {
         case CONSTANT: return start;
         case INCREMENT:
-            Instant current = currentInc;
-            currentInc = current.plusMillis(step.toEpochMilli());
+            LocalDate current = currentInc;
+            currentInc = current.plusDays(step.toEpochDay());
             return current;
         case RANDOM: return generateRandom();
         default:
@@ -33,26 +37,37 @@ public class DatePgData extends PgData<Instant> {
 
     @Override
     public String generateAsString() {
-        Instant value = generateValue();
+        LocalDate value = generateValue();
         return value == null ? "null" : ("'" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
-    protected Instant generateRandom(Random ran) {
-        return start.plusMillis((long)((end.toEpochMilli() - start.toEpochMilli() + 1)
-                * ran.nextDouble() + start.toEpochMilli()));
+    protected LocalDate generateRandom(Random ran) {
+        return start.plusDays((long)((end.toEpochDay() - start.toEpochDay() + 1)
+                * ran.nextDouble() + start.toEpochDay()));
     }
 
     @Override
     public int getMaxValues() {
-        long beginTime = start.getEpochSecond();
-        long endTime = end.getEpochSecond();
+        long beginTime = start.toEpochDay();
+        long endTime = end.toEpochDay();
         long values = (endTime - beginTime + 1);
         return values > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) values;
     }
 
     @Override
-    public Instant valueFromString(String s) {
-        return Instant.parse(s);
+    public LocalDate valueFromString(String s) {
+        return LocalDate.parse(s);
+    }
+
+    @Override
+    public String getStepAsString() {
+        return Long.toString(Duration.between(LocalDate.ofEpochDay(0).atStartOfDay(),
+                step.atStartOfDay()).toDays());
+    }
+
+    @Override
+    public void setStepFromString(String step) {
+        setStep(LocalDate.ofEpochDay(Long.parseLong(step)));
     }
 }

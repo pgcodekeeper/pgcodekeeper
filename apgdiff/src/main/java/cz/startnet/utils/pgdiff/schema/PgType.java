@@ -77,8 +77,8 @@ public class PgType extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(enums);
     }
 
-    public void addEnum(String enum_) {
-        enums.add(enum_);
+    public void addEnum(String value) {
+        enums.add(value);
         resetHash();
     }
 
@@ -336,14 +336,14 @@ public class PgType extends PgStatementWithSearchPath {
         appendOwnerSQL(sb);
         appendPrivileges(sb);
 
-        if (comment != null && !comment.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(comment)) {
             sb.append("\n\n");
             appendCommentSql(sb);
         }
 
         if (form == PgTypeForm.COMPOSITE) {
             for (PgColumn c : attrs) {
-                if (c.getComment() != null && !c.getComment().isEmpty()) {
+                if (PgDiffUtils.isStringNotEmpty(c.getComment())) {
                     sb.append("\n\n");
                     c.appendCommentSql(sb);
                 }
@@ -361,7 +361,12 @@ public class PgType extends PgStatementWithSearchPath {
             } else {
                 sb.append(',');
             }
-            sb.append("\n\t").append(attr.getFullDefinition(false, null, false));
+            sb.append("\n\t").append(attr.getName()).append(' ').append(attr.getType());
+
+            if (attr.getCollation() != null) {
+                sb.append(" COLLATE ").append(attr.getCollation());
+            }
+
         }
     }
 
@@ -397,52 +402,52 @@ public class PgType extends PgStatementWithSearchPath {
     private void appendBaseDef(StringBuilder sb) {
         sb.append("\n\tINPUT = ").append(inputFunction);
         sb.append(",\n\tOUTPUT = ").append(outputFunction);
-        if (receiveFunction != null && !receiveFunction.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(receiveFunction)) {
             sb.append(",\n\tRECEIVE = ").append(receiveFunction);
         }
-        if (sendFunction != null && !sendFunction.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(sendFunction)) {
             sb.append(",\n\tSEND = ").append(sendFunction);
         }
-        if (typmodInputFunction != null && !typmodInputFunction.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(typmodInputFunction)) {
             sb.append(",\n\tTYPMOD_IN = ").append(typmodInputFunction);
         }
-        if (typmodOutputFunction != null && !typmodOutputFunction.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(typmodOutputFunction)) {
             sb.append(",\n\tTYPMOD_OUT = ").append(typmodOutputFunction);
         }
-        if (analyzeFunction != null && !analyzeFunction.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(analyzeFunction)) {
             sb.append(",\n\tANALYZE = ").append(analyzeFunction);
         }
-        if (internalLength != null && !internalLength.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(internalLength)) {
             sb.append(",\n\tINTERNALLENGTH = ").append(internalLength);
         }
         if (passedByValue) {
             sb.append(",\n\tPASSEDBYVALUE");
         }
-        if (alignment != null && !alignment.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(alignment)) {
             sb.append(",\n\tALIGNMENT = ").append(alignment);
         }
-        if (storage != null && !storage.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(storage)) {
             sb.append(",\n\tSTORAGE = ").append(storage);
         }
-        if (likeType != null && !likeType.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(likeType)) {
             sb.append(",\n\tLIKE = ").append(likeType);
         }
-        if (category != null && !category.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(category)) {
             sb.append(",\n\tCATEGORY = ").append(category);
         }
-        if (preferred != null && !preferred.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(preferred)) {
             sb.append(",\n\tPREFERRED = ").append(preferred);
         }
-        if (defaultValue != null && !defaultValue.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(defaultValue)) {
             sb.append(",\n\tDEFAULT = ").append(defaultValue);
         }
-        if (element != null && !element.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(element)) {
             sb.append(",\n\tELEMENT = ").append(element);
         }
-        if (delimiter != null && !delimiter.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(delimiter)) {
             sb.append(",\n\tDELIMITER = ").append(delimiter);
         }
-        if (collatable != null && !collatable.isEmpty()) {
+        if (PgDiffUtils.isStringNotEmpty(collatable)) {
             sb.append(",\n\tCOLLATABLE = ").append(collatable);
         }
     }
@@ -456,7 +461,8 @@ public class PgType extends PgStatementWithSearchPath {
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
-        PgType newType, oldType = this;
+        PgType newType;
+        PgType oldType = this;
         if (newCondition instanceof PgType) {
             newType = (PgType) newCondition;
         } else {
@@ -468,31 +474,51 @@ public class PgType extends PgStatementWithSearchPath {
             return true;
         }
 
+        compareAttr(newType, oldType, sb, isNeedDepcies);
+        columnsComments(newType, oldType, sb);
+        compareEnums(newType.getEnums(), oldType.getEnums(), sb);
+
+        if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
+            newType.appendOwnerSQL(sb);
+        }
+        alterPrivileges(newType, sb);
+        if (!Objects.equals(oldType.getComment(), newType.getComment())) {
+            sb.append("\n\n");
+            newType.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    private void compareAttr(PgType newType, PgType oldType, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
         StringBuilder attrSb = new StringBuilder();
         for (PgColumn attr : newType.getAttrs()) {
             PgColumn oldAttr = oldType.getAttr(attr.getName());
-            if (oldAttr != null) {
-                if (!oldAttr.getType().equals(attr.getType()) ||
-                        (attr.getCollation() != null &&
-                        !attr.getCollation().equals(oldAttr.getCollation()))) {
-                    isNeedDepcies.set(true);
-                    attrSb.append("\n\tALTER ATTRIBUTE ")
-                    .append(PgDiffUtils.getQuotedName(attr.getName()))
-                    .append(" TYPE ")
-                    .append(attr.getType());
-                    if (attr.getCollation() != null) {
-                        attrSb.append(" COLLATE ")
-                        .append(attr.getCollation());
-                    }
-                    attrSb.append(", ");
-                }
-            } else {
+            if (oldAttr == null) {
                 isNeedDepcies.set(true);
                 attrSb.append("\n\tADD ATTRIBUTE ")
-                .append(attr.getFullDefinition(false, null, false))
-                .append(", ");
+                .append(attr.getName()).append(' ').append(attr.getType());
+
+                if (attr.getCollation() != null) {
+                    attrSb.append(" COLLATE ").append(attr.getCollation());
+                }
+
+                attrSb.append(", ");
+            } else if (!oldAttr.getType().equals(attr.getType()) ||
+                    !Objects.equals(attr.getCollation(), oldAttr.getCollation())) {
+                isNeedDepcies.set(true);
+                attrSb.append("\n\tALTER ATTRIBUTE ")
+                .append(PgDiffUtils.getQuotedName(attr.getName()))
+                .append(" TYPE ")
+                .append(attr.getType());
+                if (attr.getCollation() != null) {
+                    attrSb.append(" COLLATE ")
+                    .append(attr.getCollation());
+                }
+                attrSb.append(", ");
             }
         }
+
         for (PgColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
                 isNeedDepcies.set(true);
@@ -509,34 +535,24 @@ public class PgType extends PgStatementWithSearchPath {
             .append(PgDiffUtils.getQuotedName(newType.getName()))
             .append(attrSb).append(';');
         }
-        columnsComments(newType, oldType, sb);
+    }
 
-        List<String> enums = newType.getEnums();
-        List<String> oldEnums = oldType.getEnums();
-        for (int i = 0; i < enums.size(); ++i) {
-            String enum_ = enums.get(i);
-            if (!oldEnums.contains(enum_)) {
+    private void compareEnums(List<String> newEnums, List<String> oldEnums,
+            StringBuilder sb) {
+        for (int i = 0; i < newEnums.size(); ++i) {
+            String value = newEnums.get(i);
+            if (!oldEnums.contains(value)) {
                 sb.append("\n\nALTER TYPE ")
-                .append(PgDiffUtils.getQuotedName(newType.getName()))
-                .append("\n\tADD VALUE ").append(enum_);
+                .append(PgDiffUtils.getQuotedName(getName()))
+                .append("\n\tADD VALUE ").append(value);
                 if (i == 0) {
                     sb.append(" BEFORE ").append(oldEnums.get(0));
                 } else {
-                    sb.append(" AFTER ").append(enums.get(i - 1));
+                    sb.append(" AFTER ").append(newEnums.get(i - 1));
                 }
                 sb.append(';');
             }
         }
-
-        if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
-            newType.appendOwnerSQL(sb);
-        }
-        alterPrivileges(newType, sb);
-        if (!Objects.equals(oldType.getComment(), newType.getComment())) {
-            sb.append("\n\n");
-            newType.appendCommentSql(sb);
-        }
-        return sb.length() > startLength;
     }
 
     private void columnsComments(PgType newType, PgType oldType, StringBuilder sb) {
@@ -547,15 +563,13 @@ public class PgType extends PgStatementWithSearchPath {
                     sb.append("\n\n");
                     newAttr.appendCommentSql(sb);
                 }
-            } else {
-                if (newAttr.getComment() != null
-                        && !newAttr.getComment().isEmpty()) {
-                    sb.append("\n\n");
-                    newAttr.appendCommentSql(sb);
-                }
+            } else if (PgDiffUtils.isStringNotEmpty(newAttr.getComment())) {
+                sb.append("\n\n");
+                newAttr.appendCommentSql(sb);
             }
         }
     }
+
     @Override
     public PgType shallowCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement());

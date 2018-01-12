@@ -1,3 +1,4 @@
+SET search_path = public, pg_catalog;
 
 CREATE VIEW testview AS
 	SELECT testtable.id, testtable.name FROM testtable;

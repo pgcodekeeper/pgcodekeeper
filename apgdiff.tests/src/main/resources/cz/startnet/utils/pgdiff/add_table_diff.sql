@@ -1,3 +1,4 @@
+SET search_path = public, pg_catalog;
 
 CREATE TABLE testtable2 (
 	id integer,

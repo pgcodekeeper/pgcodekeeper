@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This TRIGGER depends on the COLUMN: t1.c2
 
 DROP TRIGGER trig1 ON t1;

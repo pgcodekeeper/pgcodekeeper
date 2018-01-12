@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE DOMAIN dom AS integer NOT NULL DEFAULT (-1)
 	CONSTRAINT dom_check CHECK ((VALUE <> 0));
 

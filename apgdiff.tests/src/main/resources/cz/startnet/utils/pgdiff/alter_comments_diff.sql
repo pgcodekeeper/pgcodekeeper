@@ -1,5 +1,7 @@
 COMMENT ON DATABASE current_database() IS 'comments database 2';
 
+SET search_path = public, pg_catalog;
+
 COMMENT ON COLUMN typ_composite.key IS 'Type column of composite comment 2';
 
 COMMENT ON TYPE typ_composite IS 'This composite type 2';

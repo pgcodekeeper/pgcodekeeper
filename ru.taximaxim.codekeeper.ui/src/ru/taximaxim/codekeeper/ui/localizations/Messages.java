@@ -343,8 +343,6 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_row_count;
 
-    public static String MockDataPage_schema_name;
-
     public static String MockDataPage_step;
 
     public static String MockDataPage_table_name;
@@ -438,6 +436,42 @@ public final class Messages extends NLS {
     public static String PgNavigatorActionProvider_failed_to_open_editor;
 
     public static String PgNavigatorActionProvider_open_with_sql_editor;
+
+    public static String PgObject_cant_find_projects;
+
+    public static String PgObject_column_name;
+
+    public static String PgObject_create_object;
+
+    public static String PgObject_empty_name;
+
+    public static String PgObject_enter_column;
+
+    public static String PgObject_enter_parent;
+
+    public static String PgObject_enter_schema;
+
+    public static String PgObject_file_creation_error;
+
+    public static String PgObject_object_name;
+
+    public static String PgObject_object_type;
+
+    public static String PgObject_parent_name;
+
+    public static String PgObject_parent_type;
+
+    public static String PgObject_project_name;
+
+    public static String PgObject_schema_name;
+
+    public static String PgObject_select_project;
+
+    public static String PgObject_table;
+
+    public static String PgObject_view;
+
+    public static String PgObject_wizard_title;
 
     public static String PrefListEditor_cannot_add;
 

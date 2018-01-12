@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE t1 DISABLE RULE rule_disable;
 
 ALTER TABLE t1 ENABLE RULE rule_enable;

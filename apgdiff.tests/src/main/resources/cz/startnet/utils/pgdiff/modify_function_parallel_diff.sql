@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP FUNCTION add_unsafe(integer, integer);
 
 CREATE OR REPLACE FUNCTION add_safe_second(integer, integer) RETURNS integer

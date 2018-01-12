@@ -1,4 +1,3 @@
-
 SET search_path = "ABC", pg_catalog;
 
 CREATE TABLE testtable2 (

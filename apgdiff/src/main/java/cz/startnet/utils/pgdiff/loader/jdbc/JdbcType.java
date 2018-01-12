@@ -66,7 +66,7 @@ public class JdbcType{
 
         String qname = PgDiffUtils.getQuotedName(typeName);
         if (!targetSchemaName.equals(parentSchema)) {
-            qname = PgDiffUtils.getQuotedName(targetSchemaName) + '.' + qname;
+            qname = PgDiffUtils.getQuotedName(parentSchema) + '.' + qname;
         }
         return qname;
     }
