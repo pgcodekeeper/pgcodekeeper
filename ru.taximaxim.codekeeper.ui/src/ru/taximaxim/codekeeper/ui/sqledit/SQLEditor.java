@@ -261,6 +261,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             throw new PartInitException(ex.getLocalizedMessage(), ex);
         } catch (Exception ex) {
             // do not destroy UI and create empty parser, if have unexpected error
+            Log.log(Log.LOG_ERROR, ex.getMessage());
             parser = new PgDbParser();
         }
         parser.addListener(parserListener);
