@@ -234,6 +234,8 @@ public class PgDiffTest {
                     {"add_constraint_trigger"},
                     // Tests scenario where COLUMN CONSTRAINT is compared.
                     {"compare_column_constraints"},
+                    // Tests scenario where FOREIGN TABLE COLUMN OPTIONS is compared.
+                    {"compare_ftable_column_options"},
                     // Tests scenario where VIEW is added.
                     {"add_view"},
                     // Tests scenario where VIEW is dropped.
