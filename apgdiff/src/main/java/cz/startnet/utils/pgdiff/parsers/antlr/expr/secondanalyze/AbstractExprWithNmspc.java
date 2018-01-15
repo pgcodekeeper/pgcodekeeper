@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.RuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
@@ -232,6 +235,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             if (withSelect == null) {
                 Log.log(Log.LOG_WARNING, "Skipped analisys of modifying CTE " + withName);
                 continue;
+            }
+
+            List<IdentifierContext> paramNamesIdentifers;
+            if ((paramNamesIdentifers = withQuery.column_name) != null) {
+                setParentRecursiveObjName(withName);
+                addRecursObjWithParamNames(withName,
+                        paramNamesIdentifers.stream().map(RuleContext::getText).collect(Collectors.toList()));
             }
 
             // add CTE name to the visible CTEs list after processing the query for normal CTEs

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -189,10 +190,18 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             } else if (primary.TABLE() != null) {
                 addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
             } else if ((values = primary.values_stmt()) != null) {
+                ret = new ArrayList<>();
+
+                List<String> paramsList = getParentRecursObjsParamNames().entrySet().stream()
+                        .filter(e -> getParentRecursiveObjName().equals(e.getKey()))
+                        .collect(Collectors.toList()).get(0).getValue();
+
                 ValueExpr vex = new ValueExpr(this);
                 for (Values_valuesContext vals : values.values_values()) {
-                    for (VexContext v : vals.vex()) {
-                        vex.analyze(new Vex(v));
+                    List<VexContext> valsVex = vals.vex();
+                    for (int i = 0; valsVex.size() > i; i++) {
+                        ret.add(new SimpleEntry<>(paramsList.get(i),
+                                vex.analyze(new Vex(valsVex.get(i))).getValue()));
                     }
                 }
             } else {

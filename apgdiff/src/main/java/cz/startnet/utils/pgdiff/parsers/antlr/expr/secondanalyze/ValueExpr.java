@@ -62,7 +62,7 @@ import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class ValueExpr<T> extends AbstractExpr {
+public class ValueExpr extends AbstractExpr {
 
     public ValueExpr(String schema, PgDatabase db) {
         super(schema, db);
@@ -280,7 +280,6 @@ public class ValueExpr<T> extends AbstractExpr {
 
         return ret;
     }
-
 
     /**
      * @return function reference or null for internal functions

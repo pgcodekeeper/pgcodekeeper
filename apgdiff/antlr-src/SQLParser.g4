@@ -1785,7 +1785,7 @@ with_clause
     ;
 
 with_query
-    : query_name=identifier (LEFT_PAREN column_name=identifier (COMMA column_name=identifier)* RIGHT_PAREN)?
+    : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
             AS LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
     ;
 
