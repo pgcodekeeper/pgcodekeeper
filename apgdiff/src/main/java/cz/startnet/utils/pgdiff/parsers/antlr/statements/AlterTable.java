@@ -62,7 +62,7 @@ public class AlterTable extends ParserAbstract {
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
-                getColumn(column.column_name.getText(),
+                addColumn(column.column_name.getText(),
                         column.datatype, column.collate_name,
                         column.colmn_constraint, getDefSchemaName(), tabl);
             }

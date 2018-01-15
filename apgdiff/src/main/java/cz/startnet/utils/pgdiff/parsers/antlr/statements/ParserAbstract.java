@@ -16,7 +16,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -155,9 +157,9 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected void getColumn(String columnName, Data_typeContext datatype,
+    protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            String defSchema, PgTable table) {
+            String defSchema, Define_foreign_optionsContext options, PgTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
@@ -169,9 +171,25 @@ public abstract class ParserAbstract {
         for (Constraint_commonContext column_constraint : constraints) {
             addTableConstraint(column_constraint, col, table, defSchema);
         }
+        if (options != null) {
+            for (Foreign_optionContext option : options.foreign_option()) {
+                String value = option.value == null ? "" : option.value.getText();
+                fillOptionParams(value, option.name.getText(), false, col::addForeignOption);
+            }
+        }
         table.addColumn(col);
     }
 
+    protected void addColumn(String columnName, Data_typeContext datatype,
+            Collate_identifierContext collate, List<Constraint_commonContext> constraints,
+            String defSchema,  PgTable table) {
+        addColumn(columnName, datatype, collate, constraints, defSchema, null, table);
+    }
+
+    protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
+            String defSchema,  PgTable table) {
+        addColumn(columnName, null, null, constraints, defSchema, table);
+    }
 
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
         PgColumn col = new PgColumn(colCtx.column_name.getText());
@@ -181,6 +199,16 @@ public abstract class ParserAbstract {
             col.setCollation(getFullCtxText(colCtx.collate_name.collation));
         }
         return col;
+    }
+
+    protected void addInherit(PgTable table, List<IdentifierContext> idsInh) {
+        String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
+        String inhTableName = QNameParser.getFirstName(idsInh);
+        table.addInherits(inhSchemaName, inhTableName);
+        GenericColumn gc = new GenericColumn(
+                inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
+                        inhTableName, DbObjType.TABLE);
+        table.addDep(gc);
     }
 
     public static void fillArguments(Function_argsContext functionArgsCtx,
