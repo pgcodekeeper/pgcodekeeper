@@ -24,7 +24,7 @@ public class PgDecorator extends LabelProvider implements ILightweightLabelDecor
             IResource res = (IResource) element;
             IProject proj = res.getProject();
             try {
-                if (proj != null && proj.isAccessible() && proj.hasNature(NATURE.ID)) {
+                if (res.exists() && proj != null && proj.isAccessible() && proj.hasNature(NATURE.ID)) {
                     IMarker[] markers = res.findMarkers(MARKER.ERROR, false,
                             IResource.DEPTH_INFINITE);
                     if (markers.length > 0) {
