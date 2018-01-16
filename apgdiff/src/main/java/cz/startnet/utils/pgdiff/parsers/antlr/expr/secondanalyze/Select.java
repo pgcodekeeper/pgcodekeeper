@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -87,6 +86,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
         List<Entry<String, String>> ret = selectOps(select.selectOps());
 
+        selectAfterOps(select);
+
+        return ret;
+    }
+
+    protected void selectAfterOps(SelectStmt select) {
         Orderby_clauseContext orderBy = select.orderBy();
 
         List<VexContext> vexs = null;
@@ -112,10 +117,9 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             }
 
         }
-        return ret;
     }
 
-    private List<Entry<String, String>> selectOps(SelectOps selectOps) {
+    protected List<Entry<String, String>> selectOps(SelectOps selectOps) {
         List<Entry<String, String>> ret = Collections.emptyList();
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
@@ -191,17 +195,10 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
             } else if ((values = primary.values_stmt()) != null) {
                 ret = new ArrayList<>();
-
-                List<String> paramsList = getParentRecursObjsParamNames().entrySet().stream()
-                        .filter(e -> getParentRecursiveObjName().equals(e.getKey()))
-                        .collect(Collectors.toList()).get(0).getValue();
-
                 ValueExpr vex = new ValueExpr(this);
                 for (Values_valuesContext vals : values.values_values()) {
-                    List<VexContext> valsVex = vals.vex();
-                    for (int i = 0; valsVex.size() > i; i++) {
-                        ret.add(new SimpleEntry<>(paramsList.get(i),
-                                vex.analyze(new Vex(valsVex.get(i))).getValue()));
+                    for (VexContext v : vals.vex()) {
+                        ret.add(vex.analyze(new Vex(v)));
                     }
                 }
             } else {

@@ -2,10 +2,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -43,9 +41,6 @@ public abstract class AbstractExpr {
 
     protected final PgDatabase db;
 
-    private String parentRecursiveObjName;
-    private Map<String, List<String>> recursObjsParamNames;
-
     public Set<GenericColumn> getDepcies() {
         return Collections.unmodifiableSet(depcies);
     }
@@ -64,25 +59,6 @@ public abstract class AbstractExpr {
         depcies = parent.depcies;
         this.db = parent.db;
         this.systemStorage = parent.systemStorage;
-    }
-
-    protected String getParentRecursiveObjName() {
-        return parent.parentRecursiveObjName;
-    }
-
-    protected void setParentRecursiveObjName(String parentRecursiveObjName) {
-        this.parentRecursiveObjName = parentRecursiveObjName;
-    }
-
-    protected Map<String, List<String>> getParentRecursObjsParamNames() {
-        return parent.recursObjsParamNames;
-    }
-
-    protected void addRecursObjWithParamNames(String recursObjName, List<String> paramNames) {
-        if (recursObjsParamNames == null) {
-            recursObjsParamNames = new HashMap<>();
-        }
-        recursObjsParamNames.put(recursObjName, paramNames);
     }
 
     protected List<Entry<String, String>> findCte(String cteName) {
