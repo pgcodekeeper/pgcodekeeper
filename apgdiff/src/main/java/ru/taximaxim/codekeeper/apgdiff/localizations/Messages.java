@@ -18,6 +18,8 @@ public final class Messages extends NLS {
     // pgdiff
 
     public static String JdbcConnector_in_jdbc_connection;
+
+    public static String JdbcReader_helper_function_error;
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 
