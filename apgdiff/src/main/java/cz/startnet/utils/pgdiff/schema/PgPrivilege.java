@@ -60,26 +60,24 @@ public class PgPrivilege extends PgStatement {
     }
 
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
-        if (newObj.getOwner() == null) {
+        DbObjType type = newObj.getStatementType();
+        String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
+        if (owner == null) {
             return;
         }
-        DbObjType type = newObj.getStatementType();
+
         String name = newObj.getName();
         String column = "";
-        String owner;
 
         if (type == DbObjType.COLUMN) {
-            PgStatement parent = newObj.getParent();
-            owner = PgDiffUtils.getQuotedName(parent.getOwner());
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
-            name = PgDiffUtils.getQuotedName(parent.getName());
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getName());
             type = DbObjType.TABLE;
-        } else {
-            if (type != DbObjType.FUNCTION) {
-                name = PgDiffUtils.getQuotedName(name);
-            }
-            owner =  PgDiffUtils.getQuotedName(newObj.getOwner());
+        } else if (type != DbObjType.FUNCTION) {
+            name = PgDiffUtils.getQuotedName(name);
         }
+
+        owner =  PgDiffUtils.getQuotedName(owner);
 
         PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC", "");
         sb.append('\n').append(priv.getCreationSQL());
