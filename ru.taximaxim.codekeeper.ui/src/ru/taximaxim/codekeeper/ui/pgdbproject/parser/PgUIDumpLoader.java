@@ -220,8 +220,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     if (schemaDefSql) {
                         // report schema pre-built if the same schema was to be built normally as well
                         mon.worked(1);
+                        continue;
                     }
-                    continue;
                 } else if (!schemaDefSql) {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally
