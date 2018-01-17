@@ -133,7 +133,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         @Override
         public void dispose() {
-            // no impl
+            filterDangerous = false;
+            sortStatements = false;
         }
 
         @Override
