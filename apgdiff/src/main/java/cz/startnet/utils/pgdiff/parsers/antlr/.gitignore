@@ -15,3 +15,9 @@
 /IgnoreListListener.java
 /IgnoreListParser.java
 /IgnoreListVisitor.java
+/PrivilegesLexer.java
+/PrivilegesLexer.tokens
+/Privileges.tokens
+/PrivilegesListener.java
+/PrivilegesBaseListener.java
+/PrivilegesParser.java

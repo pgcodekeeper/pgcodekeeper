@@ -3,8 +3,13 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.PrivilegesParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.PrivilegesParser.PrivilegeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.PrivilegesParser.PrivilegesContext;
 
 /**
  * Parser for aclItem arrays
@@ -48,72 +53,76 @@ final class JdbcAclParser {
             return privileges;
         }
 
-        ArrayList<String> acls = new ArrayList<>(
-                Arrays.asList(aclArrayAsString.replaceAll("[{}]", "").split(",")));
+        PrivilegesContext ctx = AntlrParser.makeBasicParser(PrivilegesParser.class,
+                aclArrayAsString, "jdbc privileges").privileges();
 
-        // move owner's grants to front
-        for (String s : acls){
-            if (s.startsWith(owner + '=')){
-                acls.remove(s);
-                acls.add(0, s);
-                break;
+        for (PrivilegeContext acl : ctx.acls) {
+            String grantor;
+            String grantee = "";
+            if (acl.qgrantor != null) {
+                if (acl.qname != null) {
+                    grantee = acl.qname.getText();
+                }
+                grantor = acl.qgrantor.getText();
+            } else {
+                if (acl.name != null) {
+                    grantee = acl.name.getText();
+                }
+                grantor = acl.grantor.getText();
             }
-        }
 
-        for(String s : acls){
-            int indexPos = s.indexOf('/');
-            int assignmentPos = s.indexOf('=');
-            String grantee = PgDiffUtils.getQuotedName(s.substring(0, assignmentPos));
-            if (grantee.isEmpty()){
+            String grantsString = acl.priv.getText();
+
+            Consumer<Privilege> adder = grantee.equals(owner) ? p -> privileges.add(0, p) : privileges::add;
+            grantee = PgDiffUtils.getQuotedName(grantee);
+
+            if (grantee.isEmpty()) {
                 grantee = "PUBLIC";
             }
-            String grantor = s.substring(indexPos + 1, s.length());
-
-            String grantsString = s.substring(assignmentPos + 1, indexPos);
 
             // reorder chars according to order, split to two lists based on WITH GRANT OPTION
             List<Character> grantTypeCharsWithoutGo = new ArrayList<>(grantsString.length());
             List<Character> grantTypeCharsWithGo = new ArrayList<>(grantsString.length());
-            for(int i = 0; i < order.length(); i++){
+            for (int i = 0; i < order.length(); i++) {
                 int index = grantsString.indexOf(String.valueOf(order.charAt(i)));
-                if (index > -1){
-                    if (grantsString.length() > index + 1 && grantsString.charAt(index + 1) == '*'){
+                if (index > -1) {
+                    if (grantsString.length() > index + 1 && grantsString.charAt(index + 1) == '*') {
                         grantTypeCharsWithGo.add(order.charAt(i));
-                    }else{
+                    } else {
                         grantTypeCharsWithoutGo.add(order.charAt(i));
                     }
                 }
             }
 
-            if (grantTypeCharsWithoutGo.size() == maxTypes){
-                privileges.add(new Privilege(grantee, Arrays.asList("ALL"),
+            if (grantTypeCharsWithoutGo.size() == maxTypes) {
+                adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
                         false, false));
 
-            }else if (grantTypeCharsWithGo.size() == maxTypes){
-                privileges.add(new Privilege(grantee, Arrays.asList("ALL"),
+            } else if (grantTypeCharsWithGo.size() == maxTypes) {
+                adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
                         true, grantee.equals(owner) && grantor.equals(owner)));
 
-            }else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes){
+            } else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes) {
                 List<String> grantTypesParsed = new ArrayList<>();
 
                 // add all grants without grant option
-                for(int i = 0; i < grantTypeCharsWithoutGo.size(); i++){
+                for (int i = 0; i < grantTypeCharsWithoutGo.size(); i++) {
                     char c = grantTypeCharsWithoutGo.get(i);
                     grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
                 }
-                if (!grantTypesParsed.isEmpty()){
-                    privileges.add(new Privilege(grantee, grantTypesParsed, false, false));
+                if (!grantTypesParsed.isEmpty()) {
+                    adder.accept(new Privilege(grantee, grantTypesParsed, false, false));
                 }
 
                 grantTypesParsed = new ArrayList<>();
 
                 // add all grants with grant option
-                for(int i = 0; i < grantTypeCharsWithGo.size(); i++){
+                for (int i = 0; i < grantTypeCharsWithGo.size(); i++) {
                     char c = grantTypeCharsWithGo.get(i);
                     grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
                 }
-                if (!grantTypesParsed.isEmpty()){
-                    privileges.add(new Privilege(grantee, grantTypesParsed, true, false));
+                if (!grantTypesParsed.isEmpty()) {
+                    adder.accept(new Privilege(grantee, grantTypesParsed, true, false));
                 }
             }
         }

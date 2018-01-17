@@ -68,6 +68,9 @@ public class AntlrParser {
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
+            lexer = new PrivilegesLexer(stream);
+            parser = new PrivilegesParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
