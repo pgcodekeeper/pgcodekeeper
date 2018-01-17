@@ -1,16 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.antlr.v4.runtime.RuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
@@ -246,41 +242,19 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             // add CTE name to the visible CTEs list after processing the query for normal CTEs
             // and before for recursive ones
             Select withProcessor = new Select(this);
-            List<Entry<String, String>> columnsPairs;
             boolean duplicate;
             if (recursive) {
                 Select_opsContext selectOpsCtx;
                 if ((selectOpsCtx = withSelect.select_ops()).UNION() != null) {
-                    columnsPairs = new ArrayList<>();
-
-                    SelectOps selectOps = new SelectOps(selectOpsCtx);
-
-                    // analyze left part of union
-                    List<Entry<String, String>> firstSelectPairs = withProcessor.selectOps(selectOps.selectOps(0));
-                    List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-                    if (!paramNamesIdentifers.isEmpty()) {
-                        List<String> firstSelectParamNames = paramNamesIdentifers.stream()
-                                .map(RuleContext::getText).collect(Collectors.toList());
-
-                        for (int i = 0; firstSelectParamNames.size() > i; i++) {
-                            columnsPairs.add(new SimpleEntry<>(firstSelectParamNames.get(i),
-                                    firstSelectPairs.get(i).getValue()));
-                        }
-                    }
-                    duplicate = cte.put(withName, !paramNamesIdentifers.isEmpty() ? columnsPairs : firstSelectPairs) != null;
-
-                    // analyze right part of union
-                    cte.putIfAbsent(withName, withProcessor.selectOps(selectOps.selectOps(1)));
-
+                    duplicate = cte.put(withName,
+                            withProcessor.selectOps(new SelectOps(selectOpsCtx), withQuery)) != null;
                     withProcessor.selectAfterOps(new SelectStmt(withSelect));
                 } else {
                     duplicate = cte.put(withName, null) != null;
-                    columnsPairs = withProcessor.analyze(withSelect);
-                    cte.put(withName, columnsPairs);
+                    cte.put(withName, withProcessor.analyze(withSelect));
                 }
             } else {
-                columnsPairs = withProcessor.analyze(withSelect);
-                duplicate = cte.put(withName, columnsPairs) != null;
+                duplicate = cte.put(withName, withProcessor.analyze(withSelect)) != null;
             }
 
             if (duplicate) {

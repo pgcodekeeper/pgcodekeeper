@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
@@ -30,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -120,6 +122,10 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
     }
 
     protected List<Entry<String, String>> selectOps(SelectOps selectOps) {
+        return selectOps(selectOps, null);
+    }
+
+    protected List<Entry<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
         List<Entry<String, String>> ret = Collections.emptyList();
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
@@ -129,7 +135,37 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
             // use column names from the first one
-            ret = selectOps(selectOps.selectOps(0));
+            ret = new Select(this).selectOps(selectOps.selectOps(0));
+
+            // 'recursiveCteCtx != null' means that program at this moment
+            // situated inside recursion which contains 'UNION',
+            //
+            // for example:
+            // "WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a;".
+            //
+            // At this step CTE for 'select2' is filled in by results of 'select1' analyze.
+            // Then filled CTE will use for analyze 'select2'.
+            // After analyzing 'select2' we will get correct CTE for the entire expression
+            // ("WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a;").
+            if (recursiveCteCtx != null) {
+                boolean duplicate;
+                String withName = recursiveCteCtx.query_name.getText();
+                List<IdentifierContext> paramNamesIdentifers = recursiveCteCtx.column_name;
+                if (!paramNamesIdentifers.isEmpty()) {
+                    List<Entry<String, String>> columnsPairs = new ArrayList<>();
+                    for (int i = 0;  i < ret.size(); i++) {
+                        columnsPairs.add(new SimpleEntry<>(paramNamesIdentifers.get(i).getText(),
+                                ret.get(i).getValue()));
+                    }
+                    ret = columnsPairs;
+                }
+
+                duplicate = cte.put(withName, ret) != null;
+                if (duplicate) {
+                    Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
+                }
+            }
+
             new Select(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
             Values_stmtContext values;
