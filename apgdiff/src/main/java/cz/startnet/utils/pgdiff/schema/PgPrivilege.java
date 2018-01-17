@@ -60,6 +60,9 @@ public class PgPrivilege extends PgStatement {
     }
 
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
+        if (newObj.getOwner() == null) {
+            return;
+        }
         DbObjType type = newObj.getStatementType();
         String name = newObj.getName();
         String column = "";
