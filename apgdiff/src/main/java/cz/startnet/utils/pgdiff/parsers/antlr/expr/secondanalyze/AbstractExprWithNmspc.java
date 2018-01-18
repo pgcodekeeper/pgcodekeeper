@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,11 +13,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_opsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -229,7 +228,6 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     protected void analyzeCte(With_clauseContext with) {
-        boolean recursive = with.RECURSIVE() != null;
         for (With_queryContext withQuery : with.with_query()) {
             String withName = withQuery.query_name.getText();
 
@@ -239,27 +237,37 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
                 continue;
             }
 
-            // add CTE name to the visible CTEs list after processing the query for normal CTEs
-            // and before for recursive ones
-            Select withProcessor = new Select(this);
-            boolean duplicate;
-            if (recursive) {
-                Select_opsContext selectOpsCtx;
-                if ((selectOpsCtx = withSelect.select_ops()).UNION() != null) {
-                    duplicate = cte.put(withName,
-                            withProcessor.selectOps(new SelectOps(selectOpsCtx), withQuery)) != null;
-                    withProcessor.selectAfterOps(new SelectStmt(withSelect));
-                } else {
-                    duplicate = cte.put(withName, null) != null;
-                    cte.put(withName, withProcessor.analyze(withSelect));
-                }
-            } else {
-                duplicate = cte.put(withName, withProcessor.analyze(withSelect)) != null;
-            }
-
-            if (duplicate) {
+            if (addCteSignature(withQuery,
+                    new Select(this).analyze(new SelectStmt(withSelect), withQuery))) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
+        }
+    }
+
+    /**
+     * Associates names from parameters of recursion (if they exist) with result types
+     * of analysis of 'query-select'. Result will be placed to the CTE.
+     *
+     * @param withQuery the context which contains such template:
+     * "alias(parameters) AS (query1 UNION query2)"
+     *
+     * @param resultTypes result types of analysis of 'query-select'
+     *
+     * @return returns 'true' if CTE already contains key which equals alias from 'withQuery',
+     * otherwise returns 'false'
+     */
+    protected boolean addCteSignature(With_queryContext withQuery, List<Entry<String, String>> resultTypes) {
+        String withName = withQuery.query_name.getText();
+        List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
+        if (!paramNamesIdentifers.isEmpty()) {
+            List<Entry<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
+            for (int i = 0;  i < resultTypes.size(); i++) {
+                columnsPairs.add(new SimpleEntry<>(paramNamesIdentifers.get(i).getText(),
+                        resultTypes.get(i).getValue()));
+            }
+            return cte.put(withName, columnsPairs) != null;
+        } else {
+            return cte.put(withName, resultTypes) != null;
         }
     }
 

@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
@@ -81,12 +80,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
     @Override
     public List<Entry<String, String>> analyze(SelectStmt select) {
+        return analyze(select, null);
+    }
+
+    public List<Entry<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
         }
 
-        List<Entry<String, String>> ret = selectOps(select.selectOps());
+        List<Entry<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
         selectAfterOps(select);
 
@@ -143,27 +146,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             // for example:
             // "WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a;".
             //
-            // At this step CTE for 'select2' is filled in by results of 'select1' analyze.
-            // Then filled CTE will use for analyze 'select2'.
-            // After analyzing 'select2' we will get correct CTE for the entire expression
-            // ("WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a;").
+            // Results of select1 (non-recursive part) analysis are used
+            // as CTE by select2's (potentially recursive part) analysis.
+            // This way types of recursive references in select2 will be known from select1.
+            // Lastly select1 signature is used for the entire CTE.
             if (recursiveCteCtx != null) {
-                boolean duplicate;
-                String withName = recursiveCteCtx.query_name.getText();
-                List<IdentifierContext> paramNamesIdentifers = recursiveCteCtx.column_name;
-                if (!paramNamesIdentifers.isEmpty()) {
-                    List<Entry<String, String>> columnsPairs = new ArrayList<>();
-                    for (int i = 0;  i < ret.size(); i++) {
-                        columnsPairs.add(new SimpleEntry<>(paramNamesIdentifers.get(i).getText(),
-                                ret.get(i).getValue()));
-                    }
-                    ret = columnsPairs;
-                }
-
-                duplicate = cte.put(withName, ret) != null;
-                if (duplicate) {
-                    Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
-                }
+                addCteSignature(recursiveCteCtx, ret);
             }
 
             new Select(this).selectOps(selectOps.selectOps(1));
