@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE RULE on_delete AS
     ON DELETE TO t1 DO  DELETE FROM user_data WHERE (user_data.id = old.id);
 

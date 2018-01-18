@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TABLE t1
 	ADD COLUMN c6 text;
 

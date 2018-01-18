@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 ALTER TYPE typ_enum
 	ADD VALUE 'e-1' BEFORE 'e1';
 

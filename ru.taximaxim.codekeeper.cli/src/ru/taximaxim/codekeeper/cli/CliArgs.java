@@ -108,6 +108,10 @@ public class CliArgs extends PgDiffArguments {
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
+    @Option(name="-C", aliases="--concurrently-mode", forbids="--parse",
+            usage="print CREATE INDEX with CONCURRENTLY option")
+    private boolean concurrentlyMode;
+
     @Option(name="-S", aliases="--safe-mode", forbids="--parse",
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
@@ -217,6 +221,11 @@ public class CliArgs extends PgDiffArguments {
         return usingTypeCastOff;
     }
 
+    @Override
+    public boolean isConcurrentlyMode() {
+        return concurrentlyMode;
+    }
+
     @SuppressWarnings("deprecation")
     private static void badArgs(String message) throws CmdLineException{
         throw new CmdLineException(message);
@@ -264,7 +273,9 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() == null || getNewSrc() == null) {
                 badArgs("Please specify both SOURCE and DEST.");
             }
-
+            if (isAddTransaction() && isConcurrentlyMode()) {
+                badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)");
+            }
             setOldSrcFormat(parsePath(getOldSrc()));
         }
         setNewSrcFormat(parsePath(getNewSrc()));

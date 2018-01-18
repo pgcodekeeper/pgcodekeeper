@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP TABLE cities_hi;
 
 ALTER TABLE cities_cd

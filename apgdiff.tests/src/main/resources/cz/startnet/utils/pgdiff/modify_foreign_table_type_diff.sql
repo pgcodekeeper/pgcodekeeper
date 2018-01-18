@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP FOREIGN TABLE testtable;
 
 -- DEPCY: This TABLE is a dependency of COLUMN: testtable.f1

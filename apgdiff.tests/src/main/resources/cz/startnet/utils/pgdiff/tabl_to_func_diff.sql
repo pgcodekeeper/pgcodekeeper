@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE OR REPLACE FUNCTION testf() RETURNS integer
     LANGUAGE plpgsql
     AS $$begin return 0; end;$$;

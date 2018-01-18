@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP DOMAIN dom6;
 
 CREATE DOMAIN dom6 AS text COLLATE pg_catalog."ru_RU"

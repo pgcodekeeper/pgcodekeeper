@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This VIEW depends on the COLUMN: t1.c1
 
 DROP VIEW v1;

@@ -60,6 +60,8 @@ public class MainTest {
             {new ArgumentsProvider_19()},
             {new ArgumentsProvider_IgnoreLists()},
             {new ArgumentsProvider_AllowedObjects()},
+            {new ArgumentsProvider_22()},
+            {new ArgumentsProvider_23()},
         });
     }
 
@@ -803,5 +805,45 @@ class ArgumentsProvider_AllowedObjects extends ArgumentsProvider {
         }
 
         return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing -X and -C options using in same time error message
+ */
+class ArgumentsProvider_22 extends ArgumentsProvider{
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[]{"-o", "out", "-s", "dumb", "--target", "tgt", "-X", "-C"};
+    }
+
+    @Override
+    public String output() {
+        return "-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction)\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing CREATE INDEX CONCURRENTLY options with output to console
+ */
+class ArgumentsProvider_23 extends ArgumentsProvider{
+
+    {
+        super.resName = "add_index";
+    }
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(PgDiffTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
+
+        return new String[]{"-C", fNew.getAbsolutePath(), fOriginal.getAbsolutePath()};
+    }
+
+    @Override
+    public String output() {
+        return "SET search_path = public, pg_catalog;\n\n" +
+                "CREATE INDEX CONCURRENTLY testindex3 ON testtable USING btree (field3);\n\n";
     }
 }

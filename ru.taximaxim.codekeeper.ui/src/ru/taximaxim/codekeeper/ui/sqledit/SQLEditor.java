@@ -231,7 +231,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             if (res == null || !PgUIDumpLoader.isInProject(res)) {
                 refreshParser(getParser(), res, progressMonitor);
             }
-        } catch (IOException | InterruptedException | CoreException ex) {
+        } catch (Exception ex) {
             Log.log(ex);
         }
     }
@@ -255,8 +255,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         try {
             parser = initParser();
+        } catch (PartInitException ex) {
+            throw ex;
         } catch (InterruptedException | IOException | CoreException ex) {
             throw new PartInitException(ex.getLocalizedMessage(), ex);
+        } catch (Exception ex) {
+            // do not destroy UI and create empty parser, if have unexpected error
+            Log.log(ex);
+            parser = new PgDbParser();
         }
         parser.addListener(parserListener);
 
@@ -312,8 +318,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public void dispose() {
-        getSite().getPage().removePartListener(partListener);
-
+        if (partListener != null) {
+            getSite().getPage().removePartListener(partListener);
+        }
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         if (parser != null) {
             parser.removeListener(parserListener);

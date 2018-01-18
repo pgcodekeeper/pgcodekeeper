@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE TYPE testtype AS (
 	field1 text,
 	field2 numeric,

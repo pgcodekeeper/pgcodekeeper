@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 4.6.3.qualifier
+Bundle-Version: 4.7.0.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.parsers.antlr,
@@ -15,7 +15,8 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.codekeeper.apgdiff.ignoreparser,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
- ru.taximaxim.codekeeper.apgdiff.model.graph
+ ru.taximaxim.codekeeper.apgdiff.model.graph,
+ ru.taximaxim.codekeeper.apgdiff.sql
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)",
  com.google.gson;bundle-version="[2.2.0,3.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

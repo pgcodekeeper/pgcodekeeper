@@ -381,7 +381,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append(newCollation);
             }
 
-            PgDiffArguments arg = ((PgDatabase) newColumn.getParent().getParent().getParent()).getArguments();
+            PgDiffArguments arg = getDatabase().getArguments();
 
             if (arg == null || !arg.isUsingTypeCastOff()) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))

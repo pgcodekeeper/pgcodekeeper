@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This FUNCTION depends on the TYPE: typ_range
 
 DROP FUNCTION add(typ_range, integer);

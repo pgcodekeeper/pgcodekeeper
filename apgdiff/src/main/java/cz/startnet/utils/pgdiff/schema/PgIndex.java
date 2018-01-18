@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -46,6 +47,10 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
 
         sbSQL.append("INDEX ");
+        PgDiffArguments args = getDatabase().getArguments();
+        if (args != null && args.isConcurrentlyMode()) {
+            sbSQL.append("CONCURRENTLY ");
+        }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));

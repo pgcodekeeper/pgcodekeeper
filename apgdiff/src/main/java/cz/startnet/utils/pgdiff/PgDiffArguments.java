@@ -13,7 +13,7 @@ import java.util.List;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class PgDiffArguments {
+public class PgDiffArguments implements Cloneable {
 
     private boolean modeParse;
     private String newSrc;
@@ -29,6 +29,7 @@ public class PgDiffArguments {
     private boolean disableCheckFunctionBodies;
     private String timeZone;
     private boolean usingTypeCastOff;
+    private boolean concurrentlyMode;
     private boolean safeMode;
     private List<DangerStatement> allowedDangers = new ArrayList<>();
     private List<DbObjType> allowedTypes = new ArrayList<>();
@@ -185,5 +186,22 @@ public class PgDiffArguments {
 
     protected void setIgnoreLists(List<String> ignoreLists) {
         this.ignoreLists = ignoreLists;
+    }
+
+    public boolean isConcurrentlyMode() {
+        return concurrentlyMode;
+    }
+
+    public void setConcurrentlyMode(boolean concurrentlyMode) {
+        this.concurrentlyMode = concurrentlyMode;
+    }
+
+    @Override
+    public PgDiffArguments clone() {
+        try {
+            return (PgDiffArguments) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Impossible error", e);
+        }
     }
 }

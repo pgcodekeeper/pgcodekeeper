@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This SEQUENCE is a dependency of COLUMN: t2.c4
 
 CREATE SEQUENCE seq2

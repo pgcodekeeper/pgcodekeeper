@@ -50,6 +50,11 @@ public class PgSchema extends PgStatement implements ISchema {
     }
 
     @Override
+    public PgDatabase getDatabase() {
+        return (PgDatabase)getParent();
+    }
+
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");

@@ -98,6 +98,11 @@ public class PgDatabase extends PgStatement {
         return contextsForAnalyze;
     }
 
+    @Override
+    public PgDatabase getDatabase() {
+        return this;
+    }
+
     /**
      * Returns schema of given name or null if the schema has not been found. If
      * schema name is null then default schema is returned.

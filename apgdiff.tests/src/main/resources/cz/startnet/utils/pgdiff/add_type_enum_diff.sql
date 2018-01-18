@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE TYPE typ_enum AS ENUM (
 	'wat',
 	'wut',

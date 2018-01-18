@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -15,8 +16,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,7 +27,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -129,7 +134,7 @@ public class Differ implements IRunnableWithProgress {
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
-        try {
+        try (Getter source = new Getter(sourceDbFull); Getter target = new Getter(targetDbFull)) {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, StandardCharsets.UTF_8), true);
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
@@ -161,5 +166,25 @@ public class Differ implements IRunnableWithProgress {
 
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
+    }
+
+    // TODO костыль, сохраняет текущие аргументы, подменяет их новыми, при закрытии возвращает старые аргументы
+    private static final class Getter implements AutoCloseable {
+        private final Consumer<PgDiffArguments> consumer;
+        private final PgDiffArguments oldArgs;
+
+        public Getter(PgDatabase db) {
+            oldArgs = db.getArguments();
+            consumer = (db::setArguments);
+            PgDiffArguments newArgs = oldArgs.clone();
+            IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+            newArgs.setConcurrentlyMode(prefs.getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
+            db.setArguments(newArgs);
+        }
+
+        @Override
+        public void close() {
+            consumer.accept(oldArgs);
+        }
     }
 }

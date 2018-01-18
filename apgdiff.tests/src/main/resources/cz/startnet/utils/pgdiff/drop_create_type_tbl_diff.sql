@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This COLUMN depends on the TYPE: typ_range
 
 ALTER TABLE distributors

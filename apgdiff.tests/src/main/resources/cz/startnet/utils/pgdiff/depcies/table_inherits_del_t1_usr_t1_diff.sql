@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 -- DEPCY: This TABLE depends on the TABLE: t1
 
 ALTER TABLE t2

@@ -8,20 +8,21 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum PgDataType {
-    BIGINT      (IntegerPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    BIT         (BitPgData::new,     PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    BOOLEAN     (BooleanPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    CHARACTER   (TextPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    DATE        (DatePgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    DOUBLE      (RealPgData::new,    "double precision", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM), //$NON-NLS-1$
-    INTEGER     (IntegerPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    JSON        (JsonPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    NUMERIC     (RealPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    REAL        (RealPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    SMALLINT    (IntegerPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    TEXT        (TextPgData::new,    PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
+    BIGINT      (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    BIT         (BitPgData::new,       PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
+    BOOLEAN     (BooleanPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    CHARACTER   (TextPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
+    DATE        (DatePgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    TIMESTAMP   (TimestampPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    DOUBLE      (RealPgData::new,      "double precision", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM), //$NON-NLS-1$
+    INTEGER     (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    JSON        (JsonPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
+    NUMERIC     (RealPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    REAL        (RealPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    SMALLINT    (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
+    TEXT        (TextPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
     // shouldn't get created by any type implicitly, so use an empty type name
-    OTHER       (CustomPgData::new,  "", PgDataGenerator.CONSTANT); //$NON-NLS-1$
+    OTHER       (CustomPgData::new,    "", PgDataGenerator.CONSTANT); //$NON-NLS-1$
 
     private final Collection<PgDataGenerator> generators;
     private final String type;

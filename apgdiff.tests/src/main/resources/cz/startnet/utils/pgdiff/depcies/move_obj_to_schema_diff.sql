@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 DROP RULE notify_me ON emp;
 
 DROP TRIGGER emp_stamp ON emp;

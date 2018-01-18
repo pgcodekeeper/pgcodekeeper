@@ -135,8 +135,6 @@ public abstract class PgData<T> {
      * Generates value by generator current state
      *
      * @return Generated value in string format
-     * @since 3.11.5
-     * @author galiev_mr
      */
     public abstract T generateValue();
 
@@ -161,8 +159,6 @@ public abstract class PgData<T> {
      * Counts the maximum number of unique values ​​based on the current state of the generator
      *
      * @return Maximum number of unique values
-     * @since 3.11.5
-     * @author galiev_mr
      */
     public abstract int getMaxValues();
 
@@ -173,8 +169,6 @@ public abstract class PgData<T> {
      * @param isOneWord Generation mode, if true flow can not contains whitespace
      * @param isChar Generation mode, if true generates chars, otherwise bit number
      * @return Generated string
-     * @since 3.11.5
-     * @author galiev_mr
      */
     protected String genSymbols(int length, boolean isOneWord, boolean isChar) {
         StringBuilder sb = new StringBuilder(length);
@@ -199,8 +193,6 @@ public abstract class PgData<T> {
      * Copies PgData state from given PgData
      *
      * @param data Donor of data
-     * @since 3.11.5
-     * @author galiev_mr
      */
     public void copyFrom(PgData<?> data) {
         length = data.getLength();
@@ -213,9 +205,6 @@ public abstract class PgData<T> {
 
     /**
      * Resets current increment to default value
-     *
-     * @since 3.11.5
-     * @author galiev_mr
      */
     public void reset() {
         currentInc = start;

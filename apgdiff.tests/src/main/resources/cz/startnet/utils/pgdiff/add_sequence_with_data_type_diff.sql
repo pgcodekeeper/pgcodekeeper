@@ -1,3 +1,5 @@
+SET search_path = public, pg_catalog;
+
 CREATE SEQUENCE testseq
 	AS smallint
 	START WITH 15

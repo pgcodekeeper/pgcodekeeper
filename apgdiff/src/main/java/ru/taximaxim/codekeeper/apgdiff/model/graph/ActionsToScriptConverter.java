@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ActionsToScriptConverter {
@@ -38,8 +37,7 @@ public class ActionsToScriptConverter {
      * @param script скрипт для печати
      */
     public void fillScript(PgDiffScript script) {
-        String currentSearchPath = MessageFormat.format(
-                ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
+        String currentSearchPath = "";
         Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
         for (ActionContainer action : actions) {
             DbObjType type = action.getOldObj().getStatementType();
@@ -72,6 +70,7 @@ public class ActionsToScriptConverter {
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
+
                     script.addCreate(oldObj, null, oldObj.getCreationSQL(), true);
                     break;
                 case DROP:
