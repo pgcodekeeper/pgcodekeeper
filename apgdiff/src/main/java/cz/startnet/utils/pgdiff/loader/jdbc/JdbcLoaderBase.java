@@ -220,7 +220,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " +
                     stSignature + " TO " + grant.grantee;
             if (grant.isGO) {
-                privDefinition = privDefinition.concat(" WITH GRANT OPTION");
+                privDefinition = privDefinition.concat(PgPrivilege.WITH_GRANT_OPTION);
             }
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }

@@ -11,6 +11,7 @@ public class PgPrivilege extends PgStatement {
 
     // regex grouping here is used to preserve whitespace when doing replaceAll
     private static final Pattern PATTERN_TO = Pattern.compile("(\\s+)TO(\\s+)");
+    public static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
 
     private final boolean revoke;
     private final String definition;
@@ -50,11 +51,14 @@ public class PgPrivilege extends PgStatement {
             return null;
         }
 
+        String definitionWithoutGO = !definition.endsWith(WITH_GRANT_OPTION) ? definition
+                : definition.substring(0, definition.indexOf(WITH_GRANT_OPTION));
+
         // TODO сделать надежнее чем просто регуляркой
         return new StringBuilder()
                 .append("REVOKE ")
                 // regex groups capture surrounding whitespace so we don't alter it
-                .append(PATTERN_TO.matcher(definition).replaceAll("$1FROM$2"))
+                .append(PATTERN_TO.matcher(definitionWithoutGO).replaceAll("$1FROM$2"))
                 .append(';')
                 .toString();
     }

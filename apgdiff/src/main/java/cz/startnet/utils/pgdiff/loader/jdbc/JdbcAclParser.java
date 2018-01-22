@@ -103,30 +103,26 @@ final class JdbcAclParser {
                         true, grantee.equals(owner) && grantor.equals(owner)));
 
             } else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes) {
-                List<String> grantTypesParsed = new ArrayList<>();
-
                 // add all grants without grant option
-                for (int i = 0; i < grantTypeCharsWithoutGo.size(); i++) {
-                    char c = grantTypeCharsWithoutGo.get(i);
-                    grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
-                }
-                if (!grantTypesParsed.isEmpty()) {
-                    adder.accept(new Privilege(grantee, grantTypesParsed, false, false));
-                }
-
-                grantTypesParsed = new ArrayList<>();
+                addAllGrants(false, grantTypeCharsWithoutGo, grantee, adder);
 
                 // add all grants with grant option
-                for (int i = 0; i < grantTypeCharsWithGo.size(); i++) {
-                    char c = grantTypeCharsWithGo.get(i);
-                    grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
-                }
-                if (!grantTypesParsed.isEmpty()) {
-                    adder.accept(new Privilege(grantee, grantTypesParsed, true, false));
-                }
+                addAllGrants(true, grantTypeCharsWithGo, grantee, adder);
             }
         }
         return privileges;
+    }
+
+    private static void addAllGrants(boolean isGO, List<Character> grantTypeChars,
+            String grantee, Consumer<Privilege> adder) {
+        List<String> grantTypesParsed = new ArrayList<>();
+        for (int i = 0; i < grantTypeChars.size(); i++) {
+            char c = grantTypeChars.get(i);
+            grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
+        }
+        if (!grantTypesParsed.isEmpty()) {
+            adder.accept(new Privilege(grantee, grantTypesParsed, isGO, false));
+        }
     }
 
     private JdbcAclParser() {
