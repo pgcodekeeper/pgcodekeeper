@@ -103,7 +103,8 @@ public class SequencesReader extends JdbcReader {
                     if (schemaRes.getBoolean("has_priv")) {
                         schemasAccess.add(schema);
                     } else {
-                        loader.addError("Don't have privileges to usage schema: " + schema);
+                        loader.addError("No USAGE privileges for schema " + schema +
+                                ". SEQUENCE data will be missing.");
                     }
                 }
             } finally {
@@ -136,7 +137,8 @@ public class SequencesReader extends JdbcReader {
                         .append(" qname FROM ")
                         .append(qname);
                     } else {
-                        loader.addError("Don't have privileges to read sequence: " + qname);
+                        loader.addError("No SELECT privileges for sequence " + qname +
+                                ". Its data will be missing.");
                     }
                 }
             } finally {
