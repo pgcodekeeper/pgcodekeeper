@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -63,7 +63,7 @@ public class TreeDiffer implements IRunnableWithProgress {
     }
 
     public List<Object> getErrors() {
-        List<? super Object> errors = new LinkedList<>();
+        List<? super Object> errors = new ArrayList<>();
         errors.addAll(dbSource.getErrors());
         errors.addAll(dbTarget.getErrors());
         return errors;

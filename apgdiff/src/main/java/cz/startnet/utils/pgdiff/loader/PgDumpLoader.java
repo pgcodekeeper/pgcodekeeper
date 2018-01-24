@@ -142,7 +142,7 @@ public class PgDumpLoader implements AutoCloseable {
 
         List<SQLParserBaseListener> listeners = new ArrayList<>();
         if (loadSchema) {
-            listeners.add(new CustomSQLParserListener(intoDb, errors, monitor));
+            listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
         }
         if (loadReferences) {
             ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
@@ -222,7 +222,6 @@ public class PgDumpLoader implements AutoCloseable {
                     loader.load(db);
                 } finally {
                     if (errors != null && errList != null && !errList.isEmpty()) {
-                        errList.forEach(e -> e.setLocation(f.getPath()));
                         errors.addAll(errList);
                     }
                 }

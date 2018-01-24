@@ -180,7 +180,6 @@ public class PgUIDumpLoader extends PgDumpLoader {
             }
         } finally {
             if (errors != null && errList != null && !errList.isEmpty()) {
-                errList.forEach(e -> e.setLocation(file.getFullPath().toOSString()));
                 errors.addAll(errList);
             }
         }

@@ -254,7 +254,6 @@ class DbSourceFile extends DbSource {
             return loader.load();
         } finally {
             if (errList != null && !errList.isEmpty()) {
-                errList.forEach(e -> e.setLocation(filename.getPath()));
                 errors = errList;
             }
         }

@@ -62,13 +62,16 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     private final PgDatabase db;
     private final List<AntlrError> errors;
     private final IProgressMonitor monitor;
+    private final String filename;
     private String tablespace;
     private String oids;
 
-    public CustomSQLParserListener(PgDatabase database, List<AntlrError> errors, IProgressMonitor monitor) {
+    public CustomSQLParserListener(PgDatabase database, String filename,
+            List<AntlrError> errors, IProgressMonitor monitor) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
+        this.filename = filename;
     }
 
     private PgStatement safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
@@ -76,10 +79,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
             PgDiffUtils.checkCancelled(monitor);
             return p.getObject();
         } catch (UnresolvedReferenceException ex) {
-            errors.add(handleUnresolvedReference(ex));
+            errors.add(handleUnresolvedReference(ex, filename));
             return null;
         } catch (ObjectCreationException ex) {
-            errors.add(handleCreationException(ex, ctx.getParent()));
+            errors.add(handleCreationException(ex, filename, ctx.getParent()));
             return null;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
@@ -231,15 +234,15 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         safeParseStatement(new AlterDomain(ctx, db), ctx);
     }
 
-    static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex) {
+    static AntlrError handleUnresolvedReference(UnresolvedReferenceException ex, String filename) {
         Token t = ex.getErrorToken();
         Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
-        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
+        return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(), ex.getMessage());
     }
 
-    static AntlrError handleCreationException(ObjectCreationException ex, ParserRuleContext ctx) {
+    static AntlrError handleCreationException(ObjectCreationException ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
         Log.log(Log.LOG_WARNING, ex.getMessage(), ex);
-        return new AntlrError(t, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
+        return new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
     }
 }
