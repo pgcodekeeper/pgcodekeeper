@@ -37,14 +37,9 @@ public final class ApgdiffUtils {
      * @param object - the object that you want to serialize
      */
     public static void serialize(Path path, Serializable object) {
-        try {
-            if (Files.notExists(path)) {
-                Files.createFile(path);
-            }
-            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
-                oos.writeObject(object);
-                oos.flush();
-            }
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
+            oos.writeObject(object);
+            oos.flush();
         } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while serialize object!", e);
         }

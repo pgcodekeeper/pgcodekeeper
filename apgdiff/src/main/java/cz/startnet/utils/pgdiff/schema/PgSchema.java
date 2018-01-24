@@ -272,10 +272,10 @@ public class PgSchema extends PgStatement {
     }
 
 
-    public String getTableNameByIndex(String name) {
+    public PgTable getTableByIndex(String name) {
         for (PgTable t : getTables()) {
             if (t.getIndex(name) != null) {
-                return t.getName();
+                return t;
             }
         }
         return null;

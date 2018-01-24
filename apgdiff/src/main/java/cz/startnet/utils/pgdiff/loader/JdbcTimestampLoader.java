@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -52,7 +53,7 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
         return pair;
     }
 
-    public PgDatabase getDbFromJdbc(PgDatabase projDB, String projectName, String schema)
+    public PgDatabase getDbFromJdbc(PgDatabase projDB, Path path, String schema)
             throws IOException, InterruptedException {
         PgDatabase d = new PgDatabase(false);
         d.setArguments(args);
@@ -74,10 +75,10 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
             queryRoles();
             setupMonitorWork();
 
-            DBTimestamp projTime = DBTimestamp.getDBTimastamp(projectName);
+            DBTimestamp projTime = DBTimestamp.getDBTimestamp(path);
             DBTimestamp dbTime = new TimestampsReader(this).read();
             pair = new DBTimestampPair(projTime, dbTime);
-            objects = pair.compare();
+            objects = pair.searchMatch();
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {
@@ -87,7 +88,9 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
                 }
                 new ExtensionsReader(this, d).read();
 
-                SequencesReader.querySequencesData(d, this);
+                if(!SupportedVersion.VERSION_10.checkVersion(version)) {
+                    SequencesReader.querySequencesData(d, this);
+                }
             }
             connection.commit();
             finishAntlr();

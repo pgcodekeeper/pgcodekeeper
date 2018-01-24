@@ -15,14 +15,14 @@ public class ObjectTimestamp implements Serializable {
 
     private final GenericColumn object;
     private final String hash;
-    private final Long objId;
+    private final long objId;
     private final Instant time;
 
     public ObjectTimestamp(GenericColumn object, String hash, Instant modificationtime) {
         this.object = object;
         this.hash = hash;
         this.time = modificationtime;
-        objId = null;
+        objId = -1;
     }
 
     public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime) {
@@ -43,7 +43,7 @@ public class ObjectTimestamp implements Serializable {
         return object;
     }
 
-    public Long getObjId() {
+    public long getObjId() {
         return objId;
     }
 

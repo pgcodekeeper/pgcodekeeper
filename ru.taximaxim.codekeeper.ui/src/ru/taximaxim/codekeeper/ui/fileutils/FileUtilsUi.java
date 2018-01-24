@@ -1,13 +1,17 @@
 package ru.taximaxim.codekeeper.ui.fileutils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -19,6 +23,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 
 public final class FileUtilsUi {
 
@@ -42,6 +47,12 @@ public final class FileUtilsUi {
                 prov.resetDocument(input);
             }
         }
+    }
+
+    public static Path getPathToTimeObject(String name) throws URISyntaxException {
+        return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
+                .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
+                .resolve("projects").resolve(name + ".time"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private FileUtilsUi() {

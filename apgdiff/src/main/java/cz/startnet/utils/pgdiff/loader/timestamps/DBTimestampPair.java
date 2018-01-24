@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.timestamps;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +9,16 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
+/**
+ * Stores project and remote database timestamps
+ *
+ * @since 4.2.0
+ * @author galiev_mr
+ * @see DBTimestamp
+ */
 public class DBTimestampPair {
     private final DBTimestamp dbProject;
     private final DBTimestamp dbRemote;
@@ -19,7 +28,7 @@ public class DBTimestampPair {
         this.dbRemote = dbRemote;
     }
 
-    public List<ObjectTimestamp> compare() {
+    public List<ObjectTimestamp> searchMatch() {
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
         for (ObjectTimestamp pObj : dbProject.getObjects()) {
@@ -36,6 +45,14 @@ public class DBTimestampPair {
         return equalsObjects;
     }
 
+    /**
+     * Adds given statement with remote timestamp to project's timestamps.
+     * It is expected that statement is contained and equal in both databases.
+     *  <br><br>
+     * Table adds with constraints.
+     *
+     * @param st - statement, which is contained and equal in both databases
+     */
     public void addObject(PgStatement st) {
         DbObjType type = st.getStatementType();
         String schema = null;
@@ -67,7 +84,6 @@ public class DBTimestampPair {
 
         StringBuilder hash = new StringBuilder(PgDiffUtils.sha(st.getRawStatement()));
 
-        // add constraints hash to table hash
         if (type == DbObjType.TABLE) {
             ((PgTable)st).getConstraints().forEach(con -> hash.append(PgDiffUtils.sha(con.getRawStatement())));
         }
@@ -81,8 +97,8 @@ public class DBTimestampPair {
         }
     }
 
-    public void serializeProject(String origin) {
-        DBTimestamp.serialize(origin, dbProject);
+    public void serializeProject(Path path) {
+        ApgdiffUtils.serialize(path, dbProject);
     }
 
     public void clearProject() {

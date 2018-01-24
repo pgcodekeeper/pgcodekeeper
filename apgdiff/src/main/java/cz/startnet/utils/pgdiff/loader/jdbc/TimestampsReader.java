@@ -47,7 +47,7 @@ public class TimestampsReader implements PgCatalogStrings {
         String identity = res.getString("identity");
         String schema = res.getString("schema");
         String name = res.getString("name");
-        Long objId = res.getLong("objid");
+        long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
         GenericColumn column = null;
         ObjectTimestamp object;
@@ -96,7 +96,7 @@ public class TimestampsReader implements PgCatalogStrings {
         }
     }
 
-    private void parseFunctionName(Function_args_parserContext ctx, Instant lastModified, DBTimestamp time, Long objId) {
+    private void parseFunctionName(Function_args_parserContext ctx, Instant lastModified, DBTimestamp time, long objId) {
         if (ctx != null) {
             List<IdentifierContext> object = ctx.schema_qualified_name().identifier();
             String schema = QNameParser.getSchemaNameCtx(object).getText();
@@ -109,7 +109,7 @@ public class TimestampsReader implements PgCatalogStrings {
     }
 
     private void parseIdentity(Object_identity_parserContext ctx, DbObjType type,
-            Instant lastModified, DBTimestamp time, Long objId) {
+            Instant lastModified, DBTimestamp time, long objId) {
         if (ctx != null) {
             String name = ctx.name.getText();
             List<IdentifierContext> parent = ctx.parent.identifier();

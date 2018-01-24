@@ -92,56 +92,8 @@ public abstract class JdbcReader implements PgCatalogStrings {
             for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
                 PgSchema sc = schema.getValue();
                 if (isTime) {
-                    for (ObjectTimestamp obj: objects) {
-                        if (obj.getSchema().equals(sc.getName()) && (obj.getType() == type
-                                || obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT)) {
-                            switch (type) {
-                            case VIEW:
-                                sc.addView((PgView) obj.getShallowCopy(projDb));
-                                break;
-                            case TABLE:
-                                sc.addTable((PgTable) obj.getShallowCopy(projDb));
-                                break;
-                            case RULE:
-                                PgRule rule = (PgRule) obj.getShallowCopy(projDb);
-                                sc.getRuleContainer(rule.getParent().getName()).addRule(rule);
-                                break;
-                            case TRIGGER:
-                                PgTrigger trig = (PgTrigger) obj.getShallowCopy(projDb);
-                                sc.getTriggerContainer(trig.getParent().getName()).addTrigger(trig);
-                                break;
-                            case INDEX:
-                                PgSchema baseSchema = projDb.getSchema(sc.getName());
-                                if (baseSchema != null ) {
-                                    String tableName = baseSchema.getTableNameByIndex(obj.getColumn());
-                                    if (tableName != null) {
-                                        PgIndex index = (PgIndex) ObjectTimestamp.
-                                                getObject(projDb, sc.getName(), tableName, obj.getColumn(), DbObjType.INDEX);
-                                        sc.getTable(tableName).addIndex(index.shallowCopy());
-                                    }
-                                }
-                                break;
-                            case FUNCTION:
-                                sc.addFunction((PgFunction) obj.getShallowCopy(projDb));
-                                break;
-                            case CONSTRAINT:
-                                PgTable table = (PgTable) obj.getDeepCopy(projDb);
-                                PgTable newTable = sc.getTable(table.getName());
-                                table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
-                                break;
-                            case TYPE:
-                                sc.addType((PgType) obj.getShallowCopy(projDb));
-                                break;
-                            case SEQUENCE:
-                                sc.addSequence((PgSequence) obj.getShallowCopy(projDb));
-                                break;
-                            default:
-                                break;
-                            }
-                        }
-                    }
+                    readTime(objects, sc, type, projDb);
                 }
-
                 loader.setCurrentOperation("set search_path query");
                 loader.statement.execute("SET search_path TO " +
                         PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
@@ -154,6 +106,58 @@ public abstract class JdbcReader implements PgCatalogStrings {
                         PgDiffUtils.checkCancelled(loader.monitor);
                         processResult(wrapper, schema.getValue());
                     }
+                }
+            }
+        }
+    }
+
+    private void readTime(List<ObjectTimestamp> objects, PgSchema sc, DbObjType type, PgDatabase projDb) {
+        for (ObjectTimestamp obj: objects) {
+            if (obj.getSchema().equals(sc.getName()) && (obj.getType() == type
+                    || obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT)) {
+                switch (type) {
+                case VIEW:
+                    sc.addView((PgView) obj.getShallowCopy(projDb));
+                    break;
+                case TABLE:
+                    sc.addTable((PgTable) obj.getShallowCopy(projDb));
+                    break;
+                case RULE:
+                    PgRule rule = (PgRule) obj.getShallowCopy(projDb);
+                    sc.getRuleContainer(rule.getParent().getName()).addRule(rule);
+                    break;
+                case TRIGGER:
+                    PgTrigger trig = (PgTrigger) obj.getShallowCopy(projDb);
+                    sc.getTriggerContainer(trig.getParent().getName()).addTrigger(trig);
+                    break;
+                case INDEX:
+                    PgSchema baseSchema = projDb.getSchema(sc.getName());
+                    if (baseSchema != null ) {
+                        PgTable table = baseSchema.getTableByIndex(obj.getColumn());
+                        if (table != null) {
+                            String tableName = table.getName();
+                            PgIndex index = (PgIndex) ObjectTimestamp.
+                                    getObject(projDb, sc.getName(), tableName, obj.getColumn(), DbObjType.INDEX);
+                            sc.getTable(tableName).addIndex(index.shallowCopy());
+                        }
+                    }
+                    break;
+                case FUNCTION:
+                    sc.addFunction((PgFunction) obj.getShallowCopy(projDb));
+                    break;
+                case CONSTRAINT:
+                    PgTable table = (PgTable) obj.getDeepCopy(projDb);
+                    PgTable newTable = sc.getTable(table.getName());
+                    table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                    break;
+                case TYPE:
+                    sc.addType((PgType) obj.getShallowCopy(projDb));
+                    break;
+                case SEQUENCE:
+                    sc.addSequence((PgSequence) obj.getShallowCopy(projDb));
+                    break;
+                default:
+                    break;
                 }
             }
         }

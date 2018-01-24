@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,6 +18,7 @@ import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -41,8 +44,10 @@ public class TimestampTreeDiffer extends TreeDiffer {
                 Statement statement = connection.createStatement()) {
             PgDatabase dbSrc = dbSource.get(pm);
 
+            Path path = FileUtilsUi.getPathToTimeObject(dbSource.getOrigin());
+
             JdbcTimestampLoader loader = new JdbcTimestampLoader(connector, ((DbSourceJdbc)dbTarget).getArgs(), pm);
-            PgDatabase dbTgt = loader.getDbFromJdbc(dbSrc, dbSource.getOrigin(), schema);
+            PgDatabase dbTgt = loader.getDbFromJdbc(dbSrc, path, schema);
 
             dbTarget.set(dbTgt);
 
@@ -55,12 +60,12 @@ public class TimestampTreeDiffer extends TreeDiffer {
             pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
             diffTree = DiffTree.create(dbSrc, dbTgt, pm, pair);
 
-            pair.serializeProject(dbSource.getOrigin());
+            pair.serializeProject(path);
 
             PgDiffUtils.checkCancelled(pm);
             monitor.done();
 
-        } catch (SQLException | CoreException | IOException ex) {
+        } catch (SQLException | CoreException | IOException | URISyntaxException ex) {
             Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);
         }
     }
