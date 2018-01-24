@@ -230,7 +230,7 @@ class PagePartial extends WizardPage {
         this.treeDiffer = treeDiffer;
         lblSource.setText(source);
         lblTarget.setText(target);
-        diffTable.setInput(treeDiffer.getDbSource(), treeDiffer.getDbTarget(), treeDiffer.getDiffTree(), null);
+        diffTable.setInput(treeDiffer.getDbSource(), treeDiffer.getDbTarget(), treeDiffer.getDiffTree(), null, null);
     }
 
     public TreeDiffer getTreeDiffer() {

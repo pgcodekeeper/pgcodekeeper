@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.ui.IWorkbench;
@@ -36,6 +37,10 @@ public class ProjectEditorPrefPage extends FieldEditorPreferencePage implements 
             {Messages.ProjectEditorPrefPage_action_update, PG_EDIT_PREF.UPDATE},
             {Messages.ProjectEditorPrefPage_action_reset, PG_EDIT_PREF.RESET},
             {Messages.ProjectEditorPrefPage_action_no_action, PG_EDIT_PREF.NO_ACTION}},
+                getFieldEditorParent()));
+
+        addField(new BooleanFieldEditor(
+                PG_EDIT_PREF.SHOW_GIT_USER, Messages.ProjectEditorPrefPage_show_git_user,
                 getFieldEditorParent()));
     }
 }

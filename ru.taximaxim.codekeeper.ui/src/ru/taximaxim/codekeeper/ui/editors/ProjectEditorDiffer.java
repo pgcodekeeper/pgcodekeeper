@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -677,7 +678,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
         }
-        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
+        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList,  Paths.get(proj.getProject().getLocationURI()));
         if (diffTree != null) {
             isDBLoaded = true;
             manualDepciesSource.clear();
