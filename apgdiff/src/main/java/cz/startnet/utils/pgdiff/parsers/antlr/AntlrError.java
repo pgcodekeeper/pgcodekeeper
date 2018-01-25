@@ -10,8 +10,10 @@ public class AntlrError {
     private final String text;
     private final int start;
     private final int stop;
+    private final String location;
 
-    public AntlrError(Token tokenError, int line, int charPositionInLine, String msg) {
+    public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg) {
+        this.location = location;
         this.line = line;
         this.charPositionInLine = charPositionInLine;
         this.msg = msg;
@@ -44,7 +46,12 @@ public class AntlrError {
         return stop;
     }
 
-    public String getFullMessage(String path) {
-        return path + " line " + getLine() + ':' + getCharPositionInLine() + ' ' + getMsg();
+    public String getLocation() {
+        return location;
+    }
+
+    @Override
+    public String toString() {
+        return location + " line " + getLine() + ':' + getCharPositionInLine() + ' ' + getMsg();
     }
 }

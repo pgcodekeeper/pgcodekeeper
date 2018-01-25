@@ -58,6 +58,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected SchemasContainer schemas;
     protected boolean useServerHelpers = true;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
+    protected List<String> errors = new ArrayList<>();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -109,6 +110,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
+    protected void addError(final String message) {
+        errors.add(getCurrentLocation() + ' ' + message);
+    }
+
     private String getRoleByOid(long oid) {
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
     }
@@ -148,10 +153,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
      */
     protected void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnName) {
-
-        // skip "empty" acl strings, such as "{}"
-        if (aclItemsArrayAsString == null || args.isIgnorePrivileges()
-                || aclItemsArrayAsString.length() <= "{}".length()) {
+        if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
             return;
         }
         String stType = null;

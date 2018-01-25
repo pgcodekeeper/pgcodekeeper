@@ -6,15 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -61,19 +58,10 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
         this.needTwoWay = needTwoWay;
     }
 
-    public Map<String, List<AntlrError>> getErrors() {
-        Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
-        errors.putAll(dbSource.getErrors());
-        dbTarget.getErrors().forEach((k,v) -> {
-            List<AntlrError> list = errors.get(k);
-            if (list == null) {
-                list = v;
-            } else {
-                list = new ArrayList<>(list);
-                list.addAll(v);
-            }
-            errors.put(k, list);
-        });
+    public List<Object> getErrors() {
+        List<? super Object> errors = new ArrayList<>();
+        errors.addAll(dbSource.getErrors());
+        errors.addAll(dbTarget.getErrors());
         return errors;
     }
 

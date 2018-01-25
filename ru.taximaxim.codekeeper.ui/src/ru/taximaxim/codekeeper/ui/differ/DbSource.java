@@ -6,10 +6,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -42,7 +41,7 @@ public abstract class DbSource {
 
     private final String origin;
     private PgDatabase dbObject;
-    protected final Map<String, List<AntlrError>> errors = new LinkedHashMap<>();
+    protected List<? extends Object> errors = Collections.emptyList();
 
     public String getOrigin() {
         return origin;
@@ -79,8 +78,8 @@ public abstract class DbSource {
         return dbObject != null;
     }
 
-    public Map<String, List<AntlrError>> getErrors() {
-        return Collections.unmodifiableMap(errors);
+    public List<Object> getErrors() {
+        return Collections.unmodifiableList(errors);
     }
 
     protected DbSource(String origin) {
@@ -181,8 +180,11 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines), monitor, errors);
+        List<AntlrError> er = new ArrayList<>();
+        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
+                getPgDiffArgs(encoding, forceUnixNewlines), monitor, er);
+        errors = er;
+        return db;
     }
 }
 
@@ -206,11 +208,12 @@ class DbSourceProject extends DbSource {
         monitor.setWorkRemaining(filesCount);
 
         IEclipsePreferences pref = proj.getPrefs();
+        List<AntlrError> er = new ArrayList<>();
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
                 project.getProject(),
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null, errors);
-
+                monitor, null, er);
+        errors = er;
         try {
             DBTimestamp.updateObjects(db, FileUtilsUi.getPathToTimeObject(project.getName()));
         } catch (URISyntaxException e) {
@@ -263,7 +266,7 @@ class DbSourceFile extends DbSource {
             return loader.load();
         } finally {
             if (errList != null && !errList.isEmpty()) {
-                errors.put(filename.getPath(), errList);
+                errors = errList;
             }
         }
     }
@@ -344,7 +347,9 @@ class DbSourceDb extends DbSource {
             try (PgDumpLoader loader = new PgDumpLoader(dump,
                     getPgDiffArgs(encoding, forceUnixNewlines),
                     monitor)) {
-                return loader.load();
+                PgDatabase database = loader.load();
+                errors = loader.getErrors();
+                return database;
             }
         }
     }
@@ -382,7 +387,10 @@ class DbSourceJdbc extends DbSource {
     public PgDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        return new JdbcLoader(jdbcConnector, getArgs(), monitor).getDbFromJdbc();
+        JdbcLoader loader = new JdbcLoader(jdbcConnector, getArgs(), monitor);
+        PgDatabase database = loader.getDbFromJdbc();
+        errors = loader.getErrors();
+        return database;
     }
 }
 
