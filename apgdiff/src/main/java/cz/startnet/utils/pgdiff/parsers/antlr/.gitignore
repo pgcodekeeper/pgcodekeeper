@@ -21,3 +21,5 @@
 /PrivilegesListener.java
 /PrivilegesBaseListener.java
 /PrivilegesParser.java
+/PrivilegesBaseVisitor.java
+/PrivilegesVisitor.java
