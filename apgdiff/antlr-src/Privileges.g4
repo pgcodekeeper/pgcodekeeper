@@ -28,13 +28,17 @@ QuotedIdentifier
     // unquote so that we may always call getText() and not worry about quotes
         {
             String __tx = getText();
-            setText(__tx.substring(2, __tx.length() - 2).replace("\\\"\\\"", "\""));
+            setText(__tx.substring(2, __tx.length() - 2)
+                        .replace("\\\"\\\"", "\"")
+                        .replace("\\\\", "\\")
+            );
         }
     ;
     
 fragment UnterminatedQuotedIdentifier
     : 
     ( '\\"\\"'
-    | ~'"'
+    | '\\\\'
+    | ~["\\]
     )*
     ; 
