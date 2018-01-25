@@ -52,6 +52,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -81,6 +82,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             r.run();
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
+        } catch (Exception e) {
+            Log.log(Log.LOG_ERROR, e.getLocalizedMessage());
         }
     }
 

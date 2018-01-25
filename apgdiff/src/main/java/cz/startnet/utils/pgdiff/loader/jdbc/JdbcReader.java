@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.SQLResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public abstract class JdbcReader implements PgCatalogStrings {
 
@@ -30,6 +31,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 readAllUsingHelper();
                 helperSuccess = true;
             } catch (SQLException | WrapperAccessException ex) {
+                loader.addError(Messages.JdbcReader_helper_function_error);
                 Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
                         + "falling back to old queries: " + factory.helperFunction, ex);
             }

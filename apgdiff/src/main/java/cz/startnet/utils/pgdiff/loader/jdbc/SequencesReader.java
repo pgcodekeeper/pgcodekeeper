@@ -113,11 +113,18 @@ public class SequencesReader extends JdbcReader {
 
         List<String> schemasAccess = new ArrayList<>();
         try (PreparedStatement schemasAccessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SCHEMAS_ACCESS)) {
-            Array arrSchemas = loader.connection.createArrayOf("text", db.getSchemas().stream().map(PgSchema::getName).toArray());
+            Array arrSchemas = loader.connection.createArrayOf("text",
+                    db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(PgSchema::getName).toArray());
             schemasAccessQuery.setArray(1, arrSchemas);
             try (ResultSet schemaRes = schemasAccessQuery.executeQuery()) {
                 while (schemaRes.next()) {
-                    schemasAccess.add(schemaRes.getString("nspname"));
+                    String schema = schemaRes.getString("nspname");
+                    if (schemaRes.getBoolean("has_priv")) {
+                        schemasAccess.add(schema);
+                    } else {
+                        loader.addError("No USAGE privileges for schema " + schema +
+                                ". SEQUENCE data will be missing.");
+                    }
                 }
             } finally {
                 arrSchemas.free();
@@ -139,14 +146,19 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet res = accessQuery.executeQuery()) {
                 while (res.next()) {
                     String qname = res.getString("qname");
-                    if (sbUnionQuery.length() > 0) {
-                        sbUnionQuery.append("\nUNION ALL\n");
+                    if (res.getBoolean("has_priv")) {
+                        if (sbUnionQuery.length() > 0) {
+                            sbUnionQuery.append("\nUNION ALL\n");
+                        }
+                        sbUnionQuery.append(JdbcQueries.QUERY_SEQUENCES_DATA)
+                        .append(',')
+                        .append(PgDiffUtils.quoteString(qname))
+                        .append(" qname FROM ")
+                        .append(qname);
+                    } else {
+                        loader.addError("No SELECT privileges for sequence " + qname +
+                                ". Its data will be missing.");
                     }
-                    sbUnionQuery.append(JdbcQueries.QUERY_SEQUENCES_DATA)
-                    .append(',')
-                    .append(PgDiffUtils.quoteString(qname))
-                    .append(" qname FROM ")
-                    .append(qname);
                 }
             } finally {
                 arrSeqs.free();

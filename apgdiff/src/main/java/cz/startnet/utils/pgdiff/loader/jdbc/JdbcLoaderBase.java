@@ -56,6 +56,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
+    protected List<String> errors = new ArrayList<>();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -101,6 +102,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
             }
         }
+    }
+
+    protected void addError(final String message) {
+        errors.add(getCurrentLocation() + ' ' + message);
     }
 
     private String getRoleByOid(long oid) {

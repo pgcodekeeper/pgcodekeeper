@@ -95,7 +95,7 @@ public class AntlrParser {
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
-            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex));
+            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
         }
     }
 }
@@ -156,7 +156,7 @@ class CustomAntlrErrorListener extends BaseErrorListener {
                 + ' ' + msg);
         if (errors != null) {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
-            errors.add(new AntlrError(token, line, charPositionInLine, msg));
+            errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
         }
     }
 }

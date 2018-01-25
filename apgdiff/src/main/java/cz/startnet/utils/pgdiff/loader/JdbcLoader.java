@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -35,6 +37,10 @@ public class JdbcLoader extends JdbcLoaderBase {
 
     public void setUseServerHelpers(boolean useServerHelpers) {
         this.useServerHelpers = useServerHelpers;
+    }
+
+    public List<String> getErrors() {
+        return Collections.unmodifiableList(errors);
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
