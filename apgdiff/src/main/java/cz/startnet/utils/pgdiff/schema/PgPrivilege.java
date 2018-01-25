@@ -51,8 +51,8 @@ public class PgPrivilege extends PgStatement {
             return null;
         }
 
-        String definitionWithoutGO = !definition.endsWith(WITH_GRANT_OPTION) ? definition
-                : definition.substring(0, definition.indexOf(WITH_GRANT_OPTION));
+        String definitionWithoutGO = definition.endsWith(WITH_GRANT_OPTION) ?
+                definition.substring(0, definition.length() - WITH_GRANT_OPTION.length()) : definition;
 
         // TODO сделать надежнее чем просто регуляркой
         return new StringBuilder()
