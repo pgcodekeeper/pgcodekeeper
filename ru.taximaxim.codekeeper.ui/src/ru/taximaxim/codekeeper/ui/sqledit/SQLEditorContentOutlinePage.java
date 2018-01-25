@@ -124,15 +124,17 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         actionBars.getToolBarManager().add(hideAction);
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        filterDangerous = false;
+        sortStatements = false;
+    }
+
     private class OutlineContentProvider implements ITreeContentProvider {
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            // no impl
-        }
-
-        @Override
-        public void dispose() {
             // no impl
         }
 
