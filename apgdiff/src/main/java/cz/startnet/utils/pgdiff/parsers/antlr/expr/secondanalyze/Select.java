@@ -6,9 +6,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
@@ -18,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
@@ -175,7 +179,15 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 ret = new ArrayList<>();
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
                     ValueExpr vexCol = new ValueExpr(this);
-                    Entry<String, String> columnPair = vexCol.analyze(new Vex(target.vex()));
+                    Vex selectSublistVex = new Vex(target.vex());
+
+                    Qualified_asteriskContext ast;
+                    if ((ast = vexCol.getAsteriskIfContainedInVex(selectSublistVex)) != null) {
+                        ret.addAll(getColsOfAsterisk(ast, vexCol));
+                        continue;
+                    }
+
+                    Entry<String, String> columnPair = vexCol.analyze(selectSublistVex);
 
                     if(target.alias != null && columnPair != null){
                         columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
@@ -232,6 +244,81 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
         }
         return ret;
+    }
+
+    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast, ValueExpr vexCol) {
+        List<Entry<String, String>> ret = new ArrayList<>();
+        boolean aliased = false;
+        GenericColumn genericFrom = null;
+        if (!unaliasedNamespace.isEmpty()) {
+            genericFrom = unaliasedNamespace.size() == 1 ? unaliasedNamespace.iterator().next(): null;
+        } else if (!namespace.isEmpty()) {
+
+            if (ast.tb_name != null
+                    && (genericFrom = namespace.get(QNameParser.getFirstName(ast.tb_name.identifier()))) != null) {
+                // In this case 'ast.tb_name' is alias of table or view.
+
+                aliased = true;
+            } else if (ast.tb_name != null
+                    && (genericFrom = namespace.get(QNameParser.getFirstName(ast.tb_name.identifier()))) == null) {
+                // In this case 'ast.tb_name' is alias of subselect.
+
+                List<Entry<String, String>> complexResult = complexNamespace.entrySet().iterator().next().getValue();
+
+                // check 'complexResult' for the function which return TABLE(name1 type1, name2 type2, ...)
+                List<Entry<String, String>> retColsOfTable;
+
+                if ((retColsOfTable = getTblColsForFunctionReturnTable(complexResult)) != null) {
+                    return retColsOfTable;
+                }
+
+                return complexResult;
+
+            } else {
+                List<Entry<String, String>> complexResult = complexNamespace.entrySet().iterator().next().getValue();
+
+                // check 'complexResult' for the function which return TABLE(name1 type1, name2 type2, ...)
+                List<Entry<String, String>> retColsOfTable;
+                if ((retColsOfTable = getTblColsForFunctionReturnTable(complexResult)) != null) {
+                    return retColsOfTable;
+                }
+
+                return complexResult;
+            }
+        }
+
+        ret.addAll(vexCol.analyzeAsterisk(aliased, ast, genericFrom));
+
+        return ret;
+    }
+
+    private List<Entry<String, String>> getTblColsForFunctionReturnTable(List<Entry<String, String>> complexResult) {
+        if (complexResult.size() != 1) {
+            return complexResult;
+        }
+
+        String value = complexResult.get(0).getValue();
+        Matcher matcher = Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$").matcher(value);
+
+        if (!matcher.matches()) {
+            return complexResult;
+        }
+
+        List<Entry<String, String>> ret = new ArrayList<>();
+        String matchedExpression = matcher.group(0);
+        String nameTypeExpression = matchedExpression.substring(0, matchedExpression.length()-1)
+                .replace("TABLE(", "");
+
+        String name;
+        String type;
+        for (String nameType: nameTypeExpression.split(", ")) {
+            name = nameType.substring(0, nameType.indexOf(" "));
+            type = nameType.substring(nameType.indexOf(" ")+1, nameType.length());
+            ret.add(new SimpleEntry<>(name, type));
+        }
+
+        return ret;
+
     }
 
     private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
