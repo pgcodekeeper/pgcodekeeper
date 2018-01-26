@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,9 +26,12 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
@@ -59,6 +63,13 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected boolean useServerHelpers = true;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
     protected List<String> errors = new ArrayList<>();
+
+    // time loader params
+    protected List<ObjectTimestamp> objects;
+    protected PgDatabase projDB;
+    protected DBTimestampPair pair;
+    protected String schema;
+    protected Path path;
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -112,6 +123,18 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
+    }
+
+    public List<ObjectTimestamp> getObjects() {
+        return objects;
+    }
+
+    public PgDatabase getProjDb() {
+        return projDB;
+    }
+
+    public String getSchema() {
+        return schema;
     }
 
     private String getRoleByOid(long oid) {

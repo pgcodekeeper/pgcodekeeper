@@ -13,7 +13,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
@@ -45,10 +45,9 @@ public class TimestampTreeDiffer extends TreeDiffer {
             PgDatabase dbSrc = dbSource.get(pm);
 
             Path path = FileUtilsUi.getPathToTimeObject(dbSource.getOrigin());
-
-            JdbcTimestampLoader loader = new JdbcTimestampLoader(connector, ((DbSourceJdbc)dbTarget).getArgs(), pm);
-            PgDatabase dbTgt = loader.getDbFromJdbc(dbSrc, path, schema);
-
+            JdbcLoader loader = new JdbcLoader(connector, ((DbSourceJdbc)dbTarget).getArgs(), pm);
+            loader.setTimeParams(dbSrc, path, schema);
+            PgDatabase dbTgt = loader.getDbFromJdbc();
             dbTarget.set(dbTgt);
 
             Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$

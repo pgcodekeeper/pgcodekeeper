@@ -9,7 +9,6 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -33,24 +32,21 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
 
-        // exclude existiting schemas oids from query and put it to map
-        if (loader instanceof JdbcTimestampLoader) {
-            List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
-            if (objects != null && !objects.isEmpty()) {
-                PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
-                List<Long> oids = new ArrayList<>();
-                for (ObjectTimestamp obj : objects) {
-                    if (obj.getType() == DbObjType.SCHEMA) {
-                        long oid = obj.getObjId();
-                        oids.add(oid);
-                        PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
-                        db.addSchema(schema);
-                        schemas.put(oid, schema);
-                    }
+        List<ObjectTimestamp> objects = loader.getObjects();
+        if (objects != null && !objects.isEmpty()) {
+            PgDatabase projDb = loader.getProjDb();
+            List<Long> oids = new ArrayList<>();
+            for (ObjectTimestamp obj : objects) {
+                if (obj.getType() == DbObjType.SCHEMA) {
+                    long oid = obj.getObjId();
+                    oids.add(oid);
+                    PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
+                    db.addSchema(schema);
+                    schemas.put(oid, schema);
                 }
-                if (!oids.isEmpty()) {
-                    query = JdbcReaderFactory.excludeObjects(query, oids);
-                }
+            }
+            if (!oids.isEmpty()) {
+                query = JdbcReaderFactory.excludeObjects(query, oids);
             }
         }
 

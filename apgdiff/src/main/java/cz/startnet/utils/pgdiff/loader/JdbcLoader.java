@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -17,6 +18,9 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -34,6 +38,16 @@ public class JdbcLoader extends JdbcLoaderBase {
 
     public List<String> getErrors() {
         return Collections.unmodifiableList(errors);
+    }
+
+    public void setTimeParams(PgDatabase projDB, Path path, String schema) {
+        this.projDB = projDB;
+        this.schema = schema;
+        this.path = path;
+    }
+
+    public DBTimestampPair getDbPair() {
+        return pair;
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
@@ -54,6 +68,14 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
+
+            if (schema != null) {
+                DBTimestamp projTime = DBTimestamp.getDBTimestamp(path);
+                DBTimestamp dbTime = new TimestampsReader(this).read();
+                finishAntlr();
+                pair = new DBTimestampPair(projTime, dbTime);
+                objects = pair.searchMatch();
+            }
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {

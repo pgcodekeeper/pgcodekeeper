@@ -7,7 +7,6 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
-import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -28,21 +27,18 @@ public class ExtensionsReader implements PgCatalogStrings {
         loader.setCurrentOperation("extensions query");
         String query = JdbcQueries.QUERY_EXTENSIONS.get(null);
 
-        // exclude existiting extensions oids from query
-        if (loader instanceof JdbcTimestampLoader) {
-            List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
-            if (objects != null && !objects.isEmpty()) {
-                PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
-                List<Long> oids = new ArrayList<>();
-                for (ObjectTimestamp obj : objects) {
-                    if (obj.getType() == DbObjType.EXTENSION) {
-                        oids.add(obj.getObjId());
-                        db.addExtension((PgExtension)obj.getShallowCopy(projDb));
-                    }
+        List<ObjectTimestamp> objects = loader.getObjects();
+        if (objects != null && !objects.isEmpty()) {
+            PgDatabase projDb = loader.getProjDb();
+            List<Long> oids = new ArrayList<>();
+            for (ObjectTimestamp obj : objects) {
+                if (obj.getType() == DbObjType.EXTENSION) {
+                    oids.add(obj.getObjId());
+                    db.addExtension((PgExtension)obj.getShallowCopy(projDb));
                 }
-                if (!oids.isEmpty()) {
-                    query = JdbcReaderFactory.excludeObjects(query, oids);
-                }
+            }
+            if (!oids.isEmpty()) {
+                query = JdbcReaderFactory.excludeObjects(query, oids);
             }
         }
 
