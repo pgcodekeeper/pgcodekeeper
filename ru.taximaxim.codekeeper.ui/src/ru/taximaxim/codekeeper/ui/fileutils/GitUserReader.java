@@ -5,10 +5,10 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.lib.BaseRepositoryBuilder;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.ObjectId;
@@ -26,27 +26,36 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GitUserReader implements AutoCloseable {
 
-    public static GitUserReader create (Path path) throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
-        Repository repository;
-
-        if (builder.getGitDir() != null || builder.getWorkTree() != null) {
-            repository = builder.build();
-            return new GitUserReader(repository);
-        }
-        return null;
-    }
-
     private final Repository repo;
 
-    private GitUserReader(Repository repo) {
-        this.repo = repo;
+    /**
+     * Base constructor that search git repository from given path
+     *
+     * @param path project path
+     * @throws IOException the repository could not be accessed to configure the rest of the builder's parameters
+     * @throws IllegalArgumentException if repository not found
+     * @see BaseRepositoryBuilder#requireGitDirOrWorkTree
+     */
+    public GitUserReader(Path path) throws IOException {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
+        repo = builder.build();
     }
 
     public Path getLocation() {
         return repo.getDirectory().getParentFile().toPath();
     }
 
+    public static boolean checkRepo(Path path) {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
+        return builder.getGitDir() != null || builder.getWorkTree() != null;
+    }
+
+    /**
+     * Looks for the author of the latest changes from the history of git.
+     * The values ​​found will be removed from the map
+     *
+     * @param metas map with elements meta information grouped by their location
+     */
     public void parseLastChange(Map<String, List<ElementMetaInfo>> metas) {
         try (RevWalk r = new RevWalk(repo); DiffFormatter df = new DiffFormatter(NullOutputStream.INSTANCE);) {
             ObjectId head = repo.resolve(Constants.HEAD);
@@ -82,14 +91,36 @@ public class GitUserReader implements AutoCloseable {
             ObjectId head = repo.resolve(Constants.HEAD);
             IndexDiff status = new IndexDiff(repo, head, new FileTreeIterator(repo));
             status.diff();
-            Set<String> local = status.getAdded();
-            local.addAll(status.getChanged());
-            local.addAll(status.getMissing());
-            local.addAll(status.getModified());
-            local.addAll(status.getUntracked());
-            local.addAll(status.getUntrackedFolders());
 
-            local.forEach(e -> {
+            status.getAdded().forEach(e -> {
+                List<ElementMetaInfo> set = metas.get(e);
+                if (set != null) {
+                    set.forEach(ElementMetaInfo::setChanged);
+                }
+            });
+
+            status.getChanged().forEach(e -> {
+                List<ElementMetaInfo> set = metas.get(e);
+                if (set != null) {
+                    set.forEach(ElementMetaInfo::setChanged);
+                }
+            });
+
+            status.getModified().forEach(e -> {
+                List<ElementMetaInfo> set = metas.get(e);
+                if (set != null) {
+                    set.forEach(ElementMetaInfo::setChanged);
+                }
+            });
+
+            status.getUntracked().forEach(e -> {
+                List<ElementMetaInfo> set = metas.get(e);
+                if (set != null) {
+                    set.forEach(ElementMetaInfo::setChanged);
+                }
+            });
+
+            status.getUntrackedFolders().forEach(e -> {
                 List<ElementMetaInfo> set = metas.get(e);
                 if (set != null) {
                     set.forEach(ElementMetaInfo::setChanged);

@@ -102,14 +102,16 @@ public class DiffTableViewer extends Composite {
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
-    private final boolean showGitUser = Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER);
+    private final boolean showGitUser;
 
     private final Image iSideBoth;
     private final Image iSideLeft;
     private final Image iSideRight;
 
     private final boolean viewOnly;
-    private final Map<TreeElement, ElementMetaInfo> elements = new HashMap<>();
+    private final Path location;
+    private final Map<TreeElement, ElementMetaInfo> elementInfoMap = new HashMap<>();
+    private final Set<TreeElement> elements = elementInfoMap.keySet();
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
@@ -149,13 +151,17 @@ public class DiffTableViewer extends Composite {
     }
 
     public Collection<TreeElement> getElements() {
-        return Collections.unmodifiableCollection(elements.keySet());
+        return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager) {
+    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
+        this.location = location;
+        showGitUser = location!= null
+                && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
+                && GitUserReader.checkRepo(location);
 
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -187,7 +193,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements.keySet(), true, true);
+                    setElementsChecked(elements, true, true);
                 }
             });
 
@@ -199,7 +205,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements.keySet(), false, true);
+                    setElementsChecked(elements, false, true);
                 }
             });
 
@@ -211,7 +217,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setElementsChecked(elements.keySet(), el -> !el.isSelected(), true);
+                    setElementsChecked(elements, el -> !el.isSelected(), true);
                 }
             });
 
@@ -517,9 +523,9 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                ElementMetaInfo meta = elements.get(element);
+                ElementMetaInfo meta = elementInfoMap.get(element);
                 if (meta != null) {
-                    String author = elements.get(element).getAuthorName();
+                    String author = elementInfoMap.get(element).getAuthorName();
                     if (author != null) {
                         return author;
                     }
@@ -625,7 +631,7 @@ public class DiffTableViewer extends Composite {
     private void saveCheckedElements2ClipboardAsExpession(){
         boolean first = true;
         StringBuilder sb = new StringBuilder();
-        for (TreeElement el : elements.keySet()) {
+        for (TreeElement el : elements) {
             if (!el.isSelected()) {
                 continue;
             }
@@ -657,12 +663,12 @@ public class DiffTableViewer extends Composite {
     }
 
     public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
-            IgnoreList ignoreList, Path location) {
+            IgnoreList ignoreList) {
         setInputCollection(diffTree == null ? Collections.<TreeElement>emptyList() :
             new TreeFlattener()
             .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
             .useIgnoreList(ignoreList, dbRemote.getDbName())
-            .flatten(diffTree), dbProject, dbRemote, location);
+            .flatten(diffTree), dbProject, dbRemote);
     }
 
     /**
@@ -671,7 +677,7 @@ public class DiffTableViewer extends Composite {
      * @param location
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote, Path location) {
+            DbSource dbProject, DbSource dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -684,37 +690,27 @@ public class DiffTableViewer extends Composite {
         sortViewer(Columns.TYPE);
         sortViewer(Columns.LOCATION);
 
-        elements.clear();
-        collection.forEach(el -> this.elements.put(el, new ElementMetaInfo()));
-        if (showGitUser && !elements.isEmpty() && location != null) {
-            readUsers(location);
+        elementInfoMap.clear();
+        collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
+
+        if (showGitUser && !elementInfoMap.isEmpty()) {
+            readUsers();
         }
-        viewer.setInput(elements.keySet());
+        viewer.setInput(elements);
         updateColumnsWidth();
 
         updateObjectsLabels();
     }
 
-    private void readUsers(Path location) {
+    private void readUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                GitUserReader r;
-                try {
-                    r = GitUserReader.create(location);
-                    if (r == null) {
-                        return Status.OK_STATUS;
-                    }
-                } catch (IOException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
-                            Messages.DiffTableViewer_error_reading_git_history, e);
-                }
-
-                try (GitUserReader reader = r) {
+                try (GitUserReader reader = new GitUserReader(location)) {
                     Path root = reader.getLocation();
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
-                    elements.forEach((k,v) -> {
+                    elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
                             Path fullPath = location.resolve(Paths.get(ModelExporter
                                     .getRelativeFilePath(k.getPgStatement(dbProject.getDbObject()), true)));
@@ -731,6 +727,9 @@ public class DiffTableViewer extends Composite {
                     reader.parseLocalChanges(metas);
                     reader.parseLastChange(metas);
                     return Status.OK_STATUS;
+                } catch (IOException e) {
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                            Messages.DiffTableViewer_error_reading_git_history, e);
                 }
             }
         };
@@ -740,7 +739,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    UiSync.exec(getDisplay(), () -> viewer.update(elements.keySet()
+                    UiSync.exec(getDisplay(), () -> viewer.update(elements
                             .toArray(new TreeElement[0]), new String[] { GITLABEL_PROP }));
                 }
             }
@@ -751,7 +750,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setChecked(TreeElement el, boolean checked) {
-        if (elements.keySet().contains(el)) {
+        if (elements.contains(el)) {
             // меняем состояние только элементов в наборе
             el.setSelected(checked);
         }
@@ -779,7 +778,7 @@ public class DiffTableViewer extends Composite {
     }
 
     public void updateObjectsLabels() {
-        int count = elements.size();
+        int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
         if (lineManager != null) {
             lineManager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
@@ -797,7 +796,7 @@ public class DiffTableViewer extends Composite {
 
     public int getCheckedElementsCount() {
         int count = 0;
-        for (TreeElement el : elements.keySet()) {
+        for (TreeElement el : elements) {
             if (el.isSelected()) {
                 ++count;
             }
@@ -869,7 +868,7 @@ public class DiffTableViewer extends Composite {
                 List<TreeElement> children = el.getChildren();
                 List<TreeElement> childrenInInput = new ArrayList<>(children.size());
                 for (TreeElement child : children) {
-                    if (elements.keySet().contains(child)) {
+                    if (elements.contains(child)) {
                         childrenInInput.add(child);
                     }
                 }
@@ -890,7 +889,7 @@ public class DiffTableViewer extends Composite {
             TreeElement el = (TreeElement) element;
             if (isContainer(el) && el.hasChildren()) {
                 for (TreeElement child : el.getChildren()) {
-                    if (elements.keySet().contains(child)) {
+                    if (elements.contains(child)) {
                         return true;
                     }
                 }
@@ -964,7 +963,7 @@ public class DiffTableViewer extends Composite {
             boolean hasChecked = false;
             boolean hasUnchecked = false;
             for (TreeElement child : el.getChildren()) {
-                if (elements.keySet().contains(child)) {
+                if (elements.contains(child)) {
                     if (child.isSelected()) {
                         hasChecked = true;
                     } else {
@@ -1134,7 +1133,7 @@ public class DiffTableViewer extends Composite {
             }
 
             return (codeFilter.getPattern().isEmpty() || codeFilter.findCode(el,
-                    elements.keySet(), dbProject.getDbObject(), dbRemote.getDbObject()));
+                    elements, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
         private boolean findName(TreeElement el, boolean isSubElement) {
@@ -1153,7 +1152,7 @@ public class DiffTableViewer extends Composite {
                 Iterator<TreeElement> it = el.getChildren().iterator();
                 while (!found && it.hasNext()) {
                     TreeElement child = it.next();
-                    found |= elements.keySet().contains(child) &&
+                    found |= elements.contains(child) &&
                             getMatchingLocation(child.getName(), filterName, filterRegex) != null;
                 }
             }

@@ -239,7 +239,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false, manager) {
+        diffTable = new DiffTableViewer(sashOuter, false, manager, Paths.get(proj.getProject().getLocationURI())) {
 
             @Override
             public void createRightSide(Composite container) {
@@ -678,7 +678,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
         }
-        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList,  Paths.get(proj.getProject().getLocationURI()));
+        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
             isDBLoaded = true;
             manualDepciesSource.clear();

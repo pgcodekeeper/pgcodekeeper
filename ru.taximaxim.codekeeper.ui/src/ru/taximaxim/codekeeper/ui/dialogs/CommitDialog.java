@@ -80,7 +80,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, true, null);
+        dtvTop = new DiffTableViewer(gTop, true, null, null);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
@@ -88,7 +88,7 @@ public class CommitDialog extends TrayDialog {
 
         dtvTop.setAutoExpand(true);
         List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
-        dtvTop.setInputCollection(result, dbProject, dbRemote, null);
+        dtvTop.setInputCollection(result, dbProject, dbRemote);
 
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -98,7 +98,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
 
-            dtvBottom = new DiffTableViewer(gBottom, false, null);
+            dtvBottom = new DiffTableViewer(gBottom, false, null, null);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
@@ -109,7 +109,7 @@ public class CommitDialog extends TrayDialog {
                 el.setSelected(true);
             }
             dtvTop.setAutoExpand(true);
-            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote, null);
+            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
 
             dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
             warningLbl = new Label(gBottom, SWT.NONE);
