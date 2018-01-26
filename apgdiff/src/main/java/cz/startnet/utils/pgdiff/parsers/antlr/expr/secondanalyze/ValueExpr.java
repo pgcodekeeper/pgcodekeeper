@@ -260,8 +260,7 @@ public class ValueExpr extends AbstractExpr {
                 analyze(new Vex(indirection.vex()));
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
-                // ret = new SimpleEntry<>(null, TypesSetManually.QUALIFIED_ASTERISK);
-                ret = new SimpleEntry<>(null, "= this condition must be removed =");
+                ret = new SimpleEntry<>(null, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {

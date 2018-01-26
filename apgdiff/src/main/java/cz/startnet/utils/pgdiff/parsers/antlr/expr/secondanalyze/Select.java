@@ -259,31 +259,11 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 // In this case 'ast.tb_name' is alias of table or view.
 
                 aliased = true;
-            } else if (ast.tb_name != null
-                    && (genericFrom = namespace.get(QNameParser.getFirstName(ast.tb_name.identifier()))) == null) {
-                // In this case 'ast.tb_name' is alias of subselect.
-
-                List<Entry<String, String>> complexResult = complexNamespace.entrySet().iterator().next().getValue();
-
-                // check 'complexResult' for the function which return TABLE(name1 type1, name2 type2, ...)
-                List<Entry<String, String>> retColsOfTable;
-
-                if ((retColsOfTable = getTblColsForFunctionReturnTable(complexResult)) != null) {
-                    return retColsOfTable;
-                }
-
-                return complexResult;
-
             } else {
-                List<Entry<String, String>> complexResult = complexNamespace.entrySet().iterator().next().getValue();
+                // In this case 'ast.tb_name' is alias of subselect or 'ast.tb_name' may be absent.
 
-                // check 'complexResult' for the function which return TABLE(name1 type1, name2 type2, ...)
-                List<Entry<String, String>> retColsOfTable;
-                if ((retColsOfTable = getTblColsForFunctionReturnTable(complexResult)) != null) {
-                    return retColsOfTable;
-                }
-
-                return complexResult;
+                // check for the function which return TABLE(name1 type1, name2 type2, ...)
+                return getTblColsChekedForFuncReturnTbl(complexNamespace.entrySet().iterator().next().getValue());
             }
         }
 
@@ -292,7 +272,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Entry<String, String>> getTblColsForFunctionReturnTable(List<Entry<String, String>> complexResult) {
+    private List<Entry<String, String>> getTblColsChekedForFuncReturnTbl(List<Entry<String, String>> complexResult) {
         if (complexResult.size() != 1) {
             return complexResult;
         }
@@ -312,13 +292,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         String name;
         String type;
         for (String nameType: nameTypeExpression.split(", ")) {
-            name = nameType.substring(0, nameType.indexOf(" "));
-            type = nameType.substring(nameType.indexOf(" ")+1, nameType.length());
+            name = nameType.substring(0, nameType.indexOf(' '));
+            type = nameType.substring(nameType.indexOf(' ')+1, nameType.length());
             ret.add(new SimpleEntry<>(name, type));
         }
 
         return ret;
-
     }
 
     private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
