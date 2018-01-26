@@ -5,11 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcTimestampLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -73,29 +75,29 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
     private void readSchemasSeparately() throws SQLException, InterruptedException, WrapperAccessException {
         String query = factory.makeFallbackQuery(loader.version);
-        boolean isTime = loader instanceof JdbcTimestampLoader;
-        DbObjType type = getType();
-        List<ObjectTimestamp> objects = null;
-        PgDatabase projDb = null;
+        Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
 
-        if (isTime) {
-            objects = ((JdbcTimestampLoader)loader).getObjects();
-            projDb = ((JdbcTimestampLoader)loader).getProjDb();
+        if (loader instanceof JdbcTimestampLoader) {
+            DbObjType type = getType();
+            DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
+            List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
+            PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
 
-            List<Long> oids = objects.stream().filter(obj -> (
-                    obj.getType() == (type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type)))
+            List<Long> oids = objects.stream().filter(obj -> (obj.getType() == local))
                     .map(ObjectTimestamp::getObjId).collect(Collectors.toList());
+
+            for (Entry<Long, PgSchema> schema : schemas) {
+                PgSchema sc = schema.getValue();
+                fillOldObjects(objects, sc, type, projDb);
+            }
+
             if (!oids.isEmpty()) {
                 query = JdbcReaderFactory.excludeObjects(query, oids);
             }
         }
 
         try (PreparedStatement st = loader.connection.prepareStatement(query)) {
-            for (Entry<Long, PgSchema> schema : loader.schemas.map.entrySet()) {
-                PgSchema sc = schema.getValue();
-                if (isTime) {
-                    readTime(objects, sc, type, projDb);
-                }
+            for (Entry<Long, PgSchema> schema : schemas) {
                 loader.setCurrentOperation("set search_path query");
                 loader.statement.execute("SET search_path TO " +
                         PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
@@ -113,7 +115,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void readTime(List<ObjectTimestamp> objects, PgSchema sc, DbObjType type, PgDatabase projDb) {
+    private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, DbObjType type, PgDatabase projDb) {
         for (ObjectTimestamp obj: objects) {
             if (obj.getSchema().equals(sc.getName()) && (obj.getType() == type
                     || obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT)) {
@@ -138,7 +140,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                         PgTable table = baseSchema.getTableByIndex(obj.getColumn());
                         if (table != null) {
                             String tableName = table.getName();
-                            PgIndex index = (PgIndex) ObjectTimestamp.
+                            PgIndex index = (PgIndex) GenericColumn.
                                     getObject(projDb, sc.getName(), tableName, obj.getColumn(), DbObjType.INDEX);
                             sc.getTable(tableName).addIndex(index.shallowCopy());
                         }

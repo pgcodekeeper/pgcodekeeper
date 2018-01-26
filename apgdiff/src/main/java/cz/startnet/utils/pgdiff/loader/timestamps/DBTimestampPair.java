@@ -82,16 +82,16 @@ public class DBTimestampPair {
         default: return;
         }
 
-        StringBuilder hash = new StringBuilder(PgDiffUtils.sha(st.getRawStatement()));
+        StringBuilder hash = new StringBuilder(st.getRawStatement());
 
         if (type == DbObjType.TABLE) {
-            ((PgTable)st).getConstraints().forEach(con -> hash.append(PgDiffUtils.sha(con.getRawStatement())));
+            ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
         }
 
         for (ObjectTimestamp obj : dbRemote.getObjects()) {
             if (obj.getObject().equals(gc)) {
                 dbProject.addObject(
-                        new ObjectTimestamp(gc, hash.toString(), obj.getTime()));
+                        new ObjectTimestamp(gc, PgDiffUtils.getHash(hash.toString()), obj.getTime()));
                 return;
             }
         }

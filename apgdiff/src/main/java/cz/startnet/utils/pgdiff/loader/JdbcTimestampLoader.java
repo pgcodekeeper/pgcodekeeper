@@ -77,6 +77,7 @@ public class JdbcTimestampLoader extends JdbcLoaderBase {
 
             DBTimestamp projTime = DBTimestamp.getDBTimestamp(path);
             DBTimestamp dbTime = new TimestampsReader(this).read();
+            finishAntlr();
             pair = new DBTimestampPair(projTime, dbTime);
             objects = pair.searchMatch();
 

@@ -534,7 +534,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
-                            setInput(dbProject, dbRemote, newDiffer.getDiffTree());
+                            setInput(dbProj, dbRemote, newDiffer.getDiffTree());
                             loadedRemote = currentRemote;
                         }
                     });

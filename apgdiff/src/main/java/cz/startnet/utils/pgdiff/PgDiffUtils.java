@@ -165,6 +165,17 @@ public final class PgDiffUtils {
         return sb.toString();
     }
 
+    public static byte[] getHash(String s) {
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(s.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException ex) {
+            Log.log(ex);
+            return null;
+        }
+    }
+
+
     public static String hash (String s, String instance) {
         try {
             byte[] hash = MessageDigest.getInstance(instance)
@@ -178,14 +189,6 @@ public final class PgDiffUtils {
             Log.log(ex);
             return instance +"_ERROR_" + new Random().nextInt();
         }
-    }
-
-    /**
-     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
-     */
-
-    public static String sha(String s) {
-        return hash(s, "SHA-256");
     }
 
     /**

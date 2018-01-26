@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,58 +65,58 @@ public class DBTimestamp implements Serializable {
             return;
         }
 
-        Map<GenericColumn, String> statements = new HashMap<>();
+        Map<GenericColumn, byte[]> statements = new HashMap<>();
         db.getExtensions().forEach(e -> statements.put(
                 new GenericColumn(e.getName(), DbObjType.EXTENSION),
-                PgDiffUtils.sha(e.getRawStatement())));
+                PgDiffUtils.getHash(e.getRawStatement())));
         for (PgSchema s : db.getSchemas()) {
             s.getTypes().forEach(t -> statements.put(
                     new GenericColumn(s.getName(), t.getName(), DbObjType.TYPE),
-                    PgDiffUtils.sha(t.getRawStatement())));
+                    PgDiffUtils.getHash(t.getRawStatement())));
             s.getDomains().forEach(d -> statements.put(
                     new GenericColumn(s.getName(), d.getName(), DbObjType.TYPE),
-                    PgDiffUtils.sha(d.getRawStatement())));
+                    PgDiffUtils.getHash(d.getRawStatement())));
             s.getSequences().forEach(seq -> statements.put(
                     new GenericColumn(s.getName(), seq.getName(), DbObjType.SEQUENCE),
-                    PgDiffUtils.sha(seq.getRawStatement())));
+                    PgDiffUtils.getHash(seq.getRawStatement())));
             s.getFunctions().forEach(f -> statements.put(
                     new GenericColumn(s.getName(), f.getName(), DbObjType.FUNCTION),
-                    PgDiffUtils.sha(f.getRawStatement())));
+                    PgDiffUtils.getHash(f.getRawStatement())));
             for (PgTable t : s.getTables()) {
                 t.getIndexes().forEach(i -> statements.put(
                         new GenericColumn(s.getName(), null, i.getName(), DbObjType.INDEX),
-                        PgDiffUtils.sha(i.getRawStatement())));
+                        PgDiffUtils.getHash(i.getRawStatement())));
                 t.getTriggers().forEach(tr -> statements.put(
                         new GenericColumn(s.getName(), t.getName(), tr.getName(), DbObjType.TRIGGER),
-                        PgDiffUtils.sha(tr.getRawStatement())));
+                        PgDiffUtils.getHash(tr.getRawStatement())));
                 t.getRules().forEach(r -> statements.put(
                         new GenericColumn(s.getName(), t.getName(), r.getName(), DbObjType.RULE),
-                        PgDiffUtils.sha(r.getRawStatement())));
-                // constraint hash join to table hash,
-                StringBuilder tableHash = new StringBuilder(PgDiffUtils.sha(t.getRawStatement()));
-                t.getConstraints().forEach(con -> tableHash.append(PgDiffUtils.sha(con.getRawStatement())));
+                        PgDiffUtils.getHash(r.getRawStatement())));
+
+                StringBuilder tableHash = new StringBuilder(t.getRawStatement());
+                t.getConstraints().forEach(con -> tableHash.append(con.getRawStatement()));
 
                 statements.put(new GenericColumn(s.getName(), t.getName(), DbObjType.TABLE),
-                        tableHash.toString());
+                        PgDiffUtils.getHash(tableHash.toString()));
             }
             for (PgView v : s.getViews()) {
                 v.getTriggers().forEach(tr -> statements.put(
                         new GenericColumn(s.getName(), v.getName(), tr.getName(), DbObjType.TRIGGER),
-                        PgDiffUtils.sha(tr.getRawStatement())));
+                        PgDiffUtils.getHash(tr.getRawStatement())));
                 v.getRules().forEach(r -> statements.put(
                         new GenericColumn(s.getName(), v.getName(), r.getName(), DbObjType.RULE),
-                        PgDiffUtils.sha(r.getRawStatement())));
+                        PgDiffUtils.getHash(r.getRawStatement())));
                 statements.put(new GenericColumn(s.getName(), v.getName(), DbObjType.TABLE),
-                        PgDiffUtils.sha(v.getRawStatement()));
+                        PgDiffUtils.getHash(v.getRawStatement()));
             }
             statements.put(new GenericColumn(s.getName(), DbObjType.SCHEMA),
-                    PgDiffUtils.sha(s.getRawStatement()));
+                    PgDiffUtils.getHash(s.getRawStatement()));
         }
 
         for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
             ObjectTimestamp obj = iterator.next();
             GenericColumn name = obj.getObject();
-            if (!statements.containsKey(name) || !(statements.get(name).equals(obj.getHash()))) {
+            if (!statements.containsKey(name) || !(Arrays.equals(statements.get(name), obj.getHash()))) {
                 iterator.remove();
             }
         }

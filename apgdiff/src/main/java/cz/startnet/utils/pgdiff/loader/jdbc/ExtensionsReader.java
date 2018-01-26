@@ -31,7 +31,7 @@ public class ExtensionsReader implements PgCatalogStrings {
         // exclude existiting extensions oids from query
         if (loader instanceof JdbcTimestampLoader) {
             List<ObjectTimestamp> objects = ((JdbcTimestampLoader)loader).getObjects();
-            if (objects != null) {
+            if (objects != null && !objects.isEmpty()) {
                 PgDatabase projDb = ((JdbcTimestampLoader)loader).getProjDb();
                 List<Long> oids = new ArrayList<>();
                 for (ObjectTimestamp obj : objects) {

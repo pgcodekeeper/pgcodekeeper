@@ -14,11 +14,11 @@ public class ObjectTimestamp implements Serializable {
     private static final long serialVersionUID = 6000537650992667481L;
 
     private final GenericColumn object;
-    private final String hash;
+    private final byte[] hash;
     private final long objId;
     private final Instant time;
 
-    public ObjectTimestamp(GenericColumn object, String hash, Instant modificationtime) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime) {
         this.object = object;
         this.hash = hash;
         this.time = modificationtime;
@@ -32,7 +32,7 @@ public class ObjectTimestamp implements Serializable {
         hash = null;
     }
 
-    public ObjectTimestamp(GenericColumn object, String hash, long objid, Instant modificationtime) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime) {
         this.object = object;
         this.objId = objid;
         this.hash = hash;
@@ -47,7 +47,7 @@ public class ObjectTimestamp implements Serializable {
         return objId;
     }
 
-    public String getHash() {
+    public byte[] getHash() {
         return hash;
     }
 
@@ -103,9 +103,5 @@ public class ObjectTimestamp implements Serializable {
 
     public String getColumn() {
         return object.column;
-    }
-
-    public static PgStatement getObject(PgDatabase db, String schema, String table, String column, DbObjType type) {
-        return new GenericColumn(schema, table, column, type).getStatement(db);
     }
 }
