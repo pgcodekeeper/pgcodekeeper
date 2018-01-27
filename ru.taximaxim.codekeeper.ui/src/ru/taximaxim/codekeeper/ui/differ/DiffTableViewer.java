@@ -452,13 +452,11 @@ public class DiffTableViewer extends Composite {
         columnType.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
         columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnUser.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
 
         columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
         columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
         columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
         columnLocation.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.LOCATION));
-        columnUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.USER));
 
         updateColumnsWidth();
 
@@ -611,9 +609,6 @@ public class DiffTableViewer extends Composite {
                 break;
             case NAME:
                 columnName.getColumn().setText(sb.append(Messages.diffTableViewer_object_name).toString());
-                break;
-            case USER:
-                columnUser.getColumn().setText(sb.append(Messages.DiffTableViewer_user).toString());
                 break;
             case LOCATION:
                 columnLocation.getColumn().setText(sb.append(Messages.diffTableViewer_container).toString());
