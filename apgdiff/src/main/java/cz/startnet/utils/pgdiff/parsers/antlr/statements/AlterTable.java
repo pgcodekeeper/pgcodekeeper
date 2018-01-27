@@ -25,7 +25,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.RegularPgTable;
 
-public class AlterTable extends ParserAbstract {
+public class AlterTable extends AbstractTable {
 
     private final Alter_table_statementContext ctx;
     public AlterTable(Alter_table_statementContext ctx, PgDatabase db) {

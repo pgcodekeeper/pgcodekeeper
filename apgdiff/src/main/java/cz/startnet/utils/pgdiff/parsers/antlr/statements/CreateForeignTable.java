@@ -13,10 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_serverContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.ForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -25,7 +22,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 
-public class CreateForeignTable extends ParserAbstract {
+public class CreateForeignTable extends AbstractTable {
+
     private final Create_foreign_table_statementContext ctx;
 
     public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db) {
@@ -63,7 +61,7 @@ public class CreateForeignTable extends ParserAbstract {
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
                     tableName, rawStatement, srvCtx.server_name.getText(), partBound));
 
-            fillPartitionColumns(partCtx.list_of_type_column_def(), table, schemaName);
+            fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
             addInherit(table, partCtx.parent_table.identifier());
         }
 
@@ -87,22 +85,6 @@ public class CreateForeignTable extends ParserAbstract {
         if (parentTable != null) {
             for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
                 addInherit(table, nameInher.identifier());
-            }
-        }
-    }
-
-    private void fillPartitionColumns(List_of_type_column_defContext columns,
-            PgTable table, String schemaName) {
-        if (columns == null) {
-            return;
-        }
-        for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
-            if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
-            } else if (colCtx.table_of_type_column_definition() != null) {
-                Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                addColumn(column.column_name.getText(), column.colmn_constraint,
-                        getDefSchemaName(), table);
             }
         }
     }

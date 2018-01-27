@@ -28,9 +28,10 @@ public class CreateView extends ParserAbstract {
             + "\n{2}\n)"
             + "\nSELECT {1}"
             + "\nFROM {0};";
-
     private static final String CHECK_OPTION = "check_option";
+
     private final Create_view_statementContext context;
+
     public CreateView(Create_view_statementContext context, PgDatabase db) {
         super(db);
         this.context = context;
@@ -41,8 +42,8 @@ public class CreateView extends ParserAbstract {
         Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        String name = QNameParser.getFirstName(ids);
-        PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
+        IdentifierContext name = QNameParser.getFirstNameCtx(ids);
+        PgView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext tablespace = ctx.table_space();
@@ -50,7 +51,8 @@ public class CreateView extends ParserAbstract {
                 view.setTablespace(tablespace.name.getText());
             }
         } else if (ctx.RECURSIVE() != null) {
-            String sql = MessageFormat.format(RECURSIVE_PATTERN, name,
+            String sql = MessageFormat.format(RECURSIVE_PATTERN,
+                    ParserAbstract.getFullCtxText(name),
                     ParserAbstract.getFullCtxText(ctx.column_name.names_references()),
                     ParserAbstract.getFullCtxText(ctx.v_query));
 

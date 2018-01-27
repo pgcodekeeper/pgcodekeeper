@@ -11,15 +11,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_partitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
@@ -31,7 +28,7 @@ import cz.startnet.utils.pgdiff.schema.RegularPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
 
-public class CreateTable extends ParserAbstract {
+public class CreateTable extends AbstractTable {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String oids;
@@ -96,23 +93,6 @@ public class CreateTable extends ParserAbstract {
         if (parentTable != null) {
             for (Schema_qualified_nameContext nameInher : parentTable.names_references().name) {
                 addInherit(table, nameInher.identifier());
-            }
-        }
-    }
-
-    private void fillTypeColumns(List_of_type_column_defContext columns,
-            PgTable table, String schemaName) {
-        if (columns == null) {
-            return;
-        }
-        for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
-            if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
-            }
-            if (colCtx.table_of_type_column_definition() != null) {
-                Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                addColumn(column.column_name.getText(), column.colmn_constraint,
-                        getDefSchemaName(), table);
             }
         }
     }
