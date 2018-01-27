@@ -252,7 +252,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false, null);
+        diffTable = new DiffTableViewer(container, false, null, null);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 480;
         gd.heightHint = 360;

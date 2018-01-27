@@ -251,8 +251,12 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_error_reading_git_history;
+
     public static String DiffTableViewer_expand_all;
     public static String DiffTableViewer_get_changes;
+
+    public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
@@ -264,6 +268,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_database;
 
     public static String DiffTableViewer_to_project;
+
+    public static String DiffTableViewer_user;
 
     public static String DiffWizard_db_tz;
 
@@ -506,6 +512,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_action_update;
 
+    public static String ProjectEditorPrefPage_show_git_user;
+
     public static String dbUpdatePrefPage_script_deleting_status;
 
     public static String dbUpdatePrefPage_status_always_delete;
@@ -592,6 +600,8 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source;
 
     public static String GetChanges_select_source_msg;
+
+    public static String GitUserReader_error_reading_local_changes;
 
     public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
 
