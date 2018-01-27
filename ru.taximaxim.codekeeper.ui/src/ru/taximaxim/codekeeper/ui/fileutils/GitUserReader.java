@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -26,6 +27,11 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GitUserReader implements AutoCloseable {
 
+    public static boolean checkRepo(Path path) {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
+        return builder.getGitDir() != null || builder.getWorkTree() != null;
+    }
+
     private final Repository repo;
 
     /**
@@ -43,11 +49,6 @@ public class GitUserReader implements AutoCloseable {
 
     public Path getLocation() {
         return repo.getDirectory().getParentFile().toPath();
-    }
-
-    public static boolean checkRepo(Path path) {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
-        return builder.getGitDir() != null || builder.getWorkTree() != null;
     }
 
     /**
@@ -92,40 +93,18 @@ public class GitUserReader implements AutoCloseable {
             IndexDiff status = new IndexDiff(repo, head, new FileTreeIterator(repo));
             status.diff();
 
-            status.getAdded().forEach(e -> {
+            Consumer<String> setter = e -> {
                 List<ElementMetaInfo> set = metas.get(e);
                 if (set != null) {
                     set.forEach(ElementMetaInfo::setChanged);
                 }
-            });
+            };
 
-            status.getChanged().forEach(e -> {
-                List<ElementMetaInfo> set = metas.get(e);
-                if (set != null) {
-                    set.forEach(ElementMetaInfo::setChanged);
-                }
-            });
-
-            status.getModified().forEach(e -> {
-                List<ElementMetaInfo> set = metas.get(e);
-                if (set != null) {
-                    set.forEach(ElementMetaInfo::setChanged);
-                }
-            });
-
-            status.getUntracked().forEach(e -> {
-                List<ElementMetaInfo> set = metas.get(e);
-                if (set != null) {
-                    set.forEach(ElementMetaInfo::setChanged);
-                }
-            });
-
-            status.getUntrackedFolders().forEach(e -> {
-                List<ElementMetaInfo> set = metas.get(e);
-                if (set != null) {
-                    set.forEach(ElementMetaInfo::setChanged);
-                }
-            });
+            status.getAdded().forEach(setter);
+            status.getChanged().forEach(setter);
+            status.getModified().forEach(setter);
+            status.getUntracked().forEach(setter);
+            status.getUntrackedFolders().forEach(setter);
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, Messages.GitUserReader_error_reading_local_changes, e);
         }
