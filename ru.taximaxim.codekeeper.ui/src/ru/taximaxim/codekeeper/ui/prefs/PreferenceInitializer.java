@@ -27,6 +27,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
+        store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);
 
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);

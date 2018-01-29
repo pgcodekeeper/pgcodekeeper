@@ -8,18 +8,22 @@ options {
 privileges : '{' acls+=privilege (COMMA acls+=privilege)* '}' EOF;
   
 privilege
-  : name=Identifier? EQUAL priv=Privileges SLASH grantor=Identifier  
-  | QUOTE_CHAR qname=identifier? EQUAL priv=Privileges SLASH qgrantor=identifier QUOTE_CHAR
+  : name=Identifier? priv=Privileges grantor=Identifier  
+  | QUOTE_CHAR qname=identifier? priv=Privileges qgrantor=identifier QUOTE_CHAR
   ;
 
 identifier : (Identifier | QuotedIdentifier);  
    
-COMMA: ','; 
-SLASH: '/';
-EQUAL: '=';
+COMMA: ',';
 QUOTE_CHAR : '"';
 
-Privileges : ([acdrtxwCDTUX] '*'?)+ ;
+// consume terminator chars to distinct this token from an Indentifier
+// strip terminators for getText()
+Privileges : '=' ([acdrtxwCDTUX] '*'?)+ '/'
+    {
+        String __tx = getText();
+        setText(__tx.substring(1, __tx.length() - 1));
+    };
 
 Identifier: [a-zA-Z_0-9]+;
     

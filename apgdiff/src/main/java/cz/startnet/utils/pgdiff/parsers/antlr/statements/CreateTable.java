@@ -7,39 +7,28 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_referencesContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_columnsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_partitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_serverContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_byContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_oidContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_storage_parameterContext;
-import cz.startnet.utils.pgdiff.schema.ForeignPgTable;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.RegularPgTable;
-import cz.startnet.utils.pgdiff.schema.SimpleForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.SimplePgTable;
 import cz.startnet.utils.pgdiff.schema.TypedPgTable;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-public class CreateTable extends ParserAbstract {
+public class CreateTable extends AbstractTable {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String oids;
@@ -76,23 +65,11 @@ public class CreateTable extends ParserAbstract {
         if (typeCtx != null) {
             table = defineType(typeCtx, tableName, rawStatement, schemaName);
         } else if (colCtx != null) {
-            if (ctx.FOREIGN() != null) {
-                Define_serverContext srvCtx = colCtx.define_server();
-                table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
-                        tableName, rawStatement, srvCtx.server_name.getText()));
-            } else {
-                table = fillRegularTable(new SimplePgTable(tableName, rawStatement));
-            }
+            table = fillRegularTable(new SimplePgTable(tableName, rawStatement));
             fillColumns(colCtx, table, schemaName);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
-            if (ctx.FOREIGN() != null) {
-                Define_serverContext srvCtx = partCtx.define_server();
-                table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
-                        tableName, rawStatement, srvCtx.server_name.getText(), partBound));
-            } else {
-                table = fillRegularTable(new PartitionPgTable(tableName, rawStatement, partBound));
-            }
+            table = fillRegularTable(new PartitionPgTable(tableName, rawStatement, partBound));
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName);
             addInherit(table, partCtx.parent_table.identifier());
         }
@@ -106,7 +83,7 @@ public class CreateTable extends ParserAbstract {
                 table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                getColumn(column.column_name.getText(),
+                addColumn(column.column_name.getText(),
                         column.datatype, column.collate_name,
                         column.colmn_constraint, getDefSchemaName(), table);
             }
@@ -120,24 +97,6 @@ public class CreateTable extends ParserAbstract {
         }
     }
 
-    private void fillTypeColumns(List_of_type_column_defContext columns,
-            PgTable table, String schemaName) {
-        if (columns == null) {
-            return;
-        }
-        for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
-            if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
-            }
-            if (colCtx.table_of_type_column_definition() != null) {
-                Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                getColumn(column.column_name.getText(),
-                        null, null, column.colmn_constraint,
-                        getDefSchemaName(), table);
-            }
-        }
-    }
-
     private TypedPgTable defineType(Define_typeContext typeCtx, String tableName,
             String rawStatement, String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
@@ -146,17 +105,6 @@ public class CreateTable extends ParserAbstract {
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName);
         addTypeAsDepcy(typeName, table, getDefSchemaName());
         fillRegularTable(table);
-        return table;
-    }
-
-    private ForeignPgTable fillForeignTable(Define_serverContext server, ForeignPgTable table) {
-        Define_foreign_optionsContext options = server.define_foreign_options();
-        if (options != null){
-            for (Foreign_optionContext option : options.foreign_option()){
-                String value = option.value == null ? null : option.value.getText();
-                fillOptionParams(value, option.name.getText(), false, table::addOption);
-            }
-        }
         return table;
     }
 
@@ -197,16 +145,6 @@ public class CreateTable extends ParserAbstract {
             table.setPartitionBy(ParserAbstract.getFullCtxText(part.partition_method()));
         }
         return table;
-    }
-
-    private void addInherit(PgTable table,  List<IdentifierContext> idsInh) {
-        String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
-        String inhTableName = QNameParser.getFirstName(idsInh);
-        table.addInherits(inhSchemaName, inhTableName);
-        GenericColumn gc = new GenericColumn(
-                inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
-                        inhTableName, DbObjType.TABLE);
-        table.addDep(gc);
     }
 
     private void parseOptions(List<Storage_parameter_optionContext> options, RegularPgTable table){

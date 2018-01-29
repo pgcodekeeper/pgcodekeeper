@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_foreign_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
@@ -43,6 +44,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateForeignTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
@@ -101,6 +103,12 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
         safeParseStatement(new CreateTable(ctx, db, tablespace, oids), ctx);
+    }
+
+
+    @Override
+    public void exitCreate_foreign_table_statement(Create_foreign_table_statementContext ctx) {
+        safeParseStatement(new CreateForeignTable(ctx, db), ctx);
     }
 
     @Override

@@ -62,6 +62,7 @@ schema_statement
 
 schema_create
     : CREATE (create_table_statement
+    | create_foreign_table_statement
     | create_index_statement
     | create_extension_statement
     | create_trigger_statement
@@ -676,7 +677,7 @@ schema_definition
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? MATERIALIZED? VIEW name=schema_qualified_name column_name=column_references?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW name=schema_qualified_name column_name=column_references?
         (WITH storage_parameter)?
         table_space?
         AS v_query=select_stmt
@@ -689,13 +690,35 @@ with_check_option
     ;
 
 create_table_statement
-  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? FOREIGN? TABLE (IF NOT EXISTS)? name=schema_qualified_name
+  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name
     define_table
     partition_by?
     storage_parameter_oid?
     on_commit?
     table_space?
   ;
+
+create_foreign_table_statement
+   : FOREIGN TABLE (IF NOT EXISTS)? name=schema_qualified_name
+   (define_foreign_table | define_partition)
+   define_server
+   ;
+   
+define_foreign_table
+   : LEFT_PAREN columns+=foreign_column_def (COMMA columns+=foreign_column_def)* RIGHT_PAREN
+   (INHERITS parent_table=column_references)?
+   ;
+
+foreign_column_def
+   : define_foreign_columns
+   | tabl_constraint=constraint_common
+   ;   
+   
+define_foreign_columns
+   : column_name=identifier datatype=data_type
+   define_foreign_options?
+   collate_name=collate_identifier? (column_constraint+=constraint_common)*
+   ;
 
 define_table
    : define_columns 
@@ -707,7 +730,6 @@ define_partition
     : PARTITION OF parent_table=schema_qualified_name
     list_of_type_column_def?
     for_values_bound
-    define_server?
     ;
 
 for_values_bound
@@ -729,7 +751,6 @@ define_columns
       (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? 
     RIGHT_PAREN
     (INHERITS parent_table=column_references)?
-    define_server?
   ;
 
 define_type
