@@ -575,9 +575,15 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_reset;
 
+    public static String FilterDialog_schema_filter_placeholder;
+
+    public static String FilterDialog_search_by_container;
+
     public static String FilterDialog_show_change_types;
 
     public static String FilterDialog_show_object_types;
+
+    public static String FilterDialog_sql_filter_placehodlder;
 
     public static String FilterDialog_title;
 
