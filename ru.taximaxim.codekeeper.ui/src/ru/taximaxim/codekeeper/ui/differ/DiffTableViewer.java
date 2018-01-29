@@ -522,13 +522,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                if (meta != null) {
-                    String author = elementInfoMap.get(element).getAuthorName();
-                    if (author != null) {
-                        return author;
-                    }
-                }
-                return ""; //$NON-NLS-1$
+                return meta != null ? meta.getAuthorName() : ""; //$NON-NLS-1$
             }
 
             @Override

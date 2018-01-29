@@ -13,6 +13,7 @@ public class ElementMetaInfo {
     }
 
     public String getAuthorName() {
-        return isChanged ?  "*" + author : author;
+        String a = author == null ? "" : author;
+        return isChanged ?  "*" + a : a;
     }
 }
