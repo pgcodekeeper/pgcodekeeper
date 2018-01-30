@@ -199,7 +199,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         // simplified for 1 static notification
         // refactor into multiple child composites w/ description class
         // for multiple dynamic notifications if necessary
-        contNotifications = new Group(parent, SWT.BORDER);
+        contNotifications = new Group(parent, SWT.NONE);
         contNotifications.setLayout(new GridLayout(4, false));
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
