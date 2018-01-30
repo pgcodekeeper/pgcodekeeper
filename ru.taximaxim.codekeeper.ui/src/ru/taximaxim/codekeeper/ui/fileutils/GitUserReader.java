@@ -15,6 +15,7 @@ import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -68,17 +69,15 @@ public class GitUserReader implements AutoCloseable {
 
             while (it.hasNext() && !metas.isEmpty()) {
                 RevCommit commit = it.next();
-                if (commit.getParentCount() > 0) {
-                    String author = commit.getAuthorIdent().getName();
-                    RevCommit parent = r.parseCommit(commit.getParent(0).getId());
-                    List<DiffEntry> de = df.scan(parent.getTree(), commit.getTree());
+                String author = commit.getAuthorIdent().getName();
+                RevTree parent = commit.getParentCount() > 0 ? r.parseCommit(commit.getParent(0).getId()).getTree() : null;
+                List<DiffEntry> de = df.scan(parent, commit.getTree());
 
-                    for (DiffEntry d : de) {
-                        String p = d.getNewPath();
-                        List<ElementMetaInfo> meta = metas.remove(p);
-                        if (meta != null) {
-                            meta.forEach(e -> e.setAuthor(author));
-                        }
+                for (DiffEntry d : de) {
+                    String p = d.getNewPath();
+                    List<ElementMetaInfo> meta = metas.remove(p);
+                    if (meta != null) {
+                        meta.forEach(e -> e.setAuthor(author));
                     }
                 }
             }
