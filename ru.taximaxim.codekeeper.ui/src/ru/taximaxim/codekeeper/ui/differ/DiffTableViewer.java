@@ -21,7 +21,9 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -701,9 +703,15 @@ public class DiffTableViewer extends Composite {
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT) {
-                            Path fullPath = location.resolve(Paths.get(ModelExporter
-                                    .getRelativeFilePath(k.getPgStatement(dbProject.getDbObject()), true)));
-                            String location = root.relativize(fullPath).toString();
+                            Path fullPath = location.resolve(Paths.get(ModelExporter.getRelativeFilePath(
+                                    k.getPgStatement(dbProject.getDbObject()), true)));
+                            // git always uses linux paths
+                            // since all paths here are relative it's ok to simply
+                            // join their elements with forward slashes
+                            String location = StreamSupport.stream(
+                                    root.relativize(fullPath).spliterator(), false)
+                                    .map(Path::toString)
+                                    .collect(Collectors.joining("/"));
 
                             List<ElementMetaInfo> meta = metas.get(location);
                             if (meta == null) {
