@@ -365,6 +365,10 @@ public final class Messages extends NLS {
 
     public static String NavigatorRootLabelProvider_open_editor;
 
+    public static String NewObjectWizard_invalid_input_format;
+
+    public static String NewObjectWizard_invalid_schema_format;
+
     public static String NewProjWizard_error_creating_project;
 
     public static String NewProjWizard_error_tz_query;
