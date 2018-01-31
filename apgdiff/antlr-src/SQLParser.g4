@@ -1917,7 +1917,7 @@ sort_specifier_list
 
 sort_specifier
   : key=vex
-    opclass=identifier? // this allows to share this rule with create_index; technically invalid syntax
+    opclass=schema_qualified_name? // this allows to share this rule with create_index; technically invalid syntax
     order=order_specification?
     null_order=null_ordering?
   ;
