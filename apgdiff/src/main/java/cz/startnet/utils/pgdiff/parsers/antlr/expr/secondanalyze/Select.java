@@ -61,6 +61,8 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      */
     private boolean lateralAllowed;
 
+    private static final String FUNC_RETURN_TBL_TEMPLATE = "^TABLE\\([\\w\\d\\s\\[\\],]+\\)$";
+
     public Select(String schema, PgDatabase db) {
         super(schema, db);
     }
@@ -267,11 +269,11 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
         List<Entry<String, String>> colPairsFilledByType = new ArrayList<>();
 
-        for (Entry<String, String> columnPair : analyzedColPairs) {
-            if (TypesSetManually.COLUMN.equals(columnPair.getValue())) {
+        for (Entry<String, String> currentColPair : analyzedColPairs) {
+            if (TypesSetManually.COLUMN.equals(currentColPair.getValue())) {
                 // Cases are handled when the type of column is not defined.
 
-                String currentColName = columnPair.getKey();
+                String currentColName = currentColPair.getKey();
 
                 List<Entry<String, String>> colPairsOfAliasOfComplexNmsp;
                 if ((colPairsOfAliasOfComplexNmsp = complexNamespace.get(currentColName)) != null) {
@@ -286,27 +288,40 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                     // In 'complexNamespace', check the presence of 'table (colName colType, ...)',
                     // in which the column names and their number are the same as the current one.
-                    // As result get the columns from the table returned by the function.
-                    colPairsFilledByType.addAll(getColsFromReturnedTblFunc(analyzedColPairs, currentColName));
+                    // As result get the column from the table returned by the function.
+                    colPairsFilledByType.add(getColFromReturnedTblFunc(analyzedColPairs, currentColPair));
                 }
             } else {
-                colPairsFilledByType.add(columnPair);
+                colPairsFilledByType.add(currentColPair);
             }
         }
         return colPairsFilledByType;
     }
 
     /**
-     * Get the columns from the table returned by the function.
+     * Get columnPair(with defined type) for 'currentColPair' from one of the columns
+     * of the table returned by the function
+     * (function returns 'TABLE (colName colType, ...)').
      *
-     * In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
+     * <p>Example for explanation.
+     * <p>SELECT d.f1,d.f2 FROM dup3(3) d(f1,f2);
+     * <p>SELECT dup3.f1, dup3.f2 FROM dup3(3) dup3(f1,f2);
+     * <p>'dup3' returns 'TABLE(f1 integer, f2 double precision)'.
+     * <p>For getting type for column 'f1' uses filter by 'currentColPair.getKey()'
+     * (currentColPair.getKey() == "f1").
+     *
+     * <p>In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
      * in which the column names and their number are the same as the current one.
-     * As result get the columns from the table returned by the function.
+     * As result get the column from the table returned by the function.
      *
-     * @return columns from the table returned by the function.
+     * @param analyzedColPairs list of analyzed column pairs.
+     * @param currentColPair the colPari(with undefined type) of the column to get the columnPair (with defined type).
+     *
+     * @return columnPair(with defined type) for 'currentColPair' from one of the columns of the table returned by the function
+     * or 'currentColPair' without changes
      */
-    private List<Entry<String, String>> getColsFromReturnedTblFunc(List<Entry<String, String>> analyzedColPairs,
-            String currentColName) {
+    private Entry<String, String> getColFromReturnedTblFunc(List<Entry<String, String>> analyzedColPairs,
+            Entry<String, String> currentColPair) {
         Set<String> colNamesOfanalyzedColPairs = analyzedColPairs.stream()
                 .map(Entry::getKey).collect(Collectors.toSet());
 
@@ -316,22 +331,32 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             List<Entry<String, String>> colPairsOfAliasOfComplexNmsp = complexEntry.getValue();
 
             if (colPairsOfAliasOfComplexNmsp.size() == 1
-                    && Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$")
+                    && Pattern.compile(FUNC_RETURN_TBL_TEMPLATE)
                     .matcher(colPairsOfAliasOfComplexNmsp.get(0).getValue()).matches()) {
 
                 Set<String> colNamesOfcolPairsOfAliasOfComplexNmsp = getColsChekedForFuncReturnTbl(complexEntry).stream()
                         .map(Entry::getKey).collect(Collectors.toSet());
 
                 if (colNamesOfcolPairsOfAliasOfComplexNmsp.equals(colNamesOfanalyzedColPairs)) {
-                    // return colPairs which relates to the currentColName.
+                    // Return one columnPair(name-type) which relates to the 'currentColName'.
+                    //
+                    // Example for explanation.
+                    //
+                    // SELECT d.f1,d.f2 FROM dup3(3) d(f1,f2);
+                    // SELECT dup3.f1, dup3.f2 FROM dup3(3) dup3(f1,f2);
+                    //
+                    // 'dup3' returns 'TABLE(f1 integer, f2 double precision)'.
+                    //
+                    // For getting type for column 'f1' uses filter by 'currentColPair.getKey()'
+                    // (currentColPair.getKey() == "f1").
                     return getColsChekedForFuncReturnTbl(complexEntry).stream()
-                            .filter(entry -> entry.getKey().equals(currentColName))
-                            .collect(Collectors.toList());
+                            .filter(entry -> entry.getKey().equals(currentColPair.getKey()))
+                            .collect(Collectors.toList()).get(0);
                 }
             }
         }
 
-        return Collections.emptyList();
+        return currentColPair;
     }
 
     private List<Entry<String, String>> replacingNullNameInColumns(List<Entry<String, String>> ret) {
@@ -398,7 +423,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
 
         String value = complexResult.get(0).getValue();
-        Matcher matcher = Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$").matcher(value);
+        Matcher matcher = Pattern.compile(FUNC_RETURN_TBL_TEMPLATE).matcher(value);
 
         if (!matcher.matches()) {
             return Arrays.asList(new SimpleEntry<>(entryCompNmsp.getKey(), complexResult.get(0).getValue()));
