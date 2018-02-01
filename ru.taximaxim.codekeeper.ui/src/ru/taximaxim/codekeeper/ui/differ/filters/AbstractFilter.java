@@ -11,7 +11,8 @@ import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 
 /**
- * Base implementation of  project editor filter
+ * Base implementation of  project editor filter. Subclasses must override
+ * checkElement method.
  *
  * @since 4.2.0.
  * @author galiev_mr
@@ -24,7 +25,13 @@ public abstract class AbstractFilter {
     protected boolean useRegEx;
     protected Pattern regExPattern;
 
-    public void update(String pattern, boolean useRegEx) {
+    /**
+     * Updates filter fields
+     *
+     * @param pattern - new pattern string
+     * @param useRegEx - new value for using regex
+     */
+    public void updateFields(String pattern, boolean useRegEx) {
         this.pattern = pattern;
         this.useRegEx = useRegEx;
         if (useRegEx) {
@@ -47,14 +54,29 @@ public abstract class AbstractFilter {
         return useRegEx;
     }
 
-    public abstract boolean find(TreeElement el, Set<TreeElement> elements,
+    /**
+     * Checks if the element meets the conditions
+     *
+     * @param el - checked element
+     * @param elements - full collection of elements
+     * @param dbProject - project database
+     * @param dbRemote - remote database
+     * @return true if element meets the conditions
+     */
+    public abstract boolean checkElement(TreeElement el, Set<TreeElement> elements,
             PgDatabase dbProject, PgDatabase dbRemote);
 
-    protected boolean checkCode(String code) {
+    /**
+     * Looks for matches in a given string by filter pattern
+     *
+     * @param string - string in which you want to check for matches
+     * @return true if find matches
+     */
+    protected boolean searchMatches(String string) {
         if (regExPattern != null) {
-            Matcher matcher = regExPattern.matcher(code);
+            Matcher matcher = regExPattern.matcher(string);
             return matcher.find();
         }
-        return code.indexOf(pattern.toLowerCase()) > -1;
+        return string.indexOf(pattern.toLowerCase()) > -1;
     }
 }

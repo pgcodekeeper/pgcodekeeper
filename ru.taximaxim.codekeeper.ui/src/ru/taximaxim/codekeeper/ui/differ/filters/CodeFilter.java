@@ -18,7 +18,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 public class CodeFilter extends AbstractFilter {
 
     @Override
-    public boolean find(TreeElement el, Set<TreeElement> elements,
+    public boolean checkElement(TreeElement el, Set<TreeElement> elements,
             PgDatabase dbProject, PgDatabase dbRemote) {
 
         if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements)) {
@@ -35,21 +35,21 @@ public class CodeFilter extends AbstractFilter {
     private boolean checkSide(TreeElement el, PgDatabase db, Set<TreeElement> elements) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
-            if (checkCode(getCode(statement))) {
+            if (searchMatches(getCode(statement))) {
                 return true;
             }
 
             if (DiffTableViewer.isSubElement(el)) {
                 PgStatement parent = statement.getParent();
                 if (parent != null) {
-                    return checkCode(getCode(parent));
+                    return searchMatches(getCode(parent));
                 }
             }
 
             if (DiffTableViewer.isContainer(el)) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
-                        .anyMatch(s -> s != null && checkCode(getCode(s)));
+                        .anyMatch(s -> s != null && searchMatches(getCode(s)));
             }
         }
 

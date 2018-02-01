@@ -218,8 +218,8 @@ public class FilterDialog extends Dialog {
             sides.add((DiffSide)chg);
         }
 
-        codeFilter.update(txtCode.getText(), btnCodeRegEx.getSelection());
-        schemaFilter.update(txtSchema.getText(), btnSchemaRegEx.getSelection());
+        codeFilter.updateFields(txtCode.getText(), btnCodeRegEx.getSelection());
+        schemaFilter.updateFields(txtSchema.getText(), btnSchemaRegEx.getSelection());
 
         super.okPressed();
     }

@@ -96,6 +96,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
@@ -115,8 +116,7 @@ public class DiffTableViewer extends Composite {
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
     private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
 
-    private static final List<String> HISTORY = new ArrayList<>();
-    private static final SimpleContentProposalProvider SCP = new SimpleContentProposalProvider(new String[] {});
+    private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
 
@@ -275,19 +275,28 @@ public class DiffTableViewer extends Composite {
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(30);
+        gd.widthHint = pc.convertWidthInCharsToPixels(35);
         txtFilterName.setLayoutData(gd);
-        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
+        txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
 
         KeyStroke ks = null;
+        LinkedList<String> history = new LinkedList<>();
         try {
             ks = KeyStroke.getInstance(KEY_PRESS);
         } catch (ParseException ex) {
             Log.log(ex);
         }
+        try {
+            history = XML_HISTORY.getHistory();
+        } catch (IOException ex) {
+            Log.log(ex);
+        }
+
+        SimpleContentProposalProvider scp = new SimpleContentProposalProvider(history.toArray(new String[history.size()]));
+        scp.setFiltering(true);
 
         ContentProposalAdapter adapter = new ContentProposalAdapter(txtFilterName,
-                new TextContentAdapter(), SCP, ks, null);
+                new TextContentAdapter(), scp, ks, null);
         adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 
         useRegEx = new Button(upperComp, SWT.CHECK);
@@ -339,15 +348,15 @@ public class DiffTableViewer extends Composite {
             }
 
             private void filterHistory(String text) {
-                String [] var;
-                if (text != null && !text.isEmpty()) {
-                    HISTORY.remove(text);
-                    HISTORY.add(0, text);
-                    var = HISTORY.stream().filter(e -> e.startsWith(text)).toArray(String[]::new);
-                } else {
-                    var = HISTORY.toArray(new String[HISTORY.size()]);
+                try {
+                    if (text != null && !text.isEmpty()) {
+                        XML_HISTORY.addHistoryEntry(text);
+                    }
+                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    scp.setProposals(history.toArray(new String[history.size()]));
+                } catch (IOException e) {
+                    Log.log(e);
                 }
-                SCP.setProposals(var);
             }
         };
 
@@ -1164,7 +1173,7 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            if (!schemaFilter.getPattern().isEmpty() && !schemaFilter.find(el, null, null, null)) {
+            if (!schemaFilter.getPattern().isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
                 return false;
             }
 
@@ -1172,7 +1181,7 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            return (codeFilter.getPattern().isEmpty() || codeFilter.find(el,
+            return (codeFilter.getPattern().isEmpty() || codeFilter.checkElement(el,
                     elements, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
