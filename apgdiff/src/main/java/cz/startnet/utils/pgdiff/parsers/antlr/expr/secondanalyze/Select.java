@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -176,14 +178,17 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     }
                 }
 
+                Qualified_asteriskContext ast = null;
                 ret = new ArrayList<>();
-                for (Select_sublistContext target : primary.select_list().select_sublist()) {
+                List<Select_sublistContext> selectSublist = primary.select_list().select_sublist();
+                for (int i = 0; i < selectSublist.size(); i++) {
+                    Select_sublistContext target = selectSublist.get(i);
+
                     ValueExpr vexCol = new ValueExpr(this);
                     Vex selectSublistVex = new Vex(target.vex());
 
-                    Qualified_asteriskContext ast;
                     if ((ast = vexCol.getAsteriskIfContainedInVex(selectSublistVex)) != null) {
-                        ret.addAll(getColsOfAsterisk(ast, vexCol));
+                        ret.addAll(getColsOfAsterisk(ast, vexCol, i));
                         continue;
                     }
 
@@ -191,11 +196,14 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                     if(target.alias != null && columnPair != null){
                         columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
-
                     }
 
                     ret.add(columnPair);
                 }
+
+                ret = replacingNullNameInColumns(ret);
+
+                ret = fillTypesOfColsWhenFromFunc(ret, ast);
 
                 ValueExpr vex = new ValueExpr(this);
 
@@ -246,7 +254,104 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast, ValueExpr vexCol) {
+    /**
+     * Fill columns by types in cases when function located in FROM.
+     *
+     * @return list of columns as entry('column name' - 'column type').
+     */
+    private List<Entry<String, String>> fillTypesOfColsWhenFromFunc(List<Entry<String, String>> analyzedColPairs,
+            Qualified_asteriskContext ast) {
+        if (ast != null) {
+            return analyzedColPairs;
+        }
+
+        List<Entry<String, String>> colPairsFilledByType = new ArrayList<>();
+
+        for (Entry<String, String> columnPair : analyzedColPairs) {
+            if (TypesSetManually.COLUMN.equals(columnPair.getValue())) {
+                // Cases are handled when the type of column is not defined.
+
+                String currentColName = columnPair.getKey();
+
+                List<Entry<String, String>> colPairsOfAliasOfComplexNmsp;
+                if ((colPairsOfAliasOfComplexNmsp = complexNamespace.get(currentColName)) != null) {
+                    // In this case alias of 'complexNamespace' is used as name of 'columnPair'.
+
+                    // fill column by type in cases when function return only one value.
+
+                    colPairsFilledByType.add(getColsChekedForFuncReturnTbl(new SimpleEntry<>(currentColName,
+                            colPairsOfAliasOfComplexNmsp)).get(0));
+                } else {
+                    // fill column by type in cases when function return TABLE(...).
+
+                    // In 'complexNamespace', check the presence of 'table (colName colType, ...)',
+                    // in which the column names and their number are the same as the current one.
+                    // As result get the columns from the table returned by the function.
+                    colPairsFilledByType.addAll(getColsFromReturnedTblFunc(analyzedColPairs, currentColName));
+                }
+            } else {
+                colPairsFilledByType.add(columnPair);
+            }
+        }
+        return colPairsFilledByType;
+    }
+
+    /**
+     * Get the columns from the table returned by the function.
+     *
+     * In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
+     * in which the column names and their number are the same as the current one.
+     * As result get the columns from the table returned by the function.
+     *
+     * @return columns from the table returned by the function.
+     */
+    private List<Entry<String, String>> getColsFromReturnedTblFunc(List<Entry<String, String>> analyzedColPairs,
+            String currentColName) {
+        Set<String> colNamesOfanalyzedColPairs = analyzedColPairs.stream()
+                .map(Entry::getKey).collect(Collectors.toSet());
+
+        // In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
+        // in which the column names and their number are the same as the current one.
+        for (Entry<String, List<Entry<String, String>>> complexEntry : complexNamespace.entrySet()) {
+            List<Entry<String, String>> colPairsOfAliasOfComplexNmsp = complexEntry.getValue();
+
+            if (colPairsOfAliasOfComplexNmsp.size() == 1
+                    && Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$")
+                    .matcher(colPairsOfAliasOfComplexNmsp.get(0).getValue()).matches()) {
+
+                Set<String> colNamesOfcolPairsOfAliasOfComplexNmsp = getColsChekedForFuncReturnTbl(complexEntry).stream()
+                        .map(Entry::getKey).collect(Collectors.toSet());
+
+                if (colNamesOfcolPairsOfAliasOfComplexNmsp.equals(colNamesOfanalyzedColPairs)) {
+                    // return colPairs which relates to the currentColName.
+                    return getColsChekedForFuncReturnTbl(complexEntry).stream()
+                            .filter(entry -> entry.getKey().equals(currentColName))
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<Entry<String, String>> replacingNullNameInColumns(List<Entry<String, String>> ret) {
+        if(!ret.stream().anyMatch(e -> e.getKey() == null)) {
+            return ret;
+        }
+
+        List<Entry<String, String>> withoutNullName = new ArrayList<>();
+        for (int i = 0; i < ret.size(); i++) {
+            Entry<String, String> entry = ret.get(i);
+
+            withoutNullName.add(entry.getKey() != null ? entry :
+                new SimpleEntry<>("col"+(i+1), entry.getValue()));
+
+        }
+        return withoutNullName;
+    }
+
+    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast, ValueExpr vexCol,
+            int asterNumberInList) {
         List<Entry<String, String>> ret = new ArrayList<>();
         boolean aliased = false;
         GenericColumn genericFrom = null;
@@ -260,10 +365,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                 aliased = true;
             } else {
-                // In this case 'ast.tb_name' is alias of subselect or 'ast.tb_name' may be absent.
+                // In this case 'ast.tb_name' is alias of subselect
+                // or 'ast.tb_name' is alias of function,
+                // or 'ast.tb_name' may be absent.
 
-                // check for the function which return TABLE(name1 type1, name2 type2, ...)
-                return getTblColsChekedForFuncReturnTbl(complexNamespace.entrySet().iterator().next().getValue());
+                // 'complexNamespace == 1' - means only one asterisk in query;
+                // 'complexNamespace > 1' - means several columns in the query,
+                //                          where an asterisk is located in the 'asterNumberInList'.
+                return getColsChekedForFuncReturnTbl(complexNamespace.size() == 1 ?
+                        complexNamespace.entrySet().iterator().next() :
+                            new ArrayList<>(complexNamespace.entrySet()).get(asterNumberInList));
             }
         }
 
@@ -272,7 +383,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Entry<String, String>> getTblColsChekedForFuncReturnTbl(List<Entry<String, String>> complexResult) {
+    /**
+     * This method check for the function which returns TABLE(name1 type1, name2 type2, ...)
+     * and function with alias which returns only one value.
+     *
+     * @param entryCompNmsp
+     * @return list of columns as entry('column name' - 'column type').
+     */
+    private List<Entry<String, String>> getColsChekedForFuncReturnTbl(Entry<String, List<Entry<String, String>>> entryCompNmsp) {
+        List<Entry<String, String>> complexResult = entryCompNmsp.getValue();
+
         if (complexResult.size() != 1) {
             return complexResult;
         }
@@ -281,7 +401,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         Matcher matcher = Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$").matcher(value);
 
         if (!matcher.matches()) {
-            return complexResult;
+            return Arrays.asList(new SimpleEntry<>(entryCompNmsp.getKey(), complexResult.get(0).getValue()));
         }
 
         List<Entry<String, String>> ret = new ArrayList<>();
