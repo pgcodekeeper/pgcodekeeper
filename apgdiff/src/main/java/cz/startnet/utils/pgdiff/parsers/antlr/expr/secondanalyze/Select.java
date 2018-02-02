@@ -4,6 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
@@ -31,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -42,6 +45,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
+import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -61,7 +68,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      */
     private boolean lateralAllowed;
 
-    private static final String FUNC_RETURN_TBL_TEMPLATE = "^TABLE\\([\\w\\d\\s\\[\\],]+\\)$";
+    private static final Pattern PATTERN_FUNC_RETURN_TBL_TEMPLATE = Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$");
 
     public Select(String schema, PgDatabase db) {
         super(schema, db);
@@ -182,15 +189,15 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                 Qualified_asteriskContext ast = null;
                 ret = new ArrayList<>();
-                List<Select_sublistContext> selectSublist = primary.select_list().select_sublist();
-                for (int i = 0; i < selectSublist.size(); i++) {
-                    Select_sublistContext target = selectSublist.get(i);
 
+                for (Select_sublistContext target : primary.select_list().select_sublist()) {
                     ValueExpr vexCol = new ValueExpr(this);
                     Vex selectSublistVex = new Vex(target.vex());
 
-                    if ((ast = vexCol.getAsteriskIfContainedInVex(selectSublistVex)) != null) {
-                        ret.addAll(getColsOfAsterisk(ast, vexCol, i));
+                    Value_expression_primaryContext valExprPrimary;
+                    if ((valExprPrimary = selectSublistVex.primary()) != null
+                            && (ast = valExprPrimary.qualified_asterisk()) != null) {
+                        ret.addAll(getColsOfAsterisk(ast));
                         continue;
                     }
 
@@ -202,8 +209,6 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                     ret.add(columnPair);
                 }
-
-                ret = replacingNullNameInColumns(ret);
 
                 ret = fillTypesOfColsWhenFromFunc(ret, ast);
 
@@ -331,7 +336,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             List<Entry<String, String>> colPairsOfAliasOfComplexNmsp = complexEntry.getValue();
 
             if (colPairsOfAliasOfComplexNmsp.size() == 1
-                    && Pattern.compile(FUNC_RETURN_TBL_TEMPLATE)
+                    && PATTERN_FUNC_RETURN_TBL_TEMPLATE
                     .matcher(colPairsOfAliasOfComplexNmsp.get(0).getValue()).matches()) {
 
                 Set<String> colNamesOfcolPairsOfAliasOfComplexNmsp = getColsChekedForFuncReturnTbl(complexEntry).stream()
@@ -359,51 +364,98 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return currentColPair;
     }
 
-    private List<Entry<String, String>> replacingNullNameInColumns(List<Entry<String, String>> ret) {
-        if(!ret.stream().anyMatch(e -> e.getKey() == null)) {
-            return ret;
+    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast) {
+        Schema_qualified_nameContext qNameAst = ast.tb_name;
+
+        //// If asterisk in SELECT is NOT qualified.
+
+        if(qNameAst == null ) {
+            List<Entry<String, String>> retNotQualAsterCols = new ArrayList<>();
+
+            unaliasedNamespace.forEach(gCol -> retNotQualAsterCols.addAll(getTableOrViewColumns(gCol.schema, gCol.table)));
+
+            for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
+                GenericColumn gCol = nmsp.getValue();
+                if (gCol != null) {
+                    retNotQualAsterCols.addAll(getTableOrViewColumns(gCol.schema, gCol.table));
+                }
+            }
+
+            complexNamespace.entrySet().forEach(complexNmsp -> retNotQualAsterCols.addAll(complexNmsp.getValue()));
+
+            // Check colPairs for the presence in the type the value of "TABLE (...)".
+            // If there are presence such colPairs, then replacing them by colPairs from "TABLE (...)".
+            Iterator<Entry<String, String>> iterRetNotQualAsterCols = retNotQualAsterCols.iterator();
+            List<Entry<String, String>> colsFromFuncReturnTbl = new ArrayList<>();
+            while (iterRetNotQualAsterCols.hasNext()) {
+                String colType = iterRetNotQualAsterCols.next().getValue();
+                if (PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(colType).matches()) {
+                    colsFromFuncReturnTbl.addAll(getColsFromStringOfFuncReturnTbl(colType));
+                    iterRetNotQualAsterCols.remove();
+                }
+            }
+            retNotQualAsterCols.addAll(colsFromFuncReturnTbl);
+
+            return retNotQualAsterCols;
         }
 
-        List<Entry<String, String>> withoutNullName = new ArrayList<>();
-        for (int i = 0; i < ret.size(); i++) {
-            Entry<String, String> entry = ret.get(i);
+        //// If asterisk in SELECT is qualified.
 
-            withoutNullName.add(entry.getKey() != null ? entry :
-                new SimpleEntry<>("col"+(i+1), entry.getValue()));
+        List<Entry<String, String>> retQualAsterCols;
 
+        List<IdentifierContext> ids = qNameAst.identifier();
+        String qualSchema = QNameParser.getSecondName(ids);
+        String srcOrTblOrView = QNameParser.getFirstName(ids);
+
+        // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
+        if (!(retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView)).isEmpty()) {
+            return retQualAsterCols;
         }
-        return withoutNullName;
-    }
 
-    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast, ValueExpr vexCol,
-            int asterNumberInList) {
-        List<Entry<String, String>> ret = new ArrayList<>();
-        boolean aliased = false;
-        GenericColumn genericFrom = null;
-        if (!unaliasedNamespace.isEmpty()) {
-            genericFrom = unaliasedNamespace.size() == 1 ? unaliasedNamespace.iterator().next(): null;
-        } else if (!namespace.isEmpty()) {
+        Entry<String, GenericColumn> srcOfAlias;
+        GenericColumn tableOrView;
+        if ((srcOfAlias = findReference(qualSchema, srcOrTblOrView, null)) != null
+                && (tableOrView = srcOfAlias.getValue()) != null) {
+            // if FROM has table or view with alias
+            return getTableOrViewColumns(tableOrView.schema, tableOrView.table);
+        } else {
+            // if FROM has subquery with alias
 
-            if (ast.tb_name != null
-                    && (genericFrom = namespace.get(QNameParser.getFirstName(ast.tb_name.identifier()))) != null) {
-                // In this case 'ast.tb_name' is alias of table or view.
+            if (complexNamespaceIsFunction.contains(srcOrTblOrView)) {
+                // if FROM use function as subquery
 
-                aliased = true;
+                Entry<String, List<Entry<String, String>>> funcEntry = findReferenceComplex(srcOrTblOrView, null);
+
+                String funcRetType = funcEntry.getValue().get(0).getValue();
+
+                if (PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(funcRetType).matches()) {
+                    // if function returns TABLE(...)
+                    return getColsFromStringOfFuncReturnTbl(funcRetType);
+                } else {
+                    // if function return one value
+                    retQualAsterCols.add(new SimpleEntry<>(srcOrTblOrView, funcRetType));
+                    return retQualAsterCols;
+                }
             } else {
-                // In this case 'ast.tb_name' is alias of subselect
-                // or 'ast.tb_name' is alias of function,
-                // or 'ast.tb_name' may be absent.
-
-                // 'complexNamespace == 1' - means only one asterisk in query;
-                // 'complexNamespace > 1' - means several columns in the query,
-                //                          where an asterisk is located in the 'asterNumberInList'.
-                return getColsChekedForFuncReturnTbl(complexNamespace.size() == 1 ?
-                        complexNamespace.entrySet().iterator().next() :
-                            new ArrayList<>(complexNamespace.entrySet()).get(asterNumberInList));
+                // if FROM dosn't use function as subquery
+                return findReferenceComplex(srcOrTblOrView, null).getValue();
             }
         }
+    }
 
-        ret.addAll(vexCol.analyzeAsterisk(aliased, ast, genericFrom));
+    private List<Entry<String, String>> getColsFromStringOfFuncReturnTbl(String matchedExpression) {
+        List<Entry<String, String>> ret = new ArrayList<>();
+
+        String nameTypeExpression = matchedExpression.substring(0, matchedExpression.length()-1)
+                .replace("TABLE(", "");
+
+        String name;
+        String type;
+        for (String nameType: nameTypeExpression.split(", ")) {
+            name = nameType.substring(0, nameType.indexOf(' '));
+            type = nameType.substring(nameType.indexOf(' ')+1, nameType.length());
+            ret.add(new SimpleEntry<>(name, type));
+        }
 
         return ret;
     }
@@ -423,7 +475,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
 
         String value = complexResult.get(0).getValue();
-        Matcher matcher = Pattern.compile(FUNC_RETURN_TBL_TEMPLATE).matcher(value);
+        Matcher matcher = PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(value);
 
         if (!matcher.matches()) {
             return Arrays.asList(new SimpleEntry<>(entryCompNmsp.getKey(), complexResult.get(0).getValue()));
@@ -513,8 +565,8 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
                     String tableSubQueryAlias = alias.alias.getText();
-                    complexNamespace.put(tableSubQueryAlias, columnList);
                     addReference(tableSubQueryAlias, null);
+                    complexNamespace.put(tableSubQueryAlias, columnList);
                 } finally {
                     lateralAllowed = oldLateral;
                 }
@@ -529,6 +581,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                             primary.alias.getText();
                         addReference(funcAlias, null);
                         complexNamespace.put(funcAlias, new ArrayList<>(Arrays.asList(func)));
+                        complexNamespaceIsFunction.add(funcAlias);
                     }
                 } finally {
                     lateralAllowed = oldLateral;
@@ -539,5 +592,58 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
         }
+    }
+
+    public List<Entry<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
+            GenericColumn unaliasedNmsp) {
+        Schema_qualified_nameContext qualifiedName;
+        String schema;
+        String tableOrView;
+        if (!aliased && (qualifiedName = ast.tb_name) != null) {
+            List<IdentifierContext> ids = qualifiedName.identifier();
+            schema = QNameParser.getSecondName(ids);
+            tableOrView = QNameParser.getFirstName(ids);
+        } else {
+            schema = unaliasedNmsp.schema;
+            tableOrView = unaliasedNmsp.table;
+        }
+        return getTableOrViewColumns(schema, tableOrView);
+    }
+
+    /**
+     * Gives list of columns (name-type) for the specified parameters.
+     *
+     * @param qualSchemaName
+     * @param tableOrView
+     * @return list of columns (name-type) for the specified parameters
+     */
+    protected List<Entry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
+        List<Entry<String, String>> ret = new ArrayList<>();
+
+        String schemaName = qualSchemaName != null ? qualSchemaName : this.schema;
+
+        PgSchema s;
+        if ((s = db.getSchema(schemaName)) != null && tableOrView != null) {
+            PgTable t;
+            PgView v;
+            if ((t = s.getTable(tableOrView)) != null) {
+
+                t.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
+
+                // TODO It is necessary to remake it for a new logic
+                // of 'Inherits' object (recursion should be used for this).
+                List<Inherits> inheritsList;
+                if (!(inheritsList = t.getInherits()).isEmpty()) {
+                    for (Inherits inht : inheritsList) {
+                        PgTable tInherits = s.getTable(inht.getValue());
+                        tInherits.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
+                    }
+
+                }
+            } else if ((v = s.getView(tableOrView)) != null) {
+                v.getRelationColumns().forEach(ret::add);
+            }
+        }
+        return ret;
     }
 }

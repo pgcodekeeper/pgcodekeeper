@@ -4,7 +4,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -70,7 +69,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
      *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
      */
-    protected final Map<String, List<Entry<String, String>>> complexNamespace = new LinkedHashMap<>();
+    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
+
+    /*
+     *  Map contains alias and boolean value. If alias contains function it will be true, otherwise false.
+     *  It will be used only for "...FROM (function()) alias;".
+     */
+    protected final Set<String> complexNamespaceIsFunction= new HashSet<>();
 
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);

@@ -135,14 +135,12 @@ public abstract class AbstractExpr {
             String schema = QNameParser.getThirdName(ids);
             columnParent = QNameParser.getSecondName(ids);
 
-            GenericColumn genericColumn = new GenericColumn(schema, columnParent, column, DbObjType.COLUMN);
-
             Entry<String, GenericColumn> ref = findReference(schema, columnParent, column);
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnParent = referencedTable.table;
-                    genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
+                    GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
                     depcies.add(genericColumn);
 
                     columnType = getColumnType(genericColumn);

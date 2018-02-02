@@ -42,18 +42,38 @@ CREATE TABLE users (
 ALTER TABLE users OWNER TO shamsutdinov_lr;
 
 CREATE TABLE one1 (
-    col1 text
+    col11 text
 );
 
 ALTER TABLE one1 OWNER TO shamsutdinov_lr;
 
 CREATE TABLE one2 (
-    col2 integer
+    col22 integer
 );
 
 ALTER TABLE one2 OWNER TO shamsutdinov_lr;
+
+CREATE TABLE mytable (
+    col111 integer,
+    col222 integer
+);
+
+ALTER TABLE mytable OWNER TO shamsutdinov_lr;
     
 --------------------------------------------------------------------------------
+
+CREATE VIEW asterisk AS
+    WITH mmyytable AS (
+    SELECT *, 111 AS myvalue FROM mytable
+    )
+    SELECT * FROM 
+        tablettt t, 
+        users u,
+        mmyytable mt,
+        (SELECT * FROM one1 LIMIT 1) a,
+        (SELECT * FROM one2 LIMIT 1) b;
+
+ALTER VIEW asterisk OWNER TO shamsutdinov_lr;
 
 CREATE VIEW asterisk1 AS
     SELECT tablettt.*, users.*
@@ -119,3 +139,10 @@ CREATE VIEW asterisk10 AS
         SELECT s.* FROM one1 s LIMIT 1;
 
 ALTER VIEW asterisk10 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk11 AS
+    SELECT * FROM
+        (SELECT * FROM one1 LIMIT 1) a,
+        (SELECT * FROM one2 LIMIT 1) b;
+
+ALTER VIEW asterisk11 OWNER TO shamsutdinov_lr;

@@ -42,18 +42,56 @@ CREATE TABLE users (
 ALTER TABLE users OWNER TO shamsutdinov_lr;
 
 CREATE TABLE one1 (
-    col1 text
+    col11 text
 );
 
 ALTER TABLE one1 OWNER TO shamsutdinov_lr;
 
 CREATE TABLE one2 (
-    col2 integer
+    col22 integer
 );
 
 ALTER TABLE one2 OWNER TO shamsutdinov_lr;
 
+CREATE TABLE mytable (
+    col111 integer,
+    col222 integer
+);
+
+ALTER TABLE mytable OWNER TO shamsutdinov_lr;
+
 --------------------------------------------------------------------------------
+
+CREATE VIEW asterisk AS
+    WITH mmyytable AS (
+         SELECT mytable.col111,
+            mytable.col222,
+            111 AS myvalue
+           FROM mytable
+        )
+ SELECT t.c1,
+    t.c2,
+    t.c4,
+    t.c3,
+    u.id,
+    u.login,
+    u.password,
+    mt.col111,
+    mt.col222,
+    mt.myvalue,
+    a.col11,
+    b.col22
+   FROM tablettt t,
+    users u,
+    mmyytable mt,
+    ( SELECT one1.col11
+           FROM one1
+         LIMIT 1) a,
+    ( SELECT one2.col22
+           FROM one2
+         LIMIT 1) b;
+
+ALTER VIEW asterisk OWNER TO shamsutdinov_lr;
 
 CREATE VIEW asterisk1 AS
     SELECT tablettt.c1,
@@ -130,26 +168,38 @@ CREATE VIEW asterisk7 AS
 ALTER VIEW asterisk7 OWNER TO shamsutdinov_lr;
 
 CREATE VIEW asterisk8 AS
-    SELECT ( SELECT one1.col1
+    SELECT ( SELECT one1.col11
            FROM one1
          LIMIT 1) AS onee,
-    ( SELECT one2.col2
+    ( SELECT one2.col22
            FROM one2
          LIMIT 1) AS twoo;
 
 ALTER VIEW asterisk8 OWNER TO shamsutdinov_lr;
 
 CREATE VIEW asterisk9 AS
-    SELECT ( SELECT one1.col1
+    SELECT ( SELECT one1.col11
            FROM one1
-         LIMIT 1) AS col1,
-    ( SELECT one2.col2
+         LIMIT 1) AS col11,
+    ( SELECT one2.col22
            FROM one2
-         LIMIT 1) AS col2;
+         LIMIT 1) AS col22;
 
 ALTER VIEW asterisk9 OWNER TO shamsutdinov_lr;
 
 CREATE VIEW asterisk10 AS
-        SELECT s.col1 FROM one1 s LIMIT 1;
+    SELECT s.col11 FROM one1 s LIMIT 1;
 
 ALTER VIEW asterisk10 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk11 AS
+    SELECT a.col11,
+    b.col22
+   FROM ( SELECT one1.col11
+           FROM one1
+         LIMIT 1) a,
+    ( SELECT one2.col22
+           FROM one2
+         LIMIT 1) b;
+
+ALTER VIEW asterisk11 OWNER TO shamsutdinov_lr;

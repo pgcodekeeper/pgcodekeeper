@@ -54,15 +54,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -220,11 +215,7 @@ public class ValueExpr extends AbstractExpr {
             } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
                 List<Entry<String, String>> colsList = new Select(this).analyze(subSelectStmt);
-                if(colsList.size() == 1) {
-                    ret = new SimpleEntry<>(null, colsList.get(0).getValue());
-                } else {
-                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
-                }
+                return colsList.get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 List<Vex> subOperands = null;
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
@@ -283,68 +274,6 @@ public class ValueExpr extends AbstractExpr {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
         }
 
-        return ret;
-    }
-
-    public List<Entry<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
-            GenericColumn unaliasedNmsp) {
-        Schema_qualified_nameContext qualifiedName;
-        String schema;
-        String tableOrView;
-        if (!aliased && (qualifiedName = ast.tb_name) != null) {
-            List<IdentifierContext> ids = qualifiedName.identifier();
-            schema = QNameParser.getSecondName(ids);
-            tableOrView = QNameParser.getFirstName(ids);
-        } else {
-            schema = unaliasedNmsp.schema;
-            tableOrView = unaliasedNmsp.table;
-        }
-        return getAsteriskColumns(schema, tableOrView);
-    }
-
-    public Qualified_asteriskContext getAsteriskIfContainedInVex(Vex vex) {
-        Value_expression_primaryContext primary;
-        Qualified_asteriskContext ast;
-        if ((primary = vex.primary()) != null && (ast = primary.qualified_asterisk()) != null) {
-            return ast;
-        }
-        return null;
-    }
-
-    /**
-     * Gives list of columns (name-type) for the specified parameters of asterisk.
-     *
-     * @param schemaQualified
-     * @param tableOrView
-     * @return list of columns (name-type) for the specified parameters of asterisk
-     */
-    private List<Entry<String, String>> getAsteriskColumns(String schemaQualified, String tableOrView) {
-        List<Entry<String, String>> ret = new ArrayList<>();
-
-        String sch = schemaQualified != null ? schemaQualified : schema;
-
-        PgSchema s;
-        if ((s = db.getSchema(sch)) != null && tableOrView != null) {
-            PgTable t;
-            PgView v;
-            if ((t = s.getTable(tableOrView)) != null) {
-
-                t.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-
-                // TODO It is necessary to remake it for a new logic
-                // of 'Inherits' object (recursion should be used for this).
-                List<Inherits> inheritsList;
-                if (!(inheritsList = t.getInherits()).isEmpty()) {
-                    for (Inherits inht : inheritsList) {
-                        PgTable tInherits = s.getTable(inht.getValue());
-                        tInherits.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-                    }
-
-                }
-            } else if ((v = s.getView(tableOrView)) != null) {
-                v.getRelationColumns().forEach(ret::add);
-            }
-        }
         return ret;
     }
 

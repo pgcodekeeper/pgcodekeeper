@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -91,8 +92,12 @@ public class PgDiffTypeTest {
             for (PgView view : views) {
                 cols.append("\n\n  View: " + view.getName());
                 cols.append("\n    RelationColumns : ");
-                for (Entry<String, String> col : (Iterable<Entry<String, String>>)
-                        view.getRelationColumns()::iterator) {
+
+                List<Entry<String, String>> colPairs = view.getRelationColumns().collect(Collectors.toList());
+
+                colPairs.sort((entry1, entry2) -> entry1.getKey().compareTo(entry2.getKey()));
+
+                for (Entry<String, String> col : colPairs) {
                     cols.append("\n     " + col.getKey() + " - " + col.getValue());
                 }
             }

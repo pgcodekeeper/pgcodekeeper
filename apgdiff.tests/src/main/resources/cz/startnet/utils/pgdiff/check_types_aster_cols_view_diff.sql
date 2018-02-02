@@ -2,12 +2,27 @@
 
 Schema: public
 
+  View: asterisk
+    RelationColumns : 
+     c1 - integer
+     c2 - text
+     c3 - double precision
+     c4 - text
+     col11 - text
+     col111 - integer
+     col22 - integer
+     col222 - integer
+     id - integer
+     login - character(64)
+     myvalue - integer
+     password - character(64)
+
   View: asterisk1
     RelationColumns : 
      c1 - integer
      c2 - text
-     c4 - text
      c3 - double precision
+     c4 - text
      id - integer
      login - character(64)
      password - character(64)
@@ -16,8 +31,8 @@ Schema: public
     RelationColumns : 
      c1 - integer
      c2 - text
-     c4 - text
      c3 - double precision
+     c4 - text
      id - integer
      login - character(64)
      password - character(64)
@@ -45,8 +60,8 @@ Schema: public
     RelationColumns : 
      c1 - integer
      c2 - text
-     c4 - text
      c3 - double precision
+     c4 - text
      id - integer
      login - character(64)
      password - character(64)
@@ -58,9 +73,14 @@ Schema: public
 
   View: asterisk9
     RelationColumns : 
-     col1 - text
-     col2 - integer
+     col11 - text
+     col22 - integer
 
   View: asterisk10
     RelationColumns : 
-     col1 - text
+     col11 - text
+
+  View: asterisk11
+    RelationColumns : 
+     col11 - text
+     col22 - integer
