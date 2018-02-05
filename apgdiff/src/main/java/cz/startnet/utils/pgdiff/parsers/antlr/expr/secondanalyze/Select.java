@@ -189,7 +189,6 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                 Qualified_asteriskContext ast = null;
                 ret = new ArrayList<>();
-
                 for (Select_sublistContext target : primary.select_list().select_sublist()) {
                     ValueExpr vexCol = new ValueExpr(this);
                     Vex selectSublistVex = new Vex(target.vex());
@@ -280,8 +279,10 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                 String currentColName = currentColPair.getKey();
 
+                Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(currentColName);
                 List<Entry<String, String>> colPairsOfAliasOfComplexNmsp;
-                if ((colPairsOfAliasOfComplexNmsp = complexNamespace.get(currentColName)) != null) {
+                if (refComplex != null && (colPairsOfAliasOfComplexNmsp = refComplex.getValue()) != null) {
+
                     // In this case alias of 'complexNamespace' is used as name of 'columnPair'.
 
                     // fill column by type in cases when function return only one value.
@@ -424,7 +425,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             if (complexNamespaceIsFunction.contains(srcOrTblOrView)) {
                 // if FROM use function as subquery
 
-                Entry<String, List<Entry<String, String>>> funcEntry = findReferenceComplex(srcOrTblOrView, null);
+                Entry<String, List<Entry<String, String>>> funcEntry = findReferenceComplex(srcOrTblOrView);
 
                 String funcRetType = funcEntry.getValue().get(0).getValue();
 
@@ -438,7 +439,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 }
             } else {
                 // if FROM dosn't use function as subquery
-                return findReferenceComplex(srcOrTblOrView, null).getValue();
+                return findReferenceComplex(srcOrTblOrView).getValue();
             }
         }
     }

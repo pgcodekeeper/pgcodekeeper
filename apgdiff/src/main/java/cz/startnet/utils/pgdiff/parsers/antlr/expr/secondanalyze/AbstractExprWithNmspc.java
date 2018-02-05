@@ -98,7 +98,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name, String column) {
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name) {
         Entry<String, List<Entry<String, String>>> refComplex = null;
 
         for (Entry<String, List<Entry<String, String>>> entry : complexNamespace.entrySet()) {
@@ -108,7 +108,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
             }
         }
 
-        return refComplex == null ? super.findReferenceComplex(name, column) : refComplex;
+        return refComplex == null ? super.findReferenceComplex(name) : refComplex;
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {

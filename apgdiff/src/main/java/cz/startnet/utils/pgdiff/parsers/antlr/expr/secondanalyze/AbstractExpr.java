@@ -85,12 +85,11 @@ public abstract class AbstractExpr {
     /**
      * @param schema optional schema qualification of name, may be null
      * @param name alias of the referenced object
-     * @param column optional referenced column alias, may be null
      * @return a pair of (Alias, ColumnsList) where Alias is the given name.
      *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
      */
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name, String column) {
-        return parent == null ? null : parent.findReferenceComplex(name, column);
+    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name) {
+        return parent == null ? null : parent.findReferenceComplex(name);
     }
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
@@ -145,7 +144,7 @@ public abstract class AbstractExpr {
 
                     columnType = getColumnType(genericColumn);
                 } else {
-                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent, column);
+                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
                         columnType = refComplex.getValue().stream()
                                 .filter(entry -> column.equals(entry.getKey()))
@@ -165,14 +164,14 @@ public abstract class AbstractExpr {
     }
 
     private String getColumnType(GenericColumn genericColumn) {
-        String schema = genericColumn.schema;
+        String schemaName = genericColumn.schema;
         String columnParent = genericColumn.table;
         String column = genericColumn.column;
 
         String type = TypesSetManually.COLUMN;
 
         PgSchema s;
-        if (schema != null && (s = db.getSchema(schema)) != null && columnParent != null) {
+        if (schemaName != null && (s = db.getSchema(schemaName)) != null && columnParent != null) {
             PgTable t;
             PgView v;
             if ((t = s.getTable(columnParent)) != null) {
