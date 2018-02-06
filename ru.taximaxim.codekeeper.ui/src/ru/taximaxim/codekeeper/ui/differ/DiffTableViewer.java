@@ -37,7 +37,12 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -64,6 +69,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -77,6 +84,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.ElementMetaInfo;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
@@ -85,12 +93,17 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
+import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -103,6 +116,9 @@ public class DiffTableViewer extends Composite {
 
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
+    private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
+
+    private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
 
@@ -138,7 +154,8 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
-    private final CodeFilter codeFilter = new CodeFilter();
+    private final AbstractFilter codeFilter = new CodeFilter();
+    private final AbstractFilter schemaFilter = new SchemaFilter();
 
     private final IStatusLineManager lineManager;
 
@@ -242,13 +259,15 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    FilterDialog dialog = new FilterDialog(getShell(), codeFilter,
+                    FilterDialog dialog = new FilterDialog(getShell(),
+                            schemaFilter, codeFilter,
                             viewerFilter.types, viewerFilter.sides);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
                                         viewerFilter.types.isEmpty() && viewerFilter.sides.isEmpty()
                                         && codeFilter.getPattern().isEmpty()
+                                        && schemaFilter.getPattern().isEmpty()
                                         ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
@@ -258,9 +277,29 @@ public class DiffTableViewer extends Composite {
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(30);
+        gd.widthHint = pc.convertWidthInCharsToPixels(35);
         txtFilterName.setLayoutData(gd);
-        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
+        txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
+
+        KeyStroke ks = null;
+        LinkedList<String> history = new LinkedList<>();
+        try {
+            ks = KeyStroke.getInstance(KEY_PRESS);
+        } catch (ParseException ex) {
+            Log.log(ex);
+        }
+        try {
+            history = XML_HISTORY.getHistory();
+        } catch (IOException ex) {
+            Log.log(ex);
+        }
+
+        SimpleContentProposalProvider scp = new SimpleContentProposalProvider(history.toArray(new String[history.size()]));
+        scp.setFiltering(true);
+
+        ContentProposalAdapter adapter = new ContentProposalAdapter(txtFilterName,
+                new TextContentAdapter(), scp, ks, null);
+        adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 
         useRegEx = new Button(upperComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
@@ -300,12 +339,30 @@ public class DiffTableViewer extends Composite {
         }
         viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle));
 
-        txtFilterName.addModifyListener(e -> {
-            // TODO aggregate events with small input lengths for performance
-            // "postModifyListener"
-            viewerFilter.setFilter(txtFilterName.getText());
-            viewer.refresh();
-        });
+        ModifyListener listener = new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String text = ((Text)e.getSource()).getText();
+                filterHistory(text);
+                viewerFilter.setFilter(text);
+                viewer.refresh();
+            }
+
+            private void filterHistory(String text) {
+                try {
+                    if (text != null && !text.isEmpty()) {
+                        XML_HISTORY.addHistoryEntry(text);
+                    }
+                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    scp.setProposals(history.toArray(new String[history.size()]));
+                } catch (IOException e) {
+                    Log.log(e);
+                }
+            }
+        };
+
+        AggregatingListener.addModifyListener(txtFilterName, listener);
 
         viewer.addSelectionChangedListener(event -> {
             oldSelection = newSelection;
@@ -665,7 +722,6 @@ public class DiffTableViewer extends Composite {
     /**
      * Используется в коммит диалоге для установки элементов
      * @param collection элементы для показа
-     * @param location
      */
     public void setInputCollection(Collection<TreeElement> collection,
             DbSource dbProject, DbSource dbRemote) {
@@ -832,11 +888,11 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    static boolean isContainer(TreeElement el) {
+    public static boolean isContainer(TreeElement el) {
         return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
     }
 
-    static boolean isSubElement(TreeElement el) {
+    public static boolean isSubElement(TreeElement el) {
         TreeElement parent = el.getParent();
         return parent != null && isContainer(parent);
     }
@@ -1125,11 +1181,15 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
+            if (!schemaFilter.getPattern().isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
+                return false;
+            }
+
             if (filterName != null && !findName(el, isSubElement)) {
                 return false;
             }
 
-            return (codeFilter.getPattern().isEmpty() || codeFilter.findCode(el,
+            return (codeFilter.getPattern().isEmpty() || codeFilter.checkElement(el,
                     elements, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 

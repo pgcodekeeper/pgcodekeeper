@@ -88,7 +88,7 @@ public final class XmlHistory {
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {
-            history = null;
+            history = new LinkedList<>();
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
@@ -117,11 +117,7 @@ public final class XmlHistory {
      */
     public void addHistoryEntry(String newEntry) throws IOException {
         LinkedList<String> historyEntries = getHistory();
-        if (historyEntries == null) {
-            historyEntries = new LinkedList<>();
-        }
         if (!newEntry.isEmpty()) {
-
             historyEntries.remove(newEntry);
             historyEntries.add(0, newEntry);
             while (historyEntries.size() > maxEntries) {

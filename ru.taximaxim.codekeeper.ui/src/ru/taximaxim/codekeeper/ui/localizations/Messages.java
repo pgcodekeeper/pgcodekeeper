@@ -254,6 +254,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_error_reading_git_history;
 
     public static String DiffTableViewer_expand_all;
+
+    public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reading_git_history;
@@ -583,9 +585,15 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_reset;
 
+    public static String FilterDialog_schema_filter_placeholder;
+
+    public static String FilterDialog_search_by_container;
+
     public static String FilterDialog_show_change_types;
 
     public static String FilterDialog_show_object_types;
+
+    public static String FilterDialog_sql_filter_placehodlder;
 
     public static String FilterDialog_title;
 
