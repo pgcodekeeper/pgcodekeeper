@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -198,7 +199,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         // simplified for 1 static notification
         // refactor into multiple child composites w/ description class
         // for multiple dynamic notifications if necessary
-        contNotifications = new Group(parent, SWT.BORDER);
+        contNotifications = new Group(parent, SWT.NONE);
         contNotifications.setLayout(new GridLayout(4, false));
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -238,7 +239,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        diffTable = new DiffTableViewer(sashOuter, false, manager) {
+        diffTable = new DiffTableViewer(sashOuter, false, manager, Paths.get(proj.getProject().getLocationURI())) {
 
             @Override
             public void createRightSide(Composite container) {
@@ -541,10 +542,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     });
                 }
 
-                newDiffer.getErrors()
-                .forEach((k,v) -> v.forEach(e -> StatusManager.getManager().handle(
-                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.getFullMessage(k)),
-                        StatusManager.SHOW)));
+                newDiffer.getErrors().forEach(e -> StatusManager.getManager().handle(
+                        new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()),
+                        StatusManager.SHOW));
             }
         });
         job.setUser(true);

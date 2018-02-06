@@ -11,6 +11,7 @@ public class PgPrivilege extends PgStatement {
 
     // regex grouping here is used to preserve whitespace when doing replaceAll
     private static final Pattern PATTERN_TO = Pattern.compile("(\\s+)TO(\\s+)");
+    public static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
 
     private final boolean revoke;
     private final String definition;
@@ -50,33 +51,37 @@ public class PgPrivilege extends PgStatement {
             return null;
         }
 
+        String definitionWithoutGO = definition.endsWith(WITH_GRANT_OPTION) ?
+                definition.substring(0, definition.length() - WITH_GRANT_OPTION.length()) : definition;
+
         // TODO сделать надежнее чем просто регуляркой
         return new StringBuilder()
                 .append("REVOKE ")
                 // regex groups capture surrounding whitespace so we don't alter it
-                .append(PATTERN_TO.matcher(definition).replaceAll("$1FROM$2"))
+                .append(PATTERN_TO.matcher(definitionWithoutGO).replaceAll("$1FROM$2"))
                 .append(';')
                 .toString();
     }
 
     public static void appendDefaultPrivileges(PgStatement newObj, StringBuilder sb) {
         DbObjType type = newObj.getStatementType();
+        String owner = type != DbObjType.COLUMN ? newObj.getOwner() : newObj.getParent().getOwner();
+        if (owner == null) {
+            return;
+        }
+
         String name = newObj.getName();
         String column = "";
-        String owner;
 
         if (type == DbObjType.COLUMN) {
-            PgStatement parent = newObj.getParent();
-            owner = PgDiffUtils.getQuotedName(parent.getOwner());
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
-            name = PgDiffUtils.getQuotedName(parent.getName());
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getName());
             type = DbObjType.TABLE;
-        } else {
-            if (type != DbObjType.FUNCTION) {
-                name = PgDiffUtils.getQuotedName(name);
-            }
-            owner =  PgDiffUtils.getQuotedName(newObj.getOwner());
+        } else if (type != DbObjType.FUNCTION) {
+            name = PgDiffUtils.getQuotedName(name);
         }
+
+        owner =  PgDiffUtils.getQuotedName(owner);
 
         PgPrivilege priv = new PgPrivilege(true, "ALL" + column + " ON " + type + ' ' + name + " FROM PUBLIC", "");
         sb.append('\n').append(priv.getCreationSQL());

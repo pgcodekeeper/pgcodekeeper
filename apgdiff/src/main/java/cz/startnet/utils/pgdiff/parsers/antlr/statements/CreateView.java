@@ -1,9 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+
+import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -19,24 +23,41 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class CreateView extends ParserAbstract {
 
+    private static final String RECURSIVE_PATTERN = "CREATE VIEW {0} "
+            + "\nAS WITH RECURSIVE {0}({1}) AS ("
+            + "\n{2}\n)"
+            + "\nSELECT {1}"
+            + "\nFROM {0};";
     private static final String CHECK_OPTION = "check_option";
-    private final Create_view_statementContext ctx;
-    public CreateView(Create_view_statementContext ctx, PgDatabase db) {
+
+    private final Create_view_statementContext context;
+
+    public CreateView(Create_view_statementContext context, PgDatabase db) {
         super(db);
-        this.ctx = ctx;
+        this.context = context;
     }
 
     @Override
     public PgStatement getObject() {
+        Create_view_statementContext ctx = context;
         List<IdentifierContext> ids = ctx.name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
-        PgView view = new PgView(QNameParser.getFirstName(ids), getFullCtxText(ctx.getParent()));
+        IdentifierContext name = QNameParser.getFirstNameCtx(ids);
+        PgView view = new PgView(name.getText(), getFullCtxText(ctx.getParent()));
         if (ctx.MATERIALIZED() != null) {
             view.setIsWithData(ctx.NO() == null);
             Table_spaceContext tablespace = ctx.table_space();
             if (tablespace != null) {
                 view.setTablespace(tablespace.name.getText());
             }
+        } else if (ctx.RECURSIVE() != null) {
+            String sql = MessageFormat.format(RECURSIVE_PATTERN,
+                    ParserAbstract.getFullCtxText(name),
+                    ParserAbstract.getFullCtxText(ctx.column_name.names_references()),
+                    ParserAbstract.getFullCtxText(ctx.v_query));
+
+            ctx = AntlrParser.makeBasicParser(SQLParser.class, sql, "recursive view").sql()
+                    .statement(0).schema_statement().schema_create().create_view_statement();
         }
         Select_stmtContext vQuery = null;
         if ((vQuery = ctx.v_query) != null) {

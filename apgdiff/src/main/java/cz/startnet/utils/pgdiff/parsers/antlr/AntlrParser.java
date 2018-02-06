@@ -68,6 +68,9 @@ public class AntlrParser {
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
+            lexer = new PrivilegesLexer(stream);
+            parser = new PrivilegesParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }
@@ -95,7 +98,7 @@ public class AntlrParser {
         } catch (MonitorCancelledRuntimeException mcre){
             throw new InterruptedException();
         } catch (UnresolvedReferenceException ex) {
-            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex));
+            errors.add(CustomSQLParserListener.handleUnresolvedReference(ex, parsedObjectName));
         }
     }
 }
@@ -156,7 +159,7 @@ class CustomAntlrErrorListener extends BaseErrorListener {
                 + ' ' + msg);
         if (errors != null) {
             Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
-            errors.add(new AntlrError(token, line, charPositionInLine, msg));
+            errors.add(new AntlrError(token, parsedObjectName, line, charPositionInLine, msg));
         }
     }
 }

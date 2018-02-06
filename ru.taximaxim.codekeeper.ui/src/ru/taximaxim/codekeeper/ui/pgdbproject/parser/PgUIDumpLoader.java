@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -124,7 +123,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
             PgDiffArguments arguments, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
@@ -157,7 +156,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
@@ -167,7 +166,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies, Map<String, List<AntlrError>> errors)
+            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
                     throws IOException, CoreException, InterruptedException {
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
@@ -182,7 +181,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             }
         } finally {
             if (errors != null && errList != null && !errList.isEmpty()) {
-                errors.put(file.getFullPath().toOSString(), errList);
+                errors.addAll(errList);
             }
         }
     }
@@ -221,8 +220,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     if (schemaDefSql) {
                         // report schema pre-built if the same schema was to be built normally as well
                         mon.worked(1);
+                        continue;
                     }
-                    continue;
                 } else if (!schemaDefSql) {
                     // pre-load schema for object's search path
                     // otherwise we're dealing with the schema file itself, allow it to load normally

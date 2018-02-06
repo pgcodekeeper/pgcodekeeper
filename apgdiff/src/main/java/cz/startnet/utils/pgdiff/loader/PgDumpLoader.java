@@ -13,7 +13,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -160,7 +159,7 @@ public class PgDumpLoader implements AutoCloseable {
 
         List<SQLParserBaseListener> listeners = new ArrayList<>();
         if (loadSchema) {
-            listeners.add(new CustomSQLParserListener(intoDb, errors, monitor));
+            listeners.add(new CustomSQLParserListener(intoDb, inputObjectName, errors, monitor));
         }
         if (loadReferences) {
             ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
@@ -186,7 +185,7 @@ public class PgDumpLoader implements AutoCloseable {
      * @throws InterruptedException
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(String dirPath,
-            PgDiffArguments arguments, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+            PgDiffArguments arguments, IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
@@ -220,7 +219,7 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
-            IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+            IProgressMonitor monitor, List<AntlrError> errors)
                     throws InterruptedException, IOException {
         File subDir = new File(dir, sub);
         if (subDir.exists() && subDir.isDirectory()) {
@@ -230,7 +229,7 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     private static void loadFiles(File[] files, PgDiffArguments arguments,
-            PgDatabase db, IProgressMonitor monitor, Map<String, List<AntlrError>> errors)
+            PgDatabase db, IProgressMonitor monitor, List<AntlrError> errors)
                     throws IOException, InterruptedException {
         Arrays.sort(files);
         for (File f : files) {
@@ -241,7 +240,7 @@ public class PgDumpLoader implements AutoCloseable {
                     loader.load(db);
                 } finally {
                     if (errors != null && errList != null && !errList.isEmpty()) {
-                        errors.put(f.getPath(), errList);
+                        errors.addAll(errList);
                     }
                 }
             }
