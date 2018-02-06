@@ -11,13 +11,13 @@ import java.util.Random;
 public class JsonPgData extends PgData<String> {
 
     public JsonPgData() {
-        super(PgDataType.JSON, "'{\"a\": \"b\"}'", null, null); //$NON-NLS-1$
+        super(PgDataType.JSON, "{\"a\": \"b\"}", null, null); //$NON-NLS-1$
     }
 
     @Override
     public String generateValue() {
         switch (generator) {
-        case CONSTANT: return start;
+        case CONSTANT: return "'" + start + "'";
         case INCREMENT:
             return null;
         case RANDOM: return generateRandom();

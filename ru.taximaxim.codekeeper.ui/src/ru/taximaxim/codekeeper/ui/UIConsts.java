@@ -68,6 +68,8 @@ public interface UIConsts {
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
 
         String LAST_CREATED_OBJECT_TYPE = "prefLastCreatedObjectType"; //$NON-NLS-1$
+
+        String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {

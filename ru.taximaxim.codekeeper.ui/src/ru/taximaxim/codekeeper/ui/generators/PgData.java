@@ -15,8 +15,12 @@ import java.util.Set;
  */
 public abstract class PgData<T> {
 
+    protected static final String EXP_FORMAT = "{0}. Expected format: {1}";
+
     private final PgDataType type;
     private String name;
+    private String alias;
+    protected String any = "any value";
     protected T start;
     protected T end;
     protected int length = 255;
@@ -82,6 +86,26 @@ public abstract class PgData<T> {
         return type;
     }
 
+    public String getAlias() {
+        if (alias != null) {
+            return alias;
+        }
+
+        return type.name();
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public String getAny() {
+        return any;
+    }
+
+    public void setAny(String any) {
+        this.any = any;
+    }
+
     public String getName() {
         return name;
     }
@@ -134,12 +158,12 @@ public abstract class PgData<T> {
     /**
      * Generates value by generator current state
      *
-     * @return Generated value in string format
+     * @return Generated value in T format
      */
     public abstract T generateValue();
 
     public String generateAsString() {
-        return "" + generateValue(); //$NON-NLS-1$
+        return generator == PgDataGenerator.ANY ? any : "" + generateValue();
     }
 
     protected T generateRandom() {
@@ -199,6 +223,7 @@ public abstract class PgData<T> {
         isUnique = data.isUnique();
         isNotNull = data.isNotNull();
         name = data.getName();
+        any = data.getAny();
         PgDataGenerator gen = data.getGenerator();
         generator = type.getGenerators().contains(gen) ? gen : type.getDefaultGenerator();
     }

@@ -11,13 +11,13 @@ import java.util.Random;
 public class TextPgData extends PgData<String> {
 
     public TextPgData(PgDataType type) {
-        super(type, "'text'", null, null); //$NON-NLS-1$
+        super(type, "text", null, null); //$NON-NLS-1$
     }
 
     @Override
     public String generateValue() {
         switch (generator) {
-        case CONSTANT: return start;
+        case CONSTANT: return "'" + start + "'";
         case INCREMENT:
             return null;
         case RANDOM: return generateRandom();

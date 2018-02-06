@@ -1,7 +1,10 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.text.MessageFormat;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Random;
 
 /**
@@ -37,6 +40,9 @@ public class DatePgData extends PgData<LocalDate> {
 
     @Override
     public String generateAsString() {
+        if (generator == PgDataGenerator.ANY) {
+            return any;
+        }
         LocalDate value = generateValue();
         return value == null ? "null" : ("'" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
@@ -44,20 +50,25 @@ public class DatePgData extends PgData<LocalDate> {
     @Override
     protected LocalDate generateRandom(Random ran) {
         return start.plusDays((long)((end.toEpochDay() - start.toEpochDay() + 1)
-                * ran.nextDouble() + start.toEpochDay()));
+                * ran.nextDouble()));
     }
 
     @Override
     public int getMaxValues() {
         long beginTime = start.toEpochDay();
         long endTime = end.toEpochDay();
-        long values = (endTime - beginTime + 1);
+        long values = endTime - beginTime + 1;
         return values > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) values;
     }
 
     @Override
     public LocalDate valueFromString(String s) {
-        return LocalDate.parse(s);
+        try {
+            return LocalDate.parse(s);
+        } catch (DateTimeParseException ex) {
+            throw new DateTimeException(
+                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "YYYY-MM-DD"), ex); //$NON-NLS-1$
+        }
     }
 
     @Override

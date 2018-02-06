@@ -33,8 +33,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -183,6 +185,16 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 errors.addAll(errList);
             }
         }
+    }
+
+    public static PgStatement parseStatement(IFile file, DbObjType type) {
+        try {
+            return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
+                    .values().stream().filter(e -> e.getStatementType() == type).findFirst().orElse(null);
+        } catch (Exception ex) {
+            Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), ex); //$NON-NLS-1$
+        }
+        return null;
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
