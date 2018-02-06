@@ -133,6 +133,9 @@ CREATE VIEW asterisk4 AS
 
 ALTER VIEW asterisk4 OWNER TO shamsutdinov_lr;
 
+/*
+TODO for realize in future
+
 CREATE VIEW asterisk5 AS
     SELECT d.f1,
     d.f2
@@ -146,6 +149,7 @@ CREATE VIEW asterisk6 AS
    FROM dup3(3) dup3(f1, f2);
 
 ALTER VIEW asterisk6 OWNER TO shamsutdinov_lr;
+*/
 
 CREATE VIEW asterisk7 AS
     SELECT q.c1,

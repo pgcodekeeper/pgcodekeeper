@@ -188,7 +188,7 @@ public final class GenericColumn implements Serializable {
 
         int found = 0;
         for (IFunction f : schema.getFunctions()) {
-            if (f.getName().equals(table)) {
+            if (f.getBareName().equals(table)) {
                 ++found;
                 func = (PgFunction) f;
             }

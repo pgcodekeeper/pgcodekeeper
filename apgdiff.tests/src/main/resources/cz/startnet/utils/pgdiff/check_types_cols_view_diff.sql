@@ -46,16 +46,6 @@ Schema: public
      d - integer
      t - text
 
-  View: asterisk5
-    RelationColumns : 
-     f1 - integer
-     f2 - double precision
-
-  View: asterisk6
-    RelationColumns : 
-     f1 - integer
-     f2 - double precision
-
   View: asterisk7
     RelationColumns : 
      c1 - integer

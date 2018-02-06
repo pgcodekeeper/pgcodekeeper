@@ -216,6 +216,13 @@ public abstract class AbstractExpr {
         }
     }
 
+    protected void addColumnsDepcies(String schemaName, String tableOrView, List<Entry<String, String>> cols) {
+        String sName = schemaName != null ? schemaName : this.schema;
+        for (Entry<String, String> col : cols) {
+            depcies.add(new GenericColumn(sName, tableOrView, col.getKey(), DbObjType.COLUMN));
+        }
+    }
+
     protected void addFunctionSigDepcy(String signature) {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
         Function_args_parserContext sig = p.function_args_parser();

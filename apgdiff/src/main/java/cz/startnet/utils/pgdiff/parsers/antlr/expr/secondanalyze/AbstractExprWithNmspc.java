@@ -71,12 +71,6 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      */
     protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
 
-    /*
-     *  Map contains alias and boolean value. If alias contains function it will be true, otherwise false.
-     *  It will be used only for "...FROM (function()) alias;".
-     */
-    protected final Set<String> complexNamespaceIsFunction= new HashSet<>();
-
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
     }

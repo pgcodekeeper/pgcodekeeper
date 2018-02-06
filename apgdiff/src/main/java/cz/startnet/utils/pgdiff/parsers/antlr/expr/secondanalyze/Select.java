@@ -4,13 +4,8 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -67,8 +62,6 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      * @see #inFrom
      */
     private boolean lateralAllowed;
-
-    private static final Pattern PATTERN_FUNC_RETURN_TBL_TEMPLATE = Pattern.compile("^TABLE\\([\\w\\d\\s\\[\\],]+\\)$");
 
     public Select(String schema, PgDatabase db) {
         super(schema, db);
@@ -193,10 +186,11 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     ValueExpr vexCol = new ValueExpr(this);
                     Vex selectSublistVex = new Vex(target.vex());
 
-                    Value_expression_primaryContext valExprPrimary;
-                    if ((valExprPrimary = selectSublistVex.primary()) != null
+                    Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
+                    if (valExprPrimary != null
                             && (ast = valExprPrimary.qualified_asterisk()) != null) {
-                        ret.addAll(getColsOfAsterisk(ast));
+                        Schema_qualified_nameContext qNameAst = ast.tb_name;
+                        ret.addAll(qNameAst == null ? getColsOfNotQualAster() : getColsOfQualAster(qNameAst));
                         continue;
                     }
 
@@ -208,8 +202,6 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
                     ret.add(columnPair);
                 }
-
-                ret = fillTypesOfColsWhenFromFunc(ret, ast);
 
                 ValueExpr vex = new ValueExpr(this);
 
@@ -260,242 +252,54 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    /**
-     * Fill columns by types in cases when function located in FROM.
-     *
-     * @return list of columns as entry('column name' - 'column type').
-     */
-    private List<Entry<String, String>> fillTypesOfColsWhenFromFunc(List<Entry<String, String>> analyzedColPairs,
-            Qualified_asteriskContext ast) {
-        if (ast != null) {
-            return analyzedColPairs;
-        }
-
-        List<Entry<String, String>> colPairsFilledByType = new ArrayList<>();
-
-        for (Entry<String, String> currentColPair : analyzedColPairs) {
-            if (TypesSetManually.COLUMN.equals(currentColPair.getValue())) {
-                // Cases are handled when the type of column is not defined.
-
-                String currentColName = currentColPair.getKey();
-
-                Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(currentColName);
-                List<Entry<String, String>> colPairsOfAliasOfComplexNmsp;
-                if (refComplex != null && (colPairsOfAliasOfComplexNmsp = refComplex.getValue()) != null) {
-
-                    // In this case alias of 'complexNamespace' is used as name of 'columnPair'.
-
-                    // fill column by type in cases when function return only one value.
-
-                    colPairsFilledByType.add(getColsChekedForFuncReturnTbl(new SimpleEntry<>(currentColName,
-                            colPairsOfAliasOfComplexNmsp)).get(0));
-                } else {
-                    // fill column by type in cases when function return TABLE(...).
-
-                    // In 'complexNamespace', check the presence of 'table (colName colType, ...)',
-                    // in which the column names and their number are the same as the current one.
-                    // As result get the column from the table returned by the function.
-                    colPairsFilledByType.add(getColFromReturnedTblFunc(analyzedColPairs, currentColPair));
-                }
-            } else {
-                colPairsFilledByType.add(currentColPair);
-            }
-        }
-        return colPairsFilledByType;
+    private List<Entry<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
+        String schemaName = gTablerOrView.schema;
+        String tableOrView = gTablerOrView.table;
+        List<Entry<String, String>> colsOfTableOrView = getTableOrViewColumns(schemaName, tableOrView);
+        addColumnsDepcies(schemaName, tableOrView, colsOfTableOrView);
+        return colsOfTableOrView;
     }
 
-    /**
-     * Get columnPair(with defined type) for 'currentColPair' from one of the columns
-     * of the table returned by the function
-     * (function returns 'TABLE (colName colType, ...)').
-     *
-     * <p>Example for explanation.
-     * <p>SELECT d.f1,d.f2 FROM dup3(3) d(f1,f2);
-     * <p>SELECT dup3.f1, dup3.f2 FROM dup3(3) dup3(f1,f2);
-     * <p>'dup3' returns 'TABLE(f1 integer, f2 double precision)'.
-     * <p>For getting type for column 'f1' uses filter by 'currentColPair.getKey()'
-     * (currentColPair.getKey() == "f1").
-     *
-     * <p>In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
-     * in which the column names and their number are the same as the current one.
-     * As result get the column from the table returned by the function.
-     *
-     * @param analyzedColPairs list of analyzed column pairs.
-     * @param currentColPair the colPari(with undefined type) of the column to get the columnPair (with defined type).
-     *
-     * @return columnPair(with defined type) for 'currentColPair' from one of the columns of the table returned by the function
-     * or 'currentColPair' without changes
-     */
-    private Entry<String, String> getColFromReturnedTblFunc(List<Entry<String, String>> analyzedColPairs,
-            Entry<String, String> currentColPair) {
-        Set<String> colNamesOfanalyzedColPairs = analyzedColPairs.stream()
-                .map(Entry::getKey).collect(Collectors.toSet());
+    private List<Entry<String, String>> getColsOfNotQualAster() {
+        List<Entry<String, String>> retNotQualAsterCols = new ArrayList<>();
 
-        // In 'complexNamespace', check the presence of 'TABLE (colName colType, ...)',
-        // in which the column names and their number are the same as the current one.
-        for (Entry<String, List<Entry<String, String>>> complexEntry : complexNamespace.entrySet()) {
-            List<Entry<String, String>> colPairsOfAliasOfComplexNmsp = complexEntry.getValue();
+        for (GenericColumn gTablerOrView : unaliasedNamespace) {
+            retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
+        }
 
-            if (colPairsOfAliasOfComplexNmsp.size() == 1
-                    && PATTERN_FUNC_RETURN_TBL_TEMPLATE
-                    .matcher(colPairsOfAliasOfComplexNmsp.get(0).getValue()).matches()) {
-
-                Set<String> colNamesOfcolPairsOfAliasOfComplexNmsp = getColsChekedForFuncReturnTbl(complexEntry).stream()
-                        .map(Entry::getKey).collect(Collectors.toSet());
-
-                if (colNamesOfcolPairsOfAliasOfComplexNmsp.equals(colNamesOfanalyzedColPairs)) {
-                    // Return one columnPair(name-type) which relates to the 'currentColName'.
-                    //
-                    // Example for explanation.
-                    //
-                    // SELECT d.f1,d.f2 FROM dup3(3) d(f1,f2);
-                    // SELECT dup3.f1, dup3.f2 FROM dup3(3) dup3(f1,f2);
-                    //
-                    // 'dup3' returns 'TABLE(f1 integer, f2 double precision)'.
-                    //
-                    // For getting type for column 'f1' uses filter by 'currentColPair.getKey()'
-                    // (currentColPair.getKey() == "f1").
-                    return getColsChekedForFuncReturnTbl(complexEntry).stream()
-                            .filter(entry -> entry.getKey().equals(currentColPair.getKey()))
-                            .collect(Collectors.toList()).get(0);
-                }
+        for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
+            GenericColumn gTablerOrView = nmsp.getValue();
+            if (gTablerOrView != null) {
+                retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
             }
         }
 
-        return currentColPair;
+        complexNamespace.entrySet().forEach(complexNmsp -> retNotQualAsterCols.addAll(complexNmsp.getValue()));
+
+        return retNotQualAsterCols;
     }
 
-    private List<Entry<String, String>> getColsOfAsterisk(Qualified_asteriskContext ast) {
-        Schema_qualified_nameContext qNameAst = ast.tb_name;
-
-        //// If asterisk in SELECT is NOT qualified.
-
-        if(qNameAst == null ) {
-            List<Entry<String, String>> retNotQualAsterCols = new ArrayList<>();
-
-            unaliasedNamespace.forEach(gCol -> retNotQualAsterCols.addAll(getTableOrViewColumns(gCol.schema, gCol.table)));
-
-            for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
-                GenericColumn gCol = nmsp.getValue();
-                if (gCol != null) {
-                    retNotQualAsterCols.addAll(getTableOrViewColumns(gCol.schema, gCol.table));
-                }
-            }
-
-            complexNamespace.entrySet().forEach(complexNmsp -> retNotQualAsterCols.addAll(complexNmsp.getValue()));
-
-            // Check colPairs for the presence in the type the value of "TABLE (...)".
-            // If there are presence such colPairs, then replacing them by colPairs from "TABLE (...)".
-            Iterator<Entry<String, String>> iterRetNotQualAsterCols = retNotQualAsterCols.iterator();
-            List<Entry<String, String>> colsFromFuncReturnTbl = new ArrayList<>();
-            while (iterRetNotQualAsterCols.hasNext()) {
-                String colType = iterRetNotQualAsterCols.next().getValue();
-                if (PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(colType).matches()) {
-                    colsFromFuncReturnTbl.addAll(getColsFromStringOfFuncReturnTbl(colType));
-                    iterRetNotQualAsterCols.remove();
-                }
-            }
-            retNotQualAsterCols.addAll(colsFromFuncReturnTbl);
-
-            return retNotQualAsterCols;
-        }
-
-        //// If asterisk in SELECT is qualified.
-
-        List<Entry<String, String>> retQualAsterCols;
-
+    private List<Entry<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
         List<IdentifierContext> ids = qNameAst.identifier();
         String qualSchema = QNameParser.getSecondName(ids);
         String srcOrTblOrView = QNameParser.getFirstName(ids);
 
+        List<Entry<String, String>> retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView);
         // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
-        if (!(retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView)).isEmpty()) {
+        if (!retQualAsterCols.isEmpty()) {
+            addColumnsDepcies(qualSchema, srcOrTblOrView, retQualAsterCols);
             return retQualAsterCols;
         }
 
-        Entry<String, GenericColumn> srcOfAlias;
-        GenericColumn tableOrView;
-        if ((srcOfAlias = findReference(qualSchema, srcOrTblOrView, null)) != null
-                && (tableOrView = srcOfAlias.getValue()) != null) {
+        Entry<String, GenericColumn> srcOfAlias = findReference(qualSchema, srcOrTblOrView, null);
+        GenericColumn gTablerOrView = srcOfAlias != null ? srcOfAlias.getValue() : null;
+        if (gTablerOrView != null) {
             // if FROM has table or view with alias
-            return getTableOrViewColumns(tableOrView.schema, tableOrView.table);
+            return getColsWithAddedDepcies(gTablerOrView);
         } else {
             // if FROM has subquery with alias
-
-            if (complexNamespaceIsFunction.contains(srcOrTblOrView)) {
-                // if FROM use function as subquery
-
-                Entry<String, List<Entry<String, String>>> funcEntry = findReferenceComplex(srcOrTblOrView);
-
-                String funcRetType = funcEntry.getValue().get(0).getValue();
-
-                if (PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(funcRetType).matches()) {
-                    // if function returns TABLE(...)
-                    return getColsFromStringOfFuncReturnTbl(funcRetType);
-                } else {
-                    // if function return one value
-                    retQualAsterCols.add(new SimpleEntry<>(srcOrTblOrView, funcRetType));
-                    return retQualAsterCols;
-                }
-            } else {
-                // if FROM dosn't use function as subquery
-                return findReferenceComplex(srcOrTblOrView).getValue();
-            }
+            return findReferenceComplex(srcOrTblOrView).getValue();
         }
-    }
-
-    private List<Entry<String, String>> getColsFromStringOfFuncReturnTbl(String matchedExpression) {
-        List<Entry<String, String>> ret = new ArrayList<>();
-
-        String nameTypeExpression = matchedExpression.substring(0, matchedExpression.length()-1)
-                .replace("TABLE(", "");
-
-        String name;
-        String type;
-        for (String nameType: nameTypeExpression.split(", ")) {
-            name = nameType.substring(0, nameType.indexOf(' '));
-            type = nameType.substring(nameType.indexOf(' ')+1, nameType.length());
-            ret.add(new SimpleEntry<>(name, type));
-        }
-
-        return ret;
-    }
-
-    /**
-     * This method check for the function which returns TABLE(name1 type1, name2 type2, ...)
-     * and function with alias which returns only one value.
-     *
-     * @param entryCompNmsp
-     * @return list of columns as entry('column name' - 'column type').
-     */
-    private List<Entry<String, String>> getColsChekedForFuncReturnTbl(Entry<String, List<Entry<String, String>>> entryCompNmsp) {
-        List<Entry<String, String>> complexResult = entryCompNmsp.getValue();
-
-        if (complexResult.size() != 1) {
-            return complexResult;
-        }
-
-        String value = complexResult.get(0).getValue();
-        Matcher matcher = PATTERN_FUNC_RETURN_TBL_TEMPLATE.matcher(value);
-
-        if (!matcher.matches()) {
-            return Arrays.asList(new SimpleEntry<>(entryCompNmsp.getKey(), complexResult.get(0).getValue()));
-        }
-
-        List<Entry<String, String>> ret = new ArrayList<>();
-        String matchedExpression = matcher.group(0);
-        String nameTypeExpression = matchedExpression.substring(0, matchedExpression.length()-1)
-                .replace("TABLE(", "");
-
-        String name;
-        String type;
-        for (String nameType: nameTypeExpression.split(", ")) {
-            name = nameType.substring(0, nameType.indexOf(' '));
-            type = nameType.substring(nameType.indexOf(' ')+1, nameType.length());
-            ret.add(new SimpleEntry<>(name, type));
-        }
-
-        return ret;
     }
 
     private void groupingSet(Ordinary_grouping_setContext groupingSet, ValueExpr vex) {
@@ -581,8 +385,8 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         String funcAlias = primary.alias == null ? func.getKey():
                             primary.alias.getText();
                         addReference(funcAlias, null);
-                        complexNamespace.put(funcAlias, new ArrayList<>(Arrays.asList(func)));
-                        complexNamespaceIsFunction.add(funcAlias);
+                        complexNamespace.put(funcAlias,
+                                Arrays.asList(new SimpleEntry<>(funcAlias, func.getValue())));
                     }
                 } finally {
                     lateralAllowed = oldLateral;

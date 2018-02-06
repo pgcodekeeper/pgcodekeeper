@@ -101,6 +101,9 @@ CREATE VIEW asterisk4 AS
 
 ALTER VIEW asterisk4 OWNER TO shamsutdinov_lr;
 
+/*
+TODO for realize in future
+
 CREATE VIEW asterisk5 AS
     SELECT d.*
    FROM 
@@ -114,6 +117,7 @@ CREATE VIEW asterisk6 AS
    dup3(3);
 
 ALTER VIEW asterisk6 OWNER TO shamsutdinov_lr;
+*/
 
 CREATE VIEW asterisk7 AS
     SELECT q.*
