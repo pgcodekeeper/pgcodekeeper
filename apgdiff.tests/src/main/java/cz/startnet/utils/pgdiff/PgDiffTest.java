@@ -346,6 +346,8 @@ public class PgDiffTest {
                     {"col_to_func"},
                     // Тест зависимости от таблицы к функции default
                     {"tabl_to_func"},
+                    // Dependency test in a scenario where one of the overloaded FUNCTION will be deleted.
+                    {"depcy_drop_overloaded_function"},
                     // Вью со звездочкой
                     {"multiply_view"},
                     {"multiply_view_1"},
