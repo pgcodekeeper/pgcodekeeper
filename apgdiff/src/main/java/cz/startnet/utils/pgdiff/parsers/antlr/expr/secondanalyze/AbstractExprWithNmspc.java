@@ -65,7 +65,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      */
     protected final Map<String, List<Entry<String, String>>> cte = new HashMap<>();
 
-    /*
+    /**
      *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
      *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
      */
@@ -103,6 +103,26 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         }
 
         return refComplex == null ? super.findReferenceComplex(name) : refComplex;
+    }
+
+    @Override
+    protected Map<String, List<Entry<String, String>>> getAllCte() {
+        return cte;
+    }
+
+    @Override
+    protected Set<GenericColumn> getAllUnaliasedNmsp() {
+        return unaliasedNamespace;
+    }
+
+    @Override
+    protected Map<String, GenericColumn> getAllReferences() {
+        return namespace;
+    }
+
+    @Override
+    protected Map<String, List<Entry<String, String>>> getAllReferencesComplex() {
+        return complexNamespace;
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {

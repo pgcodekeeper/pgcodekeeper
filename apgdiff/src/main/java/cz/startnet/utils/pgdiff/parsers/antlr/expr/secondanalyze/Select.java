@@ -40,10 +40,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -415,40 +411,4 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return getTableOrViewColumns(schema, tableOrView);
     }
 
-    /**
-     * Gives list of columns (name-type) for the specified parameters.
-     *
-     * @param qualSchemaName
-     * @param tableOrView
-     * @return list of columns (name-type) for the specified parameters
-     */
-    protected List<Entry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
-        List<Entry<String, String>> ret = new ArrayList<>();
-
-        String schemaName = qualSchemaName != null ? qualSchemaName : this.schema;
-
-        PgSchema s;
-        if ((s = db.getSchema(schemaName)) != null && tableOrView != null) {
-            PgTable t;
-            PgView v;
-            if ((t = s.getTable(tableOrView)) != null) {
-
-                t.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-
-                // TODO It is necessary to remake it for a new logic
-                // of 'Inherits' object (recursion should be used for this).
-                List<Inherits> inheritsList;
-                if (!(inheritsList = t.getInherits()).isEmpty()) {
-                    for (Inherits inht : inheritsList) {
-                        PgTable tInherits = s.getTable(inht.getValue());
-                        tInherits.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-                    }
-
-                }
-            } else if ((v = s.getView(tableOrView)) != null) {
-                v.getRelationColumns().forEach(ret::add);
-            }
-        }
-        return ret;
-    }
 }

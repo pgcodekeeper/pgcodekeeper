@@ -51,7 +51,9 @@ public class PgDiffTypeTest {
                     // Check types in columns of view.
                     {CHECK + "types_cols_view"},
                     // Check types in columns of view (extended).
-                    {CHECK + "types_cols_view_extended"}
+                    {CHECK + "types_cols_view_extended"},
+                    // Check types in table-less columns.
+                    {CHECK + "tableless_cols_types"}
                 });
     }
 

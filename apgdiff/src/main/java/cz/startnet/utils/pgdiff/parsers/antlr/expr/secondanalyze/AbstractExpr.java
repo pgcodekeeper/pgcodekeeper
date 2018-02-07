@@ -1,9 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -92,6 +94,38 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
+    /**
+     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.AbstractExprWithNmspc#cte
+     * CTE names that current level of FROM has access to.}
+     */
+    protected Map<String, List<Entry<String, String>>> getAllCte() {
+        return parent == null ? null : parent.getAllCte();
+    }
+
+    /**
+     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.AbstractExprWithNmspc#unaliasedNamespace
+     * unaliased namespaces}
+     */
+    protected Set<GenericColumn> getAllUnaliasedNmsp() {
+        return parent == null ? null : parent.getAllUnaliasedNmsp();
+    }
+
+    /**
+     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.AbstractExprWithNmspc#namespace
+     * The local namespace of this Select.}
+     */
+    protected Map<String, GenericColumn> getAllReferences() {
+        return parent == null ? null : parent.getAllReferences();
+    }
+
+    /**
+     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.AbstractExprWithNmspc#complexNamespace
+     * Map contains alias and list of pairs. Pairs returned by aliased subquery.}
+     */
+    protected Map<String, List<Entry<String, String>>> getAllReferencesComplex() {
+        return parent == null ? null : parent.getAllReferencesComplex();
+    }
+
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
         GenericColumn depcy = new GenericColumn(
                 QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
@@ -124,22 +158,21 @@ public abstract class AbstractExpr {
      */
     protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
-        String column = QNameParser.getFirstName(ids);
+        String columnName = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
         String columnParent = null;
-        Entry<String, String> pair = new SimpleEntry<>(column, null);
+        Entry<String, String> pair = new SimpleEntry<>(columnName, null);
 
-        // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
-            String schema = QNameParser.getThirdName(ids);
+            String schemaName = QNameParser.getThirdName(ids);
             columnParent = QNameParser.getSecondName(ids);
 
-            Entry<String, GenericColumn> ref = findReference(schema, columnParent, column);
+            Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnParent = referencedTable.table;
-                    GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
+                    GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, columnName, DbObjType.COLUMN);
                     depcies.add(genericColumn);
 
                     columnType = getColumnType(genericColumn);
@@ -147,15 +180,18 @@ public abstract class AbstractExpr {
                     Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
                         columnType = refComplex.getValue().stream()
-                                .filter(entry -> column.equals(entry.getKey()))
+                                .filter(entry -> columnName.equals(entry.getKey()))
                                 .map(Entry::getValue)
                                 .findAny().orElse(TypesSetManually.COLUMN);
                     }
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + columnParent + ' ' + column);
+                        + schemaName + ' ' + columnParent + ' ' + columnName);
             }
+        } else {
+            // table-less columns analysis
+            columnType = getTablelessColumnType(columnName);
         }
 
         pair.setValue(columnType);
@@ -207,6 +243,56 @@ public abstract class AbstractExpr {
         return type;
     }
 
+    private String getTablelessColumnType(String columnName) {
+        // In this case when table-less columns is column of cte.
+        for (Entry<String, List<Entry<String, String>>> cteNmsp :
+            getAllCte().entrySet()) {
+            for (Entry<String, String> colPair : cteNmsp.getValue()) {
+                if (columnName.equals(colPair.getKey())) {
+                    return colPair.getValue();
+                }
+            }
+        }
+
+        // In this case when table-less columns is column of unaliased namespace.
+        for (GenericColumn gTableOrView : getAllUnaliasedNmsp()) {
+            for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
+                if (columnName.equals(colPair.getKey())) {
+                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
+                    return colPair.getValue();
+                }
+            }
+        }
+
+        // In this case when table-less columns is column of aliased table or view.
+        for (Entry<String, GenericColumn> nmsp : getAllReferences().entrySet()) {
+            GenericColumn gTableOrView = nmsp.getValue();
+
+            if (gTableOrView == null) {
+                continue;
+            }
+
+            for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
+                if (columnName.equals(colPair.getKey())) {
+                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
+                    return colPair.getValue();
+                }
+            }
+        }
+
+        // In this case when table-less columns is column of subquery.
+        for (Entry<String, List<Entry<String, String>>> nmspComplex :
+            getAllReferencesComplex().entrySet()) {
+            for (Entry<String, String> colPair : nmspComplex.getValue()) {
+                if (columnName.equals(colPair.getKey())) {
+                    return colPair.getValue();
+                }
+            }
+        }
+
+        return TypesSetManually.COLUMN;
+    }
+
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
         List<IdentifierContext> ids = table.identifier();
         String schemaName = QNameParser.getSchemaName(ids, schema);
@@ -223,6 +309,11 @@ public abstract class AbstractExpr {
         }
     }
 
+    protected void addColumnDepcy(String schemaName, String tableOrView, String columnName) {
+        String sName = schemaName != null ? schemaName : this.schema;
+        depcies.add(new GenericColumn(sName, tableOrView, columnName, DbObjType.COLUMN));
+    }
+
     protected void addFunctionSigDepcy(String signature) {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
         Function_args_parserContext sig = p.function_args_parser();
@@ -235,5 +326,42 @@ public abstract class AbstractExpr {
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
+    }
+
+    /**
+     * Gives list of columns (name-type) for the specified parameters.
+     *
+     * @param qualSchemaName
+     * @param tableOrView
+     * @return list of columns (name-type) for the specified parameters
+     */
+    protected List<Entry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
+        List<Entry<String, String>> ret = new ArrayList<>();
+
+        String schemaName = qualSchemaName != null ? qualSchemaName : this.schema;
+
+        PgSchema s;
+        if ((s = db.getSchema(schemaName)) != null && tableOrView != null) {
+            PgTable t;
+            PgView v;
+            if ((t = s.getTable(tableOrView)) != null) {
+
+                t.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
+
+                // TODO It is necessary to remake it for a new logic
+                // of 'Inherits' object (recursion should be used for this).
+                List<Inherits> inheritsList;
+                if (!(inheritsList = t.getInherits()).isEmpty()) {
+                    for (Inherits inht : inheritsList) {
+                        PgTable tInherits = s.getTable(inht.getValue());
+                        tInherits.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
+                    }
+
+                }
+            } else if ((v = s.getView(tableOrView)) != null) {
+                v.getRelationColumns().forEach(ret::add);
+            }
+        }
+        return ret;
     }
 }
