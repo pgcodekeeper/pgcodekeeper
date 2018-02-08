@@ -74,3 +74,11 @@ Schema: public
     RelationColumns : 
      col11 - text
      col22 - integer
+
+  View: asterisk12
+    RelationColumns : 
+     c1 - integer
+     c2 - text
+     c3 - double precision
+     c4 - text
+     own_column - integer

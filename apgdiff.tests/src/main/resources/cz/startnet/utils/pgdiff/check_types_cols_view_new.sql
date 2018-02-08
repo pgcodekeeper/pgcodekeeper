@@ -33,6 +33,12 @@ CREATE TABLE tablettt (
 
 ALTER TABLE tablettt OWNER TO shamsutdinov_lr;
 
+CREATE TABLE table_inherits (
+    own_column integer
+) INHERITS (tablettt);
+
+ALTER TABLE table_inherits OWNER TO shamsutdinov_lr;
+
 CREATE TABLE users (
     id integer,
     login character(64),
@@ -207,3 +213,18 @@ CREATE VIEW asterisk11 AS
          LIMIT 1) b;
 
 ALTER VIEW asterisk11 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk12 AS
+    SELECT r.c1,
+    r.c2,
+    r.c4,
+    r.c3,
+    r.own_column
+   FROM ( SELECT table_inherits.c1,
+            table_inherits.c2,
+            table_inherits.c4,
+            table_inherits.c3,
+            table_inherits.own_column
+           FROM table_inherits) r;
+
+ALTER VIEW asterisk12 OWNER TO shamsutdinov_lr;
