@@ -244,23 +244,19 @@ public abstract class AbstractExpr {
     }
 
     private String getTablelessColumnType(String columnName) {
+        String columnType;
+
         // In this case when table-less columns is column of cte.
-        for (Entry<String, List<Entry<String, String>>> cteNmsp :
-            getAllCte().entrySet()) {
-            for (Entry<String, String> colPair : cteNmsp.getValue()) {
-                if (columnName.equals(colPair.getKey())) {
-                    return colPair.getValue();
-                }
-            }
+        columnType = getTypeOfCorrespondingColComplex(columnName, getAllCte());
+        if (columnType != null) {
+            return columnType;
         }
 
         // In this case when table-less columns is column of unaliased namespace.
         for (GenericColumn gTableOrView : getAllUnaliasedNmsp()) {
-            for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
-                if (columnName.equals(colPair.getKey())) {
-                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
-                    return colPair.getValue();
-                }
+            columnType = getTypeOfCorrespondingColTblOrView(columnName, gTableOrView);
+            if (columnType != null) {
+                return columnType;
             }
         }
 
@@ -272,25 +268,40 @@ public abstract class AbstractExpr {
                 continue;
             }
 
-            for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
-                if (columnName.equals(colPair.getKey())) {
-                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
-                    return colPair.getValue();
-                }
+            columnType = getTypeOfCorrespondingColTblOrView(columnName, gTableOrView);
+            if (columnType != null) {
+                return columnType;
             }
         }
 
         // In this case when table-less columns is column of subquery.
-        for (Entry<String, List<Entry<String, String>>> nmspComplex :
-            getAllReferencesComplex().entrySet()) {
-            for (Entry<String, String> colPair : nmspComplex.getValue()) {
+        columnType = getTypeOfCorrespondingColComplex(columnName, getAllReferencesComplex());
+        if (columnType != null) {
+            return columnType;
+        }
+
+        return TypesSetManually.COLUMN;
+    }
+
+    private String getTypeOfCorrespondingColComplex(String columnName, Map<String, List<Entry<String, String>>> colsOfAlias) {
+        for (Entry<String, List<Entry<String, String>>> nmsp : colsOfAlias.entrySet()) {
+            for (Entry<String, String> colPair : nmsp.getValue()) {
                 if (columnName.equals(colPair.getKey())) {
                     return colPair.getValue();
                 }
             }
         }
+        return null;
+    }
 
-        return TypesSetManually.COLUMN;
+    private String getTypeOfCorrespondingColTblOrView(String columnName, GenericColumn gTableOrView) {
+        for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
+            if (columnName.equals(colPair.getKey())) {
+                addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
+                return colPair.getValue();
+            }
+        }
+        return null;
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
