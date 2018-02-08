@@ -35,11 +35,11 @@ import org.eclipse.swt.widgets.Text;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -360,7 +360,6 @@ public class MockDataPage extends WizardPage {
             boolean isSingle = sel.size() == 1;
             columnInfo.setEnabled(isSingle);
             if (isSingle) {
-                columnInfo.setEnabled(true);
                 PgData<?> c = (PgData<?>) sel.getFirstElement();
                 showColumnInfo(c);
                 updateFields(c);
@@ -550,7 +549,7 @@ public class MockDataPage extends WizardPage {
 
     private void hideWidget(Control first, Control second) {
         boolean isShow = first.getEnabled();
-        GridData data =  (GridData)first.getLayoutData();
+        GridData data = (GridData)first.getLayoutData();
         data.exclude = !isShow;
         first.setVisible(isShow);
         data = (GridData)second.getLayoutData();
@@ -653,20 +652,27 @@ public class MockDataPage extends WizardPage {
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
-        PgStatement statement;
-        if (source instanceof IFile && PgUIDumpLoader.isInProject((IFile)source)
-                && (statement = PgUIDumpLoader.parseStatement((IFile)source, DbObjType.TABLE)) != null) {
-            PgTable table = (PgTable)statement;
-            parsedTableName = table.getName();
-            parsedSchemaName = table.getContainingSchema().getName();
-            table.getColumns().forEach(this::parseColumns);
-            table.getConstraints().forEach(this::parseConstraints);
-            return;
+        if (source instanceof IFile && PgUIDumpLoader.isInProject((IFile)source)) {
+            IFile file = (IFile)source;
+            PgTable table = null;
+            try {
+                table = (PgTable) PgUIDumpLoader.parseStatement(file, DbObjType.TABLE);
+            } catch (InterruptedException | IOException | CoreException e) {
+                Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
+            }
+            if (table != null) {
+                parsedTableName = table.getName();
+                parsedSchemaName = table.getContainingSchema().getName();
+                table.getColumns().forEach(this::parseColumns);
+                table.getConstraints().forEach(this::parseConstraints);
+                return;
+            }
         }
         // in case no file or exception
         PgData<?> c = new IntegerPgData(PgDataType.INTEGER);
         c.setName("id"); //$NON-NLS-1$
         columns.add(c);
+
     }
 
     /**
@@ -689,7 +695,7 @@ public class MockDataPage extends WizardPage {
      */
     private void parseColumns(PgColumn column) {
         String type = column.getType();
-        PgData<?> c = PgDataType.dataForType(column.getType());
+        PgData<?> c = PgDataType.dataForType(column.getType().toLowerCase());
         c.setNotNull(!column.getNullValue());
         c.setName(column.getName());
         c.setAlias(type);

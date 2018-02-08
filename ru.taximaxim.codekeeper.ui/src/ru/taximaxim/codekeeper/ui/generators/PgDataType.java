@@ -45,13 +45,13 @@ public enum PgDataType {
 
     private PgDataType(Function<PgDataType, PgData<?>> factory, String type) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = type;
+        this.type = type.toLowerCase();;
         this.factory = () -> factory.apply(this);
     }
 
     private PgDataType(Supplier<PgData<?>> factory, String type) {
         this.generators = EnumSet.allOf(PgDataGenerator.class);
-        this.type = type;
+        this.type = type.toLowerCase();;
         this.factory = factory;
     }
 
@@ -69,7 +69,7 @@ public enum PgDataType {
 
     private PgDataType(Supplier<PgData<?>> factory, String type, PgDataGenerator... generators) {
         this.generators = setOfGenerators(Arrays.asList(generators));
-        this.type = type;
+        this.type = type.toLowerCase();;
         this.factory = factory;
     }
 
@@ -121,13 +121,13 @@ public enum PgDataType {
                 t = BIT;
             } else if (type.startsWith(NUMERIC.type)) {
                 t = PgDataType.NUMERIC;
-            } else if (type.startsWith("varchar") || type.startsWith("character")) {
+            } else if (type.startsWith("VARCHAR") || type.startsWith("CHARACTER")) {
                 t = PgDataType.TEXT;
-            } else if ("timestamp without time zone".equals(type)) { //$NON-NLS-1$
+            } else if ("timestamp without time zone".equalsIgnoreCase(type)) { //$NON-NLS-1$
                 t = PgDataType.TIMESTAMP;
-            } else if ("timestamp with time zone".equals(type)) { //$NON-NLS-1$
+            } else if ("timestamp with time zone".equalsIgnoreCase(type)) { //$NON-NLS-1$
                 t = PgDataType.TIMESTAMPTZ;
-            } else if ("time without time zone".equals(type)) { //$NON-NLS-1$
+            } else if ("time without time zone".equalsIgnoreCase(type)) { //$NON-NLS-1$
                 t = PgDataType.TIME;
             }
         }

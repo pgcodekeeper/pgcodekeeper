@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -32,7 +33,7 @@ public class TimestampTZPgData extends PgData<ZonedDateTime> {
         case INCREMENT:
             ZonedDateTime current = currentInc;
             long milles = Duration.between(ZonedDateTime.ofInstant(Instant.ofEpochMilli(0),
-                    start.getZone()), step).toMillis();
+                    ZoneOffset.UTC), step).toMillis();
             currentInc = current.plus(milles, ChronoUnit.MILLIS);
             return current;
         case RANDOM: return generateRandom();
@@ -78,13 +79,13 @@ public class TimestampTZPgData extends PgData<ZonedDateTime> {
     @Override
     public String getStepAsString() {
         return Duration.between(ZonedDateTime.ofInstant(Instant.ofEpochMilli(0),
-                start.getZone()), step).toString();
+                ZoneOffset.UTC), step).toString();
     }
 
     @Override
     public void setStepFromString(String step) {
         try {
-            setStep(ZonedDateTime.ofInstant(Instant.ofEpochMilli(Duration.parse(step).toMillis()), start.getZone()));
+            setStep(ZonedDateTime.ofInstant(Instant.ofEpochMilli(Duration.parse(step).toMillis()), ZoneOffset.UTC));
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
                     MessageFormat.format(EXP_FORMAT, ex.getParsedString(), Messages.Duration_expected_format), ex);

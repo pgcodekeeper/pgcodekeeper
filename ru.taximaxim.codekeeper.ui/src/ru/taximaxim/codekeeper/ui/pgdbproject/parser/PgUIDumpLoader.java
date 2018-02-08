@@ -74,7 +74,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
+    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         try {
             load(db);
             return db;
@@ -187,14 +187,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
         }
     }
 
-    public static PgStatement parseStatement(IFile file, DbObjType type) {
-        try {
-            return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
-                    .values().stream().filter(e -> e.getStatementType() == type).findFirst().orElse(null);
-        } catch (Exception ex) {
-            Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), ex); //$NON-NLS-1$
-        }
-        return null;
+    public static PgStatement parseStatement(IFile file, DbObjType type) throws InterruptedException, IOException, CoreException {
+        return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
+                .values().stream().filter(e -> e.getStatementType() == type).findFirst().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,

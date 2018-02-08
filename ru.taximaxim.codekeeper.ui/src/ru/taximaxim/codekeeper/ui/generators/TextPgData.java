@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 /**
  * An implementation of a PostgreSql data generator for TEXT types.
  *
@@ -17,7 +19,7 @@ public class TextPgData extends PgData<String> {
     @Override
     public String generateValue() {
         switch (generator) {
-        case CONSTANT: return "'" + start + "'";
+        case CONSTANT: return PgDiffUtils.quoteString(start);
         case INCREMENT:
             return null;
         case RANDOM: return generateRandom();
