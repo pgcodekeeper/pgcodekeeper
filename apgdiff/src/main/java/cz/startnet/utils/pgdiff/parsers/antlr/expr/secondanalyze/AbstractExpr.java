@@ -201,7 +201,7 @@ public abstract class AbstractExpr {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
     }
 
-    private Stream<IRelation> findRelations(String schemaName, String relationName) {
+    protected Stream<IRelation> findRelations(String schemaName, String relationName) {
         Stream<IRelation> foundRelations;
         if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
