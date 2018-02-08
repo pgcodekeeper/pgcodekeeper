@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -19,12 +20,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -164,47 +161,14 @@ public abstract class AbstractExpr {
     }
 
     private String getColumnType(GenericColumn genericColumn) {
-        String schemaName = genericColumn.schema;
-        String columnParent = genericColumn.table;
-        String column = genericColumn.column;
-
-        String type = TypesSetManually.COLUMN;
-
-        PgSchema s;
-        if (schemaName != null && (s = db.getSchema(schemaName)) != null && columnParent != null) {
-            PgTable t;
-            PgView v;
-            if ((t = s.getTable(columnParent)) != null) {
-                PgColumn col = t.getColumn(column);
-
-                if (col != null) {
-                    type = col.getType();
-                } else {
-                    // TODO It is necessary to remake it for a new logic
-                    // of 'Inherits' object (recursion should be used for this).
-                    List<Inherits> inheritsList = t.getInherits();
-                    if (!inheritsList.isEmpty()) {
-                        for (Inherits inht : inheritsList) {
-                            PgTable tInherits = s.getTable(inht.getValue());
-                            col = tInherits.getColumn(column);
-                            if (col != null) {
-                                type = col.getType();
-                                break;
-                            }
-                        }
-                    }
-                }
-            } else if ((v = s.getView(columnParent)) != null) {
-                for (Entry<String, String> col : (Iterable <Entry<String, String>>)
-                        v.getRelationColumns()::iterator) {
-                    if (column.equals(col.getKey())) {
-                        type = col.getValue();
-                        break;
-                    }
+        for (IRelation relation : (Iterable<IRelation>)findRelations(genericColumn.schema, genericColumn.table)::iterator) {
+            for (Entry<String, String> colPair : (Iterable<Entry<String, String>>)relation.getRelationColumns()::iterator ) {
+                if (genericColumn.column.equals(colPair.getKey())) {
+                    return colPair.getValue();
                 }
             }
         }
-        return type;
+        return TypesSetManually.COLUMN;
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
@@ -235,5 +199,20 @@ public abstract class AbstractExpr {
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
         depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
+    }
+
+    private Stream<IRelation> findRelations(String schemaName, String relationName) {
+        Stream<IRelation> foundRelations;
+        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
+                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
+            foundRelations = systemStorage.getSchema(schemaName).getRelations();
+        } else if (schemaName != null) {
+            foundRelations = db.getSchema(schemaName).getRelations();
+        } else {
+            foundRelations = Stream.concat(db.getSchema(schema).getRelations(),
+                    systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations());
+        }
+
+        return foundRelations.filter(r -> r.getName().equals(relationName));
     }
 }

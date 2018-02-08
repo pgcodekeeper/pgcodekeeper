@@ -56,7 +56,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -481,21 +480,6 @@ public class ValueExpr extends AbstractExpr {
 
         return foundFunctions.filter(f -> f.getBareName().equals(functionName))
                 .filter(f -> getInInoutFuncArgs(f).size() == argsCount);
-    }
-
-    private Stream<IRelation> findRelations(String schemaName, String relationName) {
-        Stream<IRelation> foundRelations;
-        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
-                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            foundRelations = systemStorage.getSchema(schemaName).getRelations();
-        } else if (schemaName != null) {
-            foundRelations = db.getSchema(schemaName).getRelations();
-        } else {
-            foundRelations = Stream.concat(db.getSchema(schema).getRelations(),
-                    systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations());
-        }
-
-        return foundRelations.filter(r -> r.getName().equals(relationName));
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
