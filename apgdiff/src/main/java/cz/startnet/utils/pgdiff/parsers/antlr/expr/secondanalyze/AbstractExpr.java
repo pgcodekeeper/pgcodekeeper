@@ -91,7 +91,7 @@ public abstract class AbstractExpr {
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
         GenericColumn depcy = new GenericColumn(
-                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
+                QNameParser.getSchemaName(ids, schema, db, systemStorage), QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
