@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -95,11 +94,18 @@ public abstract class JdbcReaderFactory {
         return getAvailableHelperBits(loader.connection);
     }
 
-    public static String excludeObjects(String base, List<Long> oids) {
+    /**
+     * Exclude oids from query
+     *
+     * @param base - base query
+     * @param oids - oids separated by commas
+     * @return new query
+     */
+    public static String excludeObjects(String base, String oids) {
         StringBuilder sb = new StringBuilder("SELECT * FROM (");
         sb.append(base);
         sb.append(") q WHERE NOT (q.oid = ANY (ARRAY [");
-        sb.append(oids.stream().map(o -> o.toString()).collect(Collectors.joining(",")));
+        sb.append(oids);
         sb.append("]));");
         return sb.toString();
     }

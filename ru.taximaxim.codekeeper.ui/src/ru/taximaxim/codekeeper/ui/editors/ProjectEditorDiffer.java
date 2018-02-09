@@ -462,33 +462,20 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return;
         }
         IEclipsePreferences projProps = proj.getPrefs();
-        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-
-        DbSource dbRemote;
-        String name;
-        if (currentRemote instanceof DbInfo) {
-            DbInfo dbInfo = (DbInfo) currentRemote;
-            dbRemote = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
-                    charset, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
-            name = dbInfo.getName();
-            saveLastDb(dbInfo);
-        } else {
-            File file = (File) currentRemote;
-            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
-            name = file.getName();
-        }
-
-        setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
 
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
-        DbSource dbProj = DbSource.fromProject(proj);
+
+        Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
+        TreeDiffer newDiffer = TreeDiffer.getTree(proj, currentRemote, charset,
+                projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), mainPrefs,
+                projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+
+        setPartName(getEditorInput().getName() + " - " + newDiffer.getName()); //$NON-NLS-1$
         reset();
         hideNotificationArea();
 
-        Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        TreeDiffer newDiffer = TreeDiffer.getTree(dbProj, dbRemote, false);
         Job job = new SingletonEditorJob(Messages.diffPresentationPane_getting_changes_for_diff,
                 this, ChangesJobTester.EVAL_PROP) {
             @Override
@@ -534,7 +521,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
-                            setInput(dbProj, dbRemote, newDiffer.getDiffTree());
+                            setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(), newDiffer.getDiffTree());
                             loadedRemote = currentRemote;
                         }
                     });

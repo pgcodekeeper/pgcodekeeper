@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,7 +25,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -60,16 +59,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
-    protected boolean useServerHelpers = true;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
     protected List<String> errors = new ArrayList<>();
 
-    // time loader params
-    protected List<ObjectTimestamp> objects;
-    protected PgDatabase projDB;
-    protected DBTimestampPair pair;
-    protected String schema;
-    protected Path path;
+    protected final TimestampParam timestampParams = new TimestampParam();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -84,10 +77,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void setCurrentOperation(String operation) {
         currentObject = null;
         currentOperation = operation;
-    }
-
-    public void setUseServerHelpers(boolean useServerHelpers) {
-        this.useServerHelpers = useServerHelpers;
     }
 
     protected String getCurrentLocation() {
@@ -125,16 +114,16 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getObjects() {
-        return objects;
+    public List<ObjectTimestamp> getTimestampObjects() {
+        return timestampParams.timestampObjects;
     }
 
-    public PgDatabase getProjDb() {
-        return projDB;
+    public PgDatabase getTimestampProjDb() {
+        return timestampParams.projDB;
     }
 
-    public String getSchema() {
-        return schema;
+    public String getExtensionSchema() {
+        return timestampParams.extensionSchema;
     }
 
     private String getRoleByOid(long oid) {
@@ -326,13 +315,20 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return oid < firstBootstrapObjectId;
     }
 
-    public boolean hasAllHelpers() throws IOException {
-        // just makes new connection for now
-        // smarter solution would be to make the class AutoCloseable
-        try (Connection c = connector.getConnection()) {
-            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
-        } catch (SQLException ex) {
-            throw new IOException(ex.getLocalizedMessage(), ex);
+    protected final class TimestampParam {
+        private List<ObjectTimestamp> timestampObjects;
+        private PgDatabase projDB;
+        private String extensionSchema;
+        private Path path;
+
+        public void setTimeParams(PgDatabase projDB, Path path, String extensionSchema) {
+            this.projDB = projDB;
+            this.path = path;
+            this.extensionSchema = extensionSchema;
+        }
+
+        public void fillObjects(DBTimestamp dbTime) {
+            timestampObjects = DBTimestamp.getDBTimestamp(path).searchMatch(dbTime);
         }
     }
 }

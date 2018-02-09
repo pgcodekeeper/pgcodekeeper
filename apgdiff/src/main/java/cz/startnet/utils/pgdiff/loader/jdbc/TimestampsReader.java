@@ -30,7 +30,7 @@ public class TimestampsReader implements PgCatalogStrings {
 
     public DBTimestamp read() throws SQLException, InterruptedException {
         DBTimestamp time = new DBTimestamp();
-        String schemaName = loader.getSchema();
+        String schemaName = loader.getExtensionSchema();
         try (ResultSet result = loader.statement.executeQuery(MessageFormat.format(QUERY, schemaName))) {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);

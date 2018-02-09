@@ -21,7 +21,7 @@ public final class ApgdiffUtils {
      */
     public static File getFileFromOsgiRes(URL url) throws URISyntaxException, IOException {
         return new File(
-                URIUtil.toURI(url.getProtocol().equals("file") ?
+                URIUtil.toURI("file".equals(url.getProtocol()) ?
                         url : FileLocator.toFileURL(url)));
     }
 
@@ -37,9 +37,14 @@ public final class ApgdiffUtils {
      * @param object - the object that you want to serialize
      */
     public static void serialize(Path path, Serializable object) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
-            oos.writeObject(object);
-            oos.flush();
+        try {
+            if (Files.notExists(path)) {
+                Files.createDirectories(path.getParent());
+            }
+            try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
+                oos.writeObject(object);
+                oos.flush();
+            }
         } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while serialize object!", e);
         }

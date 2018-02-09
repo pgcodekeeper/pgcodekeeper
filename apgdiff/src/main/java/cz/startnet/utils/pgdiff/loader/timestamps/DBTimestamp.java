@@ -12,8 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -34,6 +37,8 @@ public class DBTimestamp implements Serializable {
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
     private final List<ObjectTimestamp> objects = new ArrayList<>();
+
+    private transient DBTimestamp dbTime;
 
     public List<ObjectTimestamp> getObjects() {
         return objects;
@@ -68,49 +73,54 @@ public class DBTimestamp implements Serializable {
         Map<GenericColumn, byte[]> statements = new HashMap<>();
         db.getExtensions().forEach(e -> statements.put(
                 new GenericColumn(e.getName(), DbObjType.EXTENSION),
-                PgDiffUtils.getHash(e.getRawStatement())));
+                PgDiffUtils.sha(e.getRawStatement())));
         for (PgSchema s : db.getSchemas()) {
             s.getTypes().forEach(t -> statements.put(
                     new GenericColumn(s.getName(), t.getName(), DbObjType.TYPE),
-                    PgDiffUtils.getHash(t.getRawStatement())));
+                    PgDiffUtils.sha(t.getRawStatement())));
             s.getDomains().forEach(d -> statements.put(
                     new GenericColumn(s.getName(), d.getName(), DbObjType.TYPE),
-                    PgDiffUtils.getHash(d.getRawStatement())));
+                    PgDiffUtils.sha(d.getRawStatement())));
             s.getSequences().forEach(seq -> statements.put(
                     new GenericColumn(s.getName(), seq.getName(), DbObjType.SEQUENCE),
-                    PgDiffUtils.getHash(seq.getRawStatement())));
+                    PgDiffUtils.sha(seq.getRawStatement())));
             s.getFunctions().forEach(f -> statements.put(
                     new GenericColumn(s.getName(), f.getName(), DbObjType.FUNCTION),
-                    PgDiffUtils.getHash(f.getRawStatement())));
+                    PgDiffUtils.sha(f.getRawStatement())));
             for (PgTable t : s.getTables()) {
                 t.getIndexes().forEach(i -> statements.put(
                         new GenericColumn(s.getName(), null, i.getName(), DbObjType.INDEX),
-                        PgDiffUtils.getHash(i.getRawStatement())));
+                        PgDiffUtils.sha(i.getRawStatement())));
                 t.getTriggers().forEach(tr -> statements.put(
                         new GenericColumn(s.getName(), t.getName(), tr.getName(), DbObjType.TRIGGER),
-                        PgDiffUtils.getHash(tr.getRawStatement())));
+                        PgDiffUtils.sha(tr.getRawStatement())));
                 t.getRules().forEach(r -> statements.put(
                         new GenericColumn(s.getName(), t.getName(), r.getName(), DbObjType.RULE),
-                        PgDiffUtils.getHash(r.getRawStatement())));
+                        PgDiffUtils.sha(r.getRawStatement())));
 
-                StringBuilder tableHash = new StringBuilder(t.getRawStatement());
-                t.getConstraints().forEach(con -> tableHash.append(con.getRawStatement()));
+                String hash = t.getRawStatement();
+                List<PgConstraint> cons = t.getConstraints();
+                if (!cons.isEmpty()) {
+                    StringBuilder tableHash = new StringBuilder(hash);
+                    cons.forEach(con -> tableHash.append(con.getRawStatement()));
+                    hash = tableHash.toString();
+                }
 
                 statements.put(new GenericColumn(s.getName(), t.getName(), DbObjType.TABLE),
-                        PgDiffUtils.getHash(tableHash.toString()));
+                        PgDiffUtils.sha(hash));
             }
             for (PgView v : s.getViews()) {
                 v.getTriggers().forEach(tr -> statements.put(
                         new GenericColumn(s.getName(), v.getName(), tr.getName(), DbObjType.TRIGGER),
-                        PgDiffUtils.getHash(tr.getRawStatement())));
+                        PgDiffUtils.sha(tr.getRawStatement())));
                 v.getRules().forEach(r -> statements.put(
                         new GenericColumn(s.getName(), v.getName(), r.getName(), DbObjType.RULE),
-                        PgDiffUtils.getHash(r.getRawStatement())));
+                        PgDiffUtils.sha(r.getRawStatement())));
                 statements.put(new GenericColumn(s.getName(), v.getName(), DbObjType.TABLE),
-                        PgDiffUtils.getHash(v.getRawStatement()));
+                        PgDiffUtils.sha(v.getRawStatement()));
             }
             statements.put(new GenericColumn(s.getName(), DbObjType.SCHEMA),
-                    PgDiffUtils.getHash(s.getRawStatement()));
+                    PgDiffUtils.sha(s.getRawStatement()));
         }
 
         for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
@@ -141,5 +151,80 @@ public class DBTimestamp implements Serializable {
         }
 
         return db;
+    }
+
+    public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
+        this.dbTime = dbTime;
+        List<ObjectTimestamp> equalsObjects = new ArrayList<>();
+
+        for (ObjectTimestamp pObj : this.getObjects()) {
+            GenericColumn gc = pObj.getObject();
+            for (ObjectTimestamp rObj : dbTime.getObjects()) {
+                if (rObj.equals(pObj)) {
+                    equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
+                            rObj.getObjId(), rObj.getTime()));
+                    break;
+                }
+            }
+        }
+
+        return equalsObjects;
+    }
+
+
+    /**
+     * Rewrites timestamp objects
+     *
+     * @param statements - statements list
+     * @param path - serialized object path
+     */
+    public static void rewrite(List<PgStatement> statements, Path path) {
+        DBTimestamp timestamp = getDBTimestamp(path);
+        List<ObjectTimestamp> objects = timestamp.objects;
+        objects.clear();
+        for (PgStatement st : statements) {
+            DbObjType type = st.getStatementType();
+            String schema = null;
+            if (st instanceof PgStatementWithSearchPath) {
+                schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+            }
+            GenericColumn gc = null;
+            switch (type) {
+            case SCHEMA:
+            case EXTENSION:
+                gc = new GenericColumn(st.getName(), type);
+                break;
+            case TYPE:
+            case SEQUENCE:
+            case FUNCTION:
+            case TABLE:
+            case VIEW:
+                gc = new GenericColumn(schema, st.getName(), type);
+                break;
+            case INDEX:
+                gc = new GenericColumn(schema, null, st.getName(), type);
+                break;
+            case RULE:
+            case TRIGGER:
+                gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
+                break;
+            default: return;
+            }
+
+            StringBuilder hash = new StringBuilder(st.getRawStatement());
+
+            if (type == DbObjType.TABLE) {
+                ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
+            }
+
+            for (ObjectTimestamp obj : timestamp.dbTime.getObjects()) {
+                if (obj.getObject().equals(gc)) {
+                    objects.add(new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime()));
+                    break;
+                }
+            }
+        }
+
+        ApgdiffUtils.serialize(path, timestamp);
     }
 }

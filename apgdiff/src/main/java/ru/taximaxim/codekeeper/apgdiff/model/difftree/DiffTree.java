@@ -7,7 +7,6 @@ import java.util.List;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestampPair;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -17,21 +16,33 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
 
-    public static TreeElement create(PgDatabase dbSrc, PgDatabase dbTgt,
-            SubMonitor pm) throws InterruptedException {
-        return create(dbSrc,dbTgt,pm, null);
+    public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
+        return new DiffTree().createTree(left, right, sMonitor);
     }
 
-    public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor, DBTimestampPair dbTime) throws InterruptedException {
+    @Deprecated
+    public static void addColumns(List<? extends PgStatement> left,
+            List<? extends PgStatement> right, TreeElement parent,
+            List<TreeElement> list) {
+        for (CompareResult col : new DiffTree().compareLists(left, right)) {
+            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
+            colEl.setParent(parent);
+            list.add(colEl);
+        }
+    }
+
+    private final List<PgStatement> equalsStatements = new ArrayList<>();
+
+    public TreeElement createTree(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
         PgDiffUtils.checkCancelled(sMonitor);
 
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
-        for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions(), dbTime)) {
+        for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions())) {
             db.addChild(new TreeElement(res.getStatement(), res.getSide()));
         }
 
-        for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas(), dbTime)) {
+        for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
             PgDiffUtils.checkCancelled(sMonitor);
 
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
@@ -50,7 +61,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getFunctions();
             }
 
-            for (CompareResult func : compareLists(leftSub, rightSub, dbTime)) {
+            for (CompareResult func : compareLists(leftSub, rightSub)) {
                 elSchema.addChild(new TreeElement(func.getStatement(), func.getSide()));
             }
 
@@ -62,7 +73,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getSequences();
             }
 
-            for (CompareResult seq : compareLists(leftSub, rightSub, dbTime)) {
+            for (CompareResult seq : compareLists(leftSub, rightSub)) {
                 elSchema.addChild(new TreeElement(seq.getStatement(), seq.getSide()));
             }
 
@@ -74,7 +85,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getTypes();
             }
 
-            for (CompareResult type : compareLists(leftSub, rightSub, dbTime)) {
+            for (CompareResult type : compareLists(leftSub, rightSub)) {
                 elSchema.addChild(new TreeElement(type.getStatement(), type.getSide()));
             }
 
@@ -86,7 +97,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getDomains();
             }
 
-            for (CompareResult dom : compareLists(leftSub, rightSub, dbTime)) {
+            for (CompareResult dom : compareLists(leftSub, rightSub)) {
                 elSchema.addChild(new TreeElement(dom.getStatement(), dom.getSide()));
             }
 
@@ -98,7 +109,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getViews();
             }
 
-            for (CompareResult view : compareLists(leftSub, rightSub, dbTime)) {
+            for (CompareResult view : compareLists(leftSub, rightSub)) {
                 TreeElement vw = new TreeElement(view.getStatement(), view.getSide());
                 elSchema.addChild(vw);
 
@@ -116,7 +127,7 @@ public final class DiffTree {
                     rightViewSub = viewRight.getRules();
                 }
 
-                for (CompareResult rule : compareLists(leftViewSub, rightViewSub, dbTime)) {
+                for (CompareResult rule : compareLists(leftViewSub, rightViewSub)) {
                     vw.addChild(new TreeElement(rule.getStatement(), rule.getSide()));
                 }
 
@@ -128,7 +139,7 @@ public final class DiffTree {
                     rightViewSub = viewRight.getTriggers();
                 }
 
-                for (CompareResult trg : compareLists(leftViewSub, rightViewSub, dbTime)) {
+                for (CompareResult trg : compareLists(leftViewSub, rightViewSub)) {
                     vw.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
                 }
             }
@@ -141,7 +152,7 @@ public final class DiffTree {
                 rightSub = schemaRight.getTables();
             }
 
-            for(CompareResult resSub : compareLists(leftSub, rightSub, dbTime)) {
+            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
                 PgDiffUtils.checkCancelled(sMonitor);
 
                 TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
@@ -161,7 +172,7 @@ public final class DiffTree {
                     rightTableSub = tableRight.getIndexes();
                 }
 
-                for (CompareResult ind : compareLists(leftTableSub, rightTableSub, dbTime)) {
+                for (CompareResult ind : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(ind.getStatement(), ind.getSide()));
                 }
 
@@ -173,7 +184,7 @@ public final class DiffTree {
                     rightTableSub = tableRight.getTriggers();
                 }
 
-                for (CompareResult trg : compareLists(leftTableSub, rightTableSub, dbTime)) {
+                for (CompareResult trg : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
                 }
 
@@ -185,7 +196,7 @@ public final class DiffTree {
                     rightTableSub = tableRight.getRules();
                 }
 
-                for (CompareResult rule : compareLists(leftTableSub, rightTableSub, dbTime)) {
+                for (CompareResult rule : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(rule.getStatement(), rule.getSide()));
                 }
 
@@ -197,7 +208,7 @@ public final class DiffTree {
                     rightTableSub = tableRight.getConstraints();
                 }
 
-                for (CompareResult constr : compareLists(leftTableSub, rightTableSub, dbTime)) {
+                for (CompareResult constr : compareLists(leftTableSub, rightTableSub)) {
                     tbl.addChild(new TreeElement(constr.getStatement(), constr.getSide()));
                 }
             }
@@ -209,8 +220,8 @@ public final class DiffTree {
     /**
      * Compare lists and put elements onto appropriate sides.
      */
-    private static List<CompareResult> compareLists(List<? extends PgStatement> left,
-            List<? extends PgStatement> right, DBTimestampPair pair) {
+    private List<CompareResult> compareLists(List<? extends PgStatement> left,
+            List<? extends PgStatement> right) {
         List<CompareResult> rv = new ArrayList<>();
 
         // add LEFT and BOTH here
@@ -228,10 +239,8 @@ public final class DiffTree {
                 rv.add(new CompareResult(sLeft, null));
             } else if(!sLeft.equals(foundRight)) {
                 rv.add(new CompareResult(sLeft, foundRight));
-            } else if (pair != null) {
-                pair.addObject(sLeft);
             } else {
-                // do nothing if both statements exist and are equal and extension not used
+                equalsStatements.add(sLeft);
             }
         }
 
@@ -250,18 +259,9 @@ public final class DiffTree {
         return rv;
     }
 
-    @Deprecated
-    public static void addColumns(List<? extends PgStatement> left,
-            List<? extends PgStatement> right, TreeElement parent,
-            List<TreeElement> list) {
-        for (CompareResult col : compareLists(left, right, null)) {
-            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
-            colEl.setParent(parent);
-            list.add(colEl);
-        }
-    }
 
-    private DiffTree() {
+    public List<PgStatement> getEqualsObjects() {
+        return equalsStatements;
     }
 }
 

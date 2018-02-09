@@ -6,14 +6,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -76,25 +73,22 @@ public abstract class JdbcReader implements PgCatalogStrings {
         String query = factory.makeFallbackQuery(loader.version);
         Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
 
-        List<ObjectTimestamp> objects = loader.getObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampObjects();
         if (objects != null && !objects.isEmpty()) {
-            DbObjType type = getType();
-            DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
-            PgDatabase projDb = loader.getProjDb();
+            PgDatabase projDb = loader.getTimestampProjDb();
 
-            List<Long> oids = objects.stream().filter(obj -> (obj.getType() == local))
-                    .map(ObjectTimestamp::getObjId).collect(Collectors.toList());
+            StringBuilder sb = new StringBuilder();
 
             for (Entry<Long, PgSchema> schema : schemas) {
                 PgSchema sc = schema.getValue();
-                fillOldObjects(objects, sc, type, projDb);
+                fillOldObjects(objects, sc, projDb, sb);
             }
 
-            if (!oids.isEmpty()) {
-                query = JdbcReaderFactory.excludeObjects(query, oids);
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
             }
         }
-
 
         try (PreparedStatement st = loader.connection.prepareStatement(query)) {
             for (Entry<Long, PgSchema> schema : schemas) {
@@ -115,50 +109,56 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
-    private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, DbObjType type, PgDatabase projDb) {
+    private void fillOldObjects(List<ObjectTimestamp> objects, PgSchema sc, PgDatabase projDb, StringBuilder sb) {
+        DbObjType type = getType();
+        DbObjType local = type == DbObjType.CONSTRAINT ? DbObjType.TABLE : type;
+
         for (ObjectTimestamp obj: objects) {
-            if (obj.getSchema().equals(sc.getName()) && (obj.getType() == type
-                    || obj.getType() == DbObjType.TABLE && type == DbObjType.CONSTRAINT)) {
+            if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
                     sc.addView((PgView) obj.getShallowCopy(projDb));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:
                     sc.addTable((PgTable) obj.getShallowCopy(projDb));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
                     PgRule rule = (PgRule) obj.getShallowCopy(projDb);
                     sc.getRuleContainer(rule.getParent().getName()).addRule(rule);
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case TRIGGER:
                     PgTrigger trig = (PgTrigger) obj.getShallowCopy(projDb);
                     sc.getTriggerContainer(trig.getParent().getName()).addTrigger(trig);
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:
-                    PgSchema baseSchema = projDb.getSchema(sc.getName());
-                    if (baseSchema != null ) {
-                        PgTable table = baseSchema.getTableByIndex(obj.getColumn());
-                        if (table != null) {
-                            String tableName = table.getName();
-                            PgIndex index = (PgIndex) GenericColumn.
-                                    getObject(projDb, sc.getName(), tableName, obj.getColumn(), DbObjType.INDEX);
-                            sc.getTable(tableName).addIndex(index.shallowCopy());
-                        }
+                    PgSchema schema = projDb.getSchema(sc.getName());
+                    PgTable t;
+                    if (schema != null && (t = schema.getTableByIndex(obj.getColumn())) != null) {
+                        sc.getTable(t.getName()).addIndex(t.getIndex(obj.getColumn()).shallowCopy());
                     }
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case FUNCTION:
                     sc.addFunction((PgFunction) obj.getShallowCopy(projDb));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
                     PgTable table = (PgTable) obj.getDeepCopy(projDb);
                     PgTable newTable = sc.getTable(table.getName());
                     table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case TYPE:
                     sc.addType((PgType) obj.getShallowCopy(projDb));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 case SEQUENCE:
                     sc.addSequence((PgSequence) obj.getShallowCopy(projDb));
+                    sb.append(obj.getObjId()).append(',');
                     break;
                 default:
                     break;

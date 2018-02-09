@@ -49,10 +49,10 @@ public final class FileUtilsUi {
         }
     }
 
-    public static Path getPathToTimeObject(String name) throws URISyntaxException {
+    public static Path getPathToTimeObject(String proj, String db, String hash) throws URISyntaxException {
         return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))
                 .resolve(".metadata").resolve(".plugins").resolve(PLUGIN_ID.THIS) //$NON-NLS-1$ //$NON-NLS-2$
-                .resolve("projects").resolve(name + ".time"); //$NON-NLS-1$ //$NON-NLS-2$
+                .resolve("projects").resolve(proj + '-' + db + '-' + hash + ".time"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private FileUtilsUi() {

@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,21 +31,22 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
 
-        List<ObjectTimestamp> objects = loader.getObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampObjects();
         if (objects != null && !objects.isEmpty()) {
-            PgDatabase projDb = loader.getProjDb();
-            List<Long> oids = new ArrayList<>();
+            PgDatabase projDb = loader.getTimestampProjDb();
+            StringBuilder sb = new StringBuilder();
             for (ObjectTimestamp obj : objects) {
                 if (obj.getType() == DbObjType.SCHEMA) {
                     long oid = obj.getObjId();
-                    oids.add(oid);
+                    sb.append(oid).append(',');
                     PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
                     db.addSchema(schema);
                     schemas.put(oid, schema);
                 }
             }
-            if (!oids.isEmpty()) {
-                query = JdbcReaderFactory.excludeObjects(query, oids);
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
             }
         }
 
