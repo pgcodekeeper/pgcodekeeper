@@ -695,7 +695,7 @@ public class MockDataPage extends WizardPage {
      */
     private void parseColumns(PgColumn column) {
         String type = column.getType();
-        PgData<?> c = PgDataType.dataForType(column.getType().toLowerCase());
+        PgData<?> c = PgDataType.dataForType(column.getType());
         c.setNotNull(!column.getNullValue());
         c.setName(column.getName());
         c.setAlias(type);
