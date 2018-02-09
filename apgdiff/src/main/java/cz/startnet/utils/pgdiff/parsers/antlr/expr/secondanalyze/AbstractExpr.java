@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
@@ -21,12 +23,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -128,15 +127,58 @@ public abstract class AbstractExpr {
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
         GenericColumn depcy = new GenericColumn(
-                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
+                getSchemaNameForRelation(ids), QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
 
+    private String getSchemaNameForRelation(List<IdentifierContext> ids) {
+        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaCtx == null) {
+            String tableName = QNameParser.getFirstName(ids);
+            if (db.getSchema(schema).getTable(tableName) != null) {
+                return schema;
+            } else {
+                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations()
+                        .map(relation -> (PgSystemRelation)relation)
+                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                    return PgSystemStorage.SCHEMA_PG_CATALOG;
+                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getRelations()
+                        .map(relation -> (PgSystemRelation)relation)
+                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
+                } else {
+                    return schema;
+                }
+            }
+        } else {
+            return schemaCtx.getText();
+        }
+    }
+
+    private String getSchemaNameForFunction(IdentifierContext sch, String signature) {
+        if (sch == null) {
+            if (db.getSchema(schema).getFunction(signature) != null) {
+                return schema;
+            } else {
+                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions()
+                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                    return PgSystemStorage.SCHEMA_PG_CATALOG;
+                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getFunctions()
+                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
+                } else {
+                    return schema;
+                }
+            }
+        } else {
+            return sch.getText();
+        }
+    }
+
     protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx, String signature){
-        IdentifierContext sch = funcNameCtx.schema;
-        String funcSchema = sch != null ? sch.getText() : schema;
-        GenericColumn depcy = new GenericColumn(funcSchema, signature, DbObjType.FUNCTION);
+        GenericColumn depcy = new GenericColumn(getSchemaNameForFunction(funcNameCtx.schema, signature),
+                signature, DbObjType.FUNCTION);
         depcies.add(depcy);
         return depcy;
     }
@@ -200,47 +242,14 @@ public abstract class AbstractExpr {
     }
 
     private String getColumnType(GenericColumn genericColumn) {
-        String schemaName = genericColumn.schema;
-        String columnParent = genericColumn.table;
-        String column = genericColumn.column;
-
-        String type = TypesSetManually.COLUMN;
-
-        PgSchema s;
-        if (schemaName != null && (s = db.getSchema(schemaName)) != null && columnParent != null) {
-            PgTable t;
-            PgView v;
-            if ((t = s.getTable(columnParent)) != null) {
-                PgColumn col = t.getColumn(column);
-
-                if (col != null) {
-                    type = col.getType();
-                } else {
-                    // TODO It is necessary to remake it for a new logic
-                    // of 'Inherits' object (recursion should be used for this).
-                    List<Inherits> inheritsList = t.getInherits();
-                    if (!inheritsList.isEmpty()) {
-                        for (Inherits inht : inheritsList) {
-                            PgTable tInherits = s.getTable(inht.getValue());
-                            col = tInherits.getColumn(column);
-                            if (col != null) {
-                                type = col.getType();
-                                break;
-                            }
-                        }
-                    }
-                }
-            } else if ((v = s.getView(columnParent)) != null) {
-                for (Entry<String, String> col : (Iterable <Entry<String, String>>)
-                        v.getRelationColumns()::iterator) {
-                    if (column.equals(col.getKey())) {
-                        type = col.getValue();
-                        break;
-                    }
+        for (IRelation relation : (Iterable<IRelation>)findRelations(genericColumn.schema, genericColumn.table)::iterator) {
+            for (Entry<String, String> colPair : (Iterable<Entry<String, String>>)relation.getRelationColumns()::iterator ) {
+                if (genericColumn.column.equals(colPair.getKey())) {
+                    return colPair.getValue();
                 }
             }
         }
-        return type;
+        return TypesSetManually.COLUMN;
     }
 
     private String getTablelessColumnType(String columnName) {
@@ -329,7 +338,7 @@ public abstract class AbstractExpr {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
         Function_args_parserContext sig = p.function_args_parser();
         List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
-        depcies.add(new GenericColumn(QNameParser.getSchemaName(ids, schema),
+        depcies.add(new GenericColumn(getSchemaNameForFunction(QNameParser.getSchemaNameCtx(ids), signature),
                 PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
                 ParserAbstract.getFullCtxText(sig.function_args()),
                 DbObjType.FUNCTION));
@@ -340,39 +349,27 @@ public abstract class AbstractExpr {
     }
 
     /**
-     * Gives list of columns (name-type) for the specified parameters.
-     *
-     * @param qualSchemaName
-     * @param tableOrView
-     * @return list of columns (name-type) for the specified parameters
+     * Returns colPairs (name-type) from the 'tableOrView' of 'qualSchemaName' schema.
      */
     protected List<Entry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
         List<Entry<String, String>> ret = new ArrayList<>();
-
-        String schemaName = qualSchemaName != null ? qualSchemaName : this.schema;
-
-        PgSchema s;
-        if ((s = db.getSchema(schemaName)) != null && tableOrView != null) {
-            PgTable t;
-            PgView v;
-            if ((t = s.getTable(tableOrView)) != null) {
-
-                t.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-
-                // TODO It is necessary to remake it for a new logic
-                // of 'Inherits' object (recursion should be used for this).
-                List<Inherits> inheritsList;
-                if (!(inheritsList = t.getInherits()).isEmpty()) {
-                    for (Inherits inht : inheritsList) {
-                        PgTable tInherits = s.getTable(inht.getValue());
-                        tInherits.getColumns().forEach(c -> ret.add(new SimpleEntry<>(c.getName(), c.getType())));
-                    }
-
-                }
-            } else if ((v = s.getView(tableOrView)) != null) {
-                v.getRelationColumns().forEach(ret::add);
-            }
-        }
+        findRelations(qualSchemaName, tableOrView)
+        .forEach(relation -> ret.addAll(relation.getRelationColumns().collect(Collectors.toList())));
         return ret;
+    }
+
+    protected Stream<IRelation> findRelations(String schemaName, String relationName) {
+        Stream<IRelation> foundRelations;
+        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
+                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
+            foundRelations = systemStorage.getSchema(schemaName).getRelations();
+        } else if (schemaName != null) {
+            foundRelations = db.getSchema(schemaName).getRelations();
+        } else {
+            foundRelations = Stream.concat(db.getSchema(schema).getRelations(),
+                    systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations());
+        }
+
+        return foundRelations.filter(r -> r.getName().equals(relationName));
     }
 }

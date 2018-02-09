@@ -410,5 +410,4 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
         return getTableOrViewColumns(schema, tableOrView);
     }
-
 }
