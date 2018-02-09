@@ -90,3 +90,15 @@ Schema: public
      c3 - double precision
      c4 - text
      own_column - integer
+
+  View: asterisk13
+    RelationColumns : 
+     castcontext - "char"
+     castfunc - oid
+     castmethod - "char"
+     castsource - oid
+     casttarget - oid
+
+  View: asterisk14
+    RelationColumns : 
+     version - text

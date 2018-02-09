@@ -228,3 +228,19 @@ CREATE VIEW asterisk12 AS
            FROM table_inherits) r;
 
 ALTER VIEW asterisk12 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk13 AS
+    SELECT pg_cast.castsource,
+    pg_cast.casttarget,
+    pg_cast.castfunc,
+    pg_cast.castcontext,
+    pg_cast.castmethod
+   FROM pg_cast;
+
+ALTER VIEW asterisk13 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk14 AS
+    SELECT version.version
+   FROM version() version(version);
+
+ALTER VIEW asterisk14 OWNER TO shamsutdinov_lr;

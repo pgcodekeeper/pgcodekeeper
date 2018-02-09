@@ -161,3 +161,13 @@ CREATE VIEW asterisk12 AS
     select * from (select * from table_inherits) r;
 
 ALTER VIEW asterisk12 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk13 AS
+    select * from pg_cast;
+
+ALTER VIEW asterisk13 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk14 AS
+    select * from version();
+
+ALTER VIEW asterisk14 OWNER TO shamsutdinov_lr;
