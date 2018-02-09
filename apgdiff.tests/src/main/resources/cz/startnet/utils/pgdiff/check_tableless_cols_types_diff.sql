@@ -19,3 +19,8 @@ Schema: public
      col222 - integer
      col333 - text
      lgn - character(64)
+
+  View: tableless_system_view
+    RelationColumns : 
+     nspname - name
+     relacl - aclitem[]

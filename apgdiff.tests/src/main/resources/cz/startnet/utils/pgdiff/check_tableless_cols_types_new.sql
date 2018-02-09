@@ -58,3 +58,8 @@ SELECT col222, col333, c3 , lgn
      JOIN usr_tbl_light utl on (m.col111 = utl.id);
 
 ALTER VIEW tableless_view3 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW tableless_system_view AS 
+    select relacl, nspname from pg_class c join pg_namespace n on (n.oid = c.relnamespace) limit 1;
+
+ALTER VIEW tableless_system_view OWNER TO shamsutdinov_lr;
