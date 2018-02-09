@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -91,15 +92,58 @@ public abstract class AbstractExpr {
 
     protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
         GenericColumn depcy = new GenericColumn(
-                QNameParser.getSchemaName(ids, schema, db, systemStorage), QNameParser.getFirstName(ids), type);
+                getSchemaNameForRelation(ids), QNameParser.getFirstName(ids), type);
         depcies.add(depcy);
         return depcy;
     }
 
+    private String getSchemaNameForRelation(List<IdentifierContext> ids) {
+        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaCtx == null) {
+            String tableName = QNameParser.getFirstName(ids);
+            if (db.getSchema(schema).getTable(tableName) != null) {
+                return schema;
+            } else {
+                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations()
+                        .map(relation -> (PgSystemRelation)relation)
+                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                    return PgSystemStorage.SCHEMA_PG_CATALOG;
+                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getRelations()
+                        .map(relation -> (PgSystemRelation)relation)
+                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
+                } else {
+                    return schema;
+                }
+            }
+        } else {
+            return schemaCtx.getText();
+        }
+    }
+
+    private String getSchemaNameForFunction(IdentifierContext sch, String signature) {
+        if (sch == null) {
+            if (db.getSchema(schema).getFunction(signature) != null) {
+                return schema;
+            } else {
+                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions()
+                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                    return PgSystemStorage.SCHEMA_PG_CATALOG;
+                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getFunctions()
+                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
+                } else {
+                    return schema;
+                }
+            }
+        } else {
+            return sch.getText();
+        }
+    }
+
     protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx, String signature){
-        IdentifierContext sch = funcNameCtx.schema;
-        String funcSchema = sch != null ? sch.getText() : schema;
-        GenericColumn depcy = new GenericColumn(funcSchema, signature, DbObjType.FUNCTION);
+        GenericColumn depcy = new GenericColumn(getSchemaNameForFunction(funcNameCtx.schema, signature),
+                signature, DbObjType.FUNCTION);
         depcies.add(depcy);
         return depcy;
     }
@@ -191,7 +235,7 @@ public abstract class AbstractExpr {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
         Function_args_parserContext sig = p.function_args_parser();
         List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
-        depcies.add(new GenericColumn(QNameParser.getSchemaName(ids, schema),
+        depcies.add(new GenericColumn(getSchemaNameForFunction(QNameParser.getSchemaNameCtx(ids), signature),
                 PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
                 ParserAbstract.getFullCtxText(sig.function_args()),
                 DbObjType.FUNCTION));

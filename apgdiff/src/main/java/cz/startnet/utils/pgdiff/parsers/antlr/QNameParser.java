@@ -4,9 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 
 public final class QNameParser {
 
@@ -37,31 +34,6 @@ public final class QNameParser {
     public static String getSchemaName(List<IdentifierContext> ids, String defaultSchema) {
         IdentifierContext schemaCtx = getSchemaNameCtx(ids);
         return schemaCtx == null ? defaultSchema : schemaCtx.getText();
-    }
-
-    public static String getSchemaName(List<IdentifierContext> ids, String defaultSchema,
-            PgDatabase db, PgSystemStorage systemStorage) {
-        IdentifierContext schemaCtx = getSchemaNameCtx(ids);
-        if (schemaCtx == null) {
-            String tableName = getFirstName(ids);
-            if (db.getSchema(defaultSchema).getTable(tableName) != null) {
-                return defaultSchema;
-            } else {
-                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations()
-                        .map(relation -> (PgSystemRelation)relation)
-                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
-                    return PgSystemStorage.SCHEMA_PG_CATALOG;
-                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getRelations()
-                        .map(relation -> (PgSystemRelation)relation)
-                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
-                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
-                } else {
-                    return defaultSchema;
-                }
-            }
-        } else {
-            return schemaCtx.getText();
-        }
     }
 
     public static IdentifierContext getSchemaNameCtx(List<IdentifierContext> ids) {
