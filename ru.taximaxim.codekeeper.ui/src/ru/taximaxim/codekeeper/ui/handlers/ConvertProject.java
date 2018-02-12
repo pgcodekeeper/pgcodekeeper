@@ -15,7 +15,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -29,14 +29,21 @@ public class ConvertProject extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        StructuredSelection selection = (StructuredSelection) HandlerUtil.getCurrentStructuredSelection(event);
-        IProject project = (IProject) selection.getFirstElement();
+        IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
+        Object obj = selection.getFirstElement();
+
+        if (!(obj instanceof IProject)) {
+            return null;
+        }
+
+        IProject project = (IProject) obj;
 
         try {
-            IProjectDescription description = project.getDescription();
-            description.setNatureIds(new String[] {NATURE.ID});
-            project.setDescription(description, null);
-            createMarker(Paths.get(project.getLocationURI()));
+            if (createMarker(Paths.get(project.getLocationURI()))) {
+                IProjectDescription description = project.getDescription();
+                description.setNatureIds(new String[] {NATURE.ID});
+                project.setDescription(description, null);
+            }
         } catch (CoreException | IOException e) {
             Log.log(e);
         }
@@ -49,16 +56,25 @@ public class ConvertProject extends AbstractHandler {
         return true;
     }
 
-    public static void createMarker(Path path) throws FileNotFoundException {
-        Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
-        if (Files.notExists(markerFile) && MessageDialog.openQuestion(
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                Messages.ConvertProject_convert_dialog_title,
-                Messages.ConvertProject_convert_dialog_message)) {
+    public static boolean createMarker(Path path) throws FileNotFoundException {
+        boolean isNeedCreate = true;
+
+        if (!Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name())) ||
+                !Files.exists(path.resolve(ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name()))) {
+            isNeedCreate = MessageDialog.openQuestion(
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                    Messages.ConvertProject_convert_dialog_title,
+                    Messages.ConvertProject_convert_dialog_message);
+        }
+
+        if (isNeedCreate) {
+            Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
             try (PrintWriter pw = new UnixPrintWriter(markerFile.toFile(), StandardCharsets.UTF_8)) {
                 pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                         + ApgdiffConsts.EXPORT_CURRENT_VERSION);
             }
         }
+
+        return isNeedCreate;
     }
 }

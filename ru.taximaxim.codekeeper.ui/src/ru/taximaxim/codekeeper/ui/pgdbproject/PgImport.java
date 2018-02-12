@@ -120,18 +120,17 @@ class PgImport extends WizardPage {
     public boolean createProject () {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(txtName.getText());
         Path p = Paths.get(txtPath.getText());
-        try {
-            PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
-            addToWorkingSet(project);
-        } catch (CoreException e) {
-            ExceptionNotifier.notifyDefault(Messages.PgImport_import_error, e);
-            return false;
-        }
 
         try {
-            ConvertProject.createMarker(p);
-        } catch (IOException e) {
-            Log.log(e);
+            if (ConvertProject.createMarker(p)) {
+                PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
+                addToWorkingSet(project);
+            } else {
+                return false;
+            }
+        } catch (CoreException | IOException e) {
+            ExceptionNotifier.notifyDefault(Messages.PgImport_import_error, e);
+            return false;
         }
 
         try {
