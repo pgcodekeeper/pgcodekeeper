@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -21,8 +22,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IRelation;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.system.PgSystemRelation;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -100,17 +101,17 @@ public abstract class AbstractExpr {
     private String getSchemaNameForRelation(List<IdentifierContext> ids) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
         if (schemaCtx == null) {
-            String tableName = QNameParser.getFirstName(ids);
-            if (db.getSchema(schema).getTable(tableName) != null) {
+            String relationName = QNameParser.getFirstName(ids);
+
+            Predicate<ISchema> isRelationIncludedInSchema = (ischema) -> ischema.getRelations()
+                    .anyMatch(relation -> relationName.equals(relation.getName()));
+
+            if (isRelationIncludedInSchema.test(db.getSchema(schema))) {
                 return schema;
             } else {
-                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations()
-                        .map(relation -> (PgSystemRelation)relation)
-                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                if (isRelationIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG))) {
                     return PgSystemStorage.SCHEMA_PG_CATALOG;
-                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getRelations()
-                        .map(relation -> (PgSystemRelation)relation)
-                        .anyMatch(sysRelation -> tableName.equals(sysRelation.getName()))) {
+                } else if (isRelationIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA))) {
                     return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
                 } else {
                     return schema;
@@ -123,14 +124,16 @@ public abstract class AbstractExpr {
 
     private String getSchemaNameForFunction(IdentifierContext sch, String signature) {
         if (sch == null) {
-            if (db.getSchema(schema).getFunction(signature) != null) {
+            Predicate<ISchema> isFunctionIncludedInSchema = (ischema) -> ischema.getRelations()
+                    .anyMatch(function -> signature.equals(function.getName()));
+
+            if (isFunctionIncludedInSchema.test(db.getSchema(schema))) {
                 return schema;
             } else {
-                if (systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions()
-                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                if (isFunctionIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG))) {
                     return PgSystemStorage.SCHEMA_PG_CATALOG;
-                } else if (systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA).getFunctions()
-                        .stream().anyMatch(func -> signature.equals(func.getName()))) {
+                } else if (isFunctionIncludedInSchema
+                        .test(systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA))) {
                     return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
                 } else {
                     return schema;
