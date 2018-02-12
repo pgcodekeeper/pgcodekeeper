@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,10 +27,10 @@ import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.handlers.ConvertProject;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class PgImport extends WizardPage {
@@ -118,14 +119,21 @@ class PgImport extends WizardPage {
 
     public boolean createProject () {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(txtName.getText());
+        Path p = Paths.get(txtPath.getText());
         try {
-            Path p = Paths.get(txtPath.getText());
             PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
             addToWorkingSet(project);
         } catch (CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.PgImport_import_error, e);
             return false;
         }
+
+        try {
+            ConvertProject.createMarker(p);
+        } catch (IOException e) {
+            Log.log(e);
+        }
+
         try {
             project.open(null);
         } catch (CoreException e) {
@@ -145,27 +153,25 @@ class PgImport extends WizardPage {
 
     @Override
     public boolean isPageComplete(){
+        String name = txtName.getText();
+
         //empty path: show default message
-        if (txtPath.getText().isEmpty()) {
+        if (name.isEmpty()) {
             setErrorMessage(null);
             return false;
         }
 
         String err = null;
-        String name = txtName.getText();
         if (name.isEmpty()) {
             err = Messages.PgImport_error_no_name;
         }
-        Path path = Paths.get(txtPath.getText());
+        Path path = Paths.get(name);
         if (Files.exists(path.resolve(FILE_PROJECT))) {
             //if has .project
             err = Messages.PgImportWizardImportPage_already_exist;
         } else if (Files.exists(path.resolve(FILE_METADATA))) {
             //if has .metadata
             err = Messages.PgImport_error_metadata;
-        } else if (Files.notExists(path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-            //if don't have .pgCodekeeper
-            err = Messages.PgImportWizardImportPage_no_project;
         } else if (isInWorkspaceRoot(path) && !path.getFileName().toString().equals(name)) {
             //if project in root of workspace, it must have default name
             err = Messages.PgImport_error_default_name;
