@@ -208,7 +208,7 @@ public class DBTimestamp implements Serializable {
             case TRIGGER:
                 gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
                 break;
-            default: return;
+            default: break;
             }
 
             StringBuilder hash = new StringBuilder(st.getRawStatement());

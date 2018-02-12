@@ -70,6 +70,7 @@ public class JdbcLoader extends JdbcLoaderBase {
                 DBTimestamp dbTime = new TimestampsReader(this).read();
                 finishAntlr();
                 timestampParams.fillObjects(dbTime);
+                useServerHelpers = false; // not supported in this version
             }
 
             schemas = new SchemasReader(this, d).read();
