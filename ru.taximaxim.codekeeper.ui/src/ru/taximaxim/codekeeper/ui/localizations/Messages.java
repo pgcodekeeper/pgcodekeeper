@@ -320,6 +320,8 @@ public final class Messages extends NLS {
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;
 
+    public static String MockDataPage_any_value;
+
     public static String MockDataPage_column_down;
 
     public static String MockDataPage_column_generator;
@@ -337,7 +339,11 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_description;
 
+    public static String MockDataPage_empty_columns;
+
     public static String MockDataPage_empty_table_name;
+
+    public static String MockDataPage_explicit_type_cast;
 
     public static String MockDataPage_generation_failed;
 
@@ -366,6 +372,10 @@ public final class Messages extends NLS {
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
+
+    public static String NewObjectWizard_invalid_input_format;
+
+    public static String NewObjectWizard_invalid_schema_format;
 
     public static String NewProjWizard_error_creating_project;
 
@@ -538,6 +548,8 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String Duration_expected_format;
 
     public static String TreeDiffer_unknown_error;
 

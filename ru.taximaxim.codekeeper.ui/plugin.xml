@@ -210,6 +210,24 @@
             </menu>
         </menuContribution>
         <menuContribution
+              locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+           <command
+                 commandId="org.eclipse.ui.newWizard">
+              <parameter
+                    name="newWizardId"
+                    value="ru.taximaxim.codekeeper.ui.mockdatawizard">
+              </parameter>
+              <visibleWhen checkEnabled="false">
+                 <iterate>
+                   <adapt type="org.eclipse.core.resources.IFile">
+                      <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                            value="*.sql"/>
+                   </adapt>
+                </iterate>
+              </visibleWhen>
+           </command>
+        </menuContribution>
+        <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <menu label="%menu.label.pgCodeKeeper">
@@ -496,6 +514,21 @@
                     </visibleWhen>
                 </control>
             </toolbar>
+        </menuContribution>
+        <menuContribution
+              allPopups="false"
+              locationURI="popup:ru.taximaxim.codekeeper.ui.SQLEditor.EditorContext?after=additions">
+           <command commandId="org.eclipse.ui.newWizard">
+                <parameter name="newWizardId" value="ru.taximaxim.codekeeper.ui.mockdatawizard" />
+                 <visibleWhen checkEnabled="false">
+                     <with variable="activeEditorInput">
+                        <adapt type="org.eclipse.core.resources.IFile">
+                            <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                                value="*.sql"/>
+                        </adapt>
+                    </with>    
+                </visibleWhen> 
+           </command>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
@@ -797,6 +830,13 @@
             namespace="ru.taximaxim.codekeeper.ui"
             properties="isQuickUpdateRunning"
             type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+        </propertyTester>
+        <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.MockDataPropertyTester"
+            id="ru.taximaxim.codekeeper.ui.MockDataPropertyTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isTableSelected"
+            type="java.lang.Object">
         </propertyTester>
     </extension>
     <extension
