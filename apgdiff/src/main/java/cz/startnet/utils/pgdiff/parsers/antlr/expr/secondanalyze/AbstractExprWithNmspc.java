@@ -106,11 +106,6 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Map<String, List<Entry<String, String>>> getAllCte() {
-        return cte;
-    }
-
-    @Override
     protected Set<GenericColumn> getAllUnaliasedNmsp() {
         return unaliasedNamespace;
     }
