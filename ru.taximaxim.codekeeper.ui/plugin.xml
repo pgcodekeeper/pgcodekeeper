@@ -217,14 +217,13 @@
                     name="newWizardId"
                     value="ru.taximaxim.codekeeper.ui.mockdatawizard">
               </parameter>
-              <visibleWhen
-                    checkEnabled="false">
-                 <with
-                       variable="selection">
-                    <test
-                          property="ru.taximaxim.codekeeper.ui.isTableSelected">
-                    </test>
-                 </with>
+              <visibleWhen checkEnabled="false">
+                 <iterate>
+                   <adapt type="org.eclipse.core.resources.IFile">
+                      <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                            value="*.sql"/>
+                   </adapt>
+                </iterate>
               </visibleWhen>
            </command>
         </menuContribution>
@@ -521,15 +520,14 @@
               locationURI="popup:ru.taximaxim.codekeeper.ui.SQLEditor.EditorContext?after=additions">
            <command commandId="org.eclipse.ui.newWizard">
                 <parameter name="newWizardId" value="ru.taximaxim.codekeeper.ui.mockdatawizard" />
-                 <visibleWhen
-              checkEnabled="false">
-                   <with
-                         variable="selection">
-                        <test
-                              property="ru.taximaxim.codekeeper.ui.isTableSelected">
-                        </test>
-                   </with>
-        </visibleWhen>
+                 <visibleWhen checkEnabled="false">
+                     <with variable="activeEditorInput">
+                        <adapt type="org.eclipse.core.resources.IFile">
+                            <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                                value="*.sql"/>
+                        </adapt>
+                    </with>    
+                </visibleWhen> 
            </command>
         </menuContribution>
     </extension>

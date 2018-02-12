@@ -149,6 +149,10 @@ public class MockDataPage extends WizardPage {
             }
         }
 
+        if (err == null && columns.isEmpty()) {
+            err = Messages.MockDataPage_empty_columns;
+        }
+
         if (err == null) {
             for (PgData<?> c : columns) {
                 try {
