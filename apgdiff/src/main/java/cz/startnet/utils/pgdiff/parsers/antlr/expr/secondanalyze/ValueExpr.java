@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -303,70 +302,62 @@ public class ValueExpr extends AbstractExpr {
         }
 
         String funcType = TypesSetManually.FUNCTION_COLUMN;
+
         if (canFindFunctionSignature) {
+            String schemaName = null;
+            String functionName;
+            Data_typeContext dataTypeCtx = funcNameCtx.data_type();
+            Schema_qualified_name_nontypeContext funcNameQualCtx = null;
+
+            IdentifierContext id;
+            Tokens_simple_functionsContext tokensSimpleFunc;
+            if (dataTypeCtx != null &&
+                    (funcNameQualCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
+                functionName = funcNameQualCtx.identifier_nontype().getText();
+
+                if ((id = funcNameQualCtx.identifier()) != null) {
+                    schemaName = id.getText();
+                }
+            } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
+                functionName = tokensSimpleFunc.getText();
+
+                if ((id = funcNameCtx.identifier()) != null) {
+                    schemaName = id.getText();
+                }
+            } else {
+                functionName = funcNameCtx.getText();
+            }
+
             if (argsType.size() == 1
                     && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0).getValue())) {
 
-                // In this case function's argument is '*' or 'source.*'.
+                //// In this case function's argument is '*' or 'source.*'.
 
-                String funcName = ParserAbstract.getFullCtxText(funcNameCtx);
-
-                Supplier<Stream<IFunction>> findFunctionsSupplier = () -> findFunctions(null, funcName, argsType.size());
-                if (findFunctionsSupplier.get().count() == 1) {
-                    funcType = findFunctionsSupplier.get().findAny().get().getReturns();
+                int foundFuncsCount = 0;
+                for (IFunction f : (Iterable<IFunction>)findFunctions(schemaName, functionName, 1)::iterator) {
+                    funcType = f.getReturns();
+                    foundFuncsCount++;
                 }
 
-                return new SimpleEntry<>(funcName, funcType);
+                return new SimpleEntry<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
             } else {
-                return getReturnedTypeOfFunction(funcNameCtx, argsType.stream()
-                        .map(Entry::getValue)
-                        .collect(Collectors.toList()));
+                List<String> sourceArgsTypes = argsType.stream().map(Entry::getValue).collect(Collectors.toList());
+
+                IFunction resultFunction = castFiltredFuncsOpers(functionName, sourceArgsTypes,
+                        findFunctions(schemaName, functionName, sourceArgsTypes.size()));
+
+                if (resultFunction != null) {
+                    if (dataTypeCtx != null && funcNameQualCtx != null) {
+                        addFunctionDepcy(funcNameQualCtx, resultFunction.getName());
+                    }
+                    return new SimpleEntry<>(functionName, resultFunction.getReturns());
+                }
+
+                return new SimpleEntry<>(functionName, TypesSetManually.FUNCTION_COLUMN);
             }
         }
 
         return new SimpleEntry<>(null, funcType);
-    }
-
-    private Entry<String, String> getReturnedTypeOfFunction(Function_nameContext name,
-            List<String> sourceArgsTypes) {
-        String schemaName = null;
-        String functionName;
-        Data_typeContext dataTypeCtx = name.data_type();
-        Schema_qualified_name_nontypeContext funcNameCtx = null;
-
-        IdentifierContext id;
-        Tokens_simple_functionsContext tokensSimpleFunc;
-        if (dataTypeCtx != null &&
-                (funcNameCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
-            functionName = funcNameCtx.identifier_nontype().getText();
-
-            if ((id = funcNameCtx.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else if ((tokensSimpleFunc = name.tokens_simple_functions()) != null) {
-            functionName = tokensSimpleFunc.getText();
-
-            if ((id = name.identifier()) != null) {
-                schemaName = id.getText();
-            }
-        } else {
-            functionName = name.getText();
-        }
-
-        Entry<String, String> pair = new SimpleEntry<>(functionName, TypesSetManually.FUNCTION_COLUMN);
-
-        IFunction resultFunction = castFiltredFuncsOpers(functionName, sourceArgsTypes,
-                findFunctions(schemaName, functionName, sourceArgsTypes.size()));
-
-        if (resultFunction != null) {
-            pair.setValue(resultFunction.getReturns());
-
-            if (dataTypeCtx != null && funcNameCtx != null) {
-                addFunctionDepcy(funcNameCtx, resultFunction.getName());
-            }
-        }
-
-        return pair;
     }
 
     private IFunction castFiltredFuncsOpers(String funcOperName, List<String> sourceTypes,
