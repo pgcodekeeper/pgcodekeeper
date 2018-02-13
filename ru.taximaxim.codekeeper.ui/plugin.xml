@@ -105,6 +105,12 @@
               id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
               name="%command.commandname.OpenDbStore">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ConvertProject"
+              id="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+              name="%command.commandname.ConvertProject">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -528,6 +534,24 @@
                         </adapt>
                     </with>    
                 </visibleWhen> 
+           </command>
+        </menuContribution>
+        <menuContribution
+              locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+           <command
+                 commandId="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+                 label="%command.commandname.ConvertProject"
+                 style="push">
+              <visibleWhen checkEnabled="false">
+                  <iterate>
+                      <not>
+                          <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="ru.taximaxim.codekeeper.ui.nature">
+                          </test>
+                      </not>
+                  </iterate>
+              </visibleWhen>
            </command>
         </menuContribution>
     </extension>
