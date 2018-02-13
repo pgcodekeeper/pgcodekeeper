@@ -102,3 +102,8 @@ Schema: public
   View: asterisk14
     RelationColumns : 
      version - text
+
+  View: asterisk15
+    RelationColumns : 
+     qqq - bigint
+     www - json
