@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -281,14 +282,14 @@ public class ValueExpr extends AbstractExpr {
      */
     public Entry<String, String> function(Function_callContext function) {
         List<Vex> args = null;
-        Function_nameContext name = function.function_name();
+        Function_nameContext funcNameCtx = function.function_name();
 
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
         boolean canFindFunctionSignature = false;
 
-        if (name != null) {
+        if (funcNameCtx != null) {
             args = addVexCtxtoList(args, function.vex());
 
             canFindFunctionSignature = true;
@@ -325,16 +326,29 @@ public class ValueExpr extends AbstractExpr {
             }
         }
 
-        Entry<String, String> pair;
+        String funcType = TypesSetManually.FUNCTION_COLUMN;
         if (canFindFunctionSignature) {
-            pair = getReturnedTypeOfFunction(name, argsType.stream()
-                    .map(Entry::getValue)
-                    .collect(Collectors.toList()));
-        } else {
-            pair = new SimpleEntry<>(null, TypesSetManually.FUNCTION_COLUMN);
+            if (argsType.size() == 1
+                    && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0).getValue())) {
+
+                // In this case function's argument is '*' or 'source.*'.
+
+                String funcName = ParserAbstract.getFullCtxText(funcNameCtx);
+
+                Supplier<Stream<IFunction>> findFunctionsSupplier = () -> findFunctions(null, funcName, argsType.size());
+                if (findFunctionsSupplier.get().count() == 1) {
+                    funcType = findFunctionsSupplier.get().findAny().get().getReturns();
+                }
+
+                return new SimpleEntry<>(funcName, funcType);
+            } else {
+                return getReturnedTypeOfFunction(funcNameCtx, argsType.stream()
+                        .map(Entry::getValue)
+                        .collect(Collectors.toList()));
+            }
         }
 
-        return pair;
+        return new SimpleEntry<>(null, funcType);
     }
 
     private Entry<String, String> getReturnedTypeOfFunction(Function_nameContext name,

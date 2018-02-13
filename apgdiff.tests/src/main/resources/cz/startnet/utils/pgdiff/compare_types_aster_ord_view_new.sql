@@ -171,3 +171,10 @@ CREATE VIEW asterisk14 AS
     select * from version();
 
 ALTER VIEW asterisk14 OWNER TO shamsutdinov_lr;
+
+CREATE VIEW asterisk15 AS
+    SELECT
+    (select count(*) from tablettt) as qqq,
+    (select to_json(d.*) from tablettt d) as www;
+
+ALTER VIEW asterisk15 OWNER TO shamsutdinov_lr;
