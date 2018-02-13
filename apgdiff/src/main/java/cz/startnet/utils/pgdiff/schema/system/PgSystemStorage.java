@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
@@ -59,19 +58,17 @@ public class PgSystemStorage implements Serializable {
     }
 
     /**
-     *  Returns the {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type context of the cast}
-     *  between two types.
+     * Checks cast present in storage
+     *
+     * @param storage - storage in which search
+     * @param source - source type
+     * @param target - target type
+     * @return true if storage contains cast
      */
-    public static String getCastContext(PgSystemStorage storage, String source, String target) {
-        for (PgSystemCast cast : storage.getCasts().stream()
-                .filter(c -> CastContext.I.equals(c.getType()))
-                .collect(Collectors.toList())) {
-            if (source.equals(cast.getSource()) && target.equals(cast.getTarget())) {
-                return cast.getType();
-            }
-        }
-
-        return null;
+    public static boolean isCastPresent(PgSystemStorage storage, String source, String target) {
+        return storage.getCasts().stream().filter(c -> CastContext.I.equals(c.getType())
+                && source.equals(c.getSource()) && target.equals(c.getTarget()))
+                .findFirst().isPresent();
     }
 
     public PgSystemSchema getSchema(String schemaName) {

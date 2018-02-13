@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -72,19 +71,6 @@ public class ValueExpr extends AbstractExpr {
         super(parent);
     }
 
-    private List<Vex> addVexCtxtoList(List<Vex> l, List<VexContext> ctx) {
-        int toAdd = ctx.size();
-        if (toAdd != 0) {
-            if (l == null) {
-                l = new ArrayList<>(toAdd);
-            }
-            for (VexContext vexCtx : ctx) {
-                l.add(new Vex(vexCtx));
-            }
-        }
-        return l;
-    }
-
     public Entry<String, String> analyze(Vex vex) {
         Entry<String, String> ret = null;
         Data_typeContext dataType = vex.dataType();
@@ -94,7 +80,6 @@ public class ValueExpr extends AbstractExpr {
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
-        boolean doneWork = true;
         List<Entry<String, String>> operandsList;
 
         List<Vex> operands = vex.vex();
@@ -145,14 +130,14 @@ public class ValueExpr extends AbstractExpr {
             }
             ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
-            if(vex.colon() == null){
+            if (vex.colon() == null) {
                 ret = operandsList.get(0);
                 ret.setValue(bracketProcessing(ret.getValue()));
             } else {
                 ret = operandsList.get(0);
             }
         } else if (vex.plus() != null || vex.minus() != null) {
-            if(operandsList.size() == 2) {
+            if (operandsList.size() == 2) {
                 ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
             } else {
                 ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
@@ -176,8 +161,7 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
             }
-        } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null) )
-                || (vex.is() != null && vex.distinct() != null)
+        } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null || vex.distinct() != null))
                 || (vex.not() != null && vex.in() == null)
                 || vex.between() != null
                 || vex.like() != null
@@ -208,21 +192,17 @@ public class ValueExpr extends AbstractExpr {
             Type_coercionContext typeCoercion;
             Unsigned_value_specificationContext unsignedValue;
 
-            if(primary.NULL() != null){
+            if (primary.NULL() != null) {
                 ret = new SimpleEntry<>(null, TypesSetManually.NULL);
-            } else if((unsignedValue = primary.unsigned_value_specification()) != null){
+            } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
                 ret = new SimpleEntry<>(null, unsigned(unsignedValue));
             } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
                 List<Entry<String, String>> colsList = new Select(this).analyze(subSelectStmt);
                 return colsList.get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
-                List<Vex> subOperands = null;
-                subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
-                if (subOperands != null) {
-                    for (Vex v : subOperands) {
-                        analyze(v);
-                    }
+                for (VexContext v : caseExpr.vex()) {
+                    analyze(new Vex(v));
                 }
                 ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
             } else if ((cast = primary.cast_specification()) != null) {
@@ -267,10 +247,6 @@ public class ValueExpr extends AbstractExpr {
                 ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(coercionDataType));
             }
         } else {
-            doneWork = false;
-        }
-
-        if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
         }
 
@@ -281,7 +257,7 @@ public class ValueExpr extends AbstractExpr {
      * @return function reference or null for internal functions
      */
     public Entry<String, String> function(Function_callContext function) {
-        List<Vex> args = null;
+        List<VexContext> args = null;
         Function_nameContext funcNameCtx = function.function_name();
 
         Extract_functionContext extract;
@@ -290,7 +266,7 @@ public class ValueExpr extends AbstractExpr {
         boolean canFindFunctionSignature = false;
 
         if (funcNameCtx != null) {
-            args = addVexCtxtoList(args, function.vex());
+            args = function.vex();
 
             canFindFunctionSignature = true;
 
@@ -309,20 +285,20 @@ public class ValueExpr extends AbstractExpr {
         } else if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
-            args = addVexCtxtoList(args, string.vex());
+            args = string.vex();
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
                 analyze(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
-            args = addVexCtxtoList(args, xml.vex());
+            args = xml.vex();
         }
 
         List<Entry<String, String>> argsType = new ArrayList<>();
         if (args != null) {
-            for (Vex v : args) {
-                argsType.add(analyze(v));
+            for (VexContext v : args) {
+                argsType.add(analyze(new Vex(v)));
             }
         }
 
@@ -382,7 +358,7 @@ public class ValueExpr extends AbstractExpr {
         IFunction resultFunction = castFiltredFuncsOpers(functionName, sourceArgsTypes,
                 findFunctions(schemaName, functionName, sourceArgsTypes.size()));
 
-        if(resultFunction != null) {
+        if (resultFunction != null) {
             pair.setValue(resultFunction.getReturns());
 
             if (dataTypeCtx != null && funcNameCtx != null) {
@@ -394,24 +370,12 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private IFunction castFiltredFuncsOpers(String funcOperName, List<String> sourceTypes,
-            Stream<IFunction> targetFunctionsList) {
+            Stream<IFunction> targetFunctions) {
         IFunction resultFunction = null;
+        String functionSignature = funcOperName + '(' + sourceTypes.stream().collect(Collectors.joining(", ")) + ')';
+        Map<IFunction, Integer> argsMatches = new HashMap<>();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(funcOperName);
-        sb.append("(");
-        for (int i = 0; sourceTypes.size() > i; i++) {
-            sb.append(sourceTypes.get(i));
-            if (sourceTypes.size() != (i+1)) {
-                sb.append(", ");
-            }
-        }
-        sb.append(")");
-        String functionSignature = sb.toString();
-
-        Map<IFunction, Integer> storeOfFunctArgsMatches = new HashMap<>();
-
-        for (IFunction f : (Iterable<IFunction>) targetFunctionsList::iterator) {
+        for (IFunction f : (Iterable<IFunction>) targetFunctions::iterator) {
             if (functionSignature.equals(f.getName())) {
                 return f;
             }
@@ -424,17 +388,11 @@ public class ValueExpr extends AbstractExpr {
                 String sourceType = sourceTypes.get(k);
 
                 if (sourceType.equals(targetType)) {
-                    Integer funcIdx = storeOfFunctArgsMatches.get(f);
-                    storeOfFunctArgsMatches.put(f, (funcIdx != null) ? funcIdx+1 : 1);
-                    continue;
-                }
-
-                String castCtx = PgSystemStorage.getCastContext(systemStorage,
-                        sourceType, targetType);
-
-                if (castCtx == null) {
+                    Integer funcIdx = argsMatches.get(f);
+                    argsMatches.put(f, (funcIdx != null) ? funcIdx + 1 : 1);
+                } else if (!PgSystemStorage.isCastPresent(systemStorage, sourceType, targetType)) {
                     castWellDone = false;
-                    storeOfFunctArgsMatches.remove(f);
+                    argsMatches.remove(f);
                     break;
                 }
             }
@@ -442,18 +400,14 @@ public class ValueExpr extends AbstractExpr {
             // On each 'castWellDone' iteration we put the current function to the 'resultFunction'.
             // If in result of 'functionsList' processing we will have empty 'storeOfFunctArgsMatches',
             // then as result of this method we will use this 'resultFunction = f'.
-            if (castWellDone && storeOfFunctArgsMatches.get(f) == null) {
+            if (castWellDone && argsMatches.get(f) == null) {
                 resultFunction = f;
             }
         }
 
-        Optional<Entry<IFunction, Integer>> maxMatches = storeOfFunctArgsMatches.entrySet().stream()
-                .max((e1,e2) -> Integer.compare(e1.getValue(), e2.getValue()));
-        if (maxMatches.isPresent()) {
-            resultFunction = maxMatches.get().getKey();
-        }
-
-        return resultFunction;
+        return argsMatches.entrySet().stream()
+                .max((e1,e2) -> Integer.compare(e1.getValue(), e2.getValue()))
+                .map(Entry::getKey).orElse(resultFunction);
     }
 
     private Entry<String, String> getReturnedTypeOfOperation(Vex vex, String...sourceArgsTypesArray) {
@@ -564,8 +518,8 @@ public class ValueExpr extends AbstractExpr {
         Datetime_literalContext dateTime;
         Truth_valueContext truthValue;
 
-        if((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null){
-            if(unsignedNumeric.NUMBER_LITERAL() != null){
+        if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
+            if (unsignedNumeric.NUMBER_LITERAL() != null) {
                 ret = TypesSetManually.INTEGER;
             } else {
                 ret = TypesSetManually.NUMERIC;
@@ -574,12 +528,12 @@ public class ValueExpr extends AbstractExpr {
         } else {
             generalLiteral = unsignedValue.general_literal();
 
-            if(generalLiteral.Character_String_Literal() != null){
+            if (generalLiteral.Character_String_Literal() != null) {
                 ret = TypesSetManually.TEXT;
-            } else if((dateTime = generalLiteral.datetime_literal()) != null) {
+            } else if ((dateTime = generalLiteral.datetime_literal()) != null) {
                 ret = ParserAbstract.getFullCtxText(dateTime);
-            } else if((truthValue = generalLiteral.truth_value()) != null){
-                if(truthValue.TRUE() != null || truthValue.FALSE() != null){
+            } else if ((truthValue = generalLiteral.truth_value()) != null) {
+                if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
                     ret = TypesSetManually.BOOLEAN;
                 } else {
                     ret = TypesSetManually.TEXT;
@@ -590,7 +544,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private String bracketProcessing(String type) {
-        if(type.endsWith("[]")){
+        if (type.endsWith("[]")) {
             Log.log(Log.LOG_WARNING, "The type '" + type + "' had brackets!");
             return type.substring(0, type.indexOf("[]"));
         } else {
