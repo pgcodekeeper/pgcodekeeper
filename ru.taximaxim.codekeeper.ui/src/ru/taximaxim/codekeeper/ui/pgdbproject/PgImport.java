@@ -122,7 +122,7 @@ class PgImport extends WizardPage {
         Path p = Paths.get(txtPath.getText());
 
         try {
-            if (ConvertProject.createMarker(p)) {
+            if (ConvertProject.createMarker(getShell(), p)) {
                 PgDbProject.createPgDbProject(project, isInWorkspaceRoot(p) ? null : p.toUri());
                 addToWorkingSet(project);
             } else {
