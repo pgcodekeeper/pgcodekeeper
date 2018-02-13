@@ -248,12 +248,17 @@ public abstract class AbstractExpr {
     }
 
     private String getTablelessColumnType(String columnName) {
-        List<String> columnType = new ArrayList<>();
+        List<String> columnTypes = new ArrayList<>();
 
         // Comparing 'tableless column' with columns from 'unaliased namespace' and
         // getting corresponding type for 'tableless column'.
         for (GenericColumn gTableOrView : getAllUnaliasedNmsp()) {
-            columnType.addAll(getTypeOfCorrespondingColTblOrView(columnName, gTableOrView));
+            String colType = getTypeOfCorrespondingColTblOrView(columnName,
+                    getTableOrViewColumns(gTableOrView.schema, gTableOrView.table));
+            if (colType != null) {
+                addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
+                columnTypes.add(colType);
+            }
         }
 
         // Comparing 'tableless column' with columns from aliased table or view and
@@ -265,16 +270,21 @@ public abstract class AbstractExpr {
                 continue;
             }
 
-            columnType.addAll(getTypeOfCorrespondingColTblOrView(columnName, gTableOrView));
+            String colType = getTypeOfCorrespondingColTblOrView(columnName,
+                    getTableOrViewColumns(gTableOrView.schema, gTableOrView.table));
+            if (colType != null) {
+                addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
+                columnTypes.add(colType);
+            }
         }
 
         // Comparing 'tableless column' with columns from subquery and
         // getting corresponding type for 'tableless column'.
-        columnType.addAll(getTypeOfCorrespondingColComplex(columnName, getAllReferencesComplex()));
+        columnTypes.addAll(getTypeOfCorrespondingColComplex(columnName, getAllReferencesComplex()));
 
-        if (columnType.size() == 1) {
-            return columnType.get(0);
-        } else if (columnType.size() > 1) {
+        if (columnTypes.size() == 1) {
+            return columnTypes.get(0);
+        } else if (columnTypes.size() > 1) {
             // TODO Warn the user about an error of ambiguity in the dialog.
             Log.log(Log.LOG_ERROR, "Ambiguous column reference: " + columnName);
         }
@@ -282,26 +292,23 @@ public abstract class AbstractExpr {
     }
 
     private List<String> getTypeOfCorrespondingColComplex(String columnName, Map<String, List<Entry<String, String>>> colsOfAlias) {
-        List<String> columnType = new ArrayList<>();
+        List<String> columnTypes = new ArrayList<>();
         for (Entry<String, List<Entry<String, String>>> nmsp : colsOfAlias.entrySet()) {
-            for (Entry<String, String> colPair : nmsp.getValue()) {
-                if (columnName.equals(colPair.getKey())) {
-                    columnType.add(colPair.getValue());
-                }
+            String colType = getTypeOfCorrespondingColTblOrView(columnName, nmsp.getValue());
+            if (colType != null) {
+                columnTypes.add(colType);
             }
         }
-        return columnType;
+        return columnTypes;
     }
 
-    private List<String> getTypeOfCorrespondingColTblOrView(String columnName, GenericColumn gTableOrView) {
-        List<String> columnType = new ArrayList<>();
-        for (Entry<String, String> colPair : getTableOrViewColumns(gTableOrView.schema, gTableOrView.table)) {
+    private String getTypeOfCorrespondingColTblOrView(String columnName, List<Entry<String, String>> tableOrViewColumns) {
+        for (Entry<String, String> colPair : tableOrViewColumns) {
             if (columnName.equals(colPair.getKey())) {
-                addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
-                columnType.add(colPair.getValue());
+                return colPair.getValue();
             }
         }
-        return columnType;
+        return null;
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
