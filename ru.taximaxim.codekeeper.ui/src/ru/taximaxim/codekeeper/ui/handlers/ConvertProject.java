@@ -67,8 +67,8 @@ public class ConvertProject extends AbstractHandler {
                     Messages.ConvertProject_convert_dialog_message);
         }
 
-        if (isNeedCreate) {
-            Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+        Path markerFile = path.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER);
+        if (isNeedCreate && Files.notExists(markerFile)) {
             try (PrintWriter pw = new UnixPrintWriter(markerFile.toFile(), StandardCharsets.UTF_8)) {
                 pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                         + ApgdiffConsts.EXPORT_CURRENT_VERSION);
