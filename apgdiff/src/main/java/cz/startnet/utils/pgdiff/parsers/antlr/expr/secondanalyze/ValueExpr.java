@@ -225,7 +225,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
-                ret = addColumnDepcy(qname);
+                ret = processColumn(qname);
             } else if ((indirection = primary.indirection_identifier()) != null) {
                 analyze(new Vex(indirection.vex()));
             } else if ((ast = primary.qualified_asterisk()) != null) {

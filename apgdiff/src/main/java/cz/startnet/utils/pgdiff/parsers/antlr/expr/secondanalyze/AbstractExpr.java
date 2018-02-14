@@ -193,7 +193,7 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
+    protected Entry<String, String> processColumn(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
         String columnName = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
@@ -208,11 +208,7 @@ public abstract class AbstractExpr {
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
-                    columnParent = referencedTable.table;
-                    GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, columnName, DbObjType.COLUMN);
-                    depcies.add(genericColumn);
-
-                    columnType = getColumnType(genericColumn);
+                    columnType = getColumnType(addColumnDepcy(referencedTable.schema, referencedTable.table, columnName));
                 } else {
                     Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
@@ -228,7 +224,7 @@ public abstract class AbstractExpr {
             }
         } else {
             // table-less columns analysis
-            columnType = getTablelessColumnType(columnName);
+            columnType = processTablelessColumn(columnName);
         }
 
         pair.setValue(columnType);
@@ -247,7 +243,7 @@ public abstract class AbstractExpr {
         return TypesSetManually.COLUMN;
     }
 
-    private String getTablelessColumnType(String columnName) {
+    private String processTablelessColumn(String columnName) {
         List<String> columnTypes = new ArrayList<>();
 
         // Comparing 'tableless column' with columns from 'unaliased namespace' and
@@ -327,9 +323,11 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addColumnDepcy(String schemaName, String tableOrView, String columnName) {
+    protected GenericColumn addColumnDepcy(String schemaName, String tableOrView, String columnName) {
         String sName = schemaName != null ? schemaName : this.schema;
-        depcies.add(new GenericColumn(sName, tableOrView, columnName, DbObjType.COLUMN));
+        GenericColumn genericColumn = new GenericColumn(sName, tableOrView, columnName, DbObjType.COLUMN);
+        depcies.add(genericColumn);
+        return genericColumn;
     }
 
     protected void addFunctionSigDepcy(String signature) {
