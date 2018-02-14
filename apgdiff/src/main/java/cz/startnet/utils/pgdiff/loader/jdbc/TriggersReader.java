@@ -6,6 +6,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -166,6 +167,7 @@ public class TriggersReader extends JdbcReader {
                 (ctx, db) -> {
                     if (ctx != null) {
                         db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx.when_expr));
+                        t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
                     }
                 });
 
