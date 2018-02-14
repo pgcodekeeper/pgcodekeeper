@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -20,8 +21,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_unique_prkeyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -63,10 +62,7 @@ public abstract class AbstractTable extends ParserAbstract {
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-
-            ValueExpr vex = new ValueExpr(defSchema);
-            vex.analyze(new Vex(def));
-            col.addAllDeps(vex.getDepcies());
+            db.getContextsForAnalyze().add(new SimpleEntry<>(col, def));
         } else if (comConstr != null && comConstr.null_value != null) {
             col.setNullValue(comConstr.null_false == null);
         } else if (ctx.constr_body().table_references() != null) {
@@ -198,8 +194,7 @@ public abstract class AbstractTable extends ParserAbstract {
         if (ctx.constr_body().table_unique_prkey() != null) {
             setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
         }
-
-        parseConstraintExpr(ctx.constr_body(), schemaName, constr);
+        db.getContextsForAnalyze().add(new SimpleEntry<>(constr, ctx.constr_body()));
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
     }

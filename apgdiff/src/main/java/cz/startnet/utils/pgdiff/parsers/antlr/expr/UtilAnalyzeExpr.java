@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -13,6 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -30,7 +34,7 @@ public class UtilAnalyzeExpr {
         pg.addAllDeps(analyzer.getDepcies());
     }
 
-    public static void analyzeRulesRewriteCreateStmtCtx(Create_rewrite_statementContext ctx, PgRule rule,
+    public static void analyzeRulesWhere(Create_rewrite_statementContext ctx, PgRule rule,
             String schemaName) {
         if (ctx.WHERE() != null) {
             ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
@@ -41,7 +45,7 @@ public class UtilAnalyzeExpr {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static void analyzeRulesRewriteCommandCtx(Rewrite_commandContext cmd, PgRule rule,
+    public static void analyzeRulesCommand(Rewrite_commandContext cmd, PgRule rule,
             String schemaName) {
         ParserRuleContext parser = null;
         AbstractExprWithNmspc analyzer = null;
@@ -61,11 +65,26 @@ public class UtilAnalyzeExpr {
         }
     }
 
-    public static void analyzeTriggersWhenVexCtx(VexContext ctx, PgTrigger trigger, String schemaName) {
+    public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger, String schemaName) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
         vex.addReference("new", null);
         vex.addReference("old", null);
         analyze(new Vex(ctx), vex, trigger);
+    }
+
+    public static void analyzeConstraint(Constr_bodyContext ctx, String schemaName,
+            PgConstraint constr) {
+        VexContext exp = null;
+        Common_constraintContext common = ctx.common_constraint();
+        Check_boolean_expressionContext check;
+        if (common != null && (check = common.check_boolean_expression()) != null) {
+            exp = check.expression;
+        } else {
+            exp = ctx.vex();
+        }
+        if (exp != null) {
+            analyze(exp, new ValueExpr(schemaName), constr);
+        }
     }
 
     public static void analyzeFunctionDefaults(Vex_eofContext ctx, PgFunction f, String schemaName) {

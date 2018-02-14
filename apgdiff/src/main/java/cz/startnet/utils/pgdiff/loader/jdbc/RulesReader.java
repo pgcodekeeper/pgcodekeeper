@@ -1,13 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -99,16 +98,7 @@ public class RulesReader extends JdbcReader {
                     }
 
                     return createRewriteCtx;
-                },
-                (ctx, db) -> {
-                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(r, ctx));
-
-                    UtilAnalyzeExpr.analyzeRulesRewriteCreateStmtCtx(ctx, r, schemaName);
-
-                    for (Rewrite_commandContext cmd : ctx.commands) {
-                        UtilAnalyzeExpr.analyzeRulesRewriteCommandCtx(cmd, r, schemaName);
-                    }
-                });
+                }, (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(r, ctx)));
 
         // COMMENT
         String comment = res.getString("comment");

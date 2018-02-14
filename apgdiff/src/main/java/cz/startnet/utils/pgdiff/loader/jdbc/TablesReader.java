@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
@@ -226,11 +224,7 @@ public class TablesReader extends JdbcReader {
                 column.setDefaultValue(columnDefault);
                 loader.submitAntlrTask(columnDefault, (PgDatabase)schema.getParent(),
                         p -> p.vex_eof().vex().get(0),
-                        (ctx, db) -> {
-                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx));
-
-                            UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schema.getName()), column);
-                        });
+                        (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(column, ctx)));
             }
 
             if (colNotNull[i]) {
