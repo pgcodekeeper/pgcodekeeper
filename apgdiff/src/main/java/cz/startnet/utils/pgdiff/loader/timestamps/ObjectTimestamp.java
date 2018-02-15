@@ -17,26 +17,30 @@ public class ObjectTimestamp implements Serializable {
     private final byte[] hash;
     private final long objId;
     private final Instant time;
+    private final String author;
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime, String author) {
         this.object = object;
         this.hash = hash;
         this.time = modificationtime;
+        this.author = author;
         objId = -1;
     }
 
-    public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime) {
+    public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime, String author) {
         this.object = object;
         this.objId = objid;
         this.time = modificationtime;
+        this.author = author;
         hash = null;
     }
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime, String author) {
         this.object = object;
         this.objId = objid;
         this.hash = hash;
         this.time = modificationtime;
+        this.author = author;
     }
 
     public GenericColumn getObject() {
@@ -53,6 +57,10 @@ public class ObjectTimestamp implements Serializable {
 
     public Instant getTime() {
         return time;
+    }
+
+    public String getAuthor() {
+        return author;
     }
 
     @Override
@@ -74,7 +82,8 @@ public class ObjectTimestamp implements Serializable {
         } else if (obj instanceof ObjectTimestamp) {
             ObjectTimestamp t = (ObjectTimestamp) obj;
             eq = Objects.equals(object, t.object)
-                    && Objects.equals(time, t.time);
+                    && Objects.equals(time, t.time)
+                    && Objects.equals(author, t.author);
         }
 
         return eq;
@@ -82,7 +91,7 @@ public class ObjectTimestamp implements Serializable {
 
     @Override
     public String toString() {
-        return object + ": " + time;
+        return object + ": " + time + " - " + author;
     }
 
     public DbObjType getType() {

@@ -153,22 +153,76 @@ public class DBTimestamp implements Serializable {
         return db;
     }
 
+    public DBTimestamp getRemoteDb() {
+        return dbTime;
+    }
+
     public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
         this.dbTime = dbTime;
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
         for (ObjectTimestamp pObj : this.getObjects()) {
             GenericColumn gc = pObj.getObject();
-            for (ObjectTimestamp rObj : dbTime.getObjects()) {
-                if (rObj.equals(pObj)) {
-                    equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
-                            rObj.getObjId(), rObj.getTime()));
-                    break;
-                }
+            ObjectTimestamp rObj = getObject(gc, dbTime.getObjects());
+            if (rObj != null) {
+                equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
+                        rObj.getObjId(), rObj.getTime(), rObj.getAuthor()));
             }
         }
 
         return equalsObjects;
+    }
+
+    public String getStatementAuthor(PgStatement st) {
+        ObjectTimestamp obj = getObject(createGC(st), getObjects());
+        if (obj != null) {
+            return obj.getAuthor();
+        }
+
+        return null;
+    }
+
+    private static ObjectTimestamp getObject(GenericColumn gc, List<ObjectTimestamp> list) {
+        if (gc != null) {
+            for (ObjectTimestamp obj : list) {
+                if (obj.getObject().equals(gc)) {
+                    return obj;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static GenericColumn createGC(PgStatement st) {
+        DbObjType type = st.getStatementType();
+        String schema = null;
+        if (st instanceof PgStatementWithSearchPath) {
+            schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+        }
+        GenericColumn gc = null;
+        switch (type) {
+        case SCHEMA:
+        case EXTENSION:
+            gc = new GenericColumn(st.getName(), type);
+            break;
+        case TYPE:
+        case SEQUENCE:
+        case FUNCTION:
+        case TABLE:
+        case VIEW:
+            gc = new GenericColumn(schema, st.getName(), type);
+            break;
+        case INDEX:
+            gc = new GenericColumn(schema, null, st.getName(), type);
+            break;
+        case RULE:
+        case TRIGGER:
+            gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
+            break;
+        default: break;
+        }
+
+        return gc;
     }
 
 
@@ -176,55 +230,20 @@ public class DBTimestamp implements Serializable {
      * Rewrites timestamp objects
      *
      * @param statements - statements list
-     * @param path - serialized object path
      */
-    public static void rewrite(List<PgStatement> statements, Path path) {
-        DBTimestamp timestamp = getDBTimestamp(path);
-        List<ObjectTimestamp> objects = timestamp.objects;
+    public void rewrite(List<PgStatement> statements) {
         objects.clear();
         for (PgStatement st : statements) {
-            DbObjType type = st.getStatementType();
-            String schema = null;
-            if (st instanceof PgStatementWithSearchPath) {
-                schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
-            }
-            GenericColumn gc = null;
-            switch (type) {
-            case SCHEMA:
-            case EXTENSION:
-                gc = new GenericColumn(st.getName(), type);
-                break;
-            case TYPE:
-            case SEQUENCE:
-            case FUNCTION:
-            case TABLE:
-            case VIEW:
-                gc = new GenericColumn(schema, st.getName(), type);
-                break;
-            case INDEX:
-                gc = new GenericColumn(schema, null, st.getName(), type);
-                break;
-            case RULE:
-            case TRIGGER:
-                gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
-                break;
-            default: break;
-            }
-
             StringBuilder hash = new StringBuilder(st.getRawStatement());
-
-            if (type == DbObjType.TABLE) {
+            if (st.getStatementType() == DbObjType.TABLE) {
                 ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
             }
 
-            for (ObjectTimestamp obj : timestamp.dbTime.getObjects()) {
-                if (obj.getObject().equals(gc)) {
-                    objects.add(new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime()));
-                    break;
-                }
+            GenericColumn gc = createGC(st);
+            ObjectTimestamp obj = getObject(gc, dbTime.getObjects());
+            if (obj != null) {
+                objects.add(new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime(), obj.getAuthor()));
             }
         }
-
-        ApgdiffUtils.serialize(path, timestamp);
     }
 }

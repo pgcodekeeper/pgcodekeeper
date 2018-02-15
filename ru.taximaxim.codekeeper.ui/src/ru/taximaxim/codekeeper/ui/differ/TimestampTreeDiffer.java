@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -73,7 +74,12 @@ public class TimestampTreeDiffer extends TreeDiffer {
 
             DiffTree tree = new DiffTree();
             diffTree = tree.createTree(dbSrc, dbTgt, pm);
-            DBTimestamp.rewrite(tree.getEqualsObjects(), path);
+
+            DBTimestamp timestamp = DBTimestamp.getDBTimestamp(path);
+            dbTime = timestamp.getRemoteDb();
+            timestamp.rewrite(tree.getEqualsObjects());
+            ApgdiffUtils.serialize(path, timestamp);
+
 
             PgDiffUtils.checkCancelled(pm);
             monitor.done();

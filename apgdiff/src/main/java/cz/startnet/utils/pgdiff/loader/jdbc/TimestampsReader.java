@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class TimestampsReader implements PgCatalogStrings {
     private final JdbcLoaderBase loader;
 
-    private static final String QUERY = "select * from {0}.show_objects";
+    private static final String QUERY = "select * from {0}.dbots_object_timestamps";
 
     public TimestampsReader(JdbcLoaderBase loader) {
         this.loader = loader;
@@ -48,6 +48,7 @@ public class TimestampsReader implements PgCatalogStrings {
         String name = res.getString("name");
         long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
+        String author = res.getString("author");
         GenericColumn column = null;
         ObjectTimestamp object;
         switch (type) {
@@ -65,7 +66,7 @@ public class TimestampsReader implements PgCatalogStrings {
             break;
         case "function":
             loader.submitAntlrTask(identity, SQLParser::function_args_parser,
-                    ctx -> parseFunctionName(ctx, lastModified, time, objId));
+                    ctx -> parseFunctionName(ctx, lastModified, time, objId, author));
             break;
         case "index":
             column = new GenericColumn(schema, null, name, DbObjType.INDEX);
@@ -80,22 +81,23 @@ public class TimestampsReader implements PgCatalogStrings {
             break;
         case "rule":
             loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
-                    ctx -> parseIdentity(ctx, DbObjType.RULE, lastModified, time, objId));
+                    ctx -> parseIdentity(ctx, DbObjType.RULE, lastModified, time, objId, author));
             break;
         case "trigger":
             loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
-                    ctx -> parseIdentity(ctx, DbObjType.TRIGGER, lastModified, time, objId));
+                    ctx -> parseIdentity(ctx, DbObjType.TRIGGER, lastModified, time, objId, author));
             break;
         default: break;
         }
 
         if (column != null) {
-            object = new ObjectTimestamp(column, objId, lastModified);
+            object = new ObjectTimestamp(column, objId, lastModified, author);
             time.addObject(object);
         }
     }
 
-    private void parseFunctionName(Function_args_parserContext ctx, Instant lastModified, DBTimestamp time, long objId) {
+    private void parseFunctionName(Function_args_parserContext ctx,
+            Instant lastModified, DBTimestamp time, long objId, String author) {
         if (ctx != null) {
             List<IdentifierContext> object = ctx.schema_qualified_name().identifier();
             String schema = QNameParser.getSchemaNameCtx(object).getText();
@@ -103,19 +105,19 @@ public class TimestampsReader implements PgCatalogStrings {
             PgFunction func = new PgFunction(name, null);
             ParserAbstract.fillArguments(ctx.function_args(), func, schema);
             GenericColumn gc = new GenericColumn(schema, func.getName(), DbObjType.FUNCTION);
-            time.addObject(new ObjectTimestamp(gc, objId, lastModified));
+            time.addObject(new ObjectTimestamp(gc, objId, lastModified, author));
         }
     }
 
     private void parseIdentity(Object_identity_parserContext ctx, DbObjType type,
-            Instant lastModified, DBTimestamp time, long objId) {
+            Instant lastModified, DBTimestamp time, long objId, String author) {
         if (ctx != null) {
             String name = ctx.name.getText();
             List<IdentifierContext> parent = ctx.parent.identifier();
             String schema = QNameParser.getSchemaNameCtx(parent).getText();
             String table = QNameParser.getFirstName(parent);
             GenericColumn gc = new GenericColumn(schema, table, name, type);
-            time.addObject(new ObjectTimestamp(gc, objId, lastModified));
+            time.addObject(new ObjectTimestamp(gc, objId, lastModified, author));
         }
     }
 }

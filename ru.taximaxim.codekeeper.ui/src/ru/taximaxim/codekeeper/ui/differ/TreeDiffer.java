@@ -11,6 +11,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -31,6 +32,8 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
     protected final boolean needTwoWay;
     private final String name;
 
+    protected DBTimestamp dbTime;
+
     protected TreeElement diffTree;
     protected TreeElement diffTreeRevert;
 
@@ -40,6 +43,10 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
 
     public DbSource getDbTarget() {
         return dbTarget;
+    }
+
+    public DBTimestamp getDbTime() {
+        return dbTime;
     }
 
     public TreeElement getDiffTree() {

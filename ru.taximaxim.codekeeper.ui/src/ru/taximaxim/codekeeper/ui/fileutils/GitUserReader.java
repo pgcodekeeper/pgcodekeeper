@@ -77,7 +77,7 @@ public class GitUserReader implements AutoCloseable {
                     String p = d.getNewPath();
                     List<ElementMetaInfo> meta = metas.remove(p);
                     if (meta != null) {
-                        meta.forEach(e -> e.setAuthor(author));
+                        meta.forEach(e -> e.setGitUser(author));
                     }
                 }
             }

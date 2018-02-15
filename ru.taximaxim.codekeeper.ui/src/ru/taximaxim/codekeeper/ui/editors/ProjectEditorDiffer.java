@@ -80,6 +80,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -522,7 +523,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
-                            setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(), newDiffer.getDiffTree());
+                            setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
+                                    newDiffer.getDiffTree(), newDiffer.getDbTime());
                             loadedRemote = currentRemote;
                         }
                     });
@@ -650,7 +652,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
-    private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
+    private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree, DBTimestamp dbTimestamp) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
@@ -663,7 +665,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
         }
-        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
+        diffTable.setInput(dbProject, dbRemote, diffTree, dbTimestamp, ignoreList);
         if (diffTree != null) {
             isDBLoaded = true;
             manualDepciesSource.clear();
@@ -675,7 +677,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         isDBLoaded = false;
         manualDepciesSource.clear();
         manualDepciesTarget.clear();
-        setInput(null, null, null);
+        setInput(null, null, null, null);
     }
 
     private void hideNotificationArea() {

@@ -83,6 +83,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -116,11 +117,13 @@ public class DiffTableViewer extends Composite {
 
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
+    private static final String DBLABEL_PROP = "DBLABEL_PROP"; //$NON-NLS-1$
     private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
 
     private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
+    private boolean showDbUser;
 
     private final Image iSideBoth;
     private final Image iSideLeft;
@@ -148,7 +151,8 @@ public class DiffTableViewer extends Composite {
     private TreeViewerColumn columnType;
     private TreeViewerColumn columnChange;
     private TreeViewerColumn columnName;
-    private TreeViewerColumn columnUser;
+    private TreeViewerColumn columnGitUser;
+    private TreeViewerColumn columnDbUser;
     private TreeViewerColumn columnLocation;
 
     private DbSource dbProject;
@@ -162,7 +166,7 @@ public class DiffTableViewer extends Composite {
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHECK, NAME, TYPE, CHANGE, LOCATION, USER
+        CHECK, NAME, TYPE, CHANGE, LOCATION
     }
 
     public StructuredViewer getViewer() {
@@ -487,7 +491,8 @@ public class DiffTableViewer extends Composite {
         columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
         columnName = new TreeViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnUser = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnDbUser = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
@@ -501,8 +506,11 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().setResizable(true);
         columnLocation.getColumn().setMoveable(true);
 
-        columnUser.getColumn().setResizable(true);
-        columnUser.getColumn().setMoveable(true);
+        columnGitUser.getColumn().setResizable(true);
+        columnGitUser.getColumn().setMoveable(true);
+
+        columnDbUser.getColumn().setResizable(true);
+        columnDbUser.getColumn().setMoveable(true);
 
         setColumnHeaders();
 
@@ -576,12 +584,12 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        columnUser.setLabelProvider(new ColumnLabelProvider() {
+        columnGitUser.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null ? meta.getAuthorName() : ""; //$NON-NLS-1$
+                return meta != null ? meta.getGitUser() : ""; //$NON-NLS-1$
             }
 
             @Override
@@ -589,6 +597,21 @@ public class DiffTableViewer extends Composite {
                 return property == GITLABEL_PROP;
             }
         });
+
+        columnDbUser.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                return meta != null ? meta.getDbUser() : ""; //$NON-NLS-1$
+            }
+
+            @Override
+            public boolean isLabelProperty(Object element, String property) {
+                return property == DBLABEL_PROP;
+            }
+        });
+
 
         columnLocation.setLabelProvider(new ColumnLabelProvider() {
 
@@ -605,7 +628,8 @@ public class DiffTableViewer extends Composite {
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
-        columnUser.getColumn().setText(Messages.DiffTableViewer_user);
+        columnGitUser.getColumn().setText(Messages.DiffTableViewer_user);
+        columnDbUser.getColumn().setText(Messages.DiffTableViewer_db_user);
     }
 
     private void updateColumnsWidth() {
@@ -614,10 +638,11 @@ public class DiffTableViewer extends Composite {
         columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         // name column will take half of the space
-        int width = (int)(viewer.getControl().getSize().x * 0.5f);
+        int width = (int)(viewer.getControl().getSize().x * 0.4f);
         columnName.getColumn().setWidth(Math.max(width, 200));
         columnLocation.getColumn().setWidth(pc.convertWidthInCharsToPixels(20));
-        columnUser.getColumn().setWidth(showGitUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
+        columnGitUser.getColumn().setWidth(showGitUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
+        columnDbUser.getColumn().setWidth(showDbUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
     }
 
     private SelectionAdapter getHeaderSelectionAdapter(final Columns index) {
@@ -710,21 +735,29 @@ public class DiffTableViewer extends Composite {
         viewer.setAutoExpandLevel(enabled ? AbstractTreeViewer.ALL_LEVELS : 0);
     }
 
+
     public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IgnoreList ignoreList) {
+        setInput(dbProject, dbRemote, diffTree, null, ignoreList);
+    }
+
+
+    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
+            DBTimestamp dbTime, IgnoreList ignoreList) {
         setInputCollection(diffTree == null ? Collections.<TreeElement>emptyList() :
             new TreeFlattener()
             .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
             .useIgnoreList(ignoreList, dbRemote.getDbName())
-            .flatten(diffTree), dbProject, dbRemote);
+            .flatten(diffTree), dbProject, dbRemote, dbTime);
     }
 
     /**
      * Используется в коммит диалоге для установки элементов
      * @param collection элементы для показа
+     * @param dbTime
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote) {
+            DbSource dbProject, DbSource dbRemote, DBTimestamp dbTime) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -741,15 +774,50 @@ public class DiffTableViewer extends Composite {
         collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
 
         if (showGitUser && !elementInfoMap.isEmpty()) {
-            readUsers();
+            readGitUsers();
         }
+        if (dbTime != null) {
+            showDbUser = true;
+            readDbUsers(dbTime);
+        }
+
         viewer.setInput(elements);
         updateColumnsWidth();
 
         updateObjectsLabels();
     }
 
-    private void readUsers() {
+    private void readDbUsers(DBTimestamp dbTime) {
+        Job job = new Job(Messages.DiffTableViewer_reading_db_user) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                elementInfoMap.forEach((k,v) -> {
+                    if (k.getSide() != DiffSide.LEFT) {
+                        v.setDbUser(dbTime.getStatementAuthor(k.getPgStatement(dbRemote.getDbObject())));
+                    }
+                });
+
+                return Status.OK_STATUS;
+            }
+        };
+
+        job.addJobChangeListener(new JobChangeAdapter() {
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    UiSync.exec(getDisplay(), () -> viewer.update(elements
+                            .toArray(new TreeElement[0]), new String[] { DBLABEL_PROP }));
+                }
+            }
+        });
+
+        job.setUser(true);
+        job.schedule();
+    }
+
+    private void readGitUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
 
             @Override
@@ -767,7 +835,7 @@ public class DiffTableViewer extends Composite {
                             String location = StreamSupport.stream(
                                     root.relativize(fullPath).spliterator(), false)
                                     .map(Path::toString)
-                                    .collect(Collectors.joining("/"));
+                                    .collect(Collectors.joining("/")); //$NON-NLS-1$
 
                             List<ElementMetaInfo> meta = metas.get(location);
                             if (meta == null) {
@@ -1238,4 +1306,6 @@ public class DiffTableViewer extends Composite {
             return null;
         }
     }
+
+
 }
