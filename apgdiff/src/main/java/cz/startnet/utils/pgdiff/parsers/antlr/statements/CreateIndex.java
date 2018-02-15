@@ -74,11 +74,12 @@ public class CreateIndex extends ParserAbstract {
             if (vexPrimary != null) {
                 Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
                 if (colName != null) {
+                    String col = colName.getText();
                     ind.addDep(new GenericColumn(schemaName, ind.getTableName(),
-                            colName.getText(), DbObjType.COLUMN));
+                            col, DbObjType.COLUMN));
+                    ind.addColumn(col);
                 }
             }
-            ind.addColumn(sort_ctx.key.getText());
         }
     }
 }
