@@ -58,6 +58,11 @@ public class AntlrParser {
         return makeBasicParser(parserClass, new ANTLRInputStream(string), parsedObjectName, null);
     }
 
+    public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
+            String parsedObjectName, List<AntlrError> errors) {
+        return makeBasicParser(parserClass, new ANTLRInputStream(string), parsedObjectName, errors);
+    }
+
     private static <T extends Parser> T makeBasicParser(Class<T> parserClass,
             ANTLRInputStream stream, String parsedObjectName, List<AntlrError> errors) {
         Lexer lexer;
@@ -68,6 +73,9 @@ public class AntlrParser {
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
+        } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
+            lexer = new PrivilegesLexer(stream);
+            parser = new PrivilegesParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }

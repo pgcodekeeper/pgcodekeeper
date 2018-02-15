@@ -64,6 +64,10 @@ public class CliArgs extends PgDiffArguments {
             usage="run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
 
+    @Option(name="-l", aliases="--license", hidden=true)
+    @Deprecated
+    private String licensePath;
+
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
             usage="source of schema changes")
     @Argument(index=0, metaVar="SOURCE", usage="source of schema changes")
@@ -247,6 +251,12 @@ public class CliArgs extends PgDiffArguments {
         } else {
             // show help instead of failing for 0 args
             zhelp = true;
+        }
+
+        if (licensePath != null) {
+            // TODO move to Log when it will properly use syserr
+            System.err.println("-- [WARNING] -l or --license parameters are deprecated!");
+            System.err.println("-- pgCodeKeeper no longer requires license files");
         }
 
         if (zhelp) {

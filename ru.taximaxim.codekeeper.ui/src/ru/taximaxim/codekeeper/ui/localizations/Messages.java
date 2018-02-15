@@ -164,6 +164,10 @@ public final class Messages extends NLS {
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
+    public static String ConvertProject_convert_dialog_message;
+
+    public static String ConvertProject_convert_dialog_title;
+
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
@@ -251,8 +255,14 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_error_reading_git_history;
+
     public static String DiffTableViewer_expand_all;
+
+    public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+
+    public static String DiffTableViewer_reading_git_history;
 
     public static String DiffTableViewer_reset_sorting;
     public static String DiffTableViewer_selected;
@@ -264,6 +274,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_database;
 
     public static String DiffTableViewer_to_project;
+
+    public static String DiffTableViewer_user;
 
     public static String DiffWizard_db_tz;
 
@@ -312,6 +324,8 @@ public final class Messages extends NLS {
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;
 
+    public static String MockDataPage_any_value;
+
     public static String MockDataPage_column_down;
 
     public static String MockDataPage_column_generator;
@@ -329,7 +343,11 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_description;
 
+    public static String MockDataPage_empty_columns;
+
     public static String MockDataPage_empty_table_name;
+
+    public static String MockDataPage_explicit_type_cast;
 
     public static String MockDataPage_generation_failed;
 
@@ -358,6 +376,10 @@ public final class Messages extends NLS {
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
+
+    public static String NewObjectWizard_invalid_input_format;
+
+    public static String NewObjectWizard_invalid_schema_format;
 
     public static String NewProjWizard_error_creating_project;
 
@@ -426,8 +448,6 @@ public final class Messages extends NLS {
     public static String PgImportWizardImportPage_browse;
 
     public static String PgImportWizardImportPage_name;
-
-    public static String PgImportWizardImportPage_no_project;
 
     public static String PgImportWizardImportPage_project;
 
@@ -506,6 +526,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_action_update;
 
+    public static String ProjectEditorPrefPage_show_git_user;
+
     public static String dbUpdatePrefPage_script_deleting_status;
 
     public static String dbUpdatePrefPage_status_always_delete;
@@ -528,6 +550,8 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String Duration_expected_format;
 
     public static String TreeDiffer_unknown_error;
 
@@ -575,9 +599,15 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_reset;
 
+    public static String FilterDialog_schema_filter_placeholder;
+
+    public static String FilterDialog_search_by_container;
+
     public static String FilterDialog_show_change_types;
 
     public static String FilterDialog_show_object_types;
+
+    public static String FilterDialog_sql_filter_placehodlder;
 
     public static String FilterDialog_title;
 
@@ -592,6 +622,8 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source;
 
     public static String GetChanges_select_source_msg;
+
+    public static String GitUserReader_error_reading_local_changes;
 
     public static String JdbcPerfVersionsDynamic_jdbc_helper_error;
 

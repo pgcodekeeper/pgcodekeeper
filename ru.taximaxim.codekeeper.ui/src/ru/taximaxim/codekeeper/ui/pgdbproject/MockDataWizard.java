@@ -1,10 +1,13 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class MockDataWizard extends Wizard implements INewWizard {
@@ -15,6 +18,8 @@ public class MockDataWizard extends Wizard implements INewWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.selection = selection;
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONAPPWIZ)));
     }
 
     @Override

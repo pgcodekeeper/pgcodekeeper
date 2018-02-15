@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,6 +52,7 @@ public final class QNameParser {
     }
 
     private final List<IdentifierContext> parts;
+    private final List<AntlrError> errors = new ArrayList<>();
 
     public List<IdentifierContext> getIds() {
         return Collections.unmodifiableList(parts);
@@ -58,7 +60,7 @@ public final class QNameParser {
 
     public QNameParser(String schemaQualifiedName) {
         this.parts = AntlrParser
-                .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName)
+                .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
                 .schema_qualified_name()
                 .identifier();
@@ -78,5 +80,9 @@ public final class QNameParser {
 
     public String getSchemaName(String defaultSchema) {
         return getSchemaName(parts, defaultSchema);
+    }
+
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 }

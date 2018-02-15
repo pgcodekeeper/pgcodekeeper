@@ -1,30 +1,48 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -51,6 +69,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -64,15 +84,27 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.ElementMetaInfo;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
+import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
+import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -83,13 +115,21 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DiffTableViewer extends Composite {
 
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
+    private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
+    private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
+
+    private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+    private final boolean showGitUser;
 
     private final Image iSideBoth;
     private final Image iSideLeft;
     private final Image iSideRight;
 
     private final boolean viewOnly;
-    private final Set<TreeElement> elements = new HashSet<>();
+    private final Path location;
+    private final Map<TreeElement, ElementMetaInfo> elementInfoMap = new HashMap<>();
+    private final Set<TreeElement> elements = elementInfoMap.keySet();
     private final DiffContentProvider contentProvider = new DiffContentProvider();
     private final CheckStateProvider checkProvider;
     private final TableViewerComparator comparator = new TableViewerComparator();
@@ -108,19 +148,21 @@ public class DiffTableViewer extends Composite {
     private TreeViewerColumn columnType;
     private TreeViewerColumn columnChange;
     private TreeViewerColumn columnName;
+    private TreeViewerColumn columnUser;
     private TreeViewerColumn columnLocation;
 
     private DbSource dbProject;
     private DbSource dbRemote;
 
-    private final CodeFilter codeFilter = new CodeFilter();
+    private final AbstractFilter codeFilter = new CodeFilter();
+    private final AbstractFilter schemaFilter = new SchemaFilter();
 
     private final IStatusLineManager lineManager;
 
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHECK, NAME, TYPE, CHANGE, LOCATION
+        CHECK, NAME, TYPE, CHANGE, LOCATION, USER
     }
 
     public StructuredViewer getViewer() {
@@ -131,10 +173,14 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager) {
+    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
+        this.location = location;
+        showGitUser = location!= null
+                && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
+                && GitUserReader.checkRepo(location);
 
         PixelConverter pc = new PixelConverter(this);
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -213,13 +259,15 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    FilterDialog dialog = new FilterDialog(getShell(), codeFilter,
+                    FilterDialog dialog = new FilterDialog(getShell(),
+                            schemaFilter, codeFilter,
                             viewerFilter.types, viewerFilter.sides);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
                                         viewerFilter.types.isEmpty() && viewerFilter.sides.isEmpty()
                                         && codeFilter.getPattern().isEmpty()
+                                        && schemaFilter.getPattern().isEmpty()
                                         ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
@@ -229,9 +277,29 @@ public class DiffTableViewer extends Composite {
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(30);
+        gd.widthHint = pc.convertWidthInCharsToPixels(35);
         txtFilterName.setLayoutData(gd);
-        txtFilterName.setMessage(Messages.diffTableViewer_object_name);
+        txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
+
+        KeyStroke ks = null;
+        LinkedList<String> history = new LinkedList<>();
+        try {
+            ks = KeyStroke.getInstance(KEY_PRESS);
+        } catch (ParseException ex) {
+            Log.log(ex);
+        }
+        try {
+            history = XML_HISTORY.getHistory();
+        } catch (IOException ex) {
+            Log.log(ex);
+        }
+
+        SimpleContentProposalProvider scp = new SimpleContentProposalProvider(history.toArray(new String[history.size()]));
+        scp.setFiltering(true);
+
+        ContentProposalAdapter adapter = new ContentProposalAdapter(txtFilterName,
+                new TextContentAdapter(), scp, ks, null);
+        adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 
         useRegEx = new Button(upperComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
@@ -271,19 +339,37 @@ public class DiffTableViewer extends Composite {
         }
         viewer = new CheckboxTreeViewer(new Tree(this, viewerStyle));
 
-        txtFilterName.addModifyListener(e -> {
-            // TODO aggregate events with small input lengths for performance
-            // "postModifyListener"
-            viewerFilter.setFilter(txtFilterName.getText());
-            viewer.refresh();
-        });
+        ModifyListener listener = new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String text = ((Text)e.getSource()).getText();
+                filterHistory(text);
+                viewerFilter.setFilter(text);
+                viewer.refresh();
+            }
+
+            private void filterHistory(String text) {
+                try {
+                    if (text != null && !text.isEmpty()) {
+                        XML_HISTORY.addHistoryEntry(text);
+                    }
+                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    scp.setProposals(history.toArray(new String[history.size()]));
+                } catch (IOException e) {
+                    Log.log(e);
+                }
+            }
+        };
+
+        AggregatingListener.addModifyListener(txtFilterName, listener);
 
         viewer.addSelectionChangedListener(event -> {
             oldSelection = newSelection;
             newSelection = (IStructuredSelection)event.getSelection();
         });
 
-        viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         viewer.getTree().setLinesVisible(true);
         viewer.getTree().setHeaderVisible(true);
 
@@ -401,6 +487,7 @@ public class DiffTableViewer extends Composite {
         columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
         columnName = new TreeViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnUser = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
@@ -413,6 +500,9 @@ public class DiffTableViewer extends Composite {
 
         columnLocation.getColumn().setResizable(true);
         columnLocation.getColumn().setMoveable(true);
+
+        columnUser.getColumn().setResizable(true);
+        columnUser.getColumn().setMoveable(true);
 
         setColumnHeaders();
 
@@ -486,6 +576,20 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        columnUser.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                return meta != null ? meta.getAuthorName() : ""; //$NON-NLS-1$
+            }
+
+            @Override
+            public boolean isLabelProperty(Object element, String property) {
+                return property == GITLABEL_PROP;
+            }
+        });
+
         columnLocation.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
@@ -501,21 +605,19 @@ public class DiffTableViewer extends Composite {
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(Messages.diffTableViewer_change_type);
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
+        columnUser.getColumn().setText(Messages.DiffTableViewer_user);
     }
 
-    private void updateColumnsWidth(){
+    private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
-        // set check column size to 4 chars
         columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
+        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         // name column will take half of the space
         int width = (int)(viewer.getControl().getSize().x * 0.5f);
         columnName.getColumn().setWidth(Math.max(width, 200));
-        // set type column size to 19 chars to fit "CONSTRAINT" in
-        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
-        // set change type column size to 14 chars
-        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(14));
-        // location takes the rest
-        columnLocation.getColumn().pack();
+        columnLocation.getColumn().setWidth(pc.convertWidthInCharsToPixels(20));
+        columnUser.getColumn().setWidth(showGitUser && !viewOnly ? pc.convertWidthInCharsToPixels(20) : 0);
     }
 
     private SelectionAdapter getHeaderSelectionAdapter(final Columns index) {
@@ -563,6 +665,8 @@ public class DiffTableViewer extends Composite {
                 break;
             case LOCATION:
                 columnLocation.getColumn().setText(sb.append(Messages.diffTableViewer_container).toString());
+                break;
+            default:
                 break;
             }
         }
@@ -617,9 +721,9 @@ public class DiffTableViewer extends Composite {
 
     /**
      * Используется в коммит диалоге для установки элементов
-     * @param elements элементы для показа
+     * @param collection элементы для показа
      */
-    public void setInputCollection(Collection<TreeElement> elements,
+    public void setInputCollection(Collection<TreeElement> collection,
             DbSource dbProject, DbSource dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
@@ -633,12 +737,69 @@ public class DiffTableViewer extends Composite {
         sortViewer(Columns.TYPE);
         sortViewer(Columns.LOCATION);
 
-        this.elements.clear();
-        this.elements.addAll(elements);
-        viewer.setInput(this.elements);
+        elementInfoMap.clear();
+        collection.forEach(el -> this.elementInfoMap.put(el, new ElementMetaInfo()));
+
+        if (showGitUser && !elementInfoMap.isEmpty()) {
+            readUsers();
+        }
+        viewer.setInput(elements);
         updateColumnsWidth();
 
         updateObjectsLabels();
+    }
+
+    private void readUsers() {
+        Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try (GitUserReader reader = new GitUserReader(location)) {
+                    Path root = reader.getLocation();
+                    Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
+                    elementInfoMap.forEach((k,v) -> {
+                        if (k.getSide() != DiffSide.RIGHT) {
+                            Path fullPath = location.resolve(Paths.get(ModelExporter.getRelativeFilePath(
+                                    k.getPgStatement(dbProject.getDbObject()), true)));
+                            // git always uses linux paths
+                            // since all paths here are relative it's ok to simply
+                            // join their elements with forward slashes
+                            String location = StreamSupport.stream(
+                                    root.relativize(fullPath).spliterator(), false)
+                                    .map(Path::toString)
+                                    .collect(Collectors.joining("/"));
+
+                            List<ElementMetaInfo> meta = metas.get(location);
+                            if (meta == null) {
+                                meta = new ArrayList<>();
+                                metas.put(location, meta);
+                            }
+                            meta.add(v);
+                        }
+                    });
+                    reader.parseLocalChanges(metas);
+                    reader.parseLastChange(metas);
+                    return Status.OK_STATUS;
+                } catch (IOException e) {
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
+                            Messages.DiffTableViewer_error_reading_git_history, e);
+                }
+            }
+        };
+
+        job.addJobChangeListener(new JobChangeAdapter() {
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    UiSync.exec(getDisplay(), () -> viewer.update(elements
+                            .toArray(new TreeElement[0]), new String[] { GITLABEL_PROP }));
+                }
+            }
+        });
+
+        job.setUser(true);
+        job.schedule();
     }
 
     private void setChecked(TreeElement el, boolean checked) {
@@ -670,7 +831,7 @@ public class DiffTableViewer extends Composite {
     }
 
     public void updateObjectsLabels() {
-        int count = elements.size();
+        int count = elementInfoMap.size();
         int checked = getCheckedElementsCount();
         if (lineManager != null) {
             lineManager.setMessage(lrm.createImage(ImageDescriptor.createFromURL(
@@ -727,11 +888,11 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    static boolean isContainer(TreeElement el) {
+    public static boolean isContainer(TreeElement el) {
         return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
     }
 
-    static boolean isSubElement(TreeElement el) {
+    public static boolean isSubElement(TreeElement el) {
         TreeElement parent = el.getParent();
         return parent != null && isContainer(parent);
     }
@@ -960,6 +1121,8 @@ public class DiffTableViewer extends Composite {
                 case TYPE:
                     res = el1.getType().toString().compareTo(el2.getType().toString());
                     break;
+                default:
+                    break;
                 }
                 if (res != 0) {
                     if (c.desc) {
@@ -1018,11 +1181,15 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
+            if (!schemaFilter.getPattern().isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
+                return false;
+            }
+
             if (filterName != null && !findName(el, isSubElement)) {
                 return false;
             }
 
-            return (codeFilter.getPattern().isEmpty() || codeFilter.findCode(el,
+            return (codeFilter.getPattern().isEmpty() || codeFilter.checkElement(el,
                     elements, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 

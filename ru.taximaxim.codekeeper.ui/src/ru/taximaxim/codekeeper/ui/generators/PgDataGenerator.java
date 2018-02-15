@@ -6,5 +6,6 @@ package ru.taximaxim.codekeeper.ui.generators;
 public enum PgDataGenerator {
     RANDOM,
     INCREMENT,
-    CONSTANT;
+    CONSTANT,
+    ANY;
 }

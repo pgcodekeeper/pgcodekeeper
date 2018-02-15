@@ -22,8 +22,9 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.differ.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
+import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -39,10 +40,13 @@ public class FilterDialog extends Dialog {
     private CheckboxTableViewer chgViewer;
     private final Collection<DbObjType> types;
     private final Collection<DiffSide> sides;
-    private final CodeFilter filter;
+    private final AbstractFilter codeFilter;
+    private final AbstractFilter schemaFilter;
 
-    private Text text;
-    private Button btnRegEx;
+    private Text txtCode;
+    private Text txtSchema;
+    private Button btnCodeRegEx;
+    private Button btnSchemaRegEx;
 
     /**
      * Creates a dialog instance. Note that the window will have no visual
@@ -52,6 +56,8 @@ public class FilterDialog extends Dialog {
      * @param parentShell
      *            the parent shell, or <code>null</code> to create a top-level
      *            shell
+     * @param schema
+     *            schema in which want to search
      * @param filter
      *            object, that contains params for code search
      * @param types
@@ -64,10 +70,12 @@ public class FilterDialog extends Dialog {
      * @see DbObjType
      * @see DiffSide
      */
-    public FilterDialog(Shell parentShell, CodeFilter filter,
+    public FilterDialog(Shell parentShell,
+            AbstractFilter schemaFilter, AbstractFilter codeFilter,
             Collection<DbObjType> types, Collection<DiffSide> sides) {
         super(parentShell);
-        this.filter = filter;
+        this.codeFilter = codeFilter;
+        this.schemaFilter = schemaFilter;
         this.types = types;
         this.sides = sides;
     }
@@ -84,26 +92,60 @@ public class FilterDialog extends Dialog {
         container.setLayout(new GridLayout(2, true));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite searchComposite = new Composite(container, SWT.NONE);
+        createCodePart(container);
+        createSchemaPart(container);
+        createTypesPart(container);
+
+        return container;
+    }
+
+    private void createCodePart(Composite container) {
+        Composite codeComposite = new Composite(container, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
-        searchComposite.setLayout(layout);
-        searchComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        codeComposite.setLayout(layout);
+        codeComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
-        Label txtFilter = new Label(searchComposite, SWT.NONE);
-        txtFilter.setText(Messages.CodeFilter_search_by_code);
-        txtFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        Label lblCodeSearch = new Label(codeComposite, SWT.NONE);
+        lblCodeSearch.setText(Messages.CodeFilter_search_by_code);
+        lblCodeSearch.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
-        text = new Text(searchComposite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        text.setText(filter.getPattern());
+        txtCode = new Text(codeComposite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        txtCode.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        txtCode.setMessage(Messages.FilterDialog_sql_filter_placehodlder);
+        txtCode.setText(codeFilter.getPattern());
 
-        btnRegEx = new Button(searchComposite, SWT.CHECK);
-        btnRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        btnRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        btnRegEx.setSelection(filter.isUseRegex());
+        btnCodeRegEx = new Button(codeComposite, SWT.CHECK);
+        btnCodeRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        btnCodeRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        btnCodeRegEx.setSelection(codeFilter.isUseRegex());
+    }
 
+    private void createSchemaPart(Composite container) {
+        Composite schemaComposite = new Composite(container, SWT.NONE);
+        GridLayout schemaLayout = new GridLayout(2, false);
+        schemaLayout.marginHeight = 0;
+        schemaLayout.marginWidth = 0;
+        schemaComposite.setLayout(schemaLayout);
+        schemaComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+        Label lblSchemaSearch = new Label(schemaComposite, SWT.NONE);
+        lblSchemaSearch.setText(Messages.FilterDialog_search_by_container);
+        lblSchemaSearch.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+
+        txtSchema = new Text(schemaComposite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        txtSchema.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        txtSchema.setMessage(Messages.FilterDialog_schema_filter_placeholder);
+        txtSchema.setText(schemaFilter.getPattern());
+
+        btnSchemaRegEx = new Button(schemaComposite, SWT.CHECK);
+        btnSchemaRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        btnSchemaRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        btnSchemaRegEx.setSelection(schemaFilter.isUseRegex());
+    }
+
+    private void createTypesPart(Composite container) {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_change_types);
@@ -135,8 +177,6 @@ public class FilterDialog extends Dialog {
 
         chgViewer.setInput(DiffSide.values());
         chgViewer.setCheckedElements(sides.toArray());
-
-        return searchComposite;
     }
 
     @Override
@@ -149,8 +189,10 @@ public class FilterDialog extends Dialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                text.setText(""); //$NON-NLS-1$
-                btnRegEx.setSelection(false);
+                txtCode.setText(""); //$NON-NLS-1$
+                btnCodeRegEx.setSelection(false);
+                txtSchema.setText(""); //$NON-NLS-1$
+                btnSchemaRegEx.setSelection(false);
                 objViewer.setAllChecked(false);
                 chgViewer.setAllChecked(false);
             }
@@ -176,7 +218,8 @@ public class FilterDialog extends Dialog {
             sides.add((DiffSide)chg);
         }
 
-        filter.update(text.getText(), btnRegEx.getSelection());
+        codeFilter.updateFields(txtCode.getText(), btnCodeRegEx.getSelection());
+        schemaFilter.updateFields(txtSchema.getText(), btnSchemaRegEx.getSelection());
 
         super.okPressed();
     }

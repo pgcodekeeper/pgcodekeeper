@@ -66,6 +66,10 @@ public interface UIConsts {
         //String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
 
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate"; //$NON-NLS-1$
+
+        String LAST_CREATED_OBJECT_TYPE = "prefLastCreatedObjectType"; //$NON-NLS-1$
+
+        String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -91,6 +95,7 @@ public interface UIConsts {
     interface PG_EDIT_PREF {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
         String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
+        String SHOW_GIT_USER = "showGitUser"; //$NON-NLS-1$
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
