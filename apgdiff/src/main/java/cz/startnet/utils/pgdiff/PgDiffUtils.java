@@ -33,7 +33,7 @@ public final class PgDiffUtils {
     public static final int ERROR_SUBSTRING_LENGTH = 20;
     private static final Pattern PATTERN_SQ = Pattern.compile("'", Pattern.LITERAL);
     private static final Pattern PATTERN_DQ = Pattern.compile("\"", Pattern.LITERAL);
-    private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static boolean isValidId(String id, boolean allowKeywords, boolean allowCaps) {
         if (id.isEmpty()) {
