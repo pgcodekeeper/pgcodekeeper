@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -242,13 +243,13 @@ public class MockDataPage extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         final Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(5, false));
+        container.setLayout(new GridLayout(6, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_table_name);
 
         txtTableName = new Text(container, SWT.BORDER);
-        txtTableName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
+        txtTableName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
         txtTableName.setText(parsedTableName == null ? "t1" : (parsedSchemaName + '.' + parsedTableName)); //$NON-NLS-1$
 
         final Composite columnInfo = createColumnInfo(container);
@@ -257,12 +258,12 @@ public class MockDataPage extends WizardPage {
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_row_count);
 
         txtRowCount = new Text(container, SWT.BORDER);
-        txtRowCount.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
+        txtRowCount.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
         txtRowCount.setText("20"); //$NON-NLS-1$
 
         viewer = new TableViewer(container, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER | SWT.MULTI);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 2);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 5, 2);
         viewer.getTable().setLayoutData(gd);
         viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);
@@ -344,6 +345,27 @@ public class MockDataPage extends WizardPage {
                     viewer.refresh();
                     viewer.getTable().setFocus();
                 }
+            }
+        });
+
+
+        final Button btnDeletetNullable = new Button(container, SWT.NONE);
+        btnDeletetNullable.setText(Messages.MockDataPage_delete_optional);
+        btnDeletetNullable.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Iterator<PgData<?>> it = columns.iterator();
+
+                while (it.hasNext()) {
+                    PgData<?> el = it.next();
+                    if (!el.isNotNull()) {
+                        it.remove();
+                    }
+                }
+
+                viewer.refresh();
+                viewer.getTable().setFocus();
             }
         });
 
@@ -699,7 +721,7 @@ public class MockDataPage extends WizardPage {
      */
     private void parseColumns(PgColumn column) {
         String type = column.getType();
-        PgData<?> c = PgDataType.dataForType(column.getType());
+        PgData<?> c = PgDataType.dataForType(type == null  ? "other" : type); //$NON-NLS-1$
         c.setNotNull(!column.getNullValue());
         c.setName(column.getName());
         c.setAlias(type);

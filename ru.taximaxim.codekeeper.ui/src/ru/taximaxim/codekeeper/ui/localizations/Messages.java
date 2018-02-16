@@ -341,6 +341,8 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_delete_column;
 
+    public static String MockDataPage_delete_optional;
+
     public static String MockDataPage_description;
 
     public static String MockDataPage_empty_columns;
