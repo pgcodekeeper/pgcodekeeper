@@ -187,9 +187,9 @@ public class PgUIDumpLoader extends PgDumpLoader {
         }
     }
 
-    public static PgStatement parseStatement(IFile file, DbObjType type) throws InterruptedException, IOException, CoreException {
+    public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
         return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
-                .values().stream().filter(e -> e.getStatementType() == type).findFirst().orElse(null);
+                .values().stream().filter(e -> types.contains(e.getStatementType())).findFirst().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,

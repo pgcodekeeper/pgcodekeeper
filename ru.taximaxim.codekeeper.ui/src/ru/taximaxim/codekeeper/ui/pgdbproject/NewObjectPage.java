@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -37,7 +36,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -87,22 +87,40 @@ public final class NewObjectPage extends WizardPage {
         if (element instanceof IResource) {
             IResource resource = (IResource)element;
             if (resource.getType() == IResource.FILE && PgUIDumpLoader.isInProject(resource)) {
-                try {
-                    PgDatabase db = PgUIDumpLoader.buildFiles(Arrays.asList((IFile)resource), null, null);
-                    PgDatabase.listPgObjects(db).values().forEach(v -> {
-                        DbObjType type = v.getStatementType();
-                        if (type == DbObjType.SCHEMA) {
-                            schema = v.getName();
-                        } else if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
-                            container = v.getName();
-                            parentIsTable = type != DbObjType.VIEW;
-                        }
-                    });
-                } catch (IOException | InterruptedException | CoreException ex) {
-                    Log.log(Log.LOG_ERROR, "Error while parsing selection", ex); //$NON-NLS-1$
-                }
+                parseFile(resource);
+            } else if (resource.getType() == IResource.FOLDER) {
+                type = allowedTypes.stream().filter(e -> e.toString().equals(resource.getName()))
+                        .findFirst().orElse(null);
             }
             currentProj = resource.getProject();
+        }
+
+        if (type == null) {
+            String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
+            type = allowedTypes.stream().filter(e -> e.toString().equals(lastType))
+                    .findFirst().orElse(DbObjType.SCHEMA);
+        }
+    }
+
+    private void parseFile(IResource resource) {
+        try {
+            PgStatement st = PgUIDumpLoader.parseStatement((IFile)resource,
+                    EnumSet.of(DbObjType.EXTENSION, DbObjType.TABLE,
+                            DbObjType.VIEW, DbObjType.DOMAIN,
+                            DbObjType.TYPE, DbObjType.FUNCTION));
+            if (st != null) {
+                type = st.getStatementType();
+                if (st instanceof PgStatementWithSearchPath) {
+                    schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
+                }
+
+                if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
+                    container = st.getName();
+                    parentIsTable = type != DbObjType.VIEW;
+                }
+            }
+        } catch (IOException | InterruptedException | CoreException ex) {
+            Log.log(Log.LOG_ERROR, "Error while parsing selection", ex); //$NON-NLS-1$
         }
     }
 
@@ -195,17 +213,7 @@ public final class NewObjectPage extends WizardPage {
             getWizard().getContainer().updateButtons();
         });
 
-        String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
-        if (lastType != null) {
-            for (DbObjType type : allowedTypes) {
-                if (type.toString().equals(lastType)) {
-                    viewerType.setSelection(new StructuredSelection(type));
-                    return;
-                }
-            }
-        }
-
-        viewerType.setSelection(new StructuredSelection(DbObjType.SCHEMA));
+        viewerType.setSelection(new StructuredSelection(type));
     }
 
     private void createAdditionalFields(Composite area) {
@@ -287,7 +295,6 @@ public final class NewObjectPage extends WizardPage {
         }
         txtName.setText(path);
         txtName.setSelection(offset, path.length());
-        txtName.setFocus();
     }
 
     @Override
@@ -417,8 +424,13 @@ public final class NewObjectPage extends WizardPage {
                 objectName +="()"; //$NON-NLS-1$
             }
         }
-        StringBuilder sb = new StringBuilder("SET search_path = " + schema //$NON-NLS-1$
-                + ", pg_catalog;\n\nCREATE "+ type + ' ' + objectName); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("SET search_path = " + schema + ", pg_catalog;"); //$NON-NLS-1$ //$NON-NLS-2$
+        sb.append("\n\nCREATE "); //$NON-NLS-1$
+        if (type == DbObjType.FUNCTION) {
+            sb.append("OR REPLACE "); //$NON-NLS-1$
+        }
+        sb.append(type + " " + objectName); //$NON-NLS-1$
+
         switch (type) {
         case TYPE:
             sb.append(';');
@@ -427,7 +439,7 @@ public final class NewObjectPage extends WizardPage {
             sb.append(" AS datatype;"); //$NON-NLS-1$
             break;
         case FUNCTION:
-            sb.append(" RETURNS void\n\tLANGUAGE sql AS \n$$\n\t --function body \n$$;"); //$NON-NLS-1$
+            sb.append(" RETURNS void\n\tLANGUAGE sql\n\tAS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
             break;
         case TABLE:
             sb.append(" (\n);"); //$NON-NLS-1$

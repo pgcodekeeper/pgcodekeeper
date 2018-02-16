@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -682,7 +683,7 @@ public class MockDataPage extends WizardPage {
             IFile file = (IFile)source;
             PgTable table = null;
             try {
-                table = (PgTable) PgUIDumpLoader.parseStatement(file, DbObjType.TABLE);
+                table = (PgTable) PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }
