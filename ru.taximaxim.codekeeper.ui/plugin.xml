@@ -107,6 +107,12 @@
         </command>
         <command
               categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenObjectWizard"
+              id="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
+              name="%command.commandname.OpenObjectWizard">
+        </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
               defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ConvertProject"
               id="ru.taximaxim.codekeeper.ui.command.ConvertProject"
               name="%command.commandname.ConvertProject">
@@ -1149,6 +1155,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+Insert">
         </key>
     </extension>
     <extension

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -54,6 +55,8 @@ public final class NewObjectPage extends WizardPage {
     private static final String NAME = "name"; //$NON-NLS-1$
     private static final String SCHEMA = "schema"; //$NON-NLS-1$
     private static final String CONTAINER = "container"; //$NON-NLS-1$
+    private static final String DEFAULT_SCHEMA = "public"; //$NON-NLS-1$
+
     private static final String POSTFIX = ".sql"; //$NON-NLS-1$
     private static final String GROUP_DELIMITER =
             "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
@@ -67,9 +70,9 @@ public final class NewObjectPage extends WizardPage {
     private static final String INDEX_PATTERN = "CREATE INDEX {0} ON {1} USING btree (COLUMN_NAME);\n"; //$NON-NLS-1$
 
     private DbObjType type;
-    private String name;
-    private String schema;
-    private String container;
+    private String name = NAME;
+    private String schema = DEFAULT_SCHEMA;
+    private String container = CONTAINER;
     private String expectedFormat;
     private IProject currentProj;
     private boolean parentIsTable = true;
@@ -89,8 +92,7 @@ public final class NewObjectPage extends WizardPage {
             if (resource.getType() == IResource.FILE && PgUIDumpLoader.isInProject(resource)) {
                 parseFile(resource);
             } else if (resource.getType() == IResource.FOLDER) {
-                type = allowedTypes.stream().filter(e -> e.toString().equals(resource.getName()))
-                        .findFirst().orElse(null);
+                parseFolder(resource);
             }
             currentProj = resource.getProject();
         }
@@ -99,6 +101,19 @@ public final class NewObjectPage extends WizardPage {
             String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
             type = allowedTypes.stream().filter(e -> e.toString().equals(lastType))
                     .findFirst().orElse(DbObjType.SCHEMA);
+        }
+    }
+
+    private void parseFolder(IResource resource) {
+        type = allowedTypes.stream().filter(e -> e.toString().equals(resource.getName()))
+                .findFirst().orElse(null);
+        IContainer container = resource.getParent();
+        if (container != null) {
+            if (type != null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION) {
+                schema = container.getName();
+            } else if (DbObjType.SCHEMA.name().equals(container.getName())) {
+                schema = resource.getName();
+            }
         }
     }
 
@@ -130,12 +145,6 @@ public final class NewObjectPage extends WizardPage {
         area.setLayout(new GridLayout(2, false));
         area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        new Label(area, SWT.NONE).setText(Messages.PgObject_project_name);
-        viewerProject = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
-
-        new Label(area, SWT.NONE).setText(Messages.PgObject_object_type);
-        viewerType = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
-
         new Label(area, SWT.NONE).setText(Messages.PgObject_object_name);
         txtName = new Text(area, SWT.BORDER);
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -145,9 +154,16 @@ public final class NewObjectPage extends WizardPage {
         });
         txtName.setFocus();
 
+        new Label(area, SWT.NONE).setText(Messages.PgObject_object_type);
+        viewerType = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
+
         createAdditionalFields(area);
         // must paint first time
         showGroup(true);
+
+        new Label(area, SWT.NONE).setText(Messages.PgObject_project_name);
+        viewerProject = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
+
         fillProjects();
         fillTypes();
         setControl(area);
@@ -256,45 +272,32 @@ public final class NewObjectPage extends WizardPage {
 
     private void setDefaultName() {
         String path;
-        int offset = 0;
         switch (type) {
         case SCHEMA:
         case EXTENSION:
-            path = expectedFormat = NAME;
+            path = name;
+            expectedFormat = NAME;
             break;
         case DOMAIN:
         case FUNCTION:
         case TABLE:
         case VIEW:
         case TYPE:
-            if (schema == null) {
-                path = SCHEMA + '.' + NAME;
-            } else {
-                path = schema + '.' + NAME;
-                offset = schema.length() + 1;
-            }
+            path = schema + '.' + name;
             expectedFormat = SCHEMA + '.' + NAME;
             break;
         case TRIGGER:
         case RULE:
         case INDEX:
         case CONSTRAINT:
-            if (schema == null) {
-                path = SCHEMA + '.' + CONTAINER + '.' + NAME;
-            } else if (container == null) {
-                path = schema + '.' + CONTAINER + '.' + NAME;
-                offset = schema.length() + 1;
-            } else {
-                path = schema + '.' + container + '.' + NAME;
-                offset = schema.length() + container.length() + 2;
-            }
+            path = schema + '.' + container + '.' + name;
             expectedFormat = SCHEMA + '.' + CONTAINER + '.' + NAME;
             break;
         default:
             return;
         }
         txtName.setText(path);
-        txtName.setSelection(offset, path.length());
+        txtName.selectAll();
     }
 
     @Override
@@ -324,6 +327,16 @@ public final class NewObjectPage extends WizardPage {
                 } else if (isSubElement() == (third == null)) {
                     err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
                 }
+
+                if (err == null) {
+                    name = parser.getFirstName();
+                    if (isSubElement()) {
+                        container = parser.getSecondName();
+                        schema = parser.getThirdName();
+                    } else if (type != DbObjType.EXTENSION && type != DbObjType.SCHEMA) {
+                        schema = parser.getSecondName();
+                    }
+                }
             }
         }
         setErrorMessage(err);
@@ -342,15 +355,6 @@ public final class NewObjectPage extends WizardPage {
     }
 
     public boolean createFile() {
-        QNameParser parser = new QNameParser(txtName.getText());
-        name = parser.getFirstName();
-        if (isSubElement()) {
-            container = parser.getSecondName();
-            schema = parser.getThirdName();
-        } else if (type != DbObjType.EXTENSION || type != DbObjType.SCHEMA) {
-            schema = parser.getSecondName();
-        }
-
         try {
             mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.name());
             if (type == DbObjType.EXTENSION) {
