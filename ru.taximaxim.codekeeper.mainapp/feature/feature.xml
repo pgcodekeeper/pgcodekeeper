@@ -2,7 +2,7 @@
 <feature
       id="ru.taximaxim.codekeeper.feature"
       label="%feature.label"
-      version="4.2.0.qualifier"
+      version="4.2.3.qualifier"
       provider-name="%feature.provider-name"
       plugin="ru.taximaxim.codekeeper.mainapp">
 
@@ -34,6 +34,7 @@
       <import plugin="com.google.gson" version="2.2.0" match="compatible"/>
       <import plugin="org.apache.httpcomponents.httpcore" version="4.3.0" match="compatible"/>
       <import plugin="org.apache.httpcomponents.httpclient" version="4.3.0" match="compatible"/>
+      <import plugin="org.eclipse.jgit" version="4.6.0" match="compatible"/>
    </requires>
 
    <plugin

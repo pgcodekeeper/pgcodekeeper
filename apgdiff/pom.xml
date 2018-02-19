@@ -14,11 +14,11 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>apgdiff</artifactId>
-    <version>4.7.0-SNAPSHOT</version>
+    <version>4.7.2-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
     <properties>
-        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Ignore*.java</sonar.exclusions>
+        <sonar.exclusions>**/cz/startnet/utils/pgdiff/parsers/antlr/SQL*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Ignore*.java, **/cz/startnet/utils/pgdiff/parsers/antlr/Privileges*.java</sonar.exclusions>
     </properties>
 
     <build>

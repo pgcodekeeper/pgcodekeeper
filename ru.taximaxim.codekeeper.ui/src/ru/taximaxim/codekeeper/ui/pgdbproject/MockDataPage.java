@@ -4,19 +4,17 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -30,16 +28,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.generators.IntegerPgData;
@@ -58,12 +59,20 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
  */
 public class MockDataPage extends WizardPage {
 
+    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
+
     private final List<PgData<?>> columns = new ArrayList<>();
     private int rowCount = 20;
     private String parsedTableName;
     private String parsedSchemaName;
 
+    private final DataModifier startDataModifier = new DataModifier(PgData::setStartFromString);
+    private final DataModifier endDataModifier = new DataModifier(PgData::setEndFromString);
+    private final DataModifier stepDataModifier = new DataModifier(PgData::setStepFromString);
+    private final DataModifier lengthDataModifier = new DataModifier((c,s) -> c.setLength(Integer.parseUnsignedInt(s)));
+
     private Text txtTableName;
+    private Button btnCast;
     private ComboViewer cmbType;
     private ComboViewer cmbGeneration;
     private Button btnIsUnique;
@@ -73,7 +82,13 @@ public class MockDataPage extends WizardPage {
     private Text txtEnd;
     private Text txtStep;
     private Text txtLength;
+    private Text txtAny;
     private Text txtRowCount;
+    private Label lblStart;
+    private Label lblEnd;
+    private Label lblStep;
+    private Label lblLength;
+    private Label lblAny;
 
     private TableViewer viewer;
     private boolean inViewerSelection;
@@ -103,6 +118,7 @@ public class MockDataPage extends WizardPage {
         }
 
         try {
+            mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             String name = FileUtils.FILE_DATE.format(LocalDateTime.now()) + " data for " + txtTableName.getText() ; //$NON-NLS-1$
             name = FileUtils.sanitizeFilename(name);
             FileUtilsUi.saveOpenTmpSqlEditor(generateInsert(), name);
@@ -133,6 +149,10 @@ public class MockDataPage extends WizardPage {
             }
         }
 
+        if (err == null && columns.isEmpty()) {
+            err = Messages.MockDataPage_empty_columns;
+        }
+
         if (err == null) {
             for (PgData<?> c : columns) {
                 try {
@@ -159,11 +179,35 @@ public class MockDataPage extends WizardPage {
     }
 
     /**
+     * Checks all PgData fields for column and disable viewer if found error
+     */
+    public void checkAllFields() {
+        String err = null;
+        if (txtStart.isEnabled()) {
+            err = startDataModifier.error;
+        }
+        if (err == null && txtEnd.isEnabled()) {
+            err = endDataModifier.error;
+        }
+        if (err == null && txtStep.isEnabled()) {
+            err = stepDataModifier.error;
+        }
+        if (err == null && txtLength.isEnabled()) {
+            err = lengthDataModifier.error;
+        }
+        setErrorMessage(err);
+        viewer.getControl().setEnabled(err == null);
+        getContainer().updateButtons();
+    }
+
+    /**
      * Generates insert query from columns list
      *
      * @see PgData #generateValue()
      */
     private String generateInsert() {
+        boolean isNeedCast = btnCast.getSelection();
+
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO "); //$NON-NLS-1$
         sb.append(txtTableName.getText());
@@ -175,17 +219,20 @@ public class MockDataPage extends WizardPage {
         });
 
         sb.setLength(sb.length() - 2);
-        sb.append(") VALUES \n\t"); //$NON-NLS-1$
+        sb.append(") VALUES\n  "); //$NON-NLS-1$
 
         columns.forEach(PgData::reset);
         for (int i = 0; i < rowCount; i++) {
             sb.append('(');
             columns.forEach(v -> {
                 sb.append(v.generateAsString());
+                if (isNeedCast) {
+                    sb.append("::" + v.getAlias()); //$NON-NLS-1$
+                }
                 sb.append(", "); //$NON-NLS-1$
             });
             sb.setLength(sb.length() - 2);
-            sb.append("), \n\t"); //$NON-NLS-1$
+            sb.append("),\n  "); //$NON-NLS-1$
         }
         sb.setLength(sb.length() - 4);
         sb.append(';');
@@ -213,7 +260,7 @@ public class MockDataPage extends WizardPage {
         txtRowCount.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
         txtRowCount.setText("20"); //$NON-NLS-1$
 
-        viewer = new TableViewer(container, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+        viewer = new TableViewer(container, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER | SWT.MULTI);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 2);
         viewer.getTable().setLayoutData(gd);
@@ -222,6 +269,7 @@ public class MockDataPage extends WizardPage {
 
         addColumns(viewer);
         viewer.setInput(columns);
+        viewer.getTable().setFocus();
 
         final Button btnAdd = new Button(container, SWT.NONE);
         btnAdd.setText(Messages.MockDataPage_add_column);
@@ -234,6 +282,7 @@ public class MockDataPage extends WizardPage {
                 columns.add(c);
                 viewer.refresh();
                 viewer.setSelection(new StructuredSelection(c));
+                viewer.getTable().setFocus();
             }
         });
 
@@ -243,16 +292,21 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                if (!sel.isEmpty() && columns.size() != 1) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
-                    int index = columns.indexOf(c);
-                    columns.remove(c);
-                    if (index == columns.size()) {
-                        index--;
+                Object [] sel = ((IStructuredSelection) viewer.getSelection()).toArray();
+                if (sel.length > 0 && columns.size() >  sel.length) {
+                    int index = 0;
+                    for (Object row : sel) {
+                        PgData<?> c = (PgData<?>) row;
+                        index = columns.indexOf(c);
+                        columns.remove(c);
+                        if (index == columns.size()) {
+                            index--;
+                        }
                     }
+
                     viewer.setSelection(new StructuredSelection(columns.get(index)));
                     viewer.refresh();
+                    viewer.getTable().setFocus();
                 }
             }
         });
@@ -270,6 +324,7 @@ public class MockDataPage extends WizardPage {
                     Collections.swap(columns, index, index - 1);
                     viewer.setSelection(new StructuredSelection(c));
                     viewer.refresh();
+                    viewer.getTable().setFocus();
                 }
             }
         });
@@ -287,38 +342,50 @@ public class MockDataPage extends WizardPage {
                     Collections.swap(columns, index, index + 1);
                     viewer.setSelection(new StructuredSelection(c));
                     viewer.refresh();
+                    viewer.getTable().setFocus();
                 }
             }
         });
 
-        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        btnCast = new Button(container, SWT.CHECK);
+        btnCast.setText(Messages.MockDataPage_explicit_type_cast);
+        btnCast.setSelection(mainPrefs.getBoolean(PREF.EXPLICIT_TYPE_CAST));
+        btnCast.addSelectionListener(new SelectionAdapter() {
 
             @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                inViewerSelection = true;
-
-                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-                boolean empty = sel.isEmpty();
-                if (!empty) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
-                    showColumnInfo(c);
-                    updateFields(c);
-                    if (columns.size() == 1) {
-                        btnUp.setEnabled(false);
-                        btnDown.setEnabled(false);
-                    } else {
-                        int index = columns.indexOf(c);
-                        btnUp.setEnabled(index != 0);
-                        btnDown.setEnabled(index != columns.size() - 1);
-                    }
-                }
-                btnDelete.setEnabled(!empty);
-
-                inViewerSelection = false;
+            public void widgetSelected(SelectionEvent e) {
+                mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             }
         });
 
-        viewer.setSelection(new StructuredSelection(columns.get(0)));
+        viewer.addSelectionChangedListener(e -> {
+            inViewerSelection = true;
+            IStructuredSelection sel = (IStructuredSelection) e.getSelection();
+            boolean isSingle = sel.size() == 1;
+            columnInfo.setEnabled(isSingle);
+            if (isSingle) {
+                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                showColumnInfo(c);
+                updateFields(c);
+                if (columns.size() == 1) {
+                    btnUp.setEnabled(false);
+                    btnDown.setEnabled(false);
+                } else {
+                    int index = columns.indexOf(c);
+                    btnUp.setEnabled(index != 0);
+                    btnDown.setEnabled(index != columns.size() - 1);
+                }
+            } else {
+                btnUp.setEnabled(false);
+                btnDown.setEnabled(false);
+            }
+            btnDelete.setEnabled(!sel.isEmpty() && sel.size() != columns.size());
+            inViewerSelection = false;
+        });
+
+        if (!columns.isEmpty()) {
+            viewer.setSelection(new StructuredSelection(columns.get(0)));
+        }
         setControl(container);
     }
 
@@ -356,25 +423,22 @@ public class MockDataPage extends WizardPage {
         cmbType.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbType.setContentProvider(ArrayContentProvider.getInstance());
         cmbType.setInput(PgDataType.values());
-        cmbType.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                // not a user selection action
-                if (inViewerSelection) {
-                    return;
-                }
-                IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                if (!sel.isEmpty()) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
-                    PgDataType type = (PgDataType) ((IStructuredSelection)event.getSelection()).getFirstElement();
-                    PgData<?> cType = type.makeData(null);
-                    cType.copyFrom(c);
-                    columns.set(columns.indexOf(c), cType);
-                    updateFields(cType);
-                    viewer.refresh();
-                    viewer.setSelection(new StructuredSelection(cType));
-                }
+        cmbType.addSelectionChangedListener(e -> {
+            // not a user selection action
+            if (inViewerSelection) {
+                return;
+            }
+            IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+            if (!sel.isEmpty()) {
+                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                PgDataType type = (PgDataType) ((IStructuredSelection)e.getSelection()).getFirstElement();
+                PgData<?> cType = type.makeData(null);
+                cType.copyFrom(c);
+                columns.set(columns.indexOf(c), cType);
+                updateFields(cType);
+                viewer.refresh();
+                checkAllFields();
+                viewer.setSelection(new StructuredSelection(cType));
             }
         });
 
@@ -384,22 +448,19 @@ public class MockDataPage extends WizardPage {
         cmbGeneration.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbGeneration.setContentProvider(ArrayContentProvider.getInstance());
         cmbGeneration.setInput(PgDataGenerator.values());
-        cmbGeneration.addSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                // not a user selection action
-                if (inViewerSelection) {
-                    return;
-                }
-                IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                if (!sel.isEmpty()) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
-                    PgDataGenerator gen = (PgDataGenerator) ((IStructuredSelection) event.getSelection()).getFirstElement();
-                    c.setGenerator(gen);
-                    updateFields(c);
-                    viewer.refresh();
-                }
+        cmbGeneration.addSelectionChangedListener(e -> {
+            // not a user selection action
+            if (inViewerSelection) {
+                return;
+            }
+            IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
+            if (!sel.isEmpty()) {
+                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                PgDataGenerator gen = (PgDataGenerator) ((IStructuredSelection) e.getSelection()).getFirstElement();
+                c.setGenerator(gen);
+                updateFields(c);
+                checkAllFields();
+                viewer.refresh();
             }
         });
 
@@ -433,29 +494,40 @@ public class MockDataPage extends WizardPage {
             }
         });
 
-        new Label(composite, SWT.NONE).setText(Messages.MockDataPage_range_start);
+        lblStart = new Label(composite, SWT.NONE);
+        lblStart.setText(Messages.MockDataPage_range_start);
 
         txtStart = new Text(composite, SWT.BORDER);
         txtStart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtStart.addModifyListener(new DataModifier(PgData::setStartFromString));
+        txtStart.addModifyListener(startDataModifier);
 
-        new Label(composite, SWT.NONE).setText(Messages.MockDataPage_range_end);
+        lblEnd = new Label(composite, SWT.NONE);
+        lblEnd.setText(Messages.MockDataPage_range_end);
 
         txtEnd = new Text(composite, SWT.BORDER);
         txtEnd.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtEnd.addModifyListener(new DataModifier(PgData::setEndFromString));
+        txtEnd.addModifyListener(endDataModifier);
 
-        new Label(composite, SWT.NONE).setText(Messages.MockDataPage_step);
+        lblStep = new Label(composite, SWT.NONE);
+        lblStep.setText(Messages.MockDataPage_step);
 
         txtStep = new Text(composite, SWT.BORDER);
         txtStep.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtStep.addModifyListener(new DataModifier(PgData::setStepFromString));
+        txtStep.addModifyListener(stepDataModifier);
 
-        new Label(composite, SWT.NONE).setText(Messages.MockDataPage_length);
+        lblLength = new Label(composite, SWT.NONE);
+        lblLength.setText(Messages.MockDataPage_length);
 
         txtLength = new Text(composite, SWT.BORDER);
         txtLength.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtLength.addModifyListener(new DataModifier((c,s) -> c.setLength(Integer.parseUnsignedInt(s))));
+        txtLength.addModifyListener(lengthDataModifier);
+
+        lblAny = new Label(composite, SWT.NONE);
+        lblAny.setText(Messages.MockDataPage_any_value);
+
+        txtAny = new Text(composite, SWT.BORDER);
+        txtAny.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtAny.addModifyListener(new DataModifier(PgData::setAny));
 
         return composite;
     }
@@ -472,14 +544,27 @@ public class MockDataPage extends WizardPage {
         txtEnd.setText(c.getEndAsString());
         txtStep.setText(c.getStepAsString());
         txtLength.setText(Integer.toString(c.getLength()));
+        txtAny.setText(c.getAny());
         btnIsUnique.setSelection(c.isUnique());
         btnIsNotNull.setSelection(c.isNotNull());
         cmbGeneration.setInput(c.getType().getGenerators());
         cmbGeneration.setSelection(new StructuredSelection(c.getGenerator()));
     }
 
+    private void hideWidget(Control first, Control second) {
+        boolean isShow = first.getEnabled();
+        GridData data = (GridData)first.getLayoutData();
+        data.exclude = !isShow;
+        first.setVisible(isShow);
+        data = (GridData)second.getLayoutData();
+        if (data != null) {
+            data.exclude = !isShow;
+        }
+        second.setVisible(isShow);
+    }
+
     /**
-     * Enable and disable fields when changing the generator and type
+     * Enable and disable fields, hide disabled fields when changing the generator and type
      *
      * @param c Selected column wrapper
      */
@@ -488,17 +573,27 @@ public class MockDataPage extends WizardPage {
         PgDataGenerator gen = c.getGenerator();
         boolean hasLength = type == PgDataType.TEXT
                 || type == PgDataType.JSON
-                || type == PgDataType.CHARACTER
                 || type == PgDataType.BIT;
 
-        txtStart.setEnabled(type != PgDataType.BOOLEAN && !hasLength
-                || gen != PgDataGenerator.RANDOM );
+        txtStart.setEnabled((type != PgDataType.BOOLEAN && !hasLength
+                || gen != PgDataGenerator.RANDOM) && gen != PgDataGenerator.ANY);
         txtEnd.setEnabled(type != PgDataType.BOOLEAN
-                && gen == PgDataGenerator.RANDOM && !hasLength);
+                && gen == PgDataGenerator.RANDOM && !hasLength
+                && gen != PgDataGenerator.ANY);
         txtStep.setEnabled(gen == PgDataGenerator.INCREMENT);
         txtLength.setEnabled(gen == PgDataGenerator.RANDOM && hasLength);
+        txtAny.setEnabled(gen == PgDataGenerator.ANY);
         btnIsUnique.setEnabled(gen == PgDataGenerator.RANDOM);
         btnIsNotNull.setEnabled(gen == PgDataGenerator.RANDOM);
+
+        hideWidget(txtStart, lblStart);
+        hideWidget(txtEnd, lblEnd);
+        hideWidget(txtStep, lblStep);
+        hideWidget(txtLength, lblLength);
+        hideWidget(txtAny, lblAny);
+        hideWidget(btnIsUnique, btnIsNotNull);
+
+        txtColumnName.getParent().layout();
     }
 
     /**
@@ -528,14 +623,7 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public String getText(Object element) {
-                PgData<?> c = (PgData<?>) element;
-                PgDataType type = c.getType();
-                switch (type) {
-                case OTHER:
-                    return type.name();
-                default:
-                    return type.getType();
-                }
+                return ((PgData<?>) element).getAlias();
             }
         });
 
@@ -568,25 +656,27 @@ public class MockDataPage extends WizardPage {
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
-        if (source instanceof IFile && "TABLE".equals(((IFile) source).getParent().getName())) { //$NON-NLS-1$
+        if (source instanceof IFile && PgUIDumpLoader.isInProject((IFile)source)) {
             IFile file = (IFile)source;
-            parsedTableName = file.getName().replaceAll(".sql", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            parsedSchemaName = file.getParent().getParent().getName();
+            PgTable table = null;
             try {
-                PgDatabase db = PgUIDumpLoader.buildFiles(Arrays.asList(file), null, null);
-                PgTable table = db.getSchema(parsedSchemaName).getTable(parsedTableName);
-
+                table = (PgTable) PgUIDumpLoader.parseStatement(file, DbObjType.TABLE);
+            } catch (InterruptedException | IOException | CoreException e) {
+                Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
+            }
+            if (table != null) {
+                parsedTableName = table.getName();
+                parsedSchemaName = table.getContainingSchema().getName();
                 table.getColumns().forEach(this::parseColumns);
                 table.getConstraints().forEach(this::parseConstraints);
                 return;
-            } catch (IOException | InterruptedException | CoreException ex) {
-                Log.log(Log.LOG_ERROR, "Error while parsing table: " + parsedTableName, ex); //$NON-NLS-1$
             }
         }
         // in case no file or exception
         PgData<?> c = new IntegerPgData(PgDataType.INTEGER);
         c.setName("id"); //$NON-NLS-1$
         columns.add(c);
+
     }
 
     /**
@@ -608,15 +698,23 @@ public class MockDataPage extends WizardPage {
      * @param column Table column
      */
     private void parseColumns(PgColumn column) {
+        String type = column.getType();
         PgData<?> c = PgDataType.dataForType(column.getType());
         c.setNotNull(!column.getNullValue());
         c.setName(column.getName());
+        c.setAlias(type);
         columns.add(c);
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return getErrorMessage() == null;
     }
 
     private class DataModifier implements ModifyListener {
 
         private final BiConsumer<PgData<?>, String> setter;
+        private String error;
 
         public DataModifier(BiConsumer<PgData<?>, String> setter) {
             this.setter = setter;
@@ -630,10 +728,12 @@ public class MockDataPage extends WizardPage {
                 try {
                     String text = ((Text) e.widget).getText();
                     setter.accept(c, text);
-                    setErrorMessage(null);
+                    error = null;
                 } catch (Exception ex) {
-                    setErrorMessage(Messages.MockDataPage_invalid_value + ex.getLocalizedMessage());
+                    error = Messages.MockDataPage_invalid_value + ex.getLocalizedMessage();
+                    setErrorMessage(error);
                 }
+                checkAllFields();
             }
         }
     }
