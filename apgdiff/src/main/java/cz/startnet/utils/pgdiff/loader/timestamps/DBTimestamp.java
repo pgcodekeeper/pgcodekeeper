@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,16 +37,20 @@ public class DBTimestamp implements Serializable {
 
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
-    private final List<ObjectTimestamp> objects = new ArrayList<>();
+    private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
 
     private transient DBTimestamp dbTime;
 
-    public List<ObjectTimestamp> getObjects() {
-        return objects;
-    }
+    public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
+        ObjectTimestamp obj = objects.get(column);
+        if (obj != null) {
+            Instant time = obj.getTime();
+            if (time.isAfter(lastModified)) {
+                return;
+            }
+        }
 
-    public void addObject(ObjectTimestamp obj) {
-        objects.add(obj);
+        objects.put(column, new ObjectTimestamp(column, objId, lastModified, author));
     }
 
     /**
@@ -65,8 +70,12 @@ public class DBTimestamp implements Serializable {
      * @see DBTimestamp
      */
     public static void updateObjects(PgDatabase db, Path path) {
+        if (true) {
+            return;
+        }
+
         DBTimestamp timestamp = getDBTimestamp(path);
-        if (timestamp.getObjects().isEmpty()) {
+        if (timestamp.objects.isEmpty()) {
             return;
         }
 
@@ -123,10 +132,11 @@ public class DBTimestamp implements Serializable {
                     PgDiffUtils.sha(s.getRawStatement()));
         }
 
-        for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
+        for (Iterator<ObjectTimestamp> iterator = timestamp.objects.values().iterator();
+                iterator.hasNext();) {
             ObjectTimestamp obj = iterator.next();
             GenericColumn name = obj.getObject();
-            if (!statements.containsKey(name) || !(Arrays.equals(statements.get(name), obj.getHash()))) {
+            if (!(Arrays.equals(statements.get(name), obj.getHash()))) {
                 iterator.remove();
             }
         }
@@ -153,44 +163,9 @@ public class DBTimestamp implements Serializable {
         return db;
     }
 
-    public DBTimestamp getRemoteDb() {
-        return dbTime;
-    }
-
-    public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
-        this.dbTime = dbTime;
-        List<ObjectTimestamp> equalsObjects = new ArrayList<>();
-
-        for (ObjectTimestamp pObj : this.getObjects()) {
-            GenericColumn gc = pObj.getObject();
-            ObjectTimestamp rObj = getObject(gc, dbTime.getObjects());
-            if (rObj != null) {
-                equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
-                        rObj.getObjId(), rObj.getTime(), rObj.getAuthor()));
-            }
-        }
-
-        return equalsObjects;
-    }
-
     public String getStatementAuthor(PgStatement st) {
-        ObjectTimestamp obj = getObject(createGC(st), getObjects());
-        if (obj != null) {
-            return obj.getAuthor();
-        }
-
-        return null;
-    }
-
-    private static ObjectTimestamp getObject(GenericColumn gc, List<ObjectTimestamp> list) {
-        if (gc != null) {
-            for (ObjectTimestamp obj : list) {
-                if (obj.getObject().equals(gc)) {
-                    return obj;
-                }
-            }
-        }
-        return null;
+        ObjectTimestamp obj = objects.get(createGC(st));
+        return obj != null ? obj.getAuthor() : null;
     }
 
     private static GenericColumn createGC(PgStatement st) {
@@ -225,6 +200,32 @@ public class DBTimestamp implements Serializable {
         return gc;
     }
 
+    public DBTimestamp getRemoteDb() {
+        return dbTime;
+    }
+
+    public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
+        this.dbTime = dbTime;
+        if (true) {
+            return new ArrayList<>();
+        }
+
+        List<ObjectTimestamp> equalsObjects = new ArrayList<>();
+
+        for (ObjectTimestamp pObj : objects.values()) {
+            GenericColumn gc = pObj.getObject();
+            for (ObjectTimestamp rObj : dbTime.objects.values()) {
+                // author?
+                if (rObj.equals(pObj) && rObj.getTime().equals(pObj.getTime())) {
+                    equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
+                            rObj.getObjId(), rObj.getTime(), rObj.getAuthor()));
+                    break;
+                }
+            }
+        }
+
+        return equalsObjects;
+    }
 
     /**
      * Rewrites timestamp objects
@@ -240,9 +241,10 @@ public class DBTimestamp implements Serializable {
             }
 
             GenericColumn gc = createGC(st);
-            ObjectTimestamp obj = getObject(gc, dbTime.getObjects());
+            ObjectTimestamp obj = objects.get(gc);;
             if (obj != null) {
-                objects.add(new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime(), obj.getAuthor()));
+                objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
+                        obj.getTime(), obj.getAuthor()));
             }
         }
     }

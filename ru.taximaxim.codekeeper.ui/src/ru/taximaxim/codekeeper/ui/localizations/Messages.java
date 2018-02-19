@@ -530,6 +530,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_action_update;
 
+    public static String ProjectEditorPrefPage_show_db_user;
+
     public static String ProjectEditorPrefPage_show_git_user;
 
     public static String dbUpdatePrefPage_script_deleting_status;

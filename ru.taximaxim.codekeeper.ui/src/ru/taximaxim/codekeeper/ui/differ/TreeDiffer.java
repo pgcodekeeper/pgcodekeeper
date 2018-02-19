@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -102,16 +103,18 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
         if (remote instanceof DbInfo) {
             DbInfo dbInfo = (DbInfo) remote;
             name = dbInfo.getName();
-            try {
-                path = FileUtilsUi.getPathToTimeObject(proj.getProjectName(),
-                        name, PgDiffUtils.shaString(dbInfo.toString()));
-            } catch (URISyntaxException e) {
-                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e);
-            }
+            if (mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
+                try {
+                    path = FileUtilsUi.getPathToTimeObject(proj.getProjectName(),
+                            name, PgDiffUtils.shaString(dbInfo.toString()));
+                } catch (URISyntaxException e) {
+                    Log.log(Log.LOG_ERROR, "Error reading project timestamps", e);
+                }
 
-            schema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
-                    dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
-                    dbInfo.getDbName(), timezone);
+                schema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
+                        dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
+                        dbInfo.getDbName(), timezone);
+            }
             if (schema == null) {
                 dbTarget = DbSource.fromDbInfo(dbInfo, mainPrefs, forceUnixNewlines,
                         charset, timezone);

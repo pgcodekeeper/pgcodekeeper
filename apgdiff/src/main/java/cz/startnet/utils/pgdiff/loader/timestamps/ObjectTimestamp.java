@@ -68,7 +68,6 @@ public class ObjectTimestamp implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((object == null) ? 0 : object.hashCode());
-        result = prime * result + ((time == null) ? 0 : time.hashCode());
         return result;
     }
 
@@ -81,9 +80,7 @@ public class ObjectTimestamp implements Serializable {
             eq = true;
         } else if (obj instanceof ObjectTimestamp) {
             ObjectTimestamp t = (ObjectTimestamp) obj;
-            eq = Objects.equals(object, t.object)
-                    && Objects.equals(time, t.time)
-                    && Objects.equals(author, t.author);
+            eq = Objects.equals(object, t.object);
         }
 
         return eq;
