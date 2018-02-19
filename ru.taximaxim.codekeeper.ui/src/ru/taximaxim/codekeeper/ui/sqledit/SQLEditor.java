@@ -15,6 +15,7 @@ import java.util.ListIterator;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -46,6 +47,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
@@ -89,6 +91,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.handlers.AddBuilder;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -253,6 +256,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         super.init(site, input);
 
+        checkBuilder();
+
         try {
             parser = initParser();
         } catch (PartInitException ex) {
@@ -271,6 +276,19 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         partListener = new SqlEditorPartListener();
         getSite().getPage().addPartListener(partListener);
+    }
+
+    private void checkBuilder() {
+        IProject proj = ResourceUtil.getResource(getEditorInput()).getProject();
+
+        if (!AddBuilder.hasBuilder(proj)) {
+            MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            mb.setText(Messages.SqlEditor_absent_builder_title);
+            mb.setMessage(Messages.SqlEditor_absent_builder_message);
+            if (mb.open() == SWT.YES) {
+                AddBuilder.addBuilder(proj);
+            }
+        }
     }
 
     private PgDbParser initParser() throws InterruptedException, IOException, CoreException {
