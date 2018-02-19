@@ -479,7 +479,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             name = file.getName();
         }
 
-        setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
+        String title = getEditorInput().getName() + " - " + name; //$NON-NLS-1$
+        ((ProjectEditorInput)getEditorInput()).setToolTipText(title);
+        setPartName(title);
 
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
