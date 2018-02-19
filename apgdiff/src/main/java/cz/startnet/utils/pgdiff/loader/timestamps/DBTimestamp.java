@@ -232,7 +232,10 @@ public class DBTimestamp implements Serializable {
      *
      * @param statements - statements list
      */
-    public void rewrite(List<PgStatement> statements) {
+    public void rewrite(List<PgStatement> statements, Path path) {
+        if (true) {
+            return;
+        }
         objects.clear();
         for (PgStatement st : statements) {
             StringBuilder hash = new StringBuilder(st.getRawStatement());
@@ -241,11 +244,13 @@ public class DBTimestamp implements Serializable {
             }
 
             GenericColumn gc = createGC(st);
-            ObjectTimestamp obj = objects.get(gc);;
+            ObjectTimestamp obj = objects.get(gc);
             if (obj != null) {
                 objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
                         obj.getTime(), obj.getAuthor()));
             }
         }
+
+        ApgdiffUtils.serialize(path, this);
     }
 }
