@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,17 +37,22 @@ public class DBTimestamp implements Serializable {
 
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
-    private final List<ObjectTimestamp> objects = new ArrayList<>();
+    private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
 
     private transient DBTimestamp dbTime;
 
-    public List<ObjectTimestamp> getObjects() {
-        return objects;
+    public void addObject(GenericColumn column, long objId, Instant lastModified) {
+        ObjectTimestamp obj = objects.get(column);
+        if (obj != null) {
+            Instant time = obj.getTime();
+            if (time.isAfter(lastModified)) {
+                return;
+            }
+        }
+
+        objects.put(column, new ObjectTimestamp(column, objId, lastModified));
     }
 
-    public void addObject(ObjectTimestamp obj) {
-        objects.add(obj);
-    }
 
     /**
      * Compares each object hash from given database with serialized
@@ -65,8 +71,12 @@ public class DBTimestamp implements Serializable {
      * @see DBTimestamp
      */
     public static void updateObjects(PgDatabase db, Path path) {
+        if (true) {
+            return;
+        }
+
         DBTimestamp timestamp = getDBTimestamp(path);
-        if (timestamp.getObjects().isEmpty()) {
+        if (timestamp.objects.isEmpty()) {
             return;
         }
 
@@ -123,10 +133,11 @@ public class DBTimestamp implements Serializable {
                     PgDiffUtils.sha(s.getRawStatement()));
         }
 
-        for (Iterator<ObjectTimestamp> iterator = timestamp.objects.iterator(); iterator.hasNext(); ) {
+        for (Iterator<ObjectTimestamp> iterator = timestamp.objects.values().iterator();
+                iterator.hasNext();) {
             ObjectTimestamp obj = iterator.next();
             GenericColumn name = obj.getObject();
-            if (!statements.containsKey(name) || !(Arrays.equals(statements.get(name), obj.getHash()))) {
+            if (!(Arrays.equals(statements.get(name), obj.getHash()))) {
                 iterator.remove();
             }
         }
@@ -155,12 +166,16 @@ public class DBTimestamp implements Serializable {
 
     public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
         this.dbTime = dbTime;
+        if (true) {
+            return new ArrayList<>();
+        }
+
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
-        for (ObjectTimestamp pObj : this.getObjects()) {
+        for (ObjectTimestamp pObj : objects.values()) {
             GenericColumn gc = pObj.getObject();
-            for (ObjectTimestamp rObj : dbTime.getObjects()) {
-                if (rObj.equals(pObj)) {
+            for (ObjectTimestamp rObj : dbTime.objects.values()) {
+                if (rObj.equals(pObj) && rObj.getTime().equals(pObj.getTime())) {
                     equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
                             rObj.getObjId(), rObj.getTime()));
                     break;
@@ -179,8 +194,11 @@ public class DBTimestamp implements Serializable {
      * @param path - serialized object path
      */
     public static void rewrite(List<PgStatement> statements, Path path) {
+        if (true) {
+            return;
+        }
         DBTimestamp timestamp = getDBTimestamp(path);
-        List<ObjectTimestamp> objects = timestamp.objects;
+        Map<GenericColumn, ObjectTimestamp> objects = timestamp.objects;
         objects.clear();
         for (PgStatement st : statements) {
             DbObjType type = st.getStatementType();
@@ -217,9 +235,9 @@ public class DBTimestamp implements Serializable {
                 ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
             }
 
-            for (ObjectTimestamp obj : timestamp.dbTime.getObjects()) {
+            for (ObjectTimestamp obj : timestamp.dbTime.objects.values()) {
                 if (obj.getObject().equals(gc)) {
-                    objects.add(new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime()));
+                    objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()), obj.getTime()));
                     break;
                 }
             }

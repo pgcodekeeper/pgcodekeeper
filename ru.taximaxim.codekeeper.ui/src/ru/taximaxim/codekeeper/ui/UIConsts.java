@@ -96,6 +96,7 @@ public interface UIConsts {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
         String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
         String SHOW_GIT_USER = "showGitUser"; //$NON-NLS-1$
+        String SHOW_DB_USER = "showDbUser"; //$NON-NLS-1$
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
