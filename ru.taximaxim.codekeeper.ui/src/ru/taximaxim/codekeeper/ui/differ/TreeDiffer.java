@@ -74,36 +74,26 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
      */
     public static TreeDiffer getTree(DbSource dbProj, DbInfo dbInfo, String charset,
             boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
+        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
+            try {
+                Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
+                        dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));
 
-        String name;
-        DbSource dbTarget = null;
-        String extSchema = null;
-        Path timePath = null;
-        if (dbInfo instanceof DbInfo) {
-            name = dbInfo.getName();
-            if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
-                try {
-                    timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
-                            name, PgDiffUtils.shaString(dbInfo.toString()));
-                } catch (URISyntaxException e) {
-                    Log.log(Log.LOG_ERROR, "Error reading project timestamps", e);
-                }
-
-                extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
+                String extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
                         dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
                         dbInfo.getDbName(), timezone);
-            }
 
-            if (extSchema == null) {
-                dbTarget = DbSource.fromDbInfo(dbInfo, prefs, forceUnixNewlines,
-                        charset, timezone);
+                if (extSchema != null) {
+                    return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
+                            timezone, forceUnixNewlines, timePath);
+                }
+            } catch (URISyntaxException e) {
+                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e);
             }
         }
 
-        if (extSchema != null) {
-            return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
-                    timezone, forceUnixNewlines, timePath);
-        }
+        DbSource dbTarget = DbSource.fromDbInfo(dbInfo, prefs, forceUnixNewlines,
+                charset, timezone);
 
         return new ClassicTreeDiffer(dbProj, dbTarget, false);
     }

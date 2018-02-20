@@ -70,14 +70,12 @@ public class TimestampTreeDiffer extends TreeDiffer {
             DBTimestamp projTimestamps = DBTimestamp.getDBTimestamp(path);
 
             synchronized (projTimestamps) {
-                pm.newChild(30); // 30
-                PgDatabase dbSrc = dbSource.get(pm);
+                PgDatabase dbSrc = dbSource.get(pm.newChild(30)); // 30
                 projTimestamps.updateObjects(dbSrc);
                 dbSrc.setDbTimestamp(projTimestamps);
 
-                pm.newChild(50); // 80
                 dbTarget = DbSource.fromDbTimestamp(dbInfo, forceUnixNewlines, charset, timezone, dbSrc, extSchema);
-                PgDatabase dbTgt = dbTarget.get(pm);
+                PgDatabase dbTgt = dbTarget.get(pm.newChild(50)); //80
 
                 Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
                 + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$

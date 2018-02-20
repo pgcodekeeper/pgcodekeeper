@@ -767,9 +767,9 @@ public class DiffTableViewer extends Composite {
         if (dbRemote != null) {
             DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
             if (dbTime != null) {
-                showDbUser = true;
                 readDbUsers(dbTime);
             }
+            showDbUser = dbTime != null;
         }
 
         viewer.setInput(elements);
