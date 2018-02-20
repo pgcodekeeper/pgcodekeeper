@@ -418,6 +418,10 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_project_normalized_success;
 
+    public static String SqlEditor_absent_builder_message;
+
+    public static String SqlEditor_absent_builder_title;
+
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
