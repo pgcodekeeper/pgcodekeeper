@@ -165,7 +165,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 listPgObjectsFragment, dbRemote.getDbObject(), dbProject.getDbObject());
 
         if (checked.isEmpty()) {
-            // no diff
+            Log.log(Log.LOG_INFO, "No object changes found when comparing to DB"); //$NON-NLS-1$
             return;
         }
 
