@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -319,16 +318,14 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         private List<ObjectTimestamp> timestampObjects;
         private PgDatabase projDB;
         private String extensionSchema;
-        private Path path;
 
-        public void setTimeParams(PgDatabase projDB, Path path, String extensionSchema) {
+        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
             this.projDB = projDB;
-            this.path = path;
             this.extensionSchema = extensionSchema;
         }
 
         public void fillObjects(DBTimestamp dbTime) {
-            timestampObjects = DBTimestamp.getDBTimestamp(path).searchEqualsObjects(dbTime);
+            timestampObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
 }

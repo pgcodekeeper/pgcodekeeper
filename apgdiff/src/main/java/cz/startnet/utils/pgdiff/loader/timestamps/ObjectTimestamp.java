@@ -15,15 +15,15 @@ public class ObjectTimestamp implements Serializable {
 
     private final GenericColumn object;
     private final byte[] hash;
-    private final long objId;
     private final Instant time;
-    private final String author;
+    private final transient long objId;
+    private final transient String author;
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime, String author) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime) {
         this.object = object;
         this.hash = hash;
         this.time = modificationtime;
-        this.author = author;
+        author = null;
         objId = -1;
     }
 
@@ -35,12 +35,12 @@ public class ObjectTimestamp implements Serializable {
         hash = null;
     }
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime, String author) {
+    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime) {
         this.object = object;
         this.objId = objid;
         this.hash = hash;
         this.time = modificationtime;
-        this.author = author;
+        author = null;
     }
 
     public GenericColumn getObject() {

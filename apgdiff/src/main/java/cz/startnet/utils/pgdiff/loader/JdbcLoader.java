@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,8 +42,8 @@ public class JdbcLoader extends JdbcLoaderBase {
         return Collections.unmodifiableList(errors);
     }
 
-    public void setTimestampParams(PgDatabase projDB, Path path, String extensionSchema) {
-        timestampParams.setTimeParams(projDB, path, extensionSchema);
+    public void setTimestampParams(PgDatabase projDB, String extensionSchema) {
+        timestampParams.setTimeParams(projDB, extensionSchema);
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
@@ -69,6 +68,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             if (getExtensionSchema() != null) {
                 DBTimestamp dbTime = new TimestampsReader(this).read();
                 finishAntlr();
+                d.setDbTimestamp(dbTime);
                 timestampParams.fillObjects(dbTime);
                 useServerHelpers = false; // not supported in this version
             }

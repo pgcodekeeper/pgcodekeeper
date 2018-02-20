@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -38,6 +39,8 @@ public class PgDatabase extends PgStatement {
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
 
     private PgDiffArguments arguments;
+
+    private DBTimestamp dbTimestamp;
 
     @Override
     public DbObjType getStatementType() {
@@ -87,6 +90,14 @@ public class PgDatabase extends PgStatement {
 
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
+    }
+
+    public void setDbTimestamp(DBTimestamp dbTimestamp) {
+        this.dbTimestamp = dbTimestamp;
+    }
+
+    public DBTimestamp getDbTimestamp() {
+        return dbTimestamp;
     }
 
     @Override

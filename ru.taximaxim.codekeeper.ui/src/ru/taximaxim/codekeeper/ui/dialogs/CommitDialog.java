@@ -88,7 +88,7 @@ public class CommitDialog extends TrayDialog {
 
         dtvTop.setAutoExpand(true);
         List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
-        dtvTop.setInputCollection(result, dbProject, dbRemote, null);
+        dtvTop.setInputCollection(result, dbProject, dbRemote);
 
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -109,7 +109,7 @@ public class CommitDialog extends TrayDialog {
                 el.setSelected(true);
             }
             dtvTop.setAutoExpand(true);
-            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote, null);
+            dtvBottom.setInputCollection(depcyElementsSet, dbProject, dbRemote);
 
             dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
             warningLbl = new Label(gBottom, SWT.NONE);

@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
 /**
  * Stores database timestamps objects
@@ -33,15 +34,36 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 public class DBTimestamp implements Serializable {
 
     private static final long serialVersionUID = 6207954672144447111L;
-
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
     private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
 
     /**
-     *  remote database timestamps, fills in when reading jdbc
+     * Get database timestamps by given path, if not found create new empty object.
+     * All modifications of returned objects must be  in synchronize block
+     *
+     * @param path - path to serialized object
+     * @return database timestamps
      */
-    private transient DBTimestamp dbTime;
+    public static DBTimestamp getDBTimestamp(Path path) {
+        DBTimestamp db = PROJ_TIMESTAMPS.get(path);
+        if (db == null) {
+            Object obj = ApgdiffUtils.deserialize(path);
+            if (obj instanceof DBTimestamp) {
+                db = (DBTimestamp) obj;
+            }
+            if (db == null) {
+                db = new DBTimestamp();
+            }
+
+            DBTimestamp dbnew = PROJ_TIMESTAMPS.putIfAbsent(path, db);
+            if (dbnew != null) {
+                return dbnew;
+            }
+        }
+
+        return db;
+    }
 
     public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
         ObjectTimestamp obj = objects.get(column);
@@ -52,28 +74,24 @@ public class DBTimestamp implements Serializable {
     }
 
     /**
-     * Compares each object hash from given database with serialized
-     * objects hash from DBTimestamp. Removes not equals objects and
-     * re-serializes the remaining objects again. <br><br>
+     * Compares each object hash from given database with current DBTimestamp and
+     * removes not equals. <br><br>
      *
      * Each statement in database <b>must have</b> filled rawStatement.<br><br>
      *
-     * If the serialized objects don't exist (first run) or don't have objects,
-     * the method does nothing.<br><br>
+     * If don't have objects, the method does nothing.<br><br>
      *
      * @param db - database with filled raw statements
-     * @param path - path to serialized file
      *
      * @see PgDatabase
      * @see DBTimestamp
      */
-    public static void updateObjects(PgDatabase db, Path path) {
+    public void updateObjects(PgDatabase db) {
         if (true) {
             return;
         }
 
-        DBTimestamp timestamp = getDBTimestamp(path);
-        if (timestamp.objects.isEmpty()) {
+        if (objects.isEmpty()) {
             return;
         }
 
@@ -130,7 +148,7 @@ public class DBTimestamp implements Serializable {
                     PgDiffUtils.sha(s.getRawStatement()));
         }
 
-        for (Iterator<ObjectTimestamp> iterator = timestamp.objects.values().iterator();
+        for (Iterator<ObjectTimestamp> iterator = objects.values().iterator();
                 iterator.hasNext();) {
             ObjectTimestamp obj = iterator.next();
             GenericColumn name = obj.getObject();
@@ -138,62 +156,60 @@ public class DBTimestamp implements Serializable {
                 iterator.remove();
             }
         }
-
-        PROJ_TIMESTAMPS.put(path, timestamp);
-
-        ApgdiffUtils.serialize(path, timestamp);
     }
 
-    public static DBTimestamp getDBTimestamp(Path path) {
-        DBTimestamp db = PROJ_TIMESTAMPS.get(path);
-        if (db == null) {
-            Object obj = ApgdiffUtils.deserialize(path);
-            if (obj instanceof DBTimestamp) {
-                db = (DBTimestamp) obj;
-            }
-            if (db == null) {
-                db = new DBTimestamp();
-            }
+    public String getElementAuthor(TreeElement el) {
+        String parentName = null;
+        String schemaName = null;
+        DbObjType type = el.getType();
 
-            DBTimestamp dbnew = PROJ_TIMESTAMPS.putIfAbsent(path, db);
-            if (dbnew != null) {
-                return dbnew;
-            }
+        TreeElement parent = el.getParent();
+        if (type == DbObjType.RULE || type == DbObjType.TRIGGER) {
+            parentName = parent.getName();
         }
 
-        return db;
-    }
+        while (parent != null) {
+            if (parent.getType() == DbObjType.SCHEMA) {
+                schemaName = parent.getName();
+            }
+            parent = parent.getParent();
+        }
 
-    public String getStatementAuthor(PgStatement st) {
-        ObjectTimestamp obj = objects.get(createGC(st));
+        el.getContainerQName();
+        ObjectTimestamp obj = objects.get(createGC(schemaName, parentName, el.getName(),  type));
         return obj != null ? obj.getAuthor() : null;
     }
 
+
     private GenericColumn createGC(PgStatement st) {
-        DbObjType type = st.getStatementType();
         String schema = null;
         if (st instanceof PgStatementWithSearchPath) {
             schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
         }
+
+        return createGC(schema, st.getParent().getName(), st.getName(), st.getStatementType());
+    }
+
+    private GenericColumn createGC(String schema, String parent, String name, DbObjType type) {
         GenericColumn gc = null;
         switch (type) {
         case SCHEMA:
         case EXTENSION:
-            gc = new GenericColumn(st.getName(), type);
+            gc = new GenericColumn(name, type);
             break;
         case TYPE:
         case SEQUENCE:
         case FUNCTION:
         case TABLE:
         case VIEW:
-            gc = new GenericColumn(schema, st.getName(), type);
+            gc = new GenericColumn(schema, name, type);
             break;
         case INDEX:
-            gc = new GenericColumn(schema, null, st.getName(), type);
+            gc = new GenericColumn(schema, null, name, type);
             break;
         case RULE:
         case TRIGGER:
-            gc = new GenericColumn(schema, st.getParent().getName(), st.getName(), type);
+            gc = new GenericColumn(schema, parent, name, type);
             break;
         default: break;
         }
@@ -201,19 +217,13 @@ public class DBTimestamp implements Serializable {
         return gc;
     }
 
-    public DBTimestamp getRemoteDb() {
-        return dbTime;
-    }
-
     /**
      * Searches equals objects in project timestamps and given remote database timestamps.
-     * Saves remote timestamps.
      *
      * @param dbTime - filled remote database timestamp
      * @return equals objects
      */
     public List<ObjectTimestamp> searchEqualsObjects(DBTimestamp dbTime) {
-        this.dbTime = dbTime;
         if (true) {
             return new ArrayList<>();
         }
@@ -223,10 +233,9 @@ public class DBTimestamp implements Serializable {
         for (ObjectTimestamp pObj : objects.values()) {
             GenericColumn gc = pObj.getObject();
             for (ObjectTimestamp rObj : dbTime.objects.values()) {
-                // author?
                 if (rObj.equals(pObj) && rObj.getTime().equals(pObj.getTime())) {
                     equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
-                            rObj.getObjId(), rObj.getTime(), rObj.getAuthor()));
+                            rObj.getObjId(), rObj.getTime()));
                     break;
                 }
             }
@@ -237,19 +246,12 @@ public class DBTimestamp implements Serializable {
 
     /**
      * Clears old objects, fills new objects based on given list of statements and
-     * remote database timestamps, serializes received objects. <br>
-     * <b>Must</b> be called just after {@link DBTimestamp#searchEqualsObjects} method.
+     * remote database timestamps. <br>
      *
      * @param statements - statements list
-     * @param path - path where serialized object will be
+     * @param remoteDb - remote database
      */
-    public void rewriteObjects(List<PgStatement> statements, Path path) {
-        if (true) {
-            return;
-        }
-        if (dbTime == null) {
-            return;
-        }
+    public void rewriteObjects(List<PgStatement> statements, DBTimestamp remoteDb) {
         objects.clear();
         for (PgStatement st : statements) {
             StringBuilder hash = new StringBuilder(st.getRawStatement());
@@ -258,13 +260,11 @@ public class DBTimestamp implements Serializable {
             }
 
             GenericColumn gc = createGC(st);
-            ObjectTimestamp obj = dbTime.objects.get(gc);
+            ObjectTimestamp obj = remoteDb.objects.get(gc);
             if (obj != null) {
                 objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
-                        obj.getTime(), obj.getAuthor()));
+                        obj.getTime()));
             }
         }
-
-        ApgdiffUtils.serialize(path, this);
     }
 }

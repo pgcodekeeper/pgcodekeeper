@@ -23,12 +23,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class ClassicTreeDiffer extends TreeDiffer {
 
-    public ClassicTreeDiffer(DbSource dbSource, DbSource dbTarget, boolean needTwoWay, String name) {
-        super(dbSource, dbTarget, needTwoWay, name);
-    }
-
     public ClassicTreeDiffer(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
-        this(dbSource, dbTarget, needTwoWay, null);
+        super(dbSource, dbTarget, needTwoWay);
     }
 
     @Override

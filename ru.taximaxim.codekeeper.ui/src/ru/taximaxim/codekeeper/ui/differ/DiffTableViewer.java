@@ -117,7 +117,6 @@ public class DiffTableViewer extends Composite {
 
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
-    private static final String DBLABEL_PROP = "DBLABEL_PROP"; //$NON-NLS-1$
     private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
 
     private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -605,11 +604,6 @@ public class DiffTableViewer extends Composite {
                 ElementMetaInfo meta = elementInfoMap.get(element);
                 return meta != null ? meta.getDbUser() : ""; //$NON-NLS-1$
             }
-
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return property == DBLABEL_PROP;
-            }
         });
 
 
@@ -738,17 +732,11 @@ public class DiffTableViewer extends Composite {
 
     public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
             IgnoreList ignoreList) {
-        setInput(dbProject, dbRemote, diffTree, null, ignoreList);
-    }
-
-
-    public void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
-            DBTimestamp dbTime, IgnoreList ignoreList) {
         setInputCollection(diffTree == null ? Collections.<TreeElement>emptyList() :
             new TreeFlattener()
             .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
             .useIgnoreList(ignoreList, dbRemote.getDbName())
-            .flatten(diffTree), dbProject, dbRemote, dbTime);
+            .flatten(diffTree), dbProject, dbRemote);
     }
 
     /**
@@ -757,7 +745,7 @@ public class DiffTableViewer extends Composite {
      * @param dbTime
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote, DBTimestamp dbTime) {
+            DbSource dbProject, DbSource dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -776,9 +764,13 @@ public class DiffTableViewer extends Composite {
         if (showGitUser && !elementInfoMap.isEmpty()) {
             readGitUsers();
         }
-        if (dbTime != null) {
-            showDbUser = true;
-            readDbUsers(dbTime);
+
+        if (dbRemote != null) {
+            DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
+            if (dbTime != null) {
+                showDbUser = true;
+                readDbUsers(dbTime);
+            }
         }
 
         viewer.setInput(elements);
@@ -788,33 +780,11 @@ public class DiffTableViewer extends Composite {
     }
 
     private void readDbUsers(DBTimestamp dbTime) {
-        Job job = new Job(Messages.DiffTableViewer_reading_db_user) {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                elementInfoMap.forEach((k,v) -> {
-                    if (k.getSide() != DiffSide.LEFT) {
-                        v.setDbUser(dbTime.getStatementAuthor(k.getPgStatement(dbRemote.getDbObject())));
-                    }
-                });
-
-                return Status.OK_STATUS;
-            }
-        };
-
-        job.addJobChangeListener(new JobChangeAdapter() {
-
-            @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
-                    UiSync.exec(getDisplay(), () -> viewer.update(elements
-                            .toArray(new TreeElement[0]), new String[] { DBLABEL_PROP }));
-                }
+        elementInfoMap.forEach((k,v) -> {
+            if (k.getSide() != DiffSide.LEFT) {
+                v.setDbUser(dbTime.getElementAuthor(k));
             }
         });
-
-        job.setUser(true);
-        job.schedule();
     }
 
     private void readGitUsers() {

@@ -80,7 +80,6 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -112,6 +111,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
+import ru.taximaxim.codekeeper.ui.differ.ClassicTreeDiffer;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -465,16 +465,35 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         IEclipsePreferences projProps = proj.getPrefs();
 
+        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+
+        DbSource dbProject = DbSource.fromProject(proj);
+
+        DbSource dbRemote;
+        TreeDiffer newDiffer;
+        String name;
+
+        if (currentRemote instanceof DbInfo) {
+            DbInfo dbInfo = (DbInfo) currentRemote;
+            newDiffer = TreeDiffer.getTree(dbProject, dbInfo, charset, forceUnixNewlines,
+                    mainPrefs, projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
+            name = dbInfo.getName();
+            saveLastDb(dbInfo);
+        } else {
+            File file = (File) currentRemote;
+            name = file.getName();
+            dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset);
+            newDiffer = new ClassicTreeDiffer(dbProject, dbRemote, false);
+        }
+
+        setPartName(getEditorInput().getName() + " - " + name); //$NON-NLS-1$
+
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
             return;
         }
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        TreeDiffer newDiffer = TreeDiffer.getTree(proj, currentRemote, charset,
-                projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true), mainPrefs,
-                projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
 
-        setPartName(getEditorInput().getName() + " - " + newDiffer.getName()); //$NON-NLS-1$
         reset();
         hideNotificationArea();
 
@@ -524,7 +543,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
-                                    newDiffer.getDiffTree(), newDiffer.getDbTime());
+                                    newDiffer.getDiffTree());
                             loadedRemote = currentRemote;
                         }
                     });
@@ -652,7 +671,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
-    private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree, DBTimestamp dbTimestamp) {
+    private void setInput(DbSource dbProject, DbSource dbRemote, TreeElement diffTree) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
@@ -665,7 +684,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
         }
-        diffTable.setInput(dbProject, dbRemote, diffTree, dbTimestamp, ignoreList);
+        diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
             isDBLoaded = true;
             manualDepciesSource.clear();
@@ -677,7 +696,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         isDBLoaded = false;
         manualDepciesSource.clear();
         manualDepciesTarget.clear();
-        setInput(null, null, null, null);
+        setInput(null, null, null);
     }
 
     private void hideNotificationArea() {

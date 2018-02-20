@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +19,6 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -108,11 +106,7 @@ public abstract class DbSource {
     }
 
     public static DbSource fromProject(PgDbProject proj) {
-        return new DbSourceProject(proj, null);
-    }
-
-    public static DbSource fromProject(PgDbProject proj, Path path) {
-        return new DbSourceProject(proj, path);
+        return new DbSourceProject(proj);
     }
 
     public static DbSource fromFile(boolean forceUnixNewlines, File filename, String encoding) {
@@ -160,10 +154,10 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDbTimestamp(DbInfo dbInfo, boolean forceUnixNewlines, String charset,
-            String timezone, PgDatabase dbSrc, Path path, String schema) {
+            String timezone, PgDatabase dbSrc, String extSchema) {
         return new DbSourceTimestamp(new JdbcConnector(dbInfo.getDbHost(), dbInfo.getDbPort(),
                 dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), timezone),
-                dbSrc, path, schema, dbInfo.getDbName(), charset, forceUnixNewlines);
+                dbSrc, extSchema, dbInfo.getDbName(), charset, forceUnixNewlines);
     }
 }
 
@@ -197,12 +191,10 @@ class DbSourceDirTree extends DbSource {
 class DbSourceProject extends DbSource {
 
     private final PgDbProject proj;
-    private final Path path;
 
-    DbSourceProject(PgDbProject proj, Path path) {
+    DbSourceProject(PgDbProject proj) {
         super(proj.getProjectName());
         this.proj = proj;
-        this.path = path;
     }
 
     @Override
@@ -222,9 +214,6 @@ class DbSourceProject extends DbSource {
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, null, er);
         errors = er;
-        if (path != null) {
-            DBTimestamp.updateObjects(db, path);
-        }
         return db;
     }
 }
@@ -397,8 +386,7 @@ class DbSourceTimestamp extends DbSource {
     private final JdbcConnector jdbcConnector;
     private final String dbName;
     private final boolean forceUnixNewlines;
-    private final String schema;
-    private final Path path;
+    private final String extSchema;
     private final PgDatabase dbSrc;
     private final String charset;
 
@@ -407,14 +395,13 @@ class DbSourceTimestamp extends DbSource {
         return dbName;
     }
 
-    public DbSourceTimestamp(JdbcConnector jdbcConnector, PgDatabase dbSrc,
-            Path path, String schema, String dbName, String charset,
+    DbSourceTimestamp(JdbcConnector jdbcConnector, PgDatabase dbSrc,
+            String extSchema, String dbName, String charset,
             boolean forceUnixNewlines) {
         super(dbName);
         this.jdbcConnector = jdbcConnector;
         this.dbSrc = dbSrc;
-        this.path = path;
-        this.schema = schema;
+        this.extSchema = extSchema;
         this.dbName = dbName;
         this.charset = charset;
         this.forceUnixNewlines = forceUnixNewlines;
@@ -426,7 +413,7 @@ class DbSourceTimestamp extends DbSource {
         monitor.subTask(Messages.reading_db_from_jdbc);
         PgDiffArguments args = getPgDiffArgs(charset, forceUnixNewlines);
         JdbcLoader loader = new JdbcLoader(jdbcConnector, args, monitor);
-        loader.setTimestampParams(dbSrc, path, schema);
+        loader.setTimestampParams(dbSrc, extSchema);
         PgDatabase database = loader.getDbFromJdbc();
         errors = loader.getErrors();
         return database;
