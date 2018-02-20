@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -33,8 +34,8 @@ public final class DiffTree {
 
     private final List<PgStatement> equalsStatements = new ArrayList<>();
 
-    public TreeElement createTree(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
-        PgDiffUtils.checkCancelled(sMonitor);
+    public TreeElement createTree(PgDatabase left, PgDatabase right, IProgressMonitor monitor) throws InterruptedException {
+        PgDiffUtils.checkCancelled(monitor);
 
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
@@ -43,7 +44,7 @@ public final class DiffTree {
         }
 
         for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
-            PgDiffUtils.checkCancelled(sMonitor);
+            PgDiffUtils.checkCancelled(monitor);
 
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
             db.addChild(elSchema);
@@ -153,7 +154,7 @@ public final class DiffTree {
             }
 
             for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                PgDiffUtils.checkCancelled(sMonitor);
+                PgDiffUtils.checkCancelled(monitor);
 
                 TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
                 elSchema.addChild(tbl);
