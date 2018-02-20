@@ -13,6 +13,7 @@ import java.util.function.Function;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -88,10 +89,18 @@ public abstract class PgStatement implements IStatement {
     }
 
     public void addDep(GenericColumn dep){
+        // TODO remove after fix
+        if (dep == null) {
+            Log.log(new Exception("null dependency added for " + getQualifiedName()));
+        }
         deps.add(dep);
     }
 
     public void addAllDeps(Collection<GenericColumn> deps){
+        // TODO remove after fix
+        if (deps.contains(null)) {
+            Log.log(new Exception("null dependency added for " + getQualifiedName()));
+        }
         this.deps.addAll(deps);
     }
 
