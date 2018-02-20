@@ -683,8 +683,6 @@ public final class Messages extends NLS {
 
     public static String QuickUpdate_multiple_schemas;
 
-    public static String QuickUpdate_no_changes;
-
     public static String QuickUpdate_quick_update;
 
     public static String QuickUpdate_updating_db;
