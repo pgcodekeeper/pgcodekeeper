@@ -439,12 +439,22 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 viewer.expandAll();
             }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
         });
         menuMgr.add(new Action(Messages.DiffTableViewer_collapse_all) {
 
             @Override
             public void run() {
                 viewer.collapseAll();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
             }
         });
         menuMgr.add(new Separator());
