@@ -166,7 +166,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         if (checked.isEmpty()) {
             // no diff
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_no_changes);
+            return;
         }
 
         Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
