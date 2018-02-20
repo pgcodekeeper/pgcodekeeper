@@ -328,7 +328,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
 
         public void fillObjects(DBTimestamp dbTime) {
-            timestampObjects = DBTimestamp.getDBTimestamp(path).searchMatch(dbTime);
+            timestampObjects = DBTimestamp.getDBTimestamp(path).searchEqualsObjects(dbTime);
         }
     }
 }

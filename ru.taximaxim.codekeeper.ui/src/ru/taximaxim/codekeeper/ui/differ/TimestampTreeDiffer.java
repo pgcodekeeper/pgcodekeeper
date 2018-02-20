@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -22,17 +21,20 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  *
  * Алгоритм:
  * <ul>
- *      <li>Данное дерево создается при наличии расширения pg_dbo_timestamp {@link JdbcLoader#getExtensionSchema}</li>
+ *      <li>Данное дерево создается при наличии расширения pg_dbo_timestamp {@link JdbcLoader#getExtensionSchema}
+ *      и включенной настройки проекта <b>PG_EDIT_PREF.SHOW_DB_USER</b></li>
  *      <li>Построение базы данных из проекта.
- *      <li>Чтение таймстампов из сериализованного объекта находящегося по пути {@link FileUtilsUi#getPathToTimeObject} </li>
+ *      <li>Чтение таймстампов из сериализованного объекта находящегося по пути FileUtilsUi#getPathToTimeObject </li>
  *      <li>Удаление объектов, у которых не совпали хеши raw statement {@link DBTimestamp#updateObjects}
  *      <li>Чтение таймстампов из базы данных</li>
  *      <li>Сравнение полученных объектов по квалифицированным именам и формирование списка совпадающих объектов </li>
  *      <li>Исключение из запросов oid объектов из полученного списка JdbcReaderFactory.excludeObjects</li>
  *      <li>Чтение объектов из базы данных с подменой совпавших объектов из базы проекта JdbcReader.fillOldObjects </li>
  *      <li>Построение дерева различий с записью совпадающий объектов в список</li>
+ *      <li>Сохранение в дерево таймстампов удаленной базы</li>
  *      <li>Формирование списка на основе полученного списка и таймстампов в базе данных</li>
  *      <li>Сериализация полученного списка</li>
+ *      <li>Чтение авторов изменений DiffTableViewer.readDbUsers</li>
  * </ul>
  *
  */
@@ -76,7 +78,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
 
             DBTimestamp timestamp = DBTimestamp.getDBTimestamp(path);
             dbTime = timestamp.getRemoteDb();
-            timestamp.rewrite(tree.getEqualsObjects(), path);
+            timestamp.rewriteObjects(tree.getEqualsObjects(), path);
 
             PgDiffUtils.checkCancelled(pm);
             monitor.done();

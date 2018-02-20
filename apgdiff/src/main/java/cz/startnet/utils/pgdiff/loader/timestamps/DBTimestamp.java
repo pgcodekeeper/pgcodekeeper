@@ -39,6 +39,9 @@ public class DBTimestamp implements Serializable {
 
     private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
 
+    /**
+     *  remote database timestamps, fills in when reading jdbc
+     */
     private transient DBTimestamp dbTime;
 
     public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
@@ -149,7 +152,10 @@ public class DBTimestamp implements Serializable {
     public static DBTimestamp getDBTimestamp(Path path) {
         DBTimestamp db = PROJ_TIMESTAMPS.get(path);
         if (db == null) {
-            db = (DBTimestamp) ApgdiffUtils.deserialize(path);
+            Object obj = ApgdiffUtils.deserialize(path);
+            if (obj instanceof DBTimestamp) {
+                db = (DBTimestamp) obj;
+            }
             if (db == null) {
                 db = new DBTimestamp();
             }
@@ -168,7 +174,7 @@ public class DBTimestamp implements Serializable {
         return obj != null ? obj.getAuthor() : null;
     }
 
-    private static GenericColumn createGC(PgStatement st) {
+    private GenericColumn createGC(PgStatement st) {
         DbObjType type = st.getStatementType();
         String schema = null;
         if (st instanceof PgStatementWithSearchPath) {
@@ -204,7 +210,15 @@ public class DBTimestamp implements Serializable {
         return dbTime;
     }
 
-    public List<ObjectTimestamp> searchMatch(DBTimestamp dbTime) {
+
+    /**
+     * Searches equals objects in project timestamps and given remote database timestamps.
+     * Saves remote timestamps.
+     *
+     * @param dbTime - filled remote database timestamp
+     * @return equals objects
+     */
+    public List<ObjectTimestamp> searchEqualsObjects(DBTimestamp dbTime) {
         this.dbTime = dbTime;
         if (true) {
             return new ArrayList<>();
@@ -228,12 +242,18 @@ public class DBTimestamp implements Serializable {
     }
 
     /**
-     * Rewrites timestamp objects
+     * Clears old objects, fills new objects based on given list of statements and
+     * remote database timestamps, serializes received objects. <br>
+     * <b>Must</b> be called just after {@link DBTimestamp#searchEqualsObjects} method.
      *
      * @param statements - statements list
+     * @param path - path where serialized object will be
      */
-    public void rewrite(List<PgStatement> statements, Path path) {
+    public void rewriteObjects(List<PgStatement> statements, Path path) {
         if (true) {
+            return;
+        }
+        if (dbTime == null) {
             return;
         }
         objects.clear();
@@ -244,7 +264,7 @@ public class DBTimestamp implements Serializable {
             }
 
             GenericColumn gc = createGC(st);
-            ObjectTimestamp obj = objects.get(gc);
+            ObjectTimestamp obj = dbTime.objects.get(gc);
             if (obj != null) {
                 objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
                         obj.getTime(), obj.getAuthor()));
