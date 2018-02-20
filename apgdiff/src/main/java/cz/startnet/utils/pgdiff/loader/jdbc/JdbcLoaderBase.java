@@ -315,7 +315,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return oid < firstBootstrapObjectId;
     }
 
-    protected final class TimestampParam {
+    protected static class TimestampParam {
         private List<ObjectTimestamp> timestampObjects;
         private PgDatabase projDB;
         private String extensionSchema;

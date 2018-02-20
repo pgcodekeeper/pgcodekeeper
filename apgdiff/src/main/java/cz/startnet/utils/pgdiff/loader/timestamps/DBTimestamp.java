@@ -23,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
-
 /**
  * Stores database timestamps objects
  *
@@ -46,14 +45,10 @@ public class DBTimestamp implements Serializable {
 
     public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
         ObjectTimestamp obj = objects.get(column);
-        if (obj != null) {
-            Instant time = obj.getTime();
-            if (time.isAfter(lastModified)) {
-                return;
-            }
+        if (obj == null || obj.getTime().isBefore(lastModified)) {
+            // replace stale timestamps
+            objects.put(column, new ObjectTimestamp(column, objId, lastModified, author));
         }
-
-        objects.put(column, new ObjectTimestamp(column, objId, lastModified, author));
     }
 
     /**
@@ -139,7 +134,7 @@ public class DBTimestamp implements Serializable {
                 iterator.hasNext();) {
             ObjectTimestamp obj = iterator.next();
             GenericColumn name = obj.getObject();
-            if (!(Arrays.equals(statements.get(name), obj.getHash()))) {
+            if (!Arrays.equals(statements.get(name), obj.getHash())) {
                 iterator.remove();
             }
         }
@@ -209,7 +204,6 @@ public class DBTimestamp implements Serializable {
     public DBTimestamp getRemoteDb() {
         return dbTime;
     }
-
 
     /**
      * Searches equals objects in project timestamps and given remote database timestamps.
