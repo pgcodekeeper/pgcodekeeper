@@ -22,8 +22,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.io.NullOutputStream;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GitUserReader implements AutoCloseable {

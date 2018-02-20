@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.apgdiff.model.difftree;
+package ru.taximaxim.codekeeper.ui.differ;
 
 public class ElementMetaInfo {
     private String gitUser;
