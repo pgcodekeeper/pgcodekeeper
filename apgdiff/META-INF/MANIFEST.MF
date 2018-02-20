@@ -5,6 +5,7 @@ Bundle-SymbolicName: apgdiff;singleton:=true
 Bundle-Version: 4.7.2.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
+ cz.startnet.utils.pgdiff.loader.timestamps,
  cz.startnet.utils.pgdiff.parsers.antlr,
  cz.startnet.utils.pgdiff.schema,
  org.jgrapht,

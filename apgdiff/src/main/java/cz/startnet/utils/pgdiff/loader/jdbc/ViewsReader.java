@@ -37,9 +37,7 @@ public class ViewsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgView view = getView(result, schema.getName());
         loader.monitor.worked(1);
-        if (view != null) {
-            schema.addView(view);
-        }
+        schema.addView(view);
     }
 
     private PgView getView(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
@@ -116,5 +114,10 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.VIEW;
     }
 }

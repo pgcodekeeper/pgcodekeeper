@@ -43,9 +43,7 @@ public class TablesReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = getTable(result, schema.getName());
         loader.monitor.worked(1);
-        if (table != null) {
-            schema.addTable(table);
-        }
+        schema.addTable(table);
     }
 
     private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
@@ -273,5 +271,10 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TABLE;
     }
 }

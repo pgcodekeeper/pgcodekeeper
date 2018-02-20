@@ -271,6 +271,16 @@ public class PgSchema extends PgStatement {
         return Collections.unmodifiableList(types);
     }
 
+
+    public PgTable getTableByIndex(String name) {
+        for (PgTable t : getTables()) {
+            if (t.getIndex(name) != null) {
+                return t;
+            }
+        }
+        return null;
+    }
+
     public void addDomain(PgDomain dom) {
         assertUnique(this::getDomain, dom);
         domains.add(dom);

@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.relname,
+SELECT c.oid::bigint,
+       c.relname,
        c.relkind AS kind,
        c.relispopulated,
        tabsp.spcname as table_space,

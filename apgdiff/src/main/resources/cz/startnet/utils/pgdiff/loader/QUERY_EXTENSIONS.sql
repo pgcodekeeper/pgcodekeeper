@@ -1,4 +1,5 @@
-SELECT e.extname,
+SELECT e.oid::bigint, 
+       e.extname,
     (SELECT n.nspname
      FROM pg_catalog.pg_namespace n
      WHERE e.extnamespace = n.oid) namespace,

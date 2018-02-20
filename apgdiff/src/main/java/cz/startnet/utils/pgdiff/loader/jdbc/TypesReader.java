@@ -301,4 +301,9 @@ public class TypesReader extends JdbcReader {
         }
         return t;
     }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TYPE;
+    }
 }

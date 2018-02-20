@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -17,7 +18,24 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 public final class DiffTree {
 
     public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
-        PgDiffUtils.checkCancelled(sMonitor);
+        return new DiffTree().createTree(left, right, sMonitor);
+    }
+
+    @Deprecated
+    public static void addColumns(List<? extends PgStatement> left,
+            List<? extends PgStatement> right, TreeElement parent,
+            List<TreeElement> list) {
+        for (CompareResult col : new DiffTree().compareLists(left, right)) {
+            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
+            colEl.setParent(parent);
+            list.add(colEl);
+        }
+    }
+
+    private final List<PgStatement> equalsStatements = new ArrayList<>();
+
+    public TreeElement createTree(PgDatabase left, PgDatabase right, IProgressMonitor monitor) throws InterruptedException {
+        PgDiffUtils.checkCancelled(monitor);
 
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
 
@@ -26,7 +44,7 @@ public final class DiffTree {
         }
 
         for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
-            PgDiffUtils.checkCancelled(sMonitor);
+            PgDiffUtils.checkCancelled(monitor);
 
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
             db.addChild(elSchema);
@@ -37,10 +55,10 @@ public final class DiffTree {
             PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
             // functions
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getFunctions();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getFunctions();
             }
 
@@ -49,10 +67,10 @@ public final class DiffTree {
             }
 
             // sequences
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getSequences();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getSequences();
             }
 
@@ -61,10 +79,10 @@ public final class DiffTree {
             }
 
             // types
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getTypes();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getTypes();
             }
 
@@ -73,10 +91,10 @@ public final class DiffTree {
             }
 
             // domains
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getDomains();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getDomains();
             }
 
@@ -85,10 +103,10 @@ public final class DiffTree {
             }
 
             // view
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getViews();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getViews();
             }
 
@@ -103,10 +121,10 @@ public final class DiffTree {
                 PgView viewRight = (PgView) view.getRight();
 
                 // rules
-                if(viewLeft != null) {
+                if (viewLeft != null) {
                     leftViewSub = viewLeft.getRules();
                 }
-                if(viewRight != null) {
+                if (viewRight != null) {
                     rightViewSub = viewRight.getRules();
                 }
 
@@ -115,10 +133,10 @@ public final class DiffTree {
                 }
 
                 // triggers
-                if(viewLeft != null) {
+                if (viewLeft != null) {
                     leftViewSub = viewLeft.getTriggers();
                 }
-                if(viewRight != null) {
+                if (viewRight != null) {
                     rightViewSub = viewRight.getTriggers();
                 }
 
@@ -128,15 +146,15 @@ public final class DiffTree {
             }
 
             // tables
-            if(schemaLeft != null) {
+            if (schemaLeft != null) {
                 leftSub = schemaLeft.getTables();
             }
-            if(schemaRight != null) {
+            if (schemaRight != null) {
                 rightSub = schemaRight.getTables();
             }
 
             for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                PgDiffUtils.checkCancelled(sMonitor);
+                PgDiffUtils.checkCancelled(monitor);
 
                 TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
                 elSchema.addChild(tbl);
@@ -148,10 +166,10 @@ public final class DiffTree {
                 PgTable tableRight = (PgTable) resSub.getRight();
 
                 // indexes
-                if(tableLeft != null) {
+                if (tableLeft != null) {
                     leftTableSub = tableLeft.getIndexes();
                 }
-                if(tableRight != null) {
+                if (tableRight != null) {
                     rightTableSub = tableRight.getIndexes();
                 }
 
@@ -160,10 +178,10 @@ public final class DiffTree {
                 }
 
                 // triggers
-                if(tableLeft != null) {
+                if (tableLeft != null) {
                     leftTableSub = tableLeft.getTriggers();
                 }
-                if(tableRight != null) {
+                if (tableRight != null) {
                     rightTableSub = tableRight.getTriggers();
                 }
 
@@ -172,10 +190,10 @@ public final class DiffTree {
                 }
 
                 // rules
-                if(tableLeft != null) {
+                if (tableLeft != null) {
                     leftTableSub = tableLeft.getRules();
                 }
-                if(tableRight != null) {
+                if (tableRight != null) {
                     rightTableSub = tableRight.getRules();
                 }
 
@@ -184,10 +202,10 @@ public final class DiffTree {
                 }
 
                 // constraints
-                if(tableLeft != null) {
+                if (tableLeft != null) {
                     leftTableSub = tableLeft.getConstraints();
                 }
-                if(tableRight != null) {
+                if (tableRight != null) {
                     rightTableSub = tableRight.getConstraints();
                 }
 
@@ -203,16 +221,16 @@ public final class DiffTree {
     /**
      * Compare lists and put elements onto appropriate sides.
      */
-    private static List<CompareResult> compareLists(List<? extends PgStatement> left,
+    private List<CompareResult> compareLists(List<? extends PgStatement> left,
             List<? extends PgStatement> right) {
         List<CompareResult> rv = new ArrayList<>();
 
         // add LEFT and BOTH here
         // and RIGHT in a separate pass
-        for(PgStatement sLeft : left) {
+        for (PgStatement sLeft : left) {
             PgStatement foundRight = null;
-            for(PgStatement sRight : right) {
-                if(sLeft.getName().equals(sRight.getName())) {
+            for (PgStatement sRight : right) {
+                if (sLeft.getName().equals(sRight.getName())) {
                     foundRight = sRight;
                     break;
                 }
@@ -223,43 +241,35 @@ public final class DiffTree {
             } else if(!sLeft.equals(foundRight)) {
                 rv.add(new CompareResult(sLeft, foundRight));
             } else {
-                // do nothing if both statements exist and are equal
+                equalsStatements.add(sLeft);
             }
         }
 
-        for(PgStatement sRight : right) {
+        for (PgStatement sRight : right) {
             boolean foundLeft = false;
-            for(PgStatement sLeft : left) {
-                if(sRight.getName().equals(sLeft.getName())) {
+            for (PgStatement sLeft : left) {
+                if (sRight.getName().equals(sLeft.getName())) {
                     foundLeft = true;
                     break;
                 }
             }
-            if(!foundLeft) {
+            if (!foundLeft) {
                 rv.add(new CompareResult(null, sRight));
             }
         }
         return rv;
     }
 
-    @Deprecated
-    public static void addColumns(List<? extends PgStatement> left,
-            List<? extends PgStatement> right, TreeElement parent,
-            List<TreeElement> list) {
-        for (CompareResult col : compareLists(left, right)) {
-            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
-            colEl.setParent(parent);
-            list.add(colEl);
-        }
-    }
 
-    private DiffTree() {
+    public List<PgStatement> getEqualsObjects() {
+        return equalsStatements;
     }
 }
 
 class CompareResult {
 
-    private final PgStatement left, right;
+    private final PgStatement left;
+    private final PgStatement right;
 
     public PgStatement getLeft() {
         return left;
@@ -275,23 +285,23 @@ class CompareResult {
     }
 
     public DiffSide getSide() {
-        if(left != null && right != null) {
+        if (left != null && right != null) {
             return DiffSide.BOTH;
         }
-        if(left != null && right == null) {
+        if (left != null) {
             return DiffSide.LEFT;
         }
-        if(left == null && right != null) {
+        if (right != null) {
             return DiffSide.RIGHT;
         }
         throw new IllegalStateException("Both diff sides are null!");
     }
 
     public PgStatement getStatement() {
-        if(left != null) {
+        if (left != null) {
             return left;
         }
-        if(right != null) {
+        if (right != null) {
             return right;
         }
         throw new IllegalStateException("Both diff sides are null!");

@@ -49,10 +49,7 @@ public class TriggersReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
-            PgTrigger trigger = getTrigger(result, schema.getName(), contName);
-            if (trigger != null) {
-                c.addTrigger(trigger);
-            }
+            c.addTrigger(getTrigger(result, schema.getName(), contName));
         }
     }
 
@@ -168,5 +165,10 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TRIGGER;
     }
 }

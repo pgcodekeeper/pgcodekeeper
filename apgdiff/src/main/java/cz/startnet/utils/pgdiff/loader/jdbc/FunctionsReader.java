@@ -243,4 +243,9 @@ public class FunctionsReader extends JdbcReader {
 
         return quote.concat("$");
     }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.FUNCTION;
+    }
 }

@@ -255,6 +255,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_db_user;
+
     public static String DiffTableViewer_error_reading_git_history;
 
     public static String DiffTableViewer_expand_all;
@@ -525,6 +527,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorPrefPage_action_type;
 
     public static String ProjectEditorPrefPage_action_update;
+
+    public static String ProjectEditorPrefPage_show_db_user;
 
     public static String ProjectEditorPrefPage_show_git_user;
 

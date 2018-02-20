@@ -38,10 +38,7 @@ public class ConstraintsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
-            PgConstraint constraint = getConstraint(result, schema.getName(), table.getName());
-            if (constraint != null) {
-                table.addConstraint(constraint);
-            }
+            table.addConstraint(getConstraint(result, schema.getName(), table.getName()));
         }
     }
 
@@ -110,5 +107,10 @@ public class ConstraintsReader extends JdbcReader {
         for (String name : concols) {
             c.addColumn(name);
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.CONSTRAINT;
     }
 }
