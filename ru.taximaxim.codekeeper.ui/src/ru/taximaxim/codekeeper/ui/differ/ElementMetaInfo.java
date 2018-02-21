@@ -17,6 +17,10 @@ public class ElementMetaInfo {
         isChanged = true;
     }
 
+    public boolean isChanged() {
+        return isChanged;
+    }
+
     public String getGitUser() {
         String a = gitUser == null ? "" : gitUser;
         return isChanged ?  "*" + a : a;

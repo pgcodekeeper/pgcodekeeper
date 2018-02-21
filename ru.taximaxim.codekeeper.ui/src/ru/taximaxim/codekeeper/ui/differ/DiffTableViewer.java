@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,6 +105,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -156,8 +158,6 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
 
-    private final AbstractFilter codeFilter = new CodeFilter();
-    private final AbstractFilter schemaFilter = new SchemaFilter();
 
     private final IStatusLineManager lineManager;
 
@@ -262,15 +262,13 @@ public class DiffTableViewer extends Composite {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     FilterDialog dialog = new FilterDialog(getShell(),
-                            schemaFilter, codeFilter,
-                            viewerFilter.types, viewerFilter.sides);
+                            viewerFilter.schemaFilter, viewerFilter.codeFilter,
+                            viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
+                            viewerFilter.types, viewerFilter.sides, viewerFilter.isLocalChange);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
-                                        viewerFilter.types.isEmpty() && viewerFilter.sides.isEmpty()
-                                        && codeFilter.getPattern().isEmpty()
-                                        && schemaFilter.getPattern().isEmpty()
-                                        ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
+                                        viewerFilter.isEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
                 }
@@ -839,8 +837,14 @@ public class DiffTableViewer extends Composite {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    UiSync.exec(getDisplay(), () -> viewer.update(elements
-                            .toArray(new TreeElement[0]), new String[] { GITLABEL_PROP }));
+                    UiSync.exec(getDisplay(), () -> {
+                        if (viewerFilter.isLocalChange.get() || !viewerFilter.gitUserFilter.isEmpty()) {
+                            viewer.refresh(false);
+                        } else {
+                            viewer.update(elements.toArray(new TreeElement[0]),
+                                    new String[] { GITLABEL_PROP });
+                        }
+                    });
                 }
             }
         });
@@ -1187,6 +1191,15 @@ public class DiffTableViewer extends Composite {
 
         private final Collection<DbObjType> types = EnumSet.noneOf(DbObjType.class);
         private final Collection<DiffSide> sides = EnumSet.noneOf(DiffSide.class);
+
+
+        private final AbstractFilter codeFilter = new CodeFilter();
+        private final AbstractFilter schemaFilter = new SchemaFilter();
+        private final AbstractFilter gitUserFilter = new UserFilter();
+        private final AbstractFilter dbUserFilter = new UserFilter();
+
+        private final AtomicBoolean isLocalChange = new AtomicBoolean(false);
+
         private String filterName;
         private boolean useRegEx;
         private Pattern regExPattern;
@@ -1203,6 +1216,15 @@ public class DiffTableViewer extends Composite {
                     regExPattern = null;
                 }
             }
+        }
+
+        public boolean isEmpty() {
+            return types.isEmpty() && sides.isEmpty()
+                    && codeFilter.isEmpty()
+                    && dbUserFilter.isEmpty()
+                    && gitUserFilter.isEmpty()
+                    && schemaFilter.isEmpty()
+                    && !isLocalChange.get();
         }
 
         public void setUseRegEx(Boolean useRegEx) {
@@ -1228,7 +1250,21 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            if (!schemaFilter.getPattern().isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
+            ElementMetaInfo meta = elementInfoMap.get(el);
+
+            if (!gitUserFilter.isEmpty() && !gitUserFilter.searchMatches(meta.getGitUser())) {
+                return false;
+            }
+
+            if (!dbUserFilter.isEmpty() && !dbUserFilter.searchMatches(meta.getDbUser())) {
+                return false;
+            }
+
+            if (isLocalChange.get() && !meta.isChanged()) {
+                return false;
+            }
+
+            if (!schemaFilter.isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
                 return false;
             }
 
@@ -1236,7 +1272,7 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            return (codeFilter.getPattern().isEmpty() || codeFilter.checkElement(el,
+            return (codeFilter.isEmpty() || codeFilter.checkElement(el,
                     elements, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
@@ -1263,6 +1299,12 @@ public class DiffTableViewer extends Composite {
             return found;
         }
 
+        @Override
+        public boolean isFilterProperty(Object element, String property) {
+            System.err.println(property);
+            return property == GITLABEL_PROP;
+        }
+
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
             if (filter != null && !filter.isEmpty() && text != null) {
                 String textLc = text.toLowerCase();
@@ -1285,6 +1327,4 @@ public class DiffTableViewer extends Composite {
             return null;
         }
     }
-
-
 }

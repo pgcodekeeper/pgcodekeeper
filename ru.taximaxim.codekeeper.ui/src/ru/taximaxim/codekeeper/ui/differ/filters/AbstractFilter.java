@@ -50,6 +50,10 @@ public abstract class AbstractFilter {
         return pattern;
     }
 
+    public boolean isEmpty() {
+        return pattern.isEmpty();
+    }
+
     public boolean isUseRegex() {
         return useRegEx;
     }
@@ -72,7 +76,7 @@ public abstract class AbstractFilter {
      * @param string - string in which you want to check for matches
      * @return true if find matches
      */
-    protected boolean searchMatches(String string) {
+    public boolean searchMatches(String string) {
         if (regExPattern != null) {
             Matcher matcher = regExPattern.matcher(string);
             return matcher.find();
