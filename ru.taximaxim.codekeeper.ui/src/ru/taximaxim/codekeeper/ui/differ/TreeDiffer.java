@@ -63,7 +63,9 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
     public List<Object> getErrors() {
         List<? super Object> errors = new ArrayList<>();
         errors.addAll(dbSource.getErrors());
-        errors.addAll(dbTarget.getErrors());
+        if (dbTarget != null) {
+            errors.addAll(dbTarget.getErrors());
+        }
         return errors;
     }
 
