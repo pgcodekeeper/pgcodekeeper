@@ -268,7 +268,7 @@ public class DiffTableViewer extends Composite {
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
-                                        viewerFilter.isEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
+                                        viewerFilter.isAdvancedEmpty() ? FILE.ICONEMPTYFILTER : FILE.ICONFILTER))));
                         viewer.refresh();
                     }
                 }
@@ -1192,7 +1192,6 @@ public class DiffTableViewer extends Composite {
         private final Collection<DbObjType> types = EnumSet.noneOf(DbObjType.class);
         private final Collection<DiffSide> sides = EnumSet.noneOf(DiffSide.class);
 
-
         private final AbstractFilter codeFilter = new CodeFilter();
         private final AbstractFilter schemaFilter = new SchemaFilter();
         private final AbstractFilter gitUserFilter = new UserFilter();
@@ -1218,7 +1217,7 @@ public class DiffTableViewer extends Composite {
             }
         }
 
-        public boolean isEmpty() {
+        public boolean isAdvancedEmpty() {
             return types.isEmpty() && sides.isEmpty()
                     && codeFilter.isEmpty()
                     && dbUserFilter.isEmpty()
@@ -1251,16 +1250,7 @@ public class DiffTableViewer extends Composite {
             }
 
             ElementMetaInfo meta = elementInfoMap.get(el);
-
-            if (!gitUserFilter.isEmpty() && !gitUserFilter.searchMatches(meta.getGitUser())) {
-                return false;
-            }
-
-            if (!dbUserFilter.isEmpty() && !dbUserFilter.searchMatches(meta.getDbUser())) {
-                return false;
-            }
-
-            if (isLocalChange.get() && !meta.isChanged()) {
+            if (meta != null && !metaFilter(meta)) {
                 return false;
             }
 
@@ -1301,8 +1291,7 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public boolean isFilterProperty(Object element, String property) {
-            System.err.println(property);
-            return property == GITLABEL_PROP;
+            return true;
         }
 
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
@@ -1325,6 +1314,19 @@ public class DiffTableViewer extends Composite {
                 }
             }
             return null;
+        }
+
+        private boolean metaFilter(ElementMetaInfo meta) {
+            if (!gitUserFilter.isEmpty() && !gitUserFilter.searchMatches(meta.getGitUser())) {
+                return false;
+            }
+            if (!dbUserFilter.isEmpty() && !dbUserFilter.searchMatches(meta.getDbUser())) {
+                return false;
+            }
+            if (isLocalChange.get() && !meta.isChanged()) {
+                return false;
+            }
+            return true;
         }
     }
 }
