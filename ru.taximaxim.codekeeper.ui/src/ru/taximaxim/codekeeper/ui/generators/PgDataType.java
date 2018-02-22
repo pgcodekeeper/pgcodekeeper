@@ -122,7 +122,7 @@ public enum PgDataType {
                 t = BIT;
             } else if (type.startsWith(NUMERIC.type)) {
                 t = PgDataType.NUMERIC;
-            } else if (type.startsWith("varchar") || type.startsWith("character")) {
+            } else if (type.startsWith("varchar") || type.startsWith("character")) { //$NON-NLS-1$ //$NON-NLS-2$
                 t = PgDataType.TEXT;
             } else if ("timestamp without time zone".equals(type)) { //$NON-NLS-1$
                 t = PgDataType.TIMESTAMP;

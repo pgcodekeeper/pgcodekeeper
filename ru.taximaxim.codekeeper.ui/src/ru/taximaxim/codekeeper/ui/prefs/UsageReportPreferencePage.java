@@ -121,7 +121,7 @@ public class UsageReportPreferencePage extends FieldEditorPreferencePage impleme
     private void appendEvents(StringBuilder builder, List<StyleRange> styles) {
         UsageEventType[] events = EventRegister.getInstance().getRegisteredEventTypes();
         if (events.length > 0) {
-            appendLabeledValue(Messages.UsageReportPreferencePage_Events, "", builder, styles);
+            appendLabeledValue(Messages.UsageReportPreferencePage_Events, "", builder, styles); //$NON-NLS-1$
             builder.append(UIConsts._NL);
             for (UsageEventType event : events) {
                 appendLabeledValue(Messages.UsageReportPreferencePage_EventComponent, event.getComponentName(), builder, styles);

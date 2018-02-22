@@ -112,19 +112,15 @@ public final class Messages extends NLS {
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
-    public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
-    public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
     public static String diffTableViewer_open_diff_in_new_window;
-    public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
-    public static String diffTableViewer_stored_selections;
     public static String diffTableViewer_use_java_regular_expressions_see_more;
     public static String diffTableViewer_use_regular_expressions;
     public static String diffTreeViewer_collapse_all;
@@ -469,17 +465,9 @@ public final class Messages extends NLS {
 
     public static String PgObject_cant_find_projects;
 
-    public static String PgObject_column_name;
-
     public static String PgObject_create_object;
 
     public static String PgObject_empty_name;
-
-    public static String PgObject_enter_column;
-
-    public static String PgObject_enter_parent;
-
-    public static String PgObject_enter_schema;
 
     public static String PgObject_file_creation_error;
 
@@ -487,13 +475,9 @@ public final class Messages extends NLS {
 
     public static String PgObject_object_type;
 
-    public static String PgObject_parent_name;
-
     public static String PgObject_parent_type;
 
     public static String PgObject_project_name;
-
-    public static String PgObject_schema_name;
 
     public static String PgObject_select_project;
 
@@ -605,6 +589,16 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_cancel;
 
+    public static String FilterDialog_db_user;
+
+    public static String FilterDialog_db_user_label;
+
+    public static String FilterDialog_git_user;
+
+    public static String FilterDialog_git_user_label;
+
+    public static String FilterDialog_only_local_changes;
+
     public static String FilterDialog_reset;
 
     public static String FilterDialog_schema_filter_placeholder;
@@ -646,10 +640,6 @@ public final class Messages extends NLS {
 
     public static String UsageReport_DialogTitle;
     public static String UsageReport_DialogMessage;
-
-    public static String HttpGetMethod_Error_Http;
-    public static String HttpGetMethod_Error_Io;
-    public static String HttpGetMethod_Success;
 
     public static String UsageReportPreferencePage_ReportedValues;
     public static String UsageReportPreferencePage_CurrentUsageHit;

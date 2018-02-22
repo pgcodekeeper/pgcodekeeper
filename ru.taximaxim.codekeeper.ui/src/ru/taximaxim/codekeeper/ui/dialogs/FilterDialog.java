@@ -126,8 +126,9 @@ public class FilterDialog extends Dialog {
         createGitUserPart(rightComposite);
 
         btnIsLocal = new Button(rightComposite, SWT.CHECK);
-        btnIsLocal.setText("Show only local changes");
+        btnIsLocal.setText(Messages.FilterDialog_only_local_changes);
         btnIsLocal.setSelection(isLocalChange.get());
+        btnIsLocal.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
 
         return container;
     }
@@ -147,15 +148,15 @@ public class FilterDialog extends Dialog {
     }
 
     private void createDbUserPart(Composite container) {
-        createFilterLabel(container, "Search by database user");
-        txtDbUser = createFilterField(container, "Enter db user name",
+        createFilterLabel(container, Messages.FilterDialog_db_user_label);
+        txtDbUser = createFilterField(container, Messages.FilterDialog_db_user,
                 dbUserFilter.getPattern());
         btnDbUserRegEx = createRegexButton(container, dbUserFilter.isUseRegex());
     }
 
     private void createGitUserPart(Composite container) {
-        createFilterLabel(container, "Search by git user");
-        txtGitUser = createFilterField(container, "Enter git user name",
+        createFilterLabel(container, Messages.FilterDialog_git_user_label);
+        txtGitUser = createFilterField(container, Messages.FilterDialog_git_user,
                 gitUserFilter.getPattern());
         btnGitUserRegEx = createRegexButton(container, gitUserFilter.isUseRegex());
     }

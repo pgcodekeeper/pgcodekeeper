@@ -88,7 +88,7 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
                             timezone, forceUnixNewlines, timePath);
                 }
             } catch (URISyntaxException e) {
-                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e);
+                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e); //$NON-NLS-1$
             }
         }
 
