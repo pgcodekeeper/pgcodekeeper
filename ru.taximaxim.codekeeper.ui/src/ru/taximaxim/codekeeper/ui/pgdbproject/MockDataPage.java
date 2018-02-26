@@ -26,6 +26,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -407,7 +409,14 @@ public class MockDataPage extends WizardPage {
         });
 
         if (!columns.isEmpty()) {
-            viewer.setSelection(new StructuredSelection(columns.get(0)));
+            getShell().addShellListener(new ShellAdapter() {
+
+                @Override
+                public void shellActivated(ShellEvent e) {
+                    getShell().removeShellListener(this);
+                    viewer.setSelection(new StructuredSelection(columns.get(0)));
+                }
+            });
         }
         setControl(container);
     }
@@ -580,9 +589,7 @@ public class MockDataPage extends WizardPage {
         data.exclude = !isShow;
         first.setVisible(isShow);
         data = (GridData)second.getLayoutData();
-        if (data != null) {
-            data.exclude = !isShow;
-        }
+        data.exclude = !isShow;
         second.setVisible(isShow);
     }
 

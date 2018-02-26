@@ -18,7 +18,7 @@ public class OpenObjectWizard extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
 
-        if (selection == StructuredSelection.EMPTY) {
+        if (selection.isEmpty()) {
             IEditorInput input = HandlerUtil.getActiveEditorInput(event);
             if (input instanceof IFileEditorInput) {
                 selection = new StructuredSelection(((IFileEditorInput)input).getFile());

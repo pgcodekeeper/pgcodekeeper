@@ -668,7 +668,7 @@
               icon="icons/pgadmin/database.png"
               id="ru.taximaxim.codekeeper.ui.newobjwizard"
               name="%wizard.name.newPgSqlObject"
-              project="true">
+              project="false">
         </wizard>
         <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"

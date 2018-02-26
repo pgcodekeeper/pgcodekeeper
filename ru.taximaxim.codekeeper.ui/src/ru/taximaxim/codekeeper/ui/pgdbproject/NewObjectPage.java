@@ -100,13 +100,13 @@ public final class NewObjectPage extends WizardPage {
         if (type == null) {
             String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
             type = allowedTypes.stream().filter(e -> e.toString().equals(lastType))
-                    .findFirst().orElse(DbObjType.SCHEMA);
+                    .findAny().orElse(DbObjType.TABLE);
         }
     }
 
     private void parseFolder(IResource resource) {
         type = allowedTypes.stream().filter(e -> e.toString().equals(resource.getName()))
-                .findFirst().orElse(null);
+                .findAny().orElse(null);
         IContainer container = resource.getParent();
         if (container != null) {
             if (type != null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION) {
