@@ -15,12 +15,12 @@ import java.util.Set;
  */
 public abstract class PgData<T> {
 
-    protected static final String EXP_FORMAT = "{0}. Expected format: {1}";
+    protected static final String EXP_FORMAT = "{0}. Expected format: {1}"; //$NON-NLS-1$
 
     private final PgDataType type;
     private String name;
     private String alias;
-    protected String any = "any value";
+    protected String any = "any value"; //$NON-NLS-1$
     protected T start;
     protected T end;
     protected int length = 255;
@@ -163,7 +163,7 @@ public abstract class PgData<T> {
     public abstract T generateValue();
 
     public String generateAsString() {
-        return generator == PgDataGenerator.ANY ? any : "" + generateValue();
+        return generator == PgDataGenerator.ANY ? any : "" + generateValue(); //$NON-NLS-1$
     }
 
     protected T generateRandom() {

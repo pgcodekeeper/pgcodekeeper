@@ -24,9 +24,9 @@ public class UsageReporter {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
-    public static final String NOT_APPLICABLE_LABEL = "N/A";
+    public static final String NOT_APPLICABLE_LABEL = "N/A"; //$NON-NLS-1$
 
-    private static final String PATH_PREFIX = "/tools/";
+    private static final String PATH_PREFIX = "/tools/"; //$NON-NLS-1$
 
     private static final UsageReporter INSTANCE = new UsageReporter();
 
@@ -231,7 +231,7 @@ public class UsageReporter {
     }
 
     private String getPagePath(UsageEvent event) {
-        return PATH_PREFIX + event.getType().getComponentName() + "/" + event.getType().getComponentVersion();
+        return PATH_PREFIX + event.getType().getComponentName() + "/" + event.getType().getComponentVersion(); //$NON-NLS-1$
     }
 
     private UsageRequest getUsageRequest() {

@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ.filters;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -8,6 +8,7 @@ import java.util.regex.PatternSyntaxException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
+import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 
 /**
@@ -50,6 +51,10 @@ public abstract class AbstractFilter {
         return pattern;
     }
 
+    public boolean isEmpty() {
+        return pattern.isEmpty();
+    }
+
     public boolean isUseRegex() {
         return useRegEx;
     }
@@ -58,12 +63,12 @@ public abstract class AbstractFilter {
      * Checks if the element meets the conditions
      *
      * @param el - checked element
-     * @param elements - full collection of elements
+     * @param elementInfoMap - full collection of elements with meta information
      * @param dbProject - project database
      * @param dbRemote - remote database
      * @return true if element meets the conditions
      */
-    public abstract boolean checkElement(TreeElement el, Set<TreeElement> elements,
+    public abstract boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
             PgDatabase dbProject, PgDatabase dbRemote);
 
     /**
@@ -77,6 +82,6 @@ public abstract class AbstractFilter {
             Matcher matcher = regExPattern.matcher(string);
             return matcher.find();
         }
-        return string.indexOf(pattern.toLowerCase()) > -1;
+        return string.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
     }
 }

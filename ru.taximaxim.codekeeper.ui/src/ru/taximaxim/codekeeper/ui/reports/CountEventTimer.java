@@ -22,7 +22,7 @@ public class CountEventTimer {
 
     public synchronized void start() {
         if (job == null) {
-            job = new Job("Daily usage event reporting") {
+            job = new Job("Daily usage event reporting") { //$NON-NLS-1$
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {

@@ -17,12 +17,16 @@ public class ElementMetaInfo {
         isChanged = true;
     }
 
+    public boolean isChanged() {
+        return isChanged;
+    }
+
     public String getGitUser() {
-        String a = gitUser == null ? "" : gitUser;
-        return isChanged ?  "*" + a : a;
+        String a = gitUser == null ? "" : gitUser; //$NON-NLS-1$
+        return isChanged ?  "*" + a : a; //$NON-NLS-1$
     }
 
     public String getDbUser() {
-        return dbUser == null ? "" : dbUser;
+        return dbUser == null ? "" : dbUser; //$NON-NLS-1$
     }
 }

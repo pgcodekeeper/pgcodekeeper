@@ -22,12 +22,12 @@ public class UsageEventType {
      */
     public UsageEventType(String componentName, String componentVersion,
             String actionName, String valueDescription) {
-        Assert.isLegal(componentName!=null, "Component name may not be null");
+        Assert.isLegal(componentName!=null, "Component name may not be null"); //$NON-NLS-1$
         Assert.isLegal(componentVersion!=null, "Component version may not be null"); //$NON-NLS-1$
         Assert.isLegal(actionName != null, "Action name may not be null"); //$NON-NLS-1$
-        this.componentName = componentName.replaceAll("\\s", "-");
+        this.componentName = componentName.replaceAll("\\s", "-"); //$NON-NLS-1$ //$NON-NLS-2$
         this.componentVersion = componentVersion;
-        this.actionName = actionName.replaceAll("\\s", "-");
+        this.actionName = actionName.replaceAll("\\s", "-"); //$NON-NLS-1$ //$NON-NLS-2$
         this.valueDescription = valueDescription;
     }
 
@@ -86,6 +86,6 @@ public class UsageEventType {
 
     @Override
     public String toString() {
-        return "{Component=\"" + componentName + "\"; Category=\"" + "\"; Action=\"" + actionName + "\"}";
+        return "{Component=\"" + componentName + "\"; Category=\"" + "\"; Action=\"" + actionName + "\"}"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 }
