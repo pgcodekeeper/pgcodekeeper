@@ -839,7 +839,7 @@ public class DiffTableViewer extends Composite {
                 if (event.getResult().isOK()) {
                     UiSync.exec(getDisplay(), () -> {
                         if (viewerFilter.isLocalChange.get() || !viewerFilter.gitUserFilter.isEmpty()) {
-                            viewer.refresh(false);
+                            viewer.refresh();
                         } else {
                             viewer.update(elements.toArray(new TreeElement[0]),
                                     new String[] { GITLABEL_PROP });
@@ -1194,8 +1194,8 @@ public class DiffTableViewer extends Composite {
 
         private final AbstractFilter codeFilter = new CodeFilter();
         private final AbstractFilter schemaFilter = new SchemaFilter();
-        private final AbstractFilter gitUserFilter = new UserFilter();
-        private final AbstractFilter dbUserFilter = new UserFilter();
+        private final AbstractFilter gitUserFilter = new UserFilter(m -> m.getGitUser());
+        private final AbstractFilter dbUserFilter = new UserFilter(m -> m.getDbUser());
 
         private final AtomicBoolean isLocalChange = new AtomicBoolean(false);
 
@@ -1249,8 +1249,15 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            ElementMetaInfo meta = elementInfoMap.get(el);
-            if (meta != null && !metaFilter(meta)) {
+            if (isLocalChange.get() && !hasLocalChanges(el)) {
+                return false;
+            }
+
+            if (!gitUserFilter.isEmpty() && !gitUserFilter.checkElement(el, elementInfoMap, null, null)) {
+                return false;
+            }
+
+            if (!dbUserFilter.isEmpty() && !dbUserFilter.checkElement(el, elementInfoMap, null, null)) {
                 return false;
             }
 
@@ -1263,7 +1270,7 @@ public class DiffTableViewer extends Composite {
             }
 
             return (codeFilter.isEmpty() || codeFilter.checkElement(el,
-                    elements, dbProject.getDbObject(), dbRemote.getDbObject()));
+                    elementInfoMap, dbProject.getDbObject(), dbRemote.getDbObject()));
         }
 
         private boolean findName(TreeElement el, boolean isSubElement) {
@@ -1289,11 +1296,6 @@ public class DiffTableViewer extends Composite {
             return found;
         }
 
-        @Override
-        public boolean isFilterProperty(Object element, String property) {
-            return true;
-        }
-
         private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
             if (filter != null && !filter.isEmpty() && text != null) {
                 String textLc = text.toLowerCase();
@@ -1316,17 +1318,25 @@ public class DiffTableViewer extends Composite {
             return null;
         }
 
-        private boolean metaFilter(ElementMetaInfo meta) {
-            if (!gitUserFilter.isEmpty() && !gitUserFilter.searchMatches(meta.getGitUser())) {
-                return false;
+        private boolean hasLocalChanges(TreeElement el) {
+            ElementMetaInfo meta = elementInfoMap.get(el);
+
+            if (meta != null) {
+                if (meta.isChanged()) {
+                    return true;
+                }
+
+                if (isSubElement(el)) {
+                    ElementMetaInfo parent = elementInfoMap.get(el.getParent());
+                    return parent != null && parent.isChanged();
+                }
+
+                return isContainer(el) && el.getChildren().stream().filter(elementInfoMap::containsKey)
+                        .map(e -> elementInfoMap.get(e))
+                        .anyMatch(m -> m != null && m.isChanged());
             }
-            if (!dbUserFilter.isEmpty() && !dbUserFilter.searchMatches(meta.getDbUser())) {
-                return false;
-            }
-            if (isLocalChange.get() && !meta.isChanged()) {
-                return false;
-            }
-            return true;
+
+            return false;
         }
     }
 }

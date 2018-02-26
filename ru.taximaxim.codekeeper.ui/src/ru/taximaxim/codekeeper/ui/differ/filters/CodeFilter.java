@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ.filters;
 
+import java.util.Map;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -7,6 +8,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
+import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
  * Contains information of code search
@@ -18,9 +20,10 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 public class CodeFilter extends AbstractFilter {
 
     @Override
-    public boolean checkElement(TreeElement el, Set<TreeElement> elements,
+    public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
             PgDatabase dbProject, PgDatabase dbRemote) {
 
+        Set<TreeElement> elements = elementInfoMap.keySet();
         if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements)) {
             return true;
         }
