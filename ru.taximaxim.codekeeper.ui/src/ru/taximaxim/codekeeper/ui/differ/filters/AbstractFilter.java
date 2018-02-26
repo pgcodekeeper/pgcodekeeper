@@ -77,11 +77,11 @@ public abstract class AbstractFilter {
      * @param string - string in which you want to check for matches
      * @return true if find matches
      */
-    public boolean searchMatches(String string) {
+    protected boolean searchMatches(String string) {
         if (regExPattern != null) {
             Matcher matcher = regExPattern.matcher(string);
             return matcher.find();
         }
-        return string.indexOf(pattern.toLowerCase()) > -1;
+        return string.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
     }
 }

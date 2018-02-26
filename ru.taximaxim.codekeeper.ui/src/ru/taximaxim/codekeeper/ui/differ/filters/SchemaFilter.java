@@ -21,9 +21,9 @@ public class SchemaFilter extends AbstractFilter {
 
         String container = el.getContainerQName();
         if (!container.isEmpty()) {
-            return searchMatches(container.toLowerCase());
+            return searchMatches(container);
         } else if (el.getType() == DbObjType.SCHEMA) {
-            return searchMatches(el.getName().toLowerCase());
+            return searchMatches(el.getName());
         }
 
         return false;

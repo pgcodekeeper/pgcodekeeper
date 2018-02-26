@@ -38,28 +38,24 @@ public class CodeFilter extends AbstractFilter {
     private boolean checkSide(TreeElement el, PgDatabase db, Set<TreeElement> elements) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
-            if (searchMatches(getCode(statement))) {
+            if (searchMatches(statement.getCreationSQL())) {
                 return true;
             }
 
             if (DiffTableViewer.isSubElement(el)) {
                 PgStatement parent = statement.getParent();
                 if (parent != null) {
-                    return searchMatches(getCode(parent));
+                    return searchMatches(parent.getCreationSQL());
                 }
             }
 
             if (DiffTableViewer.isContainer(el)) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
-                        .anyMatch(s -> s != null && searchMatches(getCode(s)));
+                        .anyMatch(s -> s != null && searchMatches(s.getCreationSQL()));
             }
         }
 
         return false;
-    }
-
-    private String getCode(PgStatement statement) {
-        return statement.getCreationSQL().toLowerCase();
     }
 }
