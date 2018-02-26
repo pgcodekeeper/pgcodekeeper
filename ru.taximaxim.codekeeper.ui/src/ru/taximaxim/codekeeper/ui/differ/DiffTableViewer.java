@@ -38,8 +38,6 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.bindings.keys.KeyStroke;
-import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
@@ -75,6 +73,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -118,7 +117,6 @@ public class DiffTableViewer extends Composite {
 
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
-    private static final String KEY_PRESS = "Ctrl+Space"; //$NON-NLS-1$
 
     private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
@@ -277,17 +275,11 @@ public class DiffTableViewer extends Composite {
 
         txtFilterName = new Text(upperComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        gd.widthHint = pc.convertWidthInCharsToPixels(35);
+        gd.widthHint = pc.convertWidthInCharsToPixels(30);
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
 
-        KeyStroke ks = null;
-        LinkedList<String> history = new LinkedList<>();
-        try {
-            ks = KeyStroke.getInstance(KEY_PRESS);
-        } catch (ParseException ex) {
-            Log.log(ex);
-        }
+        List<String> history = new LinkedList<>();
         try {
             history = XML_HISTORY.getHistory();
         } catch (IOException ex) {
@@ -298,7 +290,8 @@ public class DiffTableViewer extends Composite {
         scp.setFiltering(true);
 
         ContentProposalAdapter adapter = new ContentProposalAdapter(txtFilterName,
-                new TextContentAdapter(), scp, ks, null);
+                new TextContentAdapter(), scp, null, null);
+        adapter.setPopupSize(new Point(pc.convertWidthInCharsToPixels(40), pc.convertHeightInCharsToPixels(8)));
         adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 
         useRegEx = new Button(upperComp, SWT.CHECK);

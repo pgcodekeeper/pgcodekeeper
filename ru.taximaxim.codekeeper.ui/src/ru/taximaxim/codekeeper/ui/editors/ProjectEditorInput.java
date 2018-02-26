@@ -21,6 +21,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     private final String projName;
     private PgCodekeeperUIException ex;
+    private String toolTip;
 
     public ProjectEditorInput(String projectName) {
         projName = projectName;
@@ -102,9 +103,13 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
         return this;
     }
 
+    public void setToolTipText(String toolTip) {
+        this.toolTip = toolTip;
+    }
+
     @Override
     public String getToolTipText() {
-        return MessageFormat.format(
+        return toolTip != null ? toolTip : MessageFormat.format(
                 Messages.ProjectEditorInput_pgcodekeeper_project, projName);
     }
 
@@ -128,10 +133,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
             return false;
         }
         ProjectEditorInput other = (ProjectEditorInput) obj;
-        if (!projName.equals(other.projName)) {
-            return false;
-        }
-        return true;
+        return projName.equals(other.projName);
     }
 
     @Override

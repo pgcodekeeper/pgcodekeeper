@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.propertytests;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
@@ -18,7 +19,7 @@ public class MockDataPropertyTester extends PropertyTester {
         IFile file = (IFile) receiver;
         if (PgUIDumpLoader.isInProject(file)) {
             try {
-                return PgUIDumpLoader.parseStatement(file, DbObjType.TABLE) != null;
+                return PgUIDumpLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE)) != null;
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }
