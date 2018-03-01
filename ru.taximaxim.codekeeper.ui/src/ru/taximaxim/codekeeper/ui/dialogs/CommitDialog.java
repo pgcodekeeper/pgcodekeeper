@@ -18,11 +18,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -129,7 +127,6 @@ public class CommitDialog extends TrayDialog {
             }
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.DIALOG_UPDATE_PROJECT);
         return area;
     }
 

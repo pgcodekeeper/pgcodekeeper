@@ -65,7 +65,6 @@
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.osgi.util"/>
-      <plugin id="ru.taximaxim.codekeeper.ui.help"/>
    </plugins>
 
    <configurations>

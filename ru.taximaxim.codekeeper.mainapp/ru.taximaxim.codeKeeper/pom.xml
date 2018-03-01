@@ -40,7 +40,6 @@ to update all relevant poms and metadatas
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
         <module>../../ru.taximaxim.codekeeper.cli</module>
         <module>../../ru.taximaxim.codekeeper.cli.tests</module>
-        <module>../../ru.taximaxim.codekeeper.ui.help</module>
         <module>../feature</module>
         <module>../updatesite</module>
         <module>../product</module>

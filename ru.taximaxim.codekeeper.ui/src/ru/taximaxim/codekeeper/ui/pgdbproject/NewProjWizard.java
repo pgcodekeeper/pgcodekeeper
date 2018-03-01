@@ -39,7 +39,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
-import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
@@ -51,7 +50,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -88,15 +86,6 @@ implements IExecutableExtension, INewWizard {
         addPage(pageRepo);
         pageDb = new PageDb("schema", mainPrefStore); //$NON-NLS-1$
         addPage(pageDb);
-    }
-
-    @Override
-    public void createPageControls(Composite pageContainer) {
-        super.createPageControls(pageContainer);
-
-        IWorkbenchHelpSystem helpSystem = workbench.getHelpSystem();
-        helpSystem.setHelp(pageRepo.getControl(), HELP.NEW_WIZARD);
-        helpSystem.setHelp(pageDb.getControl(), HELP.NEW_WIZARD_INIT);
     }
 
     @Override

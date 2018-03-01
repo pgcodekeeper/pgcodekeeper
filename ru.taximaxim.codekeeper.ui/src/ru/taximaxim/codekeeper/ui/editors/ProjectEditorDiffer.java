@@ -98,7 +98,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -328,8 +327,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         });
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
-
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, HELP.MAIN_EDITOR);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE

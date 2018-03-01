@@ -571,6 +571,40 @@
               </visibleWhen>
            </command>
         </menuContribution>
+        <menuContribution
+              locationURI="menu:help?after=dynamicHelp">
+           <command
+                 commandId="ru.taximaxim.codekeeper.ui.openDocs"
+                 label="%command.label.openDocs"
+                 style="push">
+                <visibleWhen checkEnabled="false">
+                    <or>
+                        <with variable="activeWorkbenchWindow.activePerspective">
+                            <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                            </equals>
+                        </with>
+                        <with variable="activeEditorId">
+                            <or>
+                                <equals value="ru.taximaxim.codekeeper.ui.projectEditorDiffer">
+                                </equals>
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </or>
+                        </with>
+                        <with variable="selection">
+                            <iterate ifEmpty="false">
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test
+                                        property="org.eclipse.core.resources.projectNature"
+                                        value="ru.taximaxim.codekeeper.ui.nature">
+                                    </test>
+                                </adapt>
+                            </iterate>
+                        </with>
+                    </or>
+                </visibleWhen>
+           </command>
+        </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
