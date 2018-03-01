@@ -43,11 +43,7 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -137,7 +133,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite parent;
 
     private Object currentRemote;
-    private DbSource dbProject, dbRemote;
+    private DbSource dbProject;
+    private DbSource dbRemote;
     private TreeElement diffTree;
     private Object loadedRemote;
 
@@ -149,7 +146,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
-    private IStatusLineManager manager;
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
@@ -189,8 +185,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-
-        manager = getEditorSite().getActionBars().getStatusLineManager();
 
         parent.setLayout(new GridLayout());
         lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
@@ -238,6 +232,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
         diffTable = new DiffTableViewer(sashOuter, false, manager, Paths.get(proj.getProject().getLocationURI())) {
 
@@ -296,35 +292,21 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         };
 
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                if (selection.size() != 1) {
-                    diffPane.setInput(null, null);
-                } else {
-                    TreeElement el = (TreeElement) selection.getFirstElement();
-                    diffPane.setInput(el, diffTable.getElements());
-                }
-            }
-        });
-        diffTable.getViewer().addDoubleClickListener(new IDoubleClickListener() {
-
-            @Override
-            public void doubleClick(DoubleClickEvent e) {
-                TreeElement el = (TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement();
-                openElementInEditor(el);
+        diffTable.getViewer().addPostSelectionChangedListener(e -> {
+            IStructuredSelection selection = (IStructuredSelection) e.getSelection();
+            if (selection.size() != 1) {
+                diffPane.setInput(null, null);
+            } else {
+                TreeElement el = (TreeElement) selection.getFirstElement();
+                diffPane.setInput(el, diffTable.getElements());
             }
         });
 
-        diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.getViewer().addDoubleClickListener(
+                e -> openElementInEditor((TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement()));
 
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                sp.fireSelectionChanged(event, new DBPair(dbProject, dbRemote));
-            }
-        });
+        diffTable.getViewer().addPostSelectionChangedListener(
+                e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
 
@@ -404,13 +386,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private void handlerCloseProject(IResourceChangeEvent event) {
         if (event.getResource().getProject().equals(proj.getProject())) {
-            UiSync.exec(parent, new Runnable(){
-
-                @Override
-                public void run() {
-                    if (!parent.isDisposed()) {
-                        getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
-                    }
+            UiSync.exec(parent, () -> {
+                if (!parent.isDisposed()) {
+                    getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
                 }
             });
         }
@@ -829,13 +807,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        UiSync.exec(parent, new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if (!parent.isDisposed()) {
-                                    callEgitCommitCommand();
-                                }
+                        UiSync.exec(parent, () -> {
+                            if (!parent.isDisposed()) {
+                                callEgitCommitCommand();
                             }
                         });
                     } catch (CoreException e) {

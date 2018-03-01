@@ -31,10 +31,10 @@ public class CommitDialog extends TrayDialog {
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
 
-    private final DbSource dbProject, dbRemote;
+    private final DbSource dbProject;
+    private final DbSource dbRemote;
     private final TreeElement diffTree;
     private final Set<TreeElement> depcyElementsSet;
-    private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
     private Label warningLbl;
@@ -78,7 +78,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, true, null, null);
+        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, null, null);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
