@@ -256,9 +256,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         super.init(site, input);
 
-        checkBuilder();
-
         try {
+            checkBuilder();
             parser = initParser();
         } catch (PartInitException ex) {
             throw ex;
@@ -278,18 +277,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         getSite().getPage().addPartListener(partListener);
     }
 
-    private void checkBuilder() {
+    private void checkBuilder() throws CoreException {
         IResource resource = ResourceUtil.getResource(getEditorInput());
-        if (resource != null) {
-            IProject proj = resource.getProject();
-
-            if (!AddBuilder.hasBuilder(proj)) {
-                MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                mb.setText(Messages.SqlEditor_absent_builder_title);
-                mb.setMessage(Messages.SqlEditor_absent_builder_message);
-                if (mb.open() == SWT.YES) {
-                    AddBuilder.addBuilder(proj);
-                }
+        IProject proj = resource == null ? null : resource.getProject();
+        if (proj != null && proj.hasNature(NATURE.ID) && !AddBuilder.hasBuilder(proj)) {
+            MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            mb.setText(Messages.SqlEditor_absent_builder_title);
+            mb.setMessage(Messages.SqlEditor_absent_builder_message);
+            if (mb.open() == SWT.YES) {
+                AddBuilder.addBuilder(proj);
             }
         }
     }
