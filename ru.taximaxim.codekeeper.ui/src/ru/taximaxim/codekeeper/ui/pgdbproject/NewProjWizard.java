@@ -134,7 +134,8 @@ implements IExecutableExtension, INewWizard {
         try {
             props = PgDbProject.createPgDbProject(pageRepo.getProjectHandle(),
                     pageRepo.useDefaults() ? null : pageRepo.getLocationURI());
-            props.getProject().open(IResource.BACKGROUND_REFRESH, null);
+            props.getProject().open(null);
+            props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
 
             if (!checkMarkerExist()) {
                 String charset = pageDb.getCharset();
