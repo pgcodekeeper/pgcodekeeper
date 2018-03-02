@@ -43,7 +43,6 @@ to update all relevant poms and metadatas
         <module>../feature</module>
         <module>../updatesite</module>
         <module>../product</module>
-        <module>../productinfocenter</module>
     </modules>
 
     <prerequisites>
