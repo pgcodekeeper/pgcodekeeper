@@ -1,8 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -89,25 +88,19 @@ public class UtilAnalyzeExpr {
 
     public static void analyzeFunctionDefaults(Vex_eofContext ctx, PgFunction f, String schemaName) {
         List<VexContext> vexCtxList = ctx.vex();
-
-        Deque<String> defultsQueue = new ArrayDeque<>();
-        for (VexContext vx : vexCtxList) {
-            defultsQueue.offerLast(ParserAbstract.getFullCtxText(vx));
-        }
+        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
 
         for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
-            if (defultsQueue.isEmpty()) {
+            if (!vexCtxListIterator.hasPrevious()) {
                 break;
             }
             IArgument a = f.getArguments().get(i);
             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
-                a.setDefaultExpression(defultsQueue.pollLast());
+                VexContext vx = vexCtxListIterator.previous();
+                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
+                analyze(vx, new ValueExpr(schemaName), f);
+                vexCtxListIterator.remove();
             }
-        }
-
-        ValueExpr vex = new ValueExpr(schemaName);
-        for (VexContext vx : vexCtxList) {
-            analyze(vx, vex, f);
         }
     }
 }

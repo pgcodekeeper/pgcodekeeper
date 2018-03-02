@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -47,37 +46,6 @@ public class FunctionsReader extends JdbcReader {
 
         f.setBody(loader.args, getFunctionBody(res, schemaName));
 
-        // RETURN TYPE
-
-        boolean returnsTable = false;
-        StringBuilder returnedTableArguments = new StringBuilder();
-        String[] argModes = res.getArray("proargmodes", String.class);
-        String[] argNames = res.getArray("proargnames", String.class);
-        Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
-        if (argModes != null && Arrays.asList(argModes).contains("t")) {
-            for (int i = 0; i < argModes.length; i++) {
-                String type = argModes[i];
-                if ("t".equals(type)) {
-                    returnsTable = true;
-                    returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
-                    returnedTableArguments.append(argNames[i]).append(" ");
-
-                    JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
-                    returnedTableArguments.append(returnType.getFullName(schemaName));
-                    returnType.addTypeDepcy(f);
-                }
-            }
-        }
-
-        if (returnsTable) {
-            f.setReturns("TABLE(" + returnedTableArguments + ")");
-        } else {
-            JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-            String retType = returnType.getFullName(schemaName);
-            f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
-            returnType.addTypeDepcy(f);
-        }
-
         // OWNER
         loader.setOwner(f, res.getLong("proowner"));
 
@@ -87,71 +55,63 @@ public class FunctionsReader extends JdbcReader {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        boolean returnsTable = false;
+        StringBuilder returnedTableArguments = new StringBuilder();
+        String[] argModes = res.getArray("proargmodes", String.class);
+        String[] argNames = res.getArray("proargnames", String.class);
+        Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
         StringBuilder argsWithoutDefault = new StringBuilder();
 
-        Long[] argtypes = res.getArray("argtypes", Long.class);
+        Long[] argTypes = argTypeOids != null ? argTypeOids : res.getArray("argtypes", Long.class);
+        if (argTypes != null) {
+            for (int i = 0; argTypes.length > i; i++) {
+                String aMode = argModes != null ? argModes[i] : "i";
 
-        if(argTypeOids != null || argtypes != null) {
-            if (argTypeOids == null) {
-                for (int i = 0; argtypes.length > i; i++) {
-                    Argument a = f.new Argument(argNames != null ? argNames[i] : null,
-                            loader.cachedTypesByOid.get(argtypes[i]).getFullName(schemaName));
+                JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
+                returnType.addTypeDepcy(f);
 
-                    f.addArgument(a);
-
-                    if (a.getName() != null) {
-                        argsWithoutDefault.append(a.getName()).append(" ");
-                    } else {
-                        argsWithoutDefault.append("");
-                    }
-                    argsWithoutDefault.append(a.getDataType())
-                    .append(argtypes.length - 1  > i ? ", " : "");
-                }
-            } else {
-                int tableModesCount = 0;
-
-                for (int i = 0; argTypeOids.length > i; i++) {
-                    if("t".equals(argModes[i])) {
-                        tableModesCount++;
-                    }
+                if("t".equals(aMode)) {
+                    returnsTable = true;
+                    returnedTableArguments.append(argNames[i]).append(" ")
+                    .append(returnType.getFullName(schemaName)).append(", ");
+                    continue;
                 }
 
-                for (int i = 0; argTypeOids.length > i; i++) {
-                    String aMode = argModes[i];
-                    if(!"t".equals(aMode)) {
-                        switch(aMode) {
-                        case "i":
-                            aMode = "IN";
-                            break;
-                        case "o":
-                            aMode = "OUT";
-                            break;
-                        case "b":
-                            aMode = "INOUT";
-                            break;
-                        case "v":
-                            aMode = "VARIADIC";
-                            break;
-                        }
-
-                        Argument a = f.new Argument(aMode,
-                                argNames != null ? argNames[i] : null,
-                                        loader.cachedTypesByOid.get(argTypeOids[i]).getFullName(schemaName));
-
-                        f.addArgument(a);
-
-                        if (!"IN".equals(a.getMode())) {
-                            argsWithoutDefault.append(a.getMode()).append(" ");
-                        }
-                        if (a.getName() != null) {
-                            argsWithoutDefault.append(a.getName()).append(" ");
-                        } else {
-                            argsWithoutDefault.append("");
-                        }
-                        argsWithoutDefault.append(a.getDataType())
-                        .append(argTypeOids.length - 1 - tableModesCount > i ? ", " : "");
-                    }
+                switch(aMode) {
+                case "i":
+                    aMode = "IN";
+                    break;
+                case "o":
+                    aMode = "OUT";
+                    break;
+                case "b":
+                    aMode = "INOUT";
+                    break;
+                case "v":
+                    aMode = "VARIADIC";
+                    break;
                 }
+
+                Argument a = f.new Argument(aMode,
+                        argNames != null ? argNames[i] : null,
+                                loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+
+                f.addArgument(a);
+
+                if (argModes != null && !"IN".equals(a.getMode())) {
+                    argsWithoutDefault.append(a.getMode()).append(" ");
+                }
+                if (a.getName() != null) {
+                    argsWithoutDefault.append(a.getName()).append(" ");
+                }
+                argsWithoutDefault.append(a.getDataType()).append(", ");
+
+            }
+            if (argsWithoutDefault.length() != 0) {
+                argsWithoutDefault.setLength(argsWithoutDefault.length() - 2);
+            }
+            if (returnedTableArguments.length() != 0) {
+                returnedTableArguments.setLength(returnedTableArguments.length() - 2);
             }
 
             String defaultValuesAsString = res.getString("default_values_as_string");
@@ -166,10 +126,19 @@ public class FunctionsReader extends JdbcReader {
             }
         }
 
+        // RETURN TYPE
+        if (returnsTable) {
+            f.setReturns("TABLE(" + returnedTableArguments + ")");
+        } else {
+            JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
+            String retType = returnType.getFullName(schemaName);
+            f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
+            returnType.addTypeDepcy(f);
+        }
+
         // PRIVILEGES
-        String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "("
-                + argsWithoutDefault.toString() + ")";
-        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
+        loader.setPrivileges(f, f.appendFunctionSignature(new StringBuilder(), false, true).toString(),
+                res.getString("aclarray"), f.getOwner(), null);
 
         schema.addFunction(f);
     }
