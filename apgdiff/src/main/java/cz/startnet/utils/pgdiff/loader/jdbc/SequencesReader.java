@@ -57,7 +57,8 @@ public class SequencesReader extends JdbcReader {
             identityType = res.getString("attidentity");
         }
 
-        if (refTable != null && identityType == null) {
+        if (refTable != null && (identityType == null
+                || (!"d".equals(identityType) && !"a".equals(identityType)))) {
             s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
                     + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
         }
@@ -84,7 +85,7 @@ public class SequencesReader extends JdbcReader {
             }
         }
 
-        if (identityType != null) {
+        if ("d".equals(identityType) || "a".equals(identityType)) {
             PgTable table = schema.getTable(refTable);
             PgColumn column = table.getColumn(refColumn);
             if (column == null) {
