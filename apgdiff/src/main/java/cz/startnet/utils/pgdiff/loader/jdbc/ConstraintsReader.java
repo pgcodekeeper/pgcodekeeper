@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -75,16 +76,14 @@ public class ConstraintsReader extends JdbcReader {
                     Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
                             .table_action(0);
                     Constr_bodyContext bodyCtx = tableActionCtx.tabl_constraint.constr_body();
-
                     c.setDefinition(ParserAbstract.getFullCtxText(bodyCtx));
                     c.setNotValid(tableActionCtx.not_valid != null);
-
                     return bodyCtx;
                 },
                 (ctx, db) ->  {
                     db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
 
-                    ParserAbstract.parseConstraintExpr(ctx, schemaName, c);
+                    UtilAnalyzeExpr.analyzeConstraint(ctx, schemaName, c);
                 });
 
         String comment = res.getString("description");

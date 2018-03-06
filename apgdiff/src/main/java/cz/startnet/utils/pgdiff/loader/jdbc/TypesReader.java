@@ -1,14 +1,13 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -97,14 +96,10 @@ public class TypesReader extends JdbcReader {
         } else {
             loader.submitAntlrTask(def, dataBase,
                     p -> p.vex_eof().vex().get(0),
-                    (ctx, db) -> {
-                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(d, ctx));
-
-                        UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), d);
-                    });
+                    (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
         }
-        d.setDefaultValue(def);
 
+        d.setDefaultValue(def);
         d.setNotNull(res.getBoolean("dom_notnull"));
 
         String[] connames = res.getArray("dom_connames", String.class);
@@ -123,11 +118,7 @@ public class TypesReader extends JdbcReader {
                             c.setDefinition(ParserAbstract.getFullCtxText(body));
 
                             return body;
-                        }, (ctx, db) -> {
-                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
-
-                            ParserAbstract.parseConstraintExpr(ctx, schemaName, c);
-                        });
+                        }, (ctx, db) -> db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx)));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

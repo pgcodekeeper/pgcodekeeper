@@ -12,8 +12,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -24,7 +22,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -111,21 +108,6 @@ public abstract class ParserAbstract {
             }
 
             function.addArgument(arg);
-        }
-    }
-
-    public static void parseConstraintExpr(Constr_bodyContext ctx, String schemaName,
-            PgConstraint constr) {
-        VexContext exp = null;
-        Common_constraintContext common = ctx.common_constraint();
-        Check_boolean_expressionContext check;
-        if (common != null && (check = common.check_boolean_expression()) != null) {
-            exp = check.expression;
-        } else {
-            exp = ctx.vex();
-        }
-        if (exp != null) {
-            UtilAnalyzeExpr.analyze(exp, new ValueExpr(schemaName), constr);
         }
     }
 

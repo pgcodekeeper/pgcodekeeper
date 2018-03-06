@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -8,8 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -36,9 +35,7 @@ public class CreateDomain extends ParserAbstract {
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {
-            ValueExpr vex = new ValueExpr(schema.getName());
-            vex.analyze(new Vex(exp));
-            domain.addAllDeps(vex.getDepcies());
+            db.getContextsForAnalyze().add(new SimpleEntry<>(domain, exp));
             domain.setDefaultValue(getFullCtxText(exp));
         }
         for (Domain_constraintContext constr : ctx.dom_constraint) {

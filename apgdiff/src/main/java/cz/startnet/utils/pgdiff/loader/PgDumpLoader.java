@@ -25,6 +25,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -34,6 +35,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -253,10 +255,7 @@ public class PgDumpLoader implements AutoCloseable {
             ParserRuleContext ctx = entry.getValue();
             DbObjType stmtType = stmt.getStatementType();
 
-            String schemaName = null;
-            if (stmt instanceof PgStatementWithSearchPath) {
-                schemaName = ((PgStatementWithSearchPath) stmt).getContainingSchema().getName();
-            }
+            String schemaName = ((PgStatementWithSearchPath) stmt).getContainingSchema().getName();
 
             switch (stmtType) {
             case VIEW:
@@ -267,20 +266,25 @@ public class PgDumpLoader implements AutoCloseable {
                 Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) ctx;
                 PgRule rule = (PgRule)stmt;
 
-                UtilAnalyzeExpr.analyzeRulesRewriteCreateStmtCtx(createRuleCtx, rule, schemaName);
+                UtilAnalyzeExpr.analyzeRulesWhere(createRuleCtx, rule, schemaName);
 
                 if (!rule.getCommands().isEmpty()) {
                     for (Rewrite_commandContext cmd : createRuleCtx.commands) {
-                        UtilAnalyzeExpr.analyzeRulesRewriteCommandCtx(cmd, rule, schemaName);
+                        UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
                     }
                 }
                 break;
             case TRIGGER:
-                UtilAnalyzeExpr.analyzeTriggersWhenVexCtx((VexContext) ctx, (PgTrigger)stmt, schemaName);
+                UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx, (PgTrigger)stmt, schemaName);
                 break;
             case INDEX:
             case FUNCTION:
+            case DOMAIN:
+            case COLUMN:
                 UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), stmt);
+                break;
+            case CONSTRAINT:
+                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)ctx, schemaName, (PgConstraint)stmt);
                 break;
             default:
                 throw new IllegalStateException("The analyze for the case is not defined!"); //$NON-NLS-1$

@@ -11,15 +11,16 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.Select;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -69,6 +70,8 @@ public final class SecondAnalyze {
                 return;
             }
 
+            ParserRuleContext first = statementContexts.get(0);
+
             switch (statement.getStatementType()) {
             case VIEW:
                 PgView view = (PgView)statement;
@@ -83,36 +86,40 @@ public final class SecondAnalyze {
                 }
                 break;
             case RULE:
-                Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext)statementContexts.get(0);
+                Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) first;
                 PgRule rule = (PgRule)statement;
 
-                UtilAnalyzeExpr.analyzeRulesRewriteCreateStmtCtx(createRewriteCtx, rule, schemaName);
+                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName);
                 for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                    UtilAnalyzeExpr.analyzeRulesRewriteCommandCtx(cmd, rule, schemaName);
+                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
                 }
                 break;
             case TRIGGER:
-                for (ParserRuleContext ctx : statementContexts) {
-                    if (ctx instanceof When_triggerContext) {
-                        UtilAnalyzeExpr.analyzeTriggersWhenVexCtx(((When_triggerContext)statementContexts.get(0)).vex(),
-                                (PgTrigger)statement, schemaName);
-                    } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), statement);
-                    }
-                }
+                UtilAnalyzeExpr.analyzeTriggersWhen((VexContext)first,
+                        (PgTrigger)statement, schemaName);
                 break;
             case INDEX:
-                UtilAnalyzeExpr.analyze((VexContext)statementContexts.get(0),
-                        new ValueExpr(schemaName), statement);
+            case DOMAIN:
+                UtilAnalyzeExpr.analyze((VexContext)first, new ValueExpr(schemaName), statement);
                 break;
             case FUNCTION:
                 for (ParserRuleContext ctx : statementContexts) {
                     if (ctx instanceof Vex_eofContext) {
-                        UtilAnalyzeExpr.analyzeFunctionDefaults((Vex_eofContext)statementContexts.get(0),
+                        UtilAnalyzeExpr.analyzeFunctionDefaults((Vex_eofContext)ctx,
                                 (PgFunction)statement, schemaName);
                     } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), statement);
+                        UtilAnalyzeExpr.analyze((VexContext)ctx,
+                                new ValueExpr(schemaName), statement);
                     }
+                }
+                break;
+            case CONSTRAINT:
+                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)first,
+                        schemaName, (PgConstraint)statement);
+                break;
+            case COLUMN:
+                for (ParserRuleContext ctx : statementContexts) {
+                    UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), statement);
                 }
                 break;
             default:

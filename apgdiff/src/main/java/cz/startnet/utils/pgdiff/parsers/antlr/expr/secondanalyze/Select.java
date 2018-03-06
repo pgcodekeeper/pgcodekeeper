@@ -187,16 +187,15 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                             && (ast = valExprPrimary.qualified_asterisk()) != null) {
                         Schema_qualified_nameContext qNameAst = ast.tb_name;
                         ret.addAll(qNameAst == null ? getColsOfNotQualAster() : getColsOfQualAster(qNameAst));
-                        continue;
+                    } else {
+                        Entry<String, String> columnPair = vexCol.analyze(selectSublistVex);
+
+                        if (target.alias != null && columnPair != null) {
+                            columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
+                        }
+
+                        ret.add(columnPair);
                     }
-
-                    Entry<String, String> columnPair = vexCol.analyze(selectSublistVex);
-
-                    if(target.alias != null && columnPair != null){
-                        columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
-                    }
-
-                    ret.add(columnPair);
                 }
 
                 ValueExpr vex = new ValueExpr(this);
