@@ -19,15 +19,19 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.Select;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class SecondAnalyze {
 
@@ -99,6 +103,11 @@ public final class SecondAnalyze {
                         (PgTrigger)statement, schemaName);
                 break;
             case INDEX:
+                ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName);
+                valExptWithNmspc.addRawTableReference(new GenericColumn(
+                        schemaName, ((PgIndex)statement).getTableName(), DbObjType.TABLE));
+                UtilAnalyzeExpr.analyze((VexContext)first, valExptWithNmspc, statement);
+                break;
             case DOMAIN:
                 UtilAnalyzeExpr.analyze((VexContext)first, new ValueExpr(schemaName), statement);
                 break;
