@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
@@ -44,18 +45,7 @@ public class CreateIndex extends ParserAbstract {
 
         ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(), DbObjType.TABLE));
 
-        // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
-        for (Sort_specifierContext sort_ctx : ctx.index_rest().index_sort().sort_specifier_list().sort_specifier()){
-            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
-            if (vexPrimary != null) {
-                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
-                if (colName != null) {
-                    ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(),
-                            colName.getText(), DbObjType.COLUMN));
-                }
-            }
-            ind.addColumn(sort_ctx.key.getText());
-        }
+        parseIndexCols(ctx.index_rest().index_sort(), ind, schema);
 
         return ind;
     }
@@ -75,5 +65,20 @@ public class CreateIndex extends ParserAbstract {
             sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
         return sb.toString();
+    }
+
+    // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
+    public static void parseIndexCols(Index_sortContext indexSort, PgIndex ind, PgSchema schema) {
+        for (Sort_specifierContext sort_ctx : indexSort.sort_specifier_list().sort_specifier()) {
+            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
+            if (vexPrimary != null) {
+                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
+                if (colName != null) {
+                    ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(),
+                            colName.getText(), DbObjType.COLUMN));
+                }
+            }
+            ind.addColumn(sort_ctx.key.getText());
+        }
     }
 }

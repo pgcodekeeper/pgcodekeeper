@@ -6,6 +6,8 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_sortContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -59,8 +61,11 @@ public class IndicesReader extends JdbcReader {
                     Index_restContext indexRestCtx = p.sql().statement(0).schema_statement()
                             .schema_create().create_index_statement().index_rest();
 
+                    Index_sortContext indexSort = indexRestCtx.index_sort();
+                    CreateIndex.parseIndexCols(indexSort, i, schema);
+
                     StringBuilder sb = new StringBuilder();
-                    sb.append(ParserAbstract.getFullCtxText(indexRestCtx.index_sort()));
+                    sb.append(ParserAbstract.getFullCtxText(indexSort));
                     if (indexRestCtx.table_space() != null){
                         sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.table_space()));
                     } else if (tablespace != null) {

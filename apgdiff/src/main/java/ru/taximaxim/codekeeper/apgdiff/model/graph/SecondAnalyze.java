@@ -19,8 +19,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -103,10 +103,10 @@ public final class SecondAnalyze {
                         (PgTrigger)statement, schemaName);
                 break;
             case INDEX:
-                ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName);
+                ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName, db);
                 valExptWithNmspc.addRawTableReference(new GenericColumn(
                         schemaName, ((PgIndex)statement).getTableName(), DbObjType.TABLE));
-                UtilAnalyzeExpr.analyze((VexContext)first, valExptWithNmspc, statement);
+                UtilAnalyzeExpr.analyzeSecond((VexContext)first, valExptWithNmspc, statement);
                 break;
             case DOMAIN:
                 UtilAnalyzeExpr.analyze((VexContext)first, new ValueExpr(schemaName), statement);

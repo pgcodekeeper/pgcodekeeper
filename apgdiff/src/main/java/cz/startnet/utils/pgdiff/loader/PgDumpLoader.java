@@ -34,7 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -281,10 +281,10 @@ public class PgDumpLoader implements AutoCloseable {
                 UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx, (PgTrigger)stmt, schemaName);
                 break;
             case INDEX:
-                ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName);
+                ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName, db);
                 valExptWithNmspc.addRawTableReference(new GenericColumn(
                         schemaName, ((PgIndex)stmt).getTableName(), DbObjType.TABLE));
-                UtilAnalyzeExpr.analyze((VexContext)ctx, valExptWithNmspc, stmt);
+                UtilAnalyzeExpr.analyzeSecond((VexContext)ctx, valExptWithNmspc, stmt);
                 break;
             case FUNCTION:
             case DOMAIN:

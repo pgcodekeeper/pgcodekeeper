@@ -36,11 +36,6 @@ public class UtilAnalyzeExpr {
         pg.addAllDeps(analyzer.getDepcies());
     }
 
-    public static void analyze(VexContext ctx, ValueExprWithNmspc analyzer, PgStatement pg) {
-        analyzer.analyze(new Vex(ctx));
-        pg.addAllDeps(analyzer.getDepcies());
-    }
-
     public static void analyzeSecond(VexContext ctx,
             cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc analyzer,
             PgStatement pg) {
