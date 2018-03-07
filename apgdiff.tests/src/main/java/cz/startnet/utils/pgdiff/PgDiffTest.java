@@ -39,6 +39,8 @@ public class PgDiffTest {
                 new Object[][]{
                     // Tests scenario where COLUMN type is modified.
                     {"modify_column_type"},
+                    // Tests scenario where COLUMN type is modified, column has constraint.
+                    {"modify_column_type_with_constraint"},
                     // Tests scenario where CLUSTER is added to TABLE.
                     {"add_cluster"},
                     // Tests scenario where CLUSTER is dropped from TABLE.
