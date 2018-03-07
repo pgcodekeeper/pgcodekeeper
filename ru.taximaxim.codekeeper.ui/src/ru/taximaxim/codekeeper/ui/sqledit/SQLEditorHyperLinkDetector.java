@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -21,20 +22,22 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
         int offset = region.getOffset();
         List<PgObjLocation> refs = parser.getObjsForEditor(editor.getEditorInput());
+
+        Stream<IHyperlink> links = Stream.empty();
+
         for (PgObjLocation obj : refs) {
-            if (offset > obj.getOffset()
+            if (offset >= obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                IHyperlink[] links =  parser.getDefinitionsForObj(obj)
+                Stream<IHyperlink> stream = parser.getDefinitionsForObj(obj)
                         .map(def -> new SQLEditorHyperLink(
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
-                                obj.getObjName(), def.getFilePath(), def.getLineNumber()))
-                        .toArray(IHyperlink[]::new);
-                if (links.length != 0) {
-                    return links;
-                }
+                                obj.getObjName(), def.getFilePath(), def.getLineNumber()));
+                links = Stream.concat(links, stream);
             }
         }
-        return null;
+
+        IHyperlink[] result = links.toArray(IHyperlink[]::new);
+        return result.length == 0 ? null : result;
     }
 }
