@@ -124,7 +124,7 @@ public final class SecondAnalyze {
                 break;
             case CONSTRAINT:
                 UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)first,
-                        schemaName, (PgConstraint)statement);
+                        schemaName, (PgConstraint)statement, db);
                 break;
             case COLUMN:
                 for (ParserRuleContext ctx : statementContexts) {

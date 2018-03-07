@@ -292,7 +292,7 @@ public class PgDumpLoader implements AutoCloseable {
                 UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), stmt);
                 break;
             case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)ctx, schemaName, (PgConstraint)stmt);
+                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)ctx, schemaName, (PgConstraint)stmt, db);
                 break;
             default:
                 throw new IllegalStateException("The analyze for the case is not defined!"); //$NON-NLS-1$

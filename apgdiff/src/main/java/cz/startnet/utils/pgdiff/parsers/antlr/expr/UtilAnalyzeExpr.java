@@ -17,6 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -36,6 +37,13 @@ public class UtilAnalyzeExpr {
     }
 
     public static void analyze(VexContext ctx, ValueExprWithNmspc analyzer, PgStatement pg) {
+        analyzer.analyze(new Vex(ctx));
+        pg.addAllDeps(analyzer.getDepcies());
+    }
+
+    public static void analyzeSecond(VexContext ctx,
+            cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc analyzer,
+            PgStatement pg) {
         analyzer.analyze(new Vex(ctx));
         pg.addAllDeps(analyzer.getDepcies());
     }
@@ -82,7 +90,7 @@ public class UtilAnalyzeExpr {
     }
 
     public static void analyzeConstraint(Constr_bodyContext ctx, String schemaName,
-            PgConstraint constr) {
+            PgConstraint constr, PgDatabase db) {
         VexContext exp = null;
         Common_constraintContext common = ctx.common_constraint();
         Check_boolean_expressionContext check;
@@ -92,11 +100,12 @@ public class UtilAnalyzeExpr {
             exp = ctx.vex();
         }
         if (exp != null) {
-            ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName);
+            cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc valExptWithNmspc
+            = new cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc(schemaName, db);
             valExptWithNmspc.addRawTableReference(new GenericColumn(
                     constr.getContainingSchema().getName(),
                     constr.getParent().getName(), DbObjType.TABLE));
-            analyze(exp, valExptWithNmspc, constr);
+            analyzeSecond(exp, valExptWithNmspc, constr);
         }
     }
 

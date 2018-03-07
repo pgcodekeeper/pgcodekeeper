@@ -172,7 +172,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         return !exists;
     }
 
-    protected boolean addRawTableReference(GenericColumn qualifiedTable) {
+    public boolean addRawTableReference(GenericColumn qualifiedTable) {
         boolean exists = !unaliasedNamespace.add(qualifiedTable);
         if (exists) {
             Log.log(Log.LOG_WARNING,

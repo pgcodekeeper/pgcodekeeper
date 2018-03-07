@@ -83,7 +83,7 @@ public class ConstraintsReader extends JdbcReader {
                 (ctx, db) ->  {
                     db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
 
-                    UtilAnalyzeExpr.analyzeConstraint(ctx, schemaName, c);
+                    UtilAnalyzeExpr.analyzeConstraint(ctx, schemaName, c, db);
                 });
 
         String comment = res.getString("description");
