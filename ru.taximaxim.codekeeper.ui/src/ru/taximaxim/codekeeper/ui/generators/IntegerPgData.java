@@ -33,7 +33,7 @@ public class IntegerPgData extends PgData<BigInteger> {
     @Override
     protected BigInteger generateRandom(Random ran) {
         BigInteger range = end.subtract(start).add(BigInteger.ONE);
-        return new BigDecimal(range).multiply(new BigDecimal(ran.nextDouble()))
+        return new BigDecimal(range).multiply(BigDecimal.valueOf(ran.nextDouble()))
                 .toBigInteger().add(start);
     }
 
