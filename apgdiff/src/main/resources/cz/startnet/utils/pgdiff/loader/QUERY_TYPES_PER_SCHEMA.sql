@@ -15,6 +15,7 @@ WITH extension_deps AS (
     LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 SELECT  -- GENERAL
+    t.oid::bigint,
     t.typname,
     --(SELECT n.nspname FROM nspnames n WHERE n.oid = t.typnamespace) AS typnspname,
     t.typowner::bigint,

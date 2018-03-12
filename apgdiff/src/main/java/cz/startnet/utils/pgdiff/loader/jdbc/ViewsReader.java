@@ -40,9 +40,7 @@ public class ViewsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgView view = getView(result, schema);
         loader.monitor.worked(1);
-        if (view != null) {
-            schema.addView(view);
-        }
+        schema.addView(view);
     }
 
     private PgView getView(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
@@ -65,7 +63,7 @@ public class ViewsReader extends JdbcReader {
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
-        PgDatabase dataBase = (PgDatabase)schema.getParent();
+        PgDatabase dataBase = schema.getDatabase();
 
         loader.submitAntlrTask(viewDef, dataBase,
                 p -> p.sql().statement(0).data_statement().select_stmt(),
@@ -126,5 +124,10 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.VIEW;
     }
 }

@@ -1,8 +1,13 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.text.MessageFormat;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Random;
+
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
  * An implementation of a PostgreSql data generator for Timestamp type.
@@ -34,14 +39,16 @@ public class TimestampPgData extends PgData<Instant> {
 
     @Override
     public String generateAsString() {
+        if (generator == PgDataGenerator.ANY) {
+            return any;
+        }
         Instant value = generateValue();
         return value == null ? "null" : ("'" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override
     protected Instant generateRandom(Random ran) {
-        return start.plusMillis((long)((end.toEpochMilli() - start.toEpochMilli() + 1)
-                * ran.nextDouble() + start.toEpochMilli()));
+        return start.plusMillis((long)((end.toEpochMilli() - start.toEpochMilli() + 1) * ran.nextDouble()));
     }
 
     @Override
@@ -54,7 +61,12 @@ public class TimestampPgData extends PgData<Instant> {
 
     @Override
     public Instant valueFromString(String s) {
-        return Instant.parse(s);
+        try {
+            return Instant.parse(s);
+        } catch (DateTimeParseException ex) {
+            throw new DateTimeException(
+                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "YYYY-MM-DDTHH:MM:SSZ"), ex); //$NON-NLS-1$
+        }
     }
 
     @Override
@@ -64,6 +76,11 @@ public class TimestampPgData extends PgData<Instant> {
 
     @Override
     public void setStepFromString(String step) {
-        setStep(Instant.ofEpochMilli(Duration.parse(step).toMillis()));
+        try {
+            setStep(Instant.ofEpochMilli(Duration.parse(step).toMillis()));
+        } catch (DateTimeParseException ex) {
+            throw new DateTimeException(
+                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), Messages.Duration_expected_format), ex);
+        }
     }
 }

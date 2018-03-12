@@ -84,7 +84,7 @@ public class TypesReader extends JdbcReader {
                     + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
         }
 
-        PgDatabase dataBase = (PgDatabase)schema.getParent();
+        PgDatabase dataBase = schema.getDatabase();
 
         String def = res.getString("dom_defaultbin");
         if (def == null) {
@@ -302,5 +302,10 @@ public class TypesReader extends JdbcReader {
             t = null;
         }
         return t;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TYPE;
     }
 }

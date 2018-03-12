@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -22,8 +23,9 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.differ.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
+import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -39,10 +41,21 @@ public class FilterDialog extends Dialog {
     private CheckboxTableViewer chgViewer;
     private final Collection<DbObjType> types;
     private final Collection<DiffSide> sides;
-    private final CodeFilter filter;
+    private final AbstractFilter codeFilter;
+    private final AbstractFilter schemaFilter;
+    private final AbstractFilter gitUserFilter;
+    private final AbstractFilter dbUserFilter;
+    private final AtomicBoolean isLocalChange;
 
-    private Text text;
-    private Button btnRegEx;
+    private Text txtCode;
+    private Text txtSchema;
+    private Text txtGitUser;
+    private Text txtDbUser;
+    private Button btnCodeRegEx;
+    private Button btnSchemaRegEx;
+    private Button btnGitUserRegEx;
+    private Button btnDbUserRegEx;
+    private Button btnIsLocal;
 
     /**
      * Creates a dialog instance. Note that the window will have no visual
@@ -52,24 +65,39 @@ public class FilterDialog extends Dialog {
      * @param parentShell
      *            the parent shell, or <code>null</code> to create a top-level
      *            shell
-     * @param filter
+     * @param schemaFilter
+     *            object, that contains schema in which want to search
+     * @param codeFilter
      *            object, that contains params for code search
+     * @param gitUserFilter
+     *            object, that contains local git user params to search
+     * @param dbUserFilter
+     *            object, that contains db user params to search
      * @param types
      *            list of object types
      * @param sides
      *            list of change types
+     * @param isLocalChange
+     *            is search just local changes
      *
      * @since 4.1.2
      * @see CodeFilter
      * @see DbObjType
      * @see DiffSide
      */
-    public FilterDialog(Shell parentShell, CodeFilter filter,
-            Collection<DbObjType> types, Collection<DiffSide> sides) {
+    public FilterDialog(Shell parentShell,
+            AbstractFilter schemaFilter, AbstractFilter codeFilter,
+            AbstractFilter gitUserFilter, AbstractFilter dbUserFilter,
+            Collection<DbObjType> types, Collection<DiffSide> sides,
+            AtomicBoolean isLocalChange) {
         super(parentShell);
-        this.filter = filter;
+        this.codeFilter = codeFilter;
+        this.schemaFilter = schemaFilter;
+        this.gitUserFilter = gitUserFilter;
+        this.dbUserFilter = dbUserFilter;
         this.types = types;
         this.sides = sides;
+        this.isLocalChange = isLocalChange;
     }
 
     @Override
@@ -84,26 +112,79 @@ public class FilterDialog extends Dialog {
         container.setLayout(new GridLayout(2, true));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite searchComposite = new Composite(container, SWT.NONE);
-        GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        searchComposite.setLayout(layout);
-        searchComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        Composite leftComposite = new Composite(container, SWT.NONE);
+        leftComposite.setLayout(new GridLayout(2, false));
+        createTypesPart(leftComposite);
 
-        Label txtFilter = new Label(searchComposite, SWT.NONE);
-        txtFilter.setText(Messages.CodeFilter_search_by_code);
-        txtFilter.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+        Composite rightComposite = new Composite(container, SWT.NONE);
+        rightComposite.setLayout(new GridLayout(2, false));
+        rightComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-        text = new Text(searchComposite, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        text.setText(filter.getPattern());
+        createCodePart(rightComposite);
+        createSchemaPart(rightComposite);
+        createDbUserPart(rightComposite);
+        createGitUserPart(rightComposite);
 
-        btnRegEx = new Button(searchComposite, SWT.CHECK);
-        btnRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
-        btnRegEx.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        btnRegEx.setSelection(filter.isUseRegex());
+        btnIsLocal = new Button(rightComposite, SWT.CHECK);
+        btnIsLocal.setText(Messages.FilterDialog_only_local_changes);
+        btnIsLocal.setSelection(isLocalChange.get());
+        btnIsLocal.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
 
+        return container;
+    }
+
+    private void createCodePart(Composite container) {
+        createFilterLabel(container, Messages.CodeFilter_search_by_code);
+        txtCode = createFilterField(container, Messages.FilterDialog_sql_filter_placehodlder,
+                codeFilter.getPattern());
+        btnCodeRegEx = createRegexButton(container, codeFilter.isUseRegex());
+    }
+
+    private void createSchemaPart(Composite container) {
+        createFilterLabel(container, Messages.FilterDialog_search_by_container);
+        txtSchema = createFilterField(container, Messages.FilterDialog_schema_filter_placeholder,
+                schemaFilter.getPattern());
+        btnSchemaRegEx = createRegexButton(container, schemaFilter.isUseRegex());
+    }
+
+    private void createDbUserPart(Composite container) {
+        createFilterLabel(container, Messages.FilterDialog_db_user_label);
+        txtDbUser = createFilterField(container, Messages.FilterDialog_db_user,
+                dbUserFilter.getPattern());
+        btnDbUserRegEx = createRegexButton(container, dbUserFilter.isUseRegex());
+    }
+
+    private void createGitUserPart(Composite container) {
+        createFilterLabel(container, Messages.FilterDialog_git_user_label);
+        txtGitUser = createFilterField(container, Messages.FilterDialog_git_user,
+                gitUserFilter.getPattern());
+        btnGitUserRegEx = createRegexButton(container, gitUserFilter.isUseRegex());
+    }
+
+
+    private void createFilterLabel(Composite container, String text) {
+        Label lbl = new Label(container, SWT.NONE);
+        lbl.setText(text);
+        lbl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+    }
+
+    private Text createFilterField(Composite container, String placeholder, String pattern) {
+        Text txt = new Text(container, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        txt.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        txt.setMessage(placeholder);
+        txt.setText(pattern);
+        return txt;
+    }
+
+    private Button createRegexButton(Composite container, boolean useRegex) {
+        Button btnUseRegex = new Button(container, SWT.CHECK);
+        btnUseRegex.setText(Messages.diffTableViewer_use_regular_expressions);
+        btnUseRegex.setSelection(useRegex);
+        return btnUseRegex;
+    }
+
+
+    private void createTypesPart(Composite container) {
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
 
         new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_change_types);
@@ -135,8 +216,6 @@ public class FilterDialog extends Dialog {
 
         chgViewer.setInput(DiffSide.values());
         chgViewer.setCheckedElements(sides.toArray());
-
-        return searchComposite;
     }
 
     @Override
@@ -149,8 +228,15 @@ public class FilterDialog extends Dialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                text.setText(""); //$NON-NLS-1$
-                btnRegEx.setSelection(false);
+                txtCode.setText(""); //$NON-NLS-1$
+                btnCodeRegEx.setSelection(false);
+                txtSchema.setText(""); //$NON-NLS-1$
+                btnSchemaRegEx.setSelection(false);
+                txtGitUser.setText(""); //$NON-NLS-1$
+                btnGitUserRegEx.setSelection(false);
+                txtDbUser.setText(""); //$NON-NLS-1$
+                btnDbUserRegEx.setSelection(false);
+                btnIsLocal.setSelection(false);
                 objViewer.setAllChecked(false);
                 chgViewer.setAllChecked(false);
             }
@@ -176,7 +262,11 @@ public class FilterDialog extends Dialog {
             sides.add((DiffSide)chg);
         }
 
-        filter.update(text.getText(), btnRegEx.getSelection());
+        codeFilter.updateFields(txtCode.getText(), btnCodeRegEx.getSelection());
+        schemaFilter.updateFields(txtSchema.getText(), btnSchemaRegEx.getSelection());
+        gitUserFilter.updateFields(txtGitUser.getText(), btnGitUserRegEx.getSelection());
+        dbUserFilter.updateFields(txtDbUser.getText(), btnDbUserRegEx.getSelection());
+        isLocalChange.set(btnIsLocal.getSelection());
 
         super.okPressed();
     }

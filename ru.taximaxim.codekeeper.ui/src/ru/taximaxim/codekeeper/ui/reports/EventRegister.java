@@ -26,21 +26,21 @@ import ru.taximaxim.codekeeper.ui.Log;
 public class EventRegister {
 
     // Event type component name
-    private static final String EVENT_TYPE_COMPONENT_NAME = "cmp";
+    private static final String EVENT_TYPE_COMPONENT_NAME = "cmp"; //$NON-NLS-1$
     // Event type component version
-    private static final String EVENT_TYPE_VERSION = "v";
+    private static final String EVENT_TYPE_VERSION = "v"; //$NON-NLS-1$
     // Event type action name
-    private static final String EVENT_TYPE_ACTION_NAME = "a";
+    private static final String EVENT_TYPE_ACTION_NAME = "a"; //$NON-NLS-1$
     // Event type value description
-    private static final String EVENT_TYPE_VALUE_DESCRIPTION = "vl";
+    private static final String EVENT_TYPE_VALUE_DESCRIPTION = "vl"; //$NON-NLS-1$
     // Event type date when last time sent
-    private static final String EVENT_TYPE_DATE = "d";
+    private static final String EVENT_TYPE_DATE = "d"; //$NON-NLS-1$
     // How many times sent during the day
-    private static final String EVENT_TYPE_COUNT = "c";
+    private static final String EVENT_TYPE_COUNT = "c"; //$NON-NLS-1$
     // The sum of all values collected during the day
-    private static final String EVENT_TYPE_VALUE_SUM = "s";
+    private static final String EVENT_TYPE_VALUE_SUM = "s"; //$NON-NLS-1$
     // Label value used by countEvent()
-    private static final String EVENT_TYPE_COUNT_EVENT_LABEL = "cl";
+    private static final String EVENT_TYPE_COUNT_EVENT_LABEL = "cl"; //$NON-NLS-1$
 
     private static final EventRegister INSTANCE = new EventRegister();
     private Map<EventTypeKey, UsageEventProperties> eventPropertyStorage;
@@ -122,7 +122,7 @@ public class EventRegister {
             result.countEventLabel = preferenceProperties.countEventLabel;
             result.okToSend = !countEvent || result.previousSumOfValues>0;
         } else {
-            Log.log(Log.LOG_ERROR, "Event type [" + event.toString() + "] is not registered and will be ignored.");
+            Log.log(Log.LOG_ERROR, "Event type [" + event.toString() + "] is not registered and will be ignored."); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return result;
     }
@@ -190,9 +190,9 @@ public class EventRegister {
     private File getStorageFile(UsageEventProperties properties) {
         File directory = getStorageDirectory();
         if (directory != null) {
-            String name = properties.type.getActionName() + "-" + properties.countEventLabel;
+            String name = properties.type.getActionName() + "-" + properties.countEventLabel; //$NON-NLS-1$
             try {
-                name = URLEncoder.encode(name, "UTF-8");
+                name = URLEncoder.encode(name, "UTF-8"); //$NON-NLS-1$
                 if (name.length() > 40) {
                     name = (UUID.nameUUIDFromBytes(name.getBytes())).toString();
                 }
@@ -245,14 +245,14 @@ public class EventRegister {
                         try (FileReader reader = new FileReader(file)) {
                             Properties pr = new Properties();
                             pr.load(reader);
-                            long date = Long.parseLong(pr.getProperty(EVENT_TYPE_DATE, "0"));
+                            long date = Long.parseLong(pr.getProperty(EVENT_TYPE_DATE, "0")); //$NON-NLS-1$
                             if (date > sixMonthsAgo) {
                                 String component = pr.getProperty(EVENT_TYPE_COMPONENT_NAME);
                                 String version = pr.getProperty(EVENT_TYPE_VERSION);
                                 String action = pr.getProperty(EVENT_TYPE_ACTION_NAME);
                                 String value = pr.getProperty(EVENT_TYPE_VALUE_DESCRIPTION);
-                                int count = Integer.parseInt(pr.getProperty(EVENT_TYPE_COUNT, "0"));
-                                int valueSum = Integer.parseInt(pr.getProperty(EVENT_TYPE_VALUE_SUM, "0"));
+                                int count = Integer.parseInt(pr.getProperty(EVENT_TYPE_COUNT, "0")); //$NON-NLS-1$
+                                int valueSum = Integer.parseInt(pr.getProperty(EVENT_TYPE_VALUE_SUM, "0")); //$NON-NLS-1$
                                 String countLabel = pr.getProperty(EVENT_TYPE_COUNT_EVENT_LABEL);
                                 if (component != null && version != null && action != null && countLabel != null) {
                                     UsageEventType type = new UsageEventType(component, version, action, value);
@@ -319,7 +319,7 @@ public class EventRegister {
 
         @Override
         public String toString() {
-            return "Type: " + type.toString() + "; Label: " + label;
+            return "Type: " + type.toString() + "; Label: " + label; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 

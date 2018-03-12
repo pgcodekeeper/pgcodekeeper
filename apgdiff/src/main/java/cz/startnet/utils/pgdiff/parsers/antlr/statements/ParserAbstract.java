@@ -103,8 +103,10 @@ public abstract class ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
 
-                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
-                        argument.function_def_value().def_value));
+                if (dataBase != null) {
+                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
+                            argument.function_def_value().def_value));
+                }
             }
 
             function.addArgument(arg);

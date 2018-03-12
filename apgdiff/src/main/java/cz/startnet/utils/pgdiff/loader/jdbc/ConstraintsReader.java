@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -41,10 +40,7 @@ public class ConstraintsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
-            PgConstraint constraint = getConstraint(result, schema, table.getName());
-            if (constraint != null) {
-                table.addConstraint(constraint);
-            }
+            table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
@@ -70,7 +66,7 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', (PgDatabase)schema.getParent(),
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', schema.getDatabase(),
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
                 (ctx, db) -> {
@@ -117,5 +113,10 @@ public class ConstraintsReader extends JdbcReader {
         for (String name : concols) {
             c.addColumn(name);
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.CONSTRAINT;
     }
 }

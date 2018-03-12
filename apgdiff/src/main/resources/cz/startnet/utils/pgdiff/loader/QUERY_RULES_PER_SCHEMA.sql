@@ -1,6 +1,7 @@
 -- extension owned triggers are skipped by rel != null check in java code
 
-SELECT  ccc.relname, 
+SELECT  r.oid::bigint,
+        ccc.relname,
         r.rulename, 
         r.ev_type, 
         r.is_instead, 

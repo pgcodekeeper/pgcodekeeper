@@ -2,9 +2,11 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -22,13 +24,30 @@ public class ExtensionsReader implements PgCatalogStrings {
 
     public void read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("extensions query");
-        try (ResultSet res = loader.statement.executeQuery(JdbcQueries.QUERY_EXTENSIONS.get(null))) {
+        String query = JdbcQueries.QUERY_EXTENSIONS.get(null);
+
+        List<ObjectTimestamp> objects = loader.getTimestampObjects();
+        if (objects != null && !objects.isEmpty()) {
+            PgDatabase projDb = loader.getTimestampProjDb();
+            StringBuilder sb = new StringBuilder();
+
+            for (ObjectTimestamp obj : objects) {
+                if (obj.getType() == DbObjType.EXTENSION) {
+                    sb.append(obj.getObjId()).append(',');
+                    db.addExtension((PgExtension)obj.getShallowCopy(projDb));
+                }
+            }
+            if (sb.length() > 0) {
+                sb.setLength(sb.length() - 1);
+                query = JdbcReaderFactory.excludeObjects(query, sb.toString());
+            }
+        }
+
+        try (ResultSet res = loader.statement.executeQuery(query)) {
             while (res.next()) {
                 PgDiffUtils.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);
-                if (extension != null) {
-                    db.addExtension(extension);
-                }
+                db.addExtension(extension);
             }
         }
     }

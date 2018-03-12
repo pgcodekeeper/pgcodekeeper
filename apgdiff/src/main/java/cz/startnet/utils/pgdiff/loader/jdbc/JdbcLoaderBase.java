@@ -25,6 +25,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -59,6 +61,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
     protected List<String> errors = new ArrayList<>();
+
+    protected final TimestampParam timestampParams = new TimestampParam();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -108,6 +112,18 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
+    }
+
+    public List<ObjectTimestamp> getTimestampObjects() {
+        return timestampParams.timestampObjects;
+    }
+
+    public PgDatabase getTimestampProjDb() {
+        return timestampParams.projDB;
+    }
+
+    public String getExtensionSchema() {
+        return timestampParams.extensionSchema;
     }
 
     private String getRoleByOid(long oid) {
@@ -269,7 +285,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-
     protected void setupMonitorWork() throws SQLException {
         setCurrentOperation("object count query");
         try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
@@ -298,5 +313,20 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     static boolean isBuiltin(long oid) {
         final int firstBootstrapObjectId = 10000;
         return oid < firstBootstrapObjectId;
+    }
+
+    protected static class TimestampParam {
+        private List<ObjectTimestamp> timestampObjects;
+        private PgDatabase projDB;
+        private String extensionSchema;
+
+        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
+            this.projDB = projDB;
+            this.extensionSchema = extensionSchema;
+        }
+
+        public void fillObjects(DBTimestamp dbTime) {
+            timestampObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
+        }
     }
 }

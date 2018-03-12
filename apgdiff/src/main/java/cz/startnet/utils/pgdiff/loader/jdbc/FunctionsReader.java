@@ -8,7 +8,6 @@ import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -116,7 +115,7 @@ public class FunctionsReader extends JdbcReader {
 
             String defaultValuesAsString = res.getString("default_values_as_string");
             if (defaultValuesAsString != null) {
-                loader.submitAntlrTask(defaultValuesAsString, (PgDatabase)schema.getParent(),
+                loader.submitAntlrTask(defaultValuesAsString, schema.getDatabase(),
                         SQLParser::vex_eof,
                         (ctx, db) -> {
                             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(f, ctx));
@@ -276,5 +275,10 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.FUNCTION;
     }
 }

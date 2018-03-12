@@ -1,6 +1,7 @@
 -- extension owned constraints are skipped by table != null check in java code
 
-SELECT ccc.relname,
+SELECT ccc.oid::bigint, 
+    ccc.relname,
     c.conname,
     c.contype,
     cf.relname AS foreign_table_name,
