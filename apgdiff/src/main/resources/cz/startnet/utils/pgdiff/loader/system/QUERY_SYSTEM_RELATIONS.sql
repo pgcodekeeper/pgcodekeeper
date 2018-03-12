@@ -7,11 +7,11 @@ SELECT
     --columns
     columns.col_names,
     columns.col_types
-FROM pg_class c
+FROM pg_catalog.pg_class c
 LEFT JOIN (SELECT
                 a.attrelid,
-                array_agg(a.attname ORDER BY a.attnum) AS col_names,
-                array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_types
+                pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS col_names,
+                pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_types
           FROM pg_catalog.pg_attribute a
           WHERE a.attisdropped IS FALSE AND a.attnum > 0 
           GROUP BY attrelid) columns ON columns.attrelid = c.oid AND c.relkind != 'S'
