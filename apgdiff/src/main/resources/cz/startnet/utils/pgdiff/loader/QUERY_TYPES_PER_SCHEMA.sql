@@ -1,7 +1,7 @@
 WITH extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_extension'::regclass 
+    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
         AND dep.deptype = 'e'
 ), nspnames AS (
     SELECT n.oid,
@@ -17,10 +17,8 @@ WITH extension_deps AS (
 SELECT  -- GENERAL
     t.oid::bigint,
     t.typname,
-    --(SELECT n.nspname FROM nspnames n WHERE n.oid = t.typnamespace) AS typnspname,
     t.typowner::bigint,
     t.typacl::text,
-    -- t.typisdefined, -- false == SHELL type; pg_dump ignores those
     t.typtype, -- b/c/d/e/r, p - pseudotype (?)
     d.description,
     -- END GENERAL
@@ -68,7 +66,7 @@ SELECT  -- GENERAL
     -- END DOMAIN
 
     -- ENUM
-    (SELECT array_agg(en.enumlabel ORDER BY en.enumsortorder) FROM pg_catalog.pg_enum en WHERE en.enumtypid = t.oid GROUP BY en.enumtypid) AS enums,
+    (SELECT pg_catalog.array_agg(en.enumlabel ORDER BY en.enumsortorder) FROM pg_catalog.pg_enum en WHERE en.enumtypid = t.oid GROUP BY en.enumtypid) AS enums,
     -- END ENUM
 
     -- RANGE
@@ -103,9 +101,9 @@ LEFT JOIN pg_catalog.pg_opclass opc ON opc.oid = r.rngsubopc
 LEFT JOIN
     (SELECT
          c.contypid,
-         array_agg(c.conname ORDER BY c.conname) AS connames,
-         array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
-         array_agg(cd.description ORDER BY c.conname) AS concomments
+         pg_catalog.array_agg(c.conname ORDER BY c.conname) AS connames,
+         pg_catalog.array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
+         pg_catalog.array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid
      WHERE c.contypid != 0
@@ -113,14 +111,14 @@ LEFT JOIN
 LEFT JOIN
     (SELECT
          comp_attrs_list.attrelid,
-         array_agg(comp_attrs_list.attname ORDER BY comp_attrs_list.attnum) AS attnames,
-         array_agg(comp_attrs_list.atttypdefn ORDER BY comp_attrs_list.attnum) AS atttypdefns,
-         array_agg(comp_attrs_list.atttypid ORDER BY comp_attrs_list.attnum) AS atttypids,
-         array_agg(comp_attrs_list.attcollation ORDER BY comp_attrs_list.attnum) AS attcollations,
-         array_agg(comp_attrs_list.atttypcollation ORDER BY comp_attrs_list.attnum) AS atttypcollations,
-         array_agg(comp_attrs_list.attcollationname ORDER BY comp_attrs_list.attnum) AS attcollationnames,
-         array_agg(comp_attrs_list.attcollationnspname ORDER BY comp_attrs_list.attnum) AS attcollationnspnames,
-         array_agg(comp_attrs_list.description ORDER BY comp_attrs_list.attnum) AS attcomments
+         pg_catalog.array_agg(comp_attrs_list.attname ORDER BY comp_attrs_list.attnum) AS attnames,
+         pg_catalog.array_agg(comp_attrs_list.atttypdefn ORDER BY comp_attrs_list.attnum) AS atttypdefns,
+         pg_catalog.array_agg(comp_attrs_list.atttypid ORDER BY comp_attrs_list.attnum) AS atttypids,
+         pg_catalog.array_agg(comp_attrs_list.attcollation ORDER BY comp_attrs_list.attnum) AS attcollations,
+         pg_catalog.array_agg(comp_attrs_list.atttypcollation ORDER BY comp_attrs_list.attnum) AS atttypcollations,
+         pg_catalog.array_agg(comp_attrs_list.attcollationname ORDER BY comp_attrs_list.attnum) AS attcollationnames,
+         pg_catalog.array_agg(comp_attrs_list.attcollationnspname ORDER BY comp_attrs_list.attnum) AS attcollationnspnames,
+         pg_catalog.array_agg(comp_attrs_list.description ORDER BY comp_attrs_list.attnum) AS attcomments
      FROM -- this query needs filtering on non-groupby field so we do that in a sub and aggregate here
          (SELECT
               a.attnum,

@@ -243,7 +243,7 @@ class PageRepo extends WizardNewProjectCreationPage {
 
 class PageDb extends WizardPage {
 
-    private static final String QUERY_TZ = "SELECT name, setting FROM pg_file_settings" //$NON-NLS-1$
+    private static final String QUERY_TZ = "SELECT name, setting FROM pg_catalog.pg_file_settings" //$NON-NLS-1$
             + " WHERE lower(name) = 'timezone' AND applied AND error IS NULL"; //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs;

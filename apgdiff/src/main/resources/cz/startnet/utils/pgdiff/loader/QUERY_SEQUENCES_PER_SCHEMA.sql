@@ -1,7 +1,7 @@
 WITH extension_deps AS (
     SELECT dep.objid 
     FROM pg_catalog.pg_depend dep 
-    WHERE refclassid = 'pg_extension'::regclass 
+    WHERE refclassid = 'pg_catalog.pg_extension'::pg_catalog.regclass 
         AND dep.deptype = 'e'
 )
 
