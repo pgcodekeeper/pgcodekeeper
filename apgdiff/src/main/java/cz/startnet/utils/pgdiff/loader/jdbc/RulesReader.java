@@ -5,7 +5,6 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -87,18 +86,17 @@ public class RulesReader extends JdbcReader {
         }
 
         loader.submitAntlrTask(command, (PgDatabase)schema.getParent(),
-                p -> {
-                    Create_rewrite_statementContext createRewriteCtx = p.sql().statement(0).schema_statement()
-                            .schema_create().create_rewrite_statement();
+                p -> p.sql().statement(0).schema_statement()
+                .schema_create().create_rewrite_statement(),
+                (ctx, db) -> {
+                    r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
 
-                    r.setCondition((createRewriteCtx.WHERE() != null) ? ParserAbstract.getFullCtxText(createRewriteCtx.vex()) : null);
-
-                    for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
+                    for (Rewrite_commandContext cmd : ctx.commands) {
                         r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
                     }
 
-                    return createRewriteCtx;
-                }, (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(r, ctx)));
+                    db.getContextsForAnalyze().add(new SimpleEntry<>(r, ctx));
+                });
 
         // COMMENT
         String comment = res.getString("comment");

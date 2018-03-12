@@ -5,7 +5,6 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -55,25 +54,21 @@ public class IndicesReader extends JdbcReader {
 
         String tablespace = res.getString("table_space");
         loader.submitAntlrTask(res.getString("definition") + ';', (PgDatabase)schema.getParent(),
-                p -> {
-                    Index_restContext indexRestCtx = p.sql().statement(0).schema_statement()
-                            .schema_create().create_index_statement().index_rest();
-
+                p -> p.sql().statement(0).schema_statement()
+                .schema_create().create_index_statement().index_rest(),
+                (ctx, db) -> {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(ParserAbstract.getFullCtxText(indexRestCtx.index_sort()));
-                    if (indexRestCtx.table_space() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.table_space()));
+                    sb.append(ParserAbstract.getFullCtxText(ctx.index_sort()));
+                    if (ctx.table_space() != null){
+                        sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.table_space()));
                     } else if (tablespace != null) {
                         sb.append(" TABLESPACE ").append(tablespace);
                     }
-                    if (indexRestCtx.index_where() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.index_where()));
+                    if (ctx.index_where() != null){
+                        sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.index_where()));
                     }
                     i.setDefinition(sb.toString());
 
-                    return indexRestCtx;
-                },
-                (ctx, db) -> {
                     if (ctx.index_where() != null) {
                         db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(i, ctx.index_where().vex()));
                     }
