@@ -231,7 +231,7 @@ public class PgRule extends PgStatementWithSearchPath{
         result = prime * result + ((event == null) ? 0 : event.hashCode());
         result = prime * result + ((condition == null) ? 0 : condition.hashCode());
         result = prime * result + (instead ? 1231 : 1237);
-        result = prime * result + ((commands == null) ? 0 : commands.hashCode());
+        result = prime * result + commands.hashCode();
         result = prime * result + ((enabledState == null) ? 0 : enabledState.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
