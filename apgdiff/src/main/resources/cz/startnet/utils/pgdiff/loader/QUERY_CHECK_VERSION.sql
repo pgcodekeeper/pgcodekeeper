@@ -1,1 +1,1 @@
-SELECT CAST (current_setting('server_version_num') AS INT);
+SELECT CAST (pg_catalog.current_setting('server_version_num') AS INT);
