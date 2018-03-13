@@ -325,15 +325,15 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     public void createFunction(Create_function_statementContext ctx) {
         List<IdentifierContext> ids = ctx.function_parameters().name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         statementBodies.add(new StatementBodyContainer(filePath, ctx.funct_body));
-        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
+        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstNameCtx(ids), DbObjType.FUNCTION);
     }
 
     public void createSequence(Create_sequence_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
-        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.SEQUENCE);
+        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstNameCtx(ids), DbObjType.SEQUENCE);
     }
 
     public void createSchema(Create_schema_statementContext ctx) {
@@ -344,13 +344,13 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     public void createView(Create_view_statementContext ctx) {
         List<IdentifierContext> ids = ctx.name.identifier();
-        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
         Select_stmtContext select = ctx.v_query;
         if (select != null) {
             statementBodies.add(new StatementBodyContainer(filePath, select));
         }
 
-        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.VIEW);
+        fillObjDefinition(QNameParser.getSchemaName(ids, getDefSchemaName()),
+                QNameParser.getFirstNameCtx(ids), DbObjType.VIEW);
     }
 
     public void commentOn(Comment_on_statementContext ctx) {
