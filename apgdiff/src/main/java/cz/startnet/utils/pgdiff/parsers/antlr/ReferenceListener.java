@@ -698,7 +698,7 @@ public class ReferenceListener extends SQLParserBaseListener {
     private void fillObjDefinition(String schemaName, IdentifierContext ctx, DbObjType objType) {
         int start = ctx.getStart().getStartIndex();
         String name = ctx.getText();
-        if (!PgDiffUtils.isValidId(name, false, false)) {
+        if (ctx.QuotedIdentifier() != null) {
             start++;
         }
 
