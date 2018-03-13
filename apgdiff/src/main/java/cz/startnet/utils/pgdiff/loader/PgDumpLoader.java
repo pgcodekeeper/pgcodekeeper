@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -56,7 +56,7 @@ public class PgDumpLoader implements AutoCloseable {
 
     private boolean loadSchema = true;
     private boolean loadReferences;
-    private List<FunctionBodyContainer> funcBodyReferences;
+    private List<StatementBodyContainer> statementBodyReferences;
 
     public List<AntlrError> getErrors() {
         return errors;
@@ -70,8 +70,8 @@ public class PgDumpLoader implements AutoCloseable {
         this.loadReferences = loadReferences;
     }
 
-    public List<FunctionBodyContainer> getFuncBodyReferences() {
-        return funcBodyReferences;
+    public List<StatementBodyContainer> getStatementBodyReferences() {
+        return statementBodyReferences;
     }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
@@ -146,7 +146,7 @@ public class PgDumpLoader implements AutoCloseable {
         }
         if (loadReferences) {
             ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-            funcBodyReferences = refListener.getFunctionBodies();
+            statementBodyReferences = refListener.getStatementBodies();
             listeners.add(refListener);
         }
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,

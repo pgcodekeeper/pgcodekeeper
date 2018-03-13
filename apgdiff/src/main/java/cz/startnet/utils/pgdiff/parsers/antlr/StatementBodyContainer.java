@@ -1,17 +1,21 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-public class FunctionBodyContainer {
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+
+public class StatementBodyContainer {
 
     private final String body;
     private final int offset;
     private final String path;
     private final int line;
 
-    public FunctionBodyContainer(String path, int offset, int line, String body) {
-        this.body = body;
-        this.offset = offset;
+    public StatementBodyContainer(String path, ParserRuleContext ctx) {
         this.path = path;
-        this.line = line;
+        offset = ctx.getStart().getStartIndex();
+        line = ctx.getStart().getLine();
+        body = ParserAbstract.getFullCtxText(ctx);
     }
 
     public String getBody() {
