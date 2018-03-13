@@ -19,9 +19,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -39,7 +37,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
-import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
@@ -51,7 +48,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -88,15 +84,6 @@ implements IExecutableExtension, INewWizard {
         addPage(pageRepo);
         pageDb = new PageDb("schema", mainPrefStore); //$NON-NLS-1$
         addPage(pageDb);
-    }
-
-    @Override
-    public void createPageControls(Composite pageContainer) {
-        super.createPageControls(pageContainer);
-
-        IWorkbenchHelpSystem helpSystem = workbench.getHelpSystem();
-        helpSystem.setHelp(pageRepo.getControl(), HELP.NEW_WIZARD);
-        helpSystem.setHelp(pageDb.getControl(), HELP.NEW_WIZARD_INIT);
     }
 
     @Override
@@ -248,9 +235,11 @@ class PageDb extends WizardPage {
             + " WHERE pg_catalog.lower(name) = 'timezone' AND applied AND error IS NULL"; //$NON-NLS-1$
 
     private final IPreferenceStore mainPrefs;
-    private Button btnInit, btnGetTz;
+    private Button btnInit;
+    private Button btnGetTz;
     private DbStorePicker storePicker;
-    private ComboViewer timezoneCombo, charsetCombo;
+    private ComboViewer timezoneCombo;
+    private ComboViewer charsetCombo;
 
     public DbInfo getDbInfo() {
         return storePicker.getDbInfo();
@@ -308,14 +297,10 @@ class PageDb extends WizardPage {
 
         storePicker = new DbStorePicker(group, mainPrefs, true, false, false);
         storePicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        storePicker.addListenerToCombo(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                btnGetTz.setEnabled(storePicker.getDbInfo() != null);
-                getWizard().getContainer().updateButtons();
-                getWizard().getContainer().updateMessage();
-            }
+        storePicker.addListenerToCombo(e -> {
+            btnGetTz.setEnabled(storePicker.getDbInfo() != null);
+            getWizard().getContainer().updateButtons();
+            getWizard().getContainer().updateMessage();
         });
 
         //char sets
@@ -384,8 +369,8 @@ class PageDb extends WizardPage {
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), ApgdiffConsts.UTC);
 
-            try (Connection conn = connector.getConnection(); Statement s = conn.createStatement()) {
-                ResultSet rs = s.executeQuery(QUERY_TZ);
+            try (Connection conn = connector.getConnection(); Statement s = conn.createStatement();
+                    ResultSet rs = s.executeQuery(QUERY_TZ);) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$
             } catch (SQLException | IOException e) {
                 throw new InvocationTargetException(e, e.getLocalizedMessage());
