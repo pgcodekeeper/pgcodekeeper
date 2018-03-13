@@ -42,6 +42,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -57,7 +58,6 @@ public final class NewObjectPage extends WizardPage {
     private static final String SCHEMA = "schema"; //$NON-NLS-1$
     private static final String CONTAINER = "container"; //$NON-NLS-1$
 
-    private static final String POSTFIX = ".sql"; //$NON-NLS-1$
     private static final String GROUP_DELIMITER =
             "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
@@ -385,11 +385,11 @@ public final class NewObjectPage extends WizardPage {
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
-        IFolder schemaFolder = projectFolder.getFolder(name);
+        IFolder schemaFolder = projectFolder.getFolder(ModelExporter.getExportedFilename(name));
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = projectFolder.getFile(name + POSTFIX);
+        IFile file = projectFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
@@ -406,7 +406,7 @@ public final class NewObjectPage extends WizardPage {
         if (!folder.exists()) {
             folder.create(false, true, null);
         }
-        IFile extFile = folder.getFile(name + POSTFIX);
+        IFile extFile = folder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!extFile.exists()) {
             String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, PgDiffUtils.getQuotedName(name));
             extFile.create(new ByteArrayInputStream(code.getBytes()), false, null);
@@ -418,10 +418,12 @@ public final class NewObjectPage extends WizardPage {
             boolean open, IProject project) throws CoreException {
         String objectName = PgDiffUtils.getQuotedName(name);
         IFolder folder = getFolder(schema, type, project);
-        IFile file = folder.getFile(name + POSTFIX);
+        IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("SET search_path = " + schema + ", pg_catalog;"); //$NON-NLS-1$ //$NON-NLS-2$
+            StringBuilder sb = new StringBuilder("SET search_path = "
+                    + PgDiffUtils.getQuotedName(schema)
+                    + ", pg_catalog;"); //$NON-NLS-1$
             sb.append("\n\nCREATE "); //$NON-NLS-1$
             if (type == DbObjType.FUNCTION) {
                 sb.append("OR REPLACE "); //$NON-NLS-1$

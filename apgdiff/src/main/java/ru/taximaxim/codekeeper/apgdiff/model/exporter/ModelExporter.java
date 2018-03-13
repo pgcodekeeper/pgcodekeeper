@@ -823,23 +823,27 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        String name = statement.getBareName();
+        return getExportedFilename(statement.getBareName());
+    }
+
+    public static String getExportedFilenameSql(PgStatement statement) {
+        return getExportedFilenameSql(getExportedFilename(statement));
+    }
+
+    public static String getExportedFilename(String name) {
         Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
         if (m.find()) {
-            boolean bareNameGrouped = statement instanceof PgFunction;
-            String hash = PgDiffUtils.md5(
-                    bareNameGrouped? statement.getBareName() : statement.getName())
+            String hash = PgDiffUtils.md5(name)
                     // 2^40 variants, should be enough for this purpose
                     .substring(0, HASH_LENGTH);
-
             return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
         } else {
             return name;
         }
     }
 
-    private static String getExportedFilenameSql(PgStatement statement) {
-        return getExportedFilename(statement) + ".sql"; //$NON-NLS-1$
+    public static String getExportedFilenameSql(String name) {
+        return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
     private String getDumpSql(PgStatementWithSearchPath statement) {
