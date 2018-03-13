@@ -121,7 +121,7 @@
               categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
               defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDocs"
               id="ru.taximaxim.codekeeper.ui.openDocs"
-              name="%command.name.OpenDocs">
+              name="%command.commandname.OpenDocs">
         </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
