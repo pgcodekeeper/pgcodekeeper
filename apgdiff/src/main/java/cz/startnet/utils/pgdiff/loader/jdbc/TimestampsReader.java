@@ -47,7 +47,7 @@ public class TimestampsReader implements PgCatalogStrings {
         String name = res.getString("name");
         long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
-        String author = res.getString("author");
+        String author = res.getString("ses_user");
         GenericColumn column = null;
         switch (type) {
         case "schema":
