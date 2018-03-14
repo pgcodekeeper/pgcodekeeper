@@ -65,10 +65,10 @@ public class ViewsReader extends JdbcReader {
 
         PgDatabase dataBase = schema.getDatabase();
 
-        loader.submitAntlrTask(viewDef, dataBase,
+        loader.submitAntlrTask(viewDef,
                 p -> p.sql().statement(0).data_statement().select_stmt(),
-                (ctx, db) -> {
-                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+                ctx -> {
+                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
                     UtilAnalyzeExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
                 });
@@ -88,10 +88,10 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
-                    loader.submitAntlrTask(colDefault, dataBase,
+                    loader.submitAntlrTask(colDefault,
                             p -> p.vex_eof().vex().get(0),
-                            (ctx, db) -> {
-                                db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+                            ctx -> {
+                                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
                                 UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), v);
                             });

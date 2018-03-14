@@ -64,8 +64,8 @@ public class TimestampsReader implements PgCatalogStrings {
             column = new GenericColumn(schema, name, DbObjType.SEQUENCE);
             break;
         case "function":
-            loader.submitAntlrTask(identity, null, SQLParser::function_args_parser,
-                    (ctx, db) -> parseFunctionName(ctx, lastModified, time, objId, author));
+            loader.submitAntlrTask(identity, SQLParser::function_args_parser,
+                    ctx -> parseFunctionName(ctx, lastModified, time, objId, author));
             break;
         case "index":
             column = new GenericColumn(schema, null, name, DbObjType.INDEX);
@@ -79,12 +79,12 @@ public class TimestampsReader implements PgCatalogStrings {
             column = new GenericColumn(schema, name, DbObjType.VIEW);
             break;
         case "rule":
-            loader.submitAntlrTask(identity, null, SQLParser::object_identity_parser,
-                    (ctx, db) -> parseIdentity(ctx, DbObjType.RULE, lastModified, time, objId, author));
+            loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
+                    ctx -> parseIdentity(ctx, DbObjType.RULE, lastModified, time, objId, author));
             break;
         case "trigger":
-            loader.submitAntlrTask(identity, null, SQLParser::object_identity_parser,
-                    (ctx, db) -> parseIdentity(ctx, DbObjType.TRIGGER, lastModified, time, objId, author));
+            loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
+                    ctx -> parseIdentity(ctx, DbObjType.TRIGGER, lastModified, time, objId, author));
             break;
         default: break;
         }

@@ -93,9 +93,8 @@ public class TypesReader extends JdbcReader {
                 def = PgDiffUtils.quoteString(def);
             }
         } else {
-            loader.submitAntlrTask(def, dataBase,
-                    p -> p.vex_eof().vex().get(0),
-                    (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
+            loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
+                    ctx -> dataBase.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
         }
 
         d.setDefaultValue(def);
@@ -108,13 +107,13 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';', dataBase,
+                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0),
-                        (ctx, db) -> {
+                        ctx -> {
                             Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
                             c.setDefinition(ParserAbstract.getFullCtxText(constrBodyCtx));
-                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, constrBodyCtx));
+                            dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, constrBodyCtx));
                         });
 
                 d.addConstraint(c);

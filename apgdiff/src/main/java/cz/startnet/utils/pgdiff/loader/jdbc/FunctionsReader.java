@@ -115,10 +115,11 @@ public class FunctionsReader extends JdbcReader {
 
             String defaultValuesAsString = res.getString("default_values_as_string");
             if (defaultValuesAsString != null) {
-                loader.submitAntlrTask(defaultValuesAsString, schema.getDatabase(),
+                loader.submitAntlrTask(defaultValuesAsString,
                         SQLParser::vex_eof,
-                        (ctx, db) -> {
-                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(f, ctx));
+                        ctx -> {
+                            schema.getDatabase().getContextsForAnalyze()
+                            .add(new AbstractMap.SimpleEntry<>(f, ctx));
 
                             UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
                         });

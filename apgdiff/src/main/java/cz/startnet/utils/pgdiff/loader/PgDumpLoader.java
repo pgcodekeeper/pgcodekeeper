@@ -268,10 +268,8 @@ public class PgDumpLoader implements AutoCloseable {
 
                 UtilAnalyzeExpr.analyzeRulesWhere(createRuleCtx, rule, schemaName);
 
-                if (!rule.getCommands().isEmpty()) {
-                    for (Rewrite_commandContext cmd : createRuleCtx.commands) {
-                        UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
-                    }
+                for (Rewrite_commandContext cmd : createRuleCtx.commands) {
+                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
                 }
                 break;
             case TRIGGER:

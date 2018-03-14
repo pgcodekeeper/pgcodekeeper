@@ -157,12 +157,13 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(definition, schema.getDatabase(),
+        loader.submitAntlrTask(definition,
                 p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                (ctx, db) -> {
+                ctx -> {
                     if (ctx != null) {
-                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx.when_expr));
+                        schema.getDatabase().getContextsForAnalyze()
+                        .add(new AbstractMap.SimpleEntry<>(t, ctx.when_expr));
                         t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
                     }
                 });

@@ -66,15 +66,16 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', schema.getDatabase(),
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
-                (ctx, db) -> {
+                ctx -> {
                     Constr_bodyContext bodyCtx = ctx.tabl_constraint.constr_body();
                     c.setDefinition(ParserAbstract.getFullCtxText(bodyCtx));
                     c.setNotValid(ctx.not_valid != null);
 
-                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, bodyCtx));
+                    schema.getDatabase().getContextsForAnalyze()
+                    .add(new AbstractMap.SimpleEntry<>(c, bodyCtx));
 
                     UtilAnalyzeExpr.analyzeConstraint(bodyCtx, schemaName, c);
                 });

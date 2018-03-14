@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -50,7 +50,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
-    private final Queue<AntlrTask<? extends ParserRuleContext, PgDatabase>> antlrTasks = new ArrayDeque<>();
+    private final Queue<AntlrTask<? extends ParserRuleContext>> antlrTasks = new ArrayDeque<>();
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -292,16 +292,16 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected <T extends ParserRuleContext> void submitAntlrTask(String sql, PgDatabase dataBase,
-            Function<SQLParser, T> parserCtxReader, BiConsumer<T, PgDatabase> finalizer) {
+    protected <T extends ParserRuleContext> void submitAntlrTask(String sql,
+            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         String loc = getCurrentLocation();
         Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, dataBase));
+        antlrTasks.add(new AntlrTask<>(future, finalizer));
     }
 
     protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrTask<? extends ParserRuleContext, PgDatabase> task;
+        AntlrTask<? extends ParserRuleContext> task;
         while ((task = antlrTasks.poll()) != null) {
             task.finish();
         }

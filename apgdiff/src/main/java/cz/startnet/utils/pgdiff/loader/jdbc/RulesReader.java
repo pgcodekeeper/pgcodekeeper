@@ -81,17 +81,17 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command, schema.getDatabase(),
+        loader.submitAntlrTask(command,
                 p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_rewrite_statement(),
-                (ctx, db) -> {
+                ctx -> {
                     r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
 
                     for (Rewrite_commandContext cmd : ctx.commands) {
                         r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
                     }
 
-                    db.getContextsForAnalyze().add(new SimpleEntry<>(r, ctx));
+                    schema.getDatabase().getContextsForAnalyze().add(new SimpleEntry<>(r, ctx));
                 });
 
         // COMMENT

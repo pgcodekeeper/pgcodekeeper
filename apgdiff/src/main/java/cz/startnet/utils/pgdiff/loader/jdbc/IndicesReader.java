@@ -50,10 +50,10 @@ public class IndicesReader extends JdbcReader {
         i.setTableName(tableName);
 
         String tablespace = res.getString("table_space");
-        loader.submitAntlrTask(res.getString("definition") + ';', schema.getDatabase(),
-                p -> p.sql().statement(0).schema_statement()
-                .schema_create().create_index_statement().index_rest(),
-                (ctx, db) -> {
+        loader.submitAntlrTask(res.getString("definition") + ';',
+                p -> p.sql().statement(0).schema_statement().schema_create()
+                .create_index_statement().index_rest(),
+                ctx -> {
                     StringBuilder sb = new StringBuilder();
                     sb.append(ParserAbstract.getFullCtxText(ctx.index_sort()));
                     if (ctx.table_space() != null){
@@ -67,7 +67,8 @@ public class IndicesReader extends JdbcReader {
                     i.setDefinition(sb.toString());
 
                     if (ctx.index_where() != null) {
-                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(i, ctx.index_where().vex()));
+                        schema.getDatabase().getContextsForAnalyze()
+                        .add(new AbstractMap.SimpleEntry<>(i, ctx.index_where().vex()));
                     }
                 });
 

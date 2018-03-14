@@ -104,9 +104,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String arguments = result.getString("proarguments");
 
                 if (!arguments.isEmpty()) {
-                    submitAntlrTask('(' + arguments + ')', null,
+                    submitAntlrTask('(' + arguments + ')',
                             p -> p.function_args_parser().function_args(),
-                            (ctx, db) -> {
+                            ctx -> {
                                 fillArguments(ctx, function);
                                 storage.getSchema(schemaName).addFunction(function);
                             });
