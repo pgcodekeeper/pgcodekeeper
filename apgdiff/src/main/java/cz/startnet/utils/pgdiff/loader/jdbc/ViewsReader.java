@@ -65,8 +65,8 @@ public class ViewsReader extends JdbcReader {
 
         PgDatabase dataBase = schema.getDatabase();
 
-        loader.submitAntlrTask(viewDef,
-                p -> p.sql().statement(0).data_statement().select_stmt(),
+        loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
+                .select_stmt(),
                 ctx -> {
                     dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
@@ -88,8 +88,7 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
-                    loader.submitAntlrTask(colDefault,
-                            p -> p.vex_eof().vex().get(0),
+                    loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> {
                                 dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 

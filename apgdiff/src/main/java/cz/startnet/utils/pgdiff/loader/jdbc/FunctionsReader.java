@@ -59,71 +59,55 @@ public class FunctionsReader extends JdbcReader {
         String[] argModes = res.getArray("proargmodes", String.class);
         String[] argNames = res.getArray("proargnames", String.class);
         Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
-        StringBuilder argsWithoutDefault = new StringBuilder();
 
         Long[] argTypes = argTypeOids != null ? argTypeOids : res.getArray("argtypes", Long.class);
-        if (argTypes != null) {
-            for (int i = 0; argTypes.length > i; i++) {
-                String aMode = argModes != null ? argModes[i] : "i";
+        for (int i = 0; argTypes.length > i; i++) {
+            String aMode = argModes != null ? argModes[i] : "i";
 
-                JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
-                returnType.addTypeDepcy(f);
+            JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
+            returnType.addTypeDepcy(f);
 
-                if("t".equals(aMode)) {
-                    returnsTable = true;
-                    returnedTableArguments.append(argNames[i]).append(" ")
-                    .append(returnType.getFullName(schemaName)).append(", ");
-                    continue;
-                }
-
-                switch(aMode) {
-                case "i":
-                    aMode = "IN";
-                    break;
-                case "o":
-                    aMode = "OUT";
-                    break;
-                case "b":
-                    aMode = "INOUT";
-                    break;
-                case "v":
-                    aMode = "VARIADIC";
-                    break;
-                }
-
-                Argument a = f.new Argument(aMode,
-                        argNames != null ? argNames[i] : null,
-                                loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
-
-                f.addArgument(a);
-
-                if (argModes != null && !"IN".equals(a.getMode())) {
-                    argsWithoutDefault.append(a.getMode()).append(" ");
-                }
-                if (a.getName() != null) {
-                    argsWithoutDefault.append(a.getName()).append(" ");
-                }
-                argsWithoutDefault.append(a.getDataType()).append(", ");
-
-            }
-            if (argsWithoutDefault.length() != 0) {
-                argsWithoutDefault.setLength(argsWithoutDefault.length() - 2);
-            }
-            if (returnedTableArguments.length() != 0) {
-                returnedTableArguments.setLength(returnedTableArguments.length() - 2);
+            if("t".equals(aMode)) {
+                returnsTable = true;
+                returnedTableArguments.append(argNames[i]).append(" ")
+                .append(returnType.getFullName(schemaName)).append(", ");
+                continue;
             }
 
-            String defaultValuesAsString = res.getString("default_values_as_string");
-            if (defaultValuesAsString != null) {
-                loader.submitAntlrTask(defaultValuesAsString,
-                        SQLParser::vex_eof,
-                        ctx -> {
-                            schema.getDatabase().getContextsForAnalyze()
-                            .add(new AbstractMap.SimpleEntry<>(f, ctx));
-
-                            UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
-                        });
+            switch(aMode) {
+            case "i":
+                aMode = "IN";
+                break;
+            case "o":
+                aMode = "OUT";
+                break;
+            case "b":
+                aMode = "INOUT";
+                break;
+            case "v":
+                aMode = "VARIADIC";
+                break;
             }
+
+            Argument a = f.new Argument(aMode,
+                    argNames != null ? argNames[i] : null,
+                            loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+
+            f.addArgument(a);
+        }
+        if (returnedTableArguments.length() != 0) {
+            returnedTableArguments.setLength(returnedTableArguments.length() - 2);
+        }
+
+        String defaultValuesAsString = res.getString("default_values_as_string");
+        if (defaultValuesAsString != null) {
+            loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
+                    ctx -> {
+                        schema.getDatabase().getContextsForAnalyze()
+                        .add(new AbstractMap.SimpleEntry<>(f, ctx));
+
+                        UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
+                    });
         }
 
         // RETURN TYPE

@@ -81,9 +81,8 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command,
-                p -> p.sql().statement(0).schema_statement()
-                .schema_create().create_rewrite_statement(),
+        loader.submitAntlrTask(command, p -> p.sql().statement(0)
+                .schema_statement().schema_create().create_rewrite_statement(),
                 ctx -> {
                     r.setCondition((ctx.WHERE() != null) ? ParserAbstract.getFullCtxText(ctx.vex()) : null);
 

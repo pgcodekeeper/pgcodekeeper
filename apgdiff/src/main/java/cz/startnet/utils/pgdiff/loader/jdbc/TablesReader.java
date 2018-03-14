@@ -219,8 +219,7 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault,
-                        p -> p.vex_eof().vex().get(0),
+                loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
                         ctx -> schema.getDatabase().getContextsForAnalyze()
                         .add(new SimpleEntry<>(column, ctx)));
             }
