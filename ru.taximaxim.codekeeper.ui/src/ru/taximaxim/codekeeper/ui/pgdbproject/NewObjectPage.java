@@ -297,6 +297,7 @@ public final class NewObjectPage extends WizardPage {
             return;
         }
         txtName.setText(path);
+        txtName.setSelection(path.length());
     }
 
     @Override
