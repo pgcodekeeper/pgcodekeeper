@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -53,24 +52,8 @@ public class IndicesReader extends JdbcReader {
         loader.submitAntlrTask(res.getString("definition") + ';',
                 p -> p.sql().statement(0).schema_statement().schema_create()
                 .create_index_statement().index_rest(),
-                ctx -> {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ParserAbstract.getFullCtxText(ctx.index_sort()));
-                    if (ctx.table_space() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.table_space()));
-                    } else if (tablespace != null) {
-                        sb.append(" TABLESPACE ").append(tablespace);
-                    }
-                    if (ctx.index_where() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(ctx.index_where()));
-                    }
-                    i.setDefinition(sb.toString());
-
-                    if (ctx.index_where() != null) {
-                        schema.getDatabase().getContextsForAnalyze()
-                        .add(new AbstractMap.SimpleEntry<>(i, ctx.index_where().vex()));
-                    }
-                });
+                ctx -> i.setDefinition(CreateIndex.parseIndex(ctx, tablespace, i,
+                        schema.getDatabase())));
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));

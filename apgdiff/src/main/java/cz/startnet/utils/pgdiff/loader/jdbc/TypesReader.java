@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -110,11 +108,7 @@ public class TypesReader extends JdbcReader {
                 loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0),
-                        ctx -> {
-                            Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
-                            c.setDefinition(ParserAbstract.getFullCtxText(constrBodyCtx));
-                            dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, constrBodyCtx));
-                        });
+                        ctx -> ParserAbstract.processTableActionConstraintExpr(ctx, c, dataBase));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
