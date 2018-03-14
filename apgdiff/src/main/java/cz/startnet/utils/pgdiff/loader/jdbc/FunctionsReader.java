@@ -54,7 +54,6 @@ public class FunctionsReader extends JdbcReader {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        boolean returnsTable = false;
         StringBuilder returnedTableArguments = new StringBuilder();
         String[] argModes = res.getArray("proargmodes", String.class);
         String[] argNames = res.getArray("proargnames", String.class);
@@ -68,7 +67,6 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
 
             if("t".equals(aMode)) {
-                returnsTable = true;
                 returnedTableArguments.append(argNames[i]).append(" ")
                 .append(returnType.getFullName(schemaName)).append(", ");
                 continue;
@@ -95,8 +93,16 @@ public class FunctionsReader extends JdbcReader {
 
             f.addArgument(a);
         }
+
+        // RETURN TYPE
         if (returnedTableArguments.length() != 0) {
             returnedTableArguments.setLength(returnedTableArguments.length() - 2);
+            f.setReturns("TABLE(" + returnedTableArguments + ")");
+        } else {
+            JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
+            String retType = returnType.getFullName(schemaName);
+            f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
+            returnType.addTypeDepcy(f);
         }
 
         String defaultValuesAsString = res.getString("default_values_as_string");
@@ -108,16 +114,6 @@ public class FunctionsReader extends JdbcReader {
 
                         UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
                     });
-        }
-
-        // RETURN TYPE
-        if (returnsTable) {
-            f.setReturns("TABLE(" + returnedTableArguments + ")");
-        } else {
-            JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
-            String retType = returnType.getFullName(schemaName);
-            f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
-            returnType.addTypeDepcy(f);
         }
 
         // PRIVILEGES
