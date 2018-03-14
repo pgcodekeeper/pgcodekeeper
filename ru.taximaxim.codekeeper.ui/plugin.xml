@@ -572,11 +572,12 @@
            </command>
         </menuContribution>
         <menuContribution
-              locationURI="menu:help?after=dynamicHelp">
+              locationURI="menu:help?before=helpContents">
            <command
                  commandId="ru.taximaxim.codekeeper.ui.openDocs"
                  label="%command.label.openDocs"
-                 style="push">
+                 style="push"
+                 icon="icons/app_icon16.png">
                 <visibleWhen checkEnabled="false">
                     <or>
                         <with variable="activeWorkbenchWindow.activePerspective">
