@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -162,7 +161,7 @@ public class DBTimestamp implements Serializable {
     }
 
 
-    private GenericColumn createGC(IStatement st) {
+    private GenericColumn createGC(PgStatement st) {
         String schema = null;
         if (st instanceof PgStatementWithSearchPath) {
             schema = ((PgStatementWithSearchPath)st).getContainingSchema().getName();
