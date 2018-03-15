@@ -5,9 +5,9 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;

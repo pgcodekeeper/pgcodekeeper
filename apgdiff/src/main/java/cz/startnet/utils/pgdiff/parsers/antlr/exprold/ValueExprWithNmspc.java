@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 

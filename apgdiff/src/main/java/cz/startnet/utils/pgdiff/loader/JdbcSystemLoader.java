@@ -18,7 +18,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.TypesSetManually;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;

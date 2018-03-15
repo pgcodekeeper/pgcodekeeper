@@ -1,7 +1,6 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze;
+package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,9 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -50,29 +47,14 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * Columns of non-dereferenceable objects are aliases by default and need
      * not to be added to this set.
      */
-    // TODO Necessary to allow aliases for columns of 'SELECT'.
-    // In other words, it necessary have to think, how to make it
-    // to work with such expressions:
-    // SELECT (SELECT a.a) FROM (SELECT 1, 2, 3) a(a, b, c)
-    // SELECT (SELECT a.a) FROM (SELECT 1 z, 2 x, 3 c) a(a, b, c)
-    // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
     protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
      * CTE names that current level of FROM has access to.
-     *
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
      */
-    protected final Map<String, List<Entry<String, String>>> cte = new HashMap<>();
+    protected final Set<String> cte = new HashSet<>();
 
-    /*
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
-     */
-    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
-
-    public AbstractExprWithNmspc(String schema, PgDatabase db) {
-        super(schema, db);
+    public AbstractExprWithNmspc(String schema) {
+        super(schema);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {
@@ -80,21 +62,14 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected List<Entry<String, String>> findCte(String cteName) {
-        List<Entry<String, String>> pair = cte.get(cteName);
-        return pair != null ? pair : super.findCte(cteName);
+    protected AbstractExprWithNmspc<?> findCte(String cteName) {
+        return cte.contains(cteName) ? this : super.findCte(cteName);
     }
 
     @Override
     protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
         return ref == null ? super.findReference(schema, name, column) : ref;
-    }
-
-    @Override
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name) {
-        return complexNamespace.entrySet().stream().filter(e -> name.equals(e.getKey()))
-                .findFirst().orElse(super.findReferenceComplex(name));
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
@@ -192,34 +167,29 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         List<IdentifierContext> ids = name.identifier();
         String firstName = QNameParser.getFirstName(ids);
 
-        List<Entry<String, String>> cteList = null;
-        if (ids.size() == 1) {
-            cteList = findCte(firstName);
-        }
+        boolean isCte = ids.size() == 1 && hasCte(firstName);
         GenericColumn depcy = null;
-        if (cteList == null) {
+        if (!isCte) {
             depcy = addObjectDepcy(ids, DbObjType.TABLE);
         }
 
         if (alias != null) {
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
-            if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {
+            if (!added && !isCte && columnAliases != null && !columnAliases.isEmpty()) {
                 for (IdentifierContext columnAlias : columnAliases) {
                     addColumnReference(aliasName, columnAlias.getText());
                 }
-            } else if (cteList != null) {
-                complexNamespace.put(aliasName, cteList);
             }
-        } else if (cteList != null) {
+        } else if (isCte) {
             addReference(firstName, null);
-            complexNamespace.put(firstName, cteList);
         } else {
             addRawTableReference(depcy);
         }
     }
 
     protected void analyzeCte(With_clauseContext with) {
+        boolean recursive = with.RECURSIVE() != null;
         for (With_queryContext withQuery : with.with_query()) {
             String withName = withQuery.query_name.getText();
 
@@ -229,39 +199,22 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
                 continue;
             }
 
-            if (addCteSignature(withQuery,
-                    new Select(this).analyze(new SelectStmt(withSelect), withQuery))) {
+            // add CTE name to the visible CTEs list after processing the query for normal CTEs
+            // and before for recursive ones
+            Select withProcessor = new Select(this);
+            boolean duplicate;
+            if (recursive) {
+                duplicate = !cte.add(withName);
+                withProcessor.analyze(withSelect);
+            } else {
+                withProcessor.analyze(withSelect);
+                duplicate = !cte.add(withName);
+            }
+            if (duplicate) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
     }
 
-    /**
-     * Associates names from parameters of recursion (if they exist) with result types
-     * of analysis of 'query-select'. Result will be placed to the CTE.
-     *
-     * @param withQuery the context which contains such template:
-     * "alias(parameters) AS (query1 UNION query2)"
-     *
-     * @param resultTypes result types of analysis of 'query-select'
-     *
-     * @return returns 'true' if CTE already contains key which equals alias from 'withQuery',
-     * otherwise returns 'false'
-     */
-    protected boolean addCteSignature(With_queryContext withQuery, List<Entry<String, String>> resultTypes) {
-        String withName = withQuery.query_name.getText();
-        List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-        if (!paramNamesIdentifers.isEmpty()) {
-            List<Entry<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
-            for (int i = 0;  i < resultTypes.size(); i++) {
-                columnsPairs.add(new SimpleEntry<>(paramNamesIdentifers.get(i).getText(),
-                        resultTypes.get(i).getValue()));
-            }
-            return cte.put(withName, columnsPairs) != null;
-        } else {
-            return cte.put(withName, resultTypes) != null;
-        }
-    }
-
-    public abstract List<Entry<String, String>> analyze(T ruleCtx);
+    public abstract void analyze(T ruleCtx);
 }

@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;

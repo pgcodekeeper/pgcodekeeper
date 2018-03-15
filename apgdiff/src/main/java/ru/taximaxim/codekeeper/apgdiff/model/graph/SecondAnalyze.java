@@ -16,9 +16,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
