@@ -115,9 +115,7 @@ public class JdbcConnector {
             throw new IOException(MessageFormat.format(
                     Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);
         } catch (SQLException e) {
-            throw new IOException(MessageFormat.format(
-                    Messages.Connection_DatabaseJdbcAccessError,
-                    e.getLocalizedMessage(), Messages.JdbcConnector_in_jdbc_connection), e);
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
