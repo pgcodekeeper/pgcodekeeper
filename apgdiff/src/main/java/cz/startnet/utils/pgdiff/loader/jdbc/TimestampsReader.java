@@ -28,6 +28,7 @@ public class TimestampsReader implements PgCatalogStrings {
     }
 
     public DBTimestamp read() throws SQLException, InterruptedException {
+        loader.setCurrentOperation("pg_dbo_timestamp query");
         DBTimestamp time = new DBTimestamp();
         String schemaName = loader.getExtensionSchema();
         try (ResultSet result = loader.statement.executeQuery(MessageFormat.format(QUERY, schemaName))) {
