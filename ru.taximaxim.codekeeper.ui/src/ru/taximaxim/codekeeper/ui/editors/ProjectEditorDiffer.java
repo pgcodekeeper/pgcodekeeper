@@ -245,7 +245,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 container.setLayout(layout);
 
                 Label l = new Label(container, SWT.NONE);
-                l.setEnabled(false);
+                l.setForeground(l.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
                 l.setText(Messages.DiffTableViewer_apply_to);
                 l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
