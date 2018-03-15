@@ -4,7 +4,6 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -67,9 +66,8 @@ public class ConstraintsReader extends JdbcReader {
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
-                ctx -> UtilAnalyzeExpr.analyzeConstraint(ParserAbstract
-                        .processTableActionConstraintExpr(ctx, c, schema.getDatabase()),
-                        schemaName, c));
+                ctx -> ParserAbstract.processTableActionConstraintExpr(ctx, c,
+                        schema.getDatabase()));
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

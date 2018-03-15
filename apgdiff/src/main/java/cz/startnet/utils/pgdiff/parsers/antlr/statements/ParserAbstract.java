@@ -94,13 +94,12 @@ public abstract class ParserAbstract {
         return function.getSignature();
     }
 
-    public static Constr_bodyContext processTableActionConstraintExpr(Table_actionContext ctx,
+    public static void processTableActionConstraintExpr(Table_actionContext ctx,
             PgConstraint constr, PgDatabase dataBase) {
         Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
         constr.setDefinition(getFullCtxText(constrBodyCtx));
         constr.setNotValid(ctx.not_valid != null);
         dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(constr, constrBodyCtx));
-        return constrBodyCtx;
     }
 
     public static void fillArguments(Function_argsContext functionArgsContext,

@@ -1,8 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.List;
-import java.util.ListIterator;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
@@ -11,12 +8,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_eofContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -83,24 +76,6 @@ public class UtilAnalyzeExpr {
         }
         if (exp != null) {
             analyze(exp, new ValueExpr(schemaName), constr);
-        }
-    }
-
-    public static void analyzeFunctionDefaults(Vex_eofContext ctx, PgFunction f, String schemaName) {
-        List<VexContext> vexCtxList = ctx.vex();
-        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
-
-        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
-            if (!vexCtxListIterator.hasPrevious()) {
-                break;
-            }
-            IArgument a = f.getArguments().get(i);
-            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
-                VexContext vx = vexCtxListIterator.previous();
-                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                analyze(vx, new ValueExpr(schemaName), f);
-                vexCtxListIterator.remove();
-            }
         }
     }
 }

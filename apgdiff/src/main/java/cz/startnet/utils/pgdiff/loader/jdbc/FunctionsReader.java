@@ -1,13 +1,17 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.AbstractMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -109,10 +113,22 @@ public class FunctionsReader extends JdbcReader {
         if (defaultValuesAsString != null) {
             loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
                     ctx -> {
-                        schema.getDatabase().getContextsForAnalyze()
-                        .add(new AbstractMap.SimpleEntry<>(f, ctx));
+                        List<VexContext> vexCtxList = ctx.vex();
+                        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
 
-                        UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
+                        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
+                            if (!vexCtxListIterator.hasPrevious()) {
+                                break;
+                            }
+                            IArgument a = f.getArguments().get(i);
+                            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
+                                VexContext vx = vexCtxListIterator.previous();
+                                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
+                                schema.getDatabase().getContextsForAnalyze()
+                                .add(new AbstractMap.SimpleEntry<>(f, vx));
+                                vexCtxListIterator.remove();
+                            }
+                        }
                     });
         }
 
