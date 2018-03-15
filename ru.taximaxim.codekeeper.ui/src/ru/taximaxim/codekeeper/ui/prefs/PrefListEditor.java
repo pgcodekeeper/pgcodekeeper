@@ -226,7 +226,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         return viewerObjs;
     }
 
-    public void setInputList(LinkedList<T> list){
+    public void setInputList(List<T> list){
         objsList = list;
         viewerObjs.setInput(objsList);
     }

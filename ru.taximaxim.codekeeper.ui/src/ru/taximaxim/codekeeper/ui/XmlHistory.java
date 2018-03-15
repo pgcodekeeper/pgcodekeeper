@@ -12,8 +12,8 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.URIUtil;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class XmlHistory {
@@ -66,19 +67,19 @@ public final class XmlHistory {
         }
     }
 
-    public Map<String, List<String>> getMapHistory() throws IOException {
-        Map<String, List<String>> history;
+    public List<Map<String, String>> getObjectsList() throws IOException {
+        List<Map<String, String>> objects;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
                 getHistoryXmlFile()), StandardCharsets.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
-            history = xml.deserializeMap(xmlReader);
+            objects = xml.deserializeObjects(xmlReader);
         } catch (FileNotFoundException e) {
-            history = new LinkedHashMap<>();
+            objects = new ArrayList<>();
         } catch (IOException | SAXException e) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, e.getLocalizedMessage()), e);
         }
-        return history;
+        return objects;
     }
 
     public LinkedList<String> getHistory() throws IOException {
@@ -153,28 +154,35 @@ public final class XmlHistory {
         dumpListToFile(linkedList);
     }
 
-    /**
-     * @param addEntry adds entry if true, removes if false
-     * @throws IOException
-     */
-    public void updateCheckedSetHistoryEntries(String checkSetName,
-            List<String> values, boolean addEntry) throws IOException {
-        if (values.isEmpty() && addEntry) {
-            // do not add entries with no elements
-            return;
-        }
-        Map<String, List<String>> checkedSets = new LinkedHashMap<>();
-        if (addEntry) {
-            checkedSets.put(checkSetName, values);
+    public List<DbInfo> readDbStoreList() throws IOException {
+        List<DbInfo> dbStoreList = new ArrayList<>();
+        for (Map<String, String> object : getObjectsList()) {
+            String name = object.get("name");
+            String dbname = object.get("dbname");
+            String dbuser = object.get("dbuser");
+            String dbpass = object.get("dbpass");
+            String dbhost = object.get("dbhost");
+            int dbport = Integer.parseInt(object.get("dbport"));
+            boolean readOnly = Boolean.parseBoolean(object.get("readOnly"));
+            dbStoreList.add(new DbInfo(name, dbname, dbuser, dbpass, dbhost, dbport, readOnly));
         }
 
-        Map<String, List<String>> oldCheckedSets = getMapHistory();
-        oldCheckedSets.remove(checkSetName);
+        return dbStoreList;
+    }
 
-        Iterator<String> it = oldCheckedSets.keySet().iterator();
-        for (int count = 1; count < maxEntries && it.hasNext(); count++) {
-            String key = it.next();
-            checkedSets.put(key, oldCheckedSets.get(key));
+
+    public void writeDbStoreList(List<DbInfo> dbStoreList) throws IOException {
+        List<Map<String, String>> objects = new ArrayList<>();
+        for (DbInfo dbInfo: dbStoreList) {
+            Map<String, String> object = new HashMap<>();
+            object.put("name", dbInfo.getName());
+            object.put("dbname", dbInfo.getDbName());
+            object.put("dbuser", dbInfo.getDbUser());
+            object.put("dbpass", dbInfo.getDbPass());
+            object.put("dbhost", dbInfo.getDbHost());
+            object.put("dbport", String.valueOf(dbInfo.getDbPort()));
+            object.put("readOnly", String.valueOf(dbInfo.isReadOnly()));
+            objects.add(object);
         }
 
         File historyFile = getHistoryXmlFile();
@@ -183,12 +191,11 @@ public final class XmlHistory {
             historyFile.createNewFile();
             try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), StandardCharsets.UTF_8)) {
                 XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
-                xml.serializeMap(checkedSets, false, xmlWriter);
+                xml.serializeObjects(objects, true, xmlWriter);
             }
         } catch (IOException | TransformerException e) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_write_error, e.getLocalizedMessage()), e);
         }
-
     }
 }

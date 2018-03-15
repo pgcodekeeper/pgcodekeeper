@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbInfo {
 
-    private static final int DBINFO_LINE_PARTS_COUNT = 6;
+    private static final int DBINFO_LINE_PARTS_COUNT = 7;
     /**
      * Delimiter for spacing parts of the coordinates.
      */
@@ -25,6 +25,7 @@ public class DbInfo {
     private final String dbpass;
     private final String dbhost;
     private final int dbport;
+    private final boolean readOnly;
 
     public String getName() {
         return name;
@@ -50,17 +51,27 @@ public class DbInfo {
         return dbport;
     }
 
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
+        this(name, dbname, dbuser, dbpass, dbhost, dbport, false);
+    }
+
+    public DbInfo(String name, String dbname, String dbuser, String dbpass,
+            String dbhost, int dbport, boolean readOnly) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
         this.dbpass = dbpass;
         this.dbhost = dbhost;
         this.dbport = dbport;
+        this.readOnly = readOnly;
     }
 
-    public DbInfo(String coords) {
+    private DbInfo(String coords) {
         String[] parts = coords.split(DELIM, -1);
 
         try {
@@ -75,6 +86,7 @@ public class DbInfo {
             this.dbpass = parts[3];
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
+            this.readOnly = (parts.length == DBINFO_LINE_PARTS_COUNT - 1) ? false : Boolean.parseBoolean(parts[6]);
             // SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
             throw new IllegalArgumentException(
@@ -113,7 +125,7 @@ public class DbInfo {
                 + dbuser.length()
                 + dbpass.length()
                 + dbhost.length()
-                + DBINFO_LINE_PARTS_COUNT * 2);
+                + DBINFO_LINE_PARTS_COUNT * 3);
         sb.append(name)
         .append(DELIM)
         .append(dbname)
@@ -124,11 +136,38 @@ public class DbInfo {
         .append(DELIM)
         .append(dbhost)
         .append(DELIM)
-        .append(dbport);
+        .append(dbport)
+        .append(DELIM)
+        .append(readOnly);
 
         return sb.toString();
     }
 
+
+    public static List<DbInfo> readStoreFromXml(String preference) {
+        List<DbInfo> store = DbStoreXml.INSTANCE.readStoreFromXml();
+        if (store.isEmpty()) {
+            // legacy
+            return preferenceToStore(preference);
+        }
+
+        return store;
+    }
+
+    public static DbInfo getLastStore(String preference) {
+        try {
+            return new DbInfo(preference);
+        } catch (IllegalArgumentException ex) {
+            Log.log(ex);
+        }
+        return null;
+    }
+
+    /**
+     * @deprecated changed to xml history, remove in future
+     * @since 4.3.3
+     */
+    @Deprecated
     public static LinkedList<DbInfo> preferenceToStore(String preference) {
         LinkedList<DbInfo> store = new LinkedList<>();
         String[] coordStrings = preference.split(DELIM_ENTRY);
@@ -144,14 +183,5 @@ public class DbInfo {
             }
         }
         return store;
-    }
-
-    public static String storeToPreference(List<DbInfo> store) {
-        StringBuilder sb = new StringBuilder();
-        for (DbInfo entry : store) {
-            sb.append(entry).append(DELIM_ENTRY);
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
     }
 }

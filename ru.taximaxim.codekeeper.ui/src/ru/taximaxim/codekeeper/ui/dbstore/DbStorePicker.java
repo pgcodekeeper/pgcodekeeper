@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,7 +18,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelection;
@@ -106,20 +104,14 @@ public class DbStorePicker extends Composite {
             });
         }
 
-        final IPropertyChangeListener dbStoreChangeListener = (PropertyChangeEvent event) -> {
-            if (PREF.DB_STORE.equals(event.getProperty())
-                    && !Objects.equals(event.getNewValue(), event.getOldValue())) {
-                UiSync.exec(DbStorePicker.this, () ->  {
-                    if (!isDisposed()) {
-                        loadStore();
-                    }
-                });
+        final IPropertyChangeListener listener = e -> UiSync.exec(this, () -> {
+            if (!isDisposed()) {
+                loadStore();
             }
-        };
+        });
 
-        prefStore.addPropertyChangeListener(dbStoreChangeListener);
-        cmbDbNames.getControl().addDisposeListener(e -> prefStore
-                .removePropertyChangeListener(dbStoreChangeListener));
+        DbStoreXml.INSTANCE.addListener(listener);
+        cmbDbNames.getControl().addDisposeListener(e -> DbStoreXml.INSTANCE.deleteListener(listener));
 
         if (useDirSources) {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
@@ -153,7 +145,7 @@ public class DbStorePicker extends Composite {
     private void loadStore(ISelection newSelection) {
         ISelection selection = newSelection == null ? cmbDbNames.getSelection() : newSelection;
 
-        List<DbInfo> store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
+        List<DbInfo> store = DbInfo.readStoreFromXml(prefStore.getString(PREF.DB_STORE));
         Collection<File> files;
         if (useFileSources || useDirSources) {
             files = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));

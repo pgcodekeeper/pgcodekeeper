@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -19,6 +20,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStoreXml;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStorePrefPage extends PreferencePage
@@ -46,20 +48,18 @@ implements IWorkbenchPreferencePage {
     @Override
     protected Control createContents(Composite parent) {
         dbList = new DbStorePrefListEditor(parent);
-        dbList.setInputList(DbInfo.preferenceToStore(getPreferenceStore().getString(PREF.DB_STORE)));
+        dbList.setInputList(DbInfo.readStoreFromXml(getPreferenceStore().getString(PREF.DB_STORE)));
         return dbList;
     }
 
     @Override
     protected void performDefaults() {
-        dbList.setInputList(DbInfo.preferenceToStore(getPreferenceStore().getDefaultString(PREF.DB_STORE)));
+        DbStoreXml.INSTANCE.writeStoreToXml(Arrays.asList(new DbInfo("default", "", "", "", "", 0)));
     }
 
     @Override
     public boolean performOk() {
-        if(getPreferenceStore() != null) {
-            getPreferenceStore().setValue(PREF.DB_STORE, DbInfo.storeToPreference(dbList.getList()));
-        }
+        DbStoreXml.INSTANCE.writeStoreToXml(dbList.getList());
         return true;
     }
 }

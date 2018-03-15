@@ -589,8 +589,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (currentRemote != null) {
             return currentRemote;
         }
-        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
-        return lastStore.isEmpty() ? null : lastStore.get(0);
+
+        return DbInfo.getLastStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, ""));
     }
 
     public void saveLastDb(DbInfo lastDb) {
