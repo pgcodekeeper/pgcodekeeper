@@ -431,7 +431,8 @@ public class ValueExpr extends AbstractExpr {
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
             foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream();
         } else if (schemaName != null) {
-            foundFunctions = db.getSchema(schemaName).getFunctions().stream();
+            foundFunctions = db.getSchema(schemaName).getFunctions().stream()
+                    .map(f -> (IFunction) f);
         } else {
             foundFunctions = Stream.concat(db.getSchema(schema).getFunctions().stream(),
                     systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream());

@@ -5,5 +5,5 @@ import java.util.stream.Stream;
 
 public interface ISchema extends IStatement {
     Stream<IRelation> getRelations();
-    List<IFunction> getFunctions();
+    List<? extends IFunction> getFunctions();
 }

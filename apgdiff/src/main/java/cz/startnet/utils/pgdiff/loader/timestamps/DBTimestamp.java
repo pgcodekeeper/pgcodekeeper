@@ -17,8 +17,8 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -105,7 +105,7 @@ public class DBTimestamp implements Serializable {
             s.getTypes().forEach(t -> statements.put(createGC(t), PgDiffUtils.sha(t.getRawStatement())));
             s.getDomains().forEach(d -> statements.put(createGC(d), PgDiffUtils.sha(d.getRawStatement())));
             s.getSequences().forEach(seq -> statements.put(createGC(seq), PgDiffUtils.sha(seq.getRawStatement())));
-            s.getFunctions().forEach(f -> statements.put(createGC(f), PgDiffUtils.sha(((PgFunction)f).getRawStatement())));
+            s.getFunctions().forEach(f -> statements.put(createGC(f), PgDiffUtils.sha(f.getRawStatement())));
             for (PgTable t : s.getTables()) {
                 t.getIndexes().forEach(i -> statements.put(createGC(i), PgDiffUtils.sha(i.getRawStatement())));
                 t.getTriggers().forEach(tr -> statements.put(createGC(tr), PgDiffUtils.sha(tr.getRawStatement())));
@@ -230,10 +230,10 @@ public class DBTimestamp implements Serializable {
      * @param statements - statements list
      * @param remoteDb - remote database
      */
-    public void rewriteObjects(List<IStatement> statements, DBTimestamp remoteDb) {
+    public void rewriteObjects(List<PgStatement> statements, DBTimestamp remoteDb) {
         objects.clear();
-        for (IStatement st : statements) {
-            StringBuilder hash = new StringBuilder(/*st.getRawStatement()*/);
+        for (PgStatement st : statements) {
+            StringBuilder hash = new StringBuilder(st.getRawStatement());
             if (st.getStatementType() == DbObjType.TABLE) {
                 ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
             }

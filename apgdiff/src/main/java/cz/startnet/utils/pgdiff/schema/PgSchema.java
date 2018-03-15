@@ -151,7 +151,7 @@ public class PgSchema extends PgStatement implements ISchema {
      * @return {@link #functions}
      */
     @Override
-    public List<IFunction> getFunctions() {
+    public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
     }
 

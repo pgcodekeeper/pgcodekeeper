@@ -33,7 +33,7 @@ public final class DiffTree {
         }
     }
 
-    private final List<IStatement> equalsStatements = new ArrayList<>();
+    private final List<PgStatement> equalsStatements = new ArrayList<>();
 
     public TreeElement createTree(PgDatabase left, PgDatabase right, IProgressMonitor monitor) throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
@@ -50,8 +50,8 @@ public final class DiffTree {
             TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
             db.addChild(elSchema);
 
-            List<? extends IStatement> leftSub = Collections.emptyList();
-            List<? extends IStatement> rightSub = Collections.emptyList();
+            List<? extends PgStatement> leftSub = Collections.emptyList();
+            List<? extends PgStatement> rightSub = Collections.emptyList();
 
             PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
@@ -222,15 +222,15 @@ public final class DiffTree {
     /**
      * Compare lists and put elements onto appropriate sides.
      */
-    private List<CompareResult> compareLists(List<? extends IStatement> left,
-            List<? extends IStatement> right) {
+    private List<CompareResult> compareLists(List<? extends PgStatement> left,
+            List<? extends PgStatement> right) {
         List<CompareResult> rv = new ArrayList<>();
 
         // add LEFT and BOTH here
         // and RIGHT in a separate pass
-        for(IStatement sLeft : left) {
-            IStatement foundRight = null;
-            for(IStatement sRight : right) {
+        for(PgStatement sLeft : left) {
+            PgStatement foundRight = null;
+            for(PgStatement sRight : right) {
                 if(sLeft.getName().equals(sRight.getName())) {
                     foundRight = sRight;
                     break;
@@ -261,7 +261,7 @@ public final class DiffTree {
         return rv;
     }
 
-    public List<IStatement> getEqualsObjects() {
+    public List<PgStatement> getEqualsObjects() {
         return equalsStatements;
     }
 }
