@@ -23,20 +23,27 @@ public class CreateRewrite extends ParserAbstract {
     public PgStatement getObject() {
         PgSchema schema = getSchemaSafe(ctx.table_name.identifier(), db.getDefaultSchema());
         PgRule rule = new PgRule(ctx.name.getText(), getFullCtxText(ctx.getParent()));
-        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(rule, ctx));
         rule.setEvent(PgRuleEventType.valueOf(ctx.event.getText()));
-        rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
         if (ctx.INSTEAD() != null){
             rule.setInstead(true);
         }
+
+        setConditionAndAddCommands(ctx, rule, db);
+
+        getSafe(schema::getRuleContainer,
+                QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addRule(rule);
+        return rule;
+    }
+
+    public static void setConditionAndAddCommands(Create_rewrite_statementContext ctx,
+            PgRule rule, PgDatabase db) {
+        rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
         for (Rewrite_commandContext cmd : ctx.commands) {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 
-        getSafe(schema::getRuleContainer,
-                QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addRule(rule);
-        return rule;
+        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(rule, ctx));
     }
 }

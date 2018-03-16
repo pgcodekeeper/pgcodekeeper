@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -851,7 +852,7 @@ public class ModelExporter {
             statement.getFullSQL();
     }
 
-    private void writeProjVersion(File f) throws IOException {
+    public static void writeProjVersion(File f) throws FileNotFoundException {
         try (PrintWriter pw = new UnixPrintWriter(f, StandardCharsets.UTF_8)) {
             pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " //$NON-NLS-1$
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);

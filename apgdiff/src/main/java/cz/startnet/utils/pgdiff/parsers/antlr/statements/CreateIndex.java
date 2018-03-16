@@ -60,7 +60,7 @@ public class CreateIndex extends ParserAbstract {
         return ind;
     }
 
-    private static String parseIndex(Index_restContext rest, String tablespace,
+    public static String parseIndex(Index_restContext rest, String tablespace,
             PgIndex ind, PgDatabase db){
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));

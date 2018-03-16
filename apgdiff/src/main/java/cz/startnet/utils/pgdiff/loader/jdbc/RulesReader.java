@@ -1,15 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgRule.PgRuleEventType;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
@@ -41,10 +37,7 @@ public class RulesReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgRuleContainer c = schema.getRuleContainer(contName);
         if (c != null) {
-            PgRule rule = getRule(result, schema, contName);
-            if (rule != null) {
-                c.addRule(rule);
-            }
+            c.addRule(getRule(result, schema, contName));
         }
     }
 
@@ -86,19 +79,9 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command, (PgDatabase)schema.getParent(),
-                p -> {
-                    Create_rewrite_statementContext createRewriteCtx = p.sql().statement(0).schema_statement()
-                            .schema_create().create_rewrite_statement();
-
-                    r.setCondition((createRewriteCtx.WHERE() != null) ? ParserAbstract.getFullCtxText(createRewriteCtx.vex()) : null);
-
-                    for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                        r.addCommand(loader.args, ParserAbstract.getFullCtxText(cmd));
-                    }
-
-                    return createRewriteCtx;
-                }, (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(r, ctx)));
+        loader.submitAntlrTask(command, p -> p.sql().statement(0)
+                .schema_statement().schema_create().create_rewrite_statement(),
+                ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r, schema.getDatabase()));
 
         // COMMENT
         String comment = res.getString("comment");
@@ -106,5 +89,10 @@ public class RulesReader extends JdbcReader {
             r.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return r;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.RULE;
     }
 }

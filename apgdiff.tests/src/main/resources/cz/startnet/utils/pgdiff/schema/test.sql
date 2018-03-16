@@ -1,3 +1,7 @@
+-- THIS FILE MUST BE IDENTICAL TO THE ONE IN ru.taximaxim.codekeeper.internal.tests!
+-- The above applies only to internal pgCodeKeeper developers at TaxiMaxim.
+-------------------------------------------------------------------------------
+
 --
 -- PostgreSQL database dump
 --
@@ -127,31 +131,6 @@ CREATE TYPE typ_range AS RANGE (
 ALTER TYPE public.typ_range OWNER TO unit_test;
 
 --
--- Name: increment(integer, integer); Type: FUNCTION; Schema: public; Owner: unit_test
---
-
-CREATE FUNCTION increment(i integer DEFAULT 0, j integer DEFAULT 0) RETURNS integer
-    LANGUAGE plpgsql
-    AS $$ BEGIN RETURN i + 1; END; $$;
-
-
-ALTER FUNCTION public.increment(i integer, j integer) OWNER TO unit_test;
-
-CREATE FUNCTION add1(integer, integer) RETURNS integer
-    LANGUAGE sql WINDOW IMMUTABLE
-    SET "TimeZone" TO 'utc'
-    SET search_path TO public, pg_catalog
-    AS $_$select $1 + $2;$_$;
-    
-ALTER FUNCTION add1(integer, integer) OWNER TO unit_test;
---
--- Name: FUNCTION increment(i integer, j integer); Type: COMMENT; Schema: public; Owner: unit_test
---
-
-COMMENT ON FUNCTION increment(i integer, j integer) IS 'this is test function';
-
-
---
 -- Name: trfunc(); Type: FUNCTION; Schema: public; Owner: unit_test
 --
 
@@ -161,6 +140,31 @@ CREATE FUNCTION trfunc() RETURNS trigger
 
 
 ALTER FUNCTION public.trfunc() OWNER TO unit_test;
+
+CREATE FUNCTION add1(integer, integer) RETURNS integer
+    LANGUAGE sql WINDOW IMMUTABLE
+    SET "TimeZone" TO 'utc'
+    SET search_path TO public, pg_catalog
+    AS $_$select $1 + $2;$_$;
+    
+ALTER FUNCTION add1(integer, integer) OWNER TO unit_test;
+
+--
+-- Name: increment(integer, integer); Type: FUNCTION; Schema: public; Owner: unit_test
+--
+
+CREATE FUNCTION increment(i integer DEFAULT 0, j integer DEFAULT 0) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$ BEGIN RETURN i + 1; END; $$;
+
+
+ALTER FUNCTION public.increment(i integer, j integer) OWNER TO unit_test;
+--
+-- Name: FUNCTION increment(i integer, j integer); Type: COMMENT; Schema: public; Owner: unit_test
+--
+
+COMMENT ON FUNCTION increment(i integer, j integer) IS 'this is test function';
+
 
 SET default_tablespace = '';
 
@@ -299,8 +303,8 @@ ALTER TABLE public.v1 OWNER TO unit_test;
 
 COMMENT ON VIEW v1 IS 'this is test view';
 
-REVOKE ALL(i) ON TABLE v1 FROM unit_test;
 REVOKE ALL(i) ON TABLE v1 FROM PUBLIC;
+REVOKE ALL(i) ON TABLE v1 FROM unit_test;
 GRANT ALL(i) ON TABLE v1 TO unit_test;
 
 
@@ -311,8 +315,9 @@ CREATE OR REPLACE VIEW v2 AS
                    FROM t1
                 )
          SELECT t3.c1,
-                t2.c2
-           FROM t3, t2
+            t2.c2
+           FROM t3,
+            t2
         )
  SELECT _outer.c1
    FROM _outer;

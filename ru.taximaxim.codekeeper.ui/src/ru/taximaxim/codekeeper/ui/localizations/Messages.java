@@ -112,19 +112,15 @@ public final class Messages extends NLS {
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
-    public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
-    public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
     public static String diffTableViewer_open_diff_in_new_window;
-    public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
-    public static String diffTableViewer_stored_selections;
     public static String diffTableViewer_use_java_regular_expressions_see_more;
     public static String diffTableViewer_use_regular_expressions;
     public static String diffTreeViewer_collapse_all;
@@ -164,6 +160,10 @@ public final class Messages extends NLS {
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
 
     public static String ConsoleFactory_error_opening_console;
+    public static String ConvertProject_convert_dialog_message;
+
+    public static String ConvertProject_convert_dialog_title;
+
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
@@ -251,9 +251,13 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_db_user;
+
     public static String DiffTableViewer_error_reading_git_history;
 
     public static String DiffTableViewer_expand_all;
+
+    public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
 
     public static String DiffTableViewer_reading_git_history;
@@ -318,6 +322,8 @@ public final class Messages extends NLS {
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;
 
+    public static String MockDataPage_any_value;
+
     public static String MockDataPage_column_down;
 
     public static String MockDataPage_column_generator;
@@ -333,9 +339,15 @@ public final class Messages extends NLS {
 
     public static String MockDataPage_delete_column;
 
+    public static String MockDataPage_delete_optional;
+
     public static String MockDataPage_description;
 
+    public static String MockDataPage_empty_columns;
+
     public static String MockDataPage_empty_table_name;
+
+    public static String MockDataPage_explicit_type_cast;
 
     public static String MockDataPage_generation_failed;
 
@@ -364,6 +376,10 @@ public final class Messages extends NLS {
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
+
+    public static String NewObjectWizard_invalid_input_format;
+
+    public static String NewObjectWizard_invalid_schema_format;
 
     public static String NewProjWizard_error_creating_project;
 
@@ -400,6 +416,10 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_project_normalized_success;
 
+    public static String SqlEditor_absent_builder_message;
+
+    public static String SqlEditor_absent_builder_title;
+
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
@@ -433,8 +453,6 @@ public final class Messages extends NLS {
 
     public static String PgImportWizardImportPage_name;
 
-    public static String PgImportWizardImportPage_no_project;
-
     public static String PgImportWizardImportPage_project;
 
     public static String PgImportWizardImportPage_select_project;
@@ -449,17 +467,9 @@ public final class Messages extends NLS {
 
     public static String PgObject_cant_find_projects;
 
-    public static String PgObject_column_name;
-
     public static String PgObject_create_object;
 
     public static String PgObject_empty_name;
-
-    public static String PgObject_enter_column;
-
-    public static String PgObject_enter_parent;
-
-    public static String PgObject_enter_schema;
 
     public static String PgObject_file_creation_error;
 
@@ -467,13 +477,9 @@ public final class Messages extends NLS {
 
     public static String PgObject_object_type;
 
-    public static String PgObject_parent_name;
-
     public static String PgObject_parent_type;
 
     public static String PgObject_project_name;
-
-    public static String PgObject_schema_name;
 
     public static String PgObject_select_project;
 
@@ -512,6 +518,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_action_update;
 
+    public static String ProjectEditorPrefPage_show_db_user;
+
     public static String ProjectEditorPrefPage_show_git_user;
 
     public static String dbUpdatePrefPage_script_deleting_status;
@@ -536,6 +544,8 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String Duration_expected_format;
 
     public static String TreeDiffer_unknown_error;
 
@@ -581,11 +591,27 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_cancel;
 
+    public static String FilterDialog_db_user;
+
+    public static String FilterDialog_db_user_label;
+
+    public static String FilterDialog_git_user;
+
+    public static String FilterDialog_git_user_label;
+
+    public static String FilterDialog_only_local_changes;
+
     public static String FilterDialog_reset;
+
+    public static String FilterDialog_schema_filter_placeholder;
+
+    public static String FilterDialog_search_by_container;
 
     public static String FilterDialog_show_change_types;
 
     public static String FilterDialog_show_object_types;
+
+    public static String FilterDialog_sql_filter_placehodlder;
 
     public static String FilterDialog_title;
 
@@ -623,10 +649,6 @@ public final class Messages extends NLS {
     public static String UsageReport_DialogTitle;
     public static String UsageReport_DialogMessage;
 
-    public static String HttpGetMethod_Error_Http;
-    public static String HttpGetMethod_Error_Io;
-    public static String HttpGetMethod_Success;
-
     public static String UsageReportPreferencePage_ReportedValues;
     public static String UsageReportPreferencePage_CurrentUsageHit;
     public static String UsageReportPreferencePage_FirstUsageHit;
@@ -662,8 +684,6 @@ public final class Messages extends NLS {
     public static String QuickUpdate_migration_failed;
 
     public static String QuickUpdate_multiple_schemas;
-
-    public static String QuickUpdate_no_changes;
 
     public static String QuickUpdate_quick_update;
 

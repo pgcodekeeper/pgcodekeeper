@@ -2,9 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 4.7.1.qualifier
+Bundle-Version: 4.8.1.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
+ cz.startnet.utils.pgdiff.loader.timestamps,
  cz.startnet.utils.pgdiff.parsers.antlr,
  cz.startnet.utils.pgdiff.schema,
  cz.startnet.utils.pgdiff.schema.system,

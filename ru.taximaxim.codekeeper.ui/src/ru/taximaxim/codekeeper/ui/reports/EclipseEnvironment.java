@@ -33,13 +33,13 @@ public class EclipseEnvironment {
     private static final String PROP_OS_VERSION = "os.version"; //$NON-NLS-1$
     private static final String PROP_SUN_ARCH = "sun.arch.data.model"; //$NON-NLS-1$
 
-    private static final CharSequence ARCHITECTURE_64 = "64";
+    private static final CharSequence ARCHITECTURE_64 = "64"; //$NON-NLS-1$
 
 
     private static final String NOT_INSTALLED = "N/A";  //$NON-NLS-1$
     private static final String TRUE = "true";  //$NON-NLS-1$
     private static final String FALSE = "false";  //$NON-NLS-1$
-    private static final String SYSPROP_JAVA_NAME = "java.vm.name";
+    private static final String SYSPROP_JAVA_NAME = "java.vm.name"; //$NON-NLS-1$
     private static final String SHOW_BOX_ON_STARTUP = "showBoxOnStartup"; //$NON-NLS-1$
     private String keyWord;
 
@@ -63,9 +63,9 @@ public class EclipseEnvironment {
     }
 
     private String getComponentIds() {
-        String featureId = "ru.taximaxim.codekeeper.feature";
-        String pluginId = "ru.taximaxim.codekeeper.ui";
-        String pluginName = "codekeeperUI";
+        String featureId = "ru.taximaxim.codekeeper.feature"; //$NON-NLS-1$
+        String pluginId = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
+        String pluginName = "codekeeperUI"; //$NON-NLS-1$
 
         if (Platform.getBundle(pluginId) != null) {
             return pluginName;
@@ -79,7 +79,7 @@ public class EclipseEnvironment {
             }
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     public String getUserId() {

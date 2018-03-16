@@ -333,7 +333,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append(newIdentityType)
                 .append(" AS IDENTITY (")
                 .append("\n\tSEQUENCE NAME ")
-                .append(newSequence.getName());
+                .append(PgDiffUtils.getQuotedName(newSequence.getName()));
                 newSequence.fillSequenceBody(sb);
                 sb.append("\n);");
             } else {
@@ -344,8 +344,10 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
         if (oldSequence != null && newSequence != null &&
                 !Objects.equals(oldSequence, newSequence)) {
             if (!oldSequence.getName().equals(newSequence.getName())) {
-                sb.append("\n\n").append("ALTER SEQUENCE ").append(oldSequence.getName())
-                .append(" RENAME TO ").append(newSequence.getName()).append(';');
+                sb.append("\n\n").append("ALTER SEQUENCE ")
+                .append(PgDiffUtils.getQuotedName(oldSequence.getName()))
+                .append(" RENAME TO ")
+                .append(PgDiffUtils.getQuotedName(newSequence.getName())).append(';');
             }
 
             oldSequence.appendAlterSQL(newSequence, sb, new AtomicBoolean());

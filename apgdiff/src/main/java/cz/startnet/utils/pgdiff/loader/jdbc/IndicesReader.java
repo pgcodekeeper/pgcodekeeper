@@ -1,14 +1,11 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -40,9 +37,7 @@ public class IndicesReader extends JdbcReader {
         if (table != null) {
             PgIndex index = getIndex(result, schema, table.getName());
             loader.monitor.worked(1);
-            if (index != null) {
-                table.addIndex(index);
-            }
+            table.addIndex(index);
         }
     }
 
@@ -54,30 +49,11 @@ public class IndicesReader extends JdbcReader {
         i.setTableName(tableName);
 
         String tablespace = res.getString("table_space");
-        loader.submitAntlrTask(res.getString("definition") + ';', (PgDatabase)schema.getParent(),
-                p -> {
-                    Index_restContext indexRestCtx = p.sql().statement(0).schema_statement()
-                            .schema_create().create_index_statement().index_rest();
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ParserAbstract.getFullCtxText(indexRestCtx.index_sort()));
-                    if (indexRestCtx.table_space() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.table_space()));
-                    } else if (tablespace != null) {
-                        sb.append(" TABLESPACE ").append(tablespace);
-                    }
-                    if (indexRestCtx.index_where() != null){
-                        sb.append(' ').append(ParserAbstract.getFullCtxText(indexRestCtx.index_where()));
-                    }
-                    i.setDefinition(sb.toString());
-
-                    return indexRestCtx;
-                },
-                (ctx, db) -> {
-                    if (ctx.index_where() != null) {
-                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(i, ctx.index_where().vex()));
-                    }
-                });
+        loader.submitAntlrTask(res.getString("definition") + ';',
+                p -> p.sql().statement(0).schema_statement().schema_create()
+                .create_index_statement().index_rest(),
+                ctx -> i.setDefinition(CreateIndex.parseIndex(ctx, tablespace, i,
+                        schema.getDatabase())));
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));
@@ -91,5 +67,10 @@ public class IndicesReader extends JdbcReader {
         i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
 
         return i;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.INDEX;
     }
 }

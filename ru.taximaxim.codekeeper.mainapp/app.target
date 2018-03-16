@@ -25,7 +25,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jgit.feature.group" version="4.10.0.201712302008-r"/>
 <unit id="org.eclipse.jgit.source.feature.group" version="4.10.0.201712302008-r"/>
-<repository location="http://download.eclipse.org/egit/updates"/>
+<repository location="http://download.eclipse.org/egit/updates-4.10"/>
 </location>
 </locations>
 </target>

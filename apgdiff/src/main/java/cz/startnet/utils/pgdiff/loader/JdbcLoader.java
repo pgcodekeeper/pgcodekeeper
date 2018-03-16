@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -18,6 +19,8 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasContainer;
 import cz.startnet.utils.pgdiff.loader.jdbc.SchemasReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.SequencesReader;
+import cz.startnet.utils.pgdiff.loader.jdbc.TimestampsReader;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -36,12 +39,12 @@ public class JdbcLoader extends JdbcLoaderBase {
         super(connector, monitor, pgDiffArguments);
     }
 
-    public void setUseServerHelpers(boolean useServerHelpers) {
-        this.useServerHelpers = useServerHelpers;
-    }
-
     public List<String> getErrors() {
         return Collections.unmodifiableList(errors);
+    }
+
+    public void setTimestampParams(PgDatabase projDB, String extensionSchema) {
+        timestampParams.setTimeParams(projDB, extensionSchema);
     }
 
     public PgDatabase getDbFromJdbc() throws IOException, InterruptedException {
@@ -62,6 +65,14 @@ public class JdbcLoader extends JdbcLoaderBase {
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
+
+            if (getExtensionSchema() != null) {
+                DBTimestamp dbTime = new TimestampsReader(this).read();
+                finishAntlr();
+                d.setDbTimestamp(dbTime);
+                timestampParams.fillObjects(dbTime);
+                useServerHelpers = false; // not supported in this version
+            }
 
             schemas = new SchemasReader(this, d).read();
             try (SchemasContainer schemas = this.schemas) {
@@ -93,6 +104,10 @@ public class JdbcLoader extends JdbcLoaderBase {
         return d;
     }
 
+    public void setUseServerHelpers(boolean useServerHelpers) {
+        this.useServerHelpers = useServerHelpers;
+    }
+
     public boolean hasAllHelpers() throws IOException {
         // just makes new connection for now
         // smarter solution would be to make the class AutoCloseable
@@ -102,4 +117,31 @@ public class JdbcLoader extends JdbcLoaderBase {
             throw new IOException(ex.getLocalizedMessage(), ex);
         }
     }
+
+    /**
+     * Checks pg_dbo_timestamp extension in database and returns its location
+     *
+     * @param host - db host
+     * @param port - db port
+     * @param user - db user
+     * @param pass - db pass
+     * @param dbname - db name
+     * @param timezone - db timezone
+     * @return extension schema or null, if not found
+     */
+    public static String getExtensionSchema(String host, int port, String user, String pass, String dbname, String timezone) {
+        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname, timezone);
+        String schema = null;
+        try (Connection connection = connector.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
+            while (res.next()) {
+                schema = res.getString("nspname");
+            }
+        } catch (SQLException | IOException ex) {
+            Log.log(Log.LOG_ERROR, "Error loading DB schema", ex);
+        }
+        return schema;
+    }
+
 }

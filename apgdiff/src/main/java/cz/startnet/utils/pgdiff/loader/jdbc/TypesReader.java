@@ -1,13 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -85,7 +82,7 @@ public class TypesReader extends JdbcReader {
                     + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
         }
 
-        PgDatabase dataBase = (PgDatabase)schema.getParent();
+        PgDatabase dataBase = schema.getDatabase();
 
         String def = res.getString("dom_defaultbin");
         if (def == null) {
@@ -94,9 +91,8 @@ public class TypesReader extends JdbcReader {
                 def = PgDiffUtils.quoteString(def);
             }
         } else {
-            loader.submitAntlrTask(def, dataBase,
-                    p -> p.vex_eof().vex().get(0),
-                    (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
+            loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
+                    ctx -> dataBase.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
         }
 
         d.setDefaultValue(def);
@@ -109,16 +105,10 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';', dataBase,
-                        p -> {
-                            Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter()
-                                    .alter_table_statement().table_action(0);
-                            Constr_bodyContext body = tableActionCtx.tabl_constraint.constr_body();
-
-                            c.setDefinition(ParserAbstract.getFullCtxText(body));
-
-                            return body;
-                        }, (ctx, db) -> db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx)));
+                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
+                        p -> p.sql().statement(0).schema_statement().schema_alter()
+                        .alter_table_statement().table_action(0),
+                        ctx -> ParserAbstract.processTableActionConstraintExpr(ctx, c, dataBase));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
@@ -305,5 +295,10 @@ public class TypesReader extends JdbcReader {
             t = null;
         }
         return t;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TYPE;
     }
 }

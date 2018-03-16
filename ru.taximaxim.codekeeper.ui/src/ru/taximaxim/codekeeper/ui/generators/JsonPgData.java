@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 /**
  * An implementation of a PostgreSql data generator for JSON type.
  *
@@ -11,13 +13,13 @@ import java.util.Random;
 public class JsonPgData extends PgData<String> {
 
     public JsonPgData() {
-        super(PgDataType.JSON, "'{\"a\": \"b\"}'", null, null); //$NON-NLS-1$
+        super(PgDataType.JSON, "{\"a\": \"b\"}", null, null); //$NON-NLS-1$
     }
 
     @Override
     public String generateValue() {
         switch (generator) {
-        case CONSTANT: return start;
+        case CONSTANT: return PgDiffUtils.quoteString(start);
         case INCREMENT:
             return null;
         case RANDOM: return generateRandom();

@@ -1,17 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -42,10 +37,7 @@ public class ConstraintsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
-            PgConstraint constraint = getConstraint(result, schema, table.getName());
-            if (constraint != null) {
-                table.addConstraint(constraint);
-            }
+            table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
@@ -71,20 +63,11 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';', (PgDatabase)schema.getParent(),
-                p -> {
-                    Table_actionContext tableActionCtx = p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
-                            .table_action(0);
-                    Constr_bodyContext bodyCtx = tableActionCtx.tabl_constraint.constr_body();
-                    c.setDefinition(ParserAbstract.getFullCtxText(bodyCtx));
-                    c.setNotValid(tableActionCtx.not_valid != null);
-                    return bodyCtx;
-                },
-                (ctx, db) ->  {
-                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(c, ctx));
-
-                    UtilAnalyzeExpr.analyzeConstraint(ctx, schemaName, c);
-                });
+        loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
+                p -> p.sql().statement(0).schema_statement().schema_alter()
+                .alter_table_statement().table_action(0),
+                ctx -> ParserAbstract.processTableActionConstraintExpr(ctx, c,
+                        schema.getDatabase()));
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {
@@ -120,5 +103,10 @@ public class ConstraintsReader extends JdbcReader {
         for (String name : concols) {
             c.addColumn(name);
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.CONSTRAINT;
     }
 }

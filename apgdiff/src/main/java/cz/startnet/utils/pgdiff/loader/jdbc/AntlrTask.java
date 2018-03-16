@@ -2,23 +2,21 @@ package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-public class AntlrTask<T extends ParserRuleContext, PgDatabase> {
+public class AntlrTask<T extends ParserRuleContext> {
 
     private final Future<T> future;
-    private final BiConsumer<T, PgDatabase> finalizer;
-    private final PgDatabase dataBase;
+    private final Consumer<T> finalizer;
 
-    public AntlrTask(Future<T> future, BiConsumer<T, PgDatabase> finalizer, PgDatabase dataBase) {
+    public AntlrTask(Future<T> future, Consumer<T> finalizer) {
         this.future = future;
         this.finalizer = finalizer;
-        this.dataBase = dataBase;
     }
 
     public void finish() throws InterruptedException, ExecutionException {
-        finalizer.accept(future.get(), dataBase);
+        finalizer.accept(future.get());
     }
 }

@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
 import cz.startnet.utils.pgdiff.schema.PartitionPgTable;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.RegularPgTable;
@@ -43,9 +42,7 @@ public class TablesReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = getTable(result, schema);
         loader.monitor.worked(1);
-        if (table != null) {
-            schema.addTable(table);
-        }
+        schema.addTable(table);
     }
 
     private PgTable getTable(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
@@ -222,9 +219,9 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault, (PgDatabase)schema.getParent(),
-                        p -> p.vex_eof().vex().get(0),
-                        (ctx, db) -> db.getContextsForAnalyze().add(new SimpleEntry<>(column, ctx)));
+                loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
+                        ctx -> schema.getDatabase().getContextsForAnalyze()
+                        .add(new SimpleEntry<>(column, ctx)));
             }
 
             if (colNotNull[i]) {
@@ -272,5 +269,10 @@ public class TablesReader extends JdbcReader {
                 t.addColumn(column);
             }
         }
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TABLE;
     }
 }

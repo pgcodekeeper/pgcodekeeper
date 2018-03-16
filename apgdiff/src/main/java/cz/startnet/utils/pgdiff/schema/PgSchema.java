@@ -151,7 +151,7 @@ public class PgSchema extends PgStatement implements ISchema {
      * @return {@link #functions}
      */
     @Override
-    public List<IFunction> getFunctions() {
+    public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
     }
 
@@ -276,6 +276,16 @@ public class PgSchema extends PgStatement implements ISchema {
      */
     public List<PgType> getTypes() {
         return Collections.unmodifiableList(types);
+    }
+
+
+    public PgTable getTableByIndex(String name) {
+        for (PgTable t : getTables()) {
+            if (t.getIndex(name) != null) {
+                return t;
+            }
+        }
+        return null;
     }
 
     public void addDomain(PgDomain dom) {

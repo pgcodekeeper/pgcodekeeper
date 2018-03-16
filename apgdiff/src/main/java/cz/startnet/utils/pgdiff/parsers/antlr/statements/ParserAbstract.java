@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -19,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
@@ -92,6 +94,14 @@ public abstract class ParserAbstract {
         return function.getSignature();
     }
 
+    public static void processTableActionConstraintExpr(Table_actionContext ctx,
+            PgConstraint constr, PgDatabase dataBase) {
+        Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
+        constr.setDefinition(getFullCtxText(constrBodyCtx));
+        constr.setNotValid(ctx.not_valid != null);
+        dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(constr, constrBodyCtx));
+    }
+
     public static void fillArguments(Function_argsContext functionArgsContext,
             PgFunction function, String defSchemaName, PgDatabase dataBase) {
         for (Function_argumentsContext argument : functionArgsContext.function_arguments()) {
@@ -103,8 +113,10 @@ public abstract class ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
 
-                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
-                        argument.function_def_value().def_value));
+                if (dataBase != null) {
+                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
+                            argument.function_def_value().def_value));
+                }
             }
 
             function.addArgument(arg);

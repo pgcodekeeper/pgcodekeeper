@@ -5,7 +5,7 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.oid, 
+SELECT c.oid::bigint,
        c.relowner::bigint,
        c.relname,
        descr.description AS comment,

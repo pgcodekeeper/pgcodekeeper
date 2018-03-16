@@ -9,10 +9,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,23 +25,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -250,47 +241,13 @@ public class PgDumpLoader implements AutoCloseable {
     }
 
     protected static void dbAnalyze(PgDatabase db) {
-        for (SimpleEntry<PgStatement, ParserRuleContext> entry : db.getContextsForAnalyze()) {
+        for (Entry<PgStatement, ParserRuleContext> entry :
+            (Iterable<Entry<PgStatement, ParserRuleContext>>) db.getContextsForAnalyze()
+            .stream().filter(e -> DbObjType.VIEW.equals(e.getKey().getStatementType()))::iterator) {
             PgStatement stmt = entry.getKey();
-            ParserRuleContext ctx = entry.getValue();
-            DbObjType stmtType = stmt.getStatementType();
-
-            String schemaName = ((PgStatementWithSearchPath) stmt).getContainingSchema().getName();
-
-            switch (stmtType) {
-            case VIEW:
-                UtilAnalyzeExpr.analyze(new SelectStmt((Select_stmtContext) ctx),
-                        new Select(schemaName), stmt);
-                break;
-            case RULE:
-                Create_rewrite_statementContext createRuleCtx = (Create_rewrite_statementContext) ctx;
-                PgRule rule = (PgRule)stmt;
-
-                UtilAnalyzeExpr.analyzeRulesWhere(createRuleCtx, rule, schemaName);
-
-                if (!rule.getCommands().isEmpty()) {
-                    for (Rewrite_commandContext cmd : createRuleCtx.commands) {
-                        UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
-                    }
-                }
-                break;
-            case TRIGGER:
-                UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx, (PgTrigger)stmt, schemaName);
-                break;
-            case INDEX:
-            case FUNCTION:
-            case DOMAIN:
-            case COLUMN:
-                UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), stmt);
-                break;
-            case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext)ctx, schemaName, (PgConstraint)stmt);
-                break;
-            default:
-                throw new IllegalStateException("The analyze for the case is not defined!"); //$NON-NLS-1$
-            }
+            UtilAnalyzeExpr.analyze(new SelectStmt((Select_stmtContext) entry.getValue()),
+                    new Select(stmt.getParent().getName()), stmt);
         }
-
         SecondAnalyze.goThroughGraphForAnalyze(db);
     }
 }
