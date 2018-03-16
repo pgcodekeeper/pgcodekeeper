@@ -134,7 +134,7 @@ public class PgDumpLoader implements AutoCloseable {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
-        FullAnalyze.goThroughGraphForAnalyze(d);
+        FullAnalyze.fullAnalyze(d);
         return d;
     }
 
@@ -198,7 +198,7 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        FullAnalyze.goThroughGraphForAnalyze(db);
+        FullAnalyze.fullAnalyze(db);
         return db;
     }
 

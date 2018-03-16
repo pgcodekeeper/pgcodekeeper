@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
 public final class FullAnalyze {
 
-    public static void goThroughGraphForAnalyze(PgDatabase db) {
+    public static void fullAnalyze(PgDatabase db) {
         DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db, false).getReversedGraph();
 
         TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator = new TopologicalOrderIterator<>(graph);
@@ -45,12 +45,10 @@ public final class FullAnalyze {
         }
 
         // Analysis of all statements except 'VIEW'.
-        analyzeAllStmtsExceptView((Iterable<Entry<PgStatement, ParserRuleContext>>) db.getContextsForAnalyze()
-                .stream().filter(e -> !DbObjType.VIEW.equals(e.getKey().getStatementType()))::iterator);
-    }
-
-    private static void analyzeAllStmtsExceptView(Iterable<Entry<PgStatement, ParserRuleContext>> allStmtsExceptView) {
-        for (Entry<PgStatement, ParserRuleContext> entry : allStmtsExceptView) {
+        for (Entry<PgStatement, ParserRuleContext> entry : db.getContextsForAnalyze()) {
+            if (DbObjType.VIEW == entry.getKey().getStatementType()) {
+                continue;
+            }
             PgStatement statement = entry.getKey();
             ParserRuleContext ctx = entry.getValue();
             DbObjType statementType = statement.getStatementType();

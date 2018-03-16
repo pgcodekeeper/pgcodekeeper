@@ -90,7 +90,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            FullAnalyze.goThroughGraphForAnalyze(d);
+            FullAnalyze.fullAnalyze(d);
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
