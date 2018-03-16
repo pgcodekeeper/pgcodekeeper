@@ -74,8 +74,13 @@ public final class SecondAnalyze {
                         (PgTrigger) statement, schemaName);
                 break;
             case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                        schemaName, (PgConstraint) statement);
+                if (ctx instanceof Constr_bodyContext) {
+                    UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
+                            schemaName, (PgConstraint) statement);
+                } else {
+                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName),
+                            statement);
+                }
                 break;
             case INDEX:
             case DOMAIN:

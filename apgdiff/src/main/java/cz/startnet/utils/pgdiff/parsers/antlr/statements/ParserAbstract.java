@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -22,10 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -133,10 +131,7 @@ public abstract class ParserAbstract {
             PgConstraint constraint = new PgConstraint(constrName,
                     getFullCtxText(constr));
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
-            VexContext exp = bool.expression;
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constraint.addAllDeps(vex.getDepcies());
+            db.getContextsForAnalyze().add(new SimpleEntry<>(constraint, bool.expression));
             return constraint;
         }
         return null;
