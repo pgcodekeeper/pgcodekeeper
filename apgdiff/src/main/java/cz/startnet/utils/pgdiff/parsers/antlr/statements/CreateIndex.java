@@ -32,36 +32,25 @@ public class CreateIndex extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        String schemaName = schema.getName();
         String name = ctx.name.getText();
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, ind, db));
+        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, schemaName, ind, db));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             getSafe(schema::getTable,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addIndex(ind);
         }
 
-        ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(), DbObjType.TABLE));
-
-        // Костыль, т.к нужно улучшить парсер для vex в планевычитки колонок
-        for (Sort_specifierContext sort_ctx : ctx.index_rest().index_sort().sort_specifier_list().sort_specifier()){
-            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
-            if (vexPrimary != null) {
-                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
-                if (colName != null) {
-                    ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(),
-                            colName.getText(), DbObjType.COLUMN));
-                }
-            }
-            ind.addColumn(sort_ctx.key.getText());
-        }
+        ind.addDep(new GenericColumn(schemaName, ind.getTableName(), DbObjType.TABLE));
 
         return ind;
     }
 
     public static String parseIndex(Index_restContext rest, String tablespace,
-            PgIndex ind, PgDatabase db){
+            String schemaName, PgIndex ind, PgDatabase db){
+        parseColumns(rest, schemaName, ind);
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
         if (rest.table_space() != null){
@@ -75,5 +64,21 @@ public class CreateIndex extends ParserAbstract {
             sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
         return sb.toString();
+    }
+
+    // Костыль, т.к нужно улучшить парсер для vex в плане вычитки колонок
+    private static void parseColumns(Index_restContext rest, String schemaName, PgIndex ind) {
+        for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list().sort_specifier()){
+            Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
+            if (vexPrimary != null) {
+                Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
+                if (colName != null) {
+                    String col = colName.getText();
+                    ind.addDep(new GenericColumn(schemaName, ind.getTableName(),
+                            col, DbObjType.COLUMN));
+                    ind.addColumn(col);
+                }
+            }
+        }
     }
 }
