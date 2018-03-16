@@ -12,9 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
@@ -25,16 +23,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 
@@ -143,7 +135,7 @@ public class PgDumpLoader implements AutoCloseable {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
-        dbAnalyze(d);
+        SecondAnalyze.goThroughGraphForAnalyze(d);
         return d;
     }
 
@@ -207,7 +199,7 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        dbAnalyze(db);
+        SecondAnalyze.goThroughGraphForAnalyze(db);
         return db;
     }
 
@@ -238,16 +230,5 @@ public class PgDumpLoader implements AutoCloseable {
                 }
             }
         }
-    }
-
-    protected static void dbAnalyze(PgDatabase db) {
-        for (Entry<PgStatement, ParserRuleContext> entry :
-            (Iterable<Entry<PgStatement, ParserRuleContext>>) db.getContextsForAnalyze()
-            .stream().filter(e -> DbObjType.VIEW.equals(e.getKey().getStatementType()))::iterator) {
-            PgStatement stmt = entry.getKey();
-            UtilAnalyzeExpr.analyze(new SelectStmt((Select_stmtContext) entry.getValue()),
-                    new Select(stmt.getParent().getName()), stmt);
-        }
-        SecondAnalyze.goThroughGraphForAnalyze(db);
     }
 }

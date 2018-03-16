@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -153,7 +154,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        PgDumpLoader.dbAnalyze(db);
+        SecondAnalyze.goThroughGraphForAnalyze(db);
         return db;
     }
 
