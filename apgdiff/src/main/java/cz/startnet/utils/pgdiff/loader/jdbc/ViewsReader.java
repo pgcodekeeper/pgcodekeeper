@@ -7,7 +7,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -70,6 +69,8 @@ public class ViewsReader extends JdbcReader {
                 ctx -> {
                     dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
+                    // collect basic FROM dependencies between VIEW objects themselves
+                    // to ensure correct order during the main analysis phase
                     UtilAnalyzeExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
                 });
 
@@ -91,8 +92,6 @@ public class ViewsReader extends JdbcReader {
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> {
                                 dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
-
-                                UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), v);
                             });
                 }
                 String colComment = colComments[i];
