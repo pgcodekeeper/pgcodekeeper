@@ -29,6 +29,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -38,7 +39,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -154,7 +154,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        SecondAnalyze.goThroughGraphForAnalyze(db);
+        FullAnalyze.goThroughGraphForAnalyze(db);
         return db;
     }
 

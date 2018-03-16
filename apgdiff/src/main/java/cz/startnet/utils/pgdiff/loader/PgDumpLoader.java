@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -135,7 +134,7 @@ public class PgDumpLoader implements AutoCloseable {
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
         load(d);
-        SecondAnalyze.goThroughGraphForAnalyze(d);
+        FullAnalyze.goThroughGraphForAnalyze(d);
         return d;
     }
 
@@ -199,7 +198,7 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        SecondAnalyze.goThroughGraphForAnalyze(db);
+        FullAnalyze.goThroughGraphForAnalyze(db);
         return db;
     }
 

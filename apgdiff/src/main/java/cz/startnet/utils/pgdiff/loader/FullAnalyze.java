@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.apgdiff.model.graph;
+package cz.startnet.utils.pgdiff.loader;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,8 +27,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
-public final class SecondAnalyze {
+public final class FullAnalyze {
 
     public static void goThroughGraphForAnalyze(PgDatabase db) {
         DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db, false).getReversedGraph();
@@ -133,6 +134,6 @@ public final class SecondAnalyze {
         }
     }
 
-    private SecondAnalyze() {
+    private FullAnalyze() {
     }
 }
