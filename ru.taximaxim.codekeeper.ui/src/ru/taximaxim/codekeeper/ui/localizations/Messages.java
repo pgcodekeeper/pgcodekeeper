@@ -77,6 +77,10 @@ public final class Messages extends NLS {
 
     public static String SqlEditor_update_ddl;
 
+    public static String UpdateDdl_read_only_db_message;
+
+    public static String UpdateDdl_read_only_db_title;
+
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
 
