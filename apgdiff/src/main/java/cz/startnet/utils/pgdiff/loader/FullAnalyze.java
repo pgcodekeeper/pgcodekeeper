@@ -16,8 +16,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
@@ -62,29 +62,30 @@ public final class FullAnalyze {
                 Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
                 PgRule rule = (PgRule) statement;
 
-                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName);
+                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName, db);
                 for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
+                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName, db);
                 }
                 break;
             case TRIGGER:
                 UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx,
-                        (PgTrigger) statement, schemaName);
+                        (PgTrigger) statement, schemaName, db);
                 break;
             case CONSTRAINT:
                 if (ctx instanceof Constr_bodyContext) {
                     UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                            schemaName, (PgConstraint) statement);
+                            schemaName, (PgConstraint) statement, db);
                 } else {
-                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName),
-                            statement);
+                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
+                            db), statement);
                 }
                 break;
             case INDEX:
             case DOMAIN:
             case FUNCTION:
             case COLUMN:
-                UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName), statement);
+                UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
+                        db), statement);
                 break;
             default:
                 throw new IllegalStateException("The analyze for the case '"
@@ -120,8 +121,8 @@ public final class FullAnalyze {
                         view.addRelationColumns(select.analyze(ctx));
                         view.addAllDeps(select.getDepcies());
                     } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName),
-                                view);
+                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName,
+                                db), view);
                     }
                 }
             }

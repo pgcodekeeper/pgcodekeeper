@@ -1,4 +1,8 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
@@ -7,6 +11,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
 
@@ -14,12 +19,12 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Update(String schema) {
-        super(schema);
+    public Update(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     @Override
-    public void analyze(Update_stmt_for_psqlContext update) {
+    public List<Entry<String, String>> analyze(Update_stmt_for_psqlContext update) {
         With_clauseContext with = update.with_clause();
         if (with != null) {
             analyzeCte(with);
@@ -53,5 +58,7 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
                 new ValueExpr(this).analyze(new Vex(vex));
             }
         }
+
+        return Collections.emptyList();
     }
 }

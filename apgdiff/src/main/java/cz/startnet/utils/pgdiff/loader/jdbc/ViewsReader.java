@@ -6,7 +6,6 @@ import java.util.Map;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -71,7 +70,9 @@ public class ViewsReader extends JdbcReader {
 
                     // collect basic FROM dependencies between VIEW objects themselves
                     // to ensure correct order during the main analysis phase
-                    UtilAnalyzeExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
+                    Select select = new Select(schemaName);
+                    select.analyze(new SelectStmt(ctx));
+                    v.addAllDeps(select.getDepcies());
                 });
 
         // OWNER
