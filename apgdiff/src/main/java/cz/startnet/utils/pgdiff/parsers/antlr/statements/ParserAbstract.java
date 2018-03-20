@@ -100,27 +100,6 @@ public abstract class ParserAbstract {
         dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(constr, constrBodyCtx));
     }
 
-    public static void fillArguments(Function_argsContext functionArgsContext,
-            PgFunction function, String defSchemaName, PgDatabase dataBase) {
-        for (Function_argumentsContext argument : functionArgsContext.function_arguments()) {
-            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), function, defSchemaName);
-
-            if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-
-                if (dataBase != null) {
-                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
-                            argument.function_def_value().def_value));
-                }
-            }
-
-            function.addArgument(arg);
-        }
-    }
-
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
         Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
         if (bool != null) {

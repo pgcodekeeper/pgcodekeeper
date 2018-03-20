@@ -62,8 +62,8 @@ public class CreateView extends ParserAbstract {
             ctx = AntlrParser.makeBasicParser(SQLParser.class, sql, "recursive view").sql()
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
-        Select_stmtContext vQuery = null;
-        if ((vQuery = ctx.v_query) != null) {
+        Select_stmtContext vQuery = ctx.v_query;
+        if (vQuery != null) {
             view.setQuery(getFullCtxText(vQuery));
             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
             UtilAnalyzeExpr.analyze(new SelectStmt(vQuery), new Select(schema.getName()), view);
