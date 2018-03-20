@@ -1,8 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.jgrapht.DirectedGraph;
@@ -109,23 +108,20 @@ public final class FullAnalyze {
             if (DbObjType.VIEW.equals(statement.getStatementType())) {
                 String schemaName = statement.getParent().getName();
 
-                List<ParserRuleContext> statementContexts = db.getContextsForAnalyze().stream()
-                        .filter(entry -> statement.equals(entry.getKey()))
-                        .map(Entry::getValue)
-                        .collect(Collectors.toList());
-
-                if (statementContexts.isEmpty()) {
-                    return;
-                }
+                Stream<ParserRuleContext> viewStatementContexts = db.getContextsForAnalyze()
+                        .stream().filter(entry -> statement.equals(entry.getKey()))
+                        .map(Entry::getValue);
 
                 PgView view = (PgView)statement;
-                Select select = new Select(schemaName, db);
-                for (ParserRuleContext ctx : statementContexts) {
+                for (ParserRuleContext ctx : (Iterable<ParserRuleContext>)
+                        viewStatementContexts::iterator) {
                     if (ctx instanceof Select_stmtContext) {
+                        Select select = new Select(schemaName, db);
                         view.addRelationColumns(select.analyze(ctx));
                         view.addAllDeps(select.getDepcies());
                     } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), view);
+                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName),
+                                view);
                     }
                 }
             }
