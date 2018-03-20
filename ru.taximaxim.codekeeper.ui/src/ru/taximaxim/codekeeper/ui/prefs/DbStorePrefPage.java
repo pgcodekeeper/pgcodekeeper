@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eclipse.jface.preference.PreferencePage;
@@ -20,8 +21,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStoreXml;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public class DbStorePrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
@@ -54,12 +55,13 @@ implements IWorkbenchPreferencePage {
 
     @Override
     protected void performDefaults() {
-        DbStoreXml.INSTANCE.writeStoreToXml(Arrays.asList(new DbInfo("default", "", "", "", "", 0)));
+        DbXmlStore.INSTANCE.writeDbStoreList(Arrays.asList(
+                new DbInfo("default", "", "", "", "", 0, false, new ArrayList<>())));
     }
 
     @Override
     public boolean performOk() {
-        DbStoreXml.INSTANCE.writeStoreToXml(dbList.getList());
+        DbXmlStore.INSTANCE.writeDbStoreList(dbList.getList());
         return true;
     }
 }

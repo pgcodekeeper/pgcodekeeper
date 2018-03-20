@@ -119,7 +119,6 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -519,9 +518,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
+                            loadedRemote = currentRemote;
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
                                     newDiffer.getDiffTree());
-                            loadedRemote = currentRemote;
                         }
                     });
                 }
@@ -590,7 +589,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, ""));
+        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, ""));
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -600,7 +599,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public static void saveLastDb(DbInfo lastDb, IProject project) {
         IEclipsePreferences prefs = PgDbProject.getPrefs(project);
         if (prefs != null) {
-            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.toString());
+            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
             try {
                 prefs.flush();
             } catch (BackingStoreException ex) {
@@ -657,9 +656,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            ignoreList = InternalIgnoreList.readInternalList();
-            InternalIgnoreList.readAppendList(
-                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+            ignoreList = DbInfo.getIgnoreList(proj, loadedRemote);
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {

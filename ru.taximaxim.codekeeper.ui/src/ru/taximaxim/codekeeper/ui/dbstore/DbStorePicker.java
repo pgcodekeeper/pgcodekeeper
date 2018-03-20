@@ -47,8 +47,11 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public class DbStorePicker extends Composite {
+
+    private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
@@ -110,8 +113,8 @@ public class DbStorePicker extends Composite {
             }
         });
 
-        DbStoreXml.INSTANCE.addListener(listener);
-        cmbDbNames.getControl().addDisposeListener(e -> DbStoreXml.INSTANCE.deleteListener(listener));
+        DbXmlStore.INSTANCE.addListener(listener);
+        cmbDbNames.getControl().addDisposeListener(e -> DbXmlStore.INSTANCE.deleteListener(listener));
 
         if (useDirSources) {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
@@ -319,7 +322,7 @@ public class DbStorePicker extends Composite {
     }
 
     public static Deque<File> stringToDumpFileHistory(String preference, boolean allowDirs) {
-        String[] coordStrings = preference.split(DbInfo.DELIM_ENTRY);
+        String[] coordStrings = preference.split(DELIM_ENTRY);
         Deque<File> paths = new LinkedList<>();
         for (String path : coordStrings){
             File f = new File(path);
@@ -334,7 +337,7 @@ public class DbStorePicker extends Composite {
         StringBuilder sb = new StringBuilder();
         for (File path : dumps){
             sb.append(path.getAbsolutePath());
-            sb.append(DbInfo.DELIM_ENTRY);
+            sb.append(DELIM_ENTRY);
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
