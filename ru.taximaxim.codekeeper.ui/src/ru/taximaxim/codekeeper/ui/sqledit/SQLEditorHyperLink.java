@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.nio.file.Paths;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IWorkbenchPage;
@@ -21,6 +23,7 @@ public class SQLEditorHyperLink implements IHyperlink {
     private final String label;
     private final IRegion regionHightLight;
     private final int lineNumber;
+    private final String relativePath;
 
     public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label,
             String path, int lineNumber) {
@@ -30,6 +33,8 @@ public class SQLEditorHyperLink implements IHyperlink {
         this.location = path;
         this.label = label;
         this.lineNumber = lineNumber;
+        relativePath = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(location))
+                .getProjectRelativePath().toString();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public String getHyperlinkText() {
-        return label + " - " + location.toString() + " (" + lineNumber + ')'; //$NON-NLS-1$ //$NON-NLS-2$
+        return label + " - " + relativePath + ':' + lineNumber; //$NON-NLS-1$
     }
 
     @Override
