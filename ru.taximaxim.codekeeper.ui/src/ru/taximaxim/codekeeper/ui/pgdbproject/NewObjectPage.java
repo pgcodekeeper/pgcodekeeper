@@ -324,7 +324,8 @@ public final class NewObjectPage extends WizardPage {
                 String second = parser.getSecondName();
                 if ((type == DbObjType.SCHEMA || type == DbObjType.EXTENSION) && second != null) {
                     err = Messages.NewObjectWizard_invalid_schema_format;
-                } else if (isSubElement() == (third == null)) {
+                } else if (isSubElement() == (third == null)
+                        || (second == null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION)) {
                     err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
                 }
 
