@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -67,7 +66,7 @@ public class UtilAnalyzeExpr {
     }
 
     public static void analyzeConstraint(Constr_bodyContext ctx, String schemaName,
-            PgConstraint constr, PgDatabase db) {
+            PgStatement stmt, PgDatabase db) {
         VexContext exp = null;
         Common_constraintContext common = ctx.common_constraint();
         Check_boolean_expressionContext check;
@@ -77,7 +76,7 @@ public class UtilAnalyzeExpr {
             exp = ctx.vex();
         }
         if (exp != null) {
-            analyze(exp, new ValueExpr(schemaName, db), constr);
+            analyze(exp, new ValueExpr(schemaName, db), stmt);
         }
     }
 }

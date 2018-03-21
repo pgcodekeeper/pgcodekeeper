@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -72,13 +71,8 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case CONSTRAINT:
-                if (ctx instanceof Constr_bodyContext) {
-                    UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                            schemaName, (PgConstraint) statement, db);
-                } else {
-                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
-                            db), statement);
-                }
+                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
+                        schemaName, statement, db);
                 break;
             case INDEX:
             case DOMAIN:

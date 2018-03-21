@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -12,22 +10,17 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
@@ -90,30 +83,6 @@ public abstract class ParserAbstract {
             function.addArgument(arg);
         }
         return function.getSignature();
-    }
-
-    public static void processTableActionConstraintExpr(Table_actionContext ctx,
-            PgConstraint constr, PgDatabase dataBase) {
-        Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
-        constr.setDefinition(getFullCtxText(constrBodyCtx));
-        constr.setNotValid(ctx.not_valid != null);
-        dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(constr, constrBodyCtx));
-    }
-
-    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
-        Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
-        if (bool != null) {
-            String constrName = "";
-            if (constr.name != null) {
-                constrName = QNameParser.getFirstName(constr.name.identifier());
-            }
-            PgConstraint constraint = new PgConstraint(constrName,
-                    getFullCtxText(constr));
-            constraint.setDefinition(getFullCtxText(constr.common_constraint()));
-            db.getContextsForAnalyze().add(new SimpleEntry<>(constraint, bool.expression));
-            return constraint;
-        }
-        return null;
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,
