@@ -21,10 +21,12 @@ public class DbInfo {
      * @deprecated legacy
      */
     @Deprecated
-    private static final int DBINFO_LINE_PARTS_COUNT = 7;
+    private static final int DBINFO_LINE_PARTS_COUNT = 6;
     /**
+     * @deprecated legacy
      * Delimiter for spacing parts of the coordinates.
      */
+    @Deprecated
     private static final String DELIM = "\t"; //$NON-NLS-1$
     /**
      * @deprecated legacy <br>
@@ -150,7 +152,7 @@ public class DbInfo {
 
     public static DbInfo getLastDb(String preference) {
         try {
-            return preference.contains(DELIM_ENTRY) ? getLastStore(preference) :
+            return preference.contains(DELIM) ? getLastStore(preference) :
                 DbXmlStore.INSTANCE.readDbStoreList().stream()
                 .filter(e -> preference.equals(e.getName())).findAny().orElse(null);
         } catch (IOException ex) {

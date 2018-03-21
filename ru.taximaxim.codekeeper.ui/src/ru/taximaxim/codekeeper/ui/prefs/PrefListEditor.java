@@ -201,11 +201,18 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
                     }
                 }
             });
+
+            createAdditionalButtons(this, viewerObjs, lrm);
         } else {
             viewerObjs.setComparator(new ViewerComparator());
             upBtn = null;
             downBtn = null;
         }
+    }
+
+    protected void createAdditionalButtons(PrefListEditor<T, V> prefListEditor,
+            V viewer, LocalResourceManager lrm) {
+        // will be overridden by subclasses if needed
     }
 
     protected abstract V createViewer(Composite parent);

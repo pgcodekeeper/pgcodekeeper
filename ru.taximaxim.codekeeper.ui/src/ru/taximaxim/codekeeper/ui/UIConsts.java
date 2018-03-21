@@ -175,6 +175,7 @@ public interface UIConsts {
         String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
         String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
+        String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$

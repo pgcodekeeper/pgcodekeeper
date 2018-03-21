@@ -237,6 +237,12 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_already_present;
 
+    public static String DbStorePrefPage_pg_pass_file_filter;
+
+    public static String DbStorePrefPage_pg_pass_file_select_title;
+
+    public static String DbStorePrefPage_pg_pass_import_tooltip;
+
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
     public static String DbUpdatePrefPage_impossible_transaction_and_concurrently;
@@ -512,6 +518,12 @@ public final class Messages extends NLS {
     public static String PgObject_view;
 
     public static String PgObject_wizard_title;
+
+    public static String PgPassDialog_close;
+
+    public static String PgPassDialog_import;
+
+    public static String PgPassDialog_title;
 
     public static String PrefListEditor_cannot_add;
 

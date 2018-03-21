@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -142,12 +144,7 @@ public class JdbcConnector {
 
     private String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
-        File pgPassFile;
-        if (System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH).contains("win")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            pgPassFile = new File(System.getenv("APPDATA"),"\\postgresql\\pgpass.conf"); //$NON-NLS-1$ //$NON-NLS-2$
-        }else{
-            pgPassFile = new File(System.getProperty("user.home"), "/.pgpass"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
+        File pgPassFile = getPgPassLocation().toFile();
         Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFile.getAbsolutePath()); //$NON-NLS-1$
 
         if (!pgPassFile.isFile() || !pgPassFile.exists()){
@@ -168,7 +165,7 @@ public class JdbcConnector {
                     }
 
                     String token = sc.next();
-                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")) { //$NON-NLS-1$
+                    if (!token.equals(expectedTokens[tokenCounter++]) && !"*".equals(token)) { //$NON-NLS-1$
                         break;
                     }
                 }
@@ -181,5 +178,13 @@ public class JdbcConnector {
         Log.log(Log.LOG_INFO, "Using empty password, because no password has been found " //$NON-NLS-1$
                 + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         return ""; //$NON-NLS-1$
+    }
+
+    public static Path getPgPassLocation() {
+        if (System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH).contains("win")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            return Paths.get(System.getenv("APPDATA"),"\\postgresql\\pgpass.conf"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            return Paths.get(System.getProperty("user.home"), "/.pgpass"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
     }
 }
