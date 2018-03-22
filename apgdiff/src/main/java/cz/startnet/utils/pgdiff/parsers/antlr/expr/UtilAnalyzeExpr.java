@@ -2,9 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -63,20 +60,5 @@ public class UtilAnalyzeExpr {
         vex.addReference("new", null);
         vex.addReference("old", null);
         analyze(new Vex(ctx), vex, trigger);
-    }
-
-    public static void analyzeConstraint(Constr_bodyContext ctx, String schemaName,
-            PgStatement stmt, PgDatabase db) {
-        VexContext exp = null;
-        Common_constraintContext common = ctx.common_constraint();
-        Check_boolean_expressionContext check;
-        if (common != null && (check = common.check_boolean_expression()) != null) {
-            exp = check.expression;
-        } else {
-            exp = ctx.vex();
-        }
-        if (exp != null) {
-            analyze(exp, new ValueExpr(schemaName, db), stmt);
-        }
     }
 }

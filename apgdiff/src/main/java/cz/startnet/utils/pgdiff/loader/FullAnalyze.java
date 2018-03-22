@@ -10,7 +10,6 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -70,19 +69,11 @@ public final class FullAnalyze {
                 UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx,
                         (PgTrigger) statement, schemaName, db);
                 break;
-            case CONSTRAINT:
-                if (ctx instanceof Constr_bodyContext) {
-                    UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                            schemaName, statement, db);
-                } else {
-                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
-                            db), statement);
-                }
-                break;
             case INDEX:
             case DOMAIN:
             case FUNCTION:
             case COLUMN:
+            case CONSTRAINT:
                 UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
                         db), statement);
                 break;

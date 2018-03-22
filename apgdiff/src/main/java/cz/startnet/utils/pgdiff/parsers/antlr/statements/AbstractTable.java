@@ -5,6 +5,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
@@ -216,7 +217,18 @@ public abstract class AbstractTable extends ParserAbstract {
         }
 
         constrBlank.setDefinition(getFullCtxText(constrBody));
-        db.getContextsForAnalyze().add(new SimpleEntry<>(constrBlank, constrBody));
+
+        VexContext exp = null;
+        Common_constraintContext common = constrBody.common_constraint();
+        Check_boolean_expressionContext check;
+        if (common != null && (check = common.check_boolean_expression()) != null) {
+            exp = check.expression;
+        } else {
+            exp = constrBody.vex();
+        }
+        if (exp != null) {
+            db.getContextsForAnalyze().add(new SimpleEntry<>(constrBlank, exp));
+        }
     }
 
     /**
