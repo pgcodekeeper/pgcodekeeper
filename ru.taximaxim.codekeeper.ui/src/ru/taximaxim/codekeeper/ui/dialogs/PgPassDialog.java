@@ -1,9 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +18,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
+import ru.taximaxim.pgpass.PgPass;
+import ru.taximaxim.pgpass.PgPassEntry;
+import ru.taximaxim.pgpass.PgPassException;
 
 public class PgPassDialog extends Dialog {
 
@@ -73,7 +71,7 @@ public class PgPassDialog extends Dialog {
 
             @Override
             public String getText(Object element) {
-                DbInfo c = (DbInfo) element;
+                PgPassEntry c = (PgPassEntry) element;
                 return c.getDbName();
             }
         });
@@ -86,8 +84,8 @@ public class PgPassDialog extends Dialog {
 
             @Override
             public String getText(Object element) {
-                DbInfo c = (DbInfo) element;
-                return c.getDbUser();
+                PgPassEntry c = (PgPassEntry) element;
+                return c.getUser();
             }
         });
 
@@ -99,8 +97,8 @@ public class PgPassDialog extends Dialog {
 
             @Override
             public String getText(Object element) {
-                DbInfo c = (DbInfo) element;
-                return c.getDbHost();
+                PgPassEntry c = (PgPassEntry) element;
+                return c.getHost();
             }
         });
 
@@ -112,8 +110,8 @@ public class PgPassDialog extends Dialog {
 
             @Override
             public String getText(Object element) {
-                DbInfo c = (DbInfo) element;
-                return String.valueOf(c.getDbPort());
+                PgPassEntry c = (PgPassEntry) element;
+                return c.getPort();
             }
         });
 
@@ -124,36 +122,13 @@ public class PgPassDialog extends Dialog {
         port.getColumn().setWidth(Math.max(width, 100));
     }
 
-    private List<DbInfo> parseLines() {
-        List<DbInfo> databases = new ArrayList<>();
-
+    private List<PgPassEntry> parseLines() {
         try {
-            for (String line : Files.readAllLines(Paths.get(path))) {
-                if (!line.startsWith("#")) { //$NON-NLS-1$
-                    String[] parts = line.split(":"); //$NON-NLS-1$
-                    try {
-                        String s = parts[1];
-                        int port;
-                        try {
-                            port = Integer.parseInt(s);
-                        } catch (NumberFormatException e) {
-                            port = 0;
-                        }
-
-                        String name = "*".equals(parts[2]) ? "" : parts[2]; //$NON-NLS-1$ //$NON-NLS-2$
-                        String user = "*".equals(parts[3]) ? "" : parts[3]; //$NON-NLS-1$ //$NON-NLS-2$
-                        String host = "*".equals(parts[0]) ? "" : parts[0]; //$NON-NLS-1$ //$NON-NLS-2$
-                        databases.add(new DbInfo(name, name, user, "", host, port, false, new ArrayList<>())); //$NON-NLS-1$
-                    } catch (ArrayIndexOutOfBoundsException  ex) {
-                        continue;
-                    }
-                }
-            }
-        } catch (IOException ex) {
+            return PgPass.getAll(Paths.get(path));
+        } catch (PgPassException ex) {
             Log.log(Log.LOG_ERROR, "Error reading pgpass file", ex); //$NON-NLS-1$
+            return null;
         }
-
-        return databases;
     }
 
     @Override
@@ -164,35 +139,24 @@ public class PgPassDialog extends Dialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DbInfo info = (DbInfo) viewer.getStructuredSelection().getFirstElement();
+                PgPassEntry info = (PgPassEntry) viewer.getStructuredSelection().getFirstElement();
 
-                List<DbInfo> list = editor.getList();
-
-                DbInfo newValue = getNewObject(info);
-
-                while (newValue != null && list.contains(newValue)) {
-                    // duplicate
-                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                    mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(MessageFormat.format(Messages.DbStorePrefPage_already_present, newValue.getName()));
-                    mb.open();
-
-                    // request object again preserving info already entered
-                    newValue = getNewObject(newValue);
+                if (info == null) {
+                    return;
                 }
 
-                if (newValue != null) {
-                    list.add(newValue);
-                    editor.getViewer().refresh();
+                int dbport;
+                try {
+                    dbport = Integer.parseInt(info.getPort());
+                } catch (NumberFormatException ex) {
+                    dbport = 0;
                 }
+
+                editor.addNewObject(new DbInfo(info.getDbName(), info.getDbName(),
+                        info.getUser(), "", info.getHost(), dbport, false, new ArrayList<>()));
             }
         });
 
         createButton(parent, IDialogConstants.OK_ID, Messages.PgPassDialog_close, true);
-    }
-
-    private DbInfo getNewObject(DbInfo oldObject) {
-        DbStoreEditorDialog dialog = new DbStoreEditorDialog(getShell(), oldObject);
-        return dialog.open() == DbStoreEditorDialog.OK ? dialog.getDbInfo() : null;
     }
 }

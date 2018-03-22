@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -32,6 +31,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
+import ru.taximaxim.pgpass.PgPass;
 
 public class DbStorePrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
@@ -128,7 +128,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
                 dialog.setFilterNames(new String[] {
                         Messages.DbStorePrefPage_pg_pass_file_filter,
                         Messages.DiffPresentationPane_any_file_filter});
-                Path path = JdbcConnector.getPgPassLocation();
+                Path path = PgPass.getPgPassPath();
                 dialog.setFilterPath(path.getParent().toString());
                 dialog.setFileName(path.getFileName().toString());
                 String s = dialog.open();

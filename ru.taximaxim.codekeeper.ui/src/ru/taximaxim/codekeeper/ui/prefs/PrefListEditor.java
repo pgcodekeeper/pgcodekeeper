@@ -58,21 +58,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                T newValue = getNewObject(null);
-                while (newValue != null && objsList.contains(newValue)) {
-                    // duplicate
-                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                    mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(errorAlreadyExists(newValue));
-                    mb.open();
-
-                    // request object again preserving info already entered
-                    newValue = getNewObject(newValue);
-                }
-                if (newValue != null) {
-                    objsList.add(0, newValue);
-                    viewerObjs.refresh();
-                }
+                addNewObject(null);
             }
         });
 
@@ -213,6 +199,24 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     protected void createAdditionalButtons(PrefListEditor<T, V> prefListEditor,
             V viewer, LocalResourceManager lrm) {
         // will be overridden by subclasses if needed
+    }
+
+    public void addNewObject(T oldObject) {
+        T newValue = getNewObject(oldObject);
+        while (newValue != null && objsList.contains(newValue)) {
+            // duplicate
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+            mb.setText(Messages.PrefListEditor_cannot_add);
+            mb.setMessage(errorAlreadyExists(newValue));
+            mb.open();
+
+            // request object again preserving info already entered
+            newValue = getNewObject(newValue);
+        }
+        if (newValue != null) {
+            objsList.add(0, newValue);
+            viewerObjs.refresh();
+        }
     }
 
     protected abstract V createViewer(Composite parent);
