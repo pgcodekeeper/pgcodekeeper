@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -68,14 +66,7 @@ public class ConstraintsReader extends JdbcReader {
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),
-                ctx -> {
-                    Constr_bodyContext constrBodyCtx = ctx.tabl_constraint
-                            .constr_body();
-                    c.setDefinition(ParserAbstract.getFullCtxText(constrBodyCtx));
-                    c.setNotValid(ctx.not_valid != null);
-                    schema.getDatabase().getContextsForAnalyze()
-                    .add(new AbstractMap.SimpleEntry<>(c, constrBodyCtx));
-                });
+                ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase()));
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

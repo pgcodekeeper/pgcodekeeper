@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -12,8 +13,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_option
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -62,9 +61,8 @@ public class AlterTable extends AbstractTable {
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
-                addColumn(column.column_name.getText(),
-                        column.datatype, column.collate_name,
-                        column.colmn_constraint, getDefSchemaName(), tabl);
+                addColumn(column.column_name.getText(), column.datatype,
+                        column.collate_name, column.colmn_constraint, tabl);
             }
 
             if (tablAction.column != null) {
@@ -96,7 +94,7 @@ public class AlterTable extends AbstractTable {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
                     col.setDefaultValue(getFullCtxText(exp));
-                    UtilAnalyzeExpr.analyze(exp, new ValueExpr(schema.getName(), db), col);
+                    db.getContextsForAnalyze().add(new SimpleEntry<>(col, exp));
                 }
 
                 // column options
@@ -139,11 +137,8 @@ public class AlterTable extends AbstractTable {
             }
 
             if (tablAction.tabl_constraint != null) {
-                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint, schema.getName());
-                if (tablAction.not_valid != null) {
-                    constr.setNotValid(true);
-                }
-                tabl.addConstraint(constr);
+                tabl.addConstraint(parseAlterTableConstraint(tablAction,
+                        createTableConstraintBlank(tablAction.tabl_constraint), db));
             }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
@@ -189,5 +184,12 @@ public class AlterTable extends AbstractTable {
                 }
             }
         }
+    }
+
+    public static PgConstraint parseAlterTableConstraint(Table_actionContext tableAction,
+            PgConstraint constrBlank, PgDatabase db) {
+        constrBlank.setNotValid(tableAction.not_valid != null);
+        processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db);
+        return constrBlank;
     }
 }

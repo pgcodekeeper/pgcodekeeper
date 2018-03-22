@@ -71,8 +71,13 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                        schemaName, statement, db);
+                if (ctx instanceof Constr_bodyContext) {
+                    UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
+                            schemaName, statement, db);
+                } else {
+                    UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
+                            db), statement);
+                }
                 break;
             case INDEX:
             case DOMAIN:

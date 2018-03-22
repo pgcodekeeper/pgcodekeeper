@@ -57,11 +57,9 @@ public class CreateDomain extends ParserAbstract {
 
     public static PgConstraint processDomainConstraintCtx(Domain_constraintContext constrCtx,
             Check_boolean_expressionContext boolExpCtx, PgDomain domain, PgDatabase db) {
-        String constrName = "";
-        if (constrCtx.name != null) {
-            constrName = QNameParser.getFirstName(constrCtx.name.identifier());
-        }
-        PgConstraint constr = new PgConstraint(constrName, getFullCtxText(constrCtx));
+        PgConstraint constr = new PgConstraint(
+                constrCtx.name != null ? QNameParser.getFirstName(constrCtx.name.identifier()) : "",
+                        getFullCtxText(constrCtx));
         parseDomainConstraint(domain, constr, boolExpCtx, db);
         return constr;
     }
