@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
@@ -31,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.OpContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
@@ -152,7 +155,7 @@ public class ValueExpr extends AbstractExpr {
             ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
         } else if (vex.op() != null) {
             if (operandsList.size() == 1) {
-                if (vex.isChildOpIsPrefix()) {
+                if (vex.getVexCtx().getChild(0) instanceof OpContext) {
                     ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
                 } else {
                     ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), TypesSetManually.EMPTY);
@@ -401,10 +404,10 @@ public class ValueExpr extends AbstractExpr {
                 .map(Entry::getKey).orElse(resultFunction);
     }
 
-    private SimpleEntry<String, String> getReturnedTypeOfOperation(Vex vex, String...sourceArgsTypesArray) {
+    private SimpleEntry<String, String> getReturnedTypeOfOperation(Vex expression, String...sourceArgsTypesArray) {
         List<String> sourceArgsTypes = Arrays.asList(sourceArgsTypesArray);
 
-        String operatorName = vex.getChildOperator();
+        String operatorName = getChildOperator(expression);
         SimpleEntry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
 
         // TODO When the user's operators will be also process by codeKeeper,
@@ -417,6 +420,37 @@ public class ValueExpr extends AbstractExpr {
         }
 
         return pair;
+    }
+
+    /**
+     * Get an operator from expression.
+     * The expression can contains only one of the following structures:
+     * <p>"vex op vex", "op vex", "vex op",
+     * <p>"vex EXP vex",
+     * <p>"vex (MULTIPLY | DIVIDE | MODULAR) vex",
+     * <p>"vex (PLUS | MINUS) vex",
+     * <p>"<assoc=right> (PLUS | MINUS) vex".
+     *
+     * @param expression it is expression with specific structure
+     * @return operator of expression as String.
+     */
+    private String getChildOperator(Vex expression) {
+        ParserRuleContext expressionCtx = expression.getVexCtx();
+
+        OpContext op;
+        if (expressionCtx instanceof VexContext) {
+            op = ((VexContext) expressionCtx).op();
+        } else {
+            op = ((Vex_bContext) expressionCtx).op();
+        }
+
+        if (op != null) {
+            return op.OP_CHARS().getText();
+        } else {
+            int childCount = expressionCtx.getChildCount();
+            int operatorIndex = childCount == 2 ? 0 : 1;
+            return expressionCtx.getChild(operatorIndex).getText();
+        }
     }
 
     private List<IArgument> getInInoutFuncArgs(IFunction func) {
