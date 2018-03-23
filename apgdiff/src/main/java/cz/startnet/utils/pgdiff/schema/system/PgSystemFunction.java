@@ -52,7 +52,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return arguments;
     }
 
-    public void addArgumentPart(final PgSystemArgument arg) {
+    public void addArgument(final PgSystemArgument arg) {
         arguments.add(arg);
     }
 
@@ -68,7 +68,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return orderBy;
     }
 
-    public void addOrderByPart(final PgSystemArgument type) {
+    public void addOrderBy(final PgSystemArgument type) {
         orderBy.add(type);
     }
 

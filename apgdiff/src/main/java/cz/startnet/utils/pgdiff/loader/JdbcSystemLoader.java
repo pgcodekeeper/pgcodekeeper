@@ -119,11 +119,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private void fillArguments(Function_argsContext ctx, PgSystemFunction func) {
         for (Function_argumentsContext argument : ctx.function_arguments()) {
-            func.addArgumentPart(getArgument(argument));
+            func.addArgument(getArgument(argument));
         }
         if (ctx.agg_order() != null) {
             for (Function_argumentsContext argument : ctx.agg_order().function_arguments()) {
-                func.addOrderByPart(getArgument(argument));
+                func.addOrderBy(getArgument(argument));
             }
         }
     }
@@ -198,8 +198,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 PgSystemFunction operator = new PgSystemFunction(name);
                 PgSystemFunction.PgSystemArgument firstArg = new PgSystemArgument(null, left);
                 PgSystemFunction.PgSystemArgument secondArg = new PgSystemArgument(null, right);
-                operator.addArgumentPart(firstArg);
-                operator.addArgumentPart(secondArg);
+                operator.addArgument(firstArg);
+                operator.addArgument(secondArg);
                 operator.setReturns(cachedTypesByOid.get(result.getLong("result")).getFullName(schemaName));
 
                 storage.getSchema(schemaName).addFunction(operator);

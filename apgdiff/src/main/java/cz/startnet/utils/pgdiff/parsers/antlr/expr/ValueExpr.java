@@ -381,7 +381,7 @@ public class ValueExpr extends AbstractExpr {
                 if (sourceType.equals(targetType)) {
                     Integer funcIdx = argsMatches.get(f);
                     argsMatches.put(f, (funcIdx != null) ? funcIdx + 1 : 1);
-                } else if (!PgSystemStorage.isCastPresent(systemStorage, sourceType, targetType)) {
+                } else if (!systemStorage.containsCastImplicit(sourceType, targetType)) {
                     castWellDone = false;
                     argsMatches.remove(f);
                     break;

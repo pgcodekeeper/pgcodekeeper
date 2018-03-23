@@ -33,7 +33,7 @@ public abstract class PgSystemStatement implements IStatement, Serializable {
     }
 
     @Override
-    public IStatement getParent() {
+    public PgSystemStatement getParent() {
         return parent;
     }
 }
