@@ -97,12 +97,14 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         if (!inherits.isEmpty()) {
             for (Inherits inht : inherits) {
                 String schemaName = inht.getKey();
-                allColumns = Stream.concat(allColumns, getDatabase()
-                        .getSchema(schemaName == null ? getContainingSchema().getName() : schemaName)
+                PgSchema inhtSchema = schemaName == null ? getContainingSchema()
+                        : getDatabase().getSchema(schemaName);
+                allColumns = Stream.concat(allColumns, inhtSchema
                         .getTable(inht.getValue()).getColumns().stream());
             }
         }
-        return allColumns.map(c -> new SimpleEntry<>(c.getName(), c.getType()));
+        return allColumns.filter(c -> c.getType() != null)
+                .map(c -> new SimpleEntry<>(c.getName(), c.getType()));
     }
 
     /**

@@ -5,5 +5,5 @@ import java.util.List;
 public interface IFunction extends IStatement {
     String getBareName();
     String getReturns();
-    List<IArgument> getArguments();
+    List<? extends IArgument> getArguments();
 }

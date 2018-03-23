@@ -187,10 +187,10 @@ public final class GenericColumn implements Serializable {
         }
 
         int found = 0;
-        for (IFunction f : schema.getFunctions()) {
+        for (PgFunction f : schema.getFunctions()) {
             if (f.getBareName().equals(table)) {
                 ++found;
-                func = (PgFunction) f;
+                func = f;
             }
         }
         /*
