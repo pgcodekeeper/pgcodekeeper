@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.schema.system;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -16,14 +15,14 @@ public class PgSystemRelation extends PgSystemStatement implements IRelation {
     /**
      * Contains columns names and types
      */
-    private final List<Entry<String, String>> columns = new ArrayList<>();
+    private final List<SimpleEntry<String, String>> columns = new ArrayList<>();
 
     public PgSystemRelation(String name, DbObjType type) {
         super(name, type);
     }
 
     @Override
-    public Stream<Entry<String, String>> getRelationColumns() {
+    public Stream<SimpleEntry<String, String>> getRelationColumns() {
         return columns.stream();
     }
 

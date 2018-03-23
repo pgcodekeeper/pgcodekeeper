@@ -5,12 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -38,7 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
-    private final List<Entry<String, String>> relationColumns = new ArrayList<>();
+    private final List<SimpleEntry<String, String>> relationColumns = new ArrayList<>();
 
 
     @Override
@@ -132,11 +132,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<Entry<String, String>> getRelationColumns() {
+    public Stream<SimpleEntry<String, String>> getRelationColumns() {
         return relationColumns.stream();
     }
 
-    public void addRelationColumns(List<Entry<String, String>> relationColumns) {
+    public void addRelationColumns(List<SimpleEntry<String, String>> relationColumns) {
         this.relationColumns.addAll(relationColumns);
     }
 

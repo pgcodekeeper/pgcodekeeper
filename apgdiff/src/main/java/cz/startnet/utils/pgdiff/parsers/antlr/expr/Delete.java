@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
@@ -22,7 +22,7 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Entry<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
+    public List<SimpleEntry<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
         With_clauseContext with = delete.with_clause();
         if (with != null) {
             analyzeCte(with);

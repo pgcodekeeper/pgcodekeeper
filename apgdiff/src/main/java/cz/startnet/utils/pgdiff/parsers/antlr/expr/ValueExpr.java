@@ -70,8 +70,8 @@ public class ValueExpr extends AbstractExpr {
         super(parent);
     }
 
-    public Entry<String, String> analyze(Vex vex) {
-        Entry<String, String> ret = null;
+    public SimpleEntry<String, String> analyze(Vex vex) {
+        SimpleEntry<String, String> ret = null;
         Data_typeContext dataType = vex.dataType();
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
@@ -79,7 +79,7 @@ public class ValueExpr extends AbstractExpr {
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
-        List<Entry<String, String>> operandsList;
+        List<SimpleEntry<String, String>> operandsList;
 
         List<Vex> operands = vex.vex();
         if (!operands.isEmpty()) {
@@ -197,7 +197,7 @@ public class ValueExpr extends AbstractExpr {
                 ret = new SimpleEntry<>(null, unsigned(unsignedValue));
             } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                List<Entry<String, String>> colsList = new Select(this).analyze(subSelectStmt);
+                List<SimpleEntry<String, String>> colsList = new Select(this).analyze(subSelectStmt);
                 return colsList.get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
                 for (VexContext v : caseExpr.vex()) {
@@ -255,7 +255,7 @@ public class ValueExpr extends AbstractExpr {
     /**
      * @return function reference or null for internal functions
      */
-    public Entry<String, String> function(Function_callContext function) {
+    public SimpleEntry<String, String> function(Function_callContext function) {
         List<VexContext> args = null;
         Function_nameContext funcNameCtx = function.function_name();
 
@@ -401,11 +401,11 @@ public class ValueExpr extends AbstractExpr {
                 .map(Entry::getKey).orElse(resultFunction);
     }
 
-    private Entry<String, String> getReturnedTypeOfOperation(Vex vex, String...sourceArgsTypesArray) {
+    private SimpleEntry<String, String> getReturnedTypeOfOperation(Vex vex, String...sourceArgsTypesArray) {
         List<String> sourceArgsTypes = Arrays.asList(sourceArgsTypesArray);
 
         String operatorName = vex.getChildOperator();
-        Entry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
+        SimpleEntry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
 
         // TODO When the user's operators will be also process by codeKeeper,
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
@@ -429,7 +429,8 @@ public class ValueExpr extends AbstractExpr {
         Stream<IFunction> foundFunctions;
         if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream();
+            foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream()
+                    .map(f -> (IFunction) f);
         } else if (schemaName != null) {
             foundFunctions = db.getSchema(schemaName).getFunctions().stream()
                     .map(f -> (IFunction) f);

@@ -5,28 +5,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import cz.startnet.utils.pgdiff.schema.IFunction;
-import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgSystemSchema extends PgSystemStatement implements ISchema, Serializable {
 
     private static final long serialVersionUID = -5092245933861789744L;
-    private final List<IRelation> relations = new ArrayList<>();
-    private final List<IFunction> functions = new ArrayList<>();
+
+    private final List<PgSystemRelation> relations = new ArrayList<>();
+    private final List<PgSystemFunction> functions = new ArrayList<>();
 
     public PgSystemSchema(String name) {
         super(name, DbObjType.SCHEMA);
     }
 
     @Override
-    public Stream<IRelation> getRelations() {
+    public Stream<PgSystemRelation> getRelations() {
         return relations.stream();
     }
 
     @Override
-    public List<IFunction> getFunctions() {
+    public List<PgSystemFunction> getFunctions() {
         return functions;
     }
 

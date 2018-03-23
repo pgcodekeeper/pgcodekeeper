@@ -92,7 +92,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                         IntStream.range(0, argModes.size()).filter(i -> "t".equals(argModes.get(i))).forEach(e -> {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
-                            function.addColumn(argNames[e], returnType.getFullName(schemaName));
+                            function.addReturnsColumns(argNames[e], returnType.getFullName(schemaName));
                         });
                     }
                 } else {

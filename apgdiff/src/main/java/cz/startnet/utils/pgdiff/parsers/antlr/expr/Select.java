@@ -73,7 +73,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
-    public List<Entry<String, String>> analyze(ParserRuleContext ruleCtx) {
+    public List<SimpleEntry<String, String>> analyze(ParserRuleContext ruleCtx) {
         if (ruleCtx instanceof Select_stmtContext) {
             return analyze(new SelectStmt((Select_stmtContext) ruleCtx));
         } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
@@ -84,17 +84,17 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
     }
 
     @Override
-    public List<Entry<String, String>> analyze(SelectStmt select) {
+    public List<SimpleEntry<String, String>> analyze(SelectStmt select) {
         return analyze(select, null);
     }
 
-    public List<Entry<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
+    public List<SimpleEntry<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
         }
 
-        List<Entry<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
+        List<SimpleEntry<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
         selectAfterOps(select);
 
@@ -129,12 +129,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    protected List<Entry<String, String>> selectOps(SelectOps selectOps) {
+    protected List<SimpleEntry<String, String>> selectOps(SelectOps selectOps) {
         return selectOps(selectOps, null);
     }
 
-    protected List<Entry<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
-        List<Entry<String, String>> ret = Collections.emptyList();
+    protected List<SimpleEntry<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+        List<SimpleEntry<String, String>> ret = Collections.emptyList();
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
 
@@ -189,7 +189,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         Schema_qualified_nameContext qNameAst = ast.tb_name;
                         ret.addAll(qNameAst == null ? getColsOfNotQualAster() : getColsOfQualAster(qNameAst));
                     } else {
-                        Entry<String, String> columnPair = vexCol.analyze(selectSublistVex);
+                        SimpleEntry<String, String> columnPair = vexCol.analyze(selectSublistVex);
 
                         if (target.alias != null && columnPair != null) {
                             columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
@@ -248,16 +248,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Entry<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
+    private List<SimpleEntry<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
         String schemaName = gTablerOrView.schema;
         String tableOrView = gTablerOrView.table;
-        List<Entry<String, String>> colsOfTableOrView = getTableOrViewColumns(schemaName, tableOrView);
+        List<SimpleEntry<String, String>> colsOfTableOrView = getTableOrViewColumns(schemaName, tableOrView);
         addColumnsDepcies(schemaName, tableOrView, colsOfTableOrView);
         return colsOfTableOrView;
     }
 
-    private List<Entry<String, String>> getColsOfNotQualAster() {
-        List<Entry<String, String>> retNotQualAsterCols = new ArrayList<>();
+    private List<SimpleEntry<String, String>> getColsOfNotQualAster() {
+        List<SimpleEntry<String, String>> retNotQualAsterCols = new ArrayList<>();
 
         for (GenericColumn gTablerOrView : unaliasedNamespace) {
             retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
@@ -275,12 +275,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return retNotQualAsterCols;
     }
 
-    private List<Entry<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
+    private List<SimpleEntry<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
         List<IdentifierContext> ids = qNameAst.identifier();
         String qualSchema = QNameParser.getSecondName(ids);
         String srcOrTblOrView = QNameParser.getFirstName(ids);
 
-        List<Entry<String, String>> retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView);
+        List<SimpleEntry<String, String>> retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView);
         // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
         if (!retQualAsterCols.isEmpty()) {
             addColumnsDepcies(qualSchema, srcOrTblOrView, retQualAsterCols);
@@ -363,7 +363,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
+                    List<SimpleEntry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
                     String tableSubQueryAlias = alias.alias.getText();
                     addReference(tableSubQueryAlias, null);
@@ -395,7 +395,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    public List<Entry<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
+    public List<SimpleEntry<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
             GenericColumn unaliasedNmsp) {
         Schema_qualified_nameContext qualifiedName;
         String schema;
@@ -418,8 +418,8 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
      * @param tableOrView
      * @return list of columns (name-type) for the specified parameters
      */
-    protected List<Entry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
-        List<Entry<String, String>> ret = new ArrayList<>();
+    protected List<SimpleEntry<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
+        List<SimpleEntry<String, String>> ret = new ArrayList<>();
         findRelations(qualSchemaName, tableOrView)
         .forEach(relation -> ret.addAll(relation.getRelationColumns().collect(Collectors.toList())));
         return ret;

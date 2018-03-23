@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -20,7 +20,7 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Entry<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
+    public List<SimpleEntry<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
         With_clauseContext with = insert.with_clause();
         if (with != null) {
             analyzeCte(with);

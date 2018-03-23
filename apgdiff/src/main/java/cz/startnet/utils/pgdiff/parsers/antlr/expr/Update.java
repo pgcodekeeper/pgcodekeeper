@@ -1,8 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
@@ -24,7 +24,7 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
     }
 
     @Override
-    public List<Entry<String, String>> analyze(Update_stmt_for_psqlContext update) {
+    public List<SimpleEntry<String, String>> analyze(Update_stmt_for_psqlContext update) {
         With_clauseContext with = update.with_clause();
         if (with != null) {
             analyzeCte(with);

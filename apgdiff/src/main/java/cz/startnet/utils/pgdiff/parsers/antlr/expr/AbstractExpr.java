@@ -60,7 +60,7 @@ public abstract class AbstractExpr {
         this.systemStorage = parent.systemStorage;
     }
 
-    protected List<Entry<String, String>> findCte(String cteName) {
+    protected List<SimpleEntry<String, String>> findCte(String cteName) {
         return parent == null ? null : parent.findCte(cteName);
     }
 
@@ -87,7 +87,7 @@ public abstract class AbstractExpr {
      * @return a pair of (Alias, ColumnsList) where Alias is the given name.
      *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
      */
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name) {
+    protected Entry<String, List<SimpleEntry<String, String>>> findReferenceComplex(String name) {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
@@ -166,12 +166,12 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Entry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
+    protected SimpleEntry<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
         String column = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
         String columnParent = null;
-        Entry<String, String> pair = new SimpleEntry<>(column, null);
+        SimpleEntry<String, String> pair = new SimpleEntry<>(column, null);
 
         // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
@@ -188,7 +188,7 @@ public abstract class AbstractExpr {
 
                     columnType = getColumnType(genericColumn);
                 } else {
-                    Entry<String, List<Entry<String, String>>> refComplex = findReferenceComplex(columnParent);
+                    Entry<String, List<SimpleEntry<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
                         columnType = refComplex.getValue().stream()
                                 .filter(entry -> column.equals(entry.getKey()))
@@ -209,7 +209,7 @@ public abstract class AbstractExpr {
 
     private String getColumnType(GenericColumn genericColumn) {
         for (IRelation relation : (Iterable<IRelation>)findRelations(genericColumn.schema, genericColumn.table)::iterator) {
-            for (Entry<String, String> colPair : (Iterable<Entry<String, String>>)relation.getRelationColumns()::iterator ) {
+            for (Entry<String, String> colPair : (Iterable<SimpleEntry<String, String>>)relation.getRelationColumns()::iterator ) {
                 if (genericColumn.column.equals(colPair.getKey())) {
                     return colPair.getValue();
                 }
@@ -227,7 +227,7 @@ public abstract class AbstractExpr {
         }
     }
 
-    protected void addColumnsDepcies(String schemaName, String tableOrView, List<Entry<String, String>> cols) {
+    protected void addColumnsDepcies(String schemaName, String tableOrView, List<SimpleEntry<String, String>> cols) {
         String sName = schemaName != null ? schemaName : this.schema;
         for (Entry<String, String> col : cols) {
             depcies.add(new GenericColumn(sName, tableOrView, col.getKey(), DbObjType.COLUMN));
@@ -252,7 +252,8 @@ public abstract class AbstractExpr {
         Stream<IRelation> foundRelations;
         if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
                 || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            foundRelations = systemStorage.getSchema(schemaName).getRelations();
+            foundRelations = systemStorage.getSchema(schemaName).getRelations()
+                    .map(r -> (IRelation) r);
         } else if (schemaName != null) {
             foundRelations = db.getSchema(schemaName).getRelations();
         } else {

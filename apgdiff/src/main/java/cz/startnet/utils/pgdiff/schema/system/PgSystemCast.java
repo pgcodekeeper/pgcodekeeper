@@ -37,15 +37,3 @@ public class PgSystemCast implements Serializable {
         return type;
     }
 }
-
-/**
- *  {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type Context of the cast}.
- */
-class CastContext {
-    public static final String E = "e";
-    public static final String A = "a";
-    public static final String I = "i";
-
-    private CastContext() {
-    }
-}

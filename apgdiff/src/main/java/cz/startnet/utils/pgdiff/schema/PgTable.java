@@ -92,7 +92,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<Entry<String, String>> getRelationColumns() {
+    public Stream<SimpleEntry<String, String>> getRelationColumns() {
         Stream<PgColumn> allColumns = columns.stream();
         if (!inherits.isEmpty()) {
             for (Inherits inht : inherits) {
