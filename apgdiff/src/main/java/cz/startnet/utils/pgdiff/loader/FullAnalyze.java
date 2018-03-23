@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 public final class FullAnalyze {
 
     public static void fullAnalyze(PgDatabase db) {
-        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db, false).getReversedGraph();
+        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db).getReversedGraph();
 
         TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator = new TopologicalOrderIterator<>(graph);
 
@@ -99,13 +99,14 @@ public final class FullAnalyze {
             if (DbObjType.VIEW.equals(statement.getStatementType())) {
                 String schemaName = statement.getParent().getName();
 
-                Stream<ParserRuleContext> viewStatementContexts = db.getContextsForAnalyze()
-                        .stream().filter(entry -> statement.equals(entry.getKey()))
-                        .map(Entry::getValue);
+                Stream<Entry<PgStatement, ParserRuleContext>> viewAndCtx = db.getContextsForAnalyze()
+                        .stream().filter(entry -> statement.equals(entry.getKey()));
 
-                PgView view = (PgView)statement;
-                for (ParserRuleContext ctx : (Iterable<ParserRuleContext>)
-                        viewStatementContexts::iterator) {
+                for (Entry<PgStatement, ParserRuleContext> entry :
+                    (Iterable<Entry<PgStatement, ParserRuleContext>>) viewAndCtx::iterator) {
+                    PgView view = (PgView) entry.getKey();
+                    ParserRuleContext ctx = entry.getValue();
+
                     if (ctx instanceof Select_stmtContext) {
                         Select select = new Select(schemaName, db);
                         view.addRelationColumns(select.analyze(ctx));
