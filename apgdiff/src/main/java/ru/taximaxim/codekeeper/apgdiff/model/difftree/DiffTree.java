@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -228,10 +227,10 @@ public final class DiffTree {
 
         // add LEFT and BOTH here
         // and RIGHT in a separate pass
-        for(PgStatement sLeft : left) {
+        for (PgStatement sLeft : left) {
             PgStatement foundRight = null;
-            for(PgStatement sRight : right) {
-                if(sLeft.getName().equals(sRight.getName())) {
+            for (PgStatement sRight : right) {
+                if (sLeft.getName().equals(sRight.getName())) {
                     foundRight = sRight;
                     break;
                 }
@@ -246,10 +245,10 @@ public final class DiffTree {
             }
         }
 
-        for(IStatement sRight : right) {
+        for (PgStatement sRight : right) {
             boolean foundLeft = false;
-            for(IStatement sLeft : left) {
-                if(sRight.getName().equals(sLeft.getName())) {
+            for (PgStatement sLeft : left) {
+                if (sRight.getName().equals(sLeft.getName())) {
                     foundLeft = true;
                     break;
                 }
@@ -261,6 +260,7 @@ public final class DiffTree {
         return rv;
     }
 
+
     public List<PgStatement> getEqualsObjects() {
         return equalsStatements;
     }
@@ -268,18 +268,18 @@ public final class DiffTree {
 
 class CompareResult {
 
-    private final IStatement left;
-    private final IStatement right;
+    private final PgStatement left;
+    private final PgStatement right;
 
-    public IStatement getLeft() {
+    public PgStatement getLeft() {
         return left;
     }
 
-    public IStatement getRight() {
+    public PgStatement getRight() {
         return right;
     }
 
-    public CompareResult(IStatement left, IStatement right) {
+    public CompareResult(PgStatement left, PgStatement right) {
         this.left = left;
         this.right = right;
     }
@@ -297,8 +297,8 @@ class CompareResult {
         throw new IllegalStateException("Both diff sides are null!");
     }
 
-    public IStatement getStatement() {
-        if(left != null) {
+    public PgStatement getStatement() {
+        if (left != null) {
             return left;
         }
         if (right != null) {

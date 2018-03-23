@@ -25,6 +25,7 @@ public final class ApgdiffUtils {
                         url : FileLocator.toFileURL(url)));
     }
 
+
     public static void serialize(String path, Serializable object) {
         serialize(Paths.get(path), object);
     }
@@ -73,6 +74,7 @@ public final class ApgdiffUtils {
 
         return null;
     }
+
 
     private ApgdiffUtils() {
     }
