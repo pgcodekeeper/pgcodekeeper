@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -100,48 +99,37 @@ public abstract class AbstractExpr {
 
     private String getSchemaNameForRelation(List<IdentifierContext> ids) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx == null) {
-            String relationName = QNameParser.getFirstName(ids);
-
-            Predicate<ISchema> isRelationIncludedInSchema = (ischema) -> ischema.getRelations()
-                    .anyMatch(relation -> relationName.equals(relation.getName()));
-
-            if (isRelationIncludedInSchema.test(db.getSchema(schema))) {
-                return schema;
-            } else {
-                if (isRelationIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG))) {
-                    return PgSystemStorage.SCHEMA_PG_CATALOG;
-                } else if (isRelationIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA))) {
-                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
-                } else {
-                    return schema;
-                }
-            }
-        } else {
+        if (schemaCtx != null) {
             return schemaCtx.getText();
         }
+        String relationName = QNameParser.getFirstName(ids);
+
+        if (db.getSchema(schema).containsRelation(relationName)) {
+            return schema;
+        }
+        for (ISchema s : systemStorage.getSchemas()) {
+            if (s.containsRelation(relationName)) {
+                return s.getName();
+            }
+        }
+        Log.log(Log.LOG_WARNING, "Could not find schema for relation: " + relationName);
+        return schema;
     }
 
     private String getSchemaNameForFunction(IdentifierContext sch, String signature) {
-        if (sch == null) {
-            Predicate<ISchema> isFunctionIncludedInSchema = (ischema) -> ischema.getRelations()
-                    .anyMatch(function -> signature.equals(function.getName()));
-
-            if (isFunctionIncludedInSchema.test(db.getSchema(schema))) {
-                return schema;
-            } else {
-                if (isFunctionIncludedInSchema.test(systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG))) {
-                    return PgSystemStorage.SCHEMA_PG_CATALOG;
-                } else if (isFunctionIncludedInSchema
-                        .test(systemStorage.getSchema(PgSystemStorage.SCHEMA_INFORMATION_SCHEMA))) {
-                    return PgSystemStorage.SCHEMA_INFORMATION_SCHEMA;
-                } else {
-                    return schema;
-                }
-            }
-        } else {
+        if (sch != null) {
             return sch.getText();
         }
+        if (db.getSchema(schema).containsFunction(signature)) {
+            return schema;
+        }
+        for (ISchema s : systemStorage.getSchemas()) {
+            if (s.containsFunction(signature)) {
+                return s.getName();
+            }
+        }
+        Log.log(Log.LOG_WARNING, "Could not find schema for function: " + signature);
+        return schema;
     }
 
     protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx, String signature){
