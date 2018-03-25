@@ -135,6 +135,7 @@ public class PgSchema extends PgStatement implements ISchema {
      *
      * @return found function or null if no such function has been found
      */
+    @Override
     public PgFunction getFunction(final String signature) {
         for (PgFunction function : functions) {
             if (function.getSignature().equals(signature)) {
@@ -143,6 +144,15 @@ public class PgSchema extends PgStatement implements ISchema {
         }
 
         return null;
+    }
+
+    /**
+     * @return found relation or null if no such relation has been found
+     */
+    @Override
+    public IRelation getRelation(String name) {
+        return getRelations().filter(rel -> rel.getName().equals(name))
+                .findAny().orElseGet(null);
     }
 
     /**
@@ -328,10 +338,6 @@ public class PgSchema extends PgStatement implements ISchema {
         types.add(type);
         type.setParent(this);
         resetHash();
-    }
-
-    public boolean containsFunction(final String signature) {
-        return getFunction(signature) != null;
     }
 
     public boolean containsSequence(final String name) {

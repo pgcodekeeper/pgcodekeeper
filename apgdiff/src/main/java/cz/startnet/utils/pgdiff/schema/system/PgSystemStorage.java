@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,6 +27,8 @@ public class PgSystemStorage implements Serializable {
     private final List<PgSystemCast> casts = new ArrayList<>();
     private final PgSystemSchema pgCatalogSchema = new PgSystemSchema(SCHEMA_PG_CATALOG);
     private final PgSystemSchema informationSchema = new PgSystemSchema(SCHEMA_INFORMATION_SCHEMA);
+    private final List<PgSystemSchema> schemas = Collections.unmodifiableList(
+            Arrays.asList(pgCatalogSchema, informationSchema));
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
         PgSystemStorage systemStorage = STORAGE_CACHE.get(version);
@@ -66,6 +70,13 @@ public class PgSystemStorage implements Serializable {
         casts.add(cast);
     }
 
+    /**
+     * @return unmodifiable list of system schemas
+     */
+    public List<PgSystemSchema> getSchemas() {
+        return schemas;
+    }
+
     public PgSystemSchema getSchema(String schemaName) {
         if (SCHEMA_PG_CATALOG.equals(schemaName)) {
             return pgCatalogSchema;
@@ -73,5 +84,13 @@ public class PgSystemStorage implements Serializable {
             return informationSchema;
         }
         throw new IllegalArgumentException("Unknown schema name");
+    }
+
+    public PgSystemSchema getPgCatalog() {
+        return pgCatalogSchema;
+    }
+
+    public PgSystemSchema getInfoSchema() {
+        return informationSchema;
     }
 }

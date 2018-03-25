@@ -38,4 +38,24 @@ public class PgSystemSchema extends PgSystemStatement implements ISchema, Serial
         function.setParent(this);
         functions.add(function);
     }
+
+    @Override
+    public PgSystemRelation getRelation(String name) {
+        for (PgSystemRelation rel : relations) {
+            if (rel.getName().equals(name)) {
+                return rel;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public PgSystemFunction getFunction(String signature) {
+        for (PgSystemFunction func : functions) {
+            if (func.getSignature().equals(signature)) {
+                return func;
+            }
+        }
+        return null;
+    }
 }

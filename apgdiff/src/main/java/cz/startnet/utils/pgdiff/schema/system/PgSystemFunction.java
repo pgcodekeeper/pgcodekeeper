@@ -135,6 +135,11 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return sb;
     }
 
+    @Override
+    public PgSystemSchema getContainingSchema() {
+        return (PgSystemSchema) getParent();
+    }
+
     public static class PgSystemArgument extends AbstractArgument {
 
         private static final long serialVersionUID = -4230871703844831688L;

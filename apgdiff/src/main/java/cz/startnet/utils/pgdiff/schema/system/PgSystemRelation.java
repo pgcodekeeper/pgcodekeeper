@@ -29,4 +29,9 @@ public class PgSystemRelation extends PgSystemStatement implements IRelation {
     public void addColumn(String name, String type) {
         columns.add(new SimpleEntry<>(name, type));
     }
+
+    @Override
+    public PgSystemSchema getContainingSchema() {
+        return (PgSystemSchema) getParent();
+    }
 }
