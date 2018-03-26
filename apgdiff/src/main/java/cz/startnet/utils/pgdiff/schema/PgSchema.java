@@ -152,7 +152,7 @@ public class PgSchema extends PgStatement implements ISchema {
     @Override
     public IRelation getRelation(String name) {
         return getRelations().filter(rel -> rel.getName().equals(name))
-                .findAny().orElseGet(null);
+                .findAny().orElse(null);
     }
 
     /**
