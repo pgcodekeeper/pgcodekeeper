@@ -93,18 +93,16 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public Stream<SimpleEntry<String, String>> getRelationColumns() {
-        Stream<PgColumn> allColumns = columns.stream();
-        if (!inherits.isEmpty()) {
-            for (Inherits inht : inherits) {
-                String schemaName = inht.getKey();
-                PgSchema inhtSchema = schemaName == null ? getContainingSchema()
-                        : getDatabase().getSchema(schemaName);
-                allColumns = Stream.concat(allColumns, inhtSchema
-                        .getTable(inht.getValue()).getColumns().stream());
-            }
-        }
-        return allColumns.filter(c -> c.getType() != null)
+        Stream<SimpleEntry<String, String>> allColumns = columns.stream()
                 .map(c -> new SimpleEntry<>(c.getName(), c.getType()));
+        for (Inherits inht : inherits) {
+            String schemaName = inht.getKey();
+            PgSchema inhtSchema = schemaName == null ? getContainingSchema()
+                    : getDatabase().getSchema(schemaName);
+            allColumns = Stream.concat(allColumns, inhtSchema
+                    .getTable(inht.getValue()).getRelationColumns());
+        }
+        return allColumns.filter(e -> e.getValue() != null);
     }
 
     /**
