@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -132,11 +133,9 @@ public abstract class AbstractExpr {
         return schema;
     }
 
-    protected GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx, String signature){
-        GenericColumn depcy = new GenericColumn(getSchemaNameForFunction(funcNameCtx.schema, signature),
-                signature, DbObjType.FUNCTION);
-        depcies.add(depcy);
-        return depcy;
+    protected void addFunctionDepcy(IFunction function){
+        depcies.add(new GenericColumn(function.getContainingSchema().getName(),
+                function.getName(), DbObjType.FUNCTION));
     }
 
     protected void addTypeDepcy(Data_typeContext type) {

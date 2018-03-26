@@ -350,8 +350,8 @@ public class ValueExpr extends AbstractExpr {
                         findFunctions(schemaName, functionName, sourceArgsTypes.size()));
 
                 if (resultFunction != null) {
-                    if (dataTypeCtx != null && funcNameQualCtx != null) {
-                        addFunctionDepcy(funcNameQualCtx, resultFunction.getName());
+                    if (funcNameQualCtx != null) {
+                        addFunctionDepcy(resultFunction);
                     }
                     return new SimpleEntry<>(functionName, resultFunction.getReturns());
                 }
