@@ -175,7 +175,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button btnTestConnection = createButton(parent, IDialogConstants.NO_ID, Messages.DbStoreEditorDialog_test_connection, true);
+        Button btnTestConnection = createButton(parent, IDialogConstants.CLIENT_ID, Messages.DbStoreEditorDialog_test_connection, true);
         btnTestConnection.addSelectionListener(new SelectionAdapter() {
 
             @Override

@@ -133,7 +133,7 @@ public class PgPassDialog extends Dialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button btnImport = createButton(parent, IDialogConstants.NO_ID, Messages.PgPassDialog_import, true);
+        Button btnImport = createButton(parent, IDialogConstants.CLIENT_ID, Messages.PgPassDialog_import, true);
 
         btnImport.addSelectionListener(new SelectionAdapter() {
 
