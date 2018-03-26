@@ -9,9 +9,7 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
@@ -197,20 +195,9 @@ public class DbInfo {
         return store;
     }
 
-    public static IgnoreList getIgnoreList(PgDbProject proj, Object dbRemote) {
-        IgnoreList ignoreList = InternalIgnoreList.readInternalList();
-
-        if (proj != null) {
-            InternalIgnoreList.readAppendList(
-                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+    public void appendIgnoreFiles(IgnoreList ignoreList) {
+        for (String file : getIgnoreFiles()) {
+            InternalIgnoreList.readAppendList(Paths.get(file), ignoreList);
         }
-
-        if (dbRemote != null && dbRemote instanceof DbInfo) {
-            for (String file : ((DbInfo)dbRemote).getIgnoreFiles()) {
-                InternalIgnoreList.readAppendList(Paths.get(file), ignoreList);
-            }
-        }
-
-        return ignoreList;
     }
 }

@@ -119,6 +119,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -656,7 +657,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            ignoreList = DbInfo.getIgnoreList(proj, loadedRemote);
+            ignoreList = InternalIgnoreList.readInternalList();
+            InternalIgnoreList.readAppendList(
+                    proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+
+            if (loadedRemote != null && loadedRemote instanceof DbInfo) {
+                ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
