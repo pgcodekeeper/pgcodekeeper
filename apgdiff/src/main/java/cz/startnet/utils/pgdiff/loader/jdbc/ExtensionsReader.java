@@ -43,9 +43,8 @@ public class ExtensionsReader implements PgCatalogStrings {
             }
         }
 
-        try (ResultSet res = loader.statement.executeQuery(query)) {
+        try (ResultSet res = loader.runner.runScript(loader.statement, query)) {
             while (res.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
                 PgExtension extension = getExtension(res);
                 db.addExtension(extension);
             }
