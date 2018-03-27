@@ -243,7 +243,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {
 
     public DbIgnoreListEditor(Composite parent) {
-        super(parent, true, false, true);
+        super(parent);
     }
 
     @Override
@@ -270,5 +270,12 @@ class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {
         viewerObjs.getControl().setLayoutData(gd);
         viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
         return viewerObjs;
+    }
+
+    @Override
+    protected void createButtonsForSideBar(Composite parent) {
+        super.createButtonsForSideBar(parent);
+        createButton(parent, DELETE_ID, Messages.delete,
+                Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);
     }
 }

@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
@@ -19,6 +17,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -78,7 +77,7 @@ implements IWorkbenchPreferencePage {
 class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
 
     public DbStorePrefListEditor(Composite parent) {
-        super(parent, false, true, true);
+        super(parent);
     }
 
     @Override
@@ -95,7 +94,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     @Override
     protected ListViewer createViewer(Composite parent) {
         ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6);
+        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
         gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
         viewerObjs.getControl().setLayoutData(gd);
 
@@ -111,13 +110,18 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     }
 
     @Override
-    protected void createAdditionalButtons(PrefListEditor<DbInfo, ListViewer> editor,
-            ListViewer viewer, LocalResourceManager lrm) {
-        Button btnPgPass = new Button(editor, SWT.NONE);
-        btnPgPass.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
-        btnPgPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.PGPASS))));
-        btnPgPass.setToolTipText(Messages.DbStorePrefPage_pg_pass_import_tooltip);
+    protected void createButtonsForSideBar(Composite parent) {
+        super.createButtonsForSideBar(parent);
+        createButton(parent, EDIT_ID, null, FILE.ICONEDIT, GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, COPY_ID, null, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY),
+                GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, DELETE_ID, Messages.delete,
+                Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, UP_ID, null, FILE.ICONUP, GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, DOWN_ID, null, FILE.ICONDOWN, GridData.VERTICAL_ALIGN_BEGINNING);
+
+        Button btnPgPass = createButton(parent, CLIENT_ID,
+                Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS, GridData.VERTICAL_ALIGN_END);
         btnPgPass.addSelectionListener(new SelectionAdapter() {
 
             @Override

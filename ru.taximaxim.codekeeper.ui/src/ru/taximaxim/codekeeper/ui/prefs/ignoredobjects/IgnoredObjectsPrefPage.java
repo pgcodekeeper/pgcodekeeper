@@ -53,7 +53,7 @@ implements IWorkbenchPreferencePage {
         btnIsWhite.setSelection(!ignore.isShow());
 
         listEditor = new IgnoredObjectPrefListEditor(parent);
-        listEditor.setInputList(ignore.getList());
+        listEditor.setInputList(new ArrayList<>(ignore.getList()));
 
         return parent;
     }
