@@ -191,7 +191,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         Pair<String, String> columnPair = vexCol.analyze(selectSublistVex);
 
                         if (target.alias != null && columnPair != null) {
-                            columnPair = new Pair<>(target.alias.getText(), columnPair.getValue());
+                            columnPair.setFirst(target.alias.getText());
                         }
 
                         ret.add(columnPair);
@@ -375,7 +375,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 try {
                     lateralAllowed = true;
                     ValueExpr vexFunc = new ValueExpr(this);
-                    Entry<String, String> func = vexFunc.function(function);
+                    Pair<String, String> func = vexFunc.function(function);
                     if (func.getKey() != null) {
                         String funcAlias = primary.alias == null ? func.getKey():
                             primary.alias.getText();
