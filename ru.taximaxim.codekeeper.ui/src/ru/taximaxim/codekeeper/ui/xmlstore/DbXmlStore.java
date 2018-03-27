@@ -38,8 +38,6 @@ public class DbXmlStore extends XmlStore {
 
     private final List<IPropertyChangeListener> listeners = new ArrayList<>();
 
-    private List<DbInfo> databases;
-
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
         DB_INFO("db_info"), //$NON-NLS-1$
@@ -73,10 +71,7 @@ public class DbXmlStore extends XmlStore {
     public List<DbInfo> readDbStoreList() throws IOException {
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
                 getXmlFile()), StandardCharsets.UTF_8)) {
-            if (databases == null) {
-                return readObjects(readXml(xmlReader));
-            }
-            return databases;
+            return readObjects(readXml(xmlReader));
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
@@ -93,7 +88,7 @@ public class DbXmlStore extends XmlStore {
                 Element root = xml.createElement(Tags.DB_STORE.toString());
                 xml.appendChild(root);
 
-                for (DbInfo dbInfo: dbStoreList) {
+                for (DbInfo dbInfo : dbStoreList) {
                     Element keyElement = xml.createElement(Tags.DB_INFO.toString());
                     root.appendChild(keyElement);
 
@@ -107,14 +102,12 @@ public class DbXmlStore extends XmlStore {
 
                     Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
                     keyElement.appendChild(ignoreList);
-                    for (String file :dbInfo.getIgnoreFiles()) {
+                    for (String file : dbInfo.getIgnoreFiles()) {
                         createSubElement(xml, ignoreList, Tags.IGNORE_FILE.toString(), file);
                     }
                 }
 
                 serializeXml(xml, true, xmlWriter);
-
-                databases = dbStoreList;
                 notifyListeners();
             }
         } catch (IOException | TransformerException | ParserConfigurationException e) {
@@ -157,13 +150,7 @@ public class DbXmlStore extends XmlStore {
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
-                    NodeList ignoreFileSet = param.getChildNodes();
-                    for (int j = 0; j < ignoreFileSet.getLength(); j++) {
-                        Node file = ignoreFileSet.item(j);
-                        if (Tags.IGNORE_FILE.toString().equals(file.getNodeName())) {
-                            ignoreFiles.add(file.getTextContent());
-                        }
-                    }
+                    fillIgnoreFileList(param.getChildNodes(), ignoreFiles);
                     break;
                 default:
                     break;
@@ -177,11 +164,17 @@ public class DbXmlStore extends XmlStore {
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)), ignoreFiles);
     }
 
+    private void fillIgnoreFileList(NodeList xml, List<String> list) {
+        for (int i = 0; i < xml.getLength(); i++) {
+            Node file = xml.item(i);
+            if (Tags.IGNORE_FILE.toString().equals(file.getNodeName())) {
+                list.add(file.getTextContent());
+            }
+        }
+    }
 
     public void addListener(IPropertyChangeListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     public void deleteListener(IPropertyChangeListener listener) {

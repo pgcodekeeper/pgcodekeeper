@@ -121,9 +121,8 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
-            if((txtDbPass.getText().isEmpty() && !data.exclude)
-                    || (!txtDbPass.getText().isEmpty() && data.exclude)) {
-                lblWarnDbPass.setVisible(!lblWarnDbPass.getVisible());
+            if(txtDbPass.getText().isEmpty() != data.exclude) {
+                lblWarnDbPass.setVisible(data.exclude);
                 data.exclude = !data.exclude;
 
                 // ensures correct pack during shell activation
