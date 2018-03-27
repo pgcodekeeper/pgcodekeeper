@@ -56,7 +56,7 @@ public class FunctionsReader extends JdbcReader {
                 if ("t".equals(type)) {
                     returnsTable = true;
                     returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
-                    returnedTableArguments.append(argNames[i]).append(" ");
+                    returnedTableArguments.append(PgDiffUtils.getQuotedName(argNames[i])).append(" ");
 
                     JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
                     returnedTableArguments.append(returnType.getFullName(schemaName));
