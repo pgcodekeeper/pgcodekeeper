@@ -189,7 +189,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 ApgdiffConsts.UTF_8);
 
         try (Connection con = connector.getConnection(); Statement st = con.createStatement()) {
-            new JdbcRunner(monitor).runScript(st, differ.getDiffDirect());
+            new JdbcRunner(monitor).run(st, differ.getDiffDirect());
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
