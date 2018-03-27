@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.system.CastContext;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
@@ -215,7 +216,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String source = result.getString("source");
                 String target = result.getString("target");
                 String type = result.getString("castcontext");
-                storage.addCast(new PgSystemCast(source, target, type));
+                storage.addCast(new PgSystemCast(source, target, CastContext.getEnumByValue(type)));
             }
         }
     }

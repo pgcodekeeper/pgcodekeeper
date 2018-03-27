@@ -8,15 +8,13 @@ public class PgSystemCast implements Serializable {
 
     private final String source;
     private final String target;
-    /**
-     * Indicates what contexts the cast can be invoked in. <br><br>
-     * <b>e</b> means only as an explicit cast (using CAST or :: syntax).<br>
-     * <b>a</b> means implicitly in assignment to a target column, as well as explicitly.<br>
-     * <b>i</b> means implicitly in expressions, as well as the other cases.<br>
-     */
-    private final String type;
 
-    public PgSystemCast(String source, String target, String type) {
+    /**
+     *  {@link cz.startnet.utils.pgdiff.schema.system.CastContext Context of the cast}.
+     */
+    private final CastContext type;
+
+    public PgSystemCast(String source, String target, CastContext type) {
         this.source = source;
         this.target = target;
         this.type = type;
@@ -33,7 +31,7 @@ public class PgSystemCast implements Serializable {
     /**
      *  Returns the {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type context of the cast}.
      */
-    public String getType() {
+    public CastContext getType() {
         return type;
     }
 }

@@ -424,11 +424,11 @@ public class ValueExpr extends AbstractExpr {
     /**
      * Get an operator from expression.
      * The expression can contains only one of the following structures:
-     * <p>"vex op vex", "op vex", "vex op",
-     * <p>"vex EXP vex",
-     * <p>"vex (MULTIPLY | DIVIDE | MODULAR) vex",
-     * <p>"vex (PLUS | MINUS) vex",
-     * <p>"<assoc=right> (PLUS | MINUS) vex".
+     * <p>"vex op vex", "op vex", "vex op",</p>
+     * <p>"vex EXP vex",</p>
+     * <p>"vex (MULTIPLY | DIVIDE | MODULAR) vex",</p>
+     * <p>"vex (PLUS | MINUS) vex",</p>
+     * <p>"<assoc=right> (PLUS | MINUS) vex".</p>
      *
      * @param expression it is expression with specific structure
      * @return operator of expression as String.
