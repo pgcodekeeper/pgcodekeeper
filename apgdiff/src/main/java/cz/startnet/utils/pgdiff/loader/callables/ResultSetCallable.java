@@ -16,14 +16,10 @@ public class ResultSetCallable extends StatementCallable<ResultSet> {
 
     @Override
     public ResultSet call() throws Exception {
-        final ResultSet rs;
         if (st instanceof PreparedStatement) {
-            rs = ((PreparedStatement)st).executeQuery();
+            return ((PreparedStatement)st).executeQuery();
         } else {
-            rs = st.executeQuery(script);
+            return st.executeQuery(script);
         }
-
-        initThread.interrupt();
-        return rs;
     }
 }

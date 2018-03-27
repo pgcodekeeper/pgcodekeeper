@@ -22,8 +22,6 @@ public class QueryCallable extends StatementCallable<String> {
         } else {
             st.execute(script);
         }
-
-        initThread.interrupt();
         return JDBC_CONSTS.JDBC_SUCCESS;
     }
 }

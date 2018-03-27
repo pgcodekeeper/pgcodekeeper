@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -22,8 +23,8 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class JdbcRunner {
 
-    private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(2,
-            Integer.MAX_VALUE, 0, TimeUnit.SECONDS, new SynchronousQueue<>(),
+    private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(1,
+            Integer.MAX_VALUE, 2, TimeUnit.SECONDS, new SynchronousQueue<>(),
             new DaemonThreadFactory());
 
     private static final int SLEEP_TIME = 20;
@@ -69,30 +70,26 @@ public class JdbcRunner {
         return runScript(new ResultSetCallable(st, script));
     }
 
-
     private <T> T runScript(StatementCallable<T> callable) throws InterruptedException, SQLException {
         Future<T> queryFuture = THREAD_POOL.submit(callable);
 
-        while (!queryFuture.isDone()) {
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException e) {
-                //callable finished or unanticipated awakening
-            }
+        while (true) {
             if (monitor.isCanceled()) {
                 Log.log(Log.LOG_INFO, MESSAGE);
                 callable.cancel();
                 throw new InterruptedException(MESSAGE);
             }
-        }
-        try {
-            return queryFuture.get();
-        } catch (ExecutionException e) {
-            Throwable t = e.getCause();
-            if (t instanceof SQLException) {
-                throw (SQLException)t;
-            } else {
-                throw new IllegalStateException(t.getLocalizedMessage(), e);
+            try {
+                return queryFuture.get(SLEEP_TIME, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException e) {
+                Throwable t = e.getCause();
+                if (t instanceof SQLException) {
+                    throw (SQLException)t;
+                } else {
+                    throw new IllegalStateException(t.getLocalizedMessage(), e);
+                }
+            } catch (TimeoutException e) {
+                // no action: check cancellation and try again
             }
         }
     }
