@@ -281,9 +281,9 @@ alter_type_statement
       (set_schema
       | owner_to
       | rename_to
-      | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
+      | ADD VALUE (IF NOT EXISTS)? new_enum_value=character_string ((BEFORE | AFTER) existing_enum_value=character_string)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
-      | RENAME VALUE existing_enum_name=Character_String_Literal TO new_enum_name=Character_String_Literal
+      | RENAME VALUE existing_enum_name=character_string TO new_enum_name=character_string
       | type_action (COMMA type_action)*)
     ;
 
@@ -360,7 +360,7 @@ create_event_trigger
     : EVENT TRIGGER name=identifier ON event=identifier
         (WHEN filter_variable=schema_qualified_name (IN
             LEFT_PAREN
-                filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)*
+                filter_value+=character_string (COMMA filter_value+=character_string)*
             RIGHT_PAREN AND?)+ )?
         EXECUTE PROCEDURE funct_name=vex
     ;
@@ -368,7 +368,7 @@ create_event_trigger
 create_type_statement
     :TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
-        | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
+        | ENUM LEFT_PAREN ( enums+=character_string (COMMA enums+=character_string)* )? RIGHT_PAREN
         | RANGE LEFT_PAREN
                 (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
@@ -396,11 +396,11 @@ create_type_statement
             | ALIGNMENT EQUAL alignment=data_type
             | STORAGE EQUAL storage=(PLAIN | EXTERNAL | EXTENDED | MAIN)
             | LIKE EQUAL like_type=data_type
-            | CATEGORY EQUAL category=Character_String_Literal
+            | CATEGORY EQUAL category=character_string
             | PREFERRED EQUAL preferred=truth_value
-            | DEFAULT EQUAL default_value=Character_String_Literal
+            | DEFAULT EQUAL default_value=character_string
             | ELEMENT EQUAL element=data_type
-            | DELIMITER EQUAL delimiter=Character_String_Literal
+            | DELIMITER EQUAL delimiter=character_string
             | COLLATABLE EQUAL collatable=truth_value))*
         RIGHT_PAREN)?
     ;
@@ -413,7 +413,7 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER identifier (TYPE Character_String_Literal)? (VERSION Character_String_Literal)?
+    : SERVER identifier (TYPE character_string)? (VERSION character_string)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options? 
     ; 
@@ -589,7 +589,7 @@ comment_on_statement
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE
             | TYPE | VIEW)
           ) name=schema_qualified_name
-        ) IS (comment_text=Character_String_Literal | NULL)
+        ) IS (comment_text=character_string | NULL)
     ;
 
 /*
@@ -607,8 +607,7 @@ create_funct_params
     :(LANGUAGE lang_name=identifier
             | WINDOW
             | function_actions_common
-            | AS function_body
-            | AS Character_String_Literal (COMMA Character_String_Literal)*
+            | AS character_string (COMMA character_string)*
           )+
       with_storage_parameter?
     ;
@@ -632,8 +631,9 @@ function_args
     : LEFT_PAREN (function_arguments (COMMA function_arguments)*)? RIGHT_PAREN
     ;
 
-function_body
+character_string
     : BeginDollarStringConstant Text_between_Dollar+ EndDollarStringConstant
+    | Character_String_Literal
     ;
 
 function_arguments
@@ -786,7 +786,7 @@ define_foreign_options
   ;
   
 foreign_option
-  : (ADD | SET | DROP)? name=identifier value=Character_String_Literal?
+  : (ADD | SET | DROP)? name=identifier value=character_string?
   ;
 
 list_of_type_column_def
@@ -1642,13 +1642,13 @@ unsigned_numeric_literal
   ;
 
 general_literal
-  : Character_String_Literal
+  : character_string
   | datetime_literal
   | truth_value
   ;
 
 datetime_literal
-  : identifier Character_String_Literal
+  : identifier character_string
   ;
 
 truth_value
@@ -1761,7 +1761,7 @@ array_query
     ;
 
 type_coercion
-    : data_type Character_String_Literal
+    : data_type character_string
     ;
     
 /*
@@ -1977,5 +1977,5 @@ using_table
   ;
 
 notify_stmt
-  : NOTIFY channel=identifier (COMMA payload=Character_String_Literal)?
+  : NOTIFY channel=identifier (COMMA payload=character_string)?
   ;
