@@ -42,7 +42,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
@@ -123,7 +122,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
         if (select.of(0) != null) {
             for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
-                addObjectDepcy(tableLock.identifier(), DbObjType.TABLE);
+                addRelationDepcy(tableLock.identifier());
             }
 
         }
@@ -230,7 +229,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     }
                 }
             } else if (primary.TABLE() != null) {
-                addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
+                addRelationDepcy(primary.schema_qualified_name().identifier());
             } else if ((values = primary.values_stmt()) != null) {
                 ret = new ArrayList<>();
                 ValueExpr vex = new ValueExpr(this);

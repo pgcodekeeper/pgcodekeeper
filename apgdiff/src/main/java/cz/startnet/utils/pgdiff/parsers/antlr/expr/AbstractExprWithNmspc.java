@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * @author levsha_aa
@@ -198,7 +197,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         }
         GenericColumn depcy = null;
         if (cteList == null) {
-            depcy = addObjectDepcy(ids, DbObjType.TABLE);
+            depcy = addRelationDepcy(ids);
         }
 
         if (alias != null) {

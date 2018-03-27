@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -91,11 +92,31 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
-    protected GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
+    protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
         GenericColumn depcy = new GenericColumn(
-                getSchemaNameForRelation(ids), QNameParser.getFirstName(ids), type);
+                getSchemaNameForRelation(ids), QNameParser.getFirstName(ids), DbObjType.TABLE);
         depcies.add(depcy);
         return depcy;
+    }
+
+    protected void addFunctionDepcyNotOverloaded(List<IdentifierContext> ids) {
+        IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
+        String schemaName;
+        if (schemaNameCtx != null) {
+            schemaName = schemaNameCtx.getText();
+            if (GenericColumn.SYS_SCHEMAS.contains(schemaName)) {
+                return;
+            }
+        } else {
+            schemaName = schema;
+        }
+
+        PgFunction function = db.getSchema(schemaName).getFunctions().stream()
+                .filter(f -> QNameParser.getFirstName(ids).equals(f.getBareName()))
+                .findAny().orElse(null);
+        if (function != null) {
+            depcies.add(new GenericColumn(schemaName, function.getName(), DbObjType.FUNCTION));
+        }
     }
 
     private String getSchemaNameForRelation(List<IdentifierContext> ids) {

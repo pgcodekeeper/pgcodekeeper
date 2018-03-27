@@ -61,7 +61,6 @@ import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ValueExpr extends AbstractExpr {
 
@@ -508,16 +507,16 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private void regCast(String s, String regcast) {
-        DbObjType regcastType;
         switch (regcast) {
         case "regproc":
-            regcastType = DbObjType.FUNCTION;
+            // In this case, the function is not overloaded.
+            addFunctionDepcyNotOverloaded(new QNameParser(s).getIds());
             break;
         case "regclass":
-            regcastType = DbObjType.TABLE;
+            addRelationDepcy(new QNameParser(s).getIds());
             break;
         case "regtype":
-            regcastType = DbObjType.TYPE;
+            // TODO pending DbObjType.TYPE
             break;
 
         case "regnamespace":
@@ -534,8 +533,6 @@ public class ValueExpr extends AbstractExpr {
         default:
             return;
         }
-
-        addObjectDepcy(new QNameParser(s).getIds(), regcastType);
     }
 
     private String unsigned(Unsigned_value_specificationContext unsignedValue){

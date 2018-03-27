@@ -14,15 +14,15 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class GenericColumn implements Serializable {
 
-    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+    public static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "information_schema", "pg_catalog"
-    })));
+            )));
 
     @Deprecated
     // TODO detect these by separating their tokens from identifiers in parser
-    private static final Collection<String> SYS_COLUMNS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
+    private static final Collection<String> SYS_COLUMNS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
-    })));
+            )));
 
     private static final long serialVersionUID = -5032985077177033449L;
     // SONAR-OFF
