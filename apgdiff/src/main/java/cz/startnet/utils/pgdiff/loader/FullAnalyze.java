@@ -10,6 +10,7 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
@@ -102,8 +103,7 @@ public final class FullAnalyze {
                 Stream<Entry<PgStatement, ParserRuleContext>> viewAndCtx = db.getContextsForAnalyze()
                         .stream().filter(entry -> statement.equals(entry.getKey()));
 
-                for (Entry<PgStatement, ParserRuleContext> entry :
-                    (Iterable<Entry<PgStatement, ParserRuleContext>>) viewAndCtx::iterator) {
+                for (Entry<PgStatement, ParserRuleContext> entry : PgDiffUtils.sIter(viewAndCtx)) {
                     PgView view = (PgView) entry.getKey();
                     ParserRuleContext ctx = entry.getValue();
 

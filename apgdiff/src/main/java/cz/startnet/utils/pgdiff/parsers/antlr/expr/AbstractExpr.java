@@ -216,8 +216,8 @@ public abstract class AbstractExpr {
     }
 
     private String getColumnType(GenericColumn genericColumn) {
-        for (IRelation relation : (Iterable<IRelation>)findRelations(genericColumn.schema, genericColumn.table)::iterator) {
-            for (Pair<String, String> colPair : (Iterable<Pair<String, String>>)relation.getRelationColumns()::iterator ) {
+        for (IRelation relation : PgDiffUtils.sIter(findRelations(genericColumn.schema, genericColumn.table))) {
+            for (Pair<String, String> colPair : PgDiffUtils.sIter(relation.getRelationColumns())) {
                 if (genericColumn.column.equals(colPair.getKey())) {
                     return colPair.getValue();
                 }

@@ -336,7 +336,7 @@ public class ValueExpr extends AbstractExpr {
                 //// In this case function's argument is '*' or 'source.*'.
 
                 int foundFuncsCount = 0;
-                for (IFunction f : (Iterable<IFunction>)findFunctions(schemaName, functionName, 1)::iterator) {
+                for (IFunction f : PgDiffUtils.sIter(findFunctions(schemaName, functionName, 1))) {
                     funcType = f.getReturns();
                     foundFuncsCount++;
                 }
@@ -368,7 +368,7 @@ public class ValueExpr extends AbstractExpr {
         String functionSignature = funcOperName + '(' + sourceTypes.stream().collect(Collectors.joining(", ")) + ')';
         Map<IFunction, Integer> argsMatches = new HashMap<>();
 
-        for (IFunction f : (Iterable<IFunction>) targetFunctions::iterator) {
+        for (IFunction f : PgDiffUtils.sIter(targetFunctions)) {
             if (functionSignature.equals(f.getName())) {
                 return f;
             }
