@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * For use with value expressions that have predefined namespace.
@@ -21,7 +21,7 @@ public class ValueExprWithNmspc extends AbstractExprWithNmspc<Vex> {
     }
 
     @Override
-    public List<SimpleEntry<String, String>> analyze(Vex vex) {
+    public List<Pair<String, String>> analyze(Vex vex) {
         this.vex.analyze(vex);
         return Collections.emptyList();
     }

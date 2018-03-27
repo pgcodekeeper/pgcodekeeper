@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -18,6 +17,7 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores table information.
@@ -92,10 +92,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<SimpleEntry<String, String>> getRelationColumns() {
-        Stream<SimpleEntry<String, String>> allColumns = columns.stream()
+    public Stream<Pair<String, String>> getRelationColumns() {
+        Stream<Pair<String, String>> allColumns = columns.stream()
                 .filter(c -> c.getType() != null)
-                .map(c -> new SimpleEntry<>(c.getName(), c.getType()));
+                .map(c -> new Pair<>(c.getName(), c.getType()));
         for (Inherits inht : inherits) {
             String schemaName = inht.getKey();
             PgSchema inhtSchema = schemaName == null ? getContainingSchema()
