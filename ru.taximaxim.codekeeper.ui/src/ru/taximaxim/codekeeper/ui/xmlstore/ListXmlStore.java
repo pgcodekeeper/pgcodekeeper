@@ -11,7 +11,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,13 +37,13 @@ public class ListXmlStore extends XmlStore {
         this.elementTag = elementTag;
     }
 
-    public LinkedList<String> getHistory() throws IOException {
-        LinkedList<String> history;
+    public List<String> getHistory() throws IOException {
+        List<String> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
                 getXmlFile()), StandardCharsets.UTF_8)) {
             history = readList(readXml(xmlReader));
         } catch (FileNotFoundException ex) {
-            history = new LinkedList<>();
+            history = new ArrayList<>();
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
@@ -57,12 +57,12 @@ public class ListXmlStore extends XmlStore {
      * @throws IOException
      */
     public void addHistoryEntry(String newEntry) throws IOException {
-        LinkedList<String> historyEntries = getHistory();
+        List<String> historyEntries = getHistory();
         if (!newEntry.isEmpty()) {
             historyEntries.remove(newEntry);
             historyEntries.add(0, newEntry);
-            while (historyEntries.size() > maxEntries) {
-                historyEntries.removeLast();
+            if (historyEntries.size() > maxEntries) {
+                historyEntries = historyEntries.subList(0, maxEntries);
             }
 
             dumpListToFile(historyEntries);
@@ -84,8 +84,8 @@ public class ListXmlStore extends XmlStore {
         }
     }
 
-    private LinkedList<String> readList(Document xml) {
-        LinkedList<String> list = new LinkedList<>();
+    private List<String> readList(Document xml) {
+        List<String> list = new ArrayList<>();
 
         Element root = (Element) xml.getElementsByTagName(rootTag).item(0);
 
@@ -103,15 +103,10 @@ public class ListXmlStore extends XmlStore {
     }
 
     public void setHistory(List<String> list) throws IOException{
-        LinkedList<String> linkedList = new LinkedList<>(list);
-        while (linkedList.size() > maxEntries) {
-            linkedList.removeLast();
-        }
-
-        dumpListToFile(linkedList);
+        dumpListToFile(list.size() > maxEntries ? list.subList(0, maxEntries) : list);
     }
 
-    public <T> void serializeList(List<T> listToConvert, boolean noFormatting,
+    public void serializeList(List<?> listToConvert, boolean noFormatting,
             Writer writer) throws TransformerException, IOException {
         Document xml;
         try {
@@ -123,7 +118,7 @@ public class ListXmlStore extends XmlStore {
         Element root = xml.createElement(rootTag);
         xml.appendChild(root);
 
-        for (T listElement : listToConvert) {
+        for (Object listElement : listToConvert) {
             createSubElement(xml, root, elementTag, listElement.toString());
         }
 

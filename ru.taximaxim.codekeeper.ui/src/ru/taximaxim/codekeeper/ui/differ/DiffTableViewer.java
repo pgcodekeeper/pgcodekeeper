@@ -279,7 +279,7 @@ public class DiffTableViewer extends Composite {
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
 
-        List<String> history = new LinkedList<>();
+        List<String> history = new ArrayList<>();
         try {
             history = XML_HISTORY.getHistory();
         } catch (IOException ex) {
@@ -347,7 +347,7 @@ public class DiffTableViewer extends Composite {
                     if (text != null && !text.isEmpty()) {
                         XML_HISTORY.addHistoryEntry(text);
                     }
-                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    List<String> history = XML_HISTORY.getHistory();
                     scp.setProposals(history.toArray(new String[history.size()]));
                 } catch (IOException e) {
                     Log.log(e);
