@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
@@ -89,9 +90,9 @@ public abstract class JdbcReaderFactory {
      * @return helper functions that are available in the database
      *          in the form of bit field of combined {@link #hasHelperMask}s.
      */
-    public static long getAvailableHelpersBits(JdbcLoaderBase loader) throws SQLException {
+    public static long getAvailableHelpersBits(JdbcLoaderBase loader) throws SQLException, InterruptedException {
         loader.setCurrentOperation("available helpers query");
-        return getAvailableHelperBits(loader.connection);
+        return getAvailableHelperBits(loader.connection, loader.runner);
     }
 
     /**
@@ -110,11 +111,11 @@ public abstract class JdbcReaderFactory {
         return sb.toString();
     }
 
-    public static long getAvailableHelperBits(Connection connection) throws SQLException {
+    public static long getAvailableHelperBits(Connection connection, JdbcRunner runner) throws SQLException, InterruptedException {
         long bits = 0;
         try (PreparedStatement st = connection.prepareStatement(JdbcQueries.QUERY_HELPER_FUNCTIONS)) {
             st.setString(1, HELPER_SCHEMA);
-            try (ResultSet res = st.executeQuery()) {
+            try (ResultSet res = runner.runScript(st)) {
                 Set<String> funcs = new HashSet<>();
                 while (res.next()) {
                     if (!res.getBoolean("schema_access")) {

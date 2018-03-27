@@ -5,6 +5,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,7 +35,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -181,14 +183,15 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
-        JdbcRunner runner = new JdbcRunner(new JdbcConnector(
-                dbinfo.getDbHost(), dbinfo.getDbPort(),
-                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                ApgdiffConsts.UTF_8));
-        String result = runner.runScript(differ.getDiffDirect());
 
-        if(!JDBC_CONSTS.JDBC_SUCCESS.equals(result)) {
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + result);
+        JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                ApgdiffConsts.UTF_8);
+
+        try (Connection con = connector.getConnection(); Statement st = con.createStatement()) {
+            new JdbcRunner(monitor).run(st, differ.getDiffDirect());
+        } catch (SQLException e) {
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
 
         checkFileModified();
