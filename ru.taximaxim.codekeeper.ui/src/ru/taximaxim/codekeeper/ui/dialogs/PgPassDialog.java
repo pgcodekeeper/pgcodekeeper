@@ -127,7 +127,7 @@ public class PgPassDialog extends Dialog {
             return PgPass.getAll(Paths.get(path));
         } catch (PgPassException ex) {
             Log.log(Log.LOG_ERROR, "Error reading pgpass file", ex); //$NON-NLS-1$
-            return null;
+            return new ArrayList<>();
         }
     }
 
