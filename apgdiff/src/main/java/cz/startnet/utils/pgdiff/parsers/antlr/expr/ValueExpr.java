@@ -1,7 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -12,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
@@ -32,7 +41,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_numeric_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
@@ -40,34 +52,26 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Vex_bContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.IArgument;
+import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ValueExpr extends AbstractExpr {
 
-    public ValueExpr(String schema) {
-        super(schema);
+    public ValueExpr(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     protected ValueExpr(AbstractExpr parent) {
         super(parent);
     }
 
-    private List<Vex> addVexCtxtoList(List<Vex> l, List<VexContext> ctx) {
-        int toAdd = ctx.size();
-        if (toAdd != 0) {
-            if (l == null) {
-                l = new ArrayList<>(toAdd);
-            }
-            for (VexContext vexCtx : ctx) {
-                l.add(new Vex(vexCtx));
-            }
-        }
-        return l;
-    }
-
-    public void analyze(Vex vex) {
+    public Entry<String, String> analyze(Vex vex) {
+        Entry<String, String> ret = null;
         Data_typeContext dataType = vex.dataType();
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
@@ -75,11 +79,20 @@ public class ValueExpr extends AbstractExpr {
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
-        boolean doneWork = true;
+        List<Entry<String, String>> operandsList;
+
+        List<Vex> operands = vex.vex();
+        if (!operands.isEmpty()) {
+            operandsList = new ArrayList<>(operands.size());
+            for (Vex v : operands) {
+                operandsList.add(analyze(v));
+            }
+        } else {
+            operandsList = Collections.emptyList();
+        }
 
         if (vex.castExpression() != null && dataType != null) {
             addTypeDepcy(dataType);
-
             Predefined_typeContext pType = dataType.predefined_type();
             Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
             IdentifierContext typeSchema = customType == null ? null : customType.identifier();
@@ -98,15 +111,72 @@ public class ValueExpr extends AbstractExpr {
                             customType.getText());
                 }
             }
+
+            ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(dataType));
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new Select(this).analyze(selectStmt);
+            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
+        } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
+                (selectStmt = vex.selectStmt()) == null) {
+            ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
                 analyze(new Vex(v));
             }
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
+        } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
+            if (vex.colon() == null) {
+                ret = operandsList.get(0);
+                ret.setValue(bracketProcessing(ret.getValue()));
+            } else {
+                ret = operandsList.get(0);
+            }
+        } else if (vex.plus() != null || vex.minus() != null) {
+            if (operandsList.size() == 2) {
+                ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+            } else {
+                ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
+            }
+        } else if ( (vex.timeZone() != null)
+                || (vex.in() == null && vex.leftParen() != null && vex.rightParen() != null) ) {
+            if (operandsList.size() == 1) {
+                ret = operandsList.get(0);
+            } else {
+                ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
+            }
+        } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
+            ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+        } else if (vex.op() != null) {
+            if (operandsList.size() == 1) {
+                if (vex.isChildOpIsPrefix()) {
+                    ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
+                } else {
+                    ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), TypesSetManually.EMPTY);
+                }
+            } else {
+                ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+            }
+        } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null || vex.distinct() != null))
+                || (vex.not() != null && vex.in() == null)
+                || vex.between() != null
+                || vex.like() != null
+                || vex.ilike() != null
+                || vex.similar() != null
+                || vex.lth() != null
+                || vex.gth() != null
+                || vex.leq() != null
+                || vex.geq() != null
+                || vex.equal() != null
+                || vex.notEqual() != null
+                || vex.isNull() != null
+                || vex.notNull() != null
+                || vex.and() != null
+                || vex.or() != null ) {
+            ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
             Case_expressionContext caseExpr;
@@ -116,91 +186,88 @@ public class ValueExpr extends AbstractExpr {
             Function_callContext function;
             Schema_qualified_nameContext qname;
             Indirection_identifierContext indirection;
-            @SuppressWarnings("unused")
             Qualified_asteriskContext ast;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;
-            List<Vex> subOperands = null;
+            Unsigned_value_specificationContext unsignedValue;
 
-            if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
+            if (primary.NULL() != null) {
+                ret = new SimpleEntry<>(null, TypesSetManually.NULL);
+            } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
+                ret = new SimpleEntry<>(null, unsigned(unsignedValue));
+            } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                new Select(this).analyze(subSelectStmt);
+                List<Entry<String, String>> colsList = new Select(this).analyze(subSelectStmt);
+                return colsList.get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
-                subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
+                for (VexContext v : caseExpr.vex()) {
+                    analyze(new Vex(v));
+                }
+                ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
             } else if ((cast = primary.cast_specification()) != null) {
-                analyze(new Vex(cast.vex()));
-                addTypeDepcy(cast.data_type());
+                ret = analyze(new Vex(cast.vex()));
+                Data_typeContext dataTypeCtx = cast.data_type();
+                ret.setValue(ParserAbstract.getFullCtxText(dataTypeCtx));
+                addTypeDepcy(dataTypeCtx);
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
-                    analyze(new Vex(compModVex));
+                    ret = analyze(new Vex(compModVex));
+                    ret.setValue(bracketProcessing(ret.getValue()));
                 } else {
                     new Select(this).analyze(compMod.select_stmt_no_parens());
+                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN);
                 }
             } else if (primary.EXISTS() != null &&
                     (subquery = primary.table_subquery()) != null) {
                 new Select(this).analyze(subquery.select_stmt());
+                ret = new SimpleEntry<>(null, TypesSetManually.BOOLEAN);
             } else if ((function = primary.function_call()) != null) {
-                function(function);
+                ret = function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
-                addColumnDepcy(qname);
+                ret = processColumn(qname);
             } else if ((indirection = primary.indirection_identifier()) != null) {
                 analyze(new Vex(indirection.vex()));
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
+                ret = new SimpleEntry<>(null, TypesSetManually.QUALIFIED_ASTERISK);
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
-                    subOperands = addVexCtxtoList(subOperands, arrayb.vex());
+                    List<VexContext> arraybVexCtxList = arrayb.vex();
+                    ret = analyze(new Vex(arraybVexCtxList.get(0)));
                 } else {
                     new Select(this).analyze(array.array_query().table_subquery().select_stmt());
+                    ret = new SimpleEntry<>(null, TypesSetManually.UNKNOWN_ARRAY);
                 }
             } else if ((typeCoercion = primary.type_coercion()) != null) {
-                addTypeDepcy(typeCoercion.data_type());
-            }
-
-            if (subOperands != null) {
-                for (Vex v : subOperands) {
-                    analyze(v);
-                }
+                Data_typeContext coercionDataType = typeCoercion.data_type();
+                addTypeDepcy(coercionDataType);
+                ret = new SimpleEntry<>(null, ParserAbstract.getFullCtxText(coercionDataType));
             }
         } else {
-            doneWork = false;
-        }
-
-        List<Vex> operands = vex.vex();
-        if (!operands.isEmpty()) {
-            for (Vex v : operands) {
-                analyze(v);
-            }
-        } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
         }
+
+        return ret;
     }
 
     /**
      * @return function reference or null for internal functions
      */
-    public GenericColumn function(Function_callContext function) {
-        GenericColumn ret = null;
-        List<Vex> args = null;
-
-        Function_nameContext name = function.function_name();
+    public Entry<String, String> function(Function_callContext function) {
+        List<VexContext> args = null;
+        Function_nameContext funcNameCtx = function.function_name();
 
         Extract_functionContext extract;
         String_value_functionContext string;
         Xml_functionContext xml;
+        boolean canFindFunctionSignature = false;
 
-        if (name != null){
-            Data_typeContext type = name.data_type();
-            Schema_qualified_name_nontypeContext funcNameCtx;
-            if (type != null &&
-                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-                ret = addFunctionDepcy(funcNameCtx);
+        if (funcNameCtx != null) {
+            args = function.vex();
 
-            }
-
-            args = addVexCtxtoList(args, function.vex());
+            canFindFunctionSignature = true;
 
             Orderby_clauseContext orderBy = function.orderby_clause();
             if (orderBy != null) {
@@ -217,22 +284,161 @@ public class ValueExpr extends AbstractExpr {
         } else if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
         } else if ((string = function.string_value_function()) != null) {
-            args = addVexCtxtoList(args, string.vex());
+            args = string.vex();
 
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
                 analyze(new Vex(vexB));
             }
         } else if ((xml = function.xml_function()) != null) {
-            args = addVexCtxtoList(args, xml.vex());
+            args = xml.vex();
         }
 
+        List<Entry<String, String>> argsType = new ArrayList<>();
         if (args != null) {
-            for (Vex v : args) {
-                analyze(v);
+            for (VexContext v : args) {
+                argsType.add(analyze(new Vex(v)));
             }
         }
-        return ret;
+
+        String funcType = TypesSetManually.FUNCTION_COLUMN;
+
+        if (canFindFunctionSignature) {
+            String schemaName = null;
+            String functionName;
+            Data_typeContext dataTypeCtx = funcNameCtx.data_type();
+            Schema_qualified_name_nontypeContext funcNameQualCtx = null;
+
+            IdentifierContext id;
+            Tokens_simple_functionsContext tokensSimpleFunc;
+            if (dataTypeCtx != null &&
+                    (funcNameQualCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
+                functionName = funcNameQualCtx.identifier_nontype().getText();
+
+                if ((id = funcNameQualCtx.identifier()) != null) {
+                    schemaName = id.getText();
+                }
+            } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
+                functionName = tokensSimpleFunc.getText();
+
+                if ((id = funcNameCtx.identifier()) != null) {
+                    schemaName = id.getText();
+                }
+            } else {
+                functionName = funcNameCtx.getText();
+            }
+
+            if (argsType.size() == 1
+                    && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0).getValue())) {
+
+                //// In this case function's argument is '*' or 'source.*'.
+
+                int foundFuncsCount = 0;
+                for (IFunction f : (Iterable<IFunction>)findFunctions(schemaName, functionName, 1)::iterator) {
+                    funcType = f.getReturns();
+                    foundFuncsCount++;
+                }
+
+                return new SimpleEntry<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
+            } else {
+                List<String> sourceArgsTypes = argsType.stream().map(Entry::getValue).collect(Collectors.toList());
+
+                IFunction resultFunction = castFiltredFuncsOpers(functionName, sourceArgsTypes,
+                        findFunctions(schemaName, functionName, sourceArgsTypes.size()));
+
+                if (resultFunction != null) {
+                    if (dataTypeCtx != null && funcNameQualCtx != null) {
+                        addFunctionDepcy(funcNameQualCtx, resultFunction.getName());
+                    }
+                    return new SimpleEntry<>(functionName, resultFunction.getReturns());
+                }
+
+                return new SimpleEntry<>(functionName, TypesSetManually.FUNCTION_COLUMN);
+            }
+        }
+
+        return new SimpleEntry<>(null, funcType);
+    }
+
+    private IFunction castFiltredFuncsOpers(String funcOperName, List<String> sourceTypes,
+            Stream<IFunction> targetFunctions) {
+        IFunction resultFunction = null;
+        String functionSignature = funcOperName + '(' + sourceTypes.stream().collect(Collectors.joining(", ")) + ')';
+        Map<IFunction, Integer> argsMatches = new HashMap<>();
+
+        for (IFunction f : (Iterable<IFunction>) targetFunctions::iterator) {
+            if (functionSignature.equals(f.getName())) {
+                return f;
+            }
+
+            boolean castWellDone = true;
+            List<IArgument> argsOfSourceFunction = getInInoutFuncArgs(f);
+
+            for (int k = 0; k < argsOfSourceFunction.size(); k++) {
+                String targetType = argsOfSourceFunction.get(k).getDataType();
+                String sourceType = sourceTypes.get(k);
+
+                if (sourceType.equals(targetType)) {
+                    Integer funcIdx = argsMatches.get(f);
+                    argsMatches.put(f, (funcIdx != null) ? funcIdx + 1 : 1);
+                } else if (!PgSystemStorage.isCastPresent(systemStorage, sourceType, targetType)) {
+                    castWellDone = false;
+                    argsMatches.remove(f);
+                    break;
+                }
+            }
+
+            // On each 'castWellDone' iteration we put the current function to the 'resultFunction'.
+            // If in result of 'functionsList' processing we will have empty 'storeOfFunctArgsMatches',
+            // then as result of this method we will use this 'resultFunction = f'.
+            if (castWellDone && argsMatches.get(f) == null) {
+                resultFunction = f;
+            }
+        }
+
+        return argsMatches.entrySet().stream()
+                .max((e1,e2) -> Integer.compare(e1.getValue(), e2.getValue()))
+                .map(Entry::getKey).orElse(resultFunction);
+    }
+
+    private Entry<String, String> getReturnedTypeOfOperation(Vex vex, String...sourceArgsTypesArray) {
+        List<String> sourceArgsTypes = Arrays.asList(sourceArgsTypesArray);
+
+        String operatorName = vex.getChildOperator();
+        Entry<String, String> pair = new SimpleEntry<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
+
+        // TODO When the user's operators will be also process by codeKeeper,
+        // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
+        IFunction resultOperFunction = castFiltredFuncsOpers(operatorName, sourceArgsTypes,
+                findFunctions(PgSystemStorage.SCHEMA_PG_CATALOG, operatorName, sourceArgsTypes.size()));
+
+        if (resultOperFunction != null) {
+            pair.setValue(resultOperFunction.getReturns());
+        }
+
+        return pair;
+    }
+
+    private List<IArgument> getInInoutFuncArgs(IFunction func) {
+        return func.getArguments().stream()
+                .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()))
+                .collect(Collectors.toList());
+    }
+
+    private Stream<IFunction> findFunctions(String schemaName, String functionName, int argsCount) {
+        Stream<IFunction> foundFunctions;
+        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
+                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
+            foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream();
+        } else if (schemaName != null) {
+            foundFunctions = db.getSchema(schemaName).getFunctions().stream();
+        } else {
+            foundFunctions = Stream.concat(db.getSchema(schema).getFunctions().stream(),
+                    systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream());
+        }
+
+        return foundFunctions.filter(f -> f.getBareName().equals(functionName))
+                .filter(f -> getInInoutFuncArgs(f).size() == argsCount);
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
@@ -294,5 +500,46 @@ public class ValueExpr extends AbstractExpr {
         }
 
         addObjectDepcy(new QNameParser(s).getIds(), regcastType);
+    }
+
+    private String unsigned(Unsigned_value_specificationContext unsignedValue){
+        String ret = null;
+        Unsigned_numeric_literalContext unsignedNumeric;
+        General_literalContext generalLiteral;
+        Datetime_literalContext dateTime;
+        Truth_valueContext truthValue;
+
+        if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
+            if (unsignedNumeric.NUMBER_LITERAL() != null) {
+                ret = TypesSetManually.INTEGER;
+            } else {
+                ret = TypesSetManually.NUMERIC;
+            }
+
+        } else {
+            generalLiteral = unsignedValue.general_literal();
+
+            if (generalLiteral.Character_String_Literal() != null) {
+                ret = TypesSetManually.TEXT;
+            } else if ((dateTime = generalLiteral.datetime_literal()) != null) {
+                ret = ParserAbstract.getFullCtxText(dateTime);
+            } else if ((truthValue = generalLiteral.truth_value()) != null) {
+                if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
+                    ret = TypesSetManually.BOOLEAN;
+                } else {
+                    ret = TypesSetManually.TEXT;
+                }
+            }
+        }
+        return ret;
+    }
+
+    private String bracketProcessing(String type) {
+        if (type.endsWith("[]")) {
+            Log.log(Log.LOG_WARNING, "The type '" + type + "' had brackets!");
+            return type.substring(0, type.indexOf("[]"));
+        } else {
+            return type;
+        }
     }
 }

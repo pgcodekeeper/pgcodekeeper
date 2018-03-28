@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.expr;
+package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -37,7 +37,7 @@ public class UtilAnalyzeExpr {
     }
 
     public static void analyzeSecond(VexContext ctx,
-            cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc analyzer,
+            cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc analyzer,
             PgStatement pg) {
         analyzer.analyze(new Vex(ctx));
         pg.addAllDeps(analyzer.getDepcies());
@@ -95,8 +95,8 @@ public class UtilAnalyzeExpr {
             exp = ctx.vex();
         }
         if (exp != null) {
-            cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc valExptWithNmspc
-            = new cz.startnet.utils.pgdiff.parsers.antlr.expr.secondanalyze.ValueExprWithNmspc(schemaName, db);
+            cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc valExptWithNmspc
+            = new cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc(schemaName, db);
             valExptWithNmspc.addRawTableReference(new GenericColumn(
                     constr.getContainingSchema().getName(),
                     constr.getParent().getName(), DbObjType.TABLE));
