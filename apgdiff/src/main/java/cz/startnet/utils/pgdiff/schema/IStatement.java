@@ -6,4 +6,8 @@ public interface IStatement {
     String getName();
     DbObjType getStatementType();
     IStatement getParent();
+
+    default DbObjNature getStatementNature() {
+        return DbObjNature.USER;
+    }
 }

@@ -55,6 +55,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -349,7 +350,8 @@ public class ValueExpr extends AbstractExpr {
                         findFunctions(schemaName, functionName, sourceArgsTypes.size()));
 
                 if (resultFunction != null) {
-                    if (funcNameQualCtx != null) {
+                    if (funcNameQualCtx != null &&
+                            DbObjNature.USER.equals(resultFunction.getStatementNature())) {
                         addFunctionDepcy(resultFunction);
                     }
                     return new Pair<>(functionName, resultFunction.getReturns());

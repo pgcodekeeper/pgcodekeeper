@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +39,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -247,12 +249,25 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
+    private List<Pair<String, String>> getColsWithAddedDepcies(
+            List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndRelationCols,
+            String schemaName, String relationName) {
+        List<Pair<String, String>> сolsWithAddedDepcies = new ArrayList<>();
+        for (Entry<DbObjNature, List<Pair<String, String>>> systemOrUserCols : natureAndRelationCols) {
+            // Add dependency only for user's objects.
+            if (DbObjNature.USER.equals(systemOrUserCols.getKey())) {
+                addColumnsDepcies(schemaName, relationName, systemOrUserCols.getValue());
+            }
+            сolsWithAddedDepcies.addAll(systemOrUserCols.getValue());
+        }
+        return сolsWithAddedDepcies;
+    }
+
     private List<Pair<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
         String schemaName = gTablerOrView.schema;
         String tableOrView = gTablerOrView.table;
-        List<Pair<String, String>> colsOfTableOrView = getTableOrViewColumns(schemaName, tableOrView);
-        addColumnsDepcies(schemaName, tableOrView, colsOfTableOrView);
-        return colsOfTableOrView;
+        return getColsWithAddedDepcies(getNatureAndRelationColumns(schemaName, tableOrView),
+                schemaName, tableOrView);
     }
 
     private List<Pair<String, String>> getColsOfNotQualAster() {
@@ -279,11 +294,11 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         String qualSchema = QNameParser.getSecondName(ids);
         String srcOrTblOrView = QNameParser.getFirstName(ids);
 
-        List<Pair<String, String>> retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView);
+        List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndQualAsterCols = getNatureAndRelationColumns(
+                qualSchema, srcOrTblOrView);
         // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
-        if (!retQualAsterCols.isEmpty()) {
-            addColumnsDepcies(qualSchema, srcOrTblOrView, retQualAsterCols);
-            return retQualAsterCols;
+        if (!natureAndQualAsterCols.isEmpty()) {
+            return getColsWithAddedDepcies(natureAndQualAsterCols, qualSchema, srcOrTblOrView);
         }
 
         Entry<String, GenericColumn> srcOfAlias = findReference(qualSchema, srcOrTblOrView, null);
@@ -394,33 +409,19 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    public List<Pair<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
-            GenericColumn unaliasedNmsp) {
-        Schema_qualified_nameContext qualifiedName;
-        String schema;
-        String tableOrView;
-        if (!aliased && (qualifiedName = ast.tb_name) != null) {
-            List<IdentifierContext> ids = qualifiedName.identifier();
-            schema = QNameParser.getSecondName(ids);
-            tableOrView = QNameParser.getFirstName(ids);
-        } else {
-            schema = unaliasedNmsp.schema;
-            tableOrView = unaliasedNmsp.table;
-        }
-        return getTableOrViewColumns(schema, tableOrView);
-    }
-
     /**
-     * Gives list of columns (name-type) for the specified parameters.
+     * Gives lists of relation columns (name-type) with nature marks
+     * for given schemaName and relationName.
      *
      * @param qualSchemaName
-     * @param tableOrView
-     * @return list of columns (name-type) for the specified parameters
+     * @param relationName
+     * @return lists of relation columns (name-type) with nature marks
+     * for given schemaName and relationName
      */
-    protected List<Pair<String, String>> getTableOrViewColumns(String qualSchemaName, String tableOrView) {
-        List<Pair<String, String>> ret = new ArrayList<>();
-        findRelations(qualSchemaName, tableOrView)
-        .forEach(relation -> ret.addAll(relation.getRelationColumns().collect(Collectors.toList())));
-        return ret;
+    protected List<Entry<DbObjNature, List<Pair<String, String>>>> getNatureAndRelationColumns(String qualSchemaName,
+            String relationName) {
+        return findRelations(qualSchemaName, relationName)
+                .map(r -> new SimpleEntry<>(r.getStatementNature(), r.getRelationColumns().collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 }
