@@ -8,7 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -147,15 +149,15 @@ public class DbInfo {
         }
     }
 
-
     public static DbInfo getLastDb(String preference) {
         try {
             return preference.contains(DELIM) ? getLastStore(preference) :
                 DbXmlStore.INSTANCE.readDbStoreList().stream()
                 .filter(e -> preference.equals(e.getName())).findAny().orElse(null);
         } catch (IOException ex) {
-            Log.log(ex);
-            return null;
+            // check old prefs, legacy
+            return preferenceToStore(Activator.getDefault().getPreferenceStore().getString(PREF.DB_STORE)).stream()
+                    .filter(info -> preference.equals(info.getName())).findAny().orElse(null);
         }
     }
 
