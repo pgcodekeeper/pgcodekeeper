@@ -311,9 +311,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
      */
     private boolean refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        if (res instanceof IFile && res.getProject().hasNature(NATURE.ID)) {
-            parser.getObjFromProjFile((IFile) res, monitor);
-            return true;
+        if (res instanceof IFile) {
+            IFile file = (IFile) res;
+            IProject proj = file.getProject();
+            IEclipsePreferences prefs = PgDbProject.getPrefs(proj);
+
+            if (prefs != null && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
+                return true;
+            } else if (proj.hasNature(NATURE.ID)) {
+                parser.getObjFromProjFile(file, monitor);
+                return true;
+            }
         }
 
         IEditorInput in = getEditorInput();
