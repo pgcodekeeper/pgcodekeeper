@@ -59,14 +59,14 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
     }
 
-    protected Button createButton(Composite parent, int id, String label, String image) {
-        return createButton(parent, id, label, lrm.createImage(ImageDescriptor.createFromURL(
+    protected Button createButton(Composite parent, int id, String tooltip, String image) {
+        return createButton(parent, id, tooltip, lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(image))));
     }
 
-    protected Button createButton(Composite parent, int id, String label, Image image) {
+    protected Button createButton(Composite parent, int id, String tooltip, Image image) {
         Button button = new Button(parent, SWT.PUSH);
-        button.setToolTipText(label);
+        button.setToolTipText(tooltip);
         button.setImage(image);
         button.setData(Integer.valueOf(id));
         button.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
