@@ -43,18 +43,6 @@ implements IWorkbenchPreferencePage {
     }
 
     @Override
-    public void createControl(Composite parent) {
-        super.createControl(parent);
-
-        Button btnDef = getDefaultsButton();
-        btnDef.setText(Messages.dbStorePrefPage_clear_db_store);
-        GridData defGd = (GridData) btnDef.getLayoutData();
-        defGd.widthHint = Math.max(defGd.widthHint,
-                btnDef.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
-        btnDef.getParent().layout();
-    }
-
-    @Override
     protected Control createContents(Composite parent) {
         dbList = new DbStorePrefListEditor(parent);
         dbList.setInputList(DbInfo.readStoreFromXml(getPreferenceStore().getString(PREF.DB_STORE)));
@@ -63,7 +51,7 @@ implements IWorkbenchPreferencePage {
 
     @Override
     protected void performDefaults() {
-        DbXmlStore.INSTANCE.writeDbStoreList(Arrays.asList(
+        dbList.setInputList(Arrays.asList(
                 new DbInfo("default", "", "", "", "", 0, false, new ArrayList<>()))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 

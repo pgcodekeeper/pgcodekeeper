@@ -81,6 +81,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                     txtDbPort.setText("" + dbInitial.getDbPort()); //$NON-NLS-1$
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                     listEditor.setInputList(dbInitial.getIgnoreFiles());
+                } else {
+                    txtDbPass.setText("");//$NON-NLS-1$
                 }
             }
         });
@@ -121,7 +123,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
-            if(txtDbPass.getText().isEmpty() != data.exclude) {
+            if (txtDbPass.getText().isEmpty() != data.exclude) {
                 lblWarnDbPass.setVisible(data.exclude);
                 data.exclude = !data.exclude;
 
@@ -151,7 +153,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
                     e.doit = false;
                 }
-            } catch(NumberFormatException ex){
+            } catch(NumberFormatException ex) {
                 e.doit = false;
             }
         });
