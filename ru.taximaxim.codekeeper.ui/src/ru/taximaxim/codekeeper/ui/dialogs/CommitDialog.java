@@ -146,6 +146,11 @@ public class CommitDialog extends TrayDialog {
         return res;
     }
 
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
+
     /**
      * Задача этого класса - смотреть на снятие галочки с элемента и если
      * галочка снимается то проверить следующее: <br>

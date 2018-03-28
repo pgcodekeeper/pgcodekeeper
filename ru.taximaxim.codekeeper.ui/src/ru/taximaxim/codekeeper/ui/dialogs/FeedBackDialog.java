@@ -196,6 +196,11 @@ public class FeedBackDialog extends Dialog {
         }
     }
 
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
+
     private static StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {
         Bundle codeKeeperBundle = Activator.getContext().getBundle();
         sb.append(codeKeeperBundle.getSymbolicName()).append(' ').append(codeKeeperBundle.getVersion()).append('\n');

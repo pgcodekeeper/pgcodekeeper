@@ -240,6 +240,11 @@ public class DbStoreEditorDialog extends TrayDialog {
                 listEditor.getList());
         super.okPressed();
     }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
 }
 
 class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {

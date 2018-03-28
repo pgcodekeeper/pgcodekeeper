@@ -270,4 +270,9 @@ public class FilterDialog extends Dialog {
 
         super.okPressed();
     }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
 }

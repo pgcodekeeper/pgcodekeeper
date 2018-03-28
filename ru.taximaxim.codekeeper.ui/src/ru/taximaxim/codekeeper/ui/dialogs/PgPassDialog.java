@@ -159,4 +159,9 @@ public class PgPassDialog extends Dialog {
 
         createButton(parent, IDialogConstants.OK_ID, Messages.PgPassDialog_close, true);
     }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
 }
