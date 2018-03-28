@@ -112,8 +112,8 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     @Override
     protected void createButtonsForSideBar(Composite parent) {
         super.createButtonsForSideBar(parent);
-        createButton(parent, EDIT_ID, null, FILE.ICONEDIT, GridData.VERTICAL_ALIGN_BEGINNING);
-        createButton(parent, COPY_ID, null, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY),
+        createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT, GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY),
                 GridData.VERTICAL_ALIGN_BEGINNING);
         createButton(parent, DELETE_ID, Messages.delete,
                 Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);

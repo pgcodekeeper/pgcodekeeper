@@ -159,6 +159,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+
+    public static String copy;
     public static String CodeFilter_search_by_code;
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
@@ -601,6 +603,8 @@ public final class Messages extends NLS {
     public static String yesNoEditingSupport_yes;
 
     public static String e_mail;
+
+    public static String edit;
     public static String feedback_message;
     public static String add_log;
 

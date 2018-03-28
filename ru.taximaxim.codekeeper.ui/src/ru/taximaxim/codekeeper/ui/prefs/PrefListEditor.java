@@ -66,9 +66,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     protected Button createButton(Composite parent, int id, String label, Image image, int gridDataStyle) {
         Button button = new Button(parent, SWT.PUSH);
-        if (label != null) {
-            button.setToolTipText(label);
-        }
+        button.setToolTipText(label);
         button.setFont(JFaceResources.getDialogFont());
         button.setImage(image);
         button.setLayoutData(new GridData(gridDataStyle));
@@ -178,7 +176,6 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         return getNewObject(value);
     }
 
-
     private void editObject() {
         IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
         if (selection.isEmpty()) {
@@ -213,7 +210,6 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
             viewerObjs.refresh();
         }
     }
-
 
     protected abstract V createViewer(Composite parent);
 
