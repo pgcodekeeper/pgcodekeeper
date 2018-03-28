@@ -5,9 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -188,8 +186,8 @@ class QuickUpdateJob extends SingletonEditorJob {
                 dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
                 ApgdiffConsts.UTF_8);
 
-        try (Connection con = connector.getConnection(); Statement st = con.createStatement()) {
-            new JdbcRunner(monitor).run(st, differ.getDiffDirect());
+        try {
+            new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }

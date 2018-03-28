@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,6 +58,13 @@ public class JdbcRunner {
         runScript(new QueryCallable(st, script));
     }
 
+    public void run(JdbcConnector connector, String script) throws SQLException, IOException, InterruptedException {
+        try (Connection connection = connector.getConnection();
+                Statement st = connection.createStatement()) {
+            run(st, script);
+        }
+    }
+
     /**
      * execute prepared statement and return result set
      */
@@ -68,6 +77,14 @@ public class JdbcRunner {
      */
     public ResultSet runScript(Statement st, String script) throws InterruptedException, SQLException {
         return runScript(new ResultSetCallable(st, script));
+    }
+
+    public ResultSet runScript(JdbcConnector connector, String script)
+            throws SQLException, IOException, InterruptedException {
+        try (Connection connection = connector.getConnection();
+                Statement st = connection.createStatement()) {
+            return runScript(st, script);
+        }
     }
 
     private <T> T runScript(StatementCallable<T> callable) throws InterruptedException, SQLException {

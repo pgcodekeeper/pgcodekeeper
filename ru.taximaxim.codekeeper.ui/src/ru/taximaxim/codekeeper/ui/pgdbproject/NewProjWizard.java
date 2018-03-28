@@ -3,10 +3,8 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -370,8 +368,7 @@ class PageDb extends WizardPage {
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), ApgdiffConsts.UTC);
 
-            try (Connection conn = connector.getConnection(); Statement s = conn.createStatement();
-                    ResultSet rs = new JdbcRunner(monitor).runScript(s, QUERY_TZ)) {
+            try (ResultSet rs = new JdbcRunner(monitor).runScript(connector, QUERY_TZ)) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$
             } catch (SQLException | IOException e) {
                 throw new InvocationTargetException(e, e.getLocalizedMessage());

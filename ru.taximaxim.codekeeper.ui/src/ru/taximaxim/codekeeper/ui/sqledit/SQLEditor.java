@@ -7,9 +7,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -455,8 +453,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                     dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(),
                     ApgdiffConsts.UTC);
 
-            try (Connection con = connector.getConnection(); Statement st = con.createStatement()) {
-                new JdbcRunner(monitor).run(st, script);
+            try {
+                new JdbcRunner(monitor).run(connector, script);
                 output = Messages.SqlEditor_jdbc_success;
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
