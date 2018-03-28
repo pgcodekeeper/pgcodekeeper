@@ -72,6 +72,9 @@ public class DbXmlStore extends XmlStore {
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
                 getXmlFile()), StandardCharsets.UTF_8)) {
             return readObjects(readXml(xmlReader));
+            // TODO suppress when legacy preference support is removed
+            /*} catch (FileNotFoundException ex) {
+            return new ArrayList<>();*/
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);

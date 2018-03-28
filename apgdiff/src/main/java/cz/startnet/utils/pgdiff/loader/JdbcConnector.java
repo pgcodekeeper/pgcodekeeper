@@ -142,7 +142,10 @@ public class JdbcConnector {
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
 
         try {
-            return PgPass.get(host, String.valueOf(port), dbName, user);
+            String pass = PgPass.get(host, String.valueOf(port), dbName, user);
+            if (pass != null) {
+                return pass;
+            }
         } catch (PgPassException e) {
             Log.log(e);
         }
