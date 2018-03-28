@@ -16,10 +16,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -115,13 +113,6 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         PixelConverter pc = new PixelConverter(tableViewer.getControl());
         isRegular.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
         ignoreContents.getColumn().setWidth(pc.convertWidthInCharsToPixels(11));
-    }
-
-    @Override
-    protected void createButtonsForSideBar(Composite parent) {
-        super.createButtonsForSideBar(parent);
-        createButton(parent, DELETE_ID, Messages.delete,
-                Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);
     }
 }
 

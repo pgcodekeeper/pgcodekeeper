@@ -111,17 +111,17 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
 
     @Override
     protected void createButtonsForSideBar(Composite parent) {
-        super.createButtonsForSideBar(parent);
-        createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT, GridData.VERTICAL_ALIGN_BEGINNING);
-        createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY),
-                GridData.VERTICAL_ALIGN_BEGINNING);
-        createButton(parent, DELETE_ID, Messages.delete,
-                Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);
-        createButton(parent, UP_ID, null, FILE.ICONUP, GridData.VERTICAL_ALIGN_BEGINNING);
-        createButton(parent, DOWN_ID, null, FILE.ICONDOWN, GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
+        createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
+        createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT);
+        createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
+        createButton(parent, UP_ID, null, FILE.ICONUP);
+        createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
 
         Button btnPgPass = createButton(parent, CLIENT_ID,
-                Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS, GridData.VERTICAL_ALIGN_END);
+                Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS);
+        btnPgPass.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
+
         btnPgPass.addSelectionListener(new SelectionAdapter() {
 
             @Override

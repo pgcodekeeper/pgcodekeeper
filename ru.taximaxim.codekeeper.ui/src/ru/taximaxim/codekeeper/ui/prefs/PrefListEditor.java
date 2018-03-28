@@ -54,40 +54,48 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         createButtonsForSideBar(this);
     }
 
-
     protected void createButtonsForSideBar(Composite parent) {
-        createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD), GridData.VERTICAL_ALIGN_BEGINNING);
+        createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
+        createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
     }
 
-    protected Button createButton(Composite parent, int id, String label, String image, int gridDataStyle) {
+    protected Button createButton(Composite parent, int id, String label, String image) {
         return createButton(parent, id, label, lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(image))), gridDataStyle);
+                Activator.getContext().getBundle().getResource(image))));
     }
 
-    protected Button createButton(Composite parent, int id, String label, Image image, int gridDataStyle) {
+    protected Button createButton(Composite parent, int id, String label, Image image) {
         Button button = new Button(parent, SWT.PUSH);
         button.setToolTipText(label);
-        button.setFont(JFaceResources.getDialogFont());
         button.setImage(image);
-        button.setLayoutData(new GridData(gridDataStyle));
         button.setData(Integer.valueOf(id));
+        button.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         button.addSelectionListener(widgetSelectedAdapter(event -> buttonPressed(((Integer) event.widget.getData()).intValue())));
         return button;
     }
 
     private void buttonPressed(int buttonId) {
-        if (ADD_ID == buttonId) {
+        switch (buttonId) {
+        case ADD_ID:
             addNewObject(null);
-        } else if (EDIT_ID == buttonId) {
+            break;
+        case EDIT_ID:
             editObject();
-        } else if (COPY_ID == buttonId) {
+            break;
+        case COPY_ID:
             copyObject();
-        } else if (DELETE_ID == buttonId) {
+            break;
+        case DELETE_ID:
             deleteObject();
-        } else if (UP_ID == buttonId) {
+            break;
+        case UP_ID:
             upObject();
-        } else if (DOWN_ID == buttonId) {
+            break;
+        case DOWN_ID:
             downObject();
+            break;
+        default:
+            break;
         }
     }
 

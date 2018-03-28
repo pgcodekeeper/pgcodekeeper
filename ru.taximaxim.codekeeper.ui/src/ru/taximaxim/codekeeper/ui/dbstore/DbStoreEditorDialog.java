@@ -271,11 +271,4 @@ class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {
         viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
         return viewerObjs;
     }
-
-    @Override
-    protected void createButtonsForSideBar(Composite parent) {
-        super.createButtonsForSideBar(parent);
-        createButton(parent, DELETE_ID, Messages.delete,
-                Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE), GridData.VERTICAL_ALIGN_BEGINNING);
-    }
 }
