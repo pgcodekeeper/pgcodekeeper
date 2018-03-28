@@ -529,8 +529,6 @@ public final class Messages extends NLS {
 
     public static String PrefListEditor_cannot_add;
 
-    public static String PrefListEditor_cannot_edit;
-
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 

@@ -590,7 +590,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             return currentRemote;
         }
 
-        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, ""));
+        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {

@@ -172,7 +172,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res != null) {
             IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
             if (prefs != null) {
-                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, ""));
+                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
             }
         }
         return null;
