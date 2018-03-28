@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -64,6 +66,15 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
         }
+
+        if (dbInfo.isReadOnly()) {
+            MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+            mb.setText(Messages.UpdateDdl_read_only_db_title);
+            mb.setMessage(Messages.UpdateDdl_read_only_db_message);
+            mb.open();
+            return null;
+        }
+
         String text = editor.getEditorText();
         if (text.trim().isEmpty()) {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_empty_script, null);

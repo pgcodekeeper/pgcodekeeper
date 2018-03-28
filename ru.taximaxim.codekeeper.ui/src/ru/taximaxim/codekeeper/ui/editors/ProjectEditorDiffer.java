@@ -519,9 +519,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
+                            loadedRemote = currentRemote;
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
                                     newDiffer.getDiffTree());
-                            loadedRemote = currentRemote;
                         }
                     });
                 }
@@ -589,8 +589,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (currentRemote != null) {
             return currentRemote;
         }
-        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
-        return lastStore.isEmpty() ? null : lastStore.get(0);
+
+        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -600,7 +600,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public static void saveLastDb(DbInfo lastDb, IProject project) {
         IEclipsePreferences prefs = PgDbProject.getPrefs(project);
         if (prefs != null) {
-            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.toString());
+            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
             try {
                 prefs.flush();
             } catch (BackingStoreException ex) {
@@ -660,6 +660,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             ignoreList = InternalIgnoreList.readInternalList();
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+
+            if (loadedRemote != null && loadedRemote instanceof DbInfo) {
+                ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {

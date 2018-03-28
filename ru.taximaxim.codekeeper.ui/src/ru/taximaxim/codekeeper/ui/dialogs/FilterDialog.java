@@ -221,7 +221,7 @@ public class FilterDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        Button btnReset = createButton(parent, IDialogConstants.NO_ID, Messages.FilterDialog_reset, false);
+        Button btnReset = createButton(parent, IDialogConstants.CLIENT_ID, Messages.FilterDialog_reset, false);
         createButton(parent, IDialogConstants.CANCEL_ID, Messages.FilterDialog_cancel, false);
 
         btnReset.addSelectionListener(new SelectionAdapter() {

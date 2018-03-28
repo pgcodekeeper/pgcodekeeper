@@ -151,7 +151,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res != null) {
             IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
             if (prefs != null) {
-                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.toString());
+                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
                 try {
                     prefs.flush();
                 } catch (BackingStoreException ex) {
@@ -174,11 +174,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res != null) {
             IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
             if (prefs != null) {
-                List<DbInfo> lastStore = DbInfo.preferenceToStore(
-                        prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-                if (!lastStore.isEmpty()) {
-                    return lastStore.get(0);
-                }
+                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
             }
         }
         return null;

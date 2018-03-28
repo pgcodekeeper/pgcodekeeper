@@ -7,7 +7,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -53,14 +53,14 @@ implements IWorkbenchPreferencePage {
         btnIsWhite.setSelection(!ignore.isShow());
 
         listEditor = new IgnoredObjectPrefListEditor(parent);
-        listEditor.setInputList(new LinkedList<>(ignore.getList()));
+        listEditor.setInputList(new ArrayList<>(ignore.getList()));
 
         return parent;
     }
 
     @Override
     protected void performDefaults() {
-        listEditor.setInputList(new LinkedList<IgnoredObject>());
+        listEditor.setInputList(new ArrayList<>());
         super.performDefaults();
     }
 

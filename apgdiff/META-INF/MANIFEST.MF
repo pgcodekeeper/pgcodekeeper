@@ -16,17 +16,16 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
  ru.taximaxim.codekeeper.apgdiff.model.graph,
- ru.taximaxim.codekeeper.apgdiff.sql
+ ru.taximaxim.codekeeper.apgdiff.sql,
+ ru.taximaxim.pgpass
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)",
  com.google.gson;bundle-version="[2.2.0,3.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  .,
  lib/antlr-runtime-4.6.jar,
- lib/license3j/bcpg-jdk15on-1.52.jar,
- lib/license3j/bcprov-jdk15on-1.52.jar,
- lib/license3j/license3j-1.0.7.jar,
- lib/postgresql-42.0.0.jre7.jar
+ lib/postgresql-42.0.0.jre7.jar,
+ lib/PgPass-0.0.2.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.equinox.log;version="[1.0.0,2.0.0)",
