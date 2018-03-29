@@ -5,8 +5,10 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
-@SuppressWarnings("serial")
 public abstract class AbstractArgument implements IArgument, Serializable {
+
+    private static final long serialVersionUID = 7466228261754446064L;
+
     private final String mode;
     private final String name;
     private final String dataType;

@@ -29,6 +29,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -153,7 +154,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        PgDumpLoader.dbAnalyze(db);
+        FullAnalyze.fullAnalyze(db);
         return db;
     }
 

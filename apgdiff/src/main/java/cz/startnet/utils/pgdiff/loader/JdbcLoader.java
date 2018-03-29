@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.SecondAnalyze;
 
 public class JdbcLoader extends JdbcLoaderBase {
 
@@ -91,7 +90,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            SecondAnalyze.goThroughGraphForAnalyze(d);
+            FullAnalyze.fullAnalyze(d);
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {

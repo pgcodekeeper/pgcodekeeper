@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.TypesSetManually;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.system.CastContext;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemCast;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemFunction.PgSystemArgument;
@@ -92,7 +93,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                         IntStream.range(0, argModes.size()).filter(i -> "t".equals(argModes.get(i))).forEach(e -> {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
-                            function.addColumn(argNames[e], returnType.getFullName(schemaName));
+                            function.addReturnsColumns(argNames[e], returnType.getFullName(schemaName));
                         });
                     }
                 } else {
@@ -119,11 +120,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     private void fillArguments(Function_argsContext ctx, PgSystemFunction func) {
         for (Function_argumentsContext argument : ctx.function_arguments()) {
-            func.addArgumentPart(getArgument(argument));
+            func.addArgument(getArgument(argument));
         }
         if (ctx.agg_order() != null) {
             for (Function_argumentsContext argument : ctx.agg_order().function_arguments()) {
-                func.addOrderByPart(getArgument(argument));
+                func.addOrderBy(getArgument(argument));
             }
         }
     }
@@ -198,8 +199,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 PgSystemFunction operator = new PgSystemFunction(name);
                 PgSystemFunction.PgSystemArgument firstArg = new PgSystemArgument(null, left);
                 PgSystemFunction.PgSystemArgument secondArg = new PgSystemArgument(null, right);
-                operator.addArgumentPart(firstArg);
-                operator.addArgumentPart(secondArg);
+                operator.addArgument(firstArg);
+                operator.addArgument(secondArg);
                 operator.setReturns(cachedTypesByOid.get(result.getLong("result")).getFullName(schemaName));
 
                 storage.getSchema(schemaName).addFunction(operator);
@@ -215,7 +216,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String source = result.getString("source");
                 String target = result.getString("target");
                 String type = result.getString("castcontext");
-                storage.addCast(new PgSystemCast(source, target, type));
+                storage.addCast(new PgSystemCast(source, target, CastContext.getEnumByValue(type)));
             }
         }
     }

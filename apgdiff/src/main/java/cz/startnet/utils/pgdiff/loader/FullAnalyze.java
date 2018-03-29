@@ -1,8 +1,7 @@
-package ru.taximaxim.codekeeper.apgdiff.model.graph;
+package cz.startnet.utils.pgdiff.loader;
 
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.jgrapht.DirectedGraph;
@@ -11,15 +10,14 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.UtilAnalyzeExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -27,11 +25,12 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
-public final class SecondAnalyze {
+public final class FullAnalyze {
 
-    public static void goThroughGraphForAnalyze(PgDatabase db) {
-        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db, false).getReversedGraph();
+    public static void fullAnalyze(PgDatabase db) {
+        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db).getReversedGraph();
 
         TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator = new TopologicalOrderIterator<>(graph);
 
@@ -44,12 +43,10 @@ public final class SecondAnalyze {
         }
 
         // Analysis of all statements except 'VIEW'.
-        analyzeAllStmtsExceptView((Iterable<Entry<PgStatement, ParserRuleContext>>) db.getContextsForAnalyze()
-                .stream().filter(e -> !DbObjType.VIEW.equals(e.getKey().getStatementType()))::iterator);
-    }
-
-    private static void analyzeAllStmtsExceptView(Iterable<Entry<PgStatement, ParserRuleContext>> allStmtsExceptView) {
-        for (Entry<PgStatement, ParserRuleContext> entry : allStmtsExceptView) {
+        for (Entry<PgStatement, ParserRuleContext> entry : db.getContextsForAnalyze()) {
+            if (DbObjType.VIEW == entry.getKey().getStatementType()) {
+                continue;
+            }
             PgStatement statement = entry.getKey();
             ParserRuleContext ctx = entry.getValue();
             DbObjType statementType = statement.getStatementType();
@@ -64,24 +61,22 @@ public final class SecondAnalyze {
                 Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
                 PgRule rule = (PgRule) statement;
 
-                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName);
+                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName, db);
                 for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName);
+                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName, db);
                 }
                 break;
             case TRIGGER:
                 UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx,
-                        (PgTrigger) statement, schemaName);
-                break;
-            case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeConstraint((Constr_bodyContext) ctx,
-                        schemaName, (PgConstraint) statement);
+                        (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
             case DOMAIN:
             case FUNCTION:
             case COLUMN:
-                UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName), statement);
+            case CONSTRAINT:
+                UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
+                        db), statement);
                 break;
             default:
                 throw new IllegalStateException("The analyze for the case '"
@@ -105,29 +100,26 @@ public final class SecondAnalyze {
             if (DbObjType.VIEW.equals(statement.getStatementType())) {
                 String schemaName = statement.getParent().getName();
 
-                List<ParserRuleContext> statementContexts = db.getContextsForAnalyze().stream()
-                        .filter(entry -> statement.equals(entry.getKey()))
-                        .map(Entry::getValue)
-                        .collect(Collectors.toList());
+                Stream<Entry<PgStatement, ParserRuleContext>> viewAndCtx = db.getContextsForAnalyze()
+                        .stream().filter(entry -> statement.equals(entry.getKey()));
 
-                if (statementContexts.isEmpty()) {
-                    return;
-                }
+                for (Entry<PgStatement, ParserRuleContext> entry : PgDiffUtils.sIter(viewAndCtx)) {
+                    PgView view = (PgView) entry.getKey();
+                    ParserRuleContext ctx = entry.getValue();
 
-                PgView view = (PgView)statement;
-                Select select = new Select(schemaName, db);
-                for (ParserRuleContext ctx : statementContexts) {
                     if (ctx instanceof Select_stmtContext) {
+                        Select select = new Select(schemaName, db);
                         view.addRelationColumns(select.analyze(ctx));
                         view.addAllDeps(select.getDepcies());
                     } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName), view);
+                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName,
+                                db), view);
                     }
                 }
             }
         }
     }
 
-    private SecondAnalyze() {
+    private FullAnalyze() {
     }
 }

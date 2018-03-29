@@ -5,6 +5,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
@@ -25,6 +26,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -41,17 +43,23 @@ public abstract class AbstractTable extends ParserAbstract {
         }
         for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
+                addTableConstraint(colCtx.tabl_constraint, table);
             } else if (colCtx.table_of_type_column_definition() != null) {
                 Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
-                addColumn(column.column_name.getText(), column.colmn_constraint,
-                        getDefSchemaName(), table);
+                addColumn(column.column_name.getText(), column.colmn_constraint, table);
             }
         }
     }
 
+    protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
+            PgTable table) {
+        PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
+        processTableConstraintBlank(tblConstrCtx, constrBlank, db);
+        table.addConstraint(constrBlank);
+    }
+
     private void addTableConstraint(Constraint_commonContext ctx,
-            PgColumn col, PgTable table, String defSchema) {
+            PgColumn col, PgTable table) {
 
         Constr_bodyContext body = ctx.constr_body();
         Common_constraintContext comConstr = body.common_constraint();
@@ -72,7 +80,7 @@ public abstract class AbstractTable extends ParserAbstract {
             String refSchemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
             String constrName = ctx.constraint_name == null ?
-                    table.getName() + '_' + col.getName() + "_fkey" : ctx.constraint_name.getText();
+                    table.getName() + '_' + colName + "_fkey" : ctx.constraint_name.getText();
 
             constr = new PgConstraint(constrName, getFullCtxText(ctx));
             constr.setForeignTable(ftable);
@@ -119,7 +127,9 @@ public abstract class AbstractTable extends ParserAbstract {
             String genName = table.getName() + '_' + col.getName() + "_check";
             String constrName = ctx.constraint_name == null ? genName : ctx.constraint_name.getText();
             constr = new PgConstraint(constrName, getFullCtxText(ctx));
-            constr.setDefinition("CHECK ((" + getFullCtxText(comConstr.check_boolean_expression().expression) + "))");
+            VexContext expCtx = comConstr.check_boolean_expression().expression;
+            constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
+            db.getContextsForAnalyze().add(new SimpleEntry<>(constr, expCtx));
         }
 
         if (constr != null) {
@@ -129,7 +139,7 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            String defSchema, Define_foreign_optionsContext options, PgTable table) {
+            Define_foreign_optionsContext options, PgTable table) {
         PgColumn col = new PgColumn(columnName);
         if (datatype != null) {
             col.setType(getFullCtxText(datatype));
@@ -139,7 +149,7 @@ public abstract class AbstractTable extends ParserAbstract {
             col.setCollation(getFullCtxText(collate.collation));
         }
         for (Constraint_commonContext column_constraint : constraints) {
-            addTableConstraint(column_constraint, col, table, defSchema);
+            addTableConstraint(column_constraint, col, table);
         }
         if (options != null) {
             for (Foreign_optionContext option : options.foreign_option()) {
@@ -152,13 +162,13 @@ public abstract class AbstractTable extends ParserAbstract {
 
     protected void addColumn(String columnName, Data_typeContext datatype,
             Collate_identifierContext collate, List<Constraint_commonContext> constraints,
-            String defSchema,  PgTable table) {
-        addColumn(columnName, datatype, collate, constraints, defSchema, null, table);
+            PgTable table) {
+        addColumn(columnName, datatype, collate, constraints, null, table);
     }
 
     protected void addColumn(String columnName, List<Constraint_commonContext> constraints,
-            String defSchema,  PgTable table) {
-        addColumn(columnName, null, null, constraints, defSchema, table);
+            PgTable table) {
+        addColumn(columnName, null, null, constraints, table);
     }
 
     protected void addInherit(PgTable table, List<IdentifierContext> idsInh) {
@@ -171,38 +181,60 @@ public abstract class AbstractTable extends ParserAbstract {
         table.addDep(gc);
     }
 
-    protected PgConstraint getTableConstraint(Constraint_commonContext ctx, String schemaName) {
+    protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : ctx.constraint_name.getText();
-        PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
+        return new PgConstraint(constrName, getFullCtxText(ctx));
+    }
 
-        if (ctx.constr_body().FOREIGN() != null) {
-            Table_referencesContext tblRef = ctx.constr_body().table_references();
+    protected static void processTableConstraintBlank(Constraint_commonContext ctx,
+            PgConstraint constrBlank, PgDatabase db) {
+        Constr_bodyContext constrBody = ctx.constr_body();
+
+        if (constrBody.FOREIGN() != null) {
+            Table_referencesContext tblRef = constrBody.table_references();
 
             List<IdentifierContext> ids = tblRef.reftable.identifier();
             String refTableName = QNameParser.getFirstName(ids);
-            String refSchemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+            PgSchema s = db.getDefaultSchema();
+            String defSchemaName = s == null ? null : s.getName();
+
+            String refSchemaName = QNameParser.getSchemaName(ids, defSchemaName);
             GenericColumn ftable = new GenericColumn(refSchemaName, refTableName, DbObjType.TABLE);
-            constr.setForeignTable(ftable);
-            constr.addDep(ftable);
+            constrBlank.setForeignTable(ftable);
+            constrBlank.addDep(ftable);
 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 String colName = QNameParser.getFirstName(name.identifier());
-                constr.addForeignColumn(colName);
-                constr.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
+                constrBlank.addForeignColumn(colName);
+                constrBlank.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
             }
         }
-        if (ctx.constr_body().table_unique_prkey() != null) {
-            setPrimaryUniq(ctx.constr_body().table_unique_prkey(), constr);
+
+        Table_unique_prkeyContext tableUniquePrkey =  constrBody.table_unique_prkey();
+        if (tableUniquePrkey != null) {
+            setPrimaryUniq(tableUniquePrkey, constrBlank);
         }
-        db.getContextsForAnalyze().add(new SimpleEntry<>(constr, ctx.constr_body()));
-        constr.setDefinition(getFullCtxText(ctx.constr_body()));
-        return constr;
+
+        constrBlank.setDefinition(getFullCtxText(constrBody));
+
+        VexContext exp = null;
+        Common_constraintContext common = constrBody.common_constraint();
+        Check_boolean_expressionContext check;
+        if (common != null && (check = common.check_boolean_expression()) != null) {
+            exp = check.expression;
+        } else {
+            exp = constrBody.vex();
+        }
+        if (exp != null) {
+            db.getContextsForAnalyze().add(new SimpleEntry<>(constrBlank, exp));
+        }
     }
 
     /**
      * Вычитать PrimaryKey или Unique со списком колонок
      */
-    protected void setPrimaryUniq(Table_unique_prkeyContext ctx,
+    private static void setPrimaryUniq(Table_unique_prkeyContext ctx,
             PgConstraint constr) {
         constr.setUnique(ctx.UNIQUE() != null);
         constr.setPrimaryKey(ctx.PRIMARY() != null);

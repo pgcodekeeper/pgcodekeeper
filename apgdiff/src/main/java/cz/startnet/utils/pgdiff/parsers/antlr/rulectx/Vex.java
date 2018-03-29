@@ -70,22 +70,6 @@ public class Vex {
         return isB ? vexB : vex;
     }
 
-    public boolean isChildOpIsPrefix() {
-        return isB ? vexB.getChild(0) instanceof OpContext : vex.getChild(0) instanceof OpContext;
-    }
-
-    public String getChildOperator() {
-        OpContext op = isB ? vexB.op() : vex.op();
-
-        if (op != null) {
-            return op.OP_CHARS().getText();
-        } else {
-            int childCount = isB ? vexB.getChildCount() : vex.getChildCount();
-            int operatorIndex = childCount == 2 ? 0 : 1;
-            return isB ? vexB.getChild(operatorIndex).getText() : vex.getChild(operatorIndex).getText();
-        }
-    }
-
     public TerminalNode castExpression() {
         return isB ? vexB.CAST_EXPRESSION() : vex.CAST_EXPRESSION();
     }

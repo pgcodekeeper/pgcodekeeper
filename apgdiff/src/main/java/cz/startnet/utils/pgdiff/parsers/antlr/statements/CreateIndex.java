@@ -36,7 +36,7 @@ public class CreateIndex extends ParserAbstract {
         String name = ctx.name.getText();
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, schemaName, ind, db));
+        parseIndex(ctx.index_rest(), tablespace, schemaName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             getSafe(schema::getTable,
@@ -48,8 +48,8 @@ public class CreateIndex extends ParserAbstract {
         return ind;
     }
 
-    public static String parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, PgIndex ind, PgDatabase db) {
+    public static void parseIndex(Index_restContext rest, String tablespace,
+            String schemaName, PgIndex ind, PgDatabase db){
         parseColumns(rest, schemaName, ind);
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
@@ -63,7 +63,7 @@ public class CreateIndex extends ParserAbstract {
             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, whereCtx.vex()));
             sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
-        return sb.toString();
+        ind.setDefinition(sb.toString());
     }
 
     // Костыль, т.к нужно улучшить парсер для vex в плане вычитки колонок

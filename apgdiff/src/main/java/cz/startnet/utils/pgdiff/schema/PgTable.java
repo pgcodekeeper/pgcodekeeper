@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -18,6 +17,7 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores table information.
@@ -92,17 +92,18 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<Entry<String, String>> getRelationColumns() {
-        Stream<PgColumn> allColumns = columns.stream();
-        if (!inherits.isEmpty()) {
-            for (Inherits inht : inherits) {
-                String schemaName = inht.getKey();
-                allColumns = Stream.concat(allColumns, getDatabase()
-                        .getSchema(schemaName == null ? getContainingSchema().getName() : schemaName)
-                        .getTable(inht.getValue()).getColumns().stream());
-            }
+    public Stream<Pair<String, String>> getRelationColumns() {
+        Stream<Pair<String, String>> allColumns = columns.stream()
+                .filter(c -> c.getType() != null)
+                .map(c -> new Pair<>(c.getName(), c.getType()));
+        for (Inherits inht : inherits) {
+            String schemaName = inht.getKey();
+            PgSchema inhtSchema = schemaName == null ? getContainingSchema()
+                    : getDatabase().getSchema(schemaName);
+            allColumns = Stream.concat(allColumns, inhtSchema
+                    .getTable(inht.getValue()).getRelationColumns());
         }
-        return allColumns.map(c -> new SimpleEntry<>(c.getName(), c.getType()));
+        return allColumns;
     }
 
     /**

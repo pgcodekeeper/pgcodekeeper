@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * @author levsha_aa
@@ -63,13 +63,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
      *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
      */
-    protected final Map<String, List<Entry<String, String>>> cte = new HashMap<>();
+    protected final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
 
     /**
      *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
      *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
      */
-    protected final Map<String, List<Entry<String, String>>> complexNamespace = new HashMap<>();
+    protected final Map<String, List<Pair<String, String>>> complexNamespace = new HashMap<>();
 
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
@@ -80,8 +80,8 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected List<Entry<String, String>> findCte(String cteName) {
-        List<Entry<String, String>> pair = cte.get(cteName);
+    protected List<Pair<String, String>> findCte(String cteName) {
+        List<Pair<String, String>> pair = cte.get(cteName);
         return pair != null ? pair : super.findCte(cteName);
     }
 
@@ -92,8 +92,8 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Entry<String, List<Entry<String, String>>> findReferenceComplex(String name) {
-        return complexNamespace.entrySet().stream().filter(e -> name.equals(e.getKey()))
+    protected Entry<String, List<Pair<String, String>>> findReferenceComplex(String name) {
+        return complexNamespace.entrySet().stream().filter(p -> name.equals(p.getKey()))
                 .findFirst().orElse(super.findReferenceComplex(name));
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Map<String, List<Entry<String, String>>> getAllReferencesComplex() {
+    protected Map<String, List<Pair<String, String>>> getAllReferencesComplex() {
         return complexNamespace;
     }
 
@@ -207,13 +207,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         List<IdentifierContext> ids = name.identifier();
         String firstName = QNameParser.getFirstName(ids);
 
-        List<Entry<String, String>> cteList = null;
+        List<Pair<String, String>> cteList = null;
         if (ids.size() == 1) {
             cteList = findCte(firstName);
         }
         GenericColumn depcy = null;
         if (cteList == null) {
-            depcy = addObjectDepcy(ids, DbObjType.TABLE);
+            depcy = addRelationDepcy(ids);
         }
 
         if (alias != null) {
@@ -263,13 +263,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * @return returns 'true' if CTE already contains key which equals alias from 'withQuery',
      * otherwise returns 'false'
      */
-    protected boolean addCteSignature(With_queryContext withQuery, List<Entry<String, String>> resultTypes) {
+    protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
         if (!paramNamesIdentifers.isEmpty()) {
-            List<Entry<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
+            List<Pair<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
             for (int i = 0;  i < resultTypes.size(); i++) {
-                columnsPairs.add(new SimpleEntry<>(paramNamesIdentifers.get(i).getText(),
+                columnsPairs.add(new Pair<>(paramNamesIdentifers.get(i).getText(),
                         resultTypes.get(i).getValue()));
             }
             return cte.put(withName, columnsPairs) != null;
@@ -278,5 +278,5 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         }
     }
 
-    public abstract List<Entry<String, String>> analyze(T ruleCtx);
+    public abstract List<Pair<String, String>> analyze(T ruleCtx);
 }

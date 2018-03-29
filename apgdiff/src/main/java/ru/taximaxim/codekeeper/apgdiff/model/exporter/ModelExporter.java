@@ -25,7 +25,6 @@ import java.util.regex.Matcher;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -322,9 +321,9 @@ public class ModelExporter {
 
         // prepare the overloaded function list as if there are no changes
         if (oldParentSchema != null) {
-            for (IFunction oldFunc : oldParentSchema.getFunctions()) {
+            for (PgFunction oldFunc : oldParentSchema.getFunctions()) {
                 if (oldFunc.getBareName().equals(st.getBareName())) {
-                    funcsToDump.add((PgFunction)oldFunc);
+                    funcsToDump.add(oldFunc);
                 }
             }
         }
@@ -706,7 +705,7 @@ public class ModelExporter {
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    private void dumpFunctions(List<? extends IFunction> funcs, File parentDir) throws IOException {
+    private void dumpFunctions(List<PgFunction> funcs, File parentDir) throws IOException {
         if (funcs.isEmpty()) {
             return;
         }
@@ -714,14 +713,14 @@ public class ModelExporter {
         File funcDir = mkdirObjects(parentDir, "FUNCTION");
 
         Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for(IFunction f : funcs) {
-            String fileName = getExportedFilenameSql((PgFunction)f);
+        for(PgFunction f : funcs) {
+            String fileName = getExportedFilenameSql(f);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {
-                groupedDump = new StringBuilder(getDumpSql((PgFunction)f));
+                groupedDump = new StringBuilder(getDumpSql(f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql((PgFunction)f, false));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -824,23 +823,27 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        String name = statement.getBareName();
+        return getExportedFilename(statement.getBareName());
+    }
+
+    public static String getExportedFilenameSql(PgStatement statement) {
+        return getExportedFilenameSql(getExportedFilename(statement));
+    }
+
+    public static String getExportedFilename(String name) {
         Matcher m = FileUtils.INVALID_FILENAME.matcher(name);
         if (m.find()) {
-            boolean bareNameGrouped = statement instanceof PgFunction;
-            String hash = PgDiffUtils.md5(
-                    bareNameGrouped? statement.getBareName() : statement.getName())
+            String hash = PgDiffUtils.md5(name)
                     // 2^40 variants, should be enough for this purpose
                     .substring(0, HASH_LENGTH);
-
             return m.replaceAll("") + '_' + hash; //$NON-NLS-1$
         } else {
             return name;
         }
     }
 
-    private static String getExportedFilenameSql(PgStatement statement) {
-        return getExportedFilename(statement) + ".sql"; //$NON-NLS-1$
+    public static String getExportedFilenameSql(String name) {
+        return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
     private String getDumpSql(PgStatementWithSearchPath statement) {

@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -11,25 +10,17 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
@@ -92,54 +83,6 @@ public abstract class ParserAbstract {
             function.addArgument(arg);
         }
         return function.getSignature();
-    }
-
-    public static void processTableActionConstraintExpr(Table_actionContext ctx,
-            PgConstraint constr, PgDatabase dataBase) {
-        Constr_bodyContext constrBodyCtx = ctx.tabl_constraint.constr_body();
-        constr.setDefinition(getFullCtxText(constrBodyCtx));
-        constr.setNotValid(ctx.not_valid != null);
-        dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(constr, constrBodyCtx));
-    }
-
-    public static void fillArguments(Function_argsContext functionArgsContext,
-            PgFunction function, String defSchemaName, PgDatabase dataBase) {
-        for (Function_argumentsContext argument : functionArgsContext.function_arguments()) {
-            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
-                    argument.argname != null ? argument.argname.getText() : null,
-                            getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), function, defSchemaName);
-
-            if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-
-                if (dataBase != null) {
-                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
-                            argument.function_def_value().def_value));
-                }
-            }
-
-            function.addArgument(arg);
-        }
-    }
-
-    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
-        Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
-        if (bool != null) {
-            String constrName = "";
-            if (constr.name != null) {
-                constrName = QNameParser.getFirstName(constr.name.identifier());
-            }
-            PgConstraint constraint = new PgConstraint(constrName,
-                    getFullCtxText(constr));
-            constraint.setDefinition(getFullCtxText(constr.common_constraint()));
-            VexContext exp = bool.expression;
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constraint.addAllDeps(vex.getDepcies());
-            return constraint;
-        }
-        return null;
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,

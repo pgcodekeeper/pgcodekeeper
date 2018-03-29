@@ -15,14 +15,18 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
-    private final List<IArgument> arguments = new ArrayList<>();
+    private final List<PgSystemArgument> arguments = new ArrayList<>();
     private transient String signatureCache;
 
     /**
      * Order by for aggregate functions
      */
     private final List<PgSystemArgument> orderBy = new ArrayList<>();
-    private final Map<String, String> columns = new LinkedHashMap<>();
+
+    /**
+     *  Contains table's columns, if function returns table.
+     */
+    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     /**
      * Function return type name, if null columns contains columns
@@ -34,12 +38,12 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         super(name, DbObjType.FUNCTION);
     }
 
-    public Map<String, String> getColumns() {
-        return columns;
+    public Map<String, String> getReturnsColumns() {
+        return returnsColumns;
     }
 
-    public void addColumn(String name, String type) {
-        columns.put(name, type);
+    public void addReturnsColumns(String name, String type) {
+        returnsColumns.put(name, type);
     }
 
     @Override
@@ -48,11 +52,11 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     }
 
     @Override
-    public List<IArgument> getArguments() {
+    public List<PgSystemArgument> getArguments() {
         return arguments;
     }
 
-    public void addArgumentPart(final PgSystemArgument arg) {
+    public void addArgument(final PgSystemArgument arg) {
         arguments.add(arg);
     }
 
@@ -68,7 +72,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         return orderBy;
     }
 
-    public void addOrderByPart(final PgSystemArgument type) {
+    public void addOrderBy(final PgSystemArgument type) {
         orderBy.add(type);
     }
 
@@ -129,6 +133,11 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         signatureCache = sb.substring(sigStart, sb.length());
 
         return sb;
+    }
+
+    @Override
+    public PgSystemSchema getContainingSchema() {
+        return (PgSystemSchema) getParent();
     }
 
     public static class PgSystemArgument extends AbstractArgument {

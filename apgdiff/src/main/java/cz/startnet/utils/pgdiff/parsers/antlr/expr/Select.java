@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -38,10 +39,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
@@ -72,7 +74,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return !inFrom || lateralAllowed ? super.findReferenceInNmspc(schema, name, column) : null;
     }
 
-    public List<Entry<String, String>> analyze(ParserRuleContext ruleCtx) {
+    public List<Pair<String, String>> analyze(ParserRuleContext ruleCtx) {
         if (ruleCtx instanceof Select_stmtContext) {
             return analyze(new SelectStmt((Select_stmtContext) ruleCtx));
         } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
@@ -83,17 +85,17 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
     }
 
     @Override
-    public List<Entry<String, String>> analyze(SelectStmt select) {
+    public List<Pair<String, String>> analyze(SelectStmt select) {
         return analyze(select, null);
     }
 
-    public List<Entry<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
+    public List<Pair<String, String>> analyze(SelectStmt select, With_queryContext recursiveCteCtx) {
         With_clauseContext with = select.withClause();
         if (with != null) {
             analyzeCte(with);
         }
 
-        List<Entry<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
+        List<Pair<String, String>> ret = selectOps(select.selectOps(), recursiveCteCtx);
 
         selectAfterOps(select);
 
@@ -122,18 +124,18 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
         if (select.of(0) != null) {
             for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
-                addObjectDepcy(tableLock.identifier(), DbObjType.TABLE);
+                addRelationDepcy(tableLock.identifier());
             }
 
         }
     }
 
-    protected List<Entry<String, String>> selectOps(SelectOps selectOps) {
+    protected List<Pair<String, String>> selectOps(SelectOps selectOps) {
         return selectOps(selectOps, null);
     }
 
-    protected List<Entry<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
-        List<Entry<String, String>> ret = Collections.emptyList();
+    protected List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+        List<Pair<String, String>> ret = Collections.emptyList();
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
 
@@ -188,10 +190,10 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                         Schema_qualified_nameContext qNameAst = ast.tb_name;
                         ret.addAll(qNameAst == null ? getColsOfNotQualAster() : getColsOfQualAster(qNameAst));
                     } else {
-                        Entry<String, String> columnPair = vexCol.analyze(selectSublistVex);
+                        Pair<String, String> columnPair = vexCol.analyze(selectSublistVex);
 
                         if (target.alias != null && columnPair != null) {
-                            columnPair = new SimpleEntry<>(target.alias.getText(), columnPair.getValue());
+                            columnPair.setFirst(target.alias.getText());
                         }
 
                         ret.add(columnPair);
@@ -229,7 +231,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                     }
                 }
             } else if (primary.TABLE() != null) {
-                addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
+                addRelationDepcy(primary.schema_qualified_name().identifier());
             } else if ((values = primary.values_stmt()) != null) {
                 ret = new ArrayList<>();
                 ValueExpr vex = new ValueExpr(this);
@@ -247,16 +249,29 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Entry<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
-        String schemaName = gTablerOrView.schema;
-        String tableOrView = gTablerOrView.table;
-        List<Entry<String, String>> colsOfTableOrView = getTableOrViewColumns(schemaName, tableOrView);
-        addColumnsDepcies(schemaName, tableOrView, colsOfTableOrView);
-        return colsOfTableOrView;
+    private List<Pair<String, String>> getColsWithAddedDepcies(
+            List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndRelationCols,
+            String schemaName, String relationName) {
+        List<Pair<String, String>> сolsWithAddedDepcies = new ArrayList<>();
+        for (Entry<DbObjNature, List<Pair<String, String>>> systemOrUserCols : natureAndRelationCols) {
+            // Add dependency only for user's objects.
+            if (DbObjNature.USER.equals(systemOrUserCols.getKey())) {
+                addColumnsDepcies(schemaName, relationName, systemOrUserCols.getValue());
+            }
+            сolsWithAddedDepcies.addAll(systemOrUserCols.getValue());
+        }
+        return сolsWithAddedDepcies;
     }
 
-    private List<Entry<String, String>> getColsOfNotQualAster() {
-        List<Entry<String, String>> retNotQualAsterCols = new ArrayList<>();
+    private List<Pair<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
+        String schemaName = gTablerOrView.schema;
+        String tableOrView = gTablerOrView.table;
+        return getColsWithAddedDepcies(getNatureAndRelationColumns(schemaName, tableOrView),
+                schemaName, tableOrView);
+    }
+
+    private List<Pair<String, String>> getColsOfNotQualAster() {
+        List<Pair<String, String>> retNotQualAsterCols = new ArrayList<>();
 
         for (GenericColumn gTablerOrView : unaliasedNamespace) {
             retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
@@ -274,16 +289,16 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return retNotQualAsterCols;
     }
 
-    private List<Entry<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
+    private List<Pair<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
         List<IdentifierContext> ids = qNameAst.identifier();
         String qualSchema = QNameParser.getSecondName(ids);
         String srcOrTblOrView = QNameParser.getFirstName(ids);
 
-        List<Entry<String, String>> retQualAsterCols = getTableOrViewColumns(qualSchema, srcOrTblOrView);
+        List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndQualAsterCols = getNatureAndRelationColumns(
+                qualSchema, srcOrTblOrView);
         // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
-        if (!retQualAsterCols.isEmpty()) {
-            addColumnsDepcies(qualSchema, srcOrTblOrView, retQualAsterCols);
-            return retQualAsterCols;
+        if (!natureAndQualAsterCols.isEmpty()) {
+            return getColsWithAddedDepcies(natureAndQualAsterCols, qualSchema, srcOrTblOrView);
         }
 
         Entry<String, GenericColumn> srcOfAlias = findReference(qualSchema, srcOrTblOrView, null);
@@ -362,7 +377,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 boolean oldLateral = lateralAllowed;
                 try {
                     lateralAllowed = primary.LATERAL() != null;
-                    List<Entry<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
+                    List<Pair<String, String>> columnList = new Select(this).analyze(subquery.select_stmt());
 
                     String tableSubQueryAlias = alias.alias.getText();
                     addReference(tableSubQueryAlias, null);
@@ -375,13 +390,13 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
                 try {
                     lateralAllowed = true;
                     ValueExpr vexFunc = new ValueExpr(this);
-                    Entry<String, String> func = vexFunc.function(function);
+                    Pair<String, String> func = vexFunc.function(function);
                     if (func.getKey() != null) {
                         String funcAlias = primary.alias == null ? func.getKey():
                             primary.alias.getText();
                         addReference(funcAlias, null);
                         complexNamespace.put(funcAlias,
-                                Arrays.asList(new SimpleEntry<>(funcAlias, func.getValue())));
+                                Arrays.asList(new Pair<>(funcAlias, func.getValue())));
                     }
                 } finally {
                     lateralAllowed = oldLateral;
@@ -394,19 +409,19 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    public List<Entry<String, String>> analyzeAsterisk(boolean aliased, Qualified_asteriskContext ast,
-            GenericColumn unaliasedNmsp) {
-        Schema_qualified_nameContext qualifiedName;
-        String schema;
-        String tableOrView;
-        if (!aliased && (qualifiedName = ast.tb_name) != null) {
-            List<IdentifierContext> ids = qualifiedName.identifier();
-            schema = QNameParser.getSecondName(ids);
-            tableOrView = QNameParser.getFirstName(ids);
-        } else {
-            schema = unaliasedNmsp.schema;
-            tableOrView = unaliasedNmsp.table;
-        }
-        return getTableOrViewColumns(schema, tableOrView);
+    /**
+     * Gives lists of relation columns (name-type) with nature marks
+     * for given schemaName and relationName.
+     *
+     * @param qualSchemaName
+     * @param relationName
+     * @return lists of relation columns (name-type) with nature marks
+     * for given schemaName and relationName
+     */
+    protected List<Entry<DbObjNature, List<Pair<String, String>>>> getNatureAndRelationColumns(String qualSchemaName,
+            String relationName) {
+        return findRelations(qualSchemaName, relationName)
+                .map(r -> new SimpleEntry<>(r.getStatementNature(), r.getRelationColumns().collect(Collectors.toList())))
+                .collect(Collectors.toList());
     }
 }

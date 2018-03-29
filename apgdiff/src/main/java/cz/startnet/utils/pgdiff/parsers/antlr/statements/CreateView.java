@@ -16,6 +16,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -59,10 +61,13 @@ public class CreateView extends ParserAbstract {
             ctx = AntlrParser.makeBasicParser(SQLParser.class, sql, "recursive view").sql()
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
-        Select_stmtContext vQuery = null;
-        if ((vQuery = ctx.v_query) != null) {
+        Select_stmtContext vQuery = ctx.v_query;
+        if (vQuery != null) {
             view.setQuery(getFullCtxText(vQuery));
             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
+            Select select = new Select(schema.getName());
+            select.analyze(new SelectStmt(vQuery));
+            view.addAllDeps(select.getDepcies());
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {
@@ -86,7 +91,6 @@ public class CreateView extends ParserAbstract {
             }
         }
         schema.addView(view);
-
         return view;
     }
 }

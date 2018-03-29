@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -16,23 +18,17 @@ public class PgSystemStorage implements Serializable {
 
     private static final long serialVersionUID = -5150584184929914163L;
 
+    private static final ConcurrentMap<SupportedVersion, PgSystemStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
+
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
     public static final String SCHEMA_PG_CATALOG = "pg_catalog";
     public static final String SCHEMA_INFORMATION_SCHEMA = "information_schema";
 
-    private static final ConcurrentMap<SupportedVersion, PgSystemStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
-
     private final List<PgSystemCast> casts = new ArrayList<>();
     private final PgSystemSchema pgCatalogSchema = new PgSystemSchema(SCHEMA_PG_CATALOG);
     private final PgSystemSchema informationSchema = new PgSystemSchema(SCHEMA_INFORMATION_SCHEMA);
-
-    public List<PgSystemCast> getCasts() {
-        return casts;
-    }
-
-    public void addCast(PgSystemCast cast) {
-        casts.add(cast);
-    }
+    private final List<PgSystemSchema> schemas = Collections.unmodifiableList(
+            Arrays.asList(pgCatalogSchema, informationSchema));
 
     public static PgSystemStorage getObjectsFromResources(SupportedVersion version) {
         PgSystemStorage systemStorage = STORAGE_CACHE.get(version);
@@ -60,15 +56,25 @@ public class PgSystemStorage implements Serializable {
     /**
      * Checks cast present in storage
      *
-     * @param storage - storage in which search
      * @param source - source type
      * @param target - target type
      * @return true if storage contains cast
      */
-    public static boolean isCastPresent(PgSystemStorage storage, String source, String target) {
-        return storage.getCasts().stream().filter(c -> CastContext.I.equals(c.getType())
+    public boolean containsCastImplicit(String source, String target) {
+        return casts.stream().filter(c -> CastContext.I.equals(c.getType())
                 && source.equals(c.getSource()) && target.equals(c.getTarget()))
-                .findFirst().isPresent();
+                .findAny().isPresent();
+    }
+
+    public void addCast(PgSystemCast cast) {
+        casts.add(cast);
+    }
+
+    /**
+     * @return unmodifiable list of system schemas
+     */
+    public List<PgSystemSchema> getSchemas() {
+        return schemas;
     }
 
     public PgSystemSchema getSchema(String schemaName) {
@@ -77,6 +83,14 @@ public class PgSystemStorage implements Serializable {
         } else if (SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
             return informationSchema;
         }
-        throw new RuntimeException("Unknown schema name");
+        throw new IllegalArgumentException("Unknown schema name");
+    }
+
+    public PgSystemSchema getPgCatalog() {
+        return pgCatalogSchema;
+    }
+
+    public PgSystemSchema getInfoSchema() {
+        return informationSchema;
     }
 }
