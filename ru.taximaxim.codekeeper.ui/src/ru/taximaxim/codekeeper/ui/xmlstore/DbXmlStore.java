@@ -1,23 +1,15 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
@@ -30,7 +22,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DbXmlStore extends XmlStore {
+public class DbXmlStore extends XmlStore<DbInfo> {
 
     public static final DbXmlStore INSTANCE = new DbXmlStore();
 
@@ -68,73 +60,53 @@ public class DbXmlStore extends XmlStore {
     }
 
 
-    public List<DbInfo> readDbStoreList() throws IOException {
+    // TODO suppress this override when legacy preference support is removed
+    @Override
+    public List<DbInfo> readObjects() throws IOException {
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(
                 getXmlFile()), StandardCharsets.UTF_8)) {
-            return readObjects(readXml(xmlReader));
-            // TODO suppress when legacy preference support is removed
-            /*} catch (FileNotFoundException ex) {
-            return new ArrayList<>();*/
+            return getObjects(readXml(xmlReader));
         } catch (IOException | SAXException ex) {
             throw new IOException(MessageFormat.format(
                     Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
         }
     }
 
-    public void writeDbStoreList(List<DbInfo> dbStoreList) {
+    @Override
+    public void writeObjects(List<DbInfo> list) {
         try {
-            File storeFile = getXmlFile();
-            storeFile.getParentFile().mkdirs();
-            storeFile.createNewFile();
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(storeFile), StandardCharsets.UTF_8)) {
-                Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                Element root = xml.createElement(Tags.DB_STORE.toString());
-                xml.appendChild(root);
-
-                for (DbInfo dbInfo : dbStoreList) {
-                    Element keyElement = xml.createElement(Tags.DB_INFO.toString());
-                    root.appendChild(keyElement);
-
-                    createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
-                    createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
-                    createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-                    createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
-                    createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
-                    createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
-                    createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
-
-                    Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
-                    keyElement.appendChild(ignoreList);
-                    for (String file : dbInfo.getIgnoreFiles()) {
-                        createSubElement(xml, ignoreList, Tags.IGNORE_FILE.toString(), file);
-                    }
-                }
-
-                serializeXml(xml, true, xmlWriter);
-                notifyListeners();
-            }
-        } catch (IOException | TransformerException | ParserConfigurationException e) {
-            Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
+            super.writeObjects(list);
+            notifyListeners();
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e);
         }
     }
 
-    private List<DbInfo> readObjects(Document xml) {
-        List<DbInfo> objects = new ArrayList<>();
+    @Override
+    protected void appendChildren(Document xml, Element root, List<DbInfo> list) {
+        for (DbInfo dbInfo : list) {
+            Element keyElement = xml.createElement(Tags.DB_INFO.toString());
+            root.appendChild(keyElement);
 
-        Element root = (Element) xml.getElementsByTagName(rootTag).item(0);
-        NodeList nList = root.getChildNodes();
-        for (int i = 0; i < nList.getLength(); i++) {
-            Node node = nList.item(i);
+            createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
+            createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
+            createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
+            createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
+            createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
+            createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
 
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                objects.add(parseElement(node.getChildNodes()));
+            Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
+            keyElement.appendChild(ignoreList);
+            for (String file : dbInfo.getIgnoreFiles()) {
+                createSubElement(xml, ignoreList, Tags.IGNORE_FILE.toString(), file);
             }
         }
-
-        return objects;
     }
 
-    private DbInfo parseElement(NodeList params) {
+    @Override
+    protected DbInfo parseElement(Node node) {
+        NodeList params = node.getChildNodes();
         List<String> ignoreFiles = new ArrayList<>();
         Map<Tags, String> object = new EnumMap<>(Tags.class);
 

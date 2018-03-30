@@ -281,7 +281,7 @@ public class DiffTableViewer extends Composite {
 
         List<String> history = new ArrayList<>();
         try {
-            history = XML_HISTORY.getHistory();
+            history = XML_HISTORY.readObjects();
         } catch (IOException ex) {
             Log.log(ex);
         }
@@ -347,7 +347,7 @@ public class DiffTableViewer extends Composite {
                     if (text != null && !text.isEmpty()) {
                         XML_HISTORY.addHistoryEntry(text);
                     }
-                    List<String> history = XML_HISTORY.getHistory();
+                    List<String> history = XML_HISTORY.readObjects();
                     scp.setProposals(history.toArray(new String[history.size()]));
                 } catch (IOException e) {
                     Log.log(e);

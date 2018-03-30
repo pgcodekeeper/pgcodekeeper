@@ -142,7 +142,7 @@ public class DbInfo {
 
     public static List<DbInfo> readStoreFromXml(String preference) {
         try {
-            return DbXmlStore.INSTANCE.readDbStoreList();
+            return DbXmlStore.INSTANCE.readObjects();
         } catch (IOException e) {
             // check old prefs, legacy
             return preferenceToStore(preference);
@@ -152,7 +152,7 @@ public class DbInfo {
     public static DbInfo getLastDb(String preference) {
         try {
             return preference.contains(DELIM) ? getLastStore(preference) :
-                DbXmlStore.INSTANCE.readDbStoreList().stream()
+                DbXmlStore.INSTANCE.readObjects().stream()
                 .filter(e -> preference.equals(e.getName())).findAny().orElse(null);
         } catch (IOException ex) {
             // check old prefs, legacy
