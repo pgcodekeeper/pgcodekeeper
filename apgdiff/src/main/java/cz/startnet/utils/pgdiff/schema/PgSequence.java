@@ -5,18 +5,32 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores sequence information.
  *
  * @author fordfrog
  */
-public class PgSequence extends PgStatementWithSearchPath {
+public class PgSequence extends PgStatementWithSearchPath implements IRelation {
+
+    private static final List<Pair<String, String>> relationColumns = Collections
+            .unmodifiableList(new ArrayList<>(Arrays.asList(
+                    new Pair<>("sequence_name", "name"), new Pair<>("last_value", "bigint"),
+                    new Pair<>("start_value", "bigint"), new Pair<>("increment_by", "bigint"),
+                    new Pair<>("max_value", "bigint"), new Pair<>("min_value", "bigint"),
+                    new Pair<>("cache_value", "bigint"), new Pair<>("log_cnt", "bigint"),
+                    new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"))));
 
     private String cache;
     private String increment;
@@ -43,6 +57,11 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public String getCache() {
         return cache;
+    }
+
+    @Override
+    public Stream<Pair<String, String>> getRelationColumns() {
+        return relationColumns.stream();
     }
 
     @Override

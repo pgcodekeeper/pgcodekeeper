@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -18,6 +17,7 @@ import java.util.stream.Stream;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores view information.
@@ -38,7 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
-    private final List<Entry<String, String>> relationColumns = new ArrayList<>();
+    private final List<Pair<String, String>> relationColumns = new ArrayList<>();
 
 
     @Override
@@ -132,11 +132,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public Stream<Entry<String, String>> getRelationColumns() {
+    public Stream<Pair<String, String>> getRelationColumns() {
         return relationColumns.stream();
     }
 
-    public void addRelationColumns(List<Entry<String, String>> relationColumns) {
+    public void addRelationColumns(List<Pair<String, String>> relationColumns) {
         this.relationColumns.addAll(relationColumns);
     }
 

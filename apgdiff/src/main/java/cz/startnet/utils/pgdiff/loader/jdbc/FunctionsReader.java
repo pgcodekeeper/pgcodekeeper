@@ -1,14 +1,17 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.util.AbstractMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -55,85 +58,78 @@ public class FunctionsReader extends JdbcReader {
             f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        boolean returnsTable = false;
         StringBuilder returnedTableArguments = new StringBuilder();
         String[] argModes = res.getArray("proargmodes", String.class);
         String[] argNames = res.getArray("proargnames", String.class);
         Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
-        StringBuilder argsWithoutDefault = new StringBuilder();
 
         Long[] argTypes = argTypeOids != null ? argTypeOids : res.getArray("argtypes", Long.class);
-        if (argTypes != null) {
-            for (int i = 0; argTypes.length > i; i++) {
-                String aMode = argModes != null ? argModes[i] : "i";
+        for (int i = 0; argTypes.length > i; i++) {
+            String aMode = argModes != null ? argModes[i] : "i";
 
-                JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
-                returnType.addTypeDepcy(f);
+            JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
+            returnType.addTypeDepcy(f);
 
-                if("t".equals(aMode)) {
-                    returnsTable = true;
-                    returnedTableArguments.append(argNames[i]).append(" ")
-                    .append(returnType.getFullName(schemaName)).append(", ");
-                    continue;
-                }
-
-                switch(aMode) {
-                case "i":
-                    aMode = "IN";
-                    break;
-                case "o":
-                    aMode = "OUT";
-                    break;
-                case "b":
-                    aMode = "INOUT";
-                    break;
-                case "v":
-                    aMode = "VARIADIC";
-                    break;
-                }
-
-                Argument a = f.new Argument(aMode,
-                        argNames != null ? argNames[i] : null,
-                                loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
-
-                f.addArgument(a);
-
-                if (argModes != null && !"IN".equals(a.getMode())) {
-                    argsWithoutDefault.append(a.getMode()).append(" ");
-                }
-                if (a.getName() != null) {
-                    argsWithoutDefault.append(a.getName()).append(" ");
-                }
-                argsWithoutDefault.append(a.getDataType()).append(", ");
-
-            }
-            if (argsWithoutDefault.length() != 0) {
-                argsWithoutDefault.setLength(argsWithoutDefault.length() - 2);
-            }
-            if (returnedTableArguments.length() != 0) {
-                returnedTableArguments.setLength(returnedTableArguments.length() - 2);
+            if("t".equals(aMode)) {
+                returnedTableArguments.append(argNames[i]).append(" ")
+                .append(returnType.getFullName(schemaName)).append(", ");
+                continue;
             }
 
-            String defaultValuesAsString = res.getString("default_values_as_string");
-            if (defaultValuesAsString != null) {
-                loader.submitAntlrTask(defaultValuesAsString, (PgDatabase)schema.getParent(),
-                        SQLParser::vex_eof,
-                        (ctx, db) -> {
-                            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(f, ctx));
-
-                            UtilAnalyzeExpr.analyzeFunctionDefaults(ctx, f, schemaName);
-                        });
+            switch(aMode) {
+            case "i":
+                aMode = "IN";
+                break;
+            case "o":
+                aMode = "OUT";
+                break;
+            case "b":
+                aMode = "INOUT";
+                break;
+            case "v":
+                aMode = "VARIADIC";
+                break;
             }
+
+            Argument a = f.new Argument(aMode,
+                    argNames != null ? argNames[i] : null,
+                            loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+
+            f.addArgument(a);
         }
 
         // RETURN TYPE
-        if (returnsTable) {
+        if (returnedTableArguments.length() != 0) {
+            returnedTableArguments.setLength(returnedTableArguments.length() - 2);
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         } else {
             JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
             String retType = returnType.getFullName(schemaName);
             f.setReturns(res.getBoolean("proretset") ? "SETOF " + retType : retType);
             returnType.addTypeDepcy(f);
+        }
+
+        String defaultValuesAsString = res.getString("default_values_as_string");
+        if (defaultValuesAsString != null) {
+            loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
+                    ctx -> {
+                        List<VexContext> vexCtxList = ctx.vex();
+                        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
+
+                        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
+                            if (!vexCtxListIterator.hasPrevious()) {
+                                break;
+                            }
+                            IArgument a = f.getArguments().get(i);
+                            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
+                                VexContext vx = vexCtxListIterator.previous();
+                                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
+                                schema.getDatabase().getContextsForAnalyze()
+                                .add(new AbstractMap.SimpleEntry<>(f, vx));
+                                vexCtxListIterator.remove();
+                            }
+                        }
+                    });
         }
 
         // PRIVILEGES
@@ -276,5 +272,10 @@ public class FunctionsReader extends JdbcReader {
         }
 
         return quote.concat("$");
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.FUNCTION;
     }
 }

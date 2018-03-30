@@ -1,14 +1,12 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
 import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgTrigger.TgTypes;
@@ -51,10 +49,7 @@ public class TriggersReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
-            PgTrigger trigger = getTrigger(result, schema, contName);
-            if (trigger != null) {
-                c.addTrigger(trigger);
-            }
+            c.addTrigger(getTrigger(result, schema, contName));
         }
     }
 
@@ -161,15 +156,9 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        loader.submitAntlrTask(definition, (PgDatabase)schema.getParent(),
-                p -> p.sql().statement(0).schema_statement()
+        loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                (ctx, db) -> {
-                    if (ctx != null) {
-                        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(t, ctx.when_expr));
-                        t.setWhen(ParserAbstract.getFullCtxText(ctx.when_expr));
-                    }
-                });
+                ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
 
         // COMMENT
         String comment = res.getString("comment");
@@ -177,5 +166,10 @@ public class TriggersReader extends JdbcReader {
             t.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
         return t;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.TRIGGER;
     }
 }

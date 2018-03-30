@@ -9,6 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 public final class FileUtils {
 
     public static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
@@ -20,7 +22,7 @@ public final class FileUtils {
     public static void deleteRecursive(Path f) throws IOException {
         if (Files.isDirectory(f)) {
             try (Stream<Path> stream = Files.list(f)){
-                for (Path sub : (Iterable<Path>) stream::iterator) {
+                for (Path sub : PgDiffUtils.sIter(stream)) {
                     deleteRecursive(sub);
                 }
             } catch (UncheckedIOException wrapEx) {

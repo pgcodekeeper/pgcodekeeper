@@ -21,9 +21,10 @@ public final class ApgdiffUtils {
      */
     public static File getFileFromOsgiRes(URL url) throws URISyntaxException, IOException {
         return new File(
-                URIUtil.toURI(url.getProtocol().equals("file") ?
+                URIUtil.toURI("file".equals(url.getProtocol()) ?
                         url : FileLocator.toFileURL(url)));
     }
+
 
     public static void serialize(String path, Serializable object) {
         serialize(Paths.get(path), object);
@@ -38,7 +39,7 @@ public final class ApgdiffUtils {
     public static void serialize(Path path, Serializable object) {
         try {
             if (Files.notExists(path)) {
-                Files.createFile(path);
+                Files.createDirectories(path.getParent());
             }
             try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
                 oos.writeObject(object);
@@ -73,6 +74,7 @@ public final class ApgdiffUtils {
 
         return null;
     }
+
 
     private ApgdiffUtils() {
     }

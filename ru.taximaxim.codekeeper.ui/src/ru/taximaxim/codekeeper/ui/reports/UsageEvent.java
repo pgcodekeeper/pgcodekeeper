@@ -53,7 +53,7 @@ public class UsageEvent {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Type=").append(type.toString()).append(label!=null?("; Label=\"" + label) + "\"":"").append(value!=null?("; Value=\"" + value + "\""):"").append("}");
+        sb.append("{Type=").append(type.toString()).append(label!=null?("; Label=\"" + label) + "\"":"").append(value!=null?("; Value=\"" + value + "\""):"").append("}"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
         return sb.toString();
     }
 

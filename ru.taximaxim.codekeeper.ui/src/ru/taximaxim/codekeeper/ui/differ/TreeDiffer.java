@@ -1,38 +1,36 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.ProgressMonitorWrapper;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
  * строит дерево сравнения из двух баз
  */
-public class TreeDiffer implements IRunnableWithProgress {
+public abstract class TreeDiffer implements IRunnableWithProgress {
 
-    private static final int JOB_CHECK_MS = 20;
+    protected static final int JOB_CHECK_MS = 20;
 
-    private final DbSource dbSource, dbTarget;
-    private final boolean needTwoWay;
+    protected final DbSource dbSource;
+    protected DbSource dbTarget;
+    protected final boolean needTwoWay;
 
-    private TreeElement diffTree, diffTreeRevert;
+    protected TreeElement diffTree;
+    protected TreeElement diffTreeRevert;
 
     public DbSource getDbSource() {
         return dbSource;
@@ -65,156 +63,40 @@ public class TreeDiffer implements IRunnableWithProgress {
     public List<Object> getErrors() {
         List<? super Object> errors = new ArrayList<>();
         errors.addAll(dbSource.getErrors());
-        errors.addAll(dbTarget.getErrors());
+        if (dbTarget != null) {
+            errors.addAll(dbTarget.getErrors());
+        }
         return errors;
     }
 
-    @Override
-    public void run(IProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException {
-        SubMonitor pm = SubMonitor.convert(monitor,
-                Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
-
-        SubMonitor jobMonitor = pm.newChild(80); // 80
-        DbSourceJob srcJob = new DbSourceJob(dbSource, jobMonitor);
-        DbSourceJob tgtJob = new DbSourceJob(dbTarget, jobMonitor);
-        srcJob.schedule();
-        tgtJob.schedule();
-        IStatus srcResult, tgtResult;
-        do {
-            Thread.sleep(JOB_CHECK_MS);
-            srcResult = srcJob.getResult();
-            tgtResult = tgtJob.getResult();
-        } while (srcResult == null && tgtResult == null);
-        if (srcResult != null) {
-            finishJobs(srcJob, tgtJob);
-        } else {
-            finishJobs(tgtJob, srcJob);
-        }
-
-        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
-        + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
-
-        pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
-
-        if (needTwoWay){
-            Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbTarget.getOrigin() //$NON-NLS-1$
-            + " tgt: " + dbSource.getOrigin()); //$NON-NLS-1$
-
-            pm.newChild(3).subTask(Messages.TreeDiffer_reverting_tree); // 98
-            diffTreeRevert = diffTree.getRevertedCopy();
-        }
-
-        PgDiffUtils.checkCancelled(pm);
-        monitor.done();
-    }
-
-    private void finishJobs(DbSourceJob exitedJob, DbSourceJob otherJob)
-            throws InvocationTargetException, InterruptedException {
-        IStatus exitResult = exitedJob.getResult();
-        if (!exitResult.isOK()) {
-            otherJob.cancel();
-        }
-        exitedJob.join();
-        otherJob.join();
-
-        IStatus otherResult = otherJob.getResult();
-        if (!exitResult.isOK() || !otherResult.isOK()) {
-            int exitSeverity = exitResult.getSeverity();
-            int otherSeverity = otherResult.getSeverity();
-            if ((exitSeverity == IStatus.CANCEL || exitSeverity == IStatus.OK)
-                    && (otherSeverity == IStatus.CANCEL || otherSeverity == IStatus.OK)) {
-                throw new InterruptedException();
-            }
-            Throwable t = otherResult.getException();
-            Throwable exitEx = exitResult.getException();
-            if (exitEx != null) {
-                if (t != null) {
-                    t.addSuppressed(exitEx);
-                } else {
-                    t = exitEx;
-                }
-            }
-            if (t == null) {
-                t = new IOException(Messages.TreeDiffer_unknown_error);
-            }
-            throw new InvocationTargetException(t, t.getLocalizedMessage());
-        }
-    }
-
-    private static class DbSourceJob extends Job {
-
-        private final DbSource s;
-        private final SubMonitor m;
-
-        public DbSourceJob(DbSource s, SubMonitor m) {
-            super(MessageFormat.format(Messages.TreeDiffer_loading_schema_from, s.getOrigin()));
-            this.s = s;
-            this.m = m;
-        }
-
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-            MultiProgressMonitor mpm = new MultiProgressMonitor(monitor, m);
+    /**
+     * Create db sources and generate tree differ
+     *
+     * @return created tree
+     */
+    public static TreeDiffer getTree(DbSource dbProj, DbInfo dbInfo, String charset,
+            boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
+        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
             try {
-                s.get(SubMonitor.convert(mpm, Messages.TreeDiffer_loading_schema, 1));
-            } catch (InterruptedException ex) {
-                return Status.CANCEL_STATUS;
-            } catch (IOException | CoreException ex) {
-                return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.TreeDiffer_schema_load_error, ex);
-            } finally {
-                mpm.done();
+                Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
+                        dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));
+
+                String extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
+                        dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
+                        dbInfo.getDbName(), timezone);
+
+                if (extSchema != null) {
+                    return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
+                            timezone, forceUnixNewlines, timePath);
+                }
+            } catch (URISyntaxException e) {
+                Log.log(Log.LOG_ERROR, "Error reading project timestamps", e); //$NON-NLS-1$
             }
-            return Status.OK_STATUS;
-        }
-    }
-
-    private static class MultiProgressMonitor extends ProgressMonitorWrapper {
-
-        private static final int DEFAULT_SCALE = 500;
-
-        private final SubMonitor secondaryMonitor;
-        private final int secondaryWorkScale;
-
-        public MultiProgressMonitor(IProgressMonitor wrappedMonitor,
-                SubMonitor secondaryMonitor) {
-            this(wrappedMonitor, secondaryMonitor, DEFAULT_SCALE);
         }
 
-        public MultiProgressMonitor(IProgressMonitor wrappedMonitor,
-                SubMonitor secondaryMonitor, int secondaryWorkScale) {
-            super(wrappedMonitor);
-            this.secondaryMonitor = secondaryMonitor;
-            this.secondaryWorkScale = secondaryWorkScale;
-        }
+        DbSource dbTarget = DbSource.fromDbInfo(dbInfo, prefs, forceUnixNewlines,
+                charset, timezone);
 
-        @Override
-        public void worked(int work) {
-            super.internalWorked(work);
-            reportWork();
-        }
-
-        @Override
-        public void internalWorked(double work) {
-            super.internalWorked(work);
-            reportWork();
-        }
-
-        private void reportWork() {
-            secondaryMonitor.setWorkRemaining(secondaryWorkScale);
-            secondaryMonitor.worked(1);
-        }
-
-        @Override
-        public boolean isCanceled() {
-            return super.isCanceled() || secondaryMonitor.isCanceled();
-        }
-
-        @Override
-        public void setCanceled(boolean b) {
-            super.setCanceled(b);
-            secondaryMonitor.setCanceled(b);
-        }
+        return new ClassicTreeDiffer(dbProj, dbTarget, false);
     }
 }

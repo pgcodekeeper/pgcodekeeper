@@ -183,7 +183,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
      * @return {@link #arguments}
      */
     @Override
-    public List<IArgument> getArguments() {
+    public List<Argument> getArguments() {
         return Collections.unmodifiableList(arguments);
     }
 
@@ -322,11 +322,11 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
             return true;
         }
 
-        Iterator<IArgument> iOld = oldFunction.getArguments().iterator();
-        Iterator<IArgument> iNew = newFunction.getArguments().iterator();
+        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
+        Iterator<Argument> iNew = newFunction.getArguments().iterator();
         while (iOld.hasNext() && iNew.hasNext()) {
-            IArgument argOld = iOld.next();
-            IArgument argNew = iNew.next();
+            Argument argOld = iOld.next();
+            Argument argNew = iNew.next();
 
             String oldDef = argOld.getDefaultExpression();
             String newDef = argNew.getDefaultExpression();

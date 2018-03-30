@@ -1,55 +1,76 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum PgDataType {
-    BIGINT      (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    BIT         (BitPgData::new,       PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    BOOLEAN     (BooleanPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    CHARACTER   (TextPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    DATE        (DatePgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    TIMESTAMP   (TimestampPgData::new, PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    DOUBLE      (RealPgData::new,      "double precision", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM), //$NON-NLS-1$
-    INTEGER     (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    JSON        (JsonPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
-    NUMERIC     (RealPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    REAL        (RealPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    SMALLINT    (IntegerPgData::new,   PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM),
-    TEXT        (TextPgData::new,      PgDataGenerator.CONSTANT, PgDataGenerator.RANDOM),
+    BIGINT      (IntegerPgData::new),
+    BIT         (BitPgData::new,       PgDataGenerator.INCREMENT),
+    BOOLEAN     (BooleanPgData::new),
+    DATE        (DatePgData::new),
+    DOUBLE      (RealPgData::new, "double precision"), //$NON-NLS-1$
+    INTEGER     (IntegerPgData::new),
+    JSON        (JsonPgData::new,      PgDataGenerator.INCREMENT),
+    NUMERIC     (RealPgData::new),
+    REAL        (RealPgData::new),
+    SMALLINT    (IntegerPgData::new),
+    TEXT        (TextPgData::new,      PgDataGenerator.INCREMENT),
+    TIME        (TimePgData::new),
+    TIMESTAMP   (TimestampPgData::new),
+    TIMESTAMPTZ (TimestampTZPgData::new),
     // shouldn't get created by any type implicitly, so use an empty type name
-    OTHER       (CustomPgData::new,    "", PgDataGenerator.CONSTANT); //$NON-NLS-1$
+    OTHER       (CustomPgData::new, "", PgDataGenerator.CONSTANT, PgDataGenerator.INCREMENT, PgDataGenerator.RANDOM); //$NON-NLS-1$
 
     private final Collection<PgDataGenerator> generators;
     private final String type;
     private final Supplier<PgData<?>> factory;
 
-    private PgDataType(Supplier<PgData<?>> factory, PgDataGenerator... generators) {
-        this.generators = setOfGenerators(generators);
+    private PgDataType(Supplier<PgData<?>> factory) {
+        this.generators = EnumSet.allOf(PgDataGenerator.class);
+        this.type = name().toLowerCase();
+        this.factory = factory;
+    }
+
+    private PgDataType(Function<PgDataType, PgData<?>> factory) {
+        this.generators = EnumSet.allOf(PgDataGenerator.class);
+        this.type = name().toLowerCase();
+        this.factory = () -> factory.apply(this);
+    }
+
+    private PgDataType(Function<PgDataType, PgData<?>> factory, String type) {
+        this.generators = EnumSet.allOf(PgDataGenerator.class);
+        this.type = type.toLowerCase();
+        this.factory = () -> factory.apply(this);
+    }
+
+    private PgDataType(Supplier<PgData<?>> factory, String type) {
+        this.generators = EnumSet.allOf(PgDataGenerator.class);
+        this.type = type.toLowerCase();
+        this.factory = factory;
+    }
+
+    private PgDataType(Supplier<PgData<?>> factory,  PgDataGenerator... generators) {
+        this.generators = setOfGenerators(Arrays.asList(generators));
         this.type = name().toLowerCase();
         this.factory = factory;
     }
 
     private PgDataType(Function<PgDataType, PgData<?>> factory, PgDataGenerator... generators) {
-        this.generators = setOfGenerators(generators);
+        this.generators = setOfGenerators(Arrays.asList(generators));
         this.type = name().toLowerCase();
         this.factory = () -> factory.apply(this);
     }
 
     private PgDataType(Supplier<PgData<?>> factory, String type, PgDataGenerator... generators) {
-        this.generators = setOfGenerators(generators);
-        this.type = type;
+        this.generators = setOfGenerators(Arrays.asList(generators));
+        this.type = type.toLowerCase();
         this.factory = factory;
-    }
-
-    private PgDataType(Function<PgDataType, PgData<?>> factory, String type, PgDataGenerator... generators) {
-        this.generators = setOfGenerators(generators);
-        this.type = type;
-        this.factory = () -> factory.apply(this);
     }
 
     public String getType() {
@@ -74,7 +95,7 @@ public enum PgDataType {
         }
         switch (this) {
         case BIT:
-        case CHARACTER:
+        case TEXT:
             int lparen = type.indexOf('(');
             int rparen = type.indexOf(')');
             if (lparen != -1 && rparen != -1) {
@@ -87,7 +108,8 @@ public enum PgDataType {
         return data;
     }
 
-    public static PgData<?> dataForType(String type) {
+    public static PgData<?> dataForType(String text) {
+        String type = text.toLowerCase();
         PgDataType t = null;
         for (PgDataType e : values()) {
             if (e.type.equalsIgnoreCase(type)) {
@@ -98,8 +120,16 @@ public enum PgDataType {
         if (t == null) {
             if (type.startsWith(BIT.type)) {
                 t = BIT;
-            } else if (type.startsWith(CHARACTER.type)) {
-                t = CHARACTER;
+            } else if (type.startsWith(NUMERIC.type)) {
+                t = PgDataType.NUMERIC;
+            } else if (type.startsWith("varchar") || type.startsWith("character")) { //$NON-NLS-1$ //$NON-NLS-2$
+                t = PgDataType.TEXT;
+            } else if ("timestamp without time zone".equals(type)) { //$NON-NLS-1$
+                t = PgDataType.TIMESTAMP;
+            } else if ("timestamp with time zone".equals(type)) { //$NON-NLS-1$
+                t = PgDataType.TIMESTAMPTZ;
+            } else if ("time without time zone".equals(type)) { //$NON-NLS-1$
+                t = PgDataType.TIME;
             }
         }
         if (t == null) {
@@ -109,11 +139,7 @@ public enum PgDataType {
         return t.makeData(type);
     }
 
-    private static Set<PgDataGenerator> setOfGenerators(PgDataGenerator[] generators) {
-        EnumSet<PgDataGenerator> generatorsSet = EnumSet.noneOf(PgDataGenerator.class);
-        for (PgDataGenerator generator : generators) {
-            generatorsSet.add(generator);
-        }
-        return Collections.unmodifiableSet(generatorsSet);
+    private static Set<PgDataGenerator> setOfGenerators(List<PgDataGenerator> generators) {
+        return Collections.unmodifiableSet(EnumSet.complementOf(EnumSet.copyOf(generators)));
     }
 }

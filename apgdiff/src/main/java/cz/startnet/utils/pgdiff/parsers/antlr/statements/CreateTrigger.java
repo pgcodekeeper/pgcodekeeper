@@ -109,16 +109,19 @@ public class CreateTrigger extends ParserAbstract {
                 trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
             }
         }
-
-        When_triggerContext whenCtx = null;
-        if ((whenCtx = ctx.when_trigger()) != null) {
-            VexContext vex = whenCtx.when_expr;
-            trigger.setWhen(getFullCtxText(vex));
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(trigger, vex));
-        }
+        parseWhen(ctx.when_trigger(), trigger, db);
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
         .addTrigger(trigger);
         return trigger;
+    }
+
+    public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
+            PgDatabase db) {
+        if (whenCtx != null) {
+            VexContext vex = whenCtx.when_expr;
+            trigger.setWhen(getFullCtxText(vex));
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(trigger, vex));
+        }
     }
 }

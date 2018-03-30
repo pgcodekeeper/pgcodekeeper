@@ -111,6 +111,18 @@
               id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
               name="%command.commandname.OpenDbStore">
         </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenObjectWizard"
+              id="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
+              name="%command.commandname.OpenObjectWizard">
+        </command>
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ConvertProject"
+              id="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+              name="%command.commandname.ConvertProject">
+        </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler
@@ -214,6 +226,24 @@
                     </iterate>
                 </visibleWhen>
             </menu>
+        </menuContribution>
+        <menuContribution
+              locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+           <command
+                 commandId="org.eclipse.ui.newWizard">
+              <parameter
+                    name="newWizardId"
+                    value="ru.taximaxim.codekeeper.ui.mockdatawizard">
+              </parameter>
+              <visibleWhen checkEnabled="false">
+                 <iterate>
+                   <adapt type="org.eclipse.core.resources.IFile">
+                      <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                            value="*.sql"/>
+                   </adapt>
+                </iterate>
+              </visibleWhen>
+           </command>
         </menuContribution>
         <menuContribution
             allPopups="false"
@@ -512,6 +542,39 @@
                 </control>
             </toolbar>
         </menuContribution>
+        <menuContribution
+              allPopups="false"
+              locationURI="popup:ru.taximaxim.codekeeper.ui.SQLEditor.EditorContext?after=additions">
+           <command commandId="org.eclipse.ui.newWizard">
+                <parameter name="newWizardId" value="ru.taximaxim.codekeeper.ui.mockdatawizard" />
+                 <visibleWhen checkEnabled="false">
+                     <with variable="activeEditorInput">
+                        <adapt type="org.eclipse.core.resources.IFile">
+                            <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
+                                value="*.sql"/>
+                        </adapt>
+                    </with>    
+                </visibleWhen> 
+           </command>
+        </menuContribution>
+        <menuContribution
+              locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+           <command
+                 commandId="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+                 label="%command.commandname.ConvertProject"
+                 style="push">
+              <visibleWhen checkEnabled="false">
+                  <iterate>
+                      <not>
+                          <test
+                              property="org.eclipse.core.resources.projectNature"
+                              value="ru.taximaxim.codekeeper.ui.nature">
+                          </test>
+                      </not>
+                  </iterate>
+              </visibleWhen>
+           </command>
+        </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
         <editor
@@ -620,7 +683,7 @@
               icon="icons/pgadmin/database.png"
               id="ru.taximaxim.codekeeper.ui.newobjwizard"
               name="%wizard.name.newPgSqlObject"
-              project="true">
+              project="false">
         </wizard>
         <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
@@ -818,6 +881,13 @@
             namespace="ru.taximaxim.codekeeper.ui"
             properties="isQuickUpdateRunning"
             type="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor">
+        </propertyTester>
+        <propertyTester
+            class="ru.taximaxim.codekeeper.ui.propertytests.MockDataPropertyTester"
+            id="ru.taximaxim.codekeeper.ui.MockDataPropertyTester"
+            namespace="ru.taximaxim.codekeeper.ui"
+            properties="isTableSelected"
+            type="java.lang.Object">
         </propertyTester>
     </extension>
     <extension
@@ -1106,6 +1176,12 @@
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeperEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M3+E">
+        </key>
+        <key
+            commandId="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+Insert">
         </key>
     </extension>
     <extension

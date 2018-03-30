@@ -5,9 +5,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -40,9 +38,7 @@ public class ViewsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgView view = getView(result, schema);
         loader.monitor.worked(1);
-        if (view != null) {
-            schema.addView(view);
-        }
+        schema.addView(view);
     }
 
     private PgView getView(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
@@ -65,14 +61,18 @@ public class ViewsReader extends JdbcReader {
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
-        PgDatabase dataBase = (PgDatabase)schema.getParent();
+        PgDatabase dataBase = schema.getDatabase();
 
-        loader.submitAntlrTask(viewDef, dataBase,
-                p -> p.sql().statement(0).data_statement().select_stmt(),
-                (ctx, db) -> {
-                    db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+        loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
+                .select_stmt(),
+                ctx -> {
+                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
 
-                    UtilAnalyzeExpr.analyze(new SelectStmt(ctx), new Select(schemaName), v);
+                    // collect basic FROM dependencies between VIEW objects themselves
+                    // to ensure correct order during the main analysis phase
+                    Select select = new Select(schemaName);
+                    select.analyze(new SelectStmt(ctx));
+                    v.addAllDeps(select.getDepcies());
                 });
 
         // OWNER
@@ -90,12 +90,9 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
-                    loader.submitAntlrTask(colDefault, dataBase,
-                            p -> p.vex_eof().vex().get(0),
-                            (ctx, db) -> {
-                                db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
-
-                                UtilAnalyzeExpr.analyze(ctx, new ValueExpr(schemaName), v);
+                    loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
+                            ctx -> {
+                                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
                             });
                 }
                 String colComment = colComments[i];
@@ -126,5 +123,10 @@ public class ViewsReader extends JdbcReader {
         }
 
         return v;
+    }
+
+    @Override
+    protected DbObjType getType() {
+        return DbObjType.VIEW;
     }
 }

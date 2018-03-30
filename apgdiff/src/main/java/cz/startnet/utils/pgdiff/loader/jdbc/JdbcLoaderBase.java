@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -25,6 +25,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -48,7 +50,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected final JdbcConnector connector;
     protected final SubMonitor monitor;
     protected final PgDiffArguments args;
-    private final Queue<AntlrTask<? extends ParserRuleContext, PgDatabase>> antlrTasks = new ArrayDeque<>();
+    private final Queue<AntlrTask<? extends ParserRuleContext>> antlrTasks = new ArrayDeque<>();
     private GenericColumn currentObject;
     private String currentOperation;
     protected Connection connection;
@@ -59,6 +61,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected SchemasContainer schemas;
     protected int version = SupportedVersion.VERSION_9_2.getVersion();
     protected List<String> errors = new ArrayList<>();
+
+    protected final TimestampParam timestampParams = new TimestampParam();
 
     public JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args) {
         this.connector = connector;
@@ -108,6 +112,18 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
 
     protected void addError(final String message) {
         errors.add(getCurrentLocation() + ' ' + message);
+    }
+
+    public List<ObjectTimestamp> getTimestampObjects() {
+        return timestampParams.timestampObjects;
+    }
+
+    public PgDatabase getTimestampProjDb() {
+        return timestampParams.projDB;
+    }
+
+    public String getExtensionSchema() {
+        return timestampParams.extensionSchema;
     }
 
     private String getRoleByOid(long oid) {
@@ -269,7 +285,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-
     protected void setupMonitorWork() throws SQLException {
         setCurrentOperation("object count query");
         try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
@@ -277,16 +292,16 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    protected <T extends ParserRuleContext> void submitAntlrTask(String sql, PgDatabase dataBase,
-            Function<SQLParser, T> parserCtxReader, BiConsumer<T, PgDatabase> finalizer) {
+    protected <T extends ParserRuleContext> void submitAntlrTask(String sql,
+            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
         String loc = getCurrentLocation();
         Future<T> future = ANTLR_POOL.submit(() -> parserCtxReader.apply(
                 AntlrParser.makeBasicParser(SQLParser.class, sql, loc)));
-        antlrTasks.add(new AntlrTask<>(future, finalizer, dataBase));
+        antlrTasks.add(new AntlrTask<>(future, finalizer));
     }
 
     protected void finishAntlr() throws InterruptedException, ExecutionException {
-        AntlrTask<? extends ParserRuleContext, PgDatabase> task;
+        AntlrTask<? extends ParserRuleContext> task;
         while ((task = antlrTasks.poll()) != null) {
             task.finish();
         }
@@ -298,5 +313,20 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     static boolean isBuiltin(long oid) {
         final int firstBootstrapObjectId = 10000;
         return oid < firstBootstrapObjectId;
+    }
+
+    protected static class TimestampParam {
+        private List<ObjectTimestamp> timestampObjects;
+        private PgDatabase projDB;
+        private String extensionSchema;
+
+        public void setTimeParams(PgDatabase projDB, String extensionSchema) {
+            this.projDB = projDB;
+            this.extensionSchema = extensionSchema;
+        }
+
+        public void fillObjects(DBTimestamp dbTime) {
+            timestampObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
+        }
     }
 }

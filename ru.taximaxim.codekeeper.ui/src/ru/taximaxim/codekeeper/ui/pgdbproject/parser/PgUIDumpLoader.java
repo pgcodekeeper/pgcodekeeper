@@ -29,12 +29,15 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.loader.FullAnalyze;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
@@ -72,7 +75,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, args, new NullProgressMonitor(), 0);
     }
 
-    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException, CoreException {
+    public PgDatabase loadFile(PgDatabase db) throws InterruptedException, IOException {
         try {
             load(db);
             return db;
@@ -151,7 +154,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 }
             }
         }
-        PgDumpLoader.dbAnalyze(db);
+        FullAnalyze.fullAnalyze(db);
         return db;
     }
 
@@ -184,6 +187,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
                 errors.addAll(errList);
             }
         }
+    }
+
+    public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
+        return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
+                .values().stream().filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema.system;
 
 import java.io.Serializable;
 
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -33,7 +34,12 @@ public abstract class PgSystemStatement implements IStatement, Serializable {
     }
 
     @Override
-    public IStatement getParent() {
+    public PgSystemStatement getParent() {
         return parent;
+    }
+
+    @Override
+    public DbObjNature getStatementNature() {
+        return DbObjNature.SYSTEM;
     }
 }

@@ -10,7 +10,6 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -64,11 +63,6 @@ public class DepcyGraph {
         create();
     }
 
-    public DepcyGraph(PgDatabase graphSrc, boolean workWithDbCopy) {
-        db = workWithDbCopy ? graphSrc.deepCopy() : graphSrc;
-        create();
-    }
-
     private void create() {
         graph.addVertex(db);
 
@@ -77,9 +71,9 @@ public class DepcyGraph {
             graph.addVertex(schema);
             graph.addEdge(schema, db);
 
-            for(IFunction func : schema.getFunctions()) {
-                graph.addVertex((PgFunction)func);
-                graph.addEdge((PgFunction)func, schema);
+            for(PgFunction func : schema.getFunctions()) {
+                graph.addVertex(func);
+                graph.addEdge(func, schema);
             }
 
             for(PgSequence seq : schema.getSequences()) {
@@ -151,8 +145,8 @@ public class DepcyGraph {
         for(PgSchema schema : db.getSchemas()) {
             processDeps(schema);
 
-            for(IFunction func : schema.getFunctions()) {
-                processDeps((PgFunction)func);
+            for(PgFunction func : schema.getFunctions()) {
+                processDeps(func);
             }
             for(PgSequence seq : schema.getSequences()) {
                 processDeps(seq);
@@ -202,7 +196,7 @@ public class DepcyGraph {
     private void processDeps(PgStatement st) {
         for (GenericColumn dep : st.getDeps()) {
             PgStatement depSt = dep.getStatement(db);
-            if (depSt != null && !st.equals(depSt)) {
+            if (depSt != null) {
                 graph.addEdge(st, depSt);
             }
         }

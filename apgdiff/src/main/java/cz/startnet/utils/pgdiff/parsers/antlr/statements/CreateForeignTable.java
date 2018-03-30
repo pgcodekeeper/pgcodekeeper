@@ -55,7 +55,7 @@ public class CreateForeignTable extends AbstractTable {
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
                     tableName, rawStatement, srvCtx.server_name.getText()));
-            fillColumns(colCtx, table, schemaName);
+            fillColumns(colCtx, table);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
@@ -68,15 +68,14 @@ public class CreateForeignTable extends AbstractTable {
         return table;
     }
 
-    private void fillColumns(Define_foreign_tableContext columnsCtx, PgTable table, String schemaName) {
+    private void fillColumns(Define_foreign_tableContext columnsCtx, PgTable table) {
         for (Foreign_column_defContext colCtx : columnsCtx.columns) {
             if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
+                addTableConstraint(colCtx.tabl_constraint, table);
             } else if (colCtx.define_foreign_columns() != null) {
                 Define_foreign_columnsContext column = colCtx.define_foreign_columns();
-                addColumn(column.column_name.getText(),
-                        column.datatype, column.collate_name,
-                        column.column_constraint, getDefSchemaName(),
+                addColumn(column.column_name.getText(), column.datatype,
+                        column.collate_name, column.column_constraint,
                         column.define_foreign_options(), table);
             }
         }

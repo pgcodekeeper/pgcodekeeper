@@ -50,7 +50,7 @@ public class ValueExpr extends AbstractExpr {
         super(schema);
     }
 
-    public ValueExpr(AbstractExpr parent) {
+    protected ValueExpr(AbstractExpr parent) {
         super(parent);
     }
 

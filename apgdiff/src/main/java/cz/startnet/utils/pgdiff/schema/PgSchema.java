@@ -135,6 +135,7 @@ public class PgSchema extends PgStatement implements ISchema {
      *
      * @return found function or null if no such function has been found
      */
+    @Override
     public PgFunction getFunction(final String signature) {
         for (PgFunction function : functions) {
             if (function.getSignature().equals(signature)) {
@@ -146,18 +147,28 @@ public class PgSchema extends PgStatement implements ISchema {
     }
 
     /**
+     * @return found relation or null if no such relation has been found
+     */
+    @Override
+    public IRelation getRelation(String name) {
+        return getRelations().filter(rel -> rel.getName().equals(name))
+                .findAny().orElse(null);
+    }
+
+    /**
      * Getter for {@link #functions}. The list cannot be modified.
      *
      * @return {@link #functions}
      */
     @Override
-    public List<IFunction> getFunctions() {
+    public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
     }
 
     @Override
     public Stream<IRelation> getRelations() {
-        return Stream.concat(getTables().stream(), getViews().stream());
+        return Stream.concat(Stream.concat(getTables().stream(), getViews().stream()),
+                getSequences().stream());
     }
 
     /**
@@ -278,6 +289,16 @@ public class PgSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableList(types);
     }
 
+
+    public PgTable getTableByIndex(String name) {
+        for (PgTable t : getTables()) {
+            if (t.getIndex(name) != null) {
+                return t;
+            }
+        }
+        return null;
+    }
+
     public void addDomain(PgDomain dom) {
         assertUnique(this::getDomain, dom);
         domains.add(dom);
@@ -318,10 +339,6 @@ public class PgSchema extends PgStatement implements ISchema {
         types.add(type);
         type.setParent(this);
         resetHash();
-    }
-
-    public boolean containsFunction(final String signature) {
-        return getFunction(signature) != null;
     }
 
     public boolean containsSequence(final String name) {

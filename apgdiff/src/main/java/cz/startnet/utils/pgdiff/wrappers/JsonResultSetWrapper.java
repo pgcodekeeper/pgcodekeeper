@@ -62,7 +62,8 @@ public class JsonResultSetWrapper implements ResultSetWrapper {
 
     @Override
     public String getString(String columnName) throws WrapperAccessException {
-        return (String) get(columnName);
+        Object res = get(columnName);
+        return res == null ? null : res.toString();
     }
 
     @Override

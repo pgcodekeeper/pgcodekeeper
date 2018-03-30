@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -33,6 +34,7 @@ public final class PgDiffUtils {
     public static final int ERROR_SUBSTRING_LENGTH = 20;
     private static final Pattern PATTERN_SQ = Pattern.compile("'", Pattern.LITERAL);
     private static final Pattern PATTERN_DQ = Pattern.compile("\"", Pattern.LITERAL);
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
     public static boolean isValidId(String id, boolean allowKeywords, boolean allowCaps) {
         if (id.isEmpty()) {
@@ -165,22 +167,51 @@ public final class PgDiffUtils {
         return sb.toString();
     }
 
+    public static byte[] getHash(String s, String instance) {
+        try {
+            return MessageDigest.getInstance(instance)
+                    .digest(s.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException ex) {
+            Log.log(ex);
+            return null;
+        }
+    }
+
+
+    public static String hash (String s, String instance) {
+        byte[] hash = getHash(s, instance);
+        if (hash == null) {
+            return instance +"_ERROR_" + new Random().nextInt();
+        }
+
+        StringBuilder sb = new StringBuilder(2 * hash.length);
+        for (byte b : hash) {
+            sb.append(HEX_CHARS[(b & 0xff) >> 4]);
+            sb.append(HEX_CHARS[(b & 0x0f)]);
+        }
+        return sb.toString();
+
+    }
+
     /**
      * @return lowercase hex MD5 for UTF-8 representation of given string.
      */
     public static String md5(String s) {
-        try {
-            byte[] hash = MessageDigest.getInstance("MD5")
-                    .digest(s.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(2 * hash.length);
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b & 0xff));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
-            return "MD5_ERROR_" + new Random().nextInt();
-        }
+        return hash(s, "MD5");
+    }
+
+    /**
+     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
+     */
+    public static byte[] sha(String s) {
+        return getHash(s, "SHA-256");
+    }
+
+    /**
+     * @return lowercase hex SHA-256 for UTF-8 representation of given string.
+     */
+    public static String shaString(String s) {
+        return hash(s, "SHA-256");
     }
 
     public static String checkedEncodeUtf8(String string) {
@@ -267,6 +298,10 @@ public final class PgDiffUtils {
 
     public static boolean isStringNotEmpty(String input) {
         return input != null && !input.isEmpty();
+    }
+
+    public static <T> Iterable<T> sIter(Stream<T> stream) {
+        return (Iterable<T>)stream::iterator;
     }
 
     private PgDiffUtils() {

@@ -1,6 +1,7 @@
 -- extension owned indices are skipped by table != null check in java code
 
-SELECT  cls.relname,
+SELECT  cls.oid::bigint,
+    cls.relname,
     clsrel.relname AS table_name,
     ind.indisunique,
     ind.indisclustered as isclustered,
