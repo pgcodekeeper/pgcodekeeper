@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ProjectProperties extends PropertyPage implements IWorkbenchPropertyPage {
+public class ProjectProperties extends PropertyPage {
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
