@@ -1,8 +1,11 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
 
 public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
 

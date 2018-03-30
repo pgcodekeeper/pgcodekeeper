@@ -53,7 +53,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         super(schema);
     }
 
-    protected Select(AbstractExpr parent) {
+    public Select(AbstractExpr parent) {
         super(parent);
     }
 

@@ -1,9 +1,12 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {

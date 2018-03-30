@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff.parsers.antlr.exprold;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
@@ -6,6 +6,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.AbstractExprWithNmspc;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 
 public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
