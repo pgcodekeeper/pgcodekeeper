@@ -1,11 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -19,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -195,14 +195,8 @@ public abstract class AbstractExpr {
                 if (referencedTable != null) {
                     columnParent = referencedTable.table;
                     GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
-                    Entry<DbObjNature, String> systemOrUserColumnType = getSystemOrUserColumnType(genericColumn);
-                    columnType = systemOrUserColumnType.getValue();
-
-                    // Add dependency only for user's objects.
-                    if (systemOrUserColumnType.getKey() != null
-                            && DbObjNature.USER.equals(systemOrUserColumnType.getKey())) {
-                        depcies.add(genericColumn);
-                    }
+                    columnType = getSystemOrUserColumnType(genericColumn);
+                    depcies.add(genericColumn);
                 } else {
                     Entry<String, List<Pair<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
@@ -223,15 +217,28 @@ public abstract class AbstractExpr {
         return pair;
     }
 
-    private Entry<DbObjNature, String> getSystemOrUserColumnType(GenericColumn genericColumn) {
-        for (IRelation relation : PgDiffUtils.sIter(findRelations(genericColumn.schema, genericColumn.table))) {
-            for (Pair<String, String> colPair : PgDiffUtils.sIter(relation.getRelationColumns())) {
-                if (genericColumn.column.equals(colPair.getKey())) {
-                    return new SimpleEntry<>(relation.getStatementNature(), colPair.getValue());
-                }
+    private String getSystemOrUserColumnType(GenericColumn genericColumn) {
+        for (Pair<String, String> colPair : getColumnsOfRelations(genericColumn.schema, genericColumn.table)) {
+            if (genericColumn.column.equals(colPair.getKey())) {
+                return colPair.getValue();
             }
         }
-        return new SimpleEntry<>(null, TypesSetManually.COLUMN);
+        return TypesSetManually.COLUMN;
+    }
+
+    /**
+     * Gives lists of relations columns (name-type) for given schemaName and relationName.
+     *
+     * @param qualSchemaName
+     * @param relationName
+     * @return lists of relations columns (name-type) for given schemaName and relationName
+     */
+    protected List<Pair<String, String>> getColumnsOfRelations(String schemaName,
+            String relationName) {
+        List<Pair<String, String>> ret = new ArrayList<>();
+        findRelations(schemaName, relationName)
+        .forEach(r -> ret.addAll(r.getRelationColumns().collect(Collectors.toList())));
+        return ret;
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {

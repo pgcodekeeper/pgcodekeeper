@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -39,7 +37,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -249,25 +246,17 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    private List<Pair<String, String>> getColsWithAddedDepcies(
-            List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndRelationCols,
-            String schemaName, String relationName) {
-        List<Pair<String, String>> сolsWithAddedDepcies = new ArrayList<>();
-        for (Entry<DbObjNature, List<Pair<String, String>>> systemOrUserCols : natureAndRelationCols) {
-            // Add dependency only for user's objects.
-            if (DbObjNature.USER.equals(systemOrUserCols.getKey())) {
-                addColumnsDepcies(schemaName, relationName, systemOrUserCols.getValue());
-            }
-            сolsWithAddedDepcies.addAll(systemOrUserCols.getValue());
-        }
-        return сolsWithAddedDepcies;
-    }
-
     private List<Pair<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
         String schemaName = gTablerOrView.schema;
         String tableOrView = gTablerOrView.table;
-        return getColsWithAddedDepcies(getNatureAndRelationColumns(schemaName, tableOrView),
-                schemaName, tableOrView);
+        return getColsWithAddedDepcies(schemaName, tableOrView,
+                getColumnsOfRelations(schemaName, tableOrView));
+    }
+
+    private List<Pair<String, String>> getColsWithAddedDepcies(String schemaName,
+            String relationName, List<Pair<String, String>> colsOfRelations) {
+        addColumnsDepcies(schemaName, relationName, colsOfRelations);
+        return colsOfRelations;
     }
 
     private List<Pair<String, String>> getColsOfNotQualAster() {
@@ -294,11 +283,11 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         String qualSchema = QNameParser.getSecondName(ids);
         String srcOrTblOrView = QNameParser.getFirstName(ids);
 
-        List<Entry<DbObjNature, List<Pair<String, String>>>> natureAndQualAsterCols = getNatureAndRelationColumns(
+        List<Pair<String, String>> colsOfRelations = getColumnsOfRelations(
                 qualSchema, srcOrTblOrView);
         // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
-        if (!natureAndQualAsterCols.isEmpty()) {
-            return getColsWithAddedDepcies(natureAndQualAsterCols, qualSchema, srcOrTblOrView);
+        if (!colsOfRelations.isEmpty()) {
+            return getColsWithAddedDepcies(qualSchema, srcOrTblOrView, colsOfRelations);
         }
 
         Entry<String, GenericColumn> srcOfAlias = findReference(qualSchema, srcOrTblOrView, null);
@@ -407,21 +396,5 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
         }
-    }
-
-    /**
-     * Gives lists of relation columns (name-type) with nature marks
-     * for given schemaName and relationName.
-     *
-     * @param qualSchemaName
-     * @param relationName
-     * @return lists of relation columns (name-type) with nature marks
-     * for given schemaName and relationName
-     */
-    protected List<Entry<DbObjNature, List<Pair<String, String>>>> getNatureAndRelationColumns(String qualSchemaName,
-            String relationName) {
-        return findRelations(qualSchemaName, relationName)
-                .map(r -> new SimpleEntry<>(r.getStatementNature(), r.getRelationColumns().collect(Collectors.toList())))
-                .collect(Collectors.toList());
     }
 }

@@ -371,7 +371,7 @@ public class ValueExpr extends AbstractExpr {
 
                 if (resultFunction != null) {
                     if (funcNameQualCtx != null &&
-                            DbObjNature.USER.equals(resultFunction.getStatementNature())) {
+                            DbObjNature.USER == resultFunction.getStatementNature()) {
                         addFunctionDepcy(resultFunction);
                     }
                     return new Pair<>(functionName, resultFunction.getReturns());
