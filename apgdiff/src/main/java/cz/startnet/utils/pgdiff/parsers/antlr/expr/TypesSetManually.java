@@ -3,7 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 public interface TypesSetManually {
     String UNKNOWN = "unknown_unknown";
     String EMPTY = "empty";
-    String UNKNOWN_ARRAY = "unknown[]";
 
     String COLUMN = "column";
     String FUNCTION_COLUMN = "functionCol";
