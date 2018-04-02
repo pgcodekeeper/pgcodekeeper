@@ -94,7 +94,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     @Override
     protected Entry<String, List<Pair<String, String>>> findReferenceComplex(String name) {
         return complexNamespace.entrySet().stream().filter(p -> name.equals(p.getKey()))
-                .findFirst().orElse(super.findReferenceComplex(name));
+                .findAny().orElse(super.findReferenceComplex(name));
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {

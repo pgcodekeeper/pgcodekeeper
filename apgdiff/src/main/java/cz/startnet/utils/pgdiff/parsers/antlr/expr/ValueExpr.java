@@ -74,12 +74,11 @@ public class ValueExpr extends AbstractExpr {
     }
 
     public Pair<String, String> analyze(Vex vex) {
-        Pair<String, String> ret = null;
+        Pair<String, String> ret ;
         Data_typeContext dataType = vex.dataType();
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
         Collate_identifierContext collate;
-        Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
         List<Pair<String, String>> operandsList;
@@ -115,57 +114,48 @@ public class ValueExpr extends AbstractExpr {
                 }
             }
 
-            ret = new Pair<>(null, ParserAbstract.getFullCtxText(dataType));
+            ret = operandsList.get(0);
+            ret.setSecond(ParserAbstract.getFullCtxText(dataType));
+        } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
+            ret = operandsList.get(0);
+            if (vex.colon() == null) {
+                ret.setValue(stripBrackets(ret.getValue()));
+            }
         } else if ((collate = vex.collateIdentifier()) != null) {
             // TODO pending DbObjType.COLLATION
+            ret = operandsList.get(0);
+        } else if (vex.timeZone() != null) {
+            ret = operandsList.get(0);
+        } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null) {
+            Select_stmt_no_parensContext selectStmt = vex.selectStmt();
+            if (selectStmt != null) {
+                new Select(this).analyze(selectStmt);
+            }
             ret = new Pair<>(null, TypesSetManually.BOOLEAN);
-        } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
-                (selectStmt = vex.selectStmt()) != null) {
-            new Select(this).analyze(selectStmt);
-            ret = new Pair<>(null, TypesSetManually.UNKNOWN);
-        } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
-                (selectStmt = vex.selectStmt()) == null) {
-            ret = new Pair<>(null, TypesSetManually.UNKNOWN);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
             for (VexContext v : overlaps.vex()) {
                 analyze(new Vex(v));
             }
-            ret = new Pair<>(null, TypesSetManually.BOOLEAN);
-        } else if (vex.leftBracket() != null && vex.rightBracket() != null) {
-            if (vex.colon() == null) {
-                ret = operandsList.get(0);
-                ret.setValue(bracketProcessing(ret.getValue()));
-            } else {
-                ret = operandsList.get(0);
-            }
+            ret = new Pair<>("overlaps", TypesSetManually.BOOLEAN);
         } else if (vex.plus() != null || vex.minus() != null) {
             if (operandsList.size() == 2) {
-                ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+                ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
             } else {
-                ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
-            }
-        } else if ( (vex.timeZone() != null)
-                || (vex.in() == null && vex.leftParen() != null && vex.rightParen() != null) ) {
-            if (operandsList.size() == 1) {
-                ret = operandsList.get(0);
-            } else {
-                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+                ret = operator(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
             }
         } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
-            ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+            ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
         } else if (vex.op() != null) {
             if (operandsList.size() == 1) {
                 if (vex.getVexCtx().getChild(0) instanceof OpContext) {
-                    ret = getReturnedTypeOfOperation(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
+                    ret = operator(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
                 } else {
-                    ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), TypesSetManually.EMPTY);
+                    ret = operator(vex, operandsList.get(0).getValue(), TypesSetManually.EMPTY);
                 }
             } else {
-                ret = getReturnedTypeOfOperation(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+                ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
             }
-        } else if ((vex.is() != null && (vex.truthValue() != null || vex.nullValue() != null || vex.distinct() != null))
-                || (vex.not() != null && vex.in() == null)
-                || vex.between() != null
+        } else if (vex.between() != null
                 || vex.like() != null
                 || vex.ilike() != null
                 || vex.similar() != null
@@ -175,8 +165,10 @@ public class ValueExpr extends AbstractExpr {
                 || vex.geq() != null
                 || vex.equal() != null
                 || vex.notEqual() != null
+                || vex.is() != null
                 || vex.isNull() != null
                 || vex.notNull() != null
+                || (vex.not() != null && vex.in() == null)
                 || vex.and() != null
                 || vex.or() != null ) {
             ret = new Pair<>(null, TypesSetManually.BOOLEAN);
@@ -195,18 +187,25 @@ public class ValueExpr extends AbstractExpr {
             Unsigned_value_specificationContext unsignedValue;
 
             if (primary.NULL() != null) {
-                ret = new Pair<>(null, TypesSetManually.NULL);
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
-                ret = new Pair<>(null, unsigned(unsignedValue));
+                ret = new Pair<>(null, literal(unsignedValue));
             } else if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
                     subSelectStmt != null) {
-                List<Pair<String, String>> colsList = new Select(this).analyze(subSelectStmt);
-                return colsList.get(0);
+                ret = new Select(this).analyze(subSelectStmt).get(0);
             } else if ((caseExpr = primary.case_expression()) != null) {
+                VexContext retVex = caseExpr.r.get(0);
+                ret = null;
                 for (VexContext v : caseExpr.vex()) {
-                    analyze(new Vex(v));
+                    Pair<String, String> caseRet = analyze(new Vex(v));
+                    if (v == retVex) {
+                        // use the first case result as the return type
+                        ret = caseRet;
+                    }
                 }
-                ret = new Pair<>(null, TypesSetManually.BOOLEAN);
+                if (ret.getFirst() == null) {
+                    ret.setFirst("case");
+                }
             } else if ((cast = primary.cast_specification()) != null) {
                 ret = analyze(new Vex(cast.vex()));
                 Data_typeContext dataTypeCtx = cast.data_type();
@@ -216,21 +215,21 @@ public class ValueExpr extends AbstractExpr {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
                     ret = analyze(new Vex(compModVex));
-                    ret.setValue(bracketProcessing(ret.getValue()));
+                    ret.setValue(stripBrackets(ret.getValue()));
                 } else {
-                    new Select(this).analyze(compMod.select_stmt_no_parens());
-                    ret = new Pair<>(null, TypesSetManually.UNKNOWN);
+                    ret = new Select(this).analyze(compMod.select_stmt_no_parens()).get(0);
                 }
             } else if (primary.EXISTS() != null &&
                     (subquery = primary.table_subquery()) != null) {
                 new Select(this).analyze(subquery.select_stmt());
-                ret = new Pair<>(null, TypesSetManually.BOOLEAN);
+                ret = new Pair<>("exists", TypesSetManually.BOOLEAN);
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
                 ret = addColumnDepcy(qname);
             } else if ((indirection = primary.indirection_identifier()) != null) {
                 analyze(new Vex(indirection.vex()));
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             } else if ((ast = primary.qualified_asterisk()) != null) {
                 // TODO pending full analysis
                 ret = new Pair<>(null, TypesSetManually.QUALIFIED_ASTERISK);
@@ -239,17 +238,31 @@ public class ValueExpr extends AbstractExpr {
                 if (arrayb != null) {
                     List<VexContext> arraybVexCtxList = arrayb.vex();
                     ret = analyze(new Vex(arraybVexCtxList.get(0)));
+                    for (int i = 1; i < arraybVexCtxList.size(); ++i) {
+                        analyze(new Vex(arraybVexCtxList.get(i)));
+                    }
                 } else {
-                    new Select(this).analyze(array.array_query().table_subquery().select_stmt());
-                    ret = new Pair<>(null, TypesSetManually.UNKNOWN_ARRAY);
+                    ret = new Select(this)
+                            .analyze(array.array_query().table_subquery().select_stmt())
+                            .get(0);
                 }
+                ret.setFirst("array");
+                ret.setSecond(ret.getSecond() + "[]");
             } else if ((typeCoercion = primary.type_coercion()) != null) {
                 Data_typeContext coercionDataType = typeCoercion.data_type();
                 addTypeDepcy(coercionDataType);
-                ret = new Pair<>(null, ParserAbstract.getFullCtxText(coercionDataType));
+                String type = ParserAbstract.getFullCtxText(coercionDataType);
+                // since this cast can only convert string literals into a type
+                // and types are restricted to the simplest
+                // column name here will always be derived from type name
+                ret = new Pair<>(type, type);
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in Vex Primary!");
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
+            ret = new Pair<>(null, TypesSetManually.UNKNOWN);
         }
 
         return ret;
@@ -405,7 +418,7 @@ public class ValueExpr extends AbstractExpr {
                 .map(Entry::getKey).orElse(resultFunction);
     }
 
-    private Pair<String, String> getReturnedTypeOfOperation(Vex expression, String...sourceArgsTypesArray) {
+    private Pair<String, String> operator(Vex expression, String...sourceArgsTypesArray) {
         List<String> sourceArgsTypes = Arrays.asList(sourceArgsTypesArray);
 
         String operatorName = getChildOperator(expression);
@@ -537,7 +550,7 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private String unsigned(Unsigned_value_specificationContext unsignedValue){
+    private String literal(Unsigned_value_specificationContext unsignedValue){
         String ret = null;
         Unsigned_numeric_literalContext unsignedNumeric;
         General_literalContext generalLiteral;
@@ -569,10 +582,9 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    private String bracketProcessing(String type) {
+    private String stripBrackets(String type) {
         if (type.endsWith("[]")) {
-            Log.log(Log.LOG_WARNING, "The type '" + type + "' had brackets!");
-            return type.substring(0, type.indexOf("[]"));
+            return type.substring(0, type.length() - 2);
         } else {
             return type;
         }

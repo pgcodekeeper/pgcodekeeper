@@ -8,7 +8,6 @@ public interface TypesSetManually {
     String COLUMN = "column";
     String FUNCTION_COLUMN = "functionCol";
 
-    String NULL = "NULL";
     String QUALIFIED_ASTERISK = "qualifiedAsterisk";
 
     String BOOLEAN = "boolean";

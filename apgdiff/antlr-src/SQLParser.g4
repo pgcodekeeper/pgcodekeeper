@@ -1660,7 +1660,7 @@ truth_value
   ;
 
 case_expression
-  : CASE vex? (WHEN vex THEN vex)+ (ELSE r=vex)? END
+  : CASE vex? (WHEN vex THEN r+=vex)+ (ELSE r+=vex)? END
   ;
 
 cast_specification

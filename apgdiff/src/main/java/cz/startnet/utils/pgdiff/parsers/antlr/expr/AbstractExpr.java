@@ -113,8 +113,9 @@ public abstract class AbstractExpr {
             schemaName = schema;
         }
 
+        String functionName = QNameParser.getFirstName(ids);
         PgFunction function = db.getSchema(schemaName).getFunctions().stream()
-                .filter(f -> QNameParser.getFirstName(ids).equals(f.getBareName()))
+                .filter(f -> functionName.equals(f.getBareName()))
                 .findAny().orElse(null);
         if (function != null) {
             depcies.add(new GenericColumn(schemaName, function.getName(), DbObjType.FUNCTION));
