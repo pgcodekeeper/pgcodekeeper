@@ -263,6 +263,22 @@ public final class Messages extends NLS {
 
     public static String DepcyGraphView_remote;
 
+    public static String DependencyProperties_add_directory;
+
+    public static String DependencyProperties_add_dump;
+
+    public static String DependencyProperties_add_pgcodekeeper_project;
+
+    public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_path;
+
+    public static String DependencyProperties_select_directory;
+
+    public static String DependencyProperties_select_pgcodekeeper_project;
+
+    public static String DependencyProperties_type;
+
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_any_file_filter;
 
