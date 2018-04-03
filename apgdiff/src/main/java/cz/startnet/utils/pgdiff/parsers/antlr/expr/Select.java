@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -396,5 +397,20 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
         }
+    }
+
+    /**
+     * Gives lists of relations columns (name-type) for given schemaName and relationName.
+     *
+     * @param qualSchemaName
+     * @param relationName
+     * @return lists of relations columns (name-type) for given schemaName and relationName
+     */
+    private List<Pair<String, String>> getColumnsOfRelations(String schemaName,
+            String relationName) {
+        List<Pair<String, String>> ret = new ArrayList<>();
+        findRelations(schemaName, relationName)
+        .forEach(r -> ret.addAll(r.getRelationColumns().collect(Collectors.toList())));
+        return ret;
     }
 }

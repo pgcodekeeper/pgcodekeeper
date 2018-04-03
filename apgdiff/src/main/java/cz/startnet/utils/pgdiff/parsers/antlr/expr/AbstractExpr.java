@@ -1,12 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -20,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.IRelation;
@@ -95,9 +94,34 @@ public abstract class AbstractExpr {
     }
 
     protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
+        String schemaName = null;
+        IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaNameCtx != null) {
+            schemaName = schemaNameCtx.getText();
+        } else {
+            String relationName = QNameParser.getFirstName(ids);
+            if (db.getSchema(schema).containsRelation(relationName)) {
+                schemaName = schema;
+            } else {
+                for (ISchema s : systemStorage.getSchemas()) {
+                    if (s.containsRelation(relationName)) {
+                        schemaName = s.getName();
+                        break;
+                    }
+                }
+            }
+
+            if (schemaName == null) {
+                Log.log(Log.LOG_WARNING, "Could not find schema for relation: " + relationName);
+                schemaName = schema;
+            }
+        }
+
         GenericColumn depcy = new GenericColumn(
-                getSchemaNameForRelation(ids), QNameParser.getFirstName(ids), DbObjType.TABLE);
-        depcies.add(depcy);
+                schemaName, QNameParser.getFirstName(ids), DbObjType.TABLE);
+        if (!isSystemSchema(schemaName)) {
+            depcies.add(depcy);
+        }
         return depcy;
     }
 
@@ -122,55 +146,17 @@ public abstract class AbstractExpr {
         }
     }
 
-    private String getSchemaNameForRelation(List<IdentifierContext> ids) {
-        IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        if (schemaCtx != null) {
-            return schemaCtx.getText();
-        }
-        String relationName = QNameParser.getFirstName(ids);
-
-        if (db.getSchema(schema).containsRelation(relationName)) {
-            return schema;
-        }
-        for (ISchema s : systemStorage.getSchemas()) {
-            if (s.containsRelation(relationName)) {
-                return s.getName();
-            }
-        }
-        Log.log(Log.LOG_WARNING, "Could not find schema for relation: " + relationName);
-        return schema;
-    }
-
-    private String getSchemaNameForFunction(IdentifierContext sch, String signature) {
-        if (sch != null) {
-            return sch.getText();
-        }
-        if (db.getSchema(schema).containsFunction(signature)) {
-            return schema;
-        }
-        for (ISchema s : systemStorage.getSchemas()) {
-            if (s.containsFunction(signature)) {
-                return s.getName();
-            }
-        }
-        Log.log(Log.LOG_WARNING, "Could not find schema for function: " + signature);
-        return schema;
-    }
-
-    protected void addFunctionDepcy(IFunction function){
-        depcies.add(new GenericColumn(function.getContainingSchema().getName(),
-                function.getName(), DbObjType.FUNCTION));
-    }
-
     protected void addTypeDepcy(Data_typeContext type) {
         Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
 
         if (typeName != null) {
             IdentifierContext qual = typeName.identifier();
-            String schema = qual == null ? this.schema : qual.getText();
+            String schemaName = qual == null ? this.schema : qual.getText();
 
-            depcies.add(new GenericColumn(schema,
-                    typeName.identifier_nontype().getText(), DbObjType.TYPE));
+            if (!isSystemSchema(schemaName)) {
+                depcies.add(new GenericColumn(schemaName,
+                        typeName.identifier_nontype().getText(), DbObjType.TYPE));
+            }
         }
     }
 
@@ -186,17 +172,17 @@ public abstract class AbstractExpr {
 
         // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
-            String schema = QNameParser.getThirdName(ids);
+            String schemaName = QNameParser.getThirdName(ids);
             columnParent = QNameParser.getSecondName(ids);
 
-            Entry<String, GenericColumn> ref = findReference(schema, columnParent, column);
+            Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, column);
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnParent = referencedTable.table;
-                    GenericColumn genericColumn = new GenericColumn(referencedTable.schema, columnParent, column, DbObjType.COLUMN);
-                    columnType = getSystemOrUserColumnType(genericColumn);
-                    depcies.add(genericColumn);
+                    IRelation relationOfColumn = findRelationOfColumn(referencedTable.schema,
+                            columnParent, column);
+                    columnType = addFilteredColumnDepcy(relationOfColumn, column).getSecond();
                 } else {
                     Entry<String, List<Pair<String, String>>> refComplex = findReferenceComplex(columnParent);
                     if (refComplex != null) {
@@ -208,7 +194,7 @@ public abstract class AbstractExpr {
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + columnParent + ' ' + column);
+                        + schemaName + ' ' + columnParent + ' ' + column);
             }
         }
 
@@ -217,28 +203,37 @@ public abstract class AbstractExpr {
         return pair;
     }
 
-    private String getSystemOrUserColumnType(GenericColumn genericColumn) {
-        for (Pair<String, String> colPair : getColumnsOfRelations(genericColumn.schema, genericColumn.table)) {
-            if (genericColumn.column.equals(colPair.getKey())) {
-                return colPair.getValue();
+    /**
+     * Add a dependency only from the column of the user object.
+     *
+     * @param relation user or system object which contains column 'colName'
+     * @param colName dependency from this column will be added
+     * @return pair (name, type) for 'colName' or null
+     */
+    private Pair<String, String> addFilteredColumnDepcy(IRelation relation, String colName) {
+        if (relation == null) {
+            return new Pair<>(colName, TypesSetManually.COLUMN);
+        }
+
+        for (Pair<String, String> colPair : PgDiffUtils.sIter(relation.getRelationColumns())) {
+            if (colName.equals(colPair.getKey())) {
+                if (DbObjNature.USER == relation.getStatementNature()) {
+                    depcies.add(new GenericColumn(relation.getContainingSchema().getName(),
+                            relation.getName(), colName, DbObjType.COLUMN));
+
+                }
+                return colPair;
             }
         }
-        return TypesSetManually.COLUMN;
+
+        return new Pair<>(colName, TypesSetManually.COLUMN);
     }
 
-    /**
-     * Gives lists of relations columns (name-type) for given schemaName and relationName.
-     *
-     * @param qualSchemaName
-     * @param relationName
-     * @return lists of relations columns (name-type) for given schemaName and relationName
-     */
-    protected List<Pair<String, String>> getColumnsOfRelations(String schemaName,
-            String relationName) {
-        List<Pair<String, String>> ret = new ArrayList<>();
-        findRelations(schemaName, relationName)
-        .forEach(r -> ret.addAll(r.getRelationColumns().collect(Collectors.toList())));
-        return ret;
+    protected void addFilteredFunctionDepcy(IFunction function) {
+        if (DbObjNature.USER == function.getStatementNature()) {
+            depcies.add(new GenericColumn(function.getContainingSchema().getName(),
+                    function.getName(), DbObjType.FUNCTION));
+        }
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
@@ -246,14 +241,16 @@ public abstract class AbstractExpr {
         String schemaName = QNameParser.getSchemaName(ids, schema);
         String tableName = QNameParser.getFirstName(ids);
         for (IdentifierContext col : cols) {
-            depcies.add(new GenericColumn(schemaName, tableName, col.getText(), DbObjType.COLUMN));
+            String columnName = col.getText();
+            addFilteredColumnDepcy(findRelationOfColumn(schemaName, tableName, columnName), columnName);
         }
     }
 
     protected void addColumnsDepcies(String schemaName, String tableOrView, List<Pair<String, String>> cols) {
         String sName = schemaName != null ? schemaName : this.schema;
         for (Pair<String, String> col : cols) {
-            depcies.add(new GenericColumn(sName, tableOrView, col.getKey(), DbObjType.COLUMN));
+            String columnName = col.getFirst();
+            addFilteredColumnDepcy(findRelationOfColumn(sName, tableOrView, columnName), columnName);
         }
     }
 
@@ -261,29 +258,72 @@ public abstract class AbstractExpr {
         SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
         Function_args_parserContext sig = p.function_args_parser();
         List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
-        depcies.add(new GenericColumn(getSchemaNameForFunction(QNameParser.getSchemaNameCtx(ids), signature),
-                PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
-                ParserAbstract.getFullCtxText(sig.function_args()),
-                DbObjType.FUNCTION));
+
+        String schemaName = null;
+        IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
+        if (schemaNameCtx != null) {
+            schemaName = schemaNameCtx.getText();
+        } else {
+            if (db.getSchema(schema).containsFunction(signature)) {
+                schemaName = schema;
+            }
+            for (ISchema s : systemStorage.getSchemas()) {
+                if (s.containsFunction(signature)) {
+                    schemaName = s.getName();
+                }
+            }
+
+            if (schemaName == null) {
+                Log.log(Log.LOG_WARNING, "Could not find schema for function: " + signature);
+                schemaName = schema;
+            }
+        }
+
+        if (!isSystemSchema(schemaName)) {
+            depcies.add(new GenericColumn(schemaName,
+                    PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
+                    ParserAbstract.getFullCtxText(sig.function_args()), DbObjType.FUNCTION));
+        }
     }
 
     protected void addSchemaDepcy(List<IdentifierContext> ids) {
-        depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
+        String schemaName = QNameParser.getFirstName(ids);
+        if (!isSystemSchema(schemaName)) {
+            depcies.add(new GenericColumn(schemaName, DbObjType.SCHEMA));
+        }
+    }
+
+    private IRelation findRelationOfColumn(String schemaName,
+            String relName, String colName) {
+        for (IRelation r : PgDiffUtils.sIter(findRelations(schemaName, relName))) {
+            for (Pair<String, String> colPair : PgDiffUtils.sIter(r.getRelationColumns())) {
+                if (colName.equals(colPair.getKey())) {
+                    return r;
+                }
+            }
+        }
+        return null;
     }
 
     protected Stream<IRelation> findRelations(String schemaName, String relationName) {
         Stream<IRelation> foundRelations;
-        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
-                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            foundRelations = systemStorage.getSchema(schemaName).getRelations()
-                    .map(r -> (IRelation) r);
-        } else if (schemaName != null) {
-            foundRelations = db.getSchema(schemaName).getRelations();
+        if (schemaName != null) {
+            if (isSystemSchema(schemaName)) {
+                foundRelations = systemStorage.getSchema(schemaName).getRelations()
+                        .map(r -> (IRelation) r);
+            } else {
+                foundRelations = db.getSchema(schemaName).getRelations();
+            }
         } else {
             foundRelations = Stream.concat(db.getSchema(schema).getRelations(),
                     systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getRelations());
         }
 
         return foundRelations.filter(r -> r.getName().equals(relationName));
+    }
+
+    protected boolean isSystemSchema(String schemaName) {
+        return PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
+                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName);
     }
 }

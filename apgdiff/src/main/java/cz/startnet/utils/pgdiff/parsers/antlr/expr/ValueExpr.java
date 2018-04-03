@@ -55,7 +55,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -370,9 +369,8 @@ public class ValueExpr extends AbstractExpr {
                         findFunctions(schemaName, functionName, sourceArgsTypes.size()));
 
                 if (resultFunction != null) {
-                    if (funcNameQualCtx != null &&
-                            DbObjNature.USER == resultFunction.getStatementNature()) {
-                        addFunctionDepcy(resultFunction);
+                    if (funcNameQualCtx != null) {
+                        addFilteredFunctionDepcy(resultFunction);
                     }
                     return new Pair<>(functionName, resultFunction.getReturns());
                 }
@@ -396,7 +394,8 @@ public class ValueExpr extends AbstractExpr {
             }
 
             boolean castWellDone = true;
-            List<IArgument> argsOfSourceFunction = getInInoutFuncArgs(f);
+            List<IArgument> argsOfSourceFunction = getInInoutFuncArgs(f)
+                    .collect(Collectors.toList());
 
             for (int k = 0; k < argsOfSourceFunction.size(); k++) {
                 String targetType = argsOfSourceFunction.get(k).getDataType();
@@ -474,28 +473,29 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private List<IArgument> getInInoutFuncArgs(IFunction func) {
+    private Stream<? extends IArgument> getInInoutFuncArgs(IFunction func) {
         return func.getArguments().stream()
-                .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()))
-                .collect(Collectors.toList());
+                .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
     }
 
-    private Stream<IFunction> findFunctions(String schemaName, String functionName, int argsCount) {
+    private Stream<IFunction> findFunctions(String schemaName, String functionBareName,
+            int inInoutFuncArgsCount) {
         Stream<IFunction> foundFunctions;
-        if (PgSystemStorage.SCHEMA_PG_CATALOG.equals(schemaName)
-                || PgSystemStorage.SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
-            foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream()
-                    .map(f -> (IFunction) f);
-        } else if (schemaName != null) {
-            foundFunctions = db.getSchema(schemaName).getFunctions().stream()
-                    .map(f -> (IFunction) f);
+        if (schemaName != null) {
+            if (isSystemSchema(schemaName)) {
+                foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream()
+                        .map(f -> (IFunction) f);
+            } else {
+                foundFunctions = db.getSchema(schemaName).getFunctions().stream()
+                        .map(f -> (IFunction) f);
+            }
         } else {
             foundFunctions = Stream.concat(db.getSchema(schema).getFunctions().stream(),
                     systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream());
         }
 
-        return foundFunctions.filter(f -> f.getBareName().equals(functionName))
-                .filter(f -> getInInoutFuncArgs(f).size() == argsCount);
+        return foundFunctions.filter(f -> f.getBareName().equals(functionBareName))
+                .filter(f -> getInInoutFuncArgs(f).count() == inInoutFuncArgsCount);
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {
