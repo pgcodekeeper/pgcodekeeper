@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,8 +45,7 @@ public class DependencyProperties extends PropertyPage {
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
-        File file = element.getAdapter(IProject.class).getLocation().toFile();
-        store = new DependenciesXmlStore(new File(file, ".dependencies"), "dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
+        store = new DependenciesXmlStore(element.getAdapter(IProject.class));
     }
 
     @Override

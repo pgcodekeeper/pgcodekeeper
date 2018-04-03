@@ -5,9 +5,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -15,6 +20,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -33,6 +39,8 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.properties.Dependency;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public abstract class DbSource {
 
@@ -209,10 +217,40 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                project.getProject(),
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
                 getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
                 monitor, null, er);
+
+        for (Dependency dep : new DependenciesXmlStore(project).readObjects()) {
+            PgDiffArguments args = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+            args.setIgnorePrivileges(dep.isIgnorePriv());
+            try {
+                switch (dep.getType()) {
+                case DIRECTORY:
+                    try (Stream<Path> paths = Files.walk(Paths.get(dep.getPath()))) {
+                        paths.filter(Files::isRegularFile).forEach(path -> {
+                            try {
+                                db.concat(PgDiff.loadDatabaseSchema("dump", path.toString(), args)); //$NON-NLS-1$
+                            } catch (IOException | InterruptedException | URISyntaxException e) {
+                                Log.log(e);
+                            }
+                        });
+                    }
+                    break;
+                case DUMP:
+                    db.concat(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args)); //$NON-NLS-1$
+                    break;
+                case PROJECT:
+                    db.concat(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args)); //$NON-NLS-1$
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported dependency type"); //$NON-NLS-1$
+                }
+            } catch (URISyntaxException | IOException ex) {
+                Log.log(ex);
+            }
+        }
+
         errors = er;
         return db;
     }

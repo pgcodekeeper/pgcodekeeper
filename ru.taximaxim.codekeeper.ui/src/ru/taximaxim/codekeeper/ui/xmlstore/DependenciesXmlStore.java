@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.xmlstore;
 import java.io.File;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -23,6 +24,10 @@ public class DependenciesXmlStore extends XmlStore<Dependency> {
     public DependenciesXmlStore(File file, String rootTag) {
         super(file.getName(), rootTag);
         this.file = file;
+    }
+
+    public DependenciesXmlStore(IProject project) {
+        this(new File(project.getLocation().toFile(), ".dependencies"), "dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
