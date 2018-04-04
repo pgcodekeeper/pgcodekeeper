@@ -43,8 +43,6 @@ public class CreateIndex extends ParserAbstract {
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addIndex(ind);
         }
 
-        ind.addDep(new GenericColumn(schemaName, ind.getTableName(), DbObjType.TABLE));
-
         return ind;
     }
 
