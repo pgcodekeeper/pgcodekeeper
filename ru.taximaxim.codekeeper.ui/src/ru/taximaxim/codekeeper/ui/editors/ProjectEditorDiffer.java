@@ -564,10 +564,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private void openElementInEditor(TreeElement el) {
         if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
-                getSite().getPage().openEditor(new FileEditorInput(proj.getProject().getFile(
-                        org.eclipse.core.runtime.Path.fromOSString(ModelExporter.getRelativeFilePath(
-                                el.getPgStatement(dbProject.getDbObject()), true)))),
-                        EDITOR.SQL);
+                PgStatement st = el.getPgStatement(dbProject.getDbObject());
+                String location = st.getLocation();
+
+                if (location != null) {
+                    FileUtilsUi.openExternalFileSqlEditor(location);
+                } else {
+                    getSite().getPage().openEditor(new FileEditorInput(proj.getProject().getFile(
+                            org.eclipse.core.runtime.Path.fromOSString(ModelExporter.getRelativeFilePath(
+                                    st, true)))), EDITOR.SQL);
+                }
             } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
             }

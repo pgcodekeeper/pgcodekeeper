@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener {
@@ -121,10 +122,15 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     Object obj = ((IStructuredSelection) selection).getFirstElement();
                     if (obj instanceof PgStatement) {
                         PgStatement st = (PgStatement) obj;
+                        String location = st.getLocation();
                         try {
-                            getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
-                                    Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
-                                    EDITOR.SQL);
+                            if (location != null) {
+                                FileUtilsUi.openExternalFileSqlEditor(location);
+                            } else {
+                                getSite().getPage().openEditor(new FileEditorInput(currentProject.getFile(
+                                        Path.fromOSString(ModelExporter.getRelativeFilePath(st, true)))),
+                                        EDITOR.SQL);
+                            }
                         } catch (PartInitException ex) {
                             ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                         }

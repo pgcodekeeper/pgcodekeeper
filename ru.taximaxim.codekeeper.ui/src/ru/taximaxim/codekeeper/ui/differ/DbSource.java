@@ -217,12 +217,12 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
+        PgDiffArguments arguments = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
-                getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null, er);
+                arguments, monitor, null, er);
 
         for (Dependency dep : new DependenciesXmlStore(project).readObjects()) {
-            PgDiffArguments args = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+            PgDiffArguments args = arguments.clone();
             args.setIgnorePrivileges(dep.isIgnorePriv());
             try {
                 switch (dep.getType()) {
@@ -230,7 +230,7 @@ class DbSourceProject extends DbSource {
                     try (Stream<Path> paths = Files.walk(Paths.get(dep.getPath()))) {
                         paths.filter(Files::isRegularFile).forEach(path -> {
                             try {
-                                db.concat(PgDiff.loadDatabaseSchema("dump", path.toString(), args)); //$NON-NLS-1$
+                                db.addLib(PgDiff.loadDatabaseSchema("dump", path.toString(), args), path.toString(), false); //$NON-NLS-1$
                             } catch (IOException | InterruptedException | URISyntaxException e) {
                                 Log.log(e);
                             }
@@ -238,10 +238,10 @@ class DbSourceProject extends DbSource {
                     }
                     break;
                 case DUMP:
-                    db.concat(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args)); //$NON-NLS-1$
+                    db.addLib(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args), dep.getPath(), false); //$NON-NLS-1$
                     break;
                 case PROJECT:
-                    db.concat(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args)); //$NON-NLS-1$
+                    db.addLib(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args), dep.getPath(), true); //$NON-NLS-1$
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported dependency type"); //$NON-NLS-1$

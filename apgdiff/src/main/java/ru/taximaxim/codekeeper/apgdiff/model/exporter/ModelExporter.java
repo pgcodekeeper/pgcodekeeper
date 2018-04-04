@@ -124,13 +124,13 @@ public class ModelExporter {
         if (oldDb == null){
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
-        if(!outDir.exists() || !outDir.isDirectory()) {
+        if (!outDir.exists() || !outDir.isDirectory()) {
             throw new DirectoryException(MessageFormat.format(
                     "Output directory does not exist: {0}",
                     outDir.getAbsolutePath()));
         }
 
-        while (!changeList.isEmpty()){
+        while (!changeList.isEmpty()) {
             TreeElement el = changeList.pop();
             Log.log(Log.LOG_DEBUG, "Exporting object: " + el);
             switch(el.getSide()){
@@ -189,8 +189,9 @@ public class ModelExporter {
         }
     }
 
-    private void editObject(TreeElement el) throws IOException{
+    private void editObject(TreeElement el) throws IOException, PgCodekeeperException{
         PgStatement stInNew = el.getPgStatement(newDb);
+        TreeElement elParent = el.getParent();
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
@@ -204,19 +205,20 @@ public class ModelExporter {
             break;
 
         case FUNCTION:
+            testParentSchema(elParent);
             processFunction(el, stInNew);
             break;
 
         case CONSTRAINT:
         case INDEX:
-            TreeElement elParent = el.getParent();
+            testParentSchema(elParent.getParent());
             processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
         case TRIGGER:
         case RULE:
-            elParent = el.getParent();
-            if (elParent.getType() == DbObjType.TABLE){
+            testParentSchema(elParent.getParent());
+            if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
                 processViewAndContents(elParent, elParent.getPgStatement(newDb), el);
@@ -225,6 +227,7 @@ public class ModelExporter {
 
 
         case TABLE:
+            testParentSchema(elParent);
             processTableAndContents(el, stInNew, el);
             break;
 
@@ -232,6 +235,7 @@ public class ModelExporter {
             // remove old version
             deleteStatementIfExists(stInNew);
 
+            testParentSchema(elParent);
             // dump new version
             dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
                     new File(outDir, getRelativeFilePath(stInNew, true)));
@@ -243,11 +247,17 @@ public class ModelExporter {
      *
      * @throws IOException  if this object is not to be created or is to be deleted
      */
-    private void testParentSchema(TreeElement el) throws PgCodekeeperException {
+    private void testParentSchema(TreeElement el) throws PgCodekeeperException, IOException {
         if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
-                || el.getSide() == DiffSide.LEFT && el.isSelected()){
+                || el.getSide() == DiffSide.LEFT && el.isSelected()) {
             throw new PgCodekeeperException(
                     "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
+        }
+
+        PgStatement st = el.getPgStatement(newDb);
+        File file = new File(outDir, getRelativeFilePath(st, true));
+        if (!file.exists()) {
+            dumpSQL(st.getCreationSQL(), file);
         }
     }
 
@@ -438,7 +448,8 @@ public class ModelExporter {
             if (elChange.getType() == DbObjType.TABLE) {
                 tablePrimary = tableChange;
             } else {
-                PgStatementWithSearchPath stChange, stChangeOld = null;
+                PgStatementWithSearchPath stChange = null;
+                PgStatementWithSearchPath stChangeOld = null;
                 // now get the table based on the child's DiffSide
                 // otherwise BOTH (new) table may be chosen to get LEFT children
                 // which it does not contain
@@ -556,7 +567,8 @@ public class ModelExporter {
             if (elChange.getType() == DbObjType.VIEW) {
                 viewPrimary = viewChange;
             } else {
-                PgStatementWithSearchPath stChange, stChangeOld = null;
+                PgStatementWithSearchPath stChange = null;
+                PgStatementWithSearchPath stChangeOld = null;
                 // now get the view based on the child's DiffSide
                 // otherwise BOTH (new) view may be chosen to get LEFT children
                 // which it does not contain
@@ -638,8 +650,8 @@ public class ModelExporter {
      * Starts the {@link #newDb} export process.
      */
     public void exportFull() throws IOException {
-        if(outDir.exists()) {
-            if(!outDir.isDirectory()) {
+        if (outDir.exists()) {
+            if (!outDir.isDirectory()) {
                 throw new NotDirectoryException(outDir.getAbsolutePath());
             }
 
@@ -659,13 +671,13 @@ public class ModelExporter {
         // exporting schemas
         File schemasSharedDir = new File(outDir,
                 ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
-        if(!schemasSharedDir.mkdir()) {
+        if (!schemasSharedDir.mkdir()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create schemas directory: {0}",
                     schemasSharedDir.getAbsolutePath()));
         }
 
-        for(PgSchema schema : newDb.getSchemas()) {
+        for (PgSchema schema : newDb.getSchemas()) {
             File schemaSQL = new File(schemasSharedDir, getExportedFilenameSql(schema));
             dumpSQL(schema.getCreationSQL(), schemaSQL);
         }
@@ -673,7 +685,7 @@ public class ModelExporter {
         // exporting extensions
         File extensionsDir = new File(outDir,
                 ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.name());
-        if(!extensionsDir.mkdir()) {
+        if (!extensionsDir.mkdir()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create extensions directory: {0}",
                     extensionsDir.getAbsolutePath()));
@@ -685,9 +697,9 @@ public class ModelExporter {
         }
 
         // exporting schemas contents
-        for(PgSchema schema : newDb.getSchemas()) {
+        for (PgSchema schema : newDb.getSchemas()) {
             File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
-            if(!schemaDir.mkdir()) {
+            if (!schemaDir.mkdir()) {
                 throw new DirectoryException(MessageFormat.format(
                         "Could not create schema directory: {0}",
                         schemaDir.getAbsolutePath()));
@@ -713,7 +725,7 @@ public class ModelExporter {
         File funcDir = mkdirObjects(parentDir, "FUNCTION");
 
         Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
-        for(PgFunction f : funcs) {
+        for (PgFunction f : funcs) {
             String fileName = getExportedFilenameSql(f);
             StringBuilder groupedDump = dumps.get(fileName);
             if (groupedDump == null) {
@@ -789,7 +801,7 @@ public class ModelExporter {
         mkdirObjects(null, parentOutDir.toString());
         File objectDir = mkdirObjects(parentOutDir, objectDirName);
 
-        for(PgStatementWithSearchPath obj : objects) {
+        for (PgStatementWithSearchPath obj : objects) {
             dumpSQL(getDumpSql(obj), new File(objectDir, getExportedFilenameSql(obj)));
         }
     }
@@ -798,12 +810,12 @@ public class ModelExporter {
             throws NotDirectoryException, DirectoryException {
         File objectDir = new File(parentOutDir, outDirName);
 
-        if(objectDir.exists()) {
+        if (objectDir.exists()) {
             if(!objectDir.isDirectory()) {
                 throw new NotDirectoryException(objectDir.getAbsolutePath());
             }
         } else {
-            if(!objectDir.mkdir()) {
+            if (!objectDir.mkdir()) {
                 throw new DirectoryException(MessageFormat.format(
                         "Could not create objects directory: {0}",
                         objectDir.getAbsolutePath()));
@@ -813,7 +825,8 @@ public class ModelExporter {
     }
 
     private void dumpSQL(CharSequence sql, File file) throws IOException {
-        try(PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
+        Files.createDirectories(file.toPath().getParent());
+        try (PrintWriter outFile = new UnixPrintWriter(Files.newOutputStream(file.toPath(),
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE), sqlEncoding)) {
             outFile.println(sql);
         }

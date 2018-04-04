@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.fileutils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
@@ -47,6 +49,13 @@ public final class FileUtilsUi {
                 prov.resetDocument(input);
             }
         }
+    }
+
+    public static void openExternalFileSqlEditor(String path) throws PartInitException {
+        IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(path));
+        IEditorInput input = new FileStoreEditorInput(externalFile);
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+        .openEditor(input, EDITOR.SQL);
     }
 
     public static Path getPathToTimeObject(String proj, String db, String hash) throws URISyntaxException {
