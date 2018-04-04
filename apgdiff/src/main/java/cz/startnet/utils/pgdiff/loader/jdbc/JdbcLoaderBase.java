@@ -60,6 +60,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version;
+    private int lastSysOid;
     protected List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 
@@ -272,7 +273,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
                 long oid = res.getLong(OID);
                 JdbcType type = new JdbcType(oid, res.getString("typname"),
                         res.getLong("typelem"), res.getLong("typarray"),
-                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"));
+                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), lastSysOid);
                 cachedTypesByOid.put(oid, type);
             }
         }
@@ -282,6 +283,13 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         setCurrentOperation("version checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
             version = res.next() ? res.getInt(VERSION) : SupportedVersion.VERSION_9_2.getVersion();
+        }
+    }
+
+    protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
+        setCurrentOperation("last system oid checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
+            lastSysOid = res.next() ? res.getInt(LAST_SYS_OID) : 10_000;
         }
     }
 
@@ -305,14 +313,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         while ((task = antlrTasks.poll()) != null) {
             task.finish();
         }
-    }
-
-    /**
-     * See: is_builtin(Oid objectId) in shippable.c
-     */
-    static boolean isBuiltin(long oid) {
-        final int firstBootstrapObjectId = 10000;
-        return oid < firstBootstrapObjectId;
     }
 
     protected static class TimestampParam {

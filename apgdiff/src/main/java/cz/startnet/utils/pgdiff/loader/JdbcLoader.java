@@ -61,6 +61,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             runner.run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
+            queryCheckLastSysOid();
             queryTypesForCache();
             queryRoles();
             setupMonitorWork();
