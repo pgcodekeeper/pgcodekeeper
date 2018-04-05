@@ -102,7 +102,7 @@ public class DependencyProperties extends PropertyPage {
 
             addColumns(viewer);
 
-            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 6);
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
             gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
             viewer.getTable().setLayoutData(gd);
             viewer.getTable().setLinesVisible(true);
