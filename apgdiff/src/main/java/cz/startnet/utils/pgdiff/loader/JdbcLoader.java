@@ -90,6 +90,8 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
+            d.setCurrentPostgreSqlVersion(SupportedVersion.valueOf(version));
+
             FullAnalyze.fullAnalyze(d);
 
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");

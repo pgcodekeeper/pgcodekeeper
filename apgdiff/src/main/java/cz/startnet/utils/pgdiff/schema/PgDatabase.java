@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -46,6 +47,8 @@ public class PgDatabase extends PgStatement {
     private PgDiffArguments arguments;
 
     private DBTimestamp dbTimestamp;
+
+    private SupportedVersion currentPostgreSqlVersion;
 
     @Override
     public DbObjType getStatementType() {
@@ -112,6 +115,14 @@ public class PgDatabase extends PgStatement {
 
     public DBTimestamp getDbTimestamp() {
         return dbTimestamp;
+    }
+
+    public SupportedVersion getCurrentPostgreSqlVersion() {
+        return currentPostgreSqlVersion != null ? currentPostgreSqlVersion : SupportedVersion.VERSION_9_5;
+    }
+
+    public void setCurrentPostgreSqlVersion(SupportedVersion postgreSqlVersion) {
+        this.currentPostgreSqlVersion = postgreSqlVersion;
     }
 
     @Override
@@ -254,6 +265,7 @@ public class PgDatabase extends PgStatement {
         PgDatabase dbDst = new PgDatabase(false);
         dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
+        dbDst.setCurrentPostgreSqlVersion(getCurrentPostgreSqlVersion());
         return dbDst;
     }
 

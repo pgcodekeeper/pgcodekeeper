@@ -30,4 +30,17 @@ public enum SupportedVersion {
     public boolean checkVersion(int version) {
         return version >= this.version;
     }
+
+    public static SupportedVersion valueOf(int checkVersion) {
+        SupportedVersion[] set = SupportedVersion.values();
+
+        for (int i = set.length - 1; i >= 0; i--) {
+            SupportedVersion verEnum = set[i];
+            if (verEnum.checkVersion(checkVersion)) {
+                return verEnum;
+            }
+        }
+
+        return SupportedVersion.VERSION_9_2;
+    }
 }
