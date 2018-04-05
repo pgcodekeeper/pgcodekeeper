@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Date_time_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
@@ -42,6 +43,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.System_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Tokens_simple_functionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Truth_valueContext;
@@ -55,6 +57,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -278,108 +281,169 @@ public class ValueExpr extends AbstractExpr {
      * @return function reference or null for internal functions
      */
     public Pair<String, String> function(Function_callContext function) {
-        List<VexContext> args = null;
         Function_nameContext funcNameCtx = function.function_name();
+        if (funcNameCtx == null) {
+            return functionSpecial(function);
+        }
+
+        Orderby_clauseContext orderBy = function.orderby_clause();
+        if (orderBy != null) {
+            orderBy(orderBy);
+        }
+        Filter_clauseContext filter = function.filter_clause();
+        if (filter != null) {
+            analyze(new Vex(filter.vex()));
+        }
+        Window_definitionContext window = function.window_definition();
+        if (window != null) {
+            window(window);
+        }
+
+        String schemaName = null;
+        String functionName;
+        Data_typeContext dataTypeCtx = funcNameCtx.data_type();
+        Schema_qualified_name_nontypeContext funcNameQualCtx;
+
+        IdentifierContext id;
+        Tokens_simple_functionsContext tokensSimpleFunc;
+        if (dataTypeCtx != null &&
+                (funcNameQualCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
+            functionName = funcNameQualCtx.identifier_nontype().getText();
+
+            if ((id = funcNameQualCtx.identifier()) != null) {
+                schemaName = id.getText();
+            }
+        } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
+            functionName = tokensSimpleFunc.getText();
+
+            if ((id = funcNameCtx.identifier()) != null) {
+                schemaName = id.getText();
+            }
+        } else {
+            functionName = funcNameCtx.getText();
+        }
+
+        List<VexContext> args = function.vex();
+        Value_expression_primaryContext primary;
+        if (args.size() == 1 && (primary = args.get(0).value_expression_primary()) != null
+                && primary.qualified_asterisk() != null) {
+            //// In this case function's argument is '*' or 'source.*'.
+
+            int foundFuncsCount = 0;
+            String funcType = null;
+            for (IFunction f : PgDiffUtils.sIter(findFunctions(schemaName, functionName, 1))) {
+                funcType = f.getReturns();
+                foundFuncsCount++;
+            }
+
+            return new Pair<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
+        } else {
+            List<String> argsType = args.stream()
+                    .map(v -> analyze(new Vex(v)).getSecond())
+                    .collect(Collectors.toList());
+
+            IFunction resultFunction = castFiltredFuncsOpers(functionName, argsType,
+                    findFunctions(schemaName, functionName, argsType.size()));
+
+            if (resultFunction != null) {
+                addFilteredFunctionDepcy(resultFunction);
+                return new Pair<>(functionName, resultFunction.getReturns());
+            }
+            return new Pair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
+        }
+    }
+
+    private Pair<String, String> functionSpecial(Function_callContext function) {
+        Pair<String, String> ret;
+        List<VexContext> args = null;
 
         Extract_functionContext extract;
+        System_functionContext system;
+        Date_time_functionContext datetime;
         String_value_functionContext string;
         Xml_functionContext xml;
-        boolean canFindFunctionSignature = false;
 
-        if (funcNameCtx != null) {
-            args = function.vex();
-
-            canFindFunctionSignature = true;
-
-            Orderby_clauseContext orderBy = function.orderby_clause();
-            if (orderBy != null) {
-                orderBy(orderBy);
-            }
-            Filter_clauseContext filter = function.filter_clause();
-            if (filter != null) {
-                analyze(new Vex(filter.vex()));
-            }
-            Window_definitionContext window = function.window_definition();
-            if (window != null) {
-                window(window);
-            }
-        } else if ((extract = function.extract_function()) != null) {
+        if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
+            // parser defines this as a call to an overload of pg_catalog.date_part
+            ret = new Pair<>("date_part", TypesSetManually.DOUBLE);
+        } else if ((system = function.system_function()) != null) {
+            ret = new Pair<>(system.USER() != null ? "current_user"
+                    : system.getChild(0).getText().toLowerCase(),
+                    TypesSetManually.NAME);
+        } else if ((datetime = function.date_time_function()) != null) {
+            String colname;
+            String coltype;
+            if (datetime.CURRENT_DATE() != null) {
+                colname = "date";
+                coltype = TypesSetManually.DATE;
+            } else if (datetime.CURRENT_TIME() != null) {
+                colname = "timetz";
+                coltype = TypesSetManually.TIMETZ;
+            } else if (datetime.CURRENT_TIMESTAMP() != null) {
+                colname = "now";
+                coltype = TypesSetManually.TIMESTAMPTZ;
+            } else if (datetime.LOCALTIME() != null) {
+                colname = "time";
+                coltype = TypesSetManually.TIME;
+            } else if (datetime.LOCALTIMESTAMP() != null) {
+                colname = "timestamp";
+                coltype = TypesSetManually.TIMESTAMP;
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in date_time_function!");
+                colname = null;
+                coltype = TypesSetManually.UNKNOWN;
+            }
+            ret = new Pair<>(colname, coltype);
         } else if ((string = function.string_value_function()) != null) {
             args = string.vex();
-
             Vex_bContext vexB = string.vex_b();
             if (vexB != null) {
                 analyze(new Vex(vexB));
             }
+
+            String colname = string.getChild(0).getText().toLowerCase();
+            String coltype = TypesSetManually.TEXT;
+            if (string.TRIM() != null) {
+                if (string.LEADING() != null) {
+                    colname = "ltrim";
+                } else if (string.TRAILING() != null) {
+                    colname = "rtrim";
+                } else {
+                    colname = "btrim";
+                }
+            } else if (string.POSITION() != null) {
+                coltype = TypesSetManually.INTEGER;
+            } else {
+                // defaults work
+            }
+            ret = new Pair<>(colname, coltype);
         } else if ((xml = function.xml_function()) != null) {
             args = xml.vex();
+
+            String colname = xml.getChild(0).getText().toLowerCase();
+            String coltype = TypesSetManually.XML;
+            if (xml.XMLEXISTS() != null) {
+                coltype = TypesSetManually.BOOLEAN;
+            } else if (xml.XMLSERIALIZE() != null) {
+                Data_typeContext type = xml.data_type();
+                coltype = ParserAbstract.getFullCtxText(type);
+                addTypeDepcy(type);
+            } else {
+                // defaults work
+            }
+            ret = new Pair<>(colname, coltype);
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in functionSpecial!");
+            ret = new Pair<>(null, TypesSetManually.UNKNOWN);
         }
 
-        List<Entry<String, String>> argsType = new ArrayList<>();
         if (args != null) {
-            for (VexContext v : args) {
-                argsType.add(analyze(new Vex(v)));
+            for (VexContext arg : args) {
+                analyze(new Vex(arg));
             }
         }
-
-        String funcType = TypesSetManually.FUNCTION_COLUMN;
-
-        if (canFindFunctionSignature) {
-            String schemaName = null;
-            String functionName;
-            Data_typeContext dataTypeCtx = funcNameCtx.data_type();
-            Schema_qualified_name_nontypeContext funcNameQualCtx = null;
-
-            IdentifierContext id;
-            Tokens_simple_functionsContext tokensSimpleFunc;
-            if (dataTypeCtx != null &&
-                    (funcNameQualCtx = dataTypeCtx.predefined_type().schema_qualified_name_nontype()) != null) {
-                functionName = funcNameQualCtx.identifier_nontype().getText();
-
-                if ((id = funcNameQualCtx.identifier()) != null) {
-                    schemaName = id.getText();
-                }
-            } else if ((tokensSimpleFunc = funcNameCtx.tokens_simple_functions()) != null) {
-                functionName = tokensSimpleFunc.getText();
-
-                if ((id = funcNameCtx.identifier()) != null) {
-                    schemaName = id.getText();
-                }
-            } else {
-                functionName = funcNameCtx.getText();
-            }
-
-            if (argsType.size() == 1
-                    && TypesSetManually.QUALIFIED_ASTERISK.equals(argsType.get(0).getValue())) {
-
-                //// In this case function's argument is '*' or 'source.*'.
-
-                int foundFuncsCount = 0;
-                for (IFunction f : PgDiffUtils.sIter(findFunctions(schemaName, functionName, 1))) {
-                    funcType = f.getReturns();
-                    foundFuncsCount++;
-                }
-
-                return new Pair<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
-            } else {
-                List<String> sourceArgsTypes = argsType.stream().map(Entry::getValue).collect(Collectors.toList());
-
-                IFunction resultFunction = castFiltredFuncsOpers(functionName, sourceArgsTypes,
-                        findFunctions(schemaName, functionName, sourceArgsTypes.size()));
-
-                if (resultFunction != null) {
-                    if (funcNameQualCtx != null) {
-                        addFilteredFunctionDepcy(resultFunction);
-                    }
-                    return new Pair<>(functionName, resultFunction.getReturns());
-                }
-
-                return new Pair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
-            }
-        }
-
-        return new Pair<>(null, funcType);
+        return ret;
     }
 
     private IFunction castFiltredFuncsOpers(String funcOperName, List<String> sourceTypes,
