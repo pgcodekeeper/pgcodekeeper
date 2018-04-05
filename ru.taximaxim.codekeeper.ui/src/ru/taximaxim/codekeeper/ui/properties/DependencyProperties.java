@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
@@ -16,6 +17,7 @@ import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -173,11 +175,11 @@ public class DependencyProperties extends PropertyPage {
                     DirectoryDialog dialog = new DirectoryDialog(getShell());
                     dialog.setText(Messages.DependencyProperties_select_directory);
                     dialog.setFilterPath(path);
-                    String s = dialog.open();
-                    if (s != null) {
-                        getList().add(new Dependency(s, DepType.DIRECTORY));
+                    String value = dialog.open();
+                    if (value != null) {
+                        getList().add(new Dependency(value, DepType.DIRECTORY));
+                        getViewer().refresh();
                     }
-                    getViewer().refresh();
                 }
             });
 
@@ -194,11 +196,28 @@ public class DependencyProperties extends PropertyPage {
                             Messages.DiffPresentationPane_sql_file_filter,
                             Messages.DiffPresentationPane_any_file_filter});
                     dialog.setFilterPath(path);
-                    String s = dialog.open();
-                    if (s != null) {
-                        getList().add(new Dependency(s, DepType.DUMP));
+                    String value = dialog.open();
+                    if (value != null) {
+                        getList().add(new Dependency(value, DepType.DUMP));
+                        getViewer().refresh();
                     }
-                    getViewer().refresh();
+                }
+            });
+
+            Button btnAddDb = createButton(parent, CLIENT_ID,
+                    Messages.DependencyProperties_add_database, FILE.ICONDATABASE);
+            btnAddDb.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    InputDialog dialog = new InputDialog(getShell(),
+                            Messages.DependencyProperties_add_database,
+                            Messages.DependencyProperties_enter_connection_string, "", null); //$NON-NLS-1$
+
+                    if (dialog.open() == Window.OK) {
+                        getList().add(new Dependency(dialog.getValue(), DepType.DATABASE));
+                        getViewer().refresh();
+                    }
                 }
             });
 

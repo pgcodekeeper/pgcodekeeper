@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
  * Stores database information.
@@ -262,10 +260,8 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
 
-    public void addLib(PgDatabase database, String path, boolean isProject) {
-        listPgObjects(database).values().forEach(st -> st.setLocation(isProject ?
-                new File(path, ModelExporter.getRelativeFilePath(st, true)).toString() : path));
-
+    public void addLib(PgDatabase database) {
+        listPgObjects(database).values().forEach(PgStatement::markAsLib);
         concat(database);
     }
 

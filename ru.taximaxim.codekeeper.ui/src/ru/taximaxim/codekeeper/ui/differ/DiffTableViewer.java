@@ -901,6 +901,17 @@ public class DiffTableViewer extends Composite {
         return count;
     }
 
+    public boolean checkLibChange() {
+        for (TreeElement el : elements) {
+            if (el.isSelected() && el.getSide() != DiffSide.RIGHT
+                    && el.getPgStatement(dbProject.getDbObject()).isLib()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void setElementsChecked(Collection<?> elements, boolean state,
             boolean checkFilterMatch) {
         setElementsChecked(elements, el -> state, checkFilterMatch);

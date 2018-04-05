@@ -230,7 +230,7 @@ class DbSourceProject extends DbSource {
                     try (Stream<Path> paths = Files.walk(Paths.get(dep.getPath()))) {
                         paths.filter(Files::isRegularFile).forEach(path -> {
                             try {
-                                db.addLib(PgDiff.loadDatabaseSchema("dump", path.toString(), args), path.toString(), false); //$NON-NLS-1$
+                                db.addLib(PgDiff.loadDatabaseSchema("dump", path.toString(), args)); //$NON-NLS-1$
                             } catch (IOException | InterruptedException | URISyntaxException e) {
                                 Log.log(e);
                             }
@@ -238,10 +238,13 @@ class DbSourceProject extends DbSource {
                     }
                     break;
                 case DUMP:
-                    db.addLib(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args), dep.getPath(), false); //$NON-NLS-1$
+                    db.addLib(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args)); //$NON-NLS-1$
                     break;
                 case PROJECT:
-                    db.addLib(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args), dep.getPath(), true); //$NON-NLS-1$
+                    db.addLib(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args)); //$NON-NLS-1$
+                    break;
+                case DATABASE:
+                    db.addLib(PgDiff.loadDatabaseSchema("db", dep.getPath(), args)); //$NON-NLS-1$
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported dependency type"); //$NON-NLS-1$

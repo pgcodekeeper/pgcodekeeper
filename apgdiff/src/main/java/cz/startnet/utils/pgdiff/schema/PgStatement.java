@@ -38,6 +38,7 @@ public abstract class PgStatement implements IStatement {
     protected final List<GenericColumn> deps = new ArrayList<>();
 
     private String location;
+    private boolean isLib;
 
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
@@ -71,13 +72,20 @@ public abstract class PgStatement implements IStatement {
         return parent;
     }
 
-
     public String getLocation() {
         return location;
     }
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public boolean isLib() {
+        return isLib;
+    }
+
+    public void markAsLib() {
+        this.isLib = true;
     }
 
     public abstract PgDatabase getDatabase();

@@ -80,7 +80,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     private PgStatement safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
-            return p.getObject();
+            PgStatement st = p.getObject();
+            if (st != null) {
+                st.setLocation(filename);
+            }
+            return st;
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex, filename));
             return null;

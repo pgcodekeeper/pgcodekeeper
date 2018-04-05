@@ -565,10 +565,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
                 PgStatement st = el.getPgStatement(dbProject.getDbObject());
-                String location = st.getLocation();
 
-                if (location != null) {
-                    FileUtilsUi.openExternalFileSqlEditor(location);
+                if (st.isLib()) {
+                    FileUtilsUi.openExternalFileSqlEditor(st.getLocation());
                 } else {
                     getSite().getPage().openEditor(new FileEditorInput(proj.getProject().getFile(
                             org.eclipse.core.runtime.Path.fromOSString(ModelExporter.getRelativeFilePath(
@@ -784,8 +783,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     public void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
-        if (warnCheckedElements() < 1 ||
-                !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)) {
+        if (warnCheckedElements() < 1
+                || !OpenProjectUtils.checkVersionAndWarn(proj.getProject(), parent.getShell(), true)
+                || warnLibChange()) {
             return;
         }
 
@@ -874,6 +874,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             mb.open();
         }
         return checked;
+    }
+
+    private boolean warnLibChange() {
+        if (diffTable.checkLibChange()) {
+            MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
+            mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);
+            return mb.open() != SWT.YES;
+        }
+        return false;
     }
 
     private class JobProjectUpdater extends Job {

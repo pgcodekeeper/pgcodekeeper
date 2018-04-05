@@ -263,11 +263,15 @@ public final class Messages extends NLS {
 
     public static String DepcyGraphView_remote;
 
+    public static String DependencyProperties_add_database;
+
     public static String DependencyProperties_add_directory;
 
     public static String DependencyProperties_add_dump;
 
     public static String DependencyProperties_add_pgcodekeeper_project;
+
+    public static String DependencyProperties_enter_connection_string;
 
     public static String DependencyProperties_ignore_privileges;
 
@@ -555,6 +559,10 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
+    public static String ProjectEditorDiffer_lib_change_warning_message;
+
+    public static String ProjectEditorDiffer_lib_change_warning_title;
+
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
