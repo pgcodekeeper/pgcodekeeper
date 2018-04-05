@@ -9,12 +9,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -22,6 +25,7 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -54,8 +58,25 @@ public final class PgDiff {
             throws InterruptedException, IOException, URISyntaxException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
+
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+
+        for (String path : arguments.getTargetLibs()) {
+            oldDatabase.concat(getLibrary(path, arguments, false));
+        }
+
+        for (String path : arguments.getTargetLibsWithoutPriv()) {
+            oldDatabase.concat(getLibrary(path, arguments, true));
+        }
+
+        for (String path : arguments.getSourceLibs()) {
+            newDatabase.concat(getLibrary(path, arguments, false));
+        }
+
+        for (String path : arguments.getSourceLibsWithoutPriv()) {
+            newDatabase.concat(getLibrary(path, arguments, true));
+        }
 
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
@@ -63,6 +84,41 @@ public final class PgDiff {
         }
 
         return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
+    }
+
+    private static PgDatabase getLibrary(String path, PgDiffArguments arguments,
+            boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
+
+        PgDiffArguments args = arguments.clone();
+        args.setIgnorePrivileges(isIgnorePriv);
+
+        if (path.startsWith("jdbc:")) {
+            return loadDatabaseSchema("db", path, args);
+        }
+
+        Path p = Paths.get(path);
+
+        if (Files.isDirectory(p)) {
+            if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return loadDatabaseSchema("parsed", path, args);
+            } else {
+                PgDatabase db = new PgDatabase();
+
+                try (Stream<Path> paths = Files.walk(Paths.get(path))) {
+                    paths.filter(Files::isRegularFile).forEach(file -> {
+                        try {
+                            db.concat(loadDatabaseSchema("dump", file.toString(), args));
+                        } catch (IOException | InterruptedException | URISyntaxException e) {
+
+                        }
+                    });
+                }
+
+                return db;
+            }
+        }
+
+        return loadDatabaseSchema("dump", path, args);
     }
 
     /**
@@ -80,13 +136,13 @@ public final class PgDiff {
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, URISyntaxException {
-        if("dump".equals(format)) {
+        if ("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
             }
-        } else if("parsed".equals(format)) {
+        } else if ("parsed".equals(format)) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
-        } else if("db".equals(format)) {
+        } else if ("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();
         }

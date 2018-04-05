@@ -44,6 +44,10 @@ public class CliArgs extends PgDiffArguments {
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
+        this.sourceLibs = new ArrayList<>();
+        this.sourceLibsWithoutPriv = new ArrayList<>();
+        this.targetLibs = new ArrayList<>();
+        this.targetLibsWithoutPriv = new ArrayList<>();
         this.inCharsetName = ApgdiffConsts.UTF_8;
         this.outCharsetName = ApgdiffConsts.UTF_8;
     }
@@ -132,13 +136,34 @@ public class CliArgs extends PgDiffArguments {
     private List<DbObjType> allowedTypes;
 
     @Option(name="--stop-not-allowed", forbids="--parse",
-            usage="exit with an error when --allowed-object hides a statement from the script")
+            usage="exit with an error when --allowed-object hides a statement from the script, "
+                    + "if these objects are attached by dependencies ")
     private boolean stopNotAllowed;
 
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids="--parse",
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
+
+    @Option(name="--src-dep", metaVar="<path>", forbids="--parse",
+            usage="add dependency to source, "
+                    + "\nspecify multiple times to use several lists")
+    private List<String> sourceLibs;
+
+    @Option(name="--src-dep-no-priv", metaVar="<path>", forbids="--parse",
+            usage="add dependency to source without privileges, --src-dep argument has a higher priority"
+                    + "\nspecify multiple times to use several lists")
+    private List<String> sourceLibsWithoutPriv;
+
+    @Option(name="--tgt-dep", metaVar="<path>", forbids="--parse",
+            usage="add dependency to target"
+                    + "\nspecify multiple times to use several lists")
+    private List<String> targetLibs;
+
+    @Option(name="--tgt-dep-no-priv", metaVar="<path>", forbids="--parse",
+            usage="add dependency to target without privileges, --tgt-dep argument has a higher priority "
+                    + "\nspecify multiple times to use several lists")
+    private List<String> targetLibsWithoutPriv;
 
     @Override
     public boolean isModeParse() {
@@ -186,6 +211,26 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public Collection<String> getSourceLibs() {
+        return Collections.unmodifiableCollection(sourceLibs);
+    }
+
+    @Override
+    public Collection<String> getSourceLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    @Override
+    public Collection<String> getTargetLibs() {
+        return Collections.unmodifiableCollection(targetLibs);
+    }
+
+    @Override
+    public Collection<String> getTargetLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
+    @Override
     public String getInCharsetName() {
         return inCharsetName;
     }
@@ -208,6 +253,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public boolean isIgnorePrivileges() {
         return ignorePrivileges;
+    }
+
+    @Override
+    public void setIgnorePrivileges(boolean ignorePrivilleges) {
+        this.ignorePrivileges = ignorePrivilleges;
     }
 
     @Override

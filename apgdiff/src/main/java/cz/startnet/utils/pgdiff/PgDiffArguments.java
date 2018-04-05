@@ -35,6 +35,10 @@ public class PgDiffArguments implements Cloneable {
     private List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
     private List<String> ignoreLists = new ArrayList<>();
+    private List<String> sourceLibs = new ArrayList<>();
+    private List<String> sourceLibsWithoutPriv = new ArrayList<>();
+    private List<String> targetLibs = new ArrayList<>();
+    private List<String> targetLibsWithoutPriv = new ArrayList<>();
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -120,6 +124,22 @@ public class PgDiffArguments implements Cloneable {
         return Collections.unmodifiableCollection(ignoreLists);
     }
 
+    public Collection<String> getSourceLibs() {
+        return Collections.unmodifiableCollection(sourceLibs);
+    }
+
+    public Collection<String> getSourceLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    public Collection<String> getTargetLibs() {
+        return Collections.unmodifiableCollection(targetLibs);
+    }
+
+    public Collection<String> getTargetLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
     public String getInCharsetName() {
         return inCharsetName;
     }
@@ -186,6 +206,22 @@ public class PgDiffArguments implements Cloneable {
 
     protected void setIgnoreLists(List<String> ignoreLists) {
         this.ignoreLists = ignoreLists;
+    }
+
+    protected void setSourceLibs(List<String> sourceLibs) {
+        this.sourceLibs = sourceLibs;
+    }
+
+    protected void setSourceLibWithoutPriv(List<String> sourceLibsWithoutPriv) {
+        this.sourceLibsWithoutPriv = sourceLibsWithoutPriv;
+    }
+
+    protected void setTargetLibs(List<String> targetLibs) {
+        this.targetLibs = targetLibs;
+    }
+
+    protected void setTargetLibsWithoutPriv(List<String> targetLibsWithoutPriv) {
+        this.targetLibsWithoutPriv = targetLibsWithoutPriv;
     }
 
     public boolean isConcurrentlyMode() {
