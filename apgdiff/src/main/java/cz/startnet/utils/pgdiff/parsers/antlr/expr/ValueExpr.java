@@ -3,10 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,9 +54,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Window_definitionContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.DbObjNature;
 import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.IFunction;
+import cz.startnet.utils.pgdiff.schema.ISchema;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.system.PgSystemStorage;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -331,9 +328,11 @@ public class ValueExpr extends AbstractExpr {
 
             int foundFuncsCount = 0;
             String funcType = null;
-            for (IFunction f : PgDiffUtils.sIter(findFunctions(schemaName, functionName, 1))) {
-                funcType = f.getReturns();
-                foundFuncsCount++;
+            for (IFunction f : PgDiffUtils.sIter(availableFunctions(schemaName))) {
+                if (f.getBareName().equals(functionName) && getInInoutFuncArgs(f).count() == 1) {
+                    funcType = f.getReturns();
+                    foundFuncsCount++;
+                }
             }
 
             return new Pair<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
@@ -342,8 +341,7 @@ public class ValueExpr extends AbstractExpr {
                     .map(v -> analyze(new Vex(v)).getSecond())
                     .collect(Collectors.toList());
 
-            IFunction resultFunction = castFiltredFuncsOpers(functionName, argsType,
-                    findFunctions(schemaName, functionName, argsType.size()));
+            IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
 
             if (resultFunction != null) {
                 addFilteredFunctionDepcy(resultFunction);
@@ -446,46 +444,60 @@ public class ValueExpr extends AbstractExpr {
         return ret;
     }
 
-    private IFunction castFiltredFuncsOpers(String funcOperName, List<String> sourceTypes,
-            Stream<IFunction> targetFunctions) {
-        IFunction resultFunction = null;
-        String functionSignature = funcOperName + '(' + sourceTypes.stream().collect(Collectors.joining(", ")) + ')';
-        Map<IFunction, Integer> argsMatches = new HashMap<>();
-
-        for (IFunction f : PgDiffUtils.sIter(targetFunctions)) {
-            if (functionSignature.equals(f.getName())) {
-                return f;
+    /**
+     * @param functionName called function bare name
+     * @param sourceTypes call argument types
+     * @param availableFunctions functions from applicable schemas
+     * @return most suitable function to call or null,
+     *      if none were found or an ambiguity was detected
+     */
+    private IFunction resolveCall(String functionName, List<String> sourceTypes,
+            Stream<? extends IFunction> availableFunctions) {
+        // save each applicable function with the number of exact type matches
+        // between input args and function parameters
+        // function that has more exact matches (less casts) wins
+        List<Pair<IFunction, Integer>> matches = new ArrayList<>();
+        for (IFunction f : PgDiffUtils.sIter(availableFunctions)) {
+            if (!f.getBareName().equals(functionName)) {
+                continue;
             }
-
-            boolean castWellDone = true;
-            List<IArgument> argsOfSourceFunction = getInInoutFuncArgs(f)
-                    .collect(Collectors.toList());
-
-            for (int k = 0; k < argsOfSourceFunction.size(); k++) {
-                String targetType = argsOfSourceFunction.get(k).getDataType();
-                String sourceType = sourceTypes.get(k);
-
-                if (sourceType.equals(targetType)) {
-                    Integer funcIdx = argsMatches.get(f);
-                    argsMatches.put(f, (funcIdx != null) ? funcIdx + 1 : 1);
-                } else if (!systemStorage.containsCastImplicit(sourceType, targetType)) {
-                    castWellDone = false;
-                    argsMatches.remove(f);
+            int argN = 0;
+            int exactMatches = 0;
+            boolean signatureApplicable = true;
+            for (IArgument arg : PgDiffUtils.sIter(getInInoutFuncArgs(f))) {
+                if (argN >= sourceTypes.size()) {
+                    // supplied fewer arguments than function requires
+                    // current (unsatisfied) parameter having a default value
+                    // means that all the rest of parameters will also have default values
+                    // because of ordering imposed by the standard
+                    // thus, the function is applicable if the first unsatisfied parameter
+                    // has a default value, and otherwise it is not
+                    if (arg.getDefaultExpression() == null) {
+                        signatureApplicable = false;
+                    }
                     break;
                 }
+                String sourceType = sourceTypes.get(argN);
+                if (sourceType.equals(arg.getDataType())) {
+                    ++exactMatches;
+                } else if (!systemStorage.containsCastImplicit(sourceType, arg.getDataType())) {
+                    signatureApplicable = false;
+                    break;
+                }
+                ++argN;
             }
-
-            // On each 'castWellDone' iteration we put the current function to the 'resultFunction'.
-            // If in result of 'functionsList' processing we will have empty 'storeOfFunctArgsMatches',
-            // then as result of this method we will use this 'resultFunction = f'.
-            if (castWellDone && argsMatches.get(f) == null) {
-                resultFunction = f;
+            if (signatureApplicable) {
+                if (exactMatches == argN && argN == sourceTypes.size()) {
+                    // fast path for exact signature match
+                    return f;
+                }
+                matches.add(new Pair<>(f, exactMatches));
             }
         }
 
-        return argsMatches.entrySet().stream()
-                .max((e1,e2) -> Integer.compare(e1.getValue(), e2.getValue()))
-                .map(Entry::getKey).orElse(resultFunction);
+        return matches.stream()
+                .max((f1,f2) -> Integer.compare(f1.getSecond(), f2.getSecond()))
+                .map(Pair::getFirst).orElse(null);
     }
 
     private Pair<String, String> operator(Vex expression, String...sourceArgsTypesArray) {
@@ -496,8 +508,8 @@ public class ValueExpr extends AbstractExpr {
 
         // TODO When the user's operators will be also process by codeKeeper,
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
-        IFunction resultOperFunction = castFiltredFuncsOpers(operatorName, sourceArgsTypes,
-                findFunctions(PgSystemStorage.SCHEMA_PG_CATALOG, operatorName, sourceArgsTypes.size()));
+        IFunction resultOperFunction = resolveCall(operatorName, sourceArgsTypes,
+                availableFunctions(PgSystemStorage.SCHEMA_PG_CATALOG));
 
         if (resultOperFunction != null) {
             pair.setValue(resultOperFunction.getReturns());
@@ -542,24 +554,17 @@ public class ValueExpr extends AbstractExpr {
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
     }
 
-    private Stream<IFunction> findFunctions(String schemaName, String functionBareName,
-            int inInoutFuncArgsCount) {
-        Stream<IFunction> foundFunctions;
+    private Stream<? extends IFunction> availableFunctions(String schemaName) {
         if (schemaName != null) {
-            if (isSystemSchema(schemaName)) {
-                foundFunctions = systemStorage.getSchema(schemaName).getFunctions().stream()
-                        .map(f -> (IFunction) f);
-            } else {
-                foundFunctions = db.getSchema(schemaName).getFunctions().stream()
-                        .map(f -> (IFunction) f);
+            ISchema schema = systemStorage.getSchema(schemaName);
+            if (schema == null) {
+                schema = db.getSchema(schemaName);
             }
+            return schema.getFunctions().stream();
         } else {
-            foundFunctions = Stream.concat(db.getSchema(schema).getFunctions().stream(),
-                    systemStorage.getSchema(PgSystemStorage.SCHEMA_PG_CATALOG).getFunctions().stream());
+            return Stream.concat(db.getSchema(schema).getFunctions().stream(),
+                    systemStorage.getPgCatalog().getFunctions().stream());
         }
-
-        return foundFunctions.filter(f -> f.getBareName().equals(functionBareName))
-                .filter(f -> getInInoutFuncArgs(f).count() == inInoutFuncArgsCount);
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {

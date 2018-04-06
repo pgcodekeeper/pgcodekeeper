@@ -83,7 +83,7 @@ public class PgSystemStorage implements Serializable {
         } else if (SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
             return informationSchema;
         }
-        throw new IllegalArgumentException("Unknown schema name");
+        return null;
     }
 
     public PgSystemSchema getPgCatalog() {
