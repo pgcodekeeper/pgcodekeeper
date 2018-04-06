@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
@@ -19,7 +20,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Date_time_functionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
@@ -78,6 +78,8 @@ public class ValueExpr extends AbstractExpr {
         @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
         Collate_identifierContext collate;
+        TerminalNode operator;
+        OpContext op = null;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
         List<Pair<String, String>> operandsList;
@@ -143,23 +145,30 @@ public class ValueExpr extends AbstractExpr {
                 analyze(new Vex(v));
             }
             ret = new Pair<>("overlaps", TypesSetManually.BOOLEAN);
-        } else if (vex.plus() != null || vex.minus() != null) {
-            if (operandsList.size() == 2) {
-                ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
-            } else {
-                ret = operator(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
-            }
-        } else if (vex.exp() != null || vex.multiply() != null || vex.divide() != null || vex.modular() != null) {
-            ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
-        } else if (vex.op() != null) {
-            if (operandsList.size() == 1) {
-                if (vex.getVexCtx().getChild(0) instanceof OpContext) {
-                    ret = operator(vex, TypesSetManually.EMPTY, operandsList.get(0).getValue());
-                } else {
-                    ret = operator(vex, operandsList.get(0).getValue(), TypesSetManually.EMPTY);
+        } else if ((operator = getOperatorToken(vex)) != null || (op = vex.op()) != null) {
+            if (op != null) {
+                IdentifierContext opSchemaCtx = op.identifier();
+                if (opSchemaCtx == null || opSchemaCtx.getText().equals(PgSystemStorage.SCHEMA_PG_CATALOG)) {
+                    operator = op.OP_CHARS();
                 }
+            }
+            if (operator != null) {
+                String larg = TypesSetManually.EMPTY;
+                String rarg = TypesSetManually.EMPTY;
+                if (operandsList.size() == 2) {
+                    larg = operandsList.get(0).getSecond();
+                    rarg = operandsList.get(1).getSecond();
+                } else if (op == null || vex.getVexCtx().getChild(0) instanceof OpContext) {
+                    rarg = operandsList.get(0).getSecond();
+                } else {
+                    larg = operandsList.get(0).getSecond();
+                }
+                ret = operator(operator.getText(), larg, rarg);
             } else {
-                ret = operator(vex, operandsList.get(0).getValue(), operandsList.get(1).getValue());
+                // if we got to this point, operator didn't get filled by the OP_CHARS token
+                // meaning user-schema operator
+                Log.log(Log.LOG_WARNING, "Unsupported user operator!");
+                ret = new Pair<>(null, TypesSetManually.UNKNOWN);
             }
         } else if (vex.between() != null
                 || vex.like() != null
@@ -500,58 +509,36 @@ public class ValueExpr extends AbstractExpr {
                 .map(Pair::getFirst).orElse(null);
     }
 
-    private Pair<String, String> operator(Vex expression, String...sourceArgsTypesArray) {
-        List<String> sourceArgsTypes = Arrays.asList(sourceArgsTypesArray);
-
-        String operatorName = getChildOperator(expression);
-        Pair<String, String> pair = new Pair<>(operatorName, TypesSetManually.FUNCTION_COLUMN);
-
+    private Pair<String, String> operator(String operator, String... sourceArgsTypes) {
         // TODO When the user's operators will be also process by codeKeeper,
         // put in 'findFunctions' operator's schema name instead of 'PgSystemStorage.SCHEMA_PG_CATALOG'.
-        IFunction resultOperFunction = resolveCall(operatorName, sourceArgsTypes,
+        IFunction resultOperFunction = resolveCall(operator, Arrays.asList(sourceArgsTypes),
                 availableFunctions(PgSystemStorage.SCHEMA_PG_CATALOG));
-
-        if (resultOperFunction != null) {
-            pair.setValue(resultOperFunction.getReturns());
-        }
-
-        return pair;
-    }
-
-    /**
-     * Get an operator from expression.
-     * The expression can contains only one of the following structures:
-     * <p>"vex op vex", "op vex", "vex op",</p>
-     * <p>"vex EXP vex",</p>
-     * <p>"vex (MULTIPLY | DIVIDE | MODULAR) vex",</p>
-     * <p>"vex (PLUS | MINUS) vex",</p>
-     * <p>"<assoc=right> (PLUS | MINUS) vex".</p>
-     *
-     * @param expression it is expression with specific structure
-     * @return operator of expression as String.
-     */
-    private String getChildOperator(Vex expression) {
-        ParserRuleContext expressionCtx = expression.getVexCtx();
-
-        OpContext op;
-        if (expressionCtx instanceof VexContext) {
-            op = ((VexContext) expressionCtx).op();
-        } else {
-            op = ((Vex_bContext) expressionCtx).op();
-        }
-
-        if (op != null) {
-            return op.OP_CHARS().getText();
-        } else {
-            int childCount = expressionCtx.getChildCount();
-            int operatorIndex = childCount == 2 ? 0 : 1;
-            return expressionCtx.getChild(operatorIndex).getText();
-        }
+        return new Pair<>(null, resultOperFunction != null ? resultOperFunction.getReturns()
+                : TypesSetManually.FUNCTION_COLUMN);
     }
 
     private Stream<? extends IArgument> getInInoutFuncArgs(IFunction func) {
         return func.getArguments().stream()
                 .filter(arg -> "IN".equals(arg.getMode()) || "INOUT".equals(arg.getMode()));
+    }
+
+    private TerminalNode getOperatorToken(Vex vex) {
+        TerminalNode token = vex.getVexCtx().getChild(TerminalNode.class, 0);
+        if (token == null) {
+            return null;
+        }
+        switch (token.getSymbol().getType()) {
+        case SQLParser.PLUS:
+        case SQLParser.MINUS:
+        case SQLParser.EXP:
+        case SQLParser.MULTIPLY:
+        case SQLParser.DIVIDE:
+        case SQLParser.MODULAR:
+            return token;
+        default:
+            return null;
+        }
     }
 
     private Stream<? extends IFunction> availableFunctions(String schemaName) {
@@ -627,10 +614,9 @@ public class ValueExpr extends AbstractExpr {
     }
 
     private String literal(Unsigned_value_specificationContext unsignedValue){
-        String ret = null;
+        String ret;
         Unsigned_numeric_literalContext unsignedNumeric;
         General_literalContext generalLiteral;
-        Datetime_literalContext dateTime;
         Truth_valueContext truthValue;
 
         if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
@@ -645,14 +631,15 @@ public class ValueExpr extends AbstractExpr {
 
             if (generalLiteral.character_string() != null) {
                 ret = TypesSetManually.TEXT;
-            } else if ((dateTime = generalLiteral.datetime_literal()) != null) {
-                ret = ParserAbstract.getFullCtxText(dateTime);
             } else if ((truthValue = generalLiteral.truth_value()) != null) {
                 if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
                     ret = TypesSetManually.BOOLEAN;
                 } else {
                     ret = TypesSetManually.TEXT;
                 }
+            } else {
+                Log.log(Log.LOG_WARNING, "No alternative in general_literal!");
+                ret = TypesSetManually.UNKNOWN;
             }
         }
         return ret;
