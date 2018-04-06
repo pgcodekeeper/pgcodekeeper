@@ -126,7 +126,6 @@ public class FunctionsReader extends JdbcReader {
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
                                 schema.getDatabase().getContextsForAnalyze()
                                 .add(new AbstractMap.SimpleEntry<>(f, vx));
-                                vexCtxListIterator.remove();
                             }
                         }
                     });
