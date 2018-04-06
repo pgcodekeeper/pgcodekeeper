@@ -252,12 +252,12 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
+        result = prime * result + grants.hashCode();
+        result = prime * result + revokes.hashCode();
+        result = prime * result + arguments.hashCode();
         result = prime * result + ((returns == null) ? 0 : returns.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + name.hashCode();
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;

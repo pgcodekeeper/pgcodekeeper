@@ -107,7 +107,7 @@ public class ValueExpr extends AbstractExpr {
                 if (castPrimary != null
                         && (value = castPrimary.unsigned_value_specification()) != null
                         && (literal = value.general_literal()) != null
-                        && literal.Character_String_Literal() != null) {
+                        && literal.character_string() != null) {
                     regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
                             customType.getText());
                 }
@@ -643,7 +643,7 @@ public class ValueExpr extends AbstractExpr {
         } else {
             generalLiteral = unsignedValue.general_literal();
 
-            if (generalLiteral.Character_String_Literal() != null) {
+            if (generalLiteral.character_string() != null) {
                 ret = TypesSetManually.TEXT;
             } else if ((dateTime = generalLiteral.datetime_literal()) != null) {
                 ret = ParserAbstract.getFullCtxText(dateTime);

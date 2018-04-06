@@ -2,10 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Character_stringContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -55,7 +55,7 @@ public class CreateType extends ParserAbstract {
             type.addAttr(getColumn(attr));
             addTypeAsDepcy(attr.datatype, type, getDefSchemaName());
         }
-        for (Token enume : ctx.enums) {
+        for (Character_stringContext enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
         if (ctx.subtype_name != null) {

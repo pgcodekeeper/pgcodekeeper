@@ -1,6 +1,10 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-// TODO Use Keyword class in apgdiff
+import java.util.Map.Entry;
+
+import ru.taximaxim.codekeeper.apgdiff.sql.Keyword;
+import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
+
 public class SqlPostgresSyntax {
 
     private static final String EMPTY[] = {};
@@ -9,417 +13,19 @@ public class SqlPostgresSyntax {
             "--" //$NON-NLS-1$
     };
 
-    private final String[] reserved = {
-            "all", //$NON-NLS-1$
-            "analyse", //$NON-NLS-1$
-            "analyze", //$NON-NLS-1$
-            "and", //$NON-NLS-1$
-            "any", //$NON-NLS-1$
-            "array", //$NON-NLS-1$
-            "as", //$NON-NLS-1$
-            "asc", //$NON-NLS-1$
-            "asymmetric", //$NON-NLS-1$
-            "authorization", //$NON-NLS-1$
-            "binary", //$NON-NLS-1$
-            "both", //$NON-NLS-1$
-            "case", //$NON-NLS-1$
-            "cast", //$NON-NLS-1$
-            "check", //$NON-NLS-1$
-            "collate", //$NON-NLS-1$
-            "collation", //$NON-NLS-1$
-            "column", //$NON-NLS-1$
-            "concurrently", //$NON-NLS-1$
-            "constraint", //$NON-NLS-1$
-            "create", //$NON-NLS-1$
-            "cross", //$NON-NLS-1$
-            "current_catalog", //$NON-NLS-1$
-            "current_date", //$NON-NLS-1$
-            "current_role", //$NON-NLS-1$
-            "current_schema", //$NON-NLS-1$
-            "current_time", //$NON-NLS-1$
-            "current_timestamp", //$NON-NLS-1$
-            "current_user", //$NON-NLS-1$
-            "default", //$NON-NLS-1$
-            "deferrable", //$NON-NLS-1$
-            "desc", //$NON-NLS-1$
-            "distinct", //$NON-NLS-1$
-            "do", //$NON-NLS-1$
-            "else", //$NON-NLS-1$
-            "end", //$NON-NLS-1$
-            "except", //$NON-NLS-1$
-            "false", //$NON-NLS-1$
-            "fetch", //$NON-NLS-1$
-            "for", //$NON-NLS-1$
-            "foreign", //$NON-NLS-1$
-            "freeze", //$NON-NLS-1$
-            "from", //$NON-NLS-1$
-            "full", //$NON-NLS-1$
-            "grant", //$NON-NLS-1$
-            "group", //$NON-NLS-1$
-            "having", //$NON-NLS-1$
-            "ilike", //$NON-NLS-1$
-            "in", //$NON-NLS-1$
-            "initially", //$NON-NLS-1$
-            "inner", //$NON-NLS-1$
-            "intersect", //$NON-NLS-1$
-            "into", //$NON-NLS-1$
-            "is", //$NON-NLS-1$
-            "isnull", //$NON-NLS-1$
-            "join", //$NON-NLS-1$
-            "lateral", //$NON-NLS-1$
-            "leading", //$NON-NLS-1$
-            "left", //$NON-NLS-1$
-            "like", //$NON-NLS-1$
-            "limit", //$NON-NLS-1$
-            "localtime", //$NON-NLS-1$
-            "localtimestamp", //$NON-NLS-1$
-            "natural", //$NON-NLS-1$
-            "not", //$NON-NLS-1$
-            "notnull", //$NON-NLS-1$
-            "null", //$NON-NLS-1$
-            "offset", //$NON-NLS-1$
-            "on", //$NON-NLS-1$
-            "only", //$NON-NLS-1$
-            "or", //$NON-NLS-1$
-            "order", //$NON-NLS-1$
-            "outer", //$NON-NLS-1$
-            "over", //$NON-NLS-1$
-            "overlaps", //$NON-NLS-1$
-            "placing", //$NON-NLS-1$
-            "primary", //$NON-NLS-1$
-            "references", //$NON-NLS-1$
-            "returning", //$NON-NLS-1$
-            "right", //$NON-NLS-1$
-            "select", //$NON-NLS-1$
-            "session_user", //$NON-NLS-1$
-            "similar", //$NON-NLS-1$
-            "some", //$NON-NLS-1$
-            "symmetric", //$NON-NLS-1$
-            "table", //$NON-NLS-1$
-            "then", //$NON-NLS-1$
-            "to", //$NON-NLS-1$
-            "trailing", //$NON-NLS-1$
-            "true", //$NON-NLS-1$
-            "union", //$NON-NLS-1$
-            "unique", //$NON-NLS-1$
-            "user", //$NON-NLS-1$
-            "using", //$NON-NLS-1$
-            "variadic", //$NON-NLS-1$
-            "verbose", //$NON-NLS-1$
-            "when", //$NON-NLS-1$
-            "where", //$NON-NLS-1$
-            "window", //$NON-NLS-1$
-            "with" //$NON-NLS-1$
-    };
+    private final String[] reserved = Keyword.KEYWORDS.entrySet().stream()
+            .filter(e -> KeywordCategory.RESERVED_KEYWORD.equals(e.getValue().getCategory()))
+            .map(Entry::getKey)
+            .toArray(String[]::new);
 
-    private final String[] unreserved = {
-            "abort", //$NON-NLS-1$
-            "absolute", //$NON-NLS-1$
-            "access", //$NON-NLS-1$
-            "action", //$NON-NLS-1$
-            "add", //$NON-NLS-1$
-            "admin", //$NON-NLS-1$
-            "after", //$NON-NLS-1$
-            "aggregate", //$NON-NLS-1$
-            "also", //$NON-NLS-1$
-            "alter", //$NON-NLS-1$
-            "always", //$NON-NLS-1$
-            "assertion", //$NON-NLS-1$
-            "assignment", //$NON-NLS-1$
-            "at", //$NON-NLS-1$
-            "attribute", //$NON-NLS-1$
-            "backward", //$NON-NLS-1$
-            "before", //$NON-NLS-1$
-            "begin", //$NON-NLS-1$
-            "between", //$NON-NLS-1$
-            "bigint", //$NON-NLS-1$
-            "bit", //$NON-NLS-1$
-            "boolean", //$NON-NLS-1$
-            "by", //$NON-NLS-1$
-            "cache", //$NON-NLS-1$
-            "called", //$NON-NLS-1$
-            "cascade", //$NON-NLS-1$
-            "cascaded", //$NON-NLS-1$
-            "catalog", //$NON-NLS-1$
-            "chain", //$NON-NLS-1$
-            "char", //$NON-NLS-1$
-            "character", //$NON-NLS-1$
-            "characteristics", //$NON-NLS-1$
-            "checkpoint", //$NON-NLS-1$
-            "class", //$NON-NLS-1$
-            "close", //$NON-NLS-1$
-            "cluster", //$NON-NLS-1$
-            "coalesce", //$NON-NLS-1$
-            "comment", //$NON-NLS-1$
-            "comments", //$NON-NLS-1$
-            "commit", //$NON-NLS-1$
-            "committed", //$NON-NLS-1$
-            "configuration", //$NON-NLS-1$
-            "connection", //$NON-NLS-1$
-            "constraints", //$NON-NLS-1$
-            "content", //$NON-NLS-1$
-            "continue", //$NON-NLS-1$
-            "conversion", //$NON-NLS-1$
-            "copy", //$NON-NLS-1$
-            "cost", //$NON-NLS-1$
-            "csv", //$NON-NLS-1$
-            "current", //$NON-NLS-1$
-            "cursor", //$NON-NLS-1$
-            "cycle", //$NON-NLS-1$
-            "data", //$NON-NLS-1$
-            "database", //$NON-NLS-1$
-            "day", //$NON-NLS-1$
-            "deallocate", //$NON-NLS-1$
-            "dec", //$NON-NLS-1$
-            "decimal", //$NON-NLS-1$
-            "declare", //$NON-NLS-1$
-            "defaults", //$NON-NLS-1$
-            "deferred", //$NON-NLS-1$
-            "definer", //$NON-NLS-1$
-            "delete", //$NON-NLS-1$
-            "delimiter", //$NON-NLS-1$
-            "delimiters", //$NON-NLS-1$
-            "dictionary", //$NON-NLS-1$
-            "disable", //$NON-NLS-1$
-            "discard", //$NON-NLS-1$
-            "document", //$NON-NLS-1$
-            "domain", //$NON-NLS-1$
-            "double", //$NON-NLS-1$
-            "drop", //$NON-NLS-1$
-            "each", //$NON-NLS-1$
-            "enable", //$NON-NLS-1$
-            "encoding", //$NON-NLS-1$
-            "encrypted", //$NON-NLS-1$
-            "enum", //$NON-NLS-1$
-            "escape", //$NON-NLS-1$
-            "event", //$NON-NLS-1$
-            "exclude", //$NON-NLS-1$
-            "excluding", //$NON-NLS-1$
-            "exclusive", //$NON-NLS-1$
-            "execute", //$NON-NLS-1$
-            "exists", //$NON-NLS-1$
-            "explain", //$NON-NLS-1$
-            "extension", //$NON-NLS-1$
-            "external", //$NON-NLS-1$
-            "extract", //$NON-NLS-1$
-            "family", //$NON-NLS-1$
-            "first", //$NON-NLS-1$
-            "float", //$NON-NLS-1$
-            "following", //$NON-NLS-1$
-            "force", //$NON-NLS-1$
-            "forward", //$NON-NLS-1$
-            "function", //$NON-NLS-1$
-            "functions", //$NON-NLS-1$
-            "global", //$NON-NLS-1$
-            "granted", //$NON-NLS-1$
-            "greatest", //$NON-NLS-1$
-            "handler", //$NON-NLS-1$
-            "header", //$NON-NLS-1$
-            "hold", //$NON-NLS-1$
-            "hour", //$NON-NLS-1$
-            "identity", //$NON-NLS-1$
-            "if", //$NON-NLS-1$
-            "immediate", //$NON-NLS-1$
-            "immutable", //$NON-NLS-1$
-            "implicit", //$NON-NLS-1$
-            "including", //$NON-NLS-1$
-            "increment", //$NON-NLS-1$
-            "index", //$NON-NLS-1$
-            "indexes", //$NON-NLS-1$
-            "inherit", //$NON-NLS-1$
-            "inherits", //$NON-NLS-1$
-            "inline", //$NON-NLS-1$
-            "inout", //$NON-NLS-1$
-            "input", //$NON-NLS-1$
-            "insensitive", //$NON-NLS-1$
-            "insert", //$NON-NLS-1$
-            "instead", //$NON-NLS-1$
-            "int", //$NON-NLS-1$
-            "integer", //$NON-NLS-1$
-            "interval", //$NON-NLS-1$
-            "invoker", //$NON-NLS-1$
-            "isolation", //$NON-NLS-1$
-            "key", //$NON-NLS-1$
-            "label", //$NON-NLS-1$
-            "language", //$NON-NLS-1$
-            "large", //$NON-NLS-1$
-            "last", //$NON-NLS-1$
-            "lc_collate", //$NON-NLS-1$
-            "lc_ctype", //$NON-NLS-1$
-            "leakproof", //$NON-NLS-1$
-            "least", //$NON-NLS-1$
-            "level", //$NON-NLS-1$
-            "listen", //$NON-NLS-1$
-            "load", //$NON-NLS-1$
-            "local", //$NON-NLS-1$
-            "location", //$NON-NLS-1$
-            "lock", //$NON-NLS-1$
-            "mapping", //$NON-NLS-1$
-            "match", //$NON-NLS-1$
-            "materialized", //$NON-NLS-1$
-            "maxvalue", //$NON-NLS-1$
-            "minute", //$NON-NLS-1$
-            "minvalue", //$NON-NLS-1$
-            "mode", //$NON-NLS-1$
-            "month", //$NON-NLS-1$
-            "move", //$NON-NLS-1$
-            "name", //$NON-NLS-1$
-            "names", //$NON-NLS-1$
-            "national", //$NON-NLS-1$
-            "nchar", //$NON-NLS-1$
-            "next", //$NON-NLS-1$
-            "no", //$NON-NLS-1$
-            "none", //$NON-NLS-1$
-            "nothing", //$NON-NLS-1$
-            "notify", //$NON-NLS-1$
-            "nowait", //$NON-NLS-1$
-            "nullif", //$NON-NLS-1$
-            "nulls", //$NON-NLS-1$
-            "numeric", //$NON-NLS-1$
-            "object", //$NON-NLS-1$
-            "of", //$NON-NLS-1$
-            "off", //$NON-NLS-1$
-            "oids", //$NON-NLS-1$
-            "operator", //$NON-NLS-1$
-            "option", //$NON-NLS-1$
-            "options", //$NON-NLS-1$
-            "out", //$NON-NLS-1$
-            "overlay", //$NON-NLS-1$
-            "owned", //$NON-NLS-1$
-            "owner", //$NON-NLS-1$
-            "parser", //$NON-NLS-1$
-            "partial", //$NON-NLS-1$
-            "partition", //$NON-NLS-1$
-            "passing", //$NON-NLS-1$
-            "password", //$NON-NLS-1$
-            "plans", //$NON-NLS-1$
-            "position", //$NON-NLS-1$
-            "preceding", //$NON-NLS-1$
-            "precision", //$NON-NLS-1$
-            "prepare", //$NON-NLS-1$
-            "prepared", //$NON-NLS-1$
-            "preserve", //$NON-NLS-1$
-            "prior", //$NON-NLS-1$
-            "privileges", //$NON-NLS-1$
-            "procedural", //$NON-NLS-1$
-            "procedure", //$NON-NLS-1$
-            "program", //$NON-NLS-1$
-            "quote", //$NON-NLS-1$
-            "range", //$NON-NLS-1$
-            "read", //$NON-NLS-1$
-            "real", //$NON-NLS-1$
-            "reassign", //$NON-NLS-1$
-            "recheck", //$NON-NLS-1$
-            "recursive", //$NON-NLS-1$
-            "ref", //$NON-NLS-1$
-            "refresh", //$NON-NLS-1$
-            "reindex", //$NON-NLS-1$
-            "relative", //$NON-NLS-1$
-            "release", //$NON-NLS-1$
-            "rename", //$NON-NLS-1$
-            "repeatable", //$NON-NLS-1$
-            "replace", //$NON-NLS-1$
-            "replica", //$NON-NLS-1$
-            "reset", //$NON-NLS-1$
-            "restart", //$NON-NLS-1$
-            "restrict", //$NON-NLS-1$
-            "returns", //$NON-NLS-1$
-            "revoke", //$NON-NLS-1$
-            "role", //$NON-NLS-1$
-            "rollback", //$NON-NLS-1$
-            "row", //$NON-NLS-1$
-            "rows", //$NON-NLS-1$
-            "rule", //$NON-NLS-1$
-            "savepoint", //$NON-NLS-1$
-            "schema", //$NON-NLS-1$
-            "scroll", //$NON-NLS-1$
-            "search", //$NON-NLS-1$
-            "second", //$NON-NLS-1$
-            "security", //$NON-NLS-1$
-            "sequence", //$NON-NLS-1$
-            "sequences", //$NON-NLS-1$
-            "serializable", //$NON-NLS-1$
-            "server", //$NON-NLS-1$
-            "session", //$NON-NLS-1$
-            "set", //$NON-NLS-1$
-            "setof", //$NON-NLS-1$
-            "share", //$NON-NLS-1$
-            "show", //$NON-NLS-1$
-            "simple", //$NON-NLS-1$
-            "smallint", //$NON-NLS-1$
-            "snapshot", //$NON-NLS-1$
-            "stable", //$NON-NLS-1$
-            "standalone", //$NON-NLS-1$
-            "start", //$NON-NLS-1$
-            "statement", //$NON-NLS-1$
-            "statistics", //$NON-NLS-1$
-            "stdin", //$NON-NLS-1$
-            "stdout", //$NON-NLS-1$
-            "storage", //$NON-NLS-1$
-            "strict", //$NON-NLS-1$
-            "strip", //$NON-NLS-1$
-            "substring", //$NON-NLS-1$
-            "sysid", //$NON-NLS-1$
-            "system", //$NON-NLS-1$
-            "tables", //$NON-NLS-1$
-            "tablespace", //$NON-NLS-1$
-            "temp", //$NON-NLS-1$
-            "template", //$NON-NLS-1$
-            "temporary", //$NON-NLS-1$
-            "text", //$NON-NLS-1$
-            "time", //$NON-NLS-1$
-            "timestamp", //$NON-NLS-1$
-            "transaction", //$NON-NLS-1$
-            "treat", //$NON-NLS-1$
-            "trigger", //$NON-NLS-1$
-            "trim", //$NON-NLS-1$
-            "truncate", //$NON-NLS-1$
-            "trusted", //$NON-NLS-1$
-            "type", //$NON-NLS-1$
-            "types", //$NON-NLS-1$
-            "unbounded", //$NON-NLS-1$
-            "uncommitted", //$NON-NLS-1$
-            "unencrypted", //$NON-NLS-1$
-            "unknown", //$NON-NLS-1$
-            "unlisten", //$NON-NLS-1$
-            "unlogged", //$NON-NLS-1$
-            "until", //$NON-NLS-1$
-            "update", //$NON-NLS-1$
-            "vacuum", //$NON-NLS-1$
-            "valid", //$NON-NLS-1$
-            "validate", //$NON-NLS-1$
-            "validator", //$NON-NLS-1$
-            "value", //$NON-NLS-1$
-            "values", //$NON-NLS-1$
-            "varchar", //$NON-NLS-1$
-            "varying", //$NON-NLS-1$
-            "version", //$NON-NLS-1$
-            "view", //$NON-NLS-1$
-            "volatile", //$NON-NLS-1$
-            "whitespace", //$NON-NLS-1$
-            "without", //$NON-NLS-1$
-            "work", //$NON-NLS-1$
-            "wrapper", //$NON-NLS-1$
-            "write", //$NON-NLS-1$
-            "xml", //$NON-NLS-1$
-            "xmlattributes", //$NON-NLS-1$
-            "xmlconcat", //$NON-NLS-1$
-            "xmlelement", //$NON-NLS-1$
-            "xmlexists", //$NON-NLS-1$
-            "xmlforest", //$NON-NLS-1$
-            "xmlparse", //$NON-NLS-1$
-            "xmlpi", //$NON-NLS-1$
-            "xmlroot", //$NON-NLS-1$
-            "xmlserialize", //$NON-NLS-1$
-            "year", //$NON-NLS-1$
-            "yes", //$NON-NLS-1$
-            "zone" //$NON-NLS-1$
-    };
+    private final String[] unreserved = Keyword.KEYWORDS.entrySet().stream()
+            .filter(e -> KeywordCategory.UNRESERVED_KEYWORD.equals(e.getValue().getCategory()))
+            .map(Entry::getKey)
+            .toArray(String[]::new);
 
     private final String[] types = {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
-            "any", //$NON-NLS-1$
             "anyarray", //$NON-NLS-1$
             "anyelement", //$NON-NLS-1$
             "anyenum", //$NON-NLS-1$
@@ -457,7 +63,6 @@ public class SqlPostgresSyntax {
             "lseg", //$NON-NLS-1$
             "macaddr", //$NON-NLS-1$
             "money", //$NON-NLS-1$
-            "name", //$NON-NLS-1$
             "numeric", //$NON-NLS-1$
             "numrange", //$NON-NLS-1$
             "oid", //$NON-NLS-1$
@@ -481,24 +86,20 @@ public class SqlPostgresSyntax {
             "reltime", //$NON-NLS-1$
             "smallint", //$NON-NLS-1$
             "smgr", //$NON-NLS-1$
-            "text", //$NON-NLS-1$
             "tid", //$NON-NLS-1$
             "timestamp without time zone", //$NON-NLS-1$
             "timestamp with time zone", //$NON-NLS-1$
             "time without time zone", //$NON-NLS-1$
             "time with time zone", //$NON-NLS-1$
             "tinterval", //$NON-NLS-1$
-            "trigger", //$NON-NLS-1$
             "tsquery", //$NON-NLS-1$
             "tsrange", //$NON-NLS-1$
             "tstzrange", //$NON-NLS-1$
             "tsvector", //$NON-NLS-1$
             "txid_snapshot", //$NON-NLS-1$
-            "unknown", //$NON-NLS-1$
             "uuid", //$NON-NLS-1$
             "void", //$NON-NLS-1$
             "xid", //$NON-NLS-1$
-            "xml" //$NON-NLS-1$
     };
 
     private final String[] functions = {
@@ -887,7 +488,6 @@ public class SqlPostgresSyntax {
             "current_schema", //$NON-NLS-1$
             "current_schemas", //$NON-NLS-1$
             "current_setting", //$NON-NLS-1$
-            "current_user", //$NON-NLS-1$
             "currtid", //$NON-NLS-1$
             "currtid2", //$NON-NLS-1$
             "currval", //$NON-NLS-1$

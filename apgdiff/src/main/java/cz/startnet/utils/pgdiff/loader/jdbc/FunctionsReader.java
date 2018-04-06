@@ -71,7 +71,7 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
 
             if("t".equals(aMode)) {
-                returnedTableArguments.append(argNames[i]).append(" ")
+                returnedTableArguments.append(PgDiffUtils.getQuotedName(argNames[i])).append(" ")
                 .append(returnType.getFullName(schemaName)).append(", ");
                 continue;
             }

@@ -26,4 +26,21 @@
             </plugin>
         </plugins>
     </build>
+    
+  <profiles>
+    <profile>
+      <id>internal</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>ru.taximaxim.codeKeeper</groupId>
+          <artifactId>ru.taximaxim.codekeeper.internal.tests</artifactId>
+          <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+    
 </project>

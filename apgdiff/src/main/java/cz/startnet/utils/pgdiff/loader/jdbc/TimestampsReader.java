@@ -6,7 +6,6 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -27,11 +26,11 @@ public class TimestampsReader implements PgCatalogStrings {
     }
 
     public DBTimestamp read() throws SQLException, InterruptedException {
+        loader.setCurrentOperation("pg_dbo_timestamp query");
         DBTimestamp time = new DBTimestamp();
         String schemaName = loader.getExtensionSchema();
-        try (ResultSet result = loader.statement.executeQuery(MessageFormat.format(QUERY, schemaName))) {
+        try (ResultSet result = loader.runner.runScript(loader.statement, MessageFormat.format(QUERY, schemaName))) {
             while (result.next()) {
-                PgDiffUtils.checkCancelled(loader.monitor);
                 fill(result, time);
             }
         }
@@ -46,7 +45,7 @@ public class TimestampsReader implements PgCatalogStrings {
         String name = res.getString("name");
         long objId = res.getLong("objid");
         Instant lastModified = res.getTimestamp("last_modified").toInstant();
-        String author = res.getString("author");
+        String author = res.getString("ses_user");
         GenericColumn column = null;
         switch (type) {
         case "schema":

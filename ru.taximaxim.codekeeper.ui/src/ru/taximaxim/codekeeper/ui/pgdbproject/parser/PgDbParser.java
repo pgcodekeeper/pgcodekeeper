@@ -45,7 +45,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
@@ -165,48 +165,50 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             PgDatabase db = loader.loadFile(new PgDatabase());
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
-            fillFunctionBodies(loader.getFuncBodyReferences());
+            fillStatementBodies(loader.getStatementBodyReferences());
         }
         notifyListeners();
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, funcBodies);
+        List<StatementBodyContainer> statementBodies = new ArrayList<>();
+        PgDatabase db = PgUIDumpLoader.buildFiles(files, monitor, statementBodies);
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.putAll(db.getObjReferences());
-        fillFunctionBodies(funcBodies);
+        fillStatementBodies(statementBodies);
         notifyListeners();
     }
 
-    private void fillFunctionBodies(List<FunctionBodyContainer> funcBodies) {
-        for (FunctionBodyContainer funcBody : funcBodies) {
-            String body = funcBody.getBody();
+    private void fillStatementBodies(List<StatementBodyContainer> statementBodies) {
+        for (StatementBodyContainer statementBody : statementBodies) {
+            String body = statementBody.getBody().toLowerCase();
             Set<PgObjLocation> newRefs = new LinkedHashSet<>();
             getAllObjDefinitions().forEach(def -> {
-                int index = body.indexOf(def.getObjName());
+                String name = def.getObjName().toLowerCase();
+                int index = body.indexOf(name);
                 while (index >= 0) {
                     int next = index + def.getObjLength();
                     // check word boundaries, whole words only
                     if ((index == 0 || !PgDiffUtils.isValidIdChar(body.charAt(index - 1))) &&
                             (next >= body.length() || !PgDiffUtils.isValidIdChar(body.charAt(next)))) {
                         PgObjLocation loc = new PgObjLocation(def.getObject().schema,
-                                def.getObjName(), null, funcBody.getOffset() + index,
-                                funcBody.getPath(), funcBody.getLineNumber());
+                                def.getObjName(), null, statementBody.getOffset() + index,
+                                statementBody.getPath(), statementBody.getLineNumber());
                         loc.setObjType(def.getObjType());
                         loc.setAction(StatementActions.NONE);
                         newRefs.add(loc);
                     }
-                    index = body.indexOf(def.getObjName(), index + 1);
+                    index = body.indexOf(name, index + 1);
                 }
+
             });
             if (!newRefs.isEmpty()) {
-                List<PgObjLocation> refs = objReferences.get(funcBody.getPath());
+                List<PgObjLocation> refs = objReferences.get(statementBody.getPath());
                 if (refs != null) {
                     newRefs.addAll(refs);
                 }
-                objReferences.put(funcBody.getPath(), new ArrayList<>(newRefs));
+                objReferences.put(statementBody.getPath(), new ArrayList<>(newRefs));
             }
         }
     }
@@ -214,16 +216,16 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, PgUIDumpLoader.countFiles(proj));
-        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+        List<StatementBodyContainer> statementBodies = new ArrayList<>();
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(proj.getDefaultCharset(true));
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                proj, args, mon, funcBodies, null);
+                proj, args, mon, statementBodies, null);
         objDefinitions.clear();
         objDefinitions.putAll(db.getObjDefinitions());
         objReferences.clear();
         objReferences.putAll(db.getObjReferences());
-        fillFunctionBodies(funcBodies);
+        fillStatementBodies(statementBodies);
         notifyListeners();
     }
 
@@ -241,7 +243,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
             PgDatabase db = loader.load();
             objDefinitions.putAll(db.getObjDefinitions());
             objReferences.putAll(db.getObjReferences());
-            fillFunctionBodies(loader.getFuncBodyReferences());
+            fillStatementBodies(loader.getStatementBodyReferences());
         }
         notifyListeners();
     }

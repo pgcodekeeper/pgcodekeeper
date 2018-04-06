@@ -77,6 +77,10 @@ public final class Messages extends NLS {
 
     public static String SqlEditor_update_ddl;
 
+    public static String UpdateDdl_read_only_db_message;
+
+    public static String UpdateDdl_read_only_db_title;
+
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
 
@@ -155,6 +159,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+
+    public static String copy;
     public static String CodeFilter_search_by_code;
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
@@ -201,6 +207,26 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_script_add_transaction;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStoreEditorDialog_failed_connection;
+
+    public static String DbStoreEditorDialog_failed_connection_reason;
+
+    public static String DbStoreEditorDialog_ignore_file_list;
+
+    public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
+
+    public static String DbStoreEditorDialog_read_only;
+
+    public static String DbStoreEditorDialog_read_only_description;
+
+    public static String DbStoreEditorDialog_select_ignore_file;
+
+    public static String DbStoreEditorDialog_success;
+
+    public static String DbStoreEditorDialog_successfull_connection;
+
+    public static String DbStoreEditorDialog_test_connection;
+
     public static String DbStorePicker_choose_dir;
 
     public static String DbStorePicker_db_connection;
@@ -212,6 +238,12 @@ public final class Messages extends NLS {
     public static String DbStorePicker_load_from_file;
 
     public static String DbStorePrefPage_already_present;
+
+    public static String DbStorePrefPage_pg_pass_file_filter;
+
+    public static String DbStorePrefPage_pg_pass_file_select_title;
+
+    public static String DbStorePrefPage_pg_pass_import_tooltip;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
@@ -489,9 +521,13 @@ public final class Messages extends NLS {
 
     public static String PgObject_wizard_title;
 
-    public static String PrefListEditor_cannot_add;
+    public static String PgPassDialog_close;
 
-    public static String PrefListEditor_cannot_edit;
+    public static String PgPassDialog_import;
+
+    public static String PgPassDialog_title;
+
+    public static String PrefListEditor_cannot_add;
 
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
@@ -565,6 +601,8 @@ public final class Messages extends NLS {
     public static String yesNoEditingSupport_yes;
 
     public static String e_mail;
+
+    public static String edit;
     public static String feedback_message;
     public static String add_log;
 

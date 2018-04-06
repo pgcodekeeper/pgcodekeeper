@@ -58,8 +58,8 @@ public class TimePgData extends PgData<LocalTime> {
 
     @Override
     public int getMaxValues() {
-        long beginTime = start.toSecondOfDay() * 1000;
-        long endTime = end.toSecondOfDay() * 1000;
+        long beginTime = start.toSecondOfDay() * 1000L;
+        long endTime = end.toSecondOfDay() * 1000L;
         long values = endTime - beginTime + 1;
         return values > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) values;
     }

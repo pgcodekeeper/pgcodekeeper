@@ -30,7 +30,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
     }
 
     public IgnoredObjectPrefListEditor(Composite parent) {
-        super(parent, true, false, true);
+        super(parent);
     }
 
     @Override

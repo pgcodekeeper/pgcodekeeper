@@ -43,11 +43,7 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -98,7 +94,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -138,7 +133,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private Composite parent;
 
     private Object currentRemote;
-    private DbSource dbProject, dbRemote;
+    private DbSource dbProject;
+    private DbSource dbRemote;
     private TreeElement diffTree;
     private Object loadedRemote;
 
@@ -150,7 +146,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DiffTableViewer diffTable;
     private DiffPaneViewer diffPane;
 
-    private IStatusLineManager manager;
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
@@ -190,8 +185,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void createPartControl(Composite parent) {
         this.parent = parent;
-
-        manager = getEditorSite().getActionBars().getStatusLineManager();
 
         parent.setLayout(new GridLayout());
         lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
@@ -240,6 +233,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
+
         diffTable = new DiffTableViewer(sashOuter, false, manager, Paths.get(proj.getProject().getLocationURI())) {
 
             @Override
@@ -250,7 +245,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 container.setLayout(layout);
 
                 Label l = new Label(container, SWT.NONE);
-                l.setEnabled(false);
+                l.setForeground(l.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
                 l.setText(Messages.DiffTableViewer_apply_to);
                 l.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
 
@@ -297,39 +292,23 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         };
 
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
-
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                if (selection.size() != 1) {
-                    diffPane.setInput(null, null);
-                } else {
-                    TreeElement el = (TreeElement) selection.getFirstElement();
-                    diffPane.setInput(el, diffTable.getElements());
-                }
-            }
-        });
-        diffTable.getViewer().addDoubleClickListener(new IDoubleClickListener() {
-
-            @Override
-            public void doubleClick(DoubleClickEvent e) {
-                TreeElement el = (TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement();
-                openElementInEditor(el);
+        diffTable.getViewer().addPostSelectionChangedListener(e -> {
+            IStructuredSelection selection = (IStructuredSelection) e.getSelection();
+            if (selection.size() != 1) {
+                diffPane.setInput(null, null);
+            } else {
+                TreeElement el = (TreeElement) selection.getFirstElement();
+                diffPane.setInput(el, diffTable.getElements());
             }
         });
 
-        diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.getViewer().addDoubleClickListener(
+                e -> openElementInEditor((TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement()));
 
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                sp.fireSelectionChanged(event, new DBPair(dbProject, dbRemote));
-            }
-        });
+        diffTable.getViewer().addPostSelectionChangedListener(
+                e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
-
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, HELP.MAIN_EDITOR);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
@@ -407,13 +386,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private void handlerCloseProject(IResourceChangeEvent event) {
         if (event.getResource().getProject().equals(proj.getProject())) {
-            UiSync.exec(parent, new Runnable(){
-
-                @Override
-                public void run() {
-                    if (!parent.isDisposed()) {
-                        getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
-                    }
+            UiSync.exec(parent, () -> {
+                if (!parent.isDisposed()) {
+                    getSite().getPage().closeEditor(ProjectEditorDiffer.this, true);
                 }
             });
         }
@@ -544,9 +519,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
+                            loadedRemote = currentRemote;
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
                                     newDiffer.getDiffTree());
-                            loadedRemote = currentRemote;
                         }
                     });
                 }
@@ -614,8 +589,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (currentRemote != null) {
             return currentRemote;
         }
-        List<DbInfo> lastStore = DbInfo.preferenceToStore(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
-        return lastStore.isEmpty() ? null : lastStore.get(0);
+
+        return DbInfo.getLastDb(proj.getPrefs().get(PROJ_PREF.LAST_DB_STORE, "")); //$NON-NLS-1$
     }
 
     public void saveLastDb(DbInfo lastDb) {
@@ -625,7 +600,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public static void saveLastDb(DbInfo lastDb, IProject project) {
         IEclipsePreferences prefs = PgDbProject.getPrefs(project);
         if (prefs != null) {
-            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.toString());
+            prefs.put(PROJ_PREF.LAST_DB_STORE, lastDb.getName());
             try {
                 prefs.flush();
             } catch (BackingStoreException ex) {
@@ -685,6 +660,10 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             ignoreList = InternalIgnoreList.readInternalList();
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+
+            if (loadedRemote != null && loadedRemote instanceof DbInfo) {
+                ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
@@ -832,13 +811,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        UiSync.exec(parent, new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if (!parent.isDisposed()) {
-                                    callEgitCommitCommand();
-                                }
+                        UiSync.exec(parent, () -> {
+                            if (!parent.isDisposed()) {
+                                callEgitCommitCommand();
                             }
                         });
                     } catch (CoreException e) {

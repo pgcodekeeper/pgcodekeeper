@@ -85,7 +85,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public boolean exists() {
-        return projName != null || !projName.isEmpty();
+        return projName != null && !projName.isEmpty();
     }
 
     @Override

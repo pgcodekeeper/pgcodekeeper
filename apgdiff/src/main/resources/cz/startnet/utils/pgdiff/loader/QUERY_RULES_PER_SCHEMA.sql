@@ -6,7 +6,7 @@ SELECT  r.oid::bigint,
         r.ev_type, 
         r.is_instead, 
         r.ev_enabled,
-        pg_get_ruledef(r.oid) AS rule_string,
+        pg_catalog.pg_get_ruledef(r.oid) AS rule_string,
         d.description as comment
 FROM pg_catalog.pg_rewrite r
 JOIN pg_catalog.pg_class ccc ON ccc.oid = r.ev_class 

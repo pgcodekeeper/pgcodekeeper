@@ -57,8 +57,8 @@ public class JdbcLoader extends JdbcLoaderBase {
             this.connection = connection;
             this.statement = statement;
             connection.setAutoCommit(false);
-            statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
-            statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
+            runner.run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+            runner.run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
 
             queryCheckVersion();
             queryTypesForCache();
@@ -107,11 +107,11 @@ public class JdbcLoader extends JdbcLoaderBase {
         this.useServerHelpers = useServerHelpers;
     }
 
-    public boolean hasAllHelpers() throws IOException {
+    public boolean hasAllHelpers() throws IOException, InterruptedException {
         // just makes new connection for now
         // smarter solution would be to make the class AutoCloseable
         try (Connection c = connector.getConnection()) {
-            return JdbcReaderFactory.getAvailableHelperBits(c) == JdbcReaderFactory.getAllHelperBits();
+            return JdbcReaderFactory.getAvailableHelperBits(c, runner) == JdbcReaderFactory.getAllHelperBits();
         } catch (SQLException ex) {
             throw new IOException(ex.getLocalizedMessage(), ex);
         }

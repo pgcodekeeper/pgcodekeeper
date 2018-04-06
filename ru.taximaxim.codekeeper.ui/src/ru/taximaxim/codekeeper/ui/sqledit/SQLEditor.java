@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +84,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
@@ -149,7 +151,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res != null) {
             IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
             if (prefs != null) {
-                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.toString());
+                prefs.put(PROJ_PREF.LAST_DB_STORE_EDITOR, lastDb.getName());
                 try {
                     prefs.flush();
                 } catch (BackingStoreException ex) {
@@ -172,11 +174,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         if (res != null) {
             IEclipsePreferences prefs = PgDbProject.getPrefs(res.getProject());
             if (prefs != null) {
-                List<DbInfo> lastStore = DbInfo.preferenceToStore(
-                        prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
-                if (!lastStore.isEmpty()) {
-                    return lastStore.get(0);
-                }
+                return DbInfo.getLastDb(prefs.get(PROJ_PREF.LAST_DB_STORE_EDITOR, "")); //$NON-NLS-1$
             }
         }
         return null;
@@ -402,7 +400,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
         final String textRetrieved;
         Point point = getSourceViewer().getSelectedRange();
         IDocument document = getSourceViewer().getDocument();
-        if (point.y == 0){
+        if (point.y == 0) {
             textRetrieved = document.get();
         } else {
             try {
@@ -414,47 +412,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             }
         }
 
-        Runnable launcher;
-        if (!mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE)){
-            Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
-
-            final String jdbcHost = dbInfo.getDbHost();
-            final int jdbcPort = dbInfo.getDbPort();
-            final String jdbcUser = dbInfo.getDbUser();
-            final String jdbcPass = dbInfo.getDbPass();
-            final String jdbcDbName = dbInfo.getDbName();
-
-            launcher = () -> {
-                String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
-                try{
-                    JdbcConnector connector = new JdbcConnector(
-                            jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName,
-                            ApgdiffConsts.UTC);
-                    output = new JdbcRunner(connector).runScript(textRetrieved);
-                    if (JDBC_CONSTS.JDBC_SUCCESS.equals(output)) {
-                        output = Messages.SqlEditor_jdbc_success;
-                        ProjectEditorDiffer.notifyDbChanged(dbInfo);
-                    }
-                } catch (IOException e) {
-                    throw new IllegalStateException(e.getLocalizedMessage(), e);
-                } finally {
-                    afterScriptFinished(output);
-                }
-            };
-        } else {
-            Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
-            final List<String> command = new ArrayList<>(Arrays.asList(
-                    getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo)
-                    .split(" "))); //$NON-NLS-1$
-
-            launcher = new RunScriptExternal(textRetrieved, command);
-        }
-
-        Thread scriptThread = new Thread(launcher);
-        scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
-                Messages.sqlScriptDialog_exception_during_script_execution,e));
-
-        scriptThreadJobWrapper = new ScriptThreadJobWrapper(scriptThread);
+        scriptThreadJobWrapper = new ScriptThreadJobWrapper(dbInfo, textRetrieved);
         scriptThreadJobWrapper.setUser(true);
         scriptThreadJobWrapper.schedule();
 
@@ -464,25 +422,62 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     private class ScriptThreadJobWrapper extends SingletonEditorJob {
 
-        private final Thread scriptThread;
+        private final DbInfo dbInfo;
+        private final String script;
 
-        ScriptThreadJobWrapper(Thread scriptThread) {
+        public ScriptThreadJobWrapper(DbInfo dbInfo, String script) {
             super(Messages.SqlEditor_update_ddl + getEditorInput().getName(),
                     SQLEditor.this, UpdateDdlJobTester.EVAL_PROP);
-            this.scriptThread = scriptThread;
+            this.dbInfo = dbInfo;
+            this.script = script;
         }
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
+            SubMonitor.convert(monitor).setTaskName(Messages.SqlEditor_update_ddl);
+            return mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE) ?
+                    runExternal(monitor) : runInternal(monitor);
+        }
+
+        private IStatus runInternal(IProgressMonitor monitor) {
+            String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
+
+            Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
+
+            JdbcConnector connector = new JdbcConnector(
+                    dbInfo.getDbHost(), dbInfo.getDbPort(),
+                    dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(),
+                    ApgdiffConsts.UTC);
+
             try {
-                Log.log(Log.LOG_INFO, "Update DDL starting"); //$NON-NLS-1$
-                SubMonitor.convert(monitor).setTaskName(Messages.SqlEditor_update_ddl);
+                new JdbcRunner(monitor).run(connector, script);
+                output = Messages.SqlEditor_jdbc_success;
+                ProjectEditorDiffer.notifyDbChanged(dbInfo);
+                return Status.OK_STATUS;
+            } catch (InterruptedException ex) {
+                output = ex.getLocalizedMessage();
+                return Status.CANCEL_STATUS;
+            } catch (SQLException | IOException e) {
+                return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                        Messages.sqlScriptDialog_exception_during_script_execution, e);
+            } finally {
+                afterScriptFinished(output);
+            }
+        }
 
-                scriptThread.start();
+        private IStatus runExternal(IProgressMonitor monitor) {
+            Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
 
-                while(scriptThread.isAlive()) {
+            Thread scriptThread = new Thread(new RunScriptExternal(script, new ArrayList<>(Arrays.asList(
+                    getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$
+            scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
+                    Messages.sqlScriptDialog_exception_during_script_execution, e));
+            scriptThread.start();
+
+            try {
+                while (scriptThread.isAlive()) {
                     Thread.sleep(20);
-                    if(monitor.isCanceled()) {
+                    if (monitor.isCanceled()) {
                         ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
                         Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
 
@@ -493,6 +488,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {
                 scriptThread.interrupt();
+                Thread.currentThread().interrupt();
                 return Status.CANCEL_STATUS;
             } finally {
                 monitor.done();

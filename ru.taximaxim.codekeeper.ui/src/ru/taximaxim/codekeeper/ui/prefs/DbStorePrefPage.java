@@ -1,25 +1,36 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
+import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
+import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
+import ru.taximaxim.pgpass.PgPass;
 
 public class DbStorePrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
@@ -32,34 +43,21 @@ implements IWorkbenchPreferencePage {
     }
 
     @Override
-    public void createControl(Composite parent) {
-        super.createControl(parent);
-
-        Button btnDef = getDefaultsButton();
-        btnDef.setText(Messages.dbStorePrefPage_clear_db_store);
-        GridData defGd = (GridData) btnDef.getLayoutData();
-        defGd.widthHint = Math.max(defGd.widthHint,
-                btnDef.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
-        btnDef.getParent().layout();
-    }
-
-    @Override
     protected Control createContents(Composite parent) {
         dbList = new DbStorePrefListEditor(parent);
-        dbList.setInputList(DbInfo.preferenceToStore(getPreferenceStore().getString(PREF.DB_STORE)));
+        dbList.setInputList(DbInfo.readStoreFromXml(getPreferenceStore().getString(PREF.DB_STORE)));
         return dbList;
     }
 
     @Override
     protected void performDefaults() {
-        dbList.setInputList(DbInfo.preferenceToStore(getPreferenceStore().getDefaultString(PREF.DB_STORE)));
+        dbList.setInputList(Arrays.asList(
+                new DbInfo("default", "", "", "", "", 0, false, new ArrayList<>()))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     @Override
     public boolean performOk() {
-        if(getPreferenceStore() != null) {
-            getPreferenceStore().setValue(PREF.DB_STORE, DbInfo.storeToPreference(dbList.getList()));
-        }
+        DbXmlStore.INSTANCE.writeDbStoreList(dbList.getList());
         return true;
     }
 }
@@ -67,7 +65,7 @@ implements IWorkbenchPreferencePage {
 class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
 
     public DbStorePrefListEditor(Composite parent) {
-        super(parent, false, true, true);
+        super(parent);
     }
 
     @Override
@@ -84,7 +82,7 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
     @Override
     protected ListViewer createViewer(Composite parent) {
         ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 5);
+        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 7);
         gd.widthHint = PREF_PAGE.WIDTH_HINT_PX;
         viewerObjs.getControl().setLayoutData(gd);
 
@@ -97,5 +95,39 @@ class DbStorePrefListEditor extends PrefListEditor<DbInfo, ListViewer> {
             }
         });
         return viewerObjs;
+    }
+
+    @Override
+    protected void createButtonsForSideBar(Composite parent) {
+        createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
+        createButton(parent, COPY_ID, Messages.copy, Activator.getEclipseImage(ISharedImages.IMG_TOOL_COPY));
+        createButton(parent, EDIT_ID, Messages.edit, FILE.ICONEDIT);
+        createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
+        createButton(parent, UP_ID, null, FILE.ICONUP);
+        createButton(parent, DOWN_ID, null, FILE.ICONDOWN);
+
+        Button btnPgPass = createButton(parent, CLIENT_ID,
+                Messages.DbStorePrefPage_pg_pass_import_tooltip, FILE.PGPASS);
+        btnPgPass.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
+
+        btnPgPass.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                FileDialog dialog = new FileDialog(getShell());
+                dialog.setText(Messages.DbStorePrefPage_pg_pass_file_select_title);
+                dialog.setFilterExtensions(new String[] {"*.pgpass", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(new String[] {
+                        Messages.DbStorePrefPage_pg_pass_file_filter,
+                        Messages.DiffPresentationPane_any_file_filter});
+                Path path = PgPass.getPgPassPath();
+                dialog.setFilterPath(path.getParent().toString());
+                dialog.setFileName(path.getFileName().toString());
+                String s = dialog.open();
+                if (s != null) {
+                    new PgPassDialog(getShell(), s, DbStorePrefListEditor.this).open();
+                }
+            }
+        });
     }
 }
