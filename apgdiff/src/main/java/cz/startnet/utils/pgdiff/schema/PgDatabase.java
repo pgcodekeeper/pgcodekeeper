@@ -262,12 +262,13 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
 
-    public void addLib(PgDatabase database, boolean isSafeMode) throws IOException {
+    public void addLib(PgDatabase database) throws IOException {
         listPgObjects(database).values().forEach(PgStatement::markAsLib);
-        concat(database, isSafeMode);
+        concat(database);
     }
 
-    public void concat(PgDatabase database, boolean isSafeMode) throws IOException {
+    public void concat(PgDatabase database) throws IOException {
+        boolean isSafeMode = database.getArguments().isLibSafeMode();
         String message = "{0} : Library error - duplicated object : {1} {2}";
 
         for (PgExtension e : database.getExtensions()) {

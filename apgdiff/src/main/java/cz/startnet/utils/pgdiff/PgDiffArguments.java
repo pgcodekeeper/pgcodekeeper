@@ -39,6 +39,7 @@ public class PgDiffArguments implements Cloneable {
     private List<String> sourceLibsWithoutPriv = new ArrayList<>();
     private List<String> targetLibs = new ArrayList<>();
     private List<String> targetLibsWithoutPriv = new ArrayList<>();
+    private boolean libSafeMode;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -138,6 +139,14 @@ public class PgDiffArguments implements Cloneable {
 
     public Collection<String> getTargetLibsWithoutPriv() {
         return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
+    public boolean isLibSafeMode() {
+        return libSafeMode;
+    }
+
+    public void setLibSafeMode(boolean libSafeMode) {
+        this.libSafeMode = libSafeMode;
     }
 
     public String getInCharsetName() {

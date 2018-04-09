@@ -62,19 +62,19 @@ public final class PgDiff {
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
         for (String path : arguments.getTargetLibs()) {
-            oldDatabase.addLib(getLibrary(path, arguments, false), false);
+            oldDatabase.addLib(getLibrary(path, arguments, false));
         }
 
         for (String path : arguments.getTargetLibsWithoutPriv()) {
-            oldDatabase.addLib(getLibrary(path, arguments, true), false);
+            oldDatabase.addLib(getLibrary(path, arguments, true));
         }
 
         for (String path : arguments.getSourceLibs()) {
-            newDatabase.addLib(getLibrary(path, arguments, false), false);
+            newDatabase.addLib(getLibrary(path, arguments, false));
         }
 
         for (String path : arguments.getSourceLibsWithoutPriv()) {
-            newDatabase.addLib(getLibrary(path, arguments, true), false);
+            newDatabase.addLib(getLibrary(path, arguments, true));
         }
 
         IgnoreParser ignoreParser = new IgnoreParser();
@@ -102,7 +102,8 @@ public final class PgDiff {
                 return loadDatabaseSchema("parsed", path, args);
             } else {
                 PgDatabase db = new PgDatabase();
-                readStatementsFromDirectory(new File(path), db, args, false);
+                db.setArguments(args);
+                readStatementsFromDirectory(new File(path), db, args);
                 return db;
             }
         }
@@ -110,14 +111,14 @@ public final class PgDiff {
         return loadDatabaseSchema("dump", path, args);
     }
 
-    private static void readStatementsFromDirectory(final File folder, PgDatabase db, PgDiffArguments args, boolean isSafeMode)
+    private static void readStatementsFromDirectory(final File folder, PgDatabase db, PgDiffArguments args)
             throws IOException, InterruptedException, URISyntaxException {
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
-                readStatementsFromDirectory(fileEntry, db, args, isSafeMode);
+                readStatementsFromDirectory(fileEntry, db, args);
             } else {
                 // filter extension?
-                db.addLib(PgDiff.loadDatabaseSchema("dump", fileEntry.toString(), args), isSafeMode);
+                db.addLib(PgDiff.loadDatabaseSchema("dump", fileEntry.toString(), args));
             }
         }
     }

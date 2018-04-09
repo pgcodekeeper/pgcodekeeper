@@ -146,24 +146,29 @@ public class CliArgs extends PgDiffArguments {
     private List<String> ignoreLists;
 
     @Option(name="--src-dep", metaVar="<path>", forbids="--parse",
-            usage="add dependency to source, "
+            usage="add library dependency to source, "
                     + "\nspecify multiple times to use several lists")
     private List<String> sourceLibs;
 
     @Option(name="--src-dep-no-priv", metaVar="<path>", forbids="--parse",
-            usage="add dependency to source without privileges, --src-dep argument has a higher priority"
+            usage="add library dependency to source without privileges, --src-dep argument has a higher priority"
                     + "\nspecify multiple times to use several lists")
     private List<String> sourceLibsWithoutPriv;
 
     @Option(name="--tgt-dep", metaVar="<path>", forbids="--parse",
-            usage="add dependency to target"
+            usage="add library dependency to target"
                     + "\nspecify multiple times to use several lists")
     private List<String> targetLibs;
 
     @Option(name="--tgt-dep-no-priv", metaVar="<path>", forbids="--parse",
-            usage="add dependency to target without privileges, --tgt-dep argument has a higher priority "
+            usage="add library dependency to target without privileges, --tgt-dep argument has a higher priority "
                     + "\nspecify multiple times to use several lists")
     private List<String> targetLibsWithoutPriv;
+
+    @Option(name="--dep-safe-mode", forbids="--parse",
+            usage="output with an error if the library contains objects with names "
+                    + "that match the objects of the whole database")
+    private boolean libSafeMode;
 
     @Override
     public boolean isModeParse() {
@@ -228,6 +233,11 @@ public class CliArgs extends PgDiffArguments {
     @Override
     public Collection<String> getTargetLibsWithoutPriv() {
         return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
+    @Override
+    public boolean isLibSafeMode() {
+        return libSafeMode;
     }
 
     @Override

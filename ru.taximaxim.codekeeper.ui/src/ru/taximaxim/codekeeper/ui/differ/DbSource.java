@@ -217,10 +217,10 @@ class DbSourceProject extends DbSource {
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
                 arguments, monitor, null, er);
 
-        boolean isSafeMode = pref.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true);
+        arguments.setLibSafeMode(pref.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
         for (Dependency dep : new DependenciesXmlStore(project).readObjects()) {
             try {
-                db.addLib(PgDiff.getLibrary(dep.getPath(), arguments, dep.isIgnorePriv()), isSafeMode);
+                db.addLib(PgDiff.getLibrary(dep.getPath(), arguments, dep.isIgnorePriv()));
             } catch (URISyntaxException ex) {
                 Log.log(ex);
             }
