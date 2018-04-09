@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -253,21 +252,21 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase deepCopy() {
         PgDatabase copy = shallowCopy();
-        for(PgExtension ext : extensions) {
+        for (PgExtension ext : extensions) {
             copy.addExtension(ext.deepCopy());
         }
-        for(PgSchema schema : schemas) {
+        for (PgSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
         return copy;
     }
 
-    public void addLib(PgDatabase database) throws IOException {
+    public void addLib(PgDatabase database) {
         listPgObjects(database).values().forEach(PgStatement::markAsLib);
         concat(database);
     }
 
-    public void concat(PgDatabase database) throws IOException {
+    private void concat(PgDatabase database) {
         boolean isSafeMode = database.getArguments().isLibSafeMode();
 
         for (PgExtension e : database.getExtensions()) {
@@ -284,7 +283,8 @@ public class PgDatabase extends PgStatement {
             if (schema == null) {
                 s.dropParent();
                 addSchema(s);
-            } else if (!"public".equals(s.getName()) || !s.compareChildren(new PgSchema("public", ""))) {
+            } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
+                    || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
                 if (isSafeMode) {
                     throw new LibraryObjectDuplicationException(s);
                 }
