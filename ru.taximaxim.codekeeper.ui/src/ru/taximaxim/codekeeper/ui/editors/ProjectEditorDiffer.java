@@ -878,6 +878,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private boolean warnLibChange() {
         if (diffTable.checkLibChange()) {
+            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
+                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
+                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
+                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
+                mb.open();
+                return true;
+            }
+
             MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
             mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
             mb.setMessage(Messages.ProjectEditorDiffer_lib_change_warning_message);

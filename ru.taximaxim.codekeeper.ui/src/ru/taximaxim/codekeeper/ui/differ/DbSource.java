@@ -6,13 +6,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -221,35 +217,11 @@ class DbSourceProject extends DbSource {
         PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
                 arguments, monitor, null, er);
 
+        boolean isSafeMode = pref.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true);
         for (Dependency dep : new DependenciesXmlStore(project).readObjects()) {
-            PgDiffArguments args = arguments.clone();
-            args.setIgnorePrivileges(dep.isIgnorePriv());
             try {
-                switch (dep.getType()) {
-                case DIRECTORY:
-                    try (Stream<Path> paths = Files.walk(Paths.get(dep.getPath()))) {
-                        paths.filter(Files::isRegularFile).forEach(path -> {
-                            try {
-                                db.addLib(PgDiff.loadDatabaseSchema("dump", path.toString(), args)); //$NON-NLS-1$
-                            } catch (IOException | InterruptedException | URISyntaxException e) {
-                                Log.log(e);
-                            }
-                        });
-                    }
-                    break;
-                case DUMP:
-                    db.addLib(PgDiff.loadDatabaseSchema("dump", dep.getPath(), args)); //$NON-NLS-1$
-                    break;
-                case PROJECT:
-                    db.addLib(PgDiff.loadDatabaseSchema("parsed", dep.getPath(), args)); //$NON-NLS-1$
-                    break;
-                case DATABASE:
-                    db.addLib(PgDiff.loadDatabaseSchema("db", dep.getPath(), args)); //$NON-NLS-1$
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported dependency type"); //$NON-NLS-1$
-                }
-            } catch (URISyntaxException | IOException ex) {
+                db.addLib(PgDiff.getLibrary(dep.getPath(), arguments, dep.isIgnorePriv()), isSafeMode);
+            } catch (URISyntaxException ex) {
                 Log.log(ex);
             }
         }

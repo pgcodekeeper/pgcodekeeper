@@ -269,13 +269,15 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_add_dump;
 
-    public static String DependencyProperties_add_pgcodekeeper_project;
-
     public static String DependencyProperties_enter_connection_string;
 
     public static String DependencyProperties_ignore_privileges;
 
     public static String DependencyProperties_path;
+
+    public static String DependencyProperties_safe_mode;
+
+    public static String DependencyProperties_safe_mode_desc;
 
     public static String DependencyProperties_select_directory;
 
@@ -559,6 +561,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
+    public static String ProjectEditorDiffer_lib_change_error_message;
+
     public static String ProjectEditorDiffer_lib_change_warning_message;
 
     public static String ProjectEditorDiffer_lib_change_warning_title;

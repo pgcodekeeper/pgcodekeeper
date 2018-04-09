@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -63,19 +62,19 @@ public final class PgDiff {
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
         for (String path : arguments.getTargetLibs()) {
-            oldDatabase.concat(getLibrary(path, arguments, false));
+            oldDatabase.addLib(getLibrary(path, arguments, false), false);
         }
 
         for (String path : arguments.getTargetLibsWithoutPriv()) {
-            oldDatabase.concat(getLibrary(path, arguments, true));
+            oldDatabase.addLib(getLibrary(path, arguments, true), false);
         }
 
         for (String path : arguments.getSourceLibs()) {
-            newDatabase.concat(getLibrary(path, arguments, false));
+            newDatabase.addLib(getLibrary(path, arguments, false), false);
         }
 
         for (String path : arguments.getSourceLibsWithoutPriv()) {
-            newDatabase.concat(getLibrary(path, arguments, true));
+            newDatabase.addLib(getLibrary(path, arguments, true), false);
         }
 
         IgnoreParser ignoreParser = new IgnoreParser();
@@ -86,7 +85,7 @@ public final class PgDiff {
         return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
     }
 
-    private static PgDatabase getLibrary(String path, PgDiffArguments arguments,
+    public static PgDatabase getLibrary(String path, PgDiffArguments arguments,
             boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
 
         PgDiffArguments args = arguments.clone();
@@ -103,22 +102,24 @@ public final class PgDiff {
                 return loadDatabaseSchema("parsed", path, args);
             } else {
                 PgDatabase db = new PgDatabase();
-
-                try (Stream<Path> paths = Files.walk(Paths.get(path))) {
-                    paths.filter(Files::isRegularFile).forEach(file -> {
-                        try {
-                            db.concat(loadDatabaseSchema("dump", file.toString(), args));
-                        } catch (IOException | InterruptedException | URISyntaxException e) {
-
-                        }
-                    });
-                }
-
+                readStatementsFromDirectory(new File(path), db, args, false);
                 return db;
             }
         }
 
         return loadDatabaseSchema("dump", path, args);
+    }
+
+    private static void readStatementsFromDirectory(final File folder, PgDatabase db, PgDiffArguments args, boolean isSafeMode)
+            throws IOException, InterruptedException, URISyntaxException {
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                readStatementsFromDirectory(fileEntry, db, args, isSafeMode);
+            } else {
+                // filter extension?
+                db.addLib(PgDiff.loadDatabaseSchema("dump", fileEntry.toString(), args), isSafeMode);
+            }
+        }
     }
 
     /**

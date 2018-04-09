@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -260,16 +262,21 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
 
-    public void addLib(PgDatabase database) {
+    public void addLib(PgDatabase database, boolean isSafeMode) throws IOException {
         listPgObjects(database).values().forEach(PgStatement::markAsLib);
-        concat(database);
+        concat(database, isSafeMode);
     }
 
-    public void concat(PgDatabase database) {
+    public void concat(PgDatabase database, boolean isSafeMode) throws IOException {
+        String message = "{0} : Library error - duplicated object : {1} {2}";
+
         for (PgExtension e : database.getExtensions()) {
             if (getExtension(e.getName()) == null) {
                 e.dropParent();
                 addExtension(e);
+            } else if (!"plpgsql".equals(e.getName()) && isSafeMode) {
+                throw new IOException(MessageFormat.format(message,
+                        e.getLocation(), e.getStatementType(), e.getName()));
             }
         }
 
@@ -278,59 +285,96 @@ public class PgDatabase extends PgStatement {
             if (schema == null) {
                 s.dropParent();
                 addSchema(s);
-            } else {
+            } else if (!"public".equals(s.getName()) || !s.compareChildren(new PgSchema("public", ""))) {
+                if (isSafeMode) {
+                    throw new IOException(MessageFormat.format(message,
+                            s.getLocation(), s.getStatementType(), s.getName()));
+                }
+
                 for (PgType ty : s.getTypes()) {
                     if (schema.getType(ty.getName()) == null) {
                         ty.dropParent();
                         schema.addType(ty);
+                    } else if (isSafeMode) {
+                        throw new IOException(MessageFormat.format(message,
+                                ty.getLocation(), ty.getStatementType(), ty.getName()));
                     }
                 }
+
                 for (PgDomain dom : s.getDomains()) {
                     if (schema.getDomain(dom.getName()) == null) {
                         dom.dropParent();
                         schema.addDomain(dom);
+                    } else if (isSafeMode) {
+                        throw new IOException(MessageFormat.format(message,
+                                dom.getLocation(), dom.getStatementType(), dom.getName()));
                     }
                 }
+
                 for (PgSequence seq : s.getSequences()) {
                     if (schema.getSequence(seq.getName()) == null) {
                         seq.dropParent();
                         schema.addSequence(seq);
+                    } else if (isSafeMode) {
+                        throw new IOException(MessageFormat.format(message,
+                                seq.getLocation(), seq.getStatementType(), seq.getName()));
                     }
                 }
+
                 for (PgFunction func : s.getFunctions()) {
                     if (schema.getFunction(func.getName()) == null) {
                         func.dropParent();
                         schema.addFunction(func);
+                    } else if (isSafeMode) {
+                        throw new IOException(MessageFormat.format(message,
+                                func.getLocation(), func.getStatementType(), func.getName()));
                     }
                 }
+
                 for (PgTable t : s.getTables()) {
                     PgTable table = schema.getTable(t.getName());
                     if (table == null) {
                         t.dropParent();
                         schema.addTable(t);
                     } else {
+                        if (isSafeMode) {
+                            throw new IOException(MessageFormat.format(message,
+                                    t.getLocation(), t.getStatementType(), t.getName()));
+                        }
                         for (PgConstraint con : t.getConstraints()) {
                             if (table.getConstraint(con.getName()) == null) {
                                 con.dropParent();
                                 table.addConstraint(con);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        con.getLocation(), con.getStatementType(), con.getName()));
                             }
                         }
                         for (PgIndex ind : t.getIndexes()) {
                             if (table.getIndex(ind.getName()) == null) {
                                 ind.dropParent();
                                 table.addIndex(ind);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        ind.getLocation(), ind.getStatementType(), ind.getName()));
                             }
                         }
                         for (PgTrigger tr : t.getTriggers()) {
                             if (table.getTrigger(tr.getName()) == null) {
                                 tr.dropParent();
                                 table.addTrigger(tr);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        tr.getLocation(), tr.getStatementType(), tr.getName()));
                             }
                         }
                         for (PgRule r : t.getRules()) {
                             if (table.getRule(r.getName()) == null) {
                                 r.dropParent();
                                 table.addRule(r);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        r.getLocation(), r.getStatementType(), r.getName()));
                             }
                         }
                     }
@@ -341,16 +385,26 @@ public class PgDatabase extends PgStatement {
                         v.dropParent();
                         schema.addView(v);
                     } else {
+                        if (isSafeMode) {
+                            throw new IOException(MessageFormat.format(message,
+                                    v.getLocation(), v.getStatementType(), v.getName()));
+                        }
                         for (PgTrigger tr : v.getTriggers()) {
                             if (view.getTrigger(tr.getName()) == null) {
                                 tr.dropParent();
                                 view.addTrigger(tr);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        tr.getLocation(), tr.getStatementType(), tr.getName()));
                             }
                         }
                         for (PgRule r : v.getRules()) {
                             if (view.getRule(r.getName()) == null) {
                                 r.dropParent();
                                 view.addRule(r);
+                            } else if (isSafeMode) {
+                                throw new IOException(MessageFormat.format(message,
+                                        r.getLocation(), r.getStatementType(), r.getName()));
                             }
                         }
                     }

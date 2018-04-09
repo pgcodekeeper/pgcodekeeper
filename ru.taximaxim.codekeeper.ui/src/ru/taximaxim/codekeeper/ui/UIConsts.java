@@ -141,13 +141,7 @@ public interface UIConsts {
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
-        /*
-        String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String DB_NAME = "prefDbName"; //$NON-NLS-1$
-        String DB_HOST = "prefDbHost"; //$NON-NLS-1$
-        String DB_PORT = "prefDbPort"; //$NON-NLS-1$
-        String DB_USER = "prefDbUser"; //$NON-NLS-1$
-         */
+        String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
