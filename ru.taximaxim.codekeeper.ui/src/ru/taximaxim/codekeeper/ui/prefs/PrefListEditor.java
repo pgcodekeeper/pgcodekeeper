@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -12,6 +10,8 @@ import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -68,9 +68,15 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         Button button = new Button(parent, SWT.PUSH);
         button.setToolTipText(tooltip);
         button.setImage(image);
-        button.setData(Integer.valueOf(id));
         button.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        button.addSelectionListener(widgetSelectedAdapter(event -> buttonPressed(((Integer) event.widget.getData()).intValue())));
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                buttonPressed(id);
+            }
+        });
+
         return button;
     }
 
