@@ -163,8 +163,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     /*
      * See parseAclItem() in dumputils.c
      * For privilege characters see JdbcAclParser.PrivilegeTypes
-     * Order of all characters (for all types of objects combined)
-     * is given by order variable initialization
+     * Order of all characters (for all types of objects combined) : raxdtDXCcTUw
      */
     protected void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnName) {
@@ -172,7 +171,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             return;
         }
         String stType = null;
-        String order = "raxdtDXCcTUw";
+        String order;
         switch (st.getStatementType()) {
         case SEQUENCE:
             order = "rUw";
@@ -282,14 +281,14 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected void queryCheckVersion() throws SQLException, InterruptedException {
         setCurrentOperation("version checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
-            version = res.next() ? res.getInt(VERSION) : SupportedVersion.VERSION_9_2.getVersion();
+            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_2.getVersion();
         }
     }
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
         setCurrentOperation("last system oid checking query");
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
-            lastSysOid = res.next() ? res.getInt(LAST_SYS_OID) : 10_000;
+            lastSysOid = res.next() ? res.getLong(1) : 10_000;
         }
     }
 
