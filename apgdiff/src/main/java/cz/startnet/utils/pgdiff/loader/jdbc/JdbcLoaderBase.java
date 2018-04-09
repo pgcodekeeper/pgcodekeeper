@@ -60,7 +60,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
     protected int version;
-    private int lastSysOid;
+    private long lastSysOid;
     protected List<String> errors = new ArrayList<>();
     protected JdbcRunner runner;
 

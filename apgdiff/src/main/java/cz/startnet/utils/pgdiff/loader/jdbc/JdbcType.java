@@ -41,7 +41,7 @@ public class JdbcType{
     private final String parentSchema;
     private final boolean isArrayType;
     private final boolean isPgCatalog;
-    private final int lastSysOid;
+    private final long lastSysOid;
 
     /**
      * There are types, which names begin from underscore: they are simple
@@ -51,7 +51,7 @@ public class JdbcType{
      * we do not convert those to simple arrays
      */
     public JdbcType(long oid, String typeName, long typelem, long typarray, String parentSchema,
-            String elemname, int lastSysOid) {
+            String elemname, long lastSysOid) {
         this.oid = oid;
         this.parentSchema = parentSchema;
         this.isArrayType = typarray == 0L && typelem != 0L;
