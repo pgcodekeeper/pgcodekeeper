@@ -141,7 +141,8 @@ public interface UIConsts {
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
-        String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
+        String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
+	String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {

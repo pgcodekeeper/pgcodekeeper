@@ -595,6 +595,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_status_never_delete;
 
     public static String ProjectProperties_change_projprefs_warn;
+
+    public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;

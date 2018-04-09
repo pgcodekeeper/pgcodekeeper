@@ -9,8 +9,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -19,7 +17,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -29,9 +26,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ProjectProperties extends PropertyPage implements IWorkbenchPropertyPage {
+public class ProjectProperties extends PropertyPage {
 
     private Button btnForceUnixNewlines;
+    private Button btnDisableParser;
     private Combo cmbTimezone;
     private CLabel lblWarn;
 
@@ -52,26 +50,24 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
         layout.marginWidth = 0;
         panel.setLayout(layout);
 
+        btnDisableParser = new Button(panel, SWT.CHECK);
+        btnDisableParser.setText(Messages.ProjectProperties_disable_parser_in_external_files);
+        btnDisableParser.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
+        btnDisableParser.setSelection(prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false));
+
         btnForceUnixNewlines = new Button(panel, SWT.CHECK);
         btnForceUnixNewlines.setText(Messages.ProjectProperties_force_unix_newlines);
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 
-        Label label = new Label(panel, SWT.NONE);
-        label.setText(Messages.projectProperties_timezone_for_all_db_connections);
+        new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
 
         cmbTimezone = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(UIConsts.TIME_ZONES.toArray(new String[UIConsts.TIME_ZONES.size()]));
         String tz = prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         cmbTimezone.setText(tz);
-        cmbTimezone.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                checkSwitchWarnLbl();
-            }
-        });
+        cmbTimezone.addModifyListener(e -> checkSwitchWarnLbl());
 
         lblWarn = new CLabel(panel, SWT.NONE);
         lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -94,6 +90,7 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
 
     @Override
     protected void performDefaults() {
+        btnDisableParser.setSelection(false);
         btnForceUnixNewlines.setSelection(true);
         cmbTimezone.setText(ApgdiffConsts.UTC);
         try {
@@ -121,6 +118,7 @@ public class ProjectProperties extends PropertyPage implements IWorkbenchPropert
     }
 
     private void fillPrefs() throws BackingStoreException {
+        prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         prefs.flush();
