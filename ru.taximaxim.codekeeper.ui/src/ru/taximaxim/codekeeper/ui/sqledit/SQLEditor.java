@@ -466,6 +466,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
                 output = ex.getLocalizedMessage();
                 return Status.CANCEL_STATUS;
             } catch (SQLException | IOException e) {
+                output = e.getLocalizedMessage();
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                         Messages.sqlScriptDialog_exception_during_script_execution, e);
             } finally {
