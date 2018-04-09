@@ -6,7 +6,6 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -269,15 +269,13 @@ public class PgDatabase extends PgStatement {
 
     public void concat(PgDatabase database) throws IOException {
         boolean isSafeMode = database.getArguments().isLibSafeMode();
-        String message = "{0} : Library error - duplicated object : {1} {2}";
 
         for (PgExtension e : database.getExtensions()) {
             if (getExtension(e.getName()) == null) {
                 e.dropParent();
                 addExtension(e);
             } else if (!"plpgsql".equals(e.getName()) && isSafeMode) {
-                throw new IOException(MessageFormat.format(message,
-                        e.getLocation(), e.getStatementType(), e.getName()));
+                throw new LibraryObjectDuplicationException(e);
             }
         }
 
@@ -288,8 +286,7 @@ public class PgDatabase extends PgStatement {
                 addSchema(s);
             } else if (!"public".equals(s.getName()) || !s.compareChildren(new PgSchema("public", ""))) {
                 if (isSafeMode) {
-                    throw new IOException(MessageFormat.format(message,
-                            s.getLocation(), s.getStatementType(), s.getName()));
+                    throw new LibraryObjectDuplicationException(s);
                 }
 
                 for (PgType ty : s.getTypes()) {
@@ -297,8 +294,7 @@ public class PgDatabase extends PgStatement {
                         ty.dropParent();
                         schema.addType(ty);
                     } else if (isSafeMode) {
-                        throw new IOException(MessageFormat.format(message,
-                                ty.getLocation(), ty.getStatementType(), ty.getName()));
+                        throw new LibraryObjectDuplicationException(ty);
                     }
                 }
 
@@ -307,8 +303,7 @@ public class PgDatabase extends PgStatement {
                         dom.dropParent();
                         schema.addDomain(dom);
                     } else if (isSafeMode) {
-                        throw new IOException(MessageFormat.format(message,
-                                dom.getLocation(), dom.getStatementType(), dom.getName()));
+                        throw new LibraryObjectDuplicationException(dom);
                     }
                 }
 
@@ -317,8 +312,7 @@ public class PgDatabase extends PgStatement {
                         seq.dropParent();
                         schema.addSequence(seq);
                     } else if (isSafeMode) {
-                        throw new IOException(MessageFormat.format(message,
-                                seq.getLocation(), seq.getStatementType(), seq.getName()));
+                        throw new LibraryObjectDuplicationException(seq);
                     }
                 }
 
@@ -327,8 +321,7 @@ public class PgDatabase extends PgStatement {
                         func.dropParent();
                         schema.addFunction(func);
                     } else if (isSafeMode) {
-                        throw new IOException(MessageFormat.format(message,
-                                func.getLocation(), func.getStatementType(), func.getName()));
+                        throw new LibraryObjectDuplicationException(func);
                     }
                 }
 
@@ -339,16 +332,14 @@ public class PgDatabase extends PgStatement {
                         schema.addTable(t);
                     } else {
                         if (isSafeMode) {
-                            throw new IOException(MessageFormat.format(message,
-                                    t.getLocation(), t.getStatementType(), t.getName()));
+                            throw new LibraryObjectDuplicationException(t);
                         }
                         for (PgConstraint con : t.getConstraints()) {
                             if (table.getConstraint(con.getName()) == null) {
                                 con.dropParent();
                                 table.addConstraint(con);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        con.getLocation(), con.getStatementType(), con.getName()));
+                                throw new LibraryObjectDuplicationException(con);
                             }
                         }
                         for (PgIndex ind : t.getIndexes()) {
@@ -356,8 +347,7 @@ public class PgDatabase extends PgStatement {
                                 ind.dropParent();
                                 table.addIndex(ind);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        ind.getLocation(), ind.getStatementType(), ind.getName()));
+                                throw new LibraryObjectDuplicationException(ind);
                             }
                         }
                         for (PgTrigger tr : t.getTriggers()) {
@@ -365,8 +355,7 @@ public class PgDatabase extends PgStatement {
                                 tr.dropParent();
                                 table.addTrigger(tr);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        tr.getLocation(), tr.getStatementType(), tr.getName()));
+                                throw new LibraryObjectDuplicationException(tr);
                             }
                         }
                         for (PgRule r : t.getRules()) {
@@ -374,8 +363,7 @@ public class PgDatabase extends PgStatement {
                                 r.dropParent();
                                 table.addRule(r);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        r.getLocation(), r.getStatementType(), r.getName()));
+                                throw new LibraryObjectDuplicationException(r);
                             }
                         }
                     }
@@ -387,16 +375,14 @@ public class PgDatabase extends PgStatement {
                         schema.addView(v);
                     } else {
                         if (isSafeMode) {
-                            throw new IOException(MessageFormat.format(message,
-                                    v.getLocation(), v.getStatementType(), v.getName()));
+                            throw new LibraryObjectDuplicationException(v);
                         }
                         for (PgTrigger tr : v.getTriggers()) {
                             if (view.getTrigger(tr.getName()) == null) {
                                 tr.dropParent();
                                 view.addTrigger(tr);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        tr.getLocation(), tr.getStatementType(), tr.getName()));
+                                throw new LibraryObjectDuplicationException(tr);
                             }
                         }
                         for (PgRule r : v.getRules()) {
@@ -404,8 +390,7 @@ public class PgDatabase extends PgStatement {
                                 r.dropParent();
                                 view.addRule(r);
                             } else if (isSafeMode) {
-                                throw new IOException(MessageFormat.format(message,
-                                        r.getLocation(), r.getStatementType(), r.getName()));
+                                throw new LibraryObjectDuplicationException(r);
                             }
                         }
                     }
