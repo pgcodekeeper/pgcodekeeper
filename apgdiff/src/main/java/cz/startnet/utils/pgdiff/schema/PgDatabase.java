@@ -149,6 +149,11 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
+
+    public boolean containsExtension(final String name) {
+        return getExtension(name) != null;
+    }
+
     /**
      * Returns extension of given name or null if the extension has not been found.
      *
@@ -270,10 +275,10 @@ public class PgDatabase extends PgStatement {
         boolean isSafeMode = database.getArguments().isLibSafeMode();
 
         for (PgExtension e : database.getExtensions()) {
-            if (getExtension(e.getName()) == null) {
+            if (containsExtension(e.getName())) {
                 e.dropParent();
                 addExtension(e);
-            } else if (!"plpgsql".equals(e.getName()) && isSafeMode) {
+            } else if (isSafeMode && !"plpgsql".equals(e.getName())) {
                 throw new LibraryObjectDuplicationException(e);
             }
         }
@@ -283,6 +288,7 @@ public class PgDatabase extends PgStatement {
             if (schema == null) {
                 s.dropParent();
                 addSchema(s);
+                // skip empty public schema
             } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
                     || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
                 if (isSafeMode) {
@@ -290,38 +296,30 @@ public class PgDatabase extends PgStatement {
                 }
 
                 for (PgType ty : s.getTypes()) {
-                    if (schema.getType(ty.getName()) == null) {
+                    if (!schema.containsType(ty.getName())) {
                         ty.dropParent();
                         schema.addType(ty);
-                    } else if (isSafeMode) {
-                        throw new LibraryObjectDuplicationException(ty);
                     }
                 }
 
                 for (PgDomain dom : s.getDomains()) {
-                    if (schema.getDomain(dom.getName()) == null) {
+                    if (!schema.containsDomain(dom.getName())) {
                         dom.dropParent();
                         schema.addDomain(dom);
-                    } else if (isSafeMode) {
-                        throw new LibraryObjectDuplicationException(dom);
                     }
                 }
 
                 for (PgSequence seq : s.getSequences()) {
-                    if (schema.getSequence(seq.getName()) == null) {
+                    if (!schema.containsSequence(seq.getName())) {
                         seq.dropParent();
                         schema.addSequence(seq);
-                    } else if (isSafeMode) {
-                        throw new LibraryObjectDuplicationException(seq);
                     }
                 }
 
                 for (PgFunction func : s.getFunctions()) {
-                    if (schema.getFunction(func.getName()) == null) {
+                    if (!schema.containsFunction(func.getName())) {
                         func.dropParent();
                         schema.addFunction(func);
-                    } else if (isSafeMode) {
-                        throw new LibraryObjectDuplicationException(func);
                     }
                 }
 
@@ -331,66 +329,49 @@ public class PgDatabase extends PgStatement {
                         t.dropParent();
                         schema.addTable(t);
                     } else {
-                        if (isSafeMode) {
-                            throw new LibraryObjectDuplicationException(t);
-                        }
                         for (PgConstraint con : t.getConstraints()) {
-                            if (table.getConstraint(con.getName()) == null) {
+                            if (!table.containsConstraint(con.getName())) {
                                 con.dropParent();
                                 table.addConstraint(con);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(con);
                             }
                         }
                         for (PgIndex ind : t.getIndexes()) {
-                            if (table.getIndex(ind.getName()) == null) {
+                            if (!table.containsIndex(ind.getName())) {
                                 ind.dropParent();
                                 table.addIndex(ind);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(ind);
                             }
                         }
                         for (PgTrigger tr : t.getTriggers()) {
-                            if (table.getTrigger(tr.getName()) == null) {
+                            if (!table.containsTrigger(tr.getName())) {
                                 tr.dropParent();
                                 table.addTrigger(tr);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(tr);
                             }
                         }
                         for (PgRule r : t.getRules()) {
-                            if (table.getRule(r.getName()) == null) {
+                            if (!table.containsRule(r.getName())) {
                                 r.dropParent();
                                 table.addRule(r);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(r);
                             }
                         }
                     }
                 }
+
                 for (PgView v : s.getViews()) {
                     PgView view = schema.getView(v.getName());
                     if (view == null) {
                         v.dropParent();
                         schema.addView(v);
                     } else {
-                        if (isSafeMode) {
-                            throw new LibraryObjectDuplicationException(v);
-                        }
                         for (PgTrigger tr : v.getTriggers()) {
-                            if (view.getTrigger(tr.getName()) == null) {
+                            if (!view.containsTrigger(tr.getName())) {
                                 tr.dropParent();
                                 view.addTrigger(tr);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(tr);
                             }
                         }
                         for (PgRule r : v.getRules()) {
-                            if (view.getRule(r.getName()) == null) {
+                            if (!view.containsRule(r.getName())) {
                                 r.dropParent();
                                 view.addRule(r);
-                            } else if (isSafeMode) {
-                                throw new LibraryObjectDuplicationException(r);
                             }
                         }
                     }
