@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -103,7 +104,7 @@ public final class PgDiff {
             } else {
                 PgDatabase db = new PgDatabase();
                 db.setArguments(args);
-                readStatementsFromDirectory(new File(path), db, args);
+                readStatementsFromDirectory(p, db, args);
                 return db;
             }
         }
@@ -111,15 +112,16 @@ public final class PgDiff {
         return loadDatabaseSchema("dump", path, args);
     }
 
-    private static void readStatementsFromDirectory(final File folder, PgDatabase db, PgDiffArguments args)
+    private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
             throws IOException, InterruptedException, URISyntaxException {
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                readStatementsFromDirectory(fileEntry, db, args);
-            } else {
-                // filter extension?
-                db.addLib(PgDiff.loadDatabaseSchema("dump", fileEntry.toString(), args));
+        if (Files.isDirectory(f)) {
+            try (Stream<Path> stream = Files.list(f)) {
+                for (Path sub : (Iterable<Path>) stream::iterator) {
+                    readStatementsFromDirectory(sub, db, args);
+                }
             }
+        } else {
+            db.addLib(PgDiff.loadDatabaseSchema("dump", f.toString(), args));
         }
     }
 
