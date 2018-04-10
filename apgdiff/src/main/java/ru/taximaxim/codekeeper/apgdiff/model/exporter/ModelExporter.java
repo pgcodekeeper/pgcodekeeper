@@ -205,19 +205,19 @@ public class ModelExporter {
             break;
 
         case FUNCTION:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processFunction(el, stInNew);
             break;
 
         case CONSTRAINT:
         case INDEX:
-            testParentSchema(elParent.getParent());
+            createParentSchema(elParent.getParent());
             processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
         case TRIGGER:
         case RULE:
-            testParentSchema(elParent.getParent());
+            createParentSchema(elParent.getParent());
             if (elParent.getType() == DbObjType.TABLE) {
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
@@ -227,7 +227,7 @@ public class ModelExporter {
 
 
         case TABLE:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processTableAndContents(el, stInNew, el);
             break;
 
@@ -235,7 +235,7 @@ public class ModelExporter {
             // remove old version
             deleteStatementIfExists(stInNew);
 
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             // dump new version
             dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
                     new File(outDir, getRelativeFilePath(stInNew, true)));
@@ -243,11 +243,12 @@ public class ModelExporter {
     }
 
     /**
-     * Tests whether this object is either selected for creation or not selected for deletion.
+     * Create parent schema file, if not exists.
      *
-     * @throws IOException  if this object is not to be created or is to be deleted
+     * @throws PgCodekeeperException if this object is not to be created or is to be deleted
+     * @throws IOException - if an I/O error occurs
      */
-    private void testParentSchema(TreeElement el) throws PgCodekeeperException, IOException {
+    private void createParentSchema(TreeElement el) throws PgCodekeeperException, IOException {
         if (el.getSide() == DiffSide.RIGHT && !el.isSelected()
                 || el.getSide() == DiffSide.LEFT && el.isSelected()) {
             throw new PgCodekeeperException(
@@ -274,23 +275,23 @@ public class ModelExporter {
             break;
 
         case FUNCTION:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processFunction(el, stInNew);
             break;
 
         case CONSTRAINT:
         case INDEX:
-            testParentSchema(elParent.getParent());
+            createParentSchema(elParent.getParent());
             // table actually, not schema
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             break;
 
         case TRIGGER:
         case RULE:
-            testParentSchema(elParent.getParent());
+            createParentSchema(elParent.getParent());
             // table actually, not schema
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             if (elParent.getType() == DbObjType.TABLE){
                 processTableAndContents(elParent, elParent.getPgStatement(newDb), el);
             } else {
@@ -299,17 +300,17 @@ public class ModelExporter {
             break;
 
         case TABLE:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processTableAndContents(el, stInNew, el);
             break;
 
         case VIEW:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             processViewAndContents(el, stInNew, el);
             break;
 
         default:
-            testParentSchema(elParent);
+            createParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
                     stInNew.getStatementType().name());
