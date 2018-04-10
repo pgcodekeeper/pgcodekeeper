@@ -275,7 +275,7 @@ public class PgDatabase extends PgStatement {
         boolean isSafeMode = database.getArguments().isLibSafeMode();
 
         for (PgExtension e : database.getExtensions()) {
-            if (containsExtension(e.getName())) {
+            if (!containsExtension(e.getName())) {
                 e.dropParent();
                 addExtension(e);
             } else if (isSafeMode && !"plpgsql".equals(e.getName())) {
