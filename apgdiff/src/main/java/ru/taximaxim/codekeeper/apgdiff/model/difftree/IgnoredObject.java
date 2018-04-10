@@ -11,24 +11,27 @@ public class IgnoredObject {
         ADD, ADD_SUBTREE, SKIP, SKIP_SUBTREE
     }
 
+    private final String objTypeAll = "ALL";
     private final String name;
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
+    private String objType;
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
 
-    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent) {
-        this(name, null, false, isRegular, ignoreContent);
+    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, String objType) {
+        this(name, null, false, isRegular, ignoreContent, objType);
     }
 
     public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
-            boolean ignoreContent) {
+            boolean ignoreContent, String objType) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
+        this.objType = objType == null ? objTypeAll : objType;
         this.regex = isRegular ? Pattern.compile(name) : null;
         this.dbRegexStr = dbRegex;
         this.dbRegex = dbRegex == null ? null : Pattern.compile(dbRegex);
@@ -50,6 +53,10 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
+    public String getObjType() {
+        return objType;
+    }
+
     public void setShow(boolean isShow) {
         this.isShow = isShow;
     }
@@ -62,16 +69,23 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
 
-    public boolean match(String objName) {
-        return match(objName, (String[]) null);
+    public void setObjType(String objType) {
+        this.objType = objType;
     }
 
-    public boolean match(String objName, String... dbNames) {
+    public boolean match(String objName, String objType) {
+        return match(objName, objType, (String[]) null);
+    }
+
+    public boolean match(String objName, String objType, String... dbNames) {
         boolean matches;
         if (isRegular) {
             matches = regex.matcher(objName).find();
         } else {
             matches = name.equals(objName);
+        }
+        if (!objTypeAll.equals(this.objType)) {
+            matches = matches && this.objType.equals(objType);
         }
         if (matches && dbRegex != null) {
             if (dbNames != null && dbNames.length != 0) {
@@ -113,6 +127,7 @@ public class IgnoredObject {
         result = prime * result + (isShow ? itrue : ifalse);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((dbRegexStr == null) ? 0 : dbRegexStr.hashCode());
+        result = prime * result + ((objType == null) ? 0 : objType.hashCode());
         return result;
     }
 
@@ -125,7 +140,8 @@ public class IgnoredObject {
                     && isRegular == other.isRegular
                     && isShow == other.isShow
                     && Objects.equals(name, other.name)
-                    && Objects.equals(dbRegexStr, other.dbRegexStr);
+                    && Objects.equals(dbRegexStr, other.dbRegexStr)
+                    && Objects.equals(objType, other.objType);
         }
         return eq;
     }
@@ -157,6 +173,10 @@ public class IgnoredObject {
         if (dbRegex != null) {
             sb.append(" db=");
             appendId(dbRegexStr, sb);
+        }
+        if (!objTypeAll.equals(objType)) {
+            sb.append(" type=");
+            appendId(objType, sb);
         }
         return sb;
     }

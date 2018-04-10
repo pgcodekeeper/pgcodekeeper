@@ -1,0 +1,56 @@
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+
+class TypesEditingSupport extends EditingSupport {
+
+    private final ComboBoxViewerCellEditor cellEditor;
+    private final ColumnViewer viewer;
+
+    public TypesEditingSupport(ColumnViewer viewer) {
+        super(viewer);
+        cellEditor = new ComboBoxViewerCellEditor((Composite) getViewer().getControl(), SWT.READ_ONLY);
+        cellEditor.setLabelProvider(new LabelProvider());
+        cellEditor.setContentProvider(ArrayContentProvider.getInstance());
+        cellEditor.setInput(IgnoredObjectPrefListEditor.OBJECT_TYPES);
+        this.viewer = viewer;
+    }
+
+    @Override
+    protected CellEditor getCellEditor(Object element) {
+        return cellEditor;
+    }
+
+    @Override
+    protected boolean canEdit(Object element) {
+        return true;
+    }
+
+    @Override
+    protected Object getValue(Object element) {
+        if (element instanceof IgnoredObject) {
+            IgnoredObject data = (IgnoredObject)element;
+            return data.getObjType();
+        }
+        return null;
+    }
+
+    @Override
+    protected void setValue(Object element, Object value) {
+        if (element instanceof IgnoredObject && value instanceof String) {
+            IgnoredObject data = (IgnoredObject) element;
+            String newValue = (String) value;
+            data.setObjType(newValue);
+        }
+        viewer.refresh();
+    }
+}

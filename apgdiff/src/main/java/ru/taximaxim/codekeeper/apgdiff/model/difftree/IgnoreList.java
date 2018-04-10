@@ -60,14 +60,14 @@ public class IgnoreList {
         }
     }
 
-    public AddStatus getNameStatus(String name, boolean inAddSubtree) {
-        return getNameStatus(name, inAddSubtree, (String[]) null);
+    public AddStatus getNameStatus(String name, String type, boolean inAddSubtree) {
+        return getNameStatus(name, type, inAddSubtree, (String[]) null);
     }
 
-    public AddStatus getNameStatus(String name, boolean inAddSubtree, String... dbNames) {
+    public AddStatus getNameStatus(String name, String type, boolean inAddSubtree, String... dbNames) {
         AddStatus status = null;
         for (IgnoredObject rule : rules) {
-            if (rule.match(name, dbNames)) {
+            if (rule.match(name, type, dbNames)) {
                 AddStatus newStatus = rule.getAddStatus();
                 if (status == null) {
                     status = newStatus;

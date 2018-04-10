@@ -75,7 +75,8 @@ public class IgnoreParser {
     }
 
     private void rule_rest(Rule_restContext ruleRest, boolean isShow) {
-        boolean isRegular = false, ignoreContent = false;
+        boolean isRegular = false;
+        boolean ignoreContent = false;
         for (FlagContext flag : ruleRest.flags().flag()) {
             if (flag.CONTENT() != null) {
                 ignoreContent = true;
@@ -84,7 +85,8 @@ public class IgnoreParser {
             }
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
+        String objType = ruleRest.type == null ? null : ruleRest.type.getText();
         list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
-                isShow, isRegular, ignoreContent));
+                isShow, isRegular, ignoreContent, objType));
     }
 }

@@ -185,6 +185,8 @@ public final class Messages extends NLS {
 
     public static String ignoredObjectPrefListEditor_regular;
 
+    public static String ignoredObjectPrefListEditor_type;
+
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
