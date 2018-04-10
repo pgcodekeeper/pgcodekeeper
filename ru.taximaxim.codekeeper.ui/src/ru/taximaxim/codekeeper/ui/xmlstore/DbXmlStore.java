@@ -78,7 +78,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             super.writeObjects(list);
             notifyListeners();
         } catch (IOException e) {
-            Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e);
+            Log.log(Log.LOG_ERROR, "Error writing db store to xml " + e); //$NON-NLS-1$
         }
     }
 

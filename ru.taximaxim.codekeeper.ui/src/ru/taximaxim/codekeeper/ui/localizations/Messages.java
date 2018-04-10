@@ -193,7 +193,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_new_pg_db_project;
 
     // ui.prefs
-    public static String dbStorePrefPage_clear_db_store;
     public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
@@ -280,10 +279,6 @@ public final class Messages extends NLS {
     public static String DependencyProperties_safe_mode_desc;
 
     public static String DependencyProperties_select_directory;
-
-    public static String DependencyProperties_select_pgcodekeeper_project;
-
-    public static String DependencyProperties_type;
 
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_any_file_filter;
