@@ -62,11 +62,8 @@ public class PgDatabase extends PgStatement {
         if (createDefaultObjects) {
             addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
             defaultSchema = schemas.get(0);
-
-            PgExtension ext = new PgExtension("plpgsql", null);
-            ext.setSchema("pg_catalog");
-            ext.setComment("'PL/pgSQL procedural language'");
-            addExtension(ext);
+            // DO NOT ADD plpgsql extension here
+            // it is already present in dumps and this branch is executed only for dumps
         }
     }
 
