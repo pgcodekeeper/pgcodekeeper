@@ -769,6 +769,24 @@
                 </and>
             </enabledWhen>
         </page>
+        <page
+            category="ru.taximaxim.codekeeper.ui.proj_properties"
+            class="ru.taximaxim.codekeeper.ui.properties.DependencyProperties"
+            id="ru.taximaxim.codekeeper.ui.dependencies"
+            name="%page.name.libraryDependencies">
+            <enabledWhen>
+                <and>
+                    <instanceof value="org.eclipse.core.resources.IProject">
+                    </instanceof>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                    </adapt>
+                    <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
+                </and>
+            </enabledWhen>
+        </page>
     </extension>
     <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector

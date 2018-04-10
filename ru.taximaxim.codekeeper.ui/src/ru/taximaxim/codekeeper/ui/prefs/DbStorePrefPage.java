@@ -57,7 +57,7 @@ implements IWorkbenchPreferencePage {
 
     @Override
     public boolean performOk() {
-        DbXmlStore.INSTANCE.writeDbStoreList(dbList.getList());
+        DbXmlStore.INSTANCE.writeObjects(dbList.getList());
         return true;
     }
 }

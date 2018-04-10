@@ -44,6 +44,10 @@ public class CliArgs extends PgDiffArguments {
         this.allowedDangers = new ArrayList<>();
         this.allowedTypes = new ArrayList<>();
         this.ignoreLists = new ArrayList<>();
+        this.sourceLibs = new ArrayList<>();
+        this.sourceLibsWithoutPriv = new ArrayList<>();
+        this.targetLibs = new ArrayList<>();
+        this.targetLibsWithoutPriv = new ArrayList<>();
         this.inCharsetName = ApgdiffConsts.UTF_8;
         this.outCharsetName = ApgdiffConsts.UTF_8;
     }
@@ -132,7 +136,7 @@ public class CliArgs extends PgDiffArguments {
     private List<DbObjType> allowedTypes;
 
     @Option(name="--stop-not-allowed", forbids="--parse",
-            usage="exit with an error when --allowed-object hides a statement from the script")
+            usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
 
     @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids="--parse",
@@ -140,9 +144,39 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
 
+    @Option(name="--src-lib", metaVar="<path or JDBC>", forbids="--parse",
+            usage="add library dependency to source"
+                    + "\nspecify multiple times to use several libraries")
+    private List<String> sourceLibs;
+
+    @Option(name="--src-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
+            usage="add library dependency to source without privileges, --src-lib option has higher priority"
+                    + "\nspecify multiple times to use several libraries")
+    private List<String> sourceLibsWithoutPriv;
+
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids="--parse",
+            usage="add library dependency to destination"
+                    + "\nspecify multiple times to use several libraries")
+    private List<String> targetLibs;
+
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids="--parse",
+            usage="add library dependency to destination without privileges, --tgt-lib option has higher priority"
+                    + "\nspecify multiple times to use several libraries")
+    private List<String> targetLibsWithoutPriv;
+
+    @Option(name="--lib-safe-mode", forbids="--parse",
+            usage="exit with an error if a library object conflicts with other schema or library objects"
+                    + " otherwise, in case of conflicts objects loaded first have priority")
+    private boolean libSafeMode;
+
     @Override
     public boolean isModeParse() {
         return modeParse;
+    }
+
+    @Override
+    public void setModeParse(boolean modeParse) {
+        this.modeParse = modeParse;
     }
 
     @Override
@@ -151,8 +185,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setNewSrc(String newSrc) {
+        this.newSrc = newSrc;
+    }
+
+    @Override
     public String getOldSrc() {
         return this.oldSrc;
+    }
+
+    @Override
+    public void setOldSrc(String oldSrc) {
+        this.oldSrc = oldSrc;
     }
 
     @Override
@@ -161,8 +205,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setOutputTarget(String outputTarget) {
+        this.outputTarget = outputTarget;
+    }
+
+    @Override
     public boolean isAddTransaction() {
         return addTransaction;
+    }
+
+    @Override
+    public void setAddTransaction(boolean addTransaction) {
+        this.addTransaction = addTransaction;
     }
 
     @Override
@@ -171,8 +225,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setStopNotAllowed(boolean stopNotAllowed) {
+        this.stopNotAllowed = stopNotAllowed;
+    }
+
+    @Override
     public boolean isSafeMode() {
         return safeMode;
+    }
+
+    @Override
+    public void setSafeMode(boolean safeMode) {
+        this.safeMode = safeMode;
     }
 
     @Override
@@ -186,8 +250,43 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public Collection<String> getSourceLibs() {
+        return Collections.unmodifiableCollection(sourceLibs);
+    }
+
+    @Override
+    public Collection<String> getSourceLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    @Override
+    public Collection<String> getTargetLibs() {
+        return Collections.unmodifiableCollection(targetLibs);
+    }
+
+    @Override
+    public Collection<String> getTargetLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
+    @Override
+    public boolean isLibSafeMode() {
+        return libSafeMode;
+    }
+
+    @Override
+    public void setLibSafeMode(boolean libSafeMode) {
+        this.libSafeMode = libSafeMode;
+    }
+
+    @Override
     public String getInCharsetName() {
         return inCharsetName;
+    }
+
+    @Override
+    public void setInCharsetName(String inCharsetName) {
+        this.inCharsetName = inCharsetName;
     }
 
     @Override
@@ -196,8 +295,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setOutCharsetName(String outCharsetName) {
+        this.outCharsetName = outCharsetName;
+    }
+
+    @Override
     public boolean isDisableCheckFunctionBodies() {
         return disableCheckFunctionBodies;
+    }
+
+    @Override
+    public void setDisableCheckFunctionBodies(boolean disableCheckFunctionBodies) {
+        this.disableCheckFunctionBodies = disableCheckFunctionBodies;
     }
 
     @Override
@@ -206,13 +315,28 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+
+    @Override
     public boolean isIgnorePrivileges() {
         return ignorePrivileges;
     }
 
     @Override
+    public void setIgnorePrivileges(boolean ignorePrivilleges) {
+        this.ignorePrivileges = ignorePrivilleges;
+    }
+
+    @Override
     public boolean isKeepNewlines() {
         return keepNewlines;
+    }
+
+    @Override
+    public void setKeepNewlines(boolean keepNewlines) {
+        this.keepNewlines = keepNewlines;
     }
 
     @Override
@@ -226,8 +350,18 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
+    public void setUsingTypeCastOff(boolean usingTypeCastOff) {
+        this.usingTypeCastOff = usingTypeCastOff;
+    }
+
+    @Override
     public boolean isConcurrentlyMode() {
         return concurrentlyMode;
+    }
+
+    @Override
+    public void setConcurrentlyMode(boolean concurrentlyMode) {
+        this.concurrentlyMode = concurrentlyMode;
     }
 
     @SuppressWarnings("deprecation")
