@@ -102,14 +102,17 @@ public final class PgDiff {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
                 return loadDatabaseSchema("parsed", path, args);
             } else {
-                PgDatabase db = new PgDatabase();
+                PgDatabase db = new PgDatabase(false);
                 db.setArguments(args);
                 readStatementsFromDirectory(p, db, args);
                 return db;
             }
         }
 
-        return loadDatabaseSchema("dump", path, args);
+        PgDatabase dump = loadDatabaseSchema("dump", path, args);
+        // dumps are loaded with default public schema
+        dump.getSchema(ApgdiffConsts.PUBLIC).setLocation(path);
+        return dump;
     }
 
     private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
