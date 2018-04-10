@@ -31,14 +31,14 @@ public class PgDiffArguments implements Cloneable {
     private boolean usingTypeCastOff;
     private boolean concurrentlyMode;
     private boolean safeMode;
-    private List<DangerStatement> allowedDangers = new ArrayList<>();
-    private List<DbObjType> allowedTypes = new ArrayList<>();
+    private final List<DangerStatement> allowedDangers = new ArrayList<>();
+    private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
-    private List<String> ignoreLists = new ArrayList<>();
-    private List<String> sourceLibs = new ArrayList<>();
-    private List<String> sourceLibsWithoutPriv = new ArrayList<>();
-    private List<String> targetLibs = new ArrayList<>();
-    private List<String> targetLibsWithoutPriv = new ArrayList<>();
+    private final List<String> ignoreLists = new ArrayList<>();
+    private final List<String> sourceLibs = new ArrayList<>();
+    private final List<String> sourceLibsWithoutPriv = new ArrayList<>();
+    private final List<String> targetLibs = new ArrayList<>();
+    private final List<String> targetLibsWithoutPriv = new ArrayList<>();
     private boolean libSafeMode;
 
     public void setModeParse(final boolean modeParse) {
@@ -115,10 +115,6 @@ public class PgDiffArguments implements Cloneable {
 
     public Collection<DangerStatement> getAllowedDangers() {
         return Collections.unmodifiableCollection(allowedDangers);
-    }
-
-    protected void setAllowedDangers(List<DangerStatement> allowedDangers) {
-        this.allowedDangers = allowedDangers;
     }
 
     public Collection<String> getIgnoreLists() {
@@ -207,30 +203,6 @@ public class PgDiffArguments implements Cloneable {
 
     public void setUsingTypeCastOff(boolean usingTypeCastOff) {
         this.usingTypeCastOff = usingTypeCastOff;
-    }
-
-    protected void setAllowedTypes(List<DbObjType> allowedTypes) {
-        this.allowedTypes = allowedTypes;
-    }
-
-    protected void setIgnoreLists(List<String> ignoreLists) {
-        this.ignoreLists = ignoreLists;
-    }
-
-    protected void setSourceLibs(List<String> sourceLibs) {
-        this.sourceLibs = sourceLibs;
-    }
-
-    protected void setSourceLibWithoutPriv(List<String> sourceLibsWithoutPriv) {
-        this.sourceLibsWithoutPriv = sourceLibsWithoutPriv;
-    }
-
-    protected void setTargetLibs(List<String> targetLibs) {
-        this.targetLibs = targetLibs;
-    }
-
-    protected void setTargetLibsWithoutPriv(List<String> targetLibsWithoutPriv) {
-        this.targetLibsWithoutPriv = targetLibsWithoutPriv;
     }
 
     public boolean isConcurrentlyMode() {

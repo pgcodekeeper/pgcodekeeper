@@ -41,33 +41,33 @@ Usage:
                                           types only
                                           hide statements of other objects
  --stop-not-allowed                     : exit with an error when
-                                          --allowed-object hides a statement
-                                          from the script, if these objects are
-                                          attached by dependencies
+                                          --allowed-object hides a dependency
+                                          statement from the script
  -I (--ignore-list) <path>              : use an ignore list to include/exclude
                                           objects from diff
                                           specify multiple times to use several
                                           lists
- --src-dep <path>                       : add library dependency to source, 
+ --src-lib <path or JDBC>               : add library dependency to source
                                           specify multiple times to use several
-                                          lists
- --src-dep-no-priv <path>               : add library dependency to source
-                                          without privileges, --src-dep
-                                          argument has a higher priority
+                                          libraries
+ --src-lib-no-priv <path or JDBC>       : add library dependency to source
+                                          without privileges, --src-lib option
+                                          has higher priority
                                           specify multiple times to use several
-                                          lists
- --tgt-dep <path>                       : add library dependency to target
+                                          libraries
+ --tgt-lib <path or JDBC>               : add library dependency to destination
                                           specify multiple times to use several
-                                          lists
- --tgt-dep-no-priv <path>               : add library dependency to target
-                                          without privileges, --tgt-dep
-                                          argument has a higher priority
+                                          libraries
+ --tgt-lib-no-priv <path or JDBC>       : add library dependency to destination
+                                          without privileges, --tgt-lib option
+                                          has higher priority
                                           specify multiple times to use several
-                                          lists
- --dep-safe-mode                        : output with an error if the library
-                                          contains objects with names that
-                                          match the objects of the whole
-                                          database
+                                          libraries
+ --lib-safe-mode                        : exit with an error if a library
+                                          object conflicts with other schema or
+                                          library objects otherwise, in case of
+                                          conflicts objects loaded first have
+                                          priority
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH]
 OBJECT_TYPE : [SCHEMA | EXTENSION | TYPE | DOMAIN | SEQUENCE | FUNCTION | TABLE | CONSTRAINT | INDEX | VIEW | TRIGGER | RULE]
