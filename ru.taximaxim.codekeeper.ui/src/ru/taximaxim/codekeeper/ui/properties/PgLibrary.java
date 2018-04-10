@@ -1,14 +1,14 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
-public class Dependency {
+public class PgLibrary {
     private final String path;
     private boolean isIgnorePriv;
 
-    public Dependency(String path) {
+    public PgLibrary(String path) {
         this(path, true);
     }
 
-    public Dependency(String path, boolean hasPriv) {
+    public PgLibrary(String path, boolean hasPriv) {
         this.path = path;
         this.isIgnorePriv = hasPriv;
     }

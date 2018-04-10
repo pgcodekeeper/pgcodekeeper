@@ -47,7 +47,7 @@ import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public class DependencyProperties extends PropertyPage {
 
-    private final String path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+    private final String defaultPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
     private DependenciesXmlStore store;
     private IEclipsePreferences prefs;
 
@@ -70,7 +70,7 @@ public class DependencyProperties extends PropertyPage {
         editor = new DependenciesListEditor(area);
         editor.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        List<Dependency> input;
+        List<PgLibrary> input;
         try {
             input = store.readObjects();
         } catch (IOException e) {
@@ -92,9 +92,9 @@ public class DependencyProperties extends PropertyPage {
     @Override
     public boolean performOk() {
         try {
-            store.writeObjects(editor.getList());
             prefs.putBoolean(PROJ_PREF.LIB_SAFE_MODE, btnSafeMode.getSelection());
             prefs.flush();
+            store.writeObjects(editor.getList());
             setValid(true);
             setErrorMessage(null);
         } catch (IOException | BackingStoreException e) {
@@ -107,23 +107,23 @@ public class DependencyProperties extends PropertyPage {
         return true;
     }
 
-    private class DependenciesListEditor extends PrefListEditor<Dependency, TableViewer> {
+    private class DependenciesListEditor extends PrefListEditor<PgLibrary, TableViewer> {
 
         public DependenciesListEditor(Composite parent) {
             super(parent);
         }
 
         @Override
-        protected Dependency getNewObject(Dependency oldObject) {
+        protected PgLibrary getNewObject(PgLibrary oldObject) {
             DirectoryDialog dialog = new DirectoryDialog(getShell());
             dialog.setText(Messages.DependencyProperties_select_directory);
-            dialog.setFilterPath(path);
+            dialog.setFilterPath(defaultPath);
             String path = dialog.open();
-            return path != null ? new Dependency(path) : null;
+            return path != null ? new PgLibrary(path) : null;
         }
 
         @Override
-        protected String errorAlreadyExists(Dependency obj) {
+        protected String errorAlreadyExists(PgLibrary obj) {
             return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getPath());
         }
 
@@ -153,7 +153,7 @@ public class DependencyProperties extends PropertyPage {
 
                 @Override
                 public String getText(Object element) {
-                    Dependency obj = (Dependency) element;
+                    PgLibrary obj = (PgLibrary) element;
                     return obj.getPath();
                 }
             });
@@ -166,18 +166,14 @@ public class DependencyProperties extends PropertyPage {
 
                 @Override
                 public String getText(Object element) {
-                    if (((Dependency)element).isIgnorePriv()) {
-                        return Character.toString((char)0x2611);
-                    } else {
-                        return Character.toString((char)0x2610);
-                    }
+                    return (((PgLibrary)element).isIgnorePriv()) ? "\u2611" : "\u2610"; //$NON-NLS-1$ //$NON-NLS-2$
                 }
             });
 
             ignorePriv.setEditingSupport(new IgnorePrivCheckEditingSupport(viewer));
 
             int width = (int)(viewer.getTable().getSize().x * 0.33);
-            path.getColumn().setWidth(Math.max(width * 2, 500));
+            path.getColumn().setWidth(Math.max(width * 2, 400));
             ignorePriv.getColumn().setWidth(Math.max(width, 150));
         }
 
@@ -198,10 +194,10 @@ public class DependencyProperties extends PropertyPage {
                     dialog.setFilterNames(new String[] {
                             Messages.DiffPresentationPane_sql_file_filter,
                             Messages.DiffPresentationPane_any_file_filter});
-                    dialog.setFilterPath(path);
+                    dialog.setFilterPath(defaultPath);
                     String value = dialog.open();
                     if (value != null) {
-                        getList().add(new Dependency(value));
+                        getList().add(new PgLibrary(value));
                         getViewer().refresh();
                     }
                 }
@@ -218,7 +214,7 @@ public class DependencyProperties extends PropertyPage {
                             Messages.DependencyProperties_enter_connection_string, "", null); //$NON-NLS-1$
 
                     if (dialog.open() == Window.OK) {
-                        getList().add(new Dependency(dialog.getValue()));
+                        getList().add(new PgLibrary(dialog.getValue()));
                         getViewer().refresh();
                     }
                 }
@@ -230,7 +226,7 @@ public class DependencyProperties extends PropertyPage {
         }
     }
 
-    private class IgnorePrivCheckEditingSupport extends EditingSupport{
+    private static class IgnorePrivCheckEditingSupport extends EditingSupport {
         private final CheckboxCellEditor cellEditor;
 
         public IgnorePrivCheckEditingSupport(ColumnViewer viewer) {
@@ -250,12 +246,12 @@ public class DependencyProperties extends PropertyPage {
 
         @Override
         protected Object getValue(Object element) {
-            return ((Dependency) element).isIgnorePriv();
+            return ((PgLibrary) element).isIgnorePriv();
         }
 
         @Override
         protected void setValue(Object element, Object value) {
-            ((Dependency) element).setIgnorePriv((boolean) value);
+            ((PgLibrary) element).setIgnorePriv((boolean) value);
             getViewer().update(element, null);
         }
     }

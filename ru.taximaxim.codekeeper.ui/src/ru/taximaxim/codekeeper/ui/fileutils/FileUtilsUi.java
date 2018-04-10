@@ -10,6 +10,9 @@ import java.nio.file.Paths;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
@@ -19,6 +22,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -51,11 +55,22 @@ public final class FileUtilsUi {
         }
     }
 
-    public static void openExternalFileSqlEditor(String path) throws PartInitException {
-        IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(path));
-        IEditorInput input = new FileStoreEditorInput(externalFile);
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-        .openEditor(input, EDITOR.SQL);
+    public static void openFileInSqlEditor(String path) throws PartInitException {
+        Path p = Paths.get(path);
+
+        if (Files.exists(p)) {
+            IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            IFile[] files = workspace.getRoot().findFilesForLocationURI(p.toUri());
+            IEditorInput input;
+            if (files.length > 0) {
+                input = new FileEditorInput(files[0]);
+            } else {
+                IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(path));
+                input = new FileStoreEditorInput(externalFile);
+            }
+
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(input, EDITOR.SQL);
+        }
     }
 
     public static Path getPathToTimeObject(String proj, String db, String hash) throws URISyntaxException {

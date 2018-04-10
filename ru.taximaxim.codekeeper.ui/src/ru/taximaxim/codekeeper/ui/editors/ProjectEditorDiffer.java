@@ -84,7 +84,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -564,15 +563,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private void openElementInEditor(TreeElement el) {
         if (el != null && el.getSide() != DiffSide.RIGHT) {
             try {
-                PgStatement st = el.getPgStatement(dbProject.getDbObject());
-
-                if (st.isLib()) {
-                    FileUtilsUi.openExternalFileSqlEditor(st.getLocation());
-                } else {
-                    getSite().getPage().openEditor(new FileEditorInput(proj.getProject().getFile(
-                            org.eclipse.core.runtime.Path.fromOSString(ModelExporter.getRelativeFilePath(
-                                    st, true)))), EDITOR.SQL);
-                }
+                FileUtilsUi.openFileInSqlEditor(el.getPgStatement(dbProject.getDbObject()).getLocation());
             } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
             }
