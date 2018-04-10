@@ -222,7 +222,7 @@ class DbSourceProject extends DbSource {
             try {
                 db.addLib(PgDiff.getLibrary(dep.getPath(), arguments, dep.isIgnorePriv()));
             } catch (URISyntaxException ex) {
-                Log.log(ex);
+                throw new IOException(ex.getLocalizedMessage(), ex);
             }
         }
 
