@@ -490,8 +490,8 @@ public class DiffTableViewer extends Composite {
         columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
         columnName = new TreeViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
         columnDbUser = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
