@@ -1,10 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -17,16 +13,14 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -39,21 +33,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         REGULAR, IGNORE_CONTENT;
     }
 
-    protected static final String OBJECT_TYPE_ALL = "ALL";
-    protected static List<String> OBJECT_TYPES = comboTypes();
-
-
     public IgnoredObjectPrefListEditor(Composite parent) {
         super(parent);
-    }
-
-    private static List<String> comboTypes() {
-        List<String> objTypes = new ArrayList<>();
-        objTypes.add(OBJECT_TYPE_ALL);
-        objTypes.addAll(Arrays.stream(DbObjType.values())
-                .filter(e -> !(e == DbObjType.DATABASE || e == DbObjType.COLUMN))
-                .map(Enum::toString).sorted().collect(Collectors.toList()));
-        return objTypes;
     }
 
     @Override
@@ -188,31 +169,12 @@ class NewIgnoredObjectDialog extends InputDialog {
         c.setLayout(new GridLayout(4,  false));
         c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        btnPattern = new Button(c, SWT.CHECK);
-        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
-
-        btnContent = new Button(c, SWT.CHECK);
-        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
-
-        Button btnType = new Button(c, SWT.CHECK);
-        btnType.setText(Messages.ignoredObjectPrefListEditor_type);
-        btnType.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent event) {
-                if (((Button) event.getSource()).getSelection()) {
-                    comboType.getCombo().setVisible(true);
-                } else {
-                    comboType.getCombo().setVisible(false);
-                    comboType.setSelection(null);
-                }
-                composite.layout();
-            }
-        });
+        Label label = new Label(c, SWT.LEFT);
+        label.setText(Messages.ignoredObjectPrefListEditor_type);
 
         comboType = new ComboViewer(c, SWT.READ_ONLY);
         comboType.setContentProvider(ArrayContentProvider.getInstance());
-        comboType.setInput(IgnoredObjectPrefListEditor.OBJECT_TYPES);
+        comboType.setInput(TypesEditingSupport.comboTypes());
         comboType.setLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
@@ -220,17 +182,19 @@ class NewIgnoredObjectDialog extends InputDialog {
             }
         });
         comboType.setContentProvider(ArrayContentProvider.getInstance());
+        comboType.setSelection(new StructuredSelection(TypesEditingSupport.COMBO_TYPE_ALL));
+
+        btnPattern = new Button(c, SWT.CHECK);
+        btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
+
+        btnContent = new Button(c, SWT.CHECK);
+        btnContent.setText(Messages.IgnoredObjectPrefListEditor_contents);
 
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
-
-            String objType = objInitial.getObjType();
-            btnType.setSelection(!IgnoredObjectPrefListEditor.OBJECT_TYPE_ALL.equals(objType));
-            comboType.setSelection(new StructuredSelection(objType));
+            comboType.setSelection(new StructuredSelection(objInitial.getObjType()));
         }
-
-        comboType.getCombo().setVisible(btnType.getSelection());
 
         return composite;
     }
