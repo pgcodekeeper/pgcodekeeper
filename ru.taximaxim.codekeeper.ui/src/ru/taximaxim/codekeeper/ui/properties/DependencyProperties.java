@@ -172,9 +172,9 @@ public class DependencyProperties extends PropertyPage {
 
             ignorePriv.setEditingSupport(new IgnorePrivCheckEditingSupport(viewer));
 
-            int width = (int)(viewer.getTable().getSize().x * 0.33);
-            path.getColumn().setWidth(Math.max(width * 2, 400));
-            ignorePriv.getColumn().setWidth(Math.max(width, 150));
+            int width = (int)(viewer.getTable().getSize().x * 0.33f);
+            path.getColumn().setWidth(Math.max(width * 2, 500));
+            ignorePriv.getColumn().setWidth(Math.max(width, 200));
         }
 
         @Override
