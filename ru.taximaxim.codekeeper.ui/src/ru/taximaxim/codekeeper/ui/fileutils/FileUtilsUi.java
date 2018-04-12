@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.fileutils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -18,11 +17,12 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -56,22 +56,25 @@ public final class FileUtilsUi {
     }
 
     public static void openFileInSqlEditor(String path) throws PartInitException {
-        Path p = Paths.get(path);
-
-        if (Files.exists(p)) {
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IFile[] files = workspace.getRoot().findFilesForLocationURI(p.toUri());
-            IEditorInput input;
-            if (files.length > 0) {
-                input = new FileEditorInput(files[0]);
-            } else {
-                IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(path));
-                input = new FileStoreEditorInput(externalFile);
-            }
-
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(input, EDITOR.SQL);
+        if (path != null) {
+            openFileInSqlEditor(Paths.get(path));
         }
     }
+
+    public static void openFileInSqlEditor(Path path) throws PartInitException {
+        if (path != null && Files.exists(path)) {
+            IWorkspace workspace = ResourcesPlugin.getWorkspace();
+            IFile[] files = workspace.getRoot().findFilesForLocationURI(path.toUri());
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (files.length > 0) {
+                IDE.openEditor(page, files[0]);
+            } else {
+                IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(path.toFile());
+                IDE.openEditorOnFileStore(page, externalFile);
+            }
+        }
+    }
+
 
     public static Path getPathToTimeObject(String proj, String db, String hash) throws URISyntaxException {
         return Paths.get(URIUtil.toURI(Platform.getInstanceLocation().getURL()))

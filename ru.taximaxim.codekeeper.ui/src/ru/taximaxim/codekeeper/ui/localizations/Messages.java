@@ -422,6 +422,10 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_failed_to_open_library;
+
+    public static String NavigationLibrariesActionProvider_open_library;
+
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
