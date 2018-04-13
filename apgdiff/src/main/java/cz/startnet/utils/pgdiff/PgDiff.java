@@ -93,7 +93,9 @@ public final class PgDiff {
         args.setIgnorePrivileges(isIgnorePriv);
 
         if (path.startsWith("jdbc:")) {
-            return loadDatabaseSchema("db", path, args);
+            PgDatabase db = loadDatabaseSchema("db", path, args);
+            PgDatabase.listPgObjects(db).values().forEach(st -> st.setLocation(path));
+            return db;
         }
 
         Path p = Paths.get(path);

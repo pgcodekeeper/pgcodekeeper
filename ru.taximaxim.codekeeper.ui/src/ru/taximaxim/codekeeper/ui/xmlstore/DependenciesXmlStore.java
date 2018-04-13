@@ -16,16 +16,17 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     private static final String ENTRY = "dependency"; //$NON-NLS-1$
     private static final String PATH = "path"; //$NON-NLS-1$
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
+    private static final String ROOT_TAG = "dependencies"; //$NON-NLS-1$
 
     private final File file;
 
-    public DependenciesXmlStore(File file, String rootTag) {
-        super(file.getName(), rootTag);
+    public DependenciesXmlStore(File file) {
+        super(file.getName(), ROOT_TAG);
         this.file = file;
     }
 
     public DependenciesXmlStore(IProject project) {
-        this(new File(project.getLocation().toFile(), ".dependencies"), "dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
+        this(new File(project.getLocation().toFile(), ".dependencies")); //$NON-NLS-1$
     }
 
     @Override

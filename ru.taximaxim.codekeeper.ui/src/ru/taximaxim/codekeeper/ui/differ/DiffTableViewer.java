@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -51,6 +52,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -83,7 +85,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -106,6 +110,8 @@ import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
@@ -472,6 +478,8 @@ public class DiffTableViewer extends Composite {
     }
 
     private void initColumns() {
+        ColumnViewerToolTipSupport.enableFor(viewer);
+
         columnCheck = new TreeViewerColumn(viewer, SWT.LEFT);
         columnCheck.getColumn().setResizable(!viewOnly);
         columnCheck.getColumn().setMoveable(!viewOnly);
@@ -483,6 +491,26 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 return ""; //$NON-NLS-1$
+            }
+
+            @Override
+            public Image getImage(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                return meta != null && meta.getLibLocation() != null ?
+                        Activator.getRegisteredImage(FILE.ICONLIB) : null;
+            }
+
+            @Override
+            public String getToolTipText(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                if (meta != null) {
+                    String libLocation = meta.getLibLocation();
+                    if (libLocation != null) {
+                        return libLocation;
+                    }
+                }
+
+                return null;
             }
         });
 
@@ -765,6 +793,10 @@ public class DiffTableViewer extends Composite {
             readGitUsers();
         }
 
+        if (!elementInfoMap.isEmpty() && location != null) {
+            setLibLocations();
+        }
+
         if (dbRemote != null) {
             DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
             if (dbTime != null) {
@@ -777,6 +809,52 @@ public class DiffTableViewer extends Composite {
         updateColumnsWidth();
 
         updateObjectsLabels();
+    }
+
+    private void setLibLocations() {
+        Path p = location.resolve(".dependencies");
+        if (!Files.exists(p)) {
+            return;
+        }
+
+        try {
+            List<PgLibrary> libs = new DependenciesXmlStore(p.toFile()).readObjects();
+
+            elementInfoMap.forEach((k,v) -> {
+                if (k.getSide() != DiffSide.RIGHT) {
+                    PgStatement st = k.getPgStatement(dbProject.getDbObject());
+                    if (st.isLib()) {
+                        String name;
+                        String type;
+                        String loc = st.getLocation();
+                        if (loc.startsWith("jdbc:")) {
+                            type = "Database";
+                            name = JdbcConnector.dbNameFromUrl(loc);
+                            loc = ModelExporter.getRelativeFilePath(st, false);
+                        } else {
+                            Path lib = libs.stream().map(PgLibrary::getPath)
+                                    .filter(loc::startsWith).findFirst().map(Paths::get).get();
+                            Path location = Paths.get(loc);
+                            name = lib.getFileName().toString();
+
+                            if (!lib.equals(location)) {
+                                type = "Directory";
+                                loc = lib.relativize(location).toString();
+                            } else {
+                                type = "Dump";
+                                loc = null;
+                            }
+                        }
+
+                        v.setLibLocation("Lib: " + name + "\nType: " + type + (loc == null ? "" : "\nPath: " + loc));
+                    }
+                }
+            });
+
+        } catch (IOException e) {
+            Log.log(e);
+        }
+
     }
 
     private void readDbUsers(DBTimestamp dbTime) {
