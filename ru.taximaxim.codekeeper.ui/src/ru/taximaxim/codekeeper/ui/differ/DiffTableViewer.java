@@ -268,7 +268,8 @@ public class DiffTableViewer extends Composite {
                     FilterDialog dialog = new FilterDialog(getShell(),
                             viewerFilter.schemaFilter, viewerFilter.codeFilter,
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
-                            viewerFilter.types, viewerFilter.sides, viewerFilter.isLocalChange);
+                            viewerFilter.types, viewerFilter.sides,
+                            viewerFilter.isLocalChange, viewerFilter.isHideLibs);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
@@ -1281,6 +1282,7 @@ public class DiffTableViewer extends Composite {
         private final AbstractFilter dbUserFilter = new UserFilter(m -> m.getDbUser());
 
         private final AtomicBoolean isLocalChange = new AtomicBoolean(false);
+        private final AtomicBoolean isHideLibs = new AtomicBoolean(false);
 
         private String filterName;
         private boolean useRegEx;
@@ -1306,7 +1308,8 @@ public class DiffTableViewer extends Composite {
                     && dbUserFilter.isEmpty()
                     && gitUserFilter.isEmpty()
                     && schemaFilter.isEmpty()
-                    && !isLocalChange.get();
+                    && !isLocalChange.get()
+                    && !isHideLibs.get();
         }
 
         public void setUseRegEx(Boolean useRegEx) {
@@ -1333,6 +1336,10 @@ public class DiffTableViewer extends Composite {
             }
 
             if (isLocalChange.get() && !hasLocalChanges(el)) {
+                return false;
+            }
+
+            if (isHideLibs.get() && isLibElement(el)) {
                 return false;
             }
 
@@ -1415,8 +1422,17 @@ public class DiffTableViewer extends Composite {
                 }
 
                 return isContainer(el) && el.getChildren().stream().filter(elementInfoMap::containsKey)
-                        .map(e -> elementInfoMap.get(e))
-                        .anyMatch(m -> m != null && m.isChanged());
+                        .map(elementInfoMap::get).anyMatch(m -> m != null && m.isChanged());
+            }
+
+            return false;
+        }
+
+        private boolean isLibElement(TreeElement el) {
+            ElementMetaInfo meta = elementInfoMap.get(el);
+
+            if (meta != null) {
+                return meta.getLibLocation() != null;
             }
 
             return false;

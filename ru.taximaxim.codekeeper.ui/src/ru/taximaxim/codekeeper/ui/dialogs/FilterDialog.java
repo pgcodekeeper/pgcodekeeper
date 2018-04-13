@@ -46,6 +46,7 @@ public class FilterDialog extends Dialog {
     private final AbstractFilter gitUserFilter;
     private final AbstractFilter dbUserFilter;
     private final AtomicBoolean isLocalChange;
+    private final AtomicBoolean isHideLibs;
 
     private Text txtCode;
     private Text txtSchema;
@@ -56,6 +57,7 @@ public class FilterDialog extends Dialog {
     private Button btnGitUserRegEx;
     private Button btnDbUserRegEx;
     private Button btnIsLocal;
+    private Button btnIsNonLibrary;
 
     /**
      * Creates a dialog instance. Note that the window will have no visual
@@ -79,6 +81,8 @@ public class FilterDialog extends Dialog {
      *            list of change types
      * @param isLocalChange
      *            is search just local changes
+     * @param isHideLibs
+     *            is search just non -library objects
      *
      * @since 4.1.2
      * @see CodeFilter
@@ -89,7 +93,7 @@ public class FilterDialog extends Dialog {
             AbstractFilter schemaFilter, AbstractFilter codeFilter,
             AbstractFilter gitUserFilter, AbstractFilter dbUserFilter,
             Collection<DbObjType> types, Collection<DiffSide> sides,
-            AtomicBoolean isLocalChange) {
+            AtomicBoolean isLocalChange, AtomicBoolean isHideLibs) {
         super(parentShell);
         this.codeFilter = codeFilter;
         this.schemaFilter = schemaFilter;
@@ -98,6 +102,7 @@ public class FilterDialog extends Dialog {
         this.types = types;
         this.sides = sides;
         this.isLocalChange = isLocalChange;
+        this.isHideLibs = isHideLibs;
     }
 
     @Override
@@ -129,6 +134,11 @@ public class FilterDialog extends Dialog {
         btnIsLocal.setText(Messages.FilterDialog_only_local_changes);
         btnIsLocal.setSelection(isLocalChange.get());
         btnIsLocal.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
+
+        btnIsNonLibrary = new Button(rightComposite, SWT.CHECK);
+        btnIsNonLibrary.setText(Messages.FilterDialog_only_non_library_objects);
+        btnIsNonLibrary.setSelection(isHideLibs.get());
+        btnIsNonLibrary.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
 
         return container;
     }
@@ -237,6 +247,7 @@ public class FilterDialog extends Dialog {
                 txtDbUser.setText(""); //$NON-NLS-1$
                 btnDbUserRegEx.setSelection(false);
                 btnIsLocal.setSelection(false);
+                btnIsNonLibrary.setSelection(false);
                 objViewer.setAllChecked(false);
                 chgViewer.setAllChecked(false);
             }
@@ -267,6 +278,7 @@ public class FilterDialog extends Dialog {
         gitUserFilter.updateFields(txtGitUser.getText(), btnGitUserRegEx.getSelection());
         dbUserFilter.updateFields(txtDbUser.getText(), btnDbUserRegEx.getSelection());
         isLocalChange.set(btnIsLocal.getSelection());
+        isHideLibs.set(btnIsNonLibrary.getSelection());
 
         super.okPressed();
     }

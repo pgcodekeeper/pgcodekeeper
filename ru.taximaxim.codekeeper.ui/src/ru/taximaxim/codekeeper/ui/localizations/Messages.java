@@ -668,6 +668,8 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_only_local_changes;
 
+    public static String FilterDialog_only_non_library_objects;
+
     public static String FilterDialog_reset;
 
     public static String FilterDialog_schema_filter_placeholder;
