@@ -812,7 +812,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setLibLocations() {
-        Path p = location.resolve(".dependencies");
+        Path p = location.resolve(DependenciesXmlStore.FILE_NAME);
         if (!Files.exists(p)) {
             return;
         }
@@ -827,8 +827,8 @@ public class DiffTableViewer extends Composite {
                         String name;
                         String type;
                         String loc = st.getLocation();
-                        if (loc.startsWith("jdbc:")) {
-                            type = "Database";
+                        if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
+                            type = "Database"; //$NON-NLS-1$
                             name = JdbcConnector.dbNameFromUrl(loc);
                             loc = ModelExporter.getRelativeFilePath(st, false);
                         } else {
@@ -838,15 +838,16 @@ public class DiffTableViewer extends Composite {
                             name = lib.getFileName().toString();
 
                             if (!lib.equals(location)) {
-                                type = "Directory";
+                                type = "Directory"; //$NON-NLS-1$
                                 loc = lib.relativize(location).toString();
                             } else {
-                                type = "Dump";
+                                type = "Dump"; //$NON-NLS-1$
                                 loc = null;
                             }
                         }
 
-                        v.setLibLocation("Lib: " + name + "\nType: " + type + (loc == null ? "" : "\nPath: " + loc));
+                        v.setLibLocation("Lib: " + name + "\nType: " + type //$NON-NLS-1$ //$NON-NLS-2$
+                                + (loc == null ? "" : "\nPath: " + loc)); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
             });

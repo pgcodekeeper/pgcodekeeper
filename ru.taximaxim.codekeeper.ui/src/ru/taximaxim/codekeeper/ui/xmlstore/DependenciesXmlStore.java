@@ -13,6 +13,8 @@ import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 public class DependenciesXmlStore extends XmlStore<PgLibrary> {
 
+    public static final String FILE_NAME = ".dependencies"; //$NON-NLS-1$
+
     private static final String ENTRY = "dependency"; //$NON-NLS-1$
     private static final String PATH = "path"; //$NON-NLS-1$
     private static final String IGNORE_PRIV = "ignorePriv"; //$NON-NLS-1$
@@ -26,7 +28,7 @@ public class DependenciesXmlStore extends XmlStore<PgLibrary> {
     }
 
     public DependenciesXmlStore(IProject project) {
-        this(new File(project.getLocation().toFile(), ".dependencies")); //$NON-NLS-1$
+        this(new File(project.getLocation().toFile(), FILE_NAME));
     }
 
     @Override
