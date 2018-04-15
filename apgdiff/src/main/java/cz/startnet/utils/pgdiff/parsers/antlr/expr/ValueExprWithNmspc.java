@@ -1,6 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -22,7 +22,6 @@ public class ValueExprWithNmspc extends AbstractExprWithNmspc<Vex> {
 
     @Override
     public List<Pair<String, String>> analyze(Vex vex) {
-        this.vex.analyze(vex);
-        return Collections.emptyList();
+        return Arrays.asList(this.vex.analyze(vex));
     }
 }

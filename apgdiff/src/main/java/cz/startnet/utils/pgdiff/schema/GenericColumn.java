@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class GenericColumn implements Serializable {
 
-    public static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "information_schema", "pg_catalog"
             )));
 

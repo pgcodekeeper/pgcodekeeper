@@ -284,7 +284,7 @@ public class ValueExpr extends AbstractExpr {
     }
 
     /**
-     * @return function reference or null for internal functions
+     * @return return signature
      */
     public Pair<String, String> function(Function_callContext function) {
         Function_nameContext funcNameCtx = function.function_name();
@@ -353,7 +353,7 @@ public class ValueExpr extends AbstractExpr {
             IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
 
             if (resultFunction != null) {
-                addFilteredFunctionDepcy(resultFunction);
+                addFunctionDepcy(resultFunction);
                 return new Pair<>(functionName, resultFunction.getReturns());
             }
             return new Pair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
