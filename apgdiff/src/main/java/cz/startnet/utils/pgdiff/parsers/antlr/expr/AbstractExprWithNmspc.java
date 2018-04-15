@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,16 +57,11 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
     protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
-     * CTE names that current level of FROM has access to.
-     *
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
+     * CTEs that current level of FROM has access to stored as their names and signatures.
      */
     protected final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
-
-    /*
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
+    /**
+     * Non-table from items stored as their aliases and signatures.
      */
     protected final Map<String, List<Pair<String, String>>> complexNamespace = new HashMap<>();
 
@@ -236,31 +230,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         }
     }
 
-    /**
-     * Associates names from parameters of recursion (if they exist) with result types
-     * of analysis of 'query-select'. Result will be placed to the CTE.
-     *
-     * @param withQuery the context which contains such template:
-     * "alias(parameters) AS (query1 UNION query2)"
-     *
-     * @param resultTypes result types of analysis of 'query-select'
-     *
-     * @return returns 'true' if CTE already contains key which equals alias from 'withQuery',
-     * otherwise returns 'false'
-     */
     protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-        if (!paramNamesIdentifers.isEmpty()) {
-            List<Pair<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
-            for (int i = 0;  i < resultTypes.size(); i++) {
-                columnsPairs.add(new Pair<>(paramNamesIdentifers.get(i).getText(),
-                        resultTypes.get(i).getValue()));
-            }
-            return cte.put(withName, columnsPairs) != null;
-        } else {
-            return cte.put(withName, resultTypes) != null;
+        for (int i = 0;  i < paramNamesIdentifers.size(); ++i) {
+            resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
         }
+        return cte.put(withName, resultTypes) != null;
     }
 
     public abstract List<Pair<String, String>> analyze(T ruleCtx);
