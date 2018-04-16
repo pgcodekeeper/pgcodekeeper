@@ -155,10 +155,8 @@ public abstract class AbstractExpr {
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
-                    IRelation relation = findRelation(referencedTable.schema, referencedTable.table);
-                    if (relation != null) {
-                        columnType = addFilteredColumnDepcy(relation, column);
-                    }
+                    columnType = addFilteredColumnDepcy(
+                            referencedTable.schema, referencedTable.table, column);
                 } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
                     columnType = refComplex.getValue().stream()
                             .filter(entry -> column.equals(entry.getKey()))
@@ -190,7 +188,14 @@ public abstract class AbstractExpr {
      * @param colName dependency from this column will be added
      * @return column type
      */
-    private String addFilteredColumnDepcy(IRelation relation, String colName) {
+    private String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
+        IRelation relation = findRelations(schemaName, relationName)
+                .findAny()
+                .orElse(null);
+        if (relation == null) {
+            Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
+            return TypesSetManually.COLUMN;
+        }
         Optional<String> type = relation.getRelationColumns()
                 .filter(col -> col.getFirst().equals(colName))
                 .findAny()
@@ -214,7 +219,7 @@ public abstract class AbstractExpr {
         String tableName = QNameParser.getFirstName(ids);
         for (IdentifierContext col : cols) {
             String columnName = col.getText();
-            addFilteredColumnDepcy(findRelation(schemaName, tableName), columnName);
+            addFilteredColumnDepcy(schemaName, tableName, columnName);
         }
     }
 
@@ -222,7 +227,7 @@ public abstract class AbstractExpr {
         String sName = schemaName != null ? schemaName : this.schema;
         for (Pair<String, String> col : cols) {
             String columnName = col.getFirst();
-            addFilteredColumnDepcy(findRelation(sName, tableOrView), columnName);
+            addFilteredColumnDepcy(sName, tableOrView, columnName);
         }
     }
 
@@ -296,15 +301,6 @@ public abstract class AbstractExpr {
         if (!isSystemSchema(schemaName)) {
             depcies.add(new GenericColumn(schemaName, DbObjType.SCHEMA));
         }
-    }
-
-    protected IRelation findRelation(String schemaName, String relationName) {
-        return findRelations(schemaName, relationName)
-                .findAny()
-                .orElseGet(() -> {
-                    Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
-                    return null;
-                });
     }
 
     protected Stream<IRelation> findRelations(String schemaName, String relationName) {

@@ -6,6 +6,7 @@ public interface TypesSetManually {
 
     String COLUMN = "column";
     String FUNCTION_COLUMN = "functionCol";
+    String FUNCTION_TABLE = "functionTable";
 
     String QUALIFIED_ASTERISK = "qualifiedAsterisk";
 

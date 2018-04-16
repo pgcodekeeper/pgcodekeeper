@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -336,25 +335,27 @@ public class ValueExpr extends AbstractExpr {
             //// In this case function's argument is '*' or 'source.*'.
 
             int foundFuncsCount = 0;
-            String funcType = null;
+            IFunction func = null;
             for (IFunction f : PgDiffUtils.sIter(availableFunctions(schemaName))) {
                 if (f.getBareName().equals(functionName) && getInInoutFuncArgs(f).count() == 1) {
-                    funcType = f.getReturns();
+                    func = f;
                     foundFuncsCount++;
                 }
             }
 
-            return new Pair<>(functionName, foundFuncsCount == 1 ? funcType : TypesSetManually.FUNCTION_COLUMN);
+            return new Pair<>(functionName, foundFuncsCount == 1 ?
+                    getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
         } else {
-            List<String> argsType = args.stream()
-                    .map(v -> analyze(new Vex(v)).getSecond())
-                    .collect(Collectors.toList());
+            List<String> argsType = new ArrayList<>(args.size());
+            for (VexContext arg : args) {
+                argsType.add(analyze(new Vex(arg)).getSecond());
+            }
 
             IFunction resultFunction = resolveCall(functionName, argsType, availableFunctions(schemaName));
 
             if (resultFunction != null) {
                 addFunctionDepcy(resultFunction);
-                return new Pair<>(functionName, resultFunction.getReturns());
+                return new Pair<>(functionName, getFunctionReturns(resultFunction));
             }
             return new Pair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
         }
@@ -552,6 +553,10 @@ public class ValueExpr extends AbstractExpr {
             return Stream.concat(db.getSchema(schema).getFunctions().stream(),
                     systemStorage.getPgCatalog().getFunctions().stream());
         }
+    }
+
+    private String getFunctionReturns(IFunction f) {
+        return f.getReturnsColumns().isEmpty() ? f.getReturns() : TypesSetManually.FUNCTION_TABLE;
     }
 
     public void orderBy(Orderby_clauseContext orderBy) {

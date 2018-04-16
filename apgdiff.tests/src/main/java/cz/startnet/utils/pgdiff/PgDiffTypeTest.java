@@ -130,7 +130,7 @@ public class PgDiffTypeTest {
                     fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTypeTest.class, args));
         }
 
-        Assert.assertEquals("Compare columns types.",
+        Assert.assertEquals("File: " + fileNameTemplate,
                 typesForCompare,
                 getRelationColumnsTypes(dbNew));
     }

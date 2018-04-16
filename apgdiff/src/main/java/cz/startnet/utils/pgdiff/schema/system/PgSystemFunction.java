@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema.system;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +39,12 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
         super(name, DbObjType.FUNCTION);
     }
 
+    @Override
     public Map<String, String> getReturnsColumns() {
-        return returnsColumns;
+        return Collections.unmodifiableMap(returnsColumns);
     }
 
-    public void addReturnsColumns(String name, String type) {
+    public void addReturnsColumn(String name, String type) {
         returnsColumns.put(name, type);
     }
 
@@ -53,7 +55,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     @Override
     public List<PgSystemArgument> getArguments() {
-        return arguments;
+        return Collections.unmodifiableList(arguments);
     }
 
     public void addArgument(final PgSystemArgument arg) {
@@ -69,7 +71,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     }
 
     public List<PgSystemArgument> getOrderBy() {
-        return orderBy;
+        return Collections.unmodifiableList(orderBy);
     }
 
     public void addOrderBy(final PgSystemArgument type) {
