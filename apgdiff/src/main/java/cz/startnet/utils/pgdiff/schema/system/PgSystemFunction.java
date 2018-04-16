@@ -16,18 +16,18 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     private static final long serialVersionUID = -7905948011960006249L;
 
-    private final List<PgSystemArgument> arguments = new ArrayList<>();
+    private List<PgSystemArgument> arguments;
     private transient String signatureCache;
 
     /**
      * Order by for aggregate functions
      */
-    private final List<PgSystemArgument> orderBy = new ArrayList<>();
+    private List<PgSystemArgument> orderBy;
 
     /**
      *  Contains table's columns, if function returns table.
      */
-    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
+    private Map<String, String> returnsColumns;
 
     /**
      * Function return type name, if null columns contains columns
@@ -41,10 +41,13 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     @Override
     public Map<String, String> getReturnsColumns() {
-        return Collections.unmodifiableMap(returnsColumns);
+        return returnsColumns == null ? Collections.emptyMap() : Collections.unmodifiableMap(returnsColumns);
     }
 
     public void addReturnsColumn(String name, String type) {
+        if (returnsColumns == null) {
+            returnsColumns = new LinkedHashMap<>();
+        }
         returnsColumns.put(name, type);
     }
 
@@ -55,10 +58,13 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
     @Override
     public List<PgSystemArgument> getArguments() {
-        return Collections.unmodifiableList(arguments);
+        return arguments == null ? Collections.emptyList() : Collections.unmodifiableList(arguments);
     }
 
     public void addArgument(final PgSystemArgument arg) {
+        if (arguments == null) {
+            arguments = new ArrayList<>();
+        }
         arguments.add(arg);
     }
 
@@ -71,10 +77,13 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
     }
 
     public List<PgSystemArgument> getOrderBy() {
-        return Collections.unmodifiableList(orderBy);
+        return orderBy == null ? Collections.emptyList() : Collections.unmodifiableList(orderBy);
     }
 
     public void addOrderBy(final PgSystemArgument type) {
+        if (orderBy == null) {
+            orderBy = new ArrayList<>();
+        }
         orderBy.add(type);
     }
 

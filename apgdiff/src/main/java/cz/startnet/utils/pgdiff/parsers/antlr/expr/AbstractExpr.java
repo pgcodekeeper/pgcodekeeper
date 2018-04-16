@@ -164,7 +164,7 @@ public abstract class AbstractExpr {
                             .findAny()
                             .orElseGet(() -> {
                                 Log.log(Log.LOG_WARNING, "Column " + column +
-                                        "not found in complex " + columnParent);
+                                        " not found in complex " + columnParent);
                                 return TypesSetManually.COLUMN;
                             });
                 } else {
