@@ -129,7 +129,7 @@ public class PgSystemFunction extends PgSystemStatement implements IFunction {
 
         sb.append(PgDiffUtils.getQuotedName(name)).append('(');
         boolean addComma = false;
-        for (final IArgument argument : arguments) {
+        for (final IArgument argument : getArguments()) {
             if ("OUT".equalsIgnoreCase(argument.getMode())) {
                 continue;
             }
