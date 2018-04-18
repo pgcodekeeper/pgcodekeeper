@@ -585,6 +585,16 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_show_git_user;
 
+    public static String ProjectOverrideView_link_with_editor;
+
+    public static String ProjectOverrideView_new_location;
+
+    public static String ProjectOverrideView_old_location;
+
+    public static String ProjectOverrideView_open_new_location;
+
+    public static String ProjectOverrideView_open_old_location;
+
     public static String dbUpdatePrefPage_script_deleting_status;
 
     public static String dbUpdatePrefPage_status_always_delete;

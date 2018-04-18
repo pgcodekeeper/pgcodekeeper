@@ -35,6 +35,10 @@ public interface UIConsts {
         String DECORATOR = PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
     }
 
+    interface VIEW {
+        String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+    }
+
     interface COMMAND {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */

@@ -811,6 +811,11 @@
             name="%view.name.DepcyView"
             class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
             icon="IMG_OBJ_ADD" />
+       <view
+            id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+            name="%view.name.ProjectOverrideView"
+            class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
+            icon="icons/lib.gif"/>
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
@@ -823,6 +828,8 @@
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="ru.taximaxim.codekeeper.ui.mainperspective">
             <viewShortcut id="ru.taximaxim.codekeeper.ui.depcyview">
+            </viewShortcut>
+            <viewShortcut id="ru.taximaxim.codekeeper.ui.pgoverrideview">
             </viewShortcut>
             <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer">
             </viewShortcut>
@@ -881,6 +888,14 @@
                 minimized="false"
                 ratio="0.80"
                 relationship="right"
+                relative="org.eclipse.ui.editorss">
+            </view>
+            <view
+                id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+                minimized="false"
+                ratio="0.80"
+                relationship="bottom"
+                visible="false"
                 relative="org.eclipse.ui.editorss">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">

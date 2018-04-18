@@ -26,16 +26,24 @@ public abstract class SingletonEditorJob extends EditorJob {
             @Override
             public void aboutToRun(IJobChangeEvent event) {
                 IWorkbenchPartSite site = getEditorPart().getSite();
-                UiSync.exec(site.getShell(), () ->
-                site.getService(IEvaluationService.class).requestEvaluation(evalProperty));
+                UiSync.exec(site.getShell(), () -> {
+                    IEvaluationService servise = site.getService(IEvaluationService.class);
+                    if (servise != null) {
+                        servise.requestEvaluation(evalProperty);
+                    }
+                });
             }
 
             @Override
             public void done(IJobChangeEvent event) {
                 done = true;
                 IWorkbenchPartSite site = getEditorPart().getSite();
-                UiSync.exec(site.getShell(), () ->
-                site.getService(IEvaluationService.class).requestEvaluation(evalProperty));
+                UiSync.exec(site.getShell(), () -> {
+                    IEvaluationService servise = site.getService(IEvaluationService.class);
+                    if (servise != null) {
+                        servise.requestEvaluation(evalProperty);
+                    }
+                });
             }
         });
     }

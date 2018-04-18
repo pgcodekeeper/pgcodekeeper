@@ -1,12 +1,14 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.exception;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgOverride;
 
 public class LibraryObjectDuplicationException extends RuntimeException {
 
-    private static final String MESSAGE = "{0} : Library error - duplicated object : {1} {2}"; //$NON-NLS-1$
+    private static final String ENTRY = "{0} {1} in location {2} was overridden by object from {3}"; //$NON-NLS-1$
 
     private static final long serialVersionUID = -809049036145802681L;
 
@@ -31,7 +33,9 @@ public class LibraryObjectDuplicationException extends RuntimeException {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 
-    public LibraryObjectDuplicationException(PgStatement st) {
-        super(MessageFormat.format(MESSAGE, st.getLocation(), st.getStatementType(), st.getName()));
+    public LibraryObjectDuplicationException(Collection<PgOverride> overrides) {
+        super("Library conflicts:\n" + overrides.stream() //$NON-NLS-1$
+        .map(o -> MessageFormat.format(ENTRY, o.getType(), o.getName(), o.getOldLocation(), o.getNewLocation()))
+        .collect(Collectors.joining("\n"))); //$NON-NLS-1$
     }
 }
