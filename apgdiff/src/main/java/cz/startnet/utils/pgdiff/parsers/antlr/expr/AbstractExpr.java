@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -90,7 +91,7 @@ public abstract class AbstractExpr {
      * @return a pair of (Alias, ColumnsList) where Alias is the given name.
      *          ColumnsList list of columns as pair 'columnName-columnType' of the internal query.<br>
      */
-    protected Entry<String, List<Pair<String, String>>> findReferenceComplex(String name) {
+    protected List<Pair<String, String>> findReferenceComplex(String name) {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
@@ -151,14 +152,14 @@ public abstract class AbstractExpr {
             String columnParent = QNameParser.getSecondName(ids);
 
             Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, column);
-            Entry<String, List<Pair<String, String>>> refComplex;
+            List<Pair<String, String>> refComplex;
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnType = addFilteredColumnDepcy(
                             referencedTable.schema, referencedTable.table, column);
                 } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
-                    columnType = refComplex.getValue().stream()
+                    columnType = refComplex.stream()
                             .filter(entry -> column.equals(entry.getKey()))
                             .map(Entry::getValue)
                             .findAny()
@@ -189,28 +190,61 @@ public abstract class AbstractExpr {
      * @return column type
      */
     private String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
+        Stream<Pair<String, String>> columns = addFilteredRelationColumnsDepcies(
+                schemaName, relationName, col -> col.equals(colName));
+        if (columns != null) {
+            Optional<String> type = columns.findAny()
+                    .map(Pair::getSecond);
+            if (type.isPresent()) {
+                return type.get();
+            } else {
+                Log.log(Log.LOG_WARNING, "Column " + colName + " not found in relation "
+                        + relationName);
+            }
+        }
+        return TypesSetManually.COLUMN;
+    }
+
+    /**
+     * Terminal operation must be called on the returned stream
+     * for depcy addition to take effect!
+     * <br><br>
+     * Returns a stream of relation columns filtered with the given predicate.
+     * When this stream is terminated, and if the relation is a user relation,
+     * side-effect depcy-addition is performed for all columns satisfying the predicate. <br>
+     * If a short-circuiting operation is used to terminate the stream
+     * then only some column depcies will be added.
+     *<br><br>
+     * This ugly solution was chosen because all others lead to any of the following:<ul>
+     * <li>code duplicaton </li>
+     * <li>depcy addition/relation search logic leaking into other classes </li>
+     * <li>inefficient filtering on the hot path (predicate matching a single column) </li>
+     * <li>and/or other performance/allocation inefficiencies </li>
+     * @param schemaName
+     * @param relationName
+     * @param colNamePredicate
+     * @return column stream with  attached depcy-addition peek-step;
+     *          null if no relation found
+     */
+    protected Stream<Pair<String, String>> addFilteredRelationColumnsDepcies(String schemaName,
+            String relationName, Predicate<String> colNamePredicate) {
         IRelation relation = findRelations(schemaName, relationName)
                 .findAny()
                 .orElse(null);
         if (relation == null) {
             Log.log(Log.LOG_WARNING, "Relation not found: " + schemaName + '.' + relationName);
-            return TypesSetManually.COLUMN;
+            return null;
         }
-        Optional<String> type = relation.getRelationColumns()
-                .filter(col -> col.getFirst().equals(colName))
-                .findAny()
-                .map(Pair::getSecond);
-        if (type.isPresent()) {
-            if (DbObjNature.USER == relation.getStatementNature()) {
-                depcies.add(new GenericColumn(relation.getContainingSchema().getName(),
-                        relation.getName(), colName, DbObjType.COLUMN));
-            }
-            return type.get();
-        } else {
-            Log.log(Log.LOG_WARNING, "Column " + colName + " not found in relation "
-                    + relation.getName());
-            return TypesSetManually.COLUMN;
+
+        Stream<Pair<String, String>> cols = relation.getRelationColumns()
+                .filter(col -> colNamePredicate.test(col.getFirst()));
+        if (DbObjNature.USER == relation.getStatementNature()) {
+            // hack
+            cols = cols.peek(col -> depcies.add(
+                    new GenericColumn(relation.getContainingSchema().getName(),
+                            relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
+        return cols;
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
@@ -220,14 +254,6 @@ public abstract class AbstractExpr {
         for (IdentifierContext col : cols) {
             String columnName = col.getText();
             addFilteredColumnDepcy(schemaName, tableName, columnName);
-        }
-    }
-
-    protected void addColumnsDepcies(String schemaName, String tableOrView, List<Pair<String, String>> cols) {
-        String sName = schemaName != null ? schemaName : this.schema;
-        for (Pair<String, String> col : cols) {
-            String columnName = col.getFirst();
-            addFilteredColumnDepcy(sName, tableOrView, columnName);
         }
     }
 
