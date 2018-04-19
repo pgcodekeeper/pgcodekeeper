@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -16,22 +18,22 @@ public class IgnoredObject {
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
-    private String objType;
+    private List<String> objTypes;
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
 
-    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, String objType) {
-        this(name, null, false, isRegular, ignoreContent, objType);
+    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, List<String> objTypes) {
+        this(name, null, false, isRegular, ignoreContent, objTypes);
     }
 
     public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
-            boolean ignoreContent, String objType) {
+            boolean ignoreContent, List<String> objTypes) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
-        this.objType = objType == null ? objTypeAll : objType;
+        this.objTypes = objTypes.isEmpty() ? Arrays.asList(objTypeAll) : objTypes;
         this.regex = isRegular ? Pattern.compile(name) : null;
         this.dbRegexStr = dbRegex;
         this.dbRegex = dbRegex == null ? null : Pattern.compile(dbRegex);
@@ -53,8 +55,8 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
-    public String getObjType() {
-        return objType;
+    public List<String> getObjTypes() {
+        return objTypes;
     }
 
     public void setShow(boolean isShow) {
@@ -69,8 +71,8 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
 
-    public void setObjType(String objType) {
-        this.objType = objType;
+    public void setObjTypes(List<String> objTypes) {
+        this.objTypes = objTypes;
     }
 
     public boolean match(String objName, String objType) {
@@ -84,8 +86,8 @@ public class IgnoredObject {
         } else {
             matches = name.equals(objName);
         }
-        if (!objTypeAll.equals(this.objType)) {
-            matches = matches && this.objType.equals(objType);
+        if (!(this.objTypes.size() == 1 && objTypeAll.equals(this.objTypes.get(0)))) {
+            matches = matches && this.objTypes.contains(objType);
         }
         if (matches && dbRegex != null) {
             if (dbNames != null && dbNames.length != 0) {
@@ -127,7 +129,7 @@ public class IgnoredObject {
         result = prime * result + (isShow ? itrue : ifalse);
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((dbRegexStr == null) ? 0 : dbRegexStr.hashCode());
-        result = prime * result + ((objType == null) ? 0 : objType.hashCode());
+        result = prime * result + objTypes.hashCode();
         return result;
     }
 
@@ -141,7 +143,7 @@ public class IgnoredObject {
                     && isShow == other.isShow
                     && Objects.equals(name, other.name)
                     && Objects.equals(dbRegexStr, other.dbRegexStr)
-                    && Objects.equals(objType, other.objType);
+                    && objTypes.equals(other.objTypes);
         }
         return eq;
     }
@@ -174,9 +176,13 @@ public class IgnoredObject {
             sb.append(" db=");
             appendId(dbRegexStr, sb);
         }
-        if (!objTypeAll.equals(objType)) {
+        if (!(objTypes.size() == 1 && objTypeAll.equals(this.objTypes.get(0)))) {
             sb.append(" type=");
-            appendId(objType, sb);
+            for (String type : objTypes) {
+                appendId(type, sb);
+                sb.append(',');
+            }
+            sb.setLength(sb.length() - 1);
         }
         return sb;
     }

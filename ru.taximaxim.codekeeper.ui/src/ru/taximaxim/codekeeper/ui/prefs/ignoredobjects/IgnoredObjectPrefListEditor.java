@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -119,7 +120,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
-                return obj.getObjType();
+                return obj.getObjTypes().get(0);
             }
         });
         objType.setEditingSupport(new TypesEditingSupport(tableViewer));
@@ -138,6 +139,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
 class NewIgnoredObjectDialog extends InputDialog {
 
+    // TODO add possibility to select several types in GUI
+    // (in parsing logic it is already done)
     private final IgnoredObject objInitial;
     private IgnoredObject ignoredObject;
     private Button btnPattern;
@@ -193,7 +196,7 @@ class NewIgnoredObjectDialog extends InputDialog {
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
-            comboType.setSelection(new StructuredSelection(objInitial.getObjType()));
+            comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().get(0)));
         }
 
         return composite;
@@ -202,7 +205,7 @@ class NewIgnoredObjectDialog extends InputDialog {
     @Override
     protected void okPressed() {
         ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),btnContent.getSelection(),
-                (String) ((StructuredSelection) comboType.getSelection()).getFirstElement());
+                Arrays.asList((String) ((StructuredSelection) comboType.getSelection()).getFirstElement()));
         super.okPressed();
     }
 }

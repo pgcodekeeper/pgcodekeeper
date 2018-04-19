@@ -13,7 +13,7 @@ black: SHOW ALL (NewLine+ hide_rule)*;
 
 hide_rule: HIDE rule_rest;
 show_rule: SHOW rule_rest;
-rule_rest: flags obj=identifier (DB db=identifier)? (TYPE type=identifier)?;
+rule_rest: flags obj=identifier (DB db=identifier)? (TYPE type+=identifier (COMMA type+=identifier)*)?;
 
 flags: flag (COMMA flag)*;
 flag: CONTENT | REGEX | NONE;

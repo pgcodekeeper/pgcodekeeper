@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.RuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser;
@@ -85,8 +89,11 @@ public class IgnoreParser {
             }
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
-        String objType = ruleRest.type == null ? null : ruleRest.type.getText();
+
+
+        List<String> objTypes = ruleRest.type.stream().map(RuleContext::getText)
+                .collect(Collectors.toList());
         list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
-                isShow, isRegular, ignoreContent, objType));
+                isShow, isRegular, ignoreContent, objTypes));
     }
 }

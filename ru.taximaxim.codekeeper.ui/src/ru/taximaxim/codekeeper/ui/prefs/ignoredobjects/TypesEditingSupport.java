@@ -56,7 +56,7 @@ class TypesEditingSupport extends EditingSupport {
     protected Object getValue(Object element) {
         if (element instanceof IgnoredObject) {
             IgnoredObject data = (IgnoredObject)element;
-            return data.getObjType();
+            return data.getObjTypes().get(0);
         }
         return null;
     }
@@ -66,7 +66,7 @@ class TypesEditingSupport extends EditingSupport {
         if (element instanceof IgnoredObject && value instanceof String) {
             IgnoredObject data = (IgnoredObject) element;
             String newValue = (String) value;
-            data.setObjType(newValue);
+            data.setObjTypes(Arrays.asList(newValue));
         }
         viewer.refresh();
     }
