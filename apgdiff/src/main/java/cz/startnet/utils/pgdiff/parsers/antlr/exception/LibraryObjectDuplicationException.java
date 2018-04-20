@@ -8,7 +8,7 @@ import cz.startnet.utils.pgdiff.schema.PgOverride;
 
 public class LibraryObjectDuplicationException extends RuntimeException {
 
-    private static final String ENTRY = "{0} {1} in location {2} was overridden by object from {3}"; //$NON-NLS-1$
+    private static final String ENTRY = "{0} {1} in {2} conflicts with object in {3}"; //$NON-NLS-1$
 
     private static final long serialVersionUID = -809049036145802681L;
 

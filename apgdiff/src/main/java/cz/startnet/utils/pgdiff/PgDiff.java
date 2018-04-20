@@ -68,7 +68,7 @@ public final class PgDiff {
         if (arguments.isLibSafeMode()) {
             List<PgOverride> overrides = oldDatabase.getOverrides();
             overrides.addAll(newDatabase.getOverrides());
-            if (overrides.isEmpty()) {
+            if (!overrides.isEmpty()) {
                 throw new LibraryObjectDuplicationException(overrides);
             }
         }
