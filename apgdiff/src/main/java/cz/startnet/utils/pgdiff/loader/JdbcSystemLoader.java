@@ -217,7 +217,21 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String source = result.getString("source");
                 String target = result.getString("target");
                 String type = result.getString("castcontext");
-                storage.addCast(new PgSystemCast(source, target, CastContext.getEnumByValue(type)));
+                CastContext ctx;
+                switch (type) {
+                case "e":
+                    ctx = CastContext.EXPLICIT;
+                    break;
+                case "a":
+                    ctx = CastContext.ASSIGNMENT;
+                    break;
+                case "i":
+                    ctx = CastContext.IMPLICIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown cast context: " + type);
+                }
+                storage.addCast(new PgSystemCast(source, target, ctx));
             }
         }
     }
