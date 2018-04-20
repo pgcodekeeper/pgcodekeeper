@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,13 +37,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * String-null pairs keep track of internal query names that have only the
      * Alias.
      */
-    protected final Map<String, GenericColumn> namespace = new HashMap<>();
+    protected final Map<String, GenericColumn> namespace = new LinkedHashMap<>();
     /**
      * Unaliased namespace keeps track of tables that have no Alias.<br>
      * It has to be separate since same-named unaliased tables from different
      * schemas can be used, requiring qualification.
      */
-    protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
+    protected final Set<GenericColumn> unaliasedNamespace = new LinkedHashSet<>();
     /**
      * Column alias' are in a separate sets (per table) since they have two
      * values as the Key. This is not a Map because we don't connect column
@@ -63,7 +65,7 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     /**
      * Non-table from items stored as their aliases and signatures.
      */
-    protected final Map<String, List<Pair<String, String>>> complexNamespace = new HashMap<>();
+    protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
