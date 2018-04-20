@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -154,13 +153,7 @@ class NewIgnoredObjectDialog extends InputDialog {
     public NewIgnoredObjectDialog(Shell shell, IgnoredObject objInitial) {
         super(shell, Messages.IgnoredObjectPrefListEditor_new_ignored, Messages.IgnoredObjectPrefListEditor_object_name,
                 objInitial == null ? null : objInitial.getName(),
-                        new IInputValidator() {
-
-            @Override
-            public String isValid(String newText) {
-                return newText.isEmpty() ? Messages.IgnoredObjectPrefListEditor_enter_name : null;
-            }
-        });
+                        text ->  text.isEmpty() ? Messages.IgnoredObjectPrefListEditor_enter_name : null);
         this.objInitial = objInitial;
     }
 

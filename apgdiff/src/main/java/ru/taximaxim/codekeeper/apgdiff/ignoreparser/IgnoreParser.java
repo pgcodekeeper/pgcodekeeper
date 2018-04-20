@@ -68,17 +68,17 @@ public class IgnoreParser {
 
     private void white(WhiteContext white) {
         for (Show_ruleContext showRule : white.show_rule()) {
-            rule_rest(showRule.rule_rest(), true);
+            ruleRest(showRule.rule_rest(), true);
         }
     }
 
     private void black(BlackContext black) {
         for (Hide_ruleContext hideRule : black.hide_rule()) {
-            rule_rest(hideRule.rule_rest(), false);
+            ruleRest(hideRule.rule_rest(), false);
         }
     }
 
-    private void rule_rest(Rule_restContext ruleRest, boolean isShow) {
+    private void ruleRest(Rule_restContext ruleRest, boolean isShow) {
         boolean isRegular = false;
         boolean ignoreContent = false;
         for (FlagContext flag : ruleRest.flags().flag()) {
@@ -89,7 +89,6 @@ public class IgnoreParser {
             }
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
-
 
         List<String> objTypes = ruleRest.type.stream().map(RuleContext::getText)
                 .collect(Collectors.toList());

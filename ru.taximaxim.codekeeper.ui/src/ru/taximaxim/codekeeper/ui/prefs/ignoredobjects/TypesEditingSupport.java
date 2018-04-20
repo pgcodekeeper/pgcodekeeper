@@ -19,14 +19,14 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
 class TypesEditingSupport extends EditingSupport {
 
-    protected static String COMBO_TYPE_ALL = "ALL";
+    protected static final String COMBO_TYPE_ALL = "ALL";
 
     private final ComboBoxViewerCellEditor cellEditor;
     private final ColumnViewer viewer;
 
     public TypesEditingSupport(ColumnViewer viewer) {
         super(viewer);
-        cellEditor = new ComboBoxViewerCellEditor((Composite) getViewer().getControl(), SWT.READ_ONLY);
+        cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
         cellEditor.setLabelProvider(new LabelProvider());
         cellEditor.setContentProvider(ArrayContentProvider.getInstance());
         cellEditor.setInput(comboTypes());
@@ -37,7 +37,7 @@ class TypesEditingSupport extends EditingSupport {
         List<String> objTypes = new ArrayList<>();
         objTypes.add(COMBO_TYPE_ALL);
         objTypes.addAll(Arrays.stream(DbObjType.values())
-                .filter(e -> !(e == DbObjType.DATABASE || e == DbObjType.COLUMN))
+                .filter(e -> e != DbObjType.DATABASE && e != DbObjType.COLUMN)
                 .map(Enum::toString).sorted().collect(Collectors.toList()));
         return objTypes;
     }
@@ -64,10 +64,8 @@ class TypesEditingSupport extends EditingSupport {
     @Override
     protected void setValue(Object element, Object value) {
         if (element instanceof IgnoredObject && value instanceof String) {
-            IgnoredObject data = (IgnoredObject) element;
-            String newValue = (String) value;
-            data.setObjTypes(Arrays.asList(newValue));
+            ((IgnoredObject) element).setObjTypes(Arrays.asList((String) value));
+            viewer.refresh();
         }
-        viewer.refresh();
     }
 }

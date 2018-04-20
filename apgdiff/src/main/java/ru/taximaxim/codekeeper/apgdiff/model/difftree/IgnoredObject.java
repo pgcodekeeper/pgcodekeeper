@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -13,7 +14,8 @@ public class IgnoredObject {
         ADD, ADD_SUBTREE, SKIP, SKIP_SUBTREE
     }
 
-    private final String objTypeAll = "ALL";
+    private static final String OBJ_TYPE_ALL = "ALL";
+
     private final String name;
     private final Pattern regex;
     private final String dbRegexStr;
@@ -33,7 +35,7 @@ public class IgnoredObject {
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
-        this.objTypes = objTypes.isEmpty() ? Arrays.asList(objTypeAll) : objTypes;
+        this.objTypes = objTypes.isEmpty() ? Arrays.asList(OBJ_TYPE_ALL) : objTypes;
         this.regex = isRegular ? Pattern.compile(name) : null;
         this.dbRegexStr = dbRegex;
         this.dbRegex = dbRegex == null ? null : Pattern.compile(dbRegex);
@@ -86,8 +88,8 @@ public class IgnoredObject {
         } else {
             matches = name.equals(objName);
         }
-        if (!(this.objTypes.size() == 1 && objTypeAll.equals(this.objTypes.get(0)))) {
-            matches = matches && this.objTypes.contains(objType);
+        if (objTypes.size() != 1 || !OBJ_TYPE_ALL.equals(objTypes.get(0))) {
+            matches = matches && objTypes.contains(objType);
         }
         if (matches && dbRegex != null) {
             if (dbNames != null && dbNames.length != 0) {
@@ -171,37 +173,37 @@ public class IgnoredObject {
         }
         sb.append(' ');
 
-        appendId(name, sb);
+        sb.append(getValidId(name));
+
         if (dbRegex != null) {
             sb.append(" db=");
-            appendId(dbRegexStr, sb);
+            sb.append(getValidId(dbRegexStr));
         }
-        if (!(objTypes.size() == 1 && objTypeAll.equals(this.objTypes.get(0)))) {
+
+        if (objTypes.size() != 1 || !OBJ_TYPE_ALL.equals(objTypes.get(0))) {
             sb.append(" type=");
-            for (String type : objTypes) {
-                appendId(type, sb);
-                sb.append(',');
-            }
-            sb.setLength(sb.length() - 1);
+            sb.append(objTypes.stream().map(this::getValidId).collect(Collectors.joining(",")));
         }
+
         return sb;
     }
 
-    private static StringBuilder appendId(String id, StringBuilder sb) {
+    private String getValidId(String id) {
         if (PgDiffUtils.isValidId(id, true, true)) {
-            sb.append(id);
+            return id;
         } else {
-            sb.append(quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id));
+            return quoteWithDq(id) ? PgDiffUtils.quoteName(id) : PgDiffUtils.quoteString(id);
         }
-        return sb;
     }
 
-    private static boolean quoteWithDq(String str) {
-        int dq = 0, sq = 0;
+    private boolean quoteWithDq(String str) {
+        int dq = 0;
+        int sq = 0;
         for (int i = 0; i < str.length(); ++i) {
             switch (str.charAt(i)) {
             case '\'': ++sq; break;
             case '"' : ++dq; break;
+            default : break;
             }
         }
         return sq > dq;
