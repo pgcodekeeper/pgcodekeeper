@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
@@ -66,11 +67,8 @@ public class PgDatabase extends PgStatement {
         if (createDefaultObjects) {
             addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
             defaultSchema = schemas.get(0);
-
-            PgExtension ext = new PgExtension("plpgsql", null);
-            ext.setSchema("pg_catalog");
-            ext.setComment("'PL/pgSQL procedural language'");
-            addExtension(ext);
+            // DO NOT ADD plpgsql extension here
+            // it is already present in dumps and this branch is executed only for dumps
         }
     }
 
@@ -157,6 +155,11 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
 
+
+    public boolean containsExtension(final String name) {
+        return getExtension(name) != null;
+    }
+
     /**
      * Returns extension of given name or null if the extension has not been found.
      *
@@ -192,7 +195,7 @@ public class PgDatabase extends PgStatement {
 
     public void sortColumns() {
         for (PgSchema schema : schemas) {
-            schema.getTables().forEach(t -> t.sortColumns());
+            schema.getTables().forEach(PgTable::sortColumns);
         }
     }
 
@@ -260,13 +263,127 @@ public class PgDatabase extends PgStatement {
     @Override
     public PgDatabase deepCopy() {
         PgDatabase copy = shallowCopy();
-        for(PgExtension ext : extensions) {
+        for (PgExtension ext : extensions) {
             copy.addExtension(ext.deepCopy());
         }
-        for(PgSchema schema : schemas) {
+        for (PgSchema schema : schemas) {
             copy.addSchema(schema.deepCopy());
         }
         return copy;
+    }
+
+    public void addLib(PgDatabase database) {
+        listPgObjects(database).values().forEach(PgStatement::markAsLib);
+        concat(database);
+    }
+
+    private void concat(PgDatabase database) {
+        boolean isSafeMode = database.getArguments().isLibSafeMode();
+
+        for (PgExtension e : database.getExtensions()) {
+            if (!containsExtension(e.getName())) {
+                e.dropParent();
+                addExtension(e);
+            } else if (isSafeMode && !"plpgsql".equals(e.getName())) {
+                throw new LibraryObjectDuplicationException(e);
+            }
+        }
+
+        for (PgSchema s : database.getSchemas()) {
+            PgSchema schema = getSchema(s.getName());
+            if (schema == null) {
+                s.dropParent();
+                addSchema(s);
+                // skip empty public schema
+            } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
+                    || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
+                if (isSafeMode) {
+                    throw new LibraryObjectDuplicationException(s);
+                }
+
+                for (PgType ty : s.getTypes()) {
+                    if (!schema.containsType(ty.getName())) {
+                        ty.dropParent();
+                        schema.addType(ty);
+                    }
+                }
+
+                for (PgDomain dom : s.getDomains()) {
+                    if (!schema.containsDomain(dom.getName())) {
+                        dom.dropParent();
+                        schema.addDomain(dom);
+                    }
+                }
+
+                for (PgSequence seq : s.getSequences()) {
+                    if (!schema.containsSequence(seq.getName())) {
+                        seq.dropParent();
+                        schema.addSequence(seq);
+                    }
+                }
+
+                for (PgFunction func : s.getFunctions()) {
+                    if (!schema.containsFunction(func.getName())) {
+                        func.dropParent();
+                        schema.addFunction(func);
+                    }
+                }
+
+                for (PgTable t : s.getTables()) {
+                    PgTable table = schema.getTable(t.getName());
+                    if (table == null) {
+                        t.dropParent();
+                        schema.addTable(t);
+                    } else {
+                        for (PgConstraint con : t.getConstraints()) {
+                            if (!table.containsConstraint(con.getName())) {
+                                con.dropParent();
+                                table.addConstraint(con);
+                            }
+                        }
+                        for (PgIndex ind : t.getIndexes()) {
+                            if (!table.containsIndex(ind.getName())) {
+                                ind.dropParent();
+                                table.addIndex(ind);
+                            }
+                        }
+                        for (PgTrigger tr : t.getTriggers()) {
+                            if (!table.containsTrigger(tr.getName())) {
+                                tr.dropParent();
+                                table.addTrigger(tr);
+                            }
+                        }
+                        for (PgRule r : t.getRules()) {
+                            if (!table.containsRule(r.getName())) {
+                                r.dropParent();
+                                table.addRule(r);
+                            }
+                        }
+                    }
+                }
+
+                for (PgView v : s.getViews()) {
+                    PgView view = schema.getView(v.getName());
+                    if (view == null) {
+                        v.dropParent();
+                        schema.addView(v);
+                    } else {
+                        for (PgTrigger tr : v.getTriggers()) {
+                            if (!view.containsTrigger(tr.getName())) {
+                                tr.dropParent();
+                                view.addTrigger(tr);
+                            }
+                        }
+                        for (PgRule r : v.getRules()) {
+                            if (!view.containsRule(r.getName())) {
+                                r.dropParent();
+                                view.addRule(r);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {

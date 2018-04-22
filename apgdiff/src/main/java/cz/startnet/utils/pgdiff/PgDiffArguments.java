@@ -31,10 +31,15 @@ public class PgDiffArguments implements Cloneable {
     private boolean usingTypeCastOff;
     private boolean concurrentlyMode;
     private boolean safeMode;
-    private List<DangerStatement> allowedDangers = new ArrayList<>();
-    private List<DbObjType> allowedTypes = new ArrayList<>();
+    private final List<DangerStatement> allowedDangers = new ArrayList<>();
+    private final List<DbObjType> allowedTypes = new ArrayList<>();
     private boolean stopNotAllowed;
-    private List<String> ignoreLists = new ArrayList<>();
+    private final List<String> ignoreLists = new ArrayList<>();
+    private final List<String> sourceLibs = new ArrayList<>();
+    private final List<String> sourceLibsWithoutPriv = new ArrayList<>();
+    private final List<String> targetLibs = new ArrayList<>();
+    private final List<String> targetLibsWithoutPriv = new ArrayList<>();
+    private boolean libSafeMode;
 
     public void setModeParse(final boolean modeParse) {
         this.modeParse = modeParse;
@@ -112,12 +117,32 @@ public class PgDiffArguments implements Cloneable {
         return Collections.unmodifiableCollection(allowedDangers);
     }
 
-    protected void setAllowedDangers(List<DangerStatement> allowedDangers) {
-        this.allowedDangers = allowedDangers;
-    }
-
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
+    }
+
+    public Collection<String> getSourceLibs() {
+        return Collections.unmodifiableCollection(sourceLibs);
+    }
+
+    public Collection<String> getSourceLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
+    }
+
+    public Collection<String> getTargetLibs() {
+        return Collections.unmodifiableCollection(targetLibs);
+    }
+
+    public Collection<String> getTargetLibsWithoutPriv() {
+        return Collections.unmodifiableCollection(targetLibsWithoutPriv);
+    }
+
+    public boolean isLibSafeMode() {
+        return libSafeMode;
+    }
+
+    public void setLibSafeMode(boolean libSafeMode) {
+        this.libSafeMode = libSafeMode;
     }
 
     public String getInCharsetName() {
@@ -178,14 +203,6 @@ public class PgDiffArguments implements Cloneable {
 
     public void setUsingTypeCastOff(boolean usingTypeCastOff) {
         this.usingTypeCastOff = usingTypeCastOff;
-    }
-
-    protected void setAllowedTypes(List<DbObjType> allowedTypes) {
-        this.allowedTypes = allowedTypes;
-    }
-
-    protected void setIgnoreLists(List<String> ignoreLists) {
-        this.ignoreLists = ignoreLists;
     }
 
     public boolean isConcurrentlyMode() {

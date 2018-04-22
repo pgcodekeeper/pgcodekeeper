@@ -193,7 +193,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_new_pg_db_project;
 
     // ui.prefs
-    public static String dbStorePrefPage_clear_db_store;
     public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
@@ -262,6 +261,24 @@ public final class Messages extends NLS {
     public static String DepcyGraphView_project;
 
     public static String DepcyGraphView_remote;
+
+    public static String DependencyProperties_add_database;
+
+    public static String DependencyProperties_add_directory;
+
+    public static String DependencyProperties_add_dump;
+
+    public static String DependencyProperties_enter_connection_string;
+
+    public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_path;
+
+    public static String DependencyProperties_safe_mode;
+
+    public static String DependencyProperties_safe_mode_desc;
+
+    public static String DependencyProperties_select_directory;
 
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_any_file_filter;
@@ -539,6 +556,12 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
+    public static String ProjectEditorDiffer_lib_change_error_message;
+
+    public static String ProjectEditorDiffer_lib_change_warning_message;
+
+    public static String ProjectEditorDiffer_lib_change_warning_title;
+
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
@@ -567,6 +590,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_status_never_delete;
 
     public static String ProjectProperties_change_projprefs_warn;
+
+    public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;
