@@ -784,12 +784,14 @@
                 </and>
             </enabledWhen>
         </page>
+        <!--
         <page
               category="ru.taximaxim.codekeeper.ui.proj_properties"
               class="ru.taximaxim.codekeeper.ui.properties.SystemObjectProperties"
               id="ru.taximaxim.codekeeper.ui.proj_objects"
               name="PostgreSQL system objects">
         </page>
+         -->
     </extension>
     <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector

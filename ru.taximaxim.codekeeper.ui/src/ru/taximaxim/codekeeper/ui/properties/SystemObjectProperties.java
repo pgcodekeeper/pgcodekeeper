@@ -1,8 +1,8 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -52,9 +52,9 @@ public class SystemObjectProperties extends PropertyPage {
         String storage = prefs.get(PROJ_PREF.STORAGE_LIST, "");
 
         if (storage.isEmpty()) {
-            editor.setInputList(new LinkedList<String>());
+            editor.setInputList(new ArrayList<>());
         } else {
-            editor.setInputList(new LinkedList<>(Arrays.asList(storage.split(DELIM))));
+            editor.setInputList(new ArrayList<>(Arrays.asList(storage.split(DELIM))));
         }
 
         return parent;
@@ -63,7 +63,7 @@ public class SystemObjectProperties extends PropertyPage {
     @Override
     protected void performDefaults() {
         try {
-            editor.setInputList(new LinkedList<String>());
+            editor.setInputList(new ArrayList<String>());
             fillPrefs();
         } catch (BackingStoreException e) {
             setErrorMessage(MessageFormat.format(
