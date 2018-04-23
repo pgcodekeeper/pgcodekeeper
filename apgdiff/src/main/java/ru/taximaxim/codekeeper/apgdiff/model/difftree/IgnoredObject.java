@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -13,8 +12,6 @@ public class IgnoredObject {
     public enum AddStatus {
         ADD, ADD_SUBTREE, SKIP, SKIP_SUBTREE
     }
-
-    private static final String OBJ_TYPE_ALL = "ALL";
 
     private final String name;
     private final Pattern regex;
@@ -35,7 +32,7 @@ public class IgnoredObject {
         this.isShow = isShow;
         this.isRegular = isRegular;
         this.ignoreContent = ignoreContent;
-        this.objTypes = objTypes.isEmpty() ? Arrays.asList(OBJ_TYPE_ALL) : objTypes;
+        this.objTypes = objTypes;
         this.regex = isRegular ? Pattern.compile(name) : null;
         this.dbRegexStr = dbRegex;
         this.dbRegex = dbRegex == null ? null : Pattern.compile(dbRegex);
@@ -88,7 +85,7 @@ public class IgnoredObject {
         } else {
             matches = name.equals(objName);
         }
-        if (objTypes.size() != 1 || !OBJ_TYPE_ALL.equals(objTypes.get(0))) {
+        if (!objTypes.isEmpty()) {
             matches = matches && objTypes.contains(objType);
         }
         if (matches && dbRegex != null) {
@@ -180,7 +177,7 @@ public class IgnoredObject {
             sb.append(getValidId(dbRegexStr));
         }
 
-        if (objTypes.size() != 1 || !OBJ_TYPE_ALL.equals(objTypes.get(0))) {
+        if (!objTypes.isEmpty()) {
             sb.append(" type=");
             sb.append(objTypes.stream().map(this::getValidId).collect(Collectors.joining(",")));
         }

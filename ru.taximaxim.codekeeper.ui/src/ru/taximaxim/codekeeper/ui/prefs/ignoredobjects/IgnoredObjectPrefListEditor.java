@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.PixelConverter;
@@ -119,7 +121,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
-                return obj.getObjTypes().get(0);
+                List<String> typesList = obj.getObjTypes();
+                return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.get(0);
             }
         });
         objType.setEditingSupport(new TypesEditingSupport(tableViewer));
@@ -197,8 +200,10 @@ class NewIgnoredObjectDialog extends InputDialog {
 
     @Override
     protected void okPressed() {
+        String selectedType = (String) ((StructuredSelection) comboType.getSelection()).getFirstElement();
         ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),btnContent.getSelection(),
-                Arrays.asList((String) ((StructuredSelection) comboType.getSelection()).getFirstElement()));
+                TypesEditingSupport.COMBO_TYPE_ALL.equals(selectedType) ?
+                        Collections.emptyList() : Arrays.asList(selectedType));
         super.okPressed();
     }
 }

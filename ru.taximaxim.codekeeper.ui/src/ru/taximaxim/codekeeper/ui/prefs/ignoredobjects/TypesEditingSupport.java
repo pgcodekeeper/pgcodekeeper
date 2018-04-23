@@ -56,7 +56,8 @@ class TypesEditingSupport extends EditingSupport {
     protected Object getValue(Object element) {
         if (element instanceof IgnoredObject) {
             IgnoredObject data = (IgnoredObject)element;
-            return data.getObjTypes().get(0);
+            List<String> typesList = data.getObjTypes();
+            return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.get(0);
         }
         return null;
     }
