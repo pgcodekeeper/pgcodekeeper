@@ -1,8 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,9 +36,9 @@ class TypesEditingSupport extends EditingSupport {
     protected static List<String> comboTypes() {
         List<String> objTypes = new ArrayList<>();
         objTypes.add(COMBO_TYPE_ALL);
-        objTypes.addAll(Arrays.stream(DbObjType.values())
-                .filter(e -> e != DbObjType.DATABASE && e != DbObjType.COLUMN)
-                .map(Enum::toString).sorted().collect(Collectors.toList()));
+        objTypes.addAll(EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN))
+                .stream().map(Enum::toString).sorted().collect(Collectors.toList()));
+
         return objTypes;
     }
 
@@ -57,8 +56,8 @@ class TypesEditingSupport extends EditingSupport {
     protected Object getValue(Object element) {
         if (element instanceof IgnoredObject) {
             IgnoredObject data = (IgnoredObject)element;
-            List<String> typesList = data.getObjTypes();
-            return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.get(0);
+            EnumSet<DbObjType> typesList = data.getObjTypes();
+            return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.iterator().next();
         }
         return null;
     }
@@ -68,7 +67,7 @@ class TypesEditingSupport extends EditingSupport {
         if (element instanceof IgnoredObject && value instanceof String) {
             String type = (String) value;
             ((IgnoredObject) element).setObjTypes(COMBO_TYPE_ALL.equals(type) ?
-                    Collections.emptyList() : Arrays.asList(type));
+                    EnumSet.noneOf(DbObjType.class) : EnumSet.of(DbObjType.valueOf(type)));
             viewer.refresh();
         }
     }

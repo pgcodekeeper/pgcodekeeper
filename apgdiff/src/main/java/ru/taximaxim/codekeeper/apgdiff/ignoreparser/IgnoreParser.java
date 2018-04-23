@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,11 +15,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.BlackContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.FlagContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Hide_ruleContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Show_ruleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
@@ -90,8 +93,16 @@ public class IgnoreParser {
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
 
-        List<String> objTypes = ruleRest.type.stream().map(RuleContext::getText)
-                .collect(Collectors.toList());
+        List<IdentifierContext> objTypesCtx = ruleRest.type;
+        EnumSet<DbObjType> objTypes;
+        if (objTypesCtx.isEmpty()) {
+            objTypes = EnumSet.noneOf(DbObjType.class);
+        } else {
+            objTypes = objTypesCtx.stream().map(RuleContext::getText)
+                    .map(DbObjType::valueOf)
+                    .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
+        }
+
         list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
                 isShow, isRegular, ignoreContent, objTypes));
     }

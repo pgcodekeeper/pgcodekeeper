@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,17 +17,17 @@ public class IgnoredObject {
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
-    private List<String> objTypes;
+    private EnumSet<DbObjType> objTypes;
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
 
-    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, List<String> objTypes) {
+    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, EnumSet<DbObjType> objTypes) {
         this(name, null, false, isRegular, ignoreContent, objTypes);
     }
 
     public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
-            boolean ignoreContent, List<String> objTypes) {
+            boolean ignoreContent, EnumSet<DbObjType> objTypes) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
@@ -54,7 +54,7 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
-    public List<String> getObjTypes() {
+    public EnumSet<DbObjType> getObjTypes() {
         return objTypes;
     }
 
@@ -70,15 +70,15 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
 
-    public void setObjTypes(List<String> objTypes) {
+    public void setObjTypes(EnumSet<DbObjType> objTypes) {
         this.objTypes = objTypes;
     }
 
-    public boolean match(String objName, String objType) {
+    public boolean match(String objName, DbObjType objType) {
         return match(objName, objType, (String[]) null);
     }
 
-    public boolean match(String objName, String objType, String... dbNames) {
+    public boolean match(String objName, DbObjType objType, String... dbNames) {
         boolean matches;
         if (isRegular) {
             matches = regex.matcher(objName).find();
@@ -179,7 +179,8 @@ public class IgnoredObject {
 
         if (!objTypes.isEmpty()) {
             sb.append(" type=");
-            sb.append(objTypes.stream().map(IgnoredObject::getValidId).collect(Collectors.joining(",")));
+            sb.append(objTypes.stream().map(Enum::toString).map(IgnoredObject::getValidId)
+                    .collect(Collectors.joining(",")));
         }
 
         return sb;

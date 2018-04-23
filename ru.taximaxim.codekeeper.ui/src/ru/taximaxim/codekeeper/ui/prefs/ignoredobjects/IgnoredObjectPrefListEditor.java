@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.EnumSet;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.PixelConverter;
@@ -23,6 +21,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -117,8 +116,9 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
-                List<String> typesList = obj.getObjTypes();
-                return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.get(0);
+                EnumSet<DbObjType> typesList = obj.getObjTypes();
+                return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL
+                        : typesList.iterator().next().toString();
             }
         });
         objType.setEditingSupport(new TypesEditingSupport(tableViewer));
@@ -188,7 +188,7 @@ class NewIgnoredObjectDialog extends InputDialog {
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
-            comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().get(0)));
+            comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().iterator().next()));
         }
 
         return composite;
@@ -199,7 +199,7 @@ class NewIgnoredObjectDialog extends InputDialog {
         String selectedType = (String) ((StructuredSelection) comboType.getSelection()).getFirstElement();
         ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),btnContent.getSelection(),
                 TypesEditingSupport.COMBO_TYPE_ALL.equals(selectedType) ?
-                        Collections.emptyList() : Arrays.asList(selectedType));
+                        EnumSet.noneOf(DbObjType.class) : EnumSet.of(DbObjType.valueOf(selectedType)));
         super.okPressed();
     }
 }

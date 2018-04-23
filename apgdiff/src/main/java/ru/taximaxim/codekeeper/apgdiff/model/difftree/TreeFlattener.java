@@ -69,7 +69,7 @@ public class TreeFlattener {
         if (ignoreList == null) {
             status = AddStatus.ADD;
         } else {
-            status = ignoreList.getNameStatus(el.getName(), el.getType().toString(),
+            status = ignoreList.getNameStatus(el.getName(), el.getType(),
                     !addSubtreeRoots.isEmpty(), dbNames);
         }
         if (status == AddStatus.SKIP_SUBTREE) {
