@@ -15,7 +15,6 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -135,13 +134,14 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public IFigure getTooltip(Object entity) {
-        TextFlow text = new TextFlow(entity instanceof PgFunction ?
-                ((PgFunction) entity).getName()
-                : getText(entity));
-        FlowPage page = new FlowPage();
-        page.add(text);
-        return page;
-
+        if (entity instanceof PgStatement) {
+            TextFlow text = new TextFlow(((PgStatement) entity).getName());
+            FlowPage page = new FlowPage();
+            page.add(text);
+            return page;
+        } else {
+            return null;
+        }
     }
 
     @Override
