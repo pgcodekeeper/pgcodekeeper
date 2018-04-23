@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,9 @@ class TypesEditingSupport extends EditingSupport {
     @Override
     protected void setValue(Object element, Object value) {
         if (element instanceof IgnoredObject && value instanceof String) {
-            ((IgnoredObject) element).setObjTypes(Arrays.asList((String) value));
+            String type = (String) value;
+            ((IgnoredObject) element).setObjTypes(COMBO_TYPE_ALL.equals(type) ?
+                    Collections.emptyList() : Arrays.asList(type));
             viewer.refresh();
         }
     }

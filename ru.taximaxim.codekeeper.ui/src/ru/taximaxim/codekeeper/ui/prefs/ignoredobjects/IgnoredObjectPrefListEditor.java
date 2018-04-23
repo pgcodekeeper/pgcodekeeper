@@ -70,7 +70,6 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         TableViewerColumn name = new TableViewerColumn(tableViewer, SWT.NONE);
         name.getColumn().setResizable(true);
         name.getColumn().setText(Messages.ignoredObjectPrefListEditor_name);
-        name.getColumn().setResizable(true);
         name.getColumn().setMoveable(true);
         name.setLabelProvider(new ColumnLabelProvider() {
 
@@ -82,9 +81,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         });
 
         TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CHECK);
-        isRegular.getColumn().setResizable(true);
-        isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
         isRegular.getColumn().setResizable(false);
+        isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
         isRegular.getColumn().setMoveable(true);
         isRegular.setLabelProvider(new ColumnLabelProvider() {
 
@@ -97,9 +95,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         isRegular.setEditingSupport(new YesNoEditingSupport(tableViewer, BooleanChangeValues.REGULAR));
 
         TableViewerColumn ignoreContents = new TableViewerColumn(tableViewer, SWT.CHECK);
-        ignoreContents.getColumn().setResizable(true);
-        ignoreContents.getColumn().setText(Messages.ignoredObjectPrefListEditor_ignore_contents);
         ignoreContents.getColumn().setResizable(false);
+        ignoreContents.getColumn().setText(Messages.ignoredObjectPrefListEditor_ignore_contents);
         ignoreContents.getColumn().setMoveable(true);
         ignoreContents.setLabelProvider(new ColumnLabelProvider() {
 
@@ -112,9 +109,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         ignoreContents.setEditingSupport(new YesNoEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
 
         TableViewerColumn objType = new TableViewerColumn(tableViewer, SWT.NONE);
-        objType.getColumn().setResizable(true);
-        objType.getColumn().setText(Messages.ignoredObjectPrefListEditor_type);
         objType.getColumn().setResizable(false);
+        objType.getColumn().setText(Messages.ignoredObjectPrefListEditor_type);
         objType.getColumn().setMoveable(true);
         objType.setLabelProvider(new ColumnLabelProvider() {
 
