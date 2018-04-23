@@ -179,13 +179,13 @@ public class IgnoredObject {
 
         if (!objTypes.isEmpty()) {
             sb.append(" type=");
-            sb.append(objTypes.stream().map(this::getValidId).collect(Collectors.joining(",")));
+            sb.append(objTypes.stream().map(IgnoredObject::getValidId).collect(Collectors.joining(",")));
         }
 
         return sb;
     }
 
-    private String getValidId(String id) {
+    private static String getValidId(String id) {
         if (PgDiffUtils.isValidId(id, true, true)) {
             return id;
         } else {
@@ -193,7 +193,7 @@ public class IgnoredObject {
         }
     }
 
-    private boolean quoteWithDq(String str) {
+    private static boolean quoteWithDq(String str) {
         int dq = 0;
         int sq = 0;
         for (int i = 0; i < str.length(); ++i) {
