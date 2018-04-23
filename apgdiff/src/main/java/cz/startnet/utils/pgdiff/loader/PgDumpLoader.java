@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
@@ -227,7 +226,7 @@ public class PgDumpLoader implements AutoCloseable {
         args.setIgnorePrivileges(isIgnorePriv);
 
         if (path.startsWith("jdbc:")) {
-            PgDatabase db = PgDiff.loadDatabaseSchema("db", path, args);
+            PgDatabase db = new JdbcLoader(new JdbcConnector(path), args).getDbFromJdbc();
             PgDatabase.listPgObjects(db).values().forEach(st -> st.setLocation(path));
             return db;
         }
@@ -236,7 +235,7 @@ public class PgDumpLoader implements AutoCloseable {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return PgDiff.loadDatabaseSchema("parsed", path, args);
+                return PgDumpLoader.loadDatabaseSchemaFromDirTree(path,  args, null, null);
             } else {
                 PgDatabase db = new PgDatabase(false);
                 db.setArguments(args);
@@ -245,7 +244,9 @@ public class PgDumpLoader implements AutoCloseable {
             }
         }
 
-        return PgDiff.loadDatabaseSchema("dump", path, args);
+        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
+            return loader.load();
+        }
     }
 
     private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
@@ -257,7 +258,9 @@ public class PgDumpLoader implements AutoCloseable {
                 }
             }
         } else {
-            db.addLib(PgDiff.loadDatabaseSchema("dump", f.toString(), args));
+            try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
+                db.addLib(loader.load());
+            }
         }
     }
 
