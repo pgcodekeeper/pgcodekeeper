@@ -192,6 +192,23 @@ public abstract class AbstractExpr {
     private String addFilteredColumnDepcy(String schemaName, String relationName, String colName) {
         Stream<Pair<String, String>> columns = addFilteredRelationColumnsDepcies(
                 schemaName, relationName, col -> col.equals(colName));
+        // handle system columns; look for relation anyway for a potential 'not found' warning
+        // do not use the stream nor add the depcy though
+        switch (colName) {
+        case "oid":
+        case "tableoid":
+            return "oid";
+        case "xmin":
+        case "xmax":
+            return "xid";
+        case "cmin":
+        case "cmax":
+            return "cid";
+        case "ctid":
+            return "tid";
+        default:
+            break;
+        }
         if (columns != null) {
             Optional<String> type = columns.findAny()
                     .map(Pair::getSecond);
