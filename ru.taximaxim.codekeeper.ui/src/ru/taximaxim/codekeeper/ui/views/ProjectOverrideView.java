@@ -58,7 +58,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
                 List<PgOverride> overrides = db.getOverrides();
 
-                if (!filterStatement || selected == null) {
+                if (!filterStatement) {
                     viewer.setInput(overrides);
                 } else {
                     viewer.setInput(overrides.stream()
@@ -104,11 +104,8 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
     @Override
     public void createPartControl(Composite parent) {
         viewer = new TableViewer(parent, SWT.NONE);
-
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 320;
-        viewer.getTable().setLayoutData(gd);
+        viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);
 

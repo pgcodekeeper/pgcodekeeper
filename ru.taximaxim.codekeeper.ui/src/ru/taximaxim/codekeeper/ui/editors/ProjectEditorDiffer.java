@@ -348,8 +348,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     @Override
     public void setFocus() {
-        parent.setFocus();
+        diffTable.getViewer().getControl().setFocus();
         diffTable.updateObjectsLabels();
+        updateSelection();
+    }
+
+    private void updateSelection() {
         if (dbProject != null) {
             ISelection selection = diffTable.getViewer().getSelection();
             if (selection.isEmpty()) {
@@ -551,6 +555,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!overrides.isEmpty()) {
             try {
                 getSite().getPage().showView(VIEW.OVERRIDE_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+                updateSelection();
             } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
             }
