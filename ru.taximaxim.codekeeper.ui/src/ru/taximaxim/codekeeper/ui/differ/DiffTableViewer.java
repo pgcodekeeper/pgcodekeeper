@@ -837,7 +837,7 @@ public class DiffTableViewer extends Composite {
                 String type;
                 String loc = st.getLocation();
                 if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
-                    type = "Database"; //$NON-NLS-1$
+                    type = Messages.DiffTableViewer_database;
                     name = JdbcConnector.dbNameFromUrl(loc);
                     loc = ModelExporter.getRelativeFilePath(st, false);
                 } else {
@@ -847,16 +847,16 @@ public class DiffTableViewer extends Composite {
                     name = lib.getFileName().toString();
 
                     if (!lib.equals(location)) {
-                        type = "Directory"; //$NON-NLS-1$
+                        type = Messages.DiffTableViewer_directory;
                         loc = lib.relativize(location).toString();
                     } else {
-                        type = "Dump"; //$NON-NLS-1$
+                        type = Messages.DiffTableViewer_dump;
                         loc = null;
                     }
                 }
 
-                v.setLibLocation("Lib: " + name + "\nType: " + type //$NON-NLS-1$ //$NON-NLS-2$
-                        + (loc == null ? "" : "\nPath: " + loc)); //$NON-NLS-1$ //$NON-NLS-2$
+                v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type
+                        + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
             }
         });
     }

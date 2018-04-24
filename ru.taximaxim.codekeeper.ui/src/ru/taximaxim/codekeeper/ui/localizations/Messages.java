@@ -300,7 +300,13 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_database;
+
     public static String DiffTableViewer_db_user;
+
+    public static String DiffTableViewer_directory;
+
+    public static String DiffTableViewer_dump;
 
     public static String DiffTableViewer_error_reading_git_history;
 
@@ -308,6 +314,10 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+
+    public static String DiffTableViewer_library;
+
+    public static String DiffTableViewer_path;
 
     public static String DiffTableViewer_reading_git_history;
 
@@ -321,6 +331,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_database;
 
     public static String DiffTableViewer_to_project;
+
+    public static String DiffTableViewer_type;
 
     public static String DiffTableViewer_user;
 
@@ -565,6 +577,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_lib_change_warning_message;
 
     public static String ProjectEditorDiffer_lib_change_warning_title;
+
+    public static String ProjectEditorDiffer_library_duplication_exception;
 
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;

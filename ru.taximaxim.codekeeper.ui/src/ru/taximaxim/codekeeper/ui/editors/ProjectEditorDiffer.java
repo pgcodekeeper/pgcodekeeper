@@ -90,6 +90,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
@@ -545,21 +546,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
-    private void showOverrideView(DbSource dbProject) throws PgCodekeeperException {
+    private void showOverrideView(DbSource dbProject) throws PgCodekeeperUIException {
         List<PgOverride> overrides = dbProject.getDbObject().getOverrides();
         if (!overrides.isEmpty()) {
-            UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
-                try {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                    .getActivePage().showView(VIEW.OVERRIDE_VIEW);
-                    diffTable.setFocus();
-                } catch (PartInitException e) {
-                    ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
-                }
-            });
+            try {
+                getSite().getPage().showView(VIEW.OVERRIDE_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+            } catch (PartInitException e) {
+                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+            }
 
             if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
-                throw new PgCodekeeperException("Library duplication exception"); //$NON-NLS-1$
+                throw new PgCodekeeperUIException(Messages.ProjectEditorDiffer_library_duplication_exception);
             }
         }
     }
@@ -682,7 +679,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (dbProject != null) {
             try {
                 showOverrideView(dbProject);
-            } catch (PgCodekeeperException e) {
+            } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
                 return;
             }
