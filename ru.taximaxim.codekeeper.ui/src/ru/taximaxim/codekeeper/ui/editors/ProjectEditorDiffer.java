@@ -43,7 +43,9 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -77,6 +79,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -99,6 +102,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -345,6 +349,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public void setFocus() {
         parent.setFocus();
         diffTable.updateObjectsLabels();
+        if (dbProject != null) {
+            ISelection selection = diffTable.getViewer().getSelection();
+            if (selection.isEmpty()) {
+                DBPair pair = new DBPair(dbProject, dbRemote);
+                sp.fireSelectionChanged(new SelectionChangedEvent(sp, new StructuredSelection(pair)), pair);
+            }
+        }
     }
 
     @Override
@@ -534,6 +545,25 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
+    private void showOverrideView(DbSource dbProject) throws PgCodekeeperException {
+        List<PgOverride> overrides = dbProject.getDbObject().getOverrides();
+        if (!overrides.isEmpty()) {
+            UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
+                try {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                    .getActivePage().showView(VIEW.OVERRIDE_VIEW);
+                    diffTable.setFocus();
+                } catch (PartInitException e) {
+                    ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+                }
+            });
+
+            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
+                throw new PgCodekeeperException("Library duplication exception"); //$NON-NLS-1$
+            }
+        }
+    }
+
     private void askPerspectiveChange(IEditorSite site) {
         String mode = mainPrefs.getString(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
         // if select "YES" with toggle
@@ -544,7 +574,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(site.getShell(),
                     Messages.change_perspective_title, Messages.change_perspective_message,
                     Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
-            if(dialog.getReturnCode() == IDialogConstants.YES_ID){
+            if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
                 changePerspective(site);
             }
         }
@@ -648,6 +678,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
+
+        if (dbProject != null) {
+            try {
+                showOverrideView(dbProject);
+            } catch (PgCodekeeperException e) {
+                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+                return;
+            }
+        }
+
         diffPane.setDbSources(dbProject, dbRemote);
         diffPane.setInput(null, null);
 

@@ -713,6 +713,8 @@ public final class Messages extends NLS {
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
 
+    public static String LibraryContainer_root;
+
     public static String UsageReport_Reporting_Usage;
     public static String UsageReport_Querying_Enablement;
 

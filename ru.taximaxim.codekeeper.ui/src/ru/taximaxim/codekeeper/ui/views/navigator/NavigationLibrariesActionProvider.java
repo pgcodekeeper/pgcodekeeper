@@ -43,7 +43,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         }
     }
 
-    private class OpenLibrary extends Action {
+    private static class OpenLibrary extends Action {
 
         private LibraryContainer segment;
         private final ISelectionProvider provider;
@@ -58,7 +58,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             ISelection selection = provider.getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                if (sel instanceof LibraryContainer && !((LibraryContainer)sel).hasChildren()) {
+                if (sel instanceof LibraryContainer && ((LibraryContainer)sel).isEnableToOpen()) {
                     segment = (LibraryContainer) sel;
                     return true;
                 }

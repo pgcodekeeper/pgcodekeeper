@@ -34,7 +34,6 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
-import ru.taximaxim.codekeeper.ui.views.ProjectOverrideView;
 import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public abstract class DbSource {
@@ -218,7 +217,6 @@ class DbSourceProject extends DbSource {
 
         try {
             PgUIDumpLoader.loadLibraries(db, arguments, new DependenciesXmlStore(project).readObjects());
-            ProjectOverrideView.fillView(db, pref.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
         } catch (URISyntaxException ex) {
             throw new IOException(ex.getLocalizedMessage(), ex);
         }

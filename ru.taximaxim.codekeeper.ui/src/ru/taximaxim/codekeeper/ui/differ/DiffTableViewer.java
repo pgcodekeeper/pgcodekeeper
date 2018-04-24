@@ -818,45 +818,47 @@ public class DiffTableViewer extends Composite {
             return;
         }
 
+        List<PgLibrary> libs;
         try {
-            List<PgLibrary> libs = new DependenciesXmlStore(p.toFile()).readObjects();
-
-            elementInfoMap.forEach((k,v) -> {
-                if (k.getSide() != DiffSide.RIGHT) {
-                    PgStatement st = k.getPgStatement(dbProject.getDbObject());
-                    if (st.isLib()) {
-                        String name;
-                        String type;
-                        String loc = st.getLocation();
-                        if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
-                            type = "Database"; //$NON-NLS-1$
-                            name = JdbcConnector.dbNameFromUrl(loc);
-                            loc = ModelExporter.getRelativeFilePath(st, false);
-                        } else {
-                            Path lib = libs.stream().map(PgLibrary::getPath)
-                                    .filter(loc::startsWith).findFirst().map(Paths::get).get();
-                            Path location = Paths.get(loc);
-                            name = lib.getFileName().toString();
-
-                            if (!lib.equals(location)) {
-                                type = "Directory"; //$NON-NLS-1$
-                                loc = lib.relativize(location).toString();
-                            } else {
-                                type = "Dump"; //$NON-NLS-1$
-                                loc = null;
-                            }
-                        }
-
-                        v.setLibLocation("Lib: " + name + "\nType: " + type //$NON-NLS-1$ //$NON-NLS-2$
-                                + (loc == null ? "" : "\nPath: " + loc)); //$NON-NLS-1$ //$NON-NLS-2$
-                    }
-                }
-            });
-
+            libs = new DependenciesXmlStore(p.toFile()).readObjects();
         } catch (IOException e) {
             Log.log(e);
+            return;
         }
 
+        elementInfoMap.forEach((k,v) -> {
+            if (k.getSide() != DiffSide.RIGHT) {
+                PgStatement st = k.getPgStatement(dbProject.getDbObject());
+                if (!st.isLib()) {
+                    return;
+                }
+
+                String name;
+                String type;
+                String loc = st.getLocation();
+                if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
+                    type = "Database"; //$NON-NLS-1$
+                    name = JdbcConnector.dbNameFromUrl(loc);
+                    loc = ModelExporter.getRelativeFilePath(st, false);
+                } else {
+                    Path lib = libs.stream().map(PgLibrary::getPath)
+                            .filter(loc::startsWith).findFirst().map(Paths::get).get();
+                    Path location = Paths.get(loc);
+                    name = lib.getFileName().toString();
+
+                    if (!lib.equals(location)) {
+                        type = "Directory"; //$NON-NLS-1$
+                        loc = lib.relativize(location).toString();
+                    } else {
+                        type = "Dump"; //$NON-NLS-1$
+                        loc = null;
+                    }
+                }
+
+                v.setLibLocation("Lib: " + name + "\nType: " + type //$NON-NLS-1$ //$NON-NLS-2$
+                        + (loc == null ? "" : "\nPath: " + loc)); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        });
     }
 
     private void readDbUsers(DBTimestamp dbTime) {

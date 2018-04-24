@@ -24,7 +24,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -32,8 +31,6 @@ import cz.startnet.utils.pgdiff.schema.PgOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
-import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -43,58 +40,39 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
     private TableViewer viewer;
 
     private boolean filterStatement;
-    private PgDatabase db;
-    private List<?> selected;
 
-    public static void fillView(PgDatabase db, boolean isSafeMode) {
-        List<PgOverride> overrides = db.getOverrides();
-
-        if (!overrides.isEmpty()) {
-            UiSync.exec(PlatformUI.getWorkbench().getDisplay(), () -> {
-                try {
-                    ((ProjectOverrideView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                            .getActivePage().showView(VIEW.OVERRIDE_VIEW)).setDatabase(db, null);
-                } catch (PartInitException e) {
-                    ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
-                }
-            });
-
-            if (isSafeMode) {
-                throw new IllegalArgumentException("Library duplication exception"); //$NON-NLS-1$
-            }
-        }
-    }
+    private IWorkbenchPart part;
+    private ISelection selection;
 
     @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+        this.part = part;
+        this.selection = selection;
         if (selection instanceof IStructuredSelection) {
             List<?> selected = ((IStructuredSelection) selection).toList();
             DBPair dss = selected.stream().filter(e -> e instanceof DBPair)
                     .map(e -> (DBPair)e).findAny().orElse(null);
 
             if (dss != null) {
-                setDatabase(dss.dbProject.getDbObject(), selected);
+                PgDatabase db = dss.dbProject.getDbObject();
+
+                List<PgOverride> overrides = db.getOverrides();
+
+                if (!filterStatement || selected == null) {
+                    viewer.setInput(overrides);
+                } else {
+                    viewer.setInput(overrides.stream()
+                            .filter(o -> selected.stream()
+                                    .filter(e -> e instanceof TreeElement)
+                                    .map(e -> (TreeElement)e)
+                                    .filter(e -> e.getSide() != DiffSide.RIGHT)
+                                    .map(e -> e.getPgStatement(db))
+                                    .anyMatch(o::checkStatement))
+                            .collect(Collectors.toList()));
+                }
+            } else {
+                viewer.setInput(null);
             }
-        }
-    }
-
-    public void setDatabase(PgDatabase db, List<?> selected) {
-        this.db = db;
-        this.selected = selected;
-
-        List<PgOverride> overrides = db.getOverrides();
-
-        if (!filterStatement || selected == null) {
-            viewer.setInput(overrides);
-        } else {
-            viewer.setInput(overrides.stream()
-                    .filter(o -> selected.stream()
-                            .filter(e -> e instanceof TreeElement)
-                            .map(e -> (TreeElement)e)
-                            .filter(e -> e.getSide() != DiffSide.RIGHT)
-                            .map(e -> e.getPgStatement(db))
-                            .anyMatch(o::checkStatement))
-                    .collect(Collectors.toList()));
         }
     }
 
@@ -107,7 +85,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             @Override
             public void run() {
                 setState(!filterStatement);
-                setDatabase(db, selected);
+                selectionChanged(part, selection);
             }
 
             private void setState(boolean state) {

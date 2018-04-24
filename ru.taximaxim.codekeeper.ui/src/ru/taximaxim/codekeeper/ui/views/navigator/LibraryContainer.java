@@ -5,16 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 public class LibraryContainer {
 
-    private static final String ROOT = "Referenced Libraries"; //$NON-NLS-1$
+    private static final String ROOT = Messages.LibraryContainer_root;
 
     private final LibraryContainer parent;
     private final Path path;
@@ -70,13 +72,16 @@ public class LibraryContainer {
     private static void readFile(LibraryContainer parent, final Path path) throws IOException {
         if (Files.isDirectory(path)) {
             LibraryContainer dir = new LibraryContainer(parent, path);
-            try (Stream<Path> stream = Files.list(path).sorted((p1, p2) -> {
-                if (Files.isDirectory(p1) == Files.isDirectory(p2)) {
+            Comparator<Path> comparator = (p1, p2) -> {
+                boolean bool = Files.isDirectory(p1);
+                if (bool == Files.isDirectory(p2)) {
                     return 0;
                 }
 
-                return Files.isDirectory(p1) ? -1 : 1;
-            })) {
+                return bool ? -1 : 1;
+            };
+
+            try (Stream<Path> stream = Files.list(path).sorted(comparator)) {
                 for (Path sub : (Iterable<Path>) stream::iterator) {
                     readFile(dir, sub);
                 }
@@ -100,6 +105,14 @@ public class LibraryContainer {
 
     public List<LibraryContainer> getChildren() {
         return children;
+    }
+
+    public boolean isEnableToOpen() {
+        if (path == null) {
+            return false;
+        }
+
+        return Files.exists(path) && !Files.isDirectory(path);
     }
 
     public boolean hasChildren() {
