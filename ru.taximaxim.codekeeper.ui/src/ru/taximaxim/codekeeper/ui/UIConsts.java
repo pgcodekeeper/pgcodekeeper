@@ -35,6 +35,10 @@ public interface UIConsts {
         String DECORATOR = PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
     }
 
+    interface VIEW {
+        String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+    }
+
     interface COMMAND {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
@@ -142,7 +146,7 @@ public interface UIConsts {
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
-	String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
+        String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -192,6 +196,7 @@ public interface UIConsts {
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
         String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$
         String ICONSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
+        String ICONLIB = "/icons/lib.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
