@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -56,7 +57,7 @@ class TypesEditingSupport extends EditingSupport {
     protected Object getValue(Object element) {
         if (element instanceof IgnoredObject) {
             IgnoredObject data = (IgnoredObject)element;
-            EnumSet<DbObjType> typesList = data.getObjTypes();
+            Set<DbObjType> typesList = data.getObjTypes();
             return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL : typesList.iterator().next();
         }
         return null;

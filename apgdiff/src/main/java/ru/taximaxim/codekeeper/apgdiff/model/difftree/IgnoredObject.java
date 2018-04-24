@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -17,17 +17,17 @@ public class IgnoredObject {
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
-    private EnumSet<DbObjType> objTypes;
+    private Set<DbObjType> objTypes;
     private boolean isShow;
     private boolean isRegular;
     private boolean ignoreContent;
 
-    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, EnumSet<DbObjType> objTypes) {
+    public IgnoredObject(String name, boolean isRegular, boolean ignoreContent, Set<DbObjType> objTypes) {
         this(name, null, false, isRegular, ignoreContent, objTypes);
     }
 
     public IgnoredObject(String name, String dbRegex, boolean isShow, boolean isRegular,
-            boolean ignoreContent, EnumSet<DbObjType> objTypes) {
+            boolean ignoreContent, Set<DbObjType> objTypes) {
         this.name = name;
         this.isShow = isShow;
         this.isRegular = isRegular;
@@ -54,7 +54,7 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
-    public EnumSet<DbObjType> getObjTypes() {
+    public Set<DbObjType> getObjTypes() {
         return objTypes;
     }
 
@@ -70,7 +70,7 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
 
-    public void setObjTypes(EnumSet<DbObjType> objTypes) {
+    public void setObjTypes(Set<DbObjType> objTypes) {
         this.objTypes = objTypes;
     }
 

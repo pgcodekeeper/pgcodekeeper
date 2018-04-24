@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.PixelConverter;
@@ -116,7 +117,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
-                EnumSet<DbObjType> typesList = obj.getObjTypes();
+                Set<DbObjType> typesList = obj.getObjTypes();
                 return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL
                         : typesList.iterator().next().toString();
             }
