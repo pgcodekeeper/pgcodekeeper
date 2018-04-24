@@ -13,9 +13,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores table information.
@@ -23,7 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public abstract class PgTable extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
@@ -87,6 +89,26 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<PgColumn> getColumns() {
         return Collections.unmodifiableList(columns);
+    }
+
+    @Override
+    public Stream<Pair<String, String>> getRelationColumns() {
+        Stream<Pair<String, String>> localColumns = columns.stream()
+                .filter(c -> c.getType() != null)
+                .map(c -> new Pair<>(c.getName(), c.getType()));
+        if (inherits.isEmpty()) {
+            return localColumns;
+        }
+
+        Stream<Pair<String, String>> inhColumns = Stream.empty();
+        for (Inherits inht : inherits) {
+            String schemaName = inht.getKey();
+            PgSchema inhtSchema = schemaName == null ? getContainingSchema()
+                    : getDatabase().getSchema(schemaName);
+            inhColumns = Stream.concat(inhColumns, inhtSchema
+                    .getTable(inht.getValue()).getRelationColumns());
+        }
+        return Stream.concat(inhColumns, localColumns);
     }
 
     /**

@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
  *
  * @author Alexander Levsha
  */
-public abstract class PgStatementWithSearchPath extends PgStatement {
+public abstract class PgStatementWithSearchPath extends PgStatement implements ISearchPath {
 
     public PgStatementWithSearchPath(String name, String rawStatement) {
         super(name, rawStatement);
@@ -22,6 +22,7 @@ public abstract class PgStatementWithSearchPath extends PgStatement {
                 PgDiffUtils.getQuotedName(getContainingSchema().getName()));
     }
 
+    @Override
     public abstract PgSchema getContainingSchema();
 
     @Override

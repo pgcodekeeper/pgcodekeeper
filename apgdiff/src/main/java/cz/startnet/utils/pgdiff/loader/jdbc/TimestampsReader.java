@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Object_identity_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class TimestampsReader implements PgCatalogStrings {
@@ -99,9 +98,8 @@ public class TimestampsReader implements PgCatalogStrings {
             List<IdentifierContext> object = ctx.schema_qualified_name().identifier();
             String schema = QNameParser.getSchemaNameCtx(object).getText();
             String name = QNameParser.getFirstName(object);
-            PgFunction func = new PgFunction(name, null);
-            ParserAbstract.fillArguments(ctx.function_args(), func, schema);
-            GenericColumn gc = new GenericColumn(schema, func.getName(), DbObjType.FUNCTION);
+            GenericColumn gc = new GenericColumn(schema, ParserAbstract
+                    .parseSignature(name, ctx.function_args()), DbObjType.FUNCTION);
             time.addObject(gc, objId, lastModified, author);
         }
     }

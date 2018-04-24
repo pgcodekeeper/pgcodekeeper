@@ -23,11 +23,11 @@ SELECT  p.oid::bigint,
         p.proallargtypes::bigint[],
         p.proargmodes,
         p.proargnames,
-        pg_catalog.pg_get_function_arguments(p.oid) AS proarguments,
-        pg_catalog.pg_get_function_identity_arguments(p.oid) AS proarguments_without_default,
         proacl::text AS aclarray,
         d.description AS comment,
-        p.proretset
+        p.proretset,
+        array(select pg_catalog.unnest(proargtypes))::bigint[] as argtypes,
+        pg_catalog.pg_get_expr(proargdefaults, 0) AS default_values_as_string
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang

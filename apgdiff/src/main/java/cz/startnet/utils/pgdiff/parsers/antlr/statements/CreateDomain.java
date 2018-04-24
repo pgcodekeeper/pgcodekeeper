@@ -1,15 +1,15 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -36,23 +36,37 @@ public class CreateDomain extends ParserAbstract {
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {
-            ValueExpr vex = new ValueExpr(schema.getName());
-            vex.analyze(new Vex(exp));
-            domain.addAllDeps(vex.getDepcies());
+            db.getContextsForAnalyze().add(new SimpleEntry<>(domain, exp));
             domain.setDefaultValue(getFullCtxText(exp));
         }
-        for (Domain_constraintContext constr : ctx.dom_constraint) {
-            PgConstraint consta = parseDomainConstraint(constr, schema.getName());
-            if (consta != null) {
-                domain.addConstraint(consta);
+        for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
+            Check_boolean_expressionContext boolExpCtx = constrCtx.common_constraint()
+                    .check_boolean_expression();
+            if (boolExpCtx != null) {
+                domain.addConstraint(processDomainConstraintCtx(constrCtx, boolExpCtx, domain, db));
             }
             // вынесено ограничение, т.к. мы привязываем ограничение на нул к
             // объекту а не создаем отдельный констрайнт
-            if (constr.common_constraint().null_value != null) {
-                domain.setNotNull(constr.common_constraint().null_false != null);
+            if (constrCtx.common_constraint().null_value != null) {
+                domain.setNotNull(constrCtx.common_constraint().null_false != null);
             }
         }
         schema.addDomain(domain);
         return domain;
+    }
+
+    public static PgConstraint processDomainConstraintCtx(Domain_constraintContext constrCtx,
+            Check_boolean_expressionContext boolExpCtx, PgDomain domain, PgDatabase db) {
+        PgConstraint constr = new PgConstraint(
+                constrCtx.name != null ? QNameParser.getFirstName(constrCtx.name.identifier()) : "",
+                        getFullCtxText(constrCtx));
+        parseDomainConstraint(domain, constr, boolExpCtx, db);
+        return constr;
+    }
+
+    public static void parseDomainConstraint(PgDomain domain, PgConstraint constr,
+            Check_boolean_expressionContext boolExpCtx, PgDatabase db) {
+        constr.setDefinition(getFullCtxText(boolExpCtx));
+        db.getContextsForAnalyze().add(new SimpleEntry<>(domain, boolExpCtx.expression));
     }
 }

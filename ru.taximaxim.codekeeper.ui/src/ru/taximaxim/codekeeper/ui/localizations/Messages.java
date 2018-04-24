@@ -722,6 +722,12 @@ public final class Messages extends NLS {
 
     public static String GetChanges_select_source_msg;
 
+    public static String GetSystemObjects_save_dialog_title;
+
+    public static String GetSystemObjects_save_success_message;
+
+    public static String GetSystemObjects_save_success_title;
+
     public static String GitUserReader_error_reading_local_changes;
 
     public static String JdbcPerfVersionsDynamic_jdbc_helper_error;

@@ -1,10 +1,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,7 +33,7 @@ public abstract class PgStatement implements IStatement {
     protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();
 
     private PgStatement parent;
-    protected final List<GenericColumn> deps = new ArrayList<>();
+    protected final Set<GenericColumn> deps = new LinkedHashSet<>();
 
     private String location;
     private boolean isLib;
@@ -103,8 +101,8 @@ public abstract class PgStatement implements IStatement {
         this.parent = parent;
     }
 
-    public List<GenericColumn> getDeps() {
-        return Collections.unmodifiableList(deps);
+    public Set<GenericColumn> getDeps() {
+        return Collections.unmodifiableSet(deps);
     }
 
     public void addDep(GenericColumn dep){
@@ -454,5 +452,10 @@ public abstract class PgStatement implements IStatement {
             ? new ObjectCreationException(newSt, foundParent)
                     : new ObjectCreationException(newSt);
         }
+    }
+
+    @Override
+    public DbObjNature getStatementNature() {
+        return DbObjNature.USER;
     }
 }

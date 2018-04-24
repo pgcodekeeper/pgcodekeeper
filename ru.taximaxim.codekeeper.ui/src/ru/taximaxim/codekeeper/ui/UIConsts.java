@@ -147,6 +147,7 @@ public interface UIConsts {
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
         String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
         String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
+        String STORAGE_LIST = "storageList"; //$NON-NLS-1$
     }
 
     interface PROJ_PATH {
@@ -252,3 +253,4 @@ public interface UIConsts {
             "windows-1252" //$NON-NLS-1$
             ));
 }
+

@@ -96,6 +96,12 @@
         </command>
         <command
               categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
+              id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
+              name="%command.commandname.GetSystemObjects">
+        </command>        
+        <command
+              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
               id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
               name="%command.commandname.CancelDdl">
         </command>
@@ -409,6 +415,15 @@
                 </menu>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator4"
+                    visible="true">
+                </separator>
+                <command
+                    commandId="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
+                    label="%command.commandname.GetSystemObjects"
+                    style="push">
+                </command>
+                <separator
+                    name="ru.taximaxim.codekeeper.ui.separator5"
                     visible="true">
                 </separator>
                 <command
@@ -787,6 +802,14 @@
                 </and>
             </enabledWhen>
         </page>
+        <!--
+        <page
+              category="ru.taximaxim.codekeeper.ui.proj_properties"
+              class="ru.taximaxim.codekeeper.ui.properties.SystemObjectProperties"
+              id="ru.taximaxim.codekeeper.ui.proj_objects"
+              name="PostgreSQL system objects">
+        </page>
+         -->
     </extension>
     <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector

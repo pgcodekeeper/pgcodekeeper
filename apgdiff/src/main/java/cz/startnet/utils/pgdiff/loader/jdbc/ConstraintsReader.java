@@ -4,8 +4,7 @@ import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -38,12 +37,13 @@ public class ConstraintsReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString(CLASS_RELNAME));
         if (table != null) {
-            table.addConstraint(getConstraint(result, schema.getName(), table.getName()));
+            table.addConstraint(getConstraint(result, schema, table.getName()));
         }
     }
 
-    private PgConstraint getConstraint(ResultSetWrapper res, String schemaName, String tableName)
+    private PgConstraint getConstraint(ResultSetWrapper res, PgSchema schema, String tableName)
             throws WrapperAccessException {
+        String schemaName = schema.getName();
         String contype = res.getString("contype");
 
         String constraintName = res.getString("conname");
@@ -64,14 +64,9 @@ public class ConstraintsReader extends JdbcReader {
 
         String definition = res.getString("definition");
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
-                p -> p.sql().statement(0).schema_statement().schema_alter().alter_table_statement()
-                .table_action(0), ctx -> {
-                    Constr_bodyContext body = ctx.tabl_constraint.constr_body();
-                    ParserAbstract.parseConstraintExpr(body, schemaName, c);
-                    c.setDefinition(ParserAbstract.getFullCtxText(body));
-                    c.setNotValid(ctx.not_valid != null);
-                });
-
+                p -> p.sql().statement(0).schema_statement().schema_alter()
+                .alter_table_statement().table_action(0),
+                ctx -> AlterTable.parseAlterTableConstraint(ctx, c, schema.getDatabase()));
 
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {

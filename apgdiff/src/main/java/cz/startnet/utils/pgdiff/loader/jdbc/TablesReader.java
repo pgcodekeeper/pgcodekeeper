@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PartitionForeignPgTable;
@@ -41,12 +40,13 @@ public class TablesReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgTable table = getTable(result, schema.getName());
+        PgTable table = getTable(result, schema);
         loader.monitor.worked(1);
         schema.addTable(table);
     }
 
-    private PgTable getTable(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgTable getTable(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
@@ -83,7 +83,7 @@ public class TablesReader extends JdbcReader {
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
         loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
 
-        readColumns(res, t, ofTypeOid, schemaName);
+        readColumns(res, t, ofTypeOid, schema);
 
         // INHERITS
         String[] inhrelnames = res.getArray("inhrelnames", String.class);
@@ -150,7 +150,7 @@ public class TablesReader extends JdbcReader {
     }
 
     private void readColumns(ResultSetWrapper res, PgTable t, long ofTypeOid,
-            String schemaName) throws WrapperAccessException {
+            PgSchema schema) throws WrapperAccessException {
         String[] colNames = res.getArray("col_names", String.class);
         if (colNames == null) {
             return;
@@ -219,11 +219,9 @@ public class TablesReader extends JdbcReader {
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()) {
                 column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault, p -> {
-                    ValueExpr vex = new ValueExpr(schemaName);
-                    vex.analyze(new Vex(p.vex_eof().vex()));
-                    return vex.getDepcies();
-                }, column::addAllDeps);
+                loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
+                        ctx -> schema.getDatabase().getContextsForAnalyze()
+                        .add(new SimpleEntry<>(column, ctx)));
             }
 
             if (colNotNull[i]) {

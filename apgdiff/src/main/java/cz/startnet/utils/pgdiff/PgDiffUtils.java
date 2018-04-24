@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -102,6 +103,7 @@ public final class PgDiffUtils {
         return name.substring(1, name.length() - 1).replace("\"\"", "\"");
     }
 
+    // TODO dollar quotes
     public static String unquoteQuotedString(String s) {
         return s.substring(1, s.length() - 1).replace("''", "'");
     }
@@ -297,6 +299,10 @@ public final class PgDiffUtils {
 
     public static boolean isStringNotEmpty(String input) {
         return input != null && !input.isEmpty();
+    }
+
+    public static <T> Iterable<T> sIter(Stream<T> stream) {
+        return (Iterable<T>)stream::iterator;
     }
 
     private PgDiffUtils() {

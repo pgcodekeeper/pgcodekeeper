@@ -10,8 +10,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -37,6 +40,8 @@ public class PgDatabase extends PgStatement {
     private final Map<String, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<String, List<PgObjLocation>> objReferences = new HashMap<>();
+    // Contains PgStatement's contexts for analysis (for getting dependencies).
+    private final List<Entry<PgStatement, ParserRuleContext>> contextsForAnalyze = new ArrayList<>();
 
     private PgDiffArguments arguments;
 
@@ -94,6 +99,10 @@ public class PgDatabase extends PgStatement {
 
     public Map<String, List<PgObjLocation>> getObjReferences() {
         return objReferences;
+    }
+
+    public List<Entry<PgStatement, ParserRuleContext>> getContextsForAnalyze() {
+        return contextsForAnalyze;
     }
 
     public void setDbTimestamp(DBTimestamp dbTimestamp) {

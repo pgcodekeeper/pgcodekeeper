@@ -1,16 +1,15 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -34,13 +33,15 @@ public class TypesReader extends JdbcReader {
         }
     }
 
+    static final String ADD_CONSTRAINT = "ALTER DOMAIN noname ADD CONSTRAINT noname ";
+
     private TypesReader(JdbcReaderFactory factory, JdbcLoaderBase loader) {
         super(factory, loader);
     }
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgStatement typeOrDomain = getTypeDomain(result, schema.getName());
+        PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
             if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
                 schema.addDomain((PgDomain) typeOrDomain);
@@ -50,13 +51,13 @@ public class TypesReader extends JdbcReader {
         }
     }
 
-    private PgStatement getTypeDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgStatement getTypeDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
         PgStatement st;
         String typtype = res.getString("typtype");
         if ("d".equals(typtype)) {
-            st = getDomain(res, schemaName);
+            st = getDomain(res, schema);
         } else {
-            st = getType(res, schemaName, typtype);
+            st = getType(res, schema.getName(), typtype);
         }
         if (st != null) {
             loader.setOwner(st, res.getLong("typowner"));
@@ -69,7 +70,8 @@ public class TypesReader extends JdbcReader {
         return st;
     }
 
-    private PgDomain getDomain(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgDomain getDomain(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
@@ -82,6 +84,8 @@ public class TypesReader extends JdbcReader {
                     + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
         }
 
+        PgDatabase dataBase = schema.getDatabase();
+
         String def = res.getString("dom_defaultbin");
         if (def == null) {
             def = res.getString("typdefault");
@@ -89,14 +93,11 @@ public class TypesReader extends JdbcReader {
                 def = PgDiffUtils.quoteString(def);
             }
         } else {
-            loader.submitAntlrTask(def, p -> {
-                ValueExpr vex = new ValueExpr(schemaName);
-                vex.analyze(new Vex(p.vex_eof().vex()));
-                return vex.getDepcies();
-            }, d::addAllDeps);
+            loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
+                    ctx -> dataBase.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
         }
-        d.setDefaultValue(def);
 
+        d.setDefaultValue(def);
         d.setNotNull(res.getBoolean("dom_notnull"));
 
         String[] connames = res.getArray("dom_connames", String.class);
@@ -106,14 +107,11 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < connames.length; ++i) {
                 PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ConstraintsReader.ADD_CONSTRAINT + condefs[i] + ';',
+                loader.submitAntlrTask(ADD_CONSTRAINT + condefs[i] + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
-                        .alter_table_statement().table_action(0), ctx -> {
-                            Constr_bodyContext body = ctx.tabl_constraint.constr_body();
-                            ParserAbstract.parseConstraintExpr(body, schemaName, c);
-                            c.setDefinition(ParserAbstract.getFullCtxText(body));
-                            c.setNotValid(ctx.not_valid != null);
-                        });
+                        .alter_domain_statement().dom_constraint.common_constraint()
+                        .check_boolean_expression(),
+                        ctx -> CreateDomain.parseDomainConstraint(d, c, ctx, dataBase));
 
                 d.addConstraint(c);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {

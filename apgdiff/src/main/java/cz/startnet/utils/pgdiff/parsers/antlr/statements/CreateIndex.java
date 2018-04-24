@@ -1,16 +1,16 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -32,23 +32,24 @@ public class CreateIndex extends ParserAbstract {
     public PgStatement getObject() {
         List<IdentifierContext> ids = ctx.table_name.identifier();
         PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        String schemaName = schema.getName();
         String name = ctx.name.getText();
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()));
         ind.setTableName(QNameParser.getFirstName(ctx.table_name.identifier()));
-        ind.setDefinition(parseIndex(ctx.index_rest(), tablespace, schema.getName(), ind));
+        parseIndex(ctx.index_rest(), tablespace, schemaName, ind, db);
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             getSafe(schema::getTable,
                     QNameParser.getFirstNameCtx(ctx.table_name.identifier())).addIndex(ind);
         }
 
-        ind.addDep(new GenericColumn(schema.getName(), ind.getTableName(), DbObjType.TABLE));
+        ind.addDep(new GenericColumn(schemaName, ind.getTableName(), DbObjType.TABLE));
 
         return ind;
     }
 
-    public static String parseIndex(Index_restContext rest, String tablespace,
-            String schemaName, PgIndex ind) {
+    public static void parseIndex(Index_restContext rest, String tablespace,
+            String schemaName, PgIndex ind, PgDatabase db){
         parseColumns(rest, schemaName, ind);
         StringBuilder sb = new StringBuilder();
         sb.append(ParserAbstract.getFullCtxText(rest.index_sort()));
@@ -58,13 +59,11 @@ public class CreateIndex extends ParserAbstract {
             sb.append(" TABLESPACE ").append(tablespace);
         }
         if (rest.index_where() != null){
-            // не считывает ссылки на колонки
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(rest.index_where().vex()));
-            ind.addAllDeps(vex.getDepcies());
-            sb.append(' ').append(ParserAbstract.getFullCtxText(rest.index_where()));
+            Index_whereContext whereCtx = rest.index_where();
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, whereCtx.vex()));
+            sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
-        return sb.toString();
+        ind.setDefinition(sb.toString());
     }
 
     // Костыль, т.к нужно улучшить парсер для vex в плане вычитки колонок

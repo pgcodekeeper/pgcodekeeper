@@ -28,7 +28,7 @@ object_identity_parser
   ;
 
 vex_eof
-  : vex EOF
+  : vex (COMMA vex)* EOF
   ;
 
 /******* END Start symbols *******/
@@ -628,7 +628,11 @@ function_parameters
     ;
 
 function_args
-    : LEFT_PAREN (function_arguments (COMMA function_arguments)*)? RIGHT_PAREN
+    : LEFT_PAREN (function_arguments (COMMA function_arguments)*)?  agg_order? RIGHT_PAREN
+    ;
+
+agg_order
+    : ORDER BY function_arguments (COMMA function_arguments)*
     ;
 
 character_string
@@ -1643,12 +1647,7 @@ unsigned_numeric_literal
 
 general_literal
   : character_string
-  | datetime_literal
   | truth_value
-  ;
-
-datetime_literal
-  : identifier character_string
   ;
 
 truth_value
@@ -1656,7 +1655,7 @@ truth_value
   ;
 
 case_expression
-  : CASE vex? (WHEN vex THEN vex)+ (ELSE r=vex)? END
+  : CASE vex? (WHEN vex THEN r+=vex)+ (ELSE r+=vex)? END
   ;
 
 cast_specification
@@ -1807,7 +1806,7 @@ with_clause
     ;
 
 with_query
-    : query_name=identifier (LEFT_PAREN column_name=identifier (COMMA column_name=identifier)* RIGHT_PAREN)?
+    : query_name=identifier (LEFT_PAREN column_name+=identifier (COMMA column_name+=identifier)* RIGHT_PAREN)?
             AS LEFT_PAREN (select_stmt | insert_stmt_for_psql | update_stmt_for_psql | delete_stmt_for_psql) RIGHT_PAREN
     ;
 

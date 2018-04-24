@@ -37,11 +37,12 @@ public class RulesReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgRuleContainer c = schema.getRuleContainer(contName);
         if (c != null) {
-            c.addRule(getRule(result, schema.getName(), contName));
+            c.addRule(getRule(result, schema, contName));
         }
     }
 
-    private PgRule getRule(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
+    private PgRule getRule(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String ruleName = res.getString("rulename");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, ruleName, DbObjType.RULE));
 
@@ -78,11 +79,9 @@ public class RulesReader extends JdbcReader {
             r.setEnabledState("DISABLE");
         }
 
-        loader.submitAntlrTask(command, p -> p.sql().statement(0).schema_statement()
-                .schema_create().create_rewrite_statement(), ctx -> {
-                    r.setCondition(CreateRewrite.getCondition(ctx, r, schemaName));
-                    CreateRewrite.setCommands(ctx, r, loader.args, schemaName);
-                });
+        loader.submitAntlrTask(command, p -> p.sql().statement(0)
+                .schema_statement().schema_create().create_rewrite_statement(),
+                ctx -> CreateRewrite.setConditionAndAddCommands(ctx, r, schema.getDatabase()));
 
         // COMMENT
         String comment = res.getString("comment");

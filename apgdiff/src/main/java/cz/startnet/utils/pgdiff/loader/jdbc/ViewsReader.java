@@ -1,14 +1,15 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
+import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
@@ -35,12 +36,13 @@ public class ViewsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
-        PgView view = getView(result, schema.getName());
+        PgView view = getView(result, schema);
         loader.monitor.worked(1);
         schema.addView(view);
     }
 
-    private PgView getView(ResultSetWrapper res, String schemaName) throws WrapperAccessException {
+    private PgView getView(ResultSetWrapper res, PgSchema schema) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String viewName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
@@ -59,11 +61,19 @@ public class ViewsReader extends JdbcReader {
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
-        loader.submitAntlrTask(viewDef, p -> {
-            Select sel = new Select(schemaName);
-            sel.analyze(p.sql().statement(0).data_statement().select_stmt());
-            return sel.getDepcies();
-        }, v::addAllDeps);
+        PgDatabase dataBase = schema.getDatabase();
+
+        loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
+                .select_stmt(),
+                ctx -> {
+                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+
+                    // collect basic FROM dependencies between VIEW objects themselves
+                    // to ensure correct order during the main analysis phase
+                    Select select = new Select(schemaName);
+                    select.analyze(new SelectStmt(ctx));
+                    v.addAllDeps(select.getDepcies());
+                });
 
         // OWNER
         loader.setOwner(v, res.getLong(CLASS_RELOWNER));
@@ -80,11 +90,10 @@ public class ViewsReader extends JdbcReader {
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
-                    loader.submitAntlrTask(colDefault, p -> {
-                        ValueExpr vex = new ValueExpr(schemaName);
-                        vex.analyze(new Vex(p.vex_eof().vex()));
-                        return vex.getDepcies();
-                    }, v::addAllDeps);
+                    loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
+                            ctx -> {
+                                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+                            });
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

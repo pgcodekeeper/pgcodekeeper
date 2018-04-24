@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -12,9 +13,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_deferrableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_initialy_immedContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Trigger_referencingContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.When_triggerContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExprWithNmspc;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -109,21 +109,19 @@ public class CreateTrigger extends ParserAbstract {
                 trigger.addDep(new GenericColumn(schemaName, trigger.getTableName(), col, DbObjType.COLUMN));
             }
         }
-        parseWhen(ctx.when_trigger(), trigger, schema.getName());
+        parseWhen(ctx.when_trigger(), trigger, db);
 
         getSafe(schema::getTriggerContainer, QNameParser.getFirstNameCtx(ctx.table_name.identifier()))
         .addTrigger(trigger);
         return trigger;
     }
 
-    public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger, String schemaName) {
+    public static void parseWhen(When_triggerContext whenCtx, PgTrigger trigger,
+            PgDatabase db) {
         if (whenCtx != null) {
-            ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName);
-            vex.addReference("new", null);
-            vex.addReference("old", null);
-            vex.analyze(new Vex(whenCtx.vex()));
-            trigger.addAllDeps(vex.getDepcies());
-            trigger.setWhen(getFullCtxText(whenCtx.when_expr));
+            VexContext vex = whenCtx.when_expr;
+            trigger.setWhen(getFullCtxText(vex));
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(trigger, vex));
         }
     }
 }

@@ -10,7 +10,6 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -75,9 +74,7 @@ public class CommentOn extends ParserAbstract {
 
         // function
         if (ctx.FUNCTION() != null) {
-            PgFunction func = new PgFunction(name, null);
-            fillArguments(ctx.function_args(), func, getDefSchemaName());
-            getSafe(schema::getFunction, func.getSignature(), nameCtx.getStart())
+            getSafe(schema::getFunction, parseSignature(name, ctx.function_args()), nameCtx.getStart())
             .setComment(db.getArguments(), comment);
             //extension
         }  else if (ctx.EXTENSION() != null) {

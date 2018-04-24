@@ -8,7 +8,9 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,12 +23,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgFunction extends PgStatementWithSearchPath {
+public class PgFunction extends PgStatementWithSearchPath implements IFunction {
 
     private String signatureCache;
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -107,6 +110,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     /**
      * @return the returns
      */
+    @Override
     public String getReturns() {
         return returns;
     }
@@ -117,6 +121,18 @@ public class PgFunction extends PgStatementWithSearchPath {
     public void setReturns(String returns) {
         this.returns = returns;
         resetHash();
+    }
+
+    /**
+     * @return unmodifiable RETURNS TABLE map
+     */
+    @Override
+    public Map<String, String> getReturnsColumns() {
+        return Collections.unmodifiableMap(returnsColumns);
+    }
+
+    public void addReturnsColumn(String name, String type) {
+        returnsColumns.put(name, type);
     }
 
     @Override
@@ -181,6 +197,7 @@ public class PgFunction extends PgStatementWithSearchPath {
      *
      * @return {@link #arguments}
      */
+    @Override
     public List<Argument> getArguments() {
         return Collections.unmodifiableList(arguments);
     }
@@ -261,96 +278,22 @@ public class PgFunction extends PgStatementWithSearchPath {
         return result;
     }
 
-    public static class Argument {
+    public class Argument extends AbstractArgument {
 
-        private String mode = "IN";
-        private String name;
-        private String dataType;
-        private String defaultExpression;
+        private static final long serialVersionUID = -4612717362596320139L;
 
-        public String getDataType() {
-            return dataType;
+        public Argument(String name, String dataType) {
+            super(name, dataType);
         }
 
-        public void setDataType(final String dataType) {
-            this.dataType = dataType;
+        public Argument(String mode, String name, String dataType) {
+            super(mode, name, dataType);
         }
 
-        public String getDefaultExpression() {
-            return defaultExpression;
-        }
-
+        @Override
         public void setDefaultExpression(final String defaultExpression) {
-            this.defaultExpression = defaultExpression;
-        }
-
-        public String getMode() {
-            return mode;
-        }
-
-        public void setMode(final String mode) {
-            this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-
-        public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder();
-
-            if (mode != null && !"IN".equalsIgnoreCase(mode)) {
-                sbString.append(mode);
-                sbString.append(' ');
-            }
-
-            if (name != null && !name.isEmpty() && includeArgName) {
-                sbString.append(PgDiffUtils.getQuotedName(name));
-                sbString.append(' ');
-            }
-
-            sbString.append(dataType);
-
-            if (includeDefaultValue && defaultExpression != null
-                    && !defaultExpression.isEmpty()) {
-                sbString.append(" = ");
-                sbString.append(defaultExpression);
-            }
-
-            return sbString.toString();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-
-            if(this == obj) {
-                eq = true;
-            } else if(obj instanceof Argument) {
-                final Argument arg = (Argument) obj;
-                eq = Objects.equals(dataType, arg.getDataType())
-                        && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                        && Objects.equals(mode, arg.getMode())
-                        && Objects.equals(name, arg.getName());
-            }
-
-            return eq;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-            result = prime * result
-                    + ((defaultExpression == null) ? 0 : defaultExpression.hashCode());
-            result = prime * result + ((mode == null) ? 0 : mode.hashCode());
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            return result;
+            super.setDefaultExpression(defaultExpression);
+            resetHash();
         }
     }
 
@@ -359,13 +302,11 @@ public class PgFunction extends PgStatementWithSearchPath {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
+        functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
-            Argument argDst = new Argument();
-            argDst.setName(argSrc.getName());
-            argDst.setMode(argSrc.getMode());
-            argDst.setDataType(argSrc.getDataType());
+            Argument argDst = functionDst.new Argument(argSrc.getMode(), argSrc.getName(), argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }

@@ -1,6 +1,8 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+
 import java.text.MessageFormat;
+import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
@@ -9,12 +11,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -59,9 +61,13 @@ public class CreateView extends ParserAbstract {
             ctx = AntlrParser.makeBasicParser(SQLParser.class, sql, "recursive view").sql()
                     .statement(0).schema_statement().schema_create().create_view_statement();
         }
-        if (ctx.v_query != null) {
-            view.setQuery(getFullCtxText(ctx.v_query));
-            UtilExpr.analyze(new SelectStmt(ctx.v_query), new Select(schema.getName()), view);
+        Select_stmtContext vQuery = ctx.v_query;
+        if (vQuery != null) {
+            view.setQuery(getFullCtxText(vQuery));
+            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
+            Select select = new Select(schema.getName());
+            select.analyze(new SelectStmt(vQuery));
+            view.addAllDeps(select.getDepcies());
         }
         if (ctx.column_name != null) {
             for (Schema_qualified_nameContext column : ctx.column_name.names_references().name) {

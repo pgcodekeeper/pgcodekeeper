@@ -66,7 +66,7 @@ public class CreateTable extends AbstractTable {
             table = defineType(typeCtx, tableName, rawStatement, schemaName);
         } else if (colCtx != null) {
             table = fillRegularTable(new SimplePgTable(tableName, rawStatement));
-            fillColumns(colCtx, table, schemaName);
+            fillColumns(colCtx, table);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillRegularTable(new PartitionPgTable(tableName, rawStatement, partBound));
@@ -77,15 +77,14 @@ public class CreateTable extends AbstractTable {
         return table;
     }
 
-    private void fillColumns(Define_columnsContext columnsCtx, PgTable table, String schemaName) {
+    private void fillColumns(Define_columnsContext columnsCtx, PgTable table) {
         for (Table_column_defContext colCtx : columnsCtx.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                table.addConstraint(getTableConstraint(colCtx.tabl_constraint, schemaName));
+                addTableConstraint(colCtx.tabl_constraint, table);
             } else if (colCtx.table_column_definition() != null) {
                 Table_column_definitionContext column = colCtx.table_column_definition();
-                addColumn(column.column_name.getText(),
-                        column.datatype, column.collate_name,
-                        column.colmn_constraint, getDefSchemaName(), table);
+                addColumn(column.column_name.getText(), column.datatype,
+                        column.collate_name, column.colmn_constraint, table);
             }
         }
 

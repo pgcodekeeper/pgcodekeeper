@@ -10,27 +10,20 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Check_boolean_expressionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Common_constraintContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constr_bodyContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.UnresolvedReferenceException;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.IStatement;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -81,64 +74,15 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    public static void fillArguments(Function_argsContext functionArgsCtx,
-            PgFunction function, String defSchemaName) {
-        for (Function_argumentsContext argument : functionArgsCtx.function_arguments()) {
-            PgFunction.Argument arg = new PgFunction.Argument();
-            if (argument.argname != null) {
-                arg.setName(argument.argname.getText());
-            }
-            arg.setDataType(getFullCtxText(argument.argtype_data));
-            addTypeAsDepcy(argument.data_type(), function, defSchemaName);
-
-            if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-                VexContext defExpression = argument.function_def_value().def_value;
-                ValueExpr vex = new ValueExpr(defSchemaName);
-                vex.analyze(new Vex(defExpression));
-                function.addAllDeps(vex.getDepcies());
-            }
-            if (argument.arg_mode != null) {
-                arg.setMode(argument.arg_mode.getText());
-            }
+    public static String parseSignature(String name, Function_argsContext argsContext) {
+        PgFunction function = new PgFunction(name, null);
+        for (Function_argumentsContext argument : argsContext.function_arguments()) {
+            Argument arg = function.new Argument(argument.arg_mode != null ? argument.arg_mode.getText() : null,
+                    argument.argname != null ? argument.argname.getText() : null,
+                            getFullCtxText(argument.argtype_data));
             function.addArgument(arg);
         }
-    }
-
-    public static void parseConstraintExpr(Constr_bodyContext ctx, String schemaName,
-            PgConstraint constr) {
-        VexContext exp = null;
-        Common_constraintContext common = ctx.common_constraint();
-        Check_boolean_expressionContext check;
-        if (common != null && (check = common.check_boolean_expression()) != null) {
-            exp = check.expression;
-        } else {
-            exp = ctx.vex();
-        }
-        if (exp != null) {
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constr.addAllDeps(vex.getDepcies());
-        }
-    }
-
-    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr, String schemaName) {
-        Check_boolean_expressionContext bool = constr.common_constraint().check_boolean_expression();
-        if (bool != null) {
-            String constrName = "";
-            if (constr.name != null) {
-                constrName = QNameParser.getFirstName(constr.name.identifier());
-            }
-            PgConstraint constraint = new PgConstraint(constrName,
-                    getFullCtxText(constr));
-            constraint.setDefinition(getFullCtxText(constr.common_constraint()));
-            VexContext exp = bool.expression;
-            ValueExpr vex = new ValueExpr(schemaName);
-            vex.analyze(new Vex(exp));
-            constraint.addAllDeps(vex.getDepcies());
-            return constraint;
-        }
-        return null;
+        return function.getSignature();
     }
 
     public static <T extends IStatement> T getSafe(Function <String, T> getter,

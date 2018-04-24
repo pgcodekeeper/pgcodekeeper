@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Delete_stmt_for_psqlContext;
@@ -7,6 +8,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
@@ -14,12 +17,12 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Delete(String schema) {
-        super(schema);
+    public Delete(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     @Override
-    public List<String> analyze(Delete_stmt_for_psqlContext delete) {
+    public List<Pair<String, String>> analyze(Delete_stmt_for_psqlContext delete) {
         With_clauseContext with = delete.with_clause();
         if (with != null) {
             analyzeCte(with);
@@ -38,6 +41,7 @@ public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
                 new ValueExpr(this).analyze(new Vex(vex));
             }
         }
-        return null;
+
+        return Collections.emptyList();
     }
 }

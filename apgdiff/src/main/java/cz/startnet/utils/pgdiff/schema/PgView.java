@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * Stores view information.
@@ -23,7 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  * @author fordfrog
  */
 public class PgView extends PgStatementWithSearchPath
-implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
+implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     private static final String CHECK_OPTION = "check_option";
     private String query;
@@ -36,6 +38,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
     private final List<PgTrigger> triggers = new ArrayList<>();
     private Boolean isWithData;
     private String tablespace;
+    private final List<Pair<String, String>> relationColumns = new ArrayList<>();
 
 
     @Override
@@ -126,6 +129,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
      */
     public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
+    }
+
+    @Override
+    public Stream<Pair<String, String>> getRelationColumns() {
+        return relationColumns.stream();
+    }
+
+    public void addRelationColumns(List<Pair<String, String>> relationColumns) {
+        this.relationColumns.addAll(relationColumns);
     }
 
     @Override
@@ -458,7 +470,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer {
                     && Objects.equals(columnComments, view.getColumnComments())
                     && Objects.equals(options, view.getOptions())
                     && Objects.equals(isWithData, view.isWithData())
-                    && Objects.equals(tablespace, view.getTablespace());;
+                    && Objects.equals(tablespace, view.getTablespace());
         }
 
         return eq;

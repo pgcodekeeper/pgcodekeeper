@@ -3,6 +3,8 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,9 +17,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 /**
  * @author levsha_aa
@@ -33,13 +37,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * String-null pairs keep track of internal query names that have only the
      * Alias.
      */
-    protected final Map<String, GenericColumn> namespace = new HashMap<>();
+    protected final Map<String, GenericColumn> namespace = new LinkedHashMap<>();
     /**
      * Unaliased namespace keeps track of tables that have no Alias.<br>
      * It has to be separate since same-named unaliased tables from different
      * schemas can be used, requiring qualification.
      */
-    protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
+    protected final Set<GenericColumn> unaliasedNamespace = new LinkedHashSet<>();
     /**
      * Column alias' are in a separate sets (per table) since they have two
      * values as the Key. This is not a Map because we don't connect column
@@ -47,14 +51,24 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * Columns of non-dereferenceable objects are aliases by default and need
      * not to be added to this set.
      */
+    // TODO Necessary to allow aliases for columns of 'SELECT'.
+    // In other words, it necessary have to think, how to make it
+    // to work with such expressions:
+    // SELECT (SELECT a.a) FROM (SELECT 1, 2, 3) a(a, b, c)
+    // SELECT (SELECT a.a) FROM (SELECT 1 z, 2 x, 3 c) a(a, b, c)
+    // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
     protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
-     * CTE names that current level of FROM has access to.
+     * CTEs that current level of FROM has access to stored as their names and signatures.
      */
-    protected final Set<String> cte = new HashSet<>();
+    protected final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
+    /**
+     * Non-table from items stored as their aliases and signatures.
+     */
+    protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
-    public AbstractExprWithNmspc(String schema) {
-        super(schema);
+    public AbstractExprWithNmspc(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     protected AbstractExprWithNmspc(AbstractExpr parent) {
@@ -62,14 +76,23 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected AbstractExprWithNmspc<?> findCte(String cteName) {
-        return cte.contains(cteName) ? this : super.findCte(cteName);
+    protected List<Pair<String, String>> findCte(String cteName) {
+        List<Pair<String, String>> pair = cte.get(cteName);
+        return pair != null ? pair : super.findCte(cteName);
     }
 
     @Override
     protected Entry<String, GenericColumn> findReference(String schema, String name, String column) {
         Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
         return ref == null ? super.findReference(schema, name, column) : ref;
+    }
+
+    @Override
+    protected List<Pair<String, String>> findReferenceComplex(String name) {
+        return complexNamespace.entrySet().stream()
+                .filter(p -> name.equals(p.getKey()))
+                .map(Entry::getValue)
+                .findAny().orElse(super.findReferenceComplex(name));
     }
 
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
@@ -167,29 +190,34 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         List<IdentifierContext> ids = name.identifier();
         String firstName = QNameParser.getFirstName(ids);
 
-        boolean isCte = ids.size() == 1 && hasCte(firstName);
+        List<Pair<String, String>> cteList = null;
+        if (ids.size() == 1) {
+            cteList = findCte(firstName);
+        }
         GenericColumn depcy = null;
-        if (!isCte) {
-            depcy = addObjectDepcy(ids, DbObjType.TABLE);
+        if (cteList == null) {
+            depcy = addRelationDepcy(ids);
         }
 
         if (alias != null) {
             String aliasName = alias.getText();
             boolean added = addReference(aliasName, depcy);
-            if (!added && !isCte && columnAliases != null && !columnAliases.isEmpty()) {
+            if (!added && cteList == null && columnAliases != null && !columnAliases.isEmpty()) {
                 for (IdentifierContext columnAlias : columnAliases) {
                     addColumnReference(aliasName, columnAlias.getText());
                 }
+            } else if (cteList != null) {
+                complexNamespace.put(aliasName, cteList);
             }
-        } else if (isCte) {
+        } else if (cteList != null) {
             addReference(firstName, null);
+            complexNamespace.put(firstName, cteList);
         } else {
             addRawTableReference(depcy);
         }
     }
 
     protected void analyzeCte(With_clauseContext with) {
-        boolean recursive = with.RECURSIVE() != null;
         for (With_queryContext withQuery : with.with_query()) {
             String withName = withQuery.query_name.getText();
 
@@ -199,22 +227,21 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
                 continue;
             }
 
-            // add CTE name to the visible CTEs list after processing the query for normal CTEs
-            // and before for recursive ones
-            Select withProcessor = new Select(this);
-            boolean duplicate;
-            if (recursive) {
-                duplicate = !cte.add(withName);
-                withProcessor.analyze(withSelect);
-            } else {
-                withProcessor.analyze(withSelect);
-                duplicate = !cte.add(withName);
-            }
-            if (duplicate) {
+            if (addCteSignature(withQuery,
+                    new Select(this).analyze(new SelectStmt(withSelect), withQuery))) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
     }
 
-    public abstract List<String> analyze(T ruleCtx);
+    protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
+        String withName = withQuery.query_name.getText();
+        List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
+        for (int i = 0;  i < paramNamesIdentifers.size(); ++i) {
+            resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
+        }
+        return cte.put(withName, resultTypes) != null;
+    }
+
+    public abstract List<Pair<String, String>> analyze(T ruleCtx);
 }

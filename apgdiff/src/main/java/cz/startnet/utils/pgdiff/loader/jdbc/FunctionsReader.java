@@ -1,13 +1,19 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.Arrays;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IArgument;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.wrappers.ResultSetWrapper;
 import cz.startnet.utils.pgdiff.wrappers.WrapperAccessException;
@@ -43,29 +49,61 @@ public class FunctionsReader extends JdbcReader {
 
         f.setBody(loader.args, getFunctionBody(res, schemaName));
 
-        // RETURN TYPE
+        // OWNER
+        loader.setOwner(f, res.getLong("proowner"));
 
-        boolean returnsTable = false;
-        StringBuilder returnedTableArguments = new StringBuilder();
-        String[] argModes = res.getArray("proargmodes", String.class);
-        if (argModes != null && Arrays.asList(argModes).contains("t")) {
-            String[] argNames = res.getArray("proargnames", String.class);
-            Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
-            for (int i = 0; i < argModes.length; i++) {
-                String type = argModes[i];
-                if ("t".equals(type)) {
-                    returnsTable = true;
-                    returnedTableArguments.append(returnedTableArguments.length() > 0 ? ", " : "");
-                    returnedTableArguments.append(PgDiffUtils.getQuotedName(argNames[i])).append(" ");
-
-                    JdbcType returnType = loader.cachedTypesByOid.get(argTypeOids[i]);
-                    returnedTableArguments.append(returnType.getFullName(schemaName));
-                    returnType.addTypeDepcy(f);
-                }
-            }
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()) {
+            f.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
-        if (returnsTable) {
+        StringBuilder returnedTableArguments = new StringBuilder();
+        String[] argModes = res.getArray("proargmodes", String.class);
+        String[] argNames = res.getArray("proargnames", String.class);
+        Long[] argTypeOids = res.getArray("proallargtypes", Long.class);
+
+        Long[] argTypes = argTypeOids != null ? argTypeOids : res.getArray("argtypes", Long.class);
+        for (int i = 0; argTypes.length > i; i++) {
+            String aMode = argModes != null ? argModes[i] : "i";
+
+            JdbcType returnType = loader.cachedTypesByOid.get(argTypes[i]);
+            returnType.addTypeDepcy(f);
+
+            if("t".equals(aMode)) {
+                String name = argNames[i];
+                String type = returnType.getFullName(schemaName);
+                returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
+                .append(type).append(", ");
+                f.addReturnsColumn(argNames[i], type);
+                continue;
+            }
+
+            switch(aMode) {
+            case "i":
+                aMode = "IN";
+                break;
+            case "o":
+                aMode = "OUT";
+                break;
+            case "b":
+                aMode = "INOUT";
+                break;
+            case "v":
+                aMode = "VARIADIC";
+                break;
+            }
+
+            Argument a = f.new Argument(aMode,
+                    argNames != null ? argNames[i] : null,
+                            loader.cachedTypesByOid.get(argTypes[i]).getFullName(schemaName));
+
+            f.addArgument(a);
+        }
+
+        // RETURN TYPE
+        if (returnedTableArguments.length() != 0) {
+            returnedTableArguments.setLength(returnedTableArguments.length() - 2);
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         } else {
             JdbcType returnType = loader.cachedTypesByOid.get(res.getLong("prorettype"));
@@ -74,39 +112,33 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
         }
 
-        // OWNER
-        loader.setOwner(f, res.getLong("proowner"));
+        String defaultValuesAsString = res.getString("default_values_as_string");
+        if (defaultValuesAsString != null) {
+            loader.submitAntlrTask(defaultValuesAsString, SQLParser::vex_eof,
+                    ctx -> {
+                        List<VexContext> vexCtxList = ctx.vex();
+                        ListIterator<VexContext> vexCtxListIterator = vexCtxList.listIterator(vexCtxList.size());
+
+                        for (int i = (f.getArguments().size() - 1); i >= 0; i--) {
+                            if (!vexCtxListIterator.hasPrevious()) {
+                                break;
+                            }
+                            IArgument a = f.getArguments().get(i);
+                            if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
+                                VexContext vx = vexCtxListIterator.previous();
+                                a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
+                                schema.getDatabase().getContextsForAnalyze()
+                                .add(new AbstractMap.SimpleEntry<>(f, vx));
+                            }
+                        }
+                    });
+        }
 
         // PRIVILEGES
-        String signatureWithoutDefaults = PgDiffUtils.getQuotedName(functionName) + "(" +
-                res.getString("proarguments_without_default") + ")";
-        loader.setPrivileges(f, signatureWithoutDefaults, res.getString("aclarray"), f.getOwner(), null);
+        loader.setPrivileges(f, f.appendFunctionSignature(new StringBuilder(), false, true).toString(),
+                res.getString("aclarray"), f.getOwner(), null);
 
-        // COMMENT
-        String comment = res.getString("comment");
-        if (comment != null && !comment.isEmpty()) {
-            f.setComment(loader.args, PgDiffUtils.quoteString(comment));
-        }
-
-        // ARGUMENTS
-        // TODO manually assemble function sig instead of parsing?
-        // NOTE though, performance is degraded when doing multiple parser calls (to parse defaults)
-        // Benchmark               Mode  Cnt       Score      Error  Units
-        // StupidTests.parseArgs  thrpt   20  115902.677 ± 1179.340  ops/s
-        // StupidTests.parseVex   thrpt   20  165616.367 ± 2195.409  ops/s
-        //
-        // This is the last one, because addFunction requires filled function arguments
-        String arguments = res.getString("proarguments");
-        if (!arguments.isEmpty()) {
-            loader.submitAntlrTask('(' + arguments + ')',
-                    p -> p.function_args_parser().function_args(),
-                    ctx -> {
-                        ParserAbstract.fillArguments(ctx, f, schemaName);
-                        schema.addFunction(f);
-                    });
-        } else {
-            schema.addFunction(f);
-        }
+        schema.addFunction(f);
     }
 
     private String getFunctionBody(ResultSetWrapper res, String schemaName) throws WrapperAccessException {

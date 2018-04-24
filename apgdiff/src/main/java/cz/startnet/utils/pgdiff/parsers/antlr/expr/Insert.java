@@ -1,10 +1,13 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
+import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Insert_stmt_for_psqlContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
 
@@ -12,12 +15,12 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
         super(parent);
     }
 
-    public Insert(String schema) {
-        super(schema);
+    public Insert(String schema, PgDatabase db) {
+        super(schema, db);
     }
 
     @Override
-    public List<String> analyze(Insert_stmt_for_psqlContext insert) {
+    public List<Pair<String, String>> analyze(Insert_stmt_for_psqlContext insert) {
         With_clauseContext with = insert.with_clause();
         if (with != null) {
             analyzeCte(with);
@@ -32,6 +35,7 @@ public class Insert extends AbstractExprWithNmspc<Insert_stmt_for_psqlContext> {
         if (select_ctx != null) {
             new Select(this).analyze(select_ctx);
         }
-        return null;
+
+        return Collections.emptyList();
     }
 }

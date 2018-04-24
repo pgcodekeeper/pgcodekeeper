@@ -49,11 +49,12 @@ public class TriggersReader extends JdbcReader {
         String contName = result.getString(CLASS_RELNAME);
         PgTriggerContainer c = schema.getTriggerContainer(contName);
         if (c != null) {
-            c.addTrigger(getTrigger(result, schema.getName(), contName));
+            c.addTrigger(getTrigger(result, schema, contName));
         }
     }
 
-    private PgTrigger getTrigger(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
+    private PgTrigger getTrigger(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName, "");
@@ -157,7 +158,7 @@ public class TriggersReader extends JdbcReader {
         String definition = res.getString("definition");
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
-                whenCtx -> CreateTrigger.parseWhen(whenCtx, t, schemaName));
+                ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));
 
         // COMMENT
         String comment = res.getString("comment");

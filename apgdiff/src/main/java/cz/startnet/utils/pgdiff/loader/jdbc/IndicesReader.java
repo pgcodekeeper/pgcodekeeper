@@ -35,13 +35,14 @@ public class IndicesReader extends JdbcReader {
     protected void processResult(ResultSetWrapper result, PgSchema schema) throws WrapperAccessException {
         PgTable table = schema.getTable(result.getString("table_name"));
         if (table != null) {
-            PgIndex index = getIndex(result, schema.getName(), table.getName());
+            PgIndex index = getIndex(result, schema, table.getName());
             loader.monitor.worked(1);
             table.addIndex(index);
         }
     }
 
-    private PgIndex getIndex(ResultSetWrapper res, String schemaName, String tableName) throws WrapperAccessException {
+    private PgIndex getIndex(ResultSetWrapper res, PgSchema schema, String tableName) throws WrapperAccessException {
+        String schemaName = schema.getName();
         String indexName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, indexName, DbObjType.INDEX));
         PgIndex i = new PgIndex(indexName, "");
@@ -49,9 +50,10 @@ public class IndicesReader extends JdbcReader {
 
         String tablespace = res.getString("table_space");
         loader.submitAntlrTask(res.getString("definition") + ';',
-                p -> CreateIndex.parseIndex(p.sql().statement(0).schema_statement()
-                        .schema_create().create_index_statement().index_rest(), tablespace,
-                        schemaName, i), i::setDefinition);
+                p -> p.sql().statement(0).schema_statement().schema_create()
+                .create_index_statement().index_rest(),
+                ctx -> CreateIndex.parseIndex(ctx, tablespace, schemaName, i,
+                        schema.getDatabase()));
 
         i.setClusterIndex(res.getBoolean("isclustered"));
         i.setUnique(res.getBoolean("indisunique"));

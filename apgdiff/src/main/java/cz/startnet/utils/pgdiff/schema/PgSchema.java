@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -19,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author fordfrog
  */
-public class PgSchema extends PgStatement {
+public class PgSchema extends PgStatement implements ISchema {
 
     private final List<PgDomain> domains = new ArrayList<>();
     private final List<PgFunction> functions = new ArrayList<>();
@@ -134,6 +135,7 @@ public class PgSchema extends PgStatement {
      *
      * @return found function or null if no such function has been found
      */
+    @Override
     public PgFunction getFunction(final String signature) {
         for (PgFunction function : functions) {
             if (function.getSignature().equals(signature)) {
@@ -145,12 +147,28 @@ public class PgSchema extends PgStatement {
     }
 
     /**
+     * @return found relation or null if no such relation has been found
+     */
+    @Override
+    public IRelation getRelation(String name) {
+        return getRelations().filter(rel -> rel.getName().equals(name))
+                .findAny().orElse(null);
+    }
+
+    /**
      * Getter for {@link #functions}. The list cannot be modified.
      *
      * @return {@link #functions}
      */
+    @Override
     public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
+    }
+
+    @Override
+    public Stream<IRelation> getRelations() {
+        return Stream.concat(Stream.concat(getTables().stream(), getViews().stream()),
+                getSequences().stream());
     }
 
     /**
@@ -321,10 +339,6 @@ public class PgSchema extends PgStatement {
         types.add(type);
         type.setParent(this);
         resetHash();
-    }
-
-    public boolean containsFunction(final String signature) {
-        return getFunction(signature) != null;
     }
 
     public boolean containsSequence(final String name) {
