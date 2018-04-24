@@ -546,14 +546,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return getIndex(name) != null;
     }
 
-    public boolean containsTrigger(String name) {
-        return getTrigger(name) != null;
-    }
-
-    public boolean containsRule(String name) {
-        return getRule(name) != null;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;

@@ -1,15 +1,13 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 
-@SuppressWarnings("deprecation")
-public class NavigatorOutlineSorter extends ViewerSorter {
+public class DisabledSorter extends ViewerComparator {
 
     @Override
     public void sort(Viewer viewer, Object[] elements) {
         // do no sorting
-        // NavigatorOutlineContentProvider provides ordered elements given by PgDbParser
     }
 
     @Override

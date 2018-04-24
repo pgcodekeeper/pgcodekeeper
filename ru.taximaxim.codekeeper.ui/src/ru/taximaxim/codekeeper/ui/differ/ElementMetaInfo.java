@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 public class ElementMetaInfo {
     private String gitUser;
     private String dbUser;
+    private String libLocation;
     private boolean isChanged;
 
     public void setGitUser(final String gitUser) {
@@ -28,5 +29,13 @@ public class ElementMetaInfo {
 
     public String getDbUser() {
         return dbUser == null ? "" : dbUser; //$NON-NLS-1$
+    }
+
+    public void setLibLocation(String libLocation) {
+        this.libLocation = libLocation;
+    }
+
+    public String getLibLocation() {
+        return libLocation;
     }
 }

@@ -13,7 +13,7 @@ black: SHOW ALL (NewLine+ hide_rule)*;
 
 hide_rule: HIDE rule_rest;
 show_rule: SHOW rule_rest;
-rule_rest: flags obj=identifier (DB db=identifier)?;
+rule_rest: flags obj=identifier (DB db=identifier)? (TYPE type+=identifier (COMMA type+=identifier)*)?;
 
 flags: flag (COMMA flag)*;
 flag: CONTENT | REGEX | NONE;
@@ -27,6 +27,7 @@ CONTENT: 'CONTENT';
 REGEX: 'REGEX';
 NONE: 'NONE';
 DB: 'db=';
+TYPE: 'type=';
 
 Identifier: [a-zA-Z_] [a-zA-Z_0-9]*;
 SQstring: '\'' ( ~('\'' | [\r\n]) | '\'\'' )* '\'' {

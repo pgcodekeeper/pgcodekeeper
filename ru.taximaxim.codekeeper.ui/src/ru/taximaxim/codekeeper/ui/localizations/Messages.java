@@ -185,6 +185,8 @@ public final class Messages extends NLS {
 
     public static String ignoredObjectPrefListEditor_regular;
 
+    public static String ignoredObjectPrefListEditor_type;
+
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
@@ -300,7 +302,13 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_database;
+
     public static String DiffTableViewer_db_user;
+
+    public static String DiffTableViewer_directory;
+
+    public static String DiffTableViewer_dump;
 
     public static String DiffTableViewer_error_reading_git_history;
 
@@ -308,6 +316,10 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+
+    public static String DiffTableViewer_library;
+
+    public static String DiffTableViewer_path;
 
     public static String DiffTableViewer_reading_git_history;
 
@@ -321,6 +333,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_to_database;
 
     public static String DiffTableViewer_to_project;
+
+    public static String DiffTableViewer_type;
 
     public static String DiffTableViewer_user;
 
@@ -421,6 +435,10 @@ public final class Messages extends NLS {
     public static String MockDataWizard_create_data;
 
     public static String MockDataWizard_create_data_table;
+
+    public static String NavigationLibrariesActionProvider_failed_to_open_library;
+
+    public static String NavigationLibrariesActionProvider_open_library;
 
     public static String NavigatorRootActionProvider_open_action;
 
@@ -562,6 +580,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorDiffer_lib_change_warning_title;
 
+    public static String ProjectEditorDiffer_library_duplication_exception;
+
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
@@ -580,6 +600,16 @@ public final class Messages extends NLS {
     public static String ProjectEditorPrefPage_show_db_user;
 
     public static String ProjectEditorPrefPage_show_git_user;
+
+    public static String ProjectOverrideView_link_with_editor;
+
+    public static String ProjectOverrideView_new_location;
+
+    public static String ProjectOverrideView_old_location;
+
+    public static String ProjectOverrideView_open_new_location;
+
+    public static String ProjectOverrideView_open_old_location;
 
     public static String dbUpdatePrefPage_script_deleting_status;
 
@@ -664,6 +694,8 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_only_local_changes;
 
+    public static String FilterDialog_only_non_library_objects;
+
     public static String FilterDialog_reset;
 
     public static String FilterDialog_schema_filter_placeholder;
@@ -702,6 +734,8 @@ public final class Messages extends NLS {
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String LibraryContainer_root;
 
     public static String UsageReport_Reporting_Usage;
     public static String UsageReport_Querying_Enablement;
