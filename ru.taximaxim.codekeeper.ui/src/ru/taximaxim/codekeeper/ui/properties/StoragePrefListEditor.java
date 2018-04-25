@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 public class StoragePrefListEditor extends PrefListEditor<String, ListViewer> {
 
     public StoragePrefListEditor(Composite parent) {
-        super(parent, true, false, true);
+        super(parent);
     }
 
     @Override

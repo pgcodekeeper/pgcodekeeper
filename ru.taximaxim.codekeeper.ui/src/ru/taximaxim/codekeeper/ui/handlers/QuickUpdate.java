@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,6 +22,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -32,7 +35,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -64,6 +66,15 @@ public class QuickUpdate extends AbstractHandler {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
         }
+
+        if (dbInfo.isReadOnly()) {
+            MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+            mb.setText(Messages.UpdateDdl_read_only_db_title);
+            mb.setMessage(Messages.UpdateDdl_read_only_db_message);
+            mb.open();
+            return null;
+        }
+
         String text = editor.getEditorText();
         if (text.trim().isEmpty()) {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_empty_script, null);
@@ -181,14 +192,15 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
-        JdbcRunner runner = new JdbcRunner(new JdbcConnector(
-                dbinfo.getDbHost(), dbinfo.getDbPort(),
-                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                ApgdiffConsts.UTF_8));
-        String result = runner.runScript(differ.getDiffDirect());
 
-        if(!JDBC_CONSTS.JDBC_SUCCESS.equals(result)) {
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + result);
+        JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
+                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
+                ApgdiffConsts.UTF_8);
+
+        try {
+            new JdbcRunner(monitor).run(connector, differ.getDiffDirect());
+        } catch (SQLException e) {
+            throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
 
         checkFileModified();

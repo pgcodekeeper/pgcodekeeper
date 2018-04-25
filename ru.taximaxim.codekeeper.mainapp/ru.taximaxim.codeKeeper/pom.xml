@@ -40,11 +40,9 @@ to update all relevant poms and metadatas
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
         <module>../../ru.taximaxim.codekeeper.cli</module>
         <module>../../ru.taximaxim.codekeeper.cli.tests</module>
-        <module>../../ru.taximaxim.codekeeper.ui.help</module>
         <module>../feature</module>
         <module>../updatesite</module>
         <module>../product</module>
-        <module>../productinfocenter</module>
     </modules>
 
     <prerequisites>
@@ -105,6 +103,7 @@ to update all relevant poms and metadatas
             </activation>
             <modules>
                 <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.tests</module>
+                <module>../../../codekeeper-internal/ru.taximaxim.codekeeper.internal.ui.tests</module>
             </modules>
         </profile>
     </profiles>

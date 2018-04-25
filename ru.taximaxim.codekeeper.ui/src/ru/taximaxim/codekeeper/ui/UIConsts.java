@@ -10,7 +10,6 @@ public interface UIConsts {
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
-        String HELP = THIS + ".help"; //$NON-NLS-1$
     }
 
     interface PERSPECTIVE {
@@ -142,14 +141,9 @@ public interface UIConsts {
         String FORCE_UNIX_NEWLINES = "prefForceUnixNewlines"; //$NON-NLS-1$
         String LAST_DB_STORE = "prefLastDbStore"; //$NON-NLS-1$
         String LAST_DB_STORE_EDITOR = "prefLastDbStoreEditor"; //$NON-NLS-1$
+        String DISABLE_PARSER_IN_EXTERNAL_FILES = "disableParserInExternalFiles"; //$NON-NLS-1$
+        String LIB_SAFE_MODE = "libSafeMode"; //$NON-NLS-1$
         String STORAGE_LIST = "storageList"; //$NON-NLS-1$
-        /*
-        String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String DB_NAME = "prefDbName"; //$NON-NLS-1$
-        String DB_HOST = "prefDbHost"; //$NON-NLS-1$
-        String DB_PORT = "prefDbPort"; //$NON-NLS-1$
-        String DB_USER = "prefDbUser"; //$NON-NLS-1$
-         */
     }
 
     interface PROJ_PATH {
@@ -162,15 +156,6 @@ public interface UIConsts {
 
     interface BUILDER {
         String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
-    }
-
-    interface HELP {
-        String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
-        String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
-        String NEW_WIZARD = PLUGIN_ID.HELP + ".project_initializer"; //$NON-NLS-1$
-        String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
-        String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
-        String DIALOG_UPDATE_PROJECT = PLUGIN_ID.HELP + ".update_project_dialog"; //$NON-NLS-1$
     }
 
     interface FILE {
@@ -186,6 +171,7 @@ public interface UIConsts {
         String ICONFROMPROJECT = "/icons/arrow_left_blue.png"; //$NON-NLS-1$
         String ICONFROMREMOTE = "/icons/arrow_right_green.png"; //$NON-NLS-1$
         String ICONADDDEP = "/icons/add_dep.png"; //$NON-NLS-1$
+        String PGPASS = "/icons/pg_pass.png"; //$NON-NLS-1$
 
         // pgadmin icons
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$

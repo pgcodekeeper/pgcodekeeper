@@ -98,7 +98,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
@@ -107,6 +106,7 @@ import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
  * Use {@link #setChecked(TreeElement, boolean)} for any kind of checkbox work.
@@ -118,7 +118,7 @@ public class DiffTableViewer extends Composite {
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
-    private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    private static final ListXmlStore XML_HISTORY = new ListXmlStore(200, "fhistory.xml", "history", "element"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
     private boolean showDbUser;
@@ -279,9 +279,9 @@ public class DiffTableViewer extends Composite {
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
 
-        List<String> history = new LinkedList<>();
+        List<String> history = new ArrayList<>();
         try {
-            history = XML_HISTORY.getHistory();
+            history = XML_HISTORY.readObjects();
         } catch (IOException ex) {
             Log.log(ex);
         }
@@ -347,7 +347,7 @@ public class DiffTableViewer extends Composite {
                     if (text != null && !text.isEmpty()) {
                         XML_HISTORY.addHistoryEntry(text);
                     }
-                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    List<String> history = XML_HISTORY.readObjects();
                     scp.setProposals(history.toArray(new String[history.size()]));
                 } catch (IOException e) {
                     Log.log(e);
@@ -490,8 +490,8 @@ public class DiffTableViewer extends Composite {
         columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
         columnName = new TreeViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
         columnDbUser = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
@@ -899,6 +899,17 @@ public class DiffTableViewer extends Composite {
             }
         }
         return count;
+    }
+
+    public boolean checkLibChange() {
+        for (TreeElement el : elements) {
+            if (el.isSelected() && el.getSide() != DiffSide.RIGHT
+                    && el.getPgStatement(dbProject.getDbObject()).isLib()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void setElementsChecked(Collection<?> elements, boolean state,

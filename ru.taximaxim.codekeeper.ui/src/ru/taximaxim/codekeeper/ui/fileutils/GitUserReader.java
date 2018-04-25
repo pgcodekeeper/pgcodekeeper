@@ -61,6 +61,9 @@ public class GitUserReader implements AutoCloseable {
     public void parseLastChange(Map<String, List<ElementMetaInfo>> metas) {
         try (RevWalk r = new RevWalk(repo); DiffFormatter df = new DiffFormatter(NullOutputStream.INSTANCE);) {
             ObjectId head = repo.resolve(Constants.HEAD);
+            if (head == null) {
+                return;
+            }
 
             r.setRevFilter(RevFilter.NO_MERGES);
             r.markStart(r.lookupCommit(head));

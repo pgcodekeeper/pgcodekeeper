@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
@@ -33,6 +35,8 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public abstract class DbSource {
 
@@ -209,10 +213,19 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                project.getProject(),
-                getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null, er);
+        PgDiffArguments arguments = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
+                arguments, monitor, null, er);
+
+        arguments.setLibSafeMode(pref.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
+        for (PgLibrary dep : new DependenciesXmlStore(project).readObjects()) {
+            try {
+                db.addLib(PgDiff.getLibrary(dep.getPath(), arguments, dep.isIgnorePriv()));
+            } catch (URISyntaxException ex) {
+                throw new IOException(ex.getLocalizedMessage(), ex);
+            }
+        }
+
         errors = er;
         return db;
     }

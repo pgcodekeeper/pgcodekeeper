@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcQueries;
+import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
@@ -59,8 +60,10 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     protected Map<Long, JdbcType> cachedTypesByOid;
     protected long availableHelpersBits;
     protected SchemasContainer schemas;
-    protected int version = SupportedVersion.VERSION_9_2.getVersion();
+    protected int version;
+    private long lastSysOid;
     protected List<String> errors = new ArrayList<>();
+    protected JdbcRunner runner;
 
     protected final TimestampParam timestampParams = new TimestampParam();
 
@@ -68,6 +71,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         this.connector = connector;
         this.monitor = monitor;
         this.args = args;
+        this.runner = new JdbcRunner(monitor);
     }
 
     protected void setCurrentObject(GenericColumn currentObject) {
@@ -97,13 +101,13 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return sb.toString();
     }
 
-    protected void queryRoles() throws SQLException {
+    protected void queryRoles() throws SQLException, InterruptedException {
         if (args.isIgnorePrivileges()) {
             return;
         }
         cachedRolesNamesByOid = new HashMap<>();
         setCurrentOperation("roles query");
-        try (ResultSet res = statement.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")) {
+        try (ResultSet res = runner.runScript(statement, "SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")) {
             while (res.next()) {
                 cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
             }
@@ -160,8 +164,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     /*
      * See parseAclItem() in dumputils.c
      * For privilege characters see JdbcAclParser.PrivilegeTypes
-     * Order of all characters (for all types of objects combined)
-     * is given by order variable initialization
+     * Order of all characters (for all types of objects combined) : raxdtDXCcTUw
      */
     protected void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnName) {
@@ -169,7 +172,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             return;
         }
         String stType = null;
-        String order = "raxdtDXCcTUw";
+        String order;
         switch (st.getStatementType()) {
         case SEQUENCE:
             order = "rUw";
@@ -262,32 +265,37 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         return resultList.toString();
     }
 
-    protected void queryTypesForCache() throws SQLException {
+    protected void queryTypesForCache() throws SQLException, InterruptedException {
         cachedTypesByOid = new HashMap<>();
         setCurrentOperation("type cache query");
-        try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)) {
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)) {
             while (res.next()) {
                 long oid = res.getLong(OID);
                 JdbcType type = new JdbcType(oid, res.getString("typname"),
                         res.getLong("typelem"), res.getLong("typarray"),
-                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"));
+                        res.getString(NAMESPACE_NSPNAME), res.getString("elemname"), lastSysOid);
                 cachedTypesByOid.put(oid, type);
             }
         }
     }
 
-    protected void queryCheckVersion() throws SQLException {
+    protected void queryCheckVersion() throws SQLException, InterruptedException {
         setCurrentOperation("version checking query");
-        try (ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_VERSION)) {
-            while (res.next()) {
-                version = res.getInt(VERSION);
-            }
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
+            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_2.getVersion();
         }
     }
 
-    protected void setupMonitorWork() throws SQLException {
+    protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
+        setCurrentOperation("last system oid checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
+            lastSysOid = res.next() ? res.getLong(1) : 10_000;
+        }
+    }
+
+    protected void setupMonitorWork() throws SQLException, InterruptedException {
         setCurrentOperation("object count query");
-        try (ResultSet resCount = statement.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
+        try (ResultSet resCount = runner.runScript(statement, JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
             monitor.setWorkRemaining(resCount.next() ? resCount.getInt(1) : DEFAULT_OBJECTS_COUNT);
         }
     }
@@ -305,14 +313,6 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         while ((task = antlrTasks.poll()) != null) {
             task.finish();
         }
-    }
-
-    /**
-     * See: is_builtin(Oid objectId) in shippable.c
-     */
-    static boolean isBuiltin(long oid) {
-        final int firstBootstrapObjectId = 10000;
-        return oid < firstBootstrapObjectId;
     }
 
     protected static class TimestampParam {

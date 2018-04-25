@@ -18,11 +18,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -33,10 +31,10 @@ public class CommitDialog extends TrayDialog {
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
 
-    private final DbSource dbProject, dbRemote;
+    private final DbSource dbProject;
+    private final DbSource dbRemote;
     private final TreeElement diffTree;
     private final Set<TreeElement> depcyElementsSet;
-    private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
     private Label warningLbl;
@@ -80,7 +78,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        dtvTop = new DiffTableViewer(gTop, true, null, null);
+        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, null, null);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
@@ -129,7 +127,6 @@ public class CommitDialog extends TrayDialog {
             }
         });
         btnAutocommit.setEnabled(egitCommitAvailable);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.DIALOG_UPDATE_PROJECT);
         return area;
     }
 
@@ -147,6 +144,11 @@ public class CommitDialog extends TrayDialog {
             }
         }
         return res;
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     /**
