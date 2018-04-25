@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
 class TypesEditingSupport extends EditingSupport {
 
-    protected static final String COMBO_TYPE_ALL = "ALL";
+    protected static final String COMBO_TYPE_ALL = "ALL"; //$NON-NLS-1$
 
     private final ComboBoxViewerCellEditor cellEditor;
     private final ColumnViewer viewer;

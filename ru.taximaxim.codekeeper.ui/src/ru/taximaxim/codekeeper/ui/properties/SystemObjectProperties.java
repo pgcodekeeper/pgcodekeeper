@@ -49,7 +49,7 @@ public class SystemObjectProperties extends PropertyPage {
 
         editor = new StoragePrefListEditor(parent);
 
-        String storage = prefs.get(PROJ_PREF.STORAGE_LIST, "");
+        String storage = prefs.get(PROJ_PREF.STORAGE_LIST, ""); //$NON-NLS-1$
 
         if (storage.isEmpty()) {
             editor.setInputList(new ArrayList<>());

@@ -636,6 +636,10 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
 
+    public static String StoragePrefListEditor_file_already_added;
+
+    public static String StoragePrefListEditor_open_snapshot;
+
     public static String Duration_expected_format;
 
     public static String TreeDiffer_unknown_error;

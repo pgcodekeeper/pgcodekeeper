@@ -829,16 +829,22 @@
         </target>
     </extension>
     <extension point="org.eclipse.ui.views">
+    		<category
+            id="ru.taximaxim.codekeeper.ui.viewsCategory"
+            name="%view.category.name">
+    		</category>
         <view
             id="ru.taximaxim.codekeeper.ui.depcyview"
             name="%view.name.DepcyView"
             class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
-            icon="IMG_OBJ_ADD" />
+            icon="IMG_OBJ_ADD"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
        <view
             id="ru.taximaxim.codekeeper.ui.pgoverrideview"
             name="%view.name.ProjectOverrideView"
             class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
-            icon="icons/lib.gif"/>
+            icon="icons/lib.gif"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
@@ -1238,8 +1244,7 @@
     </extension>
     <extension
         point="org.eclipse.ui.bindings"
-        id="ru.taximaxim.codekeeper.ui.bindings"
-        name="ru.taximaxim.codekeeper.ui.bindings.hotKey">
+        id="ru.taximaxim.codekeeper.ui.bindings">
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
