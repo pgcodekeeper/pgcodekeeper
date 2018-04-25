@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -153,8 +153,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
-    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
     public IProject getProject() {
         return proj.getProject();
@@ -221,15 +221,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
         btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
+                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
         btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
         btnDismissRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-
         btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                hideNotificationArea();
+                getChanges();
             }
         });
         // end notifications container

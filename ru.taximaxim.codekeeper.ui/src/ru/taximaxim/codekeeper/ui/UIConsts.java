@@ -189,7 +189,6 @@ public interface UIConsts {
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
-        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
         String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
         String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$

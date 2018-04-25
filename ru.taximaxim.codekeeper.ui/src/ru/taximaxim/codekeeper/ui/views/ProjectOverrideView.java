@@ -15,8 +15,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
@@ -103,31 +101,13 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
     @Override
     public void createPartControl(Composite parent) {
-        viewer = new TableViewer(parent, SWT.NONE);
+        viewer = new TableViewer(parent, SWT.FULL_SELECTION);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);
         viewer.getTable().setHeaderVisible(true);
 
         addColumns();
-
-        viewer.getTable().addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseDoubleClick(MouseEvent e) {
-                ISelection selection = viewer.getSelection();
-                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                    Object obj = ((IStructuredSelection) selection).getFirstElement();
-                    if (obj instanceof PgOverride) {
-                        try {
-                            FileUtilsUi.openFileInSqlEditor(((PgOverride)obj).getOldLocation());
-                        } catch (PartInitException ex) {
-                            ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
-                        }
-                    }
-                }
-            }
-        });
 
         viewer.getControl().setMenu(getViewerMenu().createContextMenu(viewer.getControl()));
         getSite().getPage().addPostSelectionListener(this);

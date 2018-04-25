@@ -441,7 +441,7 @@ public final class NewObjectPage extends WizardPage {
                 sb.append(" AS datatype;"); //$NON-NLS-1$
                 break;
             case FUNCTION:
-                sb.append(" RETURNS void\n\tLANGUAGE sql\n\tAS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
+                sb.append(" RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
                 break;
             case TABLE:
                 sb.append(" (\n);"); //$NON-NLS-1$
