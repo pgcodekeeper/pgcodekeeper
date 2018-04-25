@@ -8,7 +8,6 @@ WITH extension_deps AS (
 SELECT c.oid::bigint,
        c.relname,
        c.relkind AS kind,
-       c.relispopulated,
        tabsp.spcname as table_space,
        c.relacl::text,
        c.relowner::bigint,
