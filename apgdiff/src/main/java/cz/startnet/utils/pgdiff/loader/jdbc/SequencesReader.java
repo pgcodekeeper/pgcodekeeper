@@ -81,7 +81,9 @@ public class SequencesReader extends JdbcReader {
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
-                s.setDataType(res.getString("data_type"));
+                String dataType = res.getString("data_type");
+                checkDefinition(dataType, sequenceName);
+                s.setDataType(dataType);
             }
         }
 

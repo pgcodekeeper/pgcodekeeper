@@ -178,7 +178,9 @@ public class TablesReader extends JdbcReader {
             column.setInherit(!colIsLocal[i]);
 
             if (ofTypeOid == 0 && !column.isInherit()) {
-                column.setType(colTypeName[i]);
+                String type = colTypeName[i];
+                checkDefinition(type, t.getName());
+                column.setType(type);
             }
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);

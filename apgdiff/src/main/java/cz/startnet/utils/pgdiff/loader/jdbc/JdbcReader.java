@@ -165,6 +165,12 @@ public abstract class JdbcReader implements PgCatalogStrings {
         }
     }
 
+    protected void checkDefinition(String definition, String name) {
+        if (definition == null) {
+            throw new IllegalStateException("Statement concurrent modification: " + getType() + ' ' + name);
+        }
+    }
+
     protected abstract void processResult(ResultSetWrapper json, PgSchema schema)
             throws SQLException, WrapperAccessException;
 
