@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.apgdiff.utils;
 import java.io.Serializable;
 import java.util.Map;
 
-public class Pair<K extends Serializable, V extends Serializable>
+public class Pair<K, V>
 implements Map.Entry<K, V>, Serializable {
 
     private static final long serialVersionUID = 3151284706296455602L;

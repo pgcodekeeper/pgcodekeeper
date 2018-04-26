@@ -8,14 +8,14 @@ Schema: public
      c2 - text
      c3 - double precision
      c4 - text
-     col11 - text
-     col111 - integer
-     col22 - integer
-     col222 - integer
      id - integer
      login - character(64)
-     myvalue - integer
      password - character(64)
+     col111 - integer
+     col222 - integer
+     myvalue - integer
+     col11 - text
+     col22 - integer
 
   View: asterisk1
     RelationColumns : 
@@ -48,11 +48,11 @@ Schema: public
 
   View: asterisk5
     RelationColumns : 
-     d - TABLE(f1 integer, f2 double precision)
+     d - functionTable
 
   View: asterisk6
     RelationColumns : 
-     dup3 - TABLE(f1 integer, f2 double precision)
+     dup3 - functionTable
 
   View: asterisk7
     RelationColumns : 
@@ -93,11 +93,11 @@ Schema: public
 
   View: asterisk13
     RelationColumns : 
-     castcontext - "char"
-     castfunc - oid
-     castmethod - "char"
      castsource - oid
      casttarget - oid
+     castfunc - oid
+     castcontext - "char"
+     castmethod - "char"
 
   View: asterisk14
     RelationColumns : 

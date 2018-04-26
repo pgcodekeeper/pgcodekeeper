@@ -93,17 +93,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        Stream<Pair<String, String>> allColumns = columns.stream()
+        Stream<Pair<String, String>> localColumns = columns.stream()
                 .filter(c -> c.getType() != null)
                 .map(c -> new Pair<>(c.getName(), c.getType()));
+        if (inherits.isEmpty()) {
+            return localColumns;
+        }
+
+        Stream<Pair<String, String>> inhColumns = Stream.empty();
         for (Inherits inht : inherits) {
             String schemaName = inht.getKey();
             PgSchema inhtSchema = schemaName == null ? getContainingSchema()
                     : getDatabase().getSchema(schemaName);
-            allColumns = Stream.concat(allColumns, inhtSchema
+            inhColumns = Stream.concat(inhColumns, inhtSchema
                     .getTable(inht.getValue()).getRelationColumns());
         }
-        return allColumns;
+        return Stream.concat(inhColumns, localColumns);
     }
 
     /**
@@ -539,14 +544,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     public boolean containsIndex(final String name) {
         return getIndex(name) != null;
-    }
-
-    public boolean containsTrigger(String name) {
-        return getTrigger(name) != null;
-    }
-
-    public boolean containsRule(String name) {
-        return getRule(name) != null;
     }
 
     @Override

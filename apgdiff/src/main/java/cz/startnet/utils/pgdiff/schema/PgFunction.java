@@ -8,7 +8,9 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +29,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -118,6 +121,18 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public void setReturns(String returns) {
         this.returns = returns;
         resetHash();
+    }
+
+    /**
+     * @return unmodifiable RETURNS TABLE map
+     */
+    @Override
+    public Map<String, String> getReturnsColumns() {
+        return Collections.unmodifiableMap(returnsColumns);
+    }
+
+    public void addReturnsColumn(String name, String type) {
+        returnsColumns.put(name, type);
     }
 
     @Override
@@ -287,6 +302,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
+        functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {

@@ -93,10 +93,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                         IntStream.range(0, argModes.size()).filter(i -> "t".equals(argModes.get(i))).forEach(e -> {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
-                            function.addReturnsColumns(argNames[e], returnType.getFullName(schemaName));
+                            function.addReturnsColumn(argNames[e], returnType.getFullName(schemaName));
                         });
                     }
-                } else {
+                }
+                if (function.getReturnsColumns().isEmpty()) {
                     function.setReturns(result.getString("prorettype"));
                 }
 
@@ -216,7 +217,21 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String source = result.getString("source");
                 String target = result.getString("target");
                 String type = result.getString("castcontext");
-                storage.addCast(new PgSystemCast(source, target, CastContext.getEnumByValue(type)));
+                CastContext ctx;
+                switch (type) {
+                case "e":
+                    ctx = CastContext.EXPLICIT;
+                    break;
+                case "a":
+                    ctx = CastContext.ASSIGNMENT;
+                    break;
+                case "i":
+                    ctx = CastContext.IMPLICIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown cast context: " + type);
+                }
+                storage.addCast(new PgSystemCast(source, target, ctx));
             }
         }
     }

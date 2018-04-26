@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class StoragePrefListEditor extends PrefListEditor<String, ListViewer> {
@@ -32,14 +33,14 @@ public class StoragePrefListEditor extends PrefListEditor<String, ListViewer> {
     @Override
     protected String getNewObject(String oldObject) {
         FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
-        fd.setText("Open storage");
-        String[] filterExt = {"*.ser"};
+        fd.setText(Messages.StoragePrefListEditor_open_snapshot);
+        String[] filterExt = {"*.ser"}; //$NON-NLS-1$
         fd.setFilterExtensions(filterExt);
         return fd.open();
     }
 
     @Override
     protected String errorAlreadyExists(String obj) {
-        return "This file is already exists";
+        return Messages.StoragePrefListEditor_file_already_added;
     }
 }

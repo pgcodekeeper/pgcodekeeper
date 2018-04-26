@@ -9,23 +9,21 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.CompareTree;
@@ -62,20 +60,17 @@ public final class PgDiff {
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        for (String path : arguments.getTargetLibs()) {
-            oldDatabase.addLib(getLibrary(path, arguments, false));
-        }
+        PgDumpLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
+        PgDumpLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
+        PgDumpLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
+        PgDumpLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
 
-        for (String path : arguments.getTargetLibsWithoutPriv()) {
-            oldDatabase.addLib(getLibrary(path, arguments, true));
-        }
-
-        for (String path : arguments.getSourceLibs()) {
-            newDatabase.addLib(getLibrary(path, arguments, false));
-        }
-
-        for (String path : arguments.getSourceLibsWithoutPriv()) {
-            newDatabase.addLib(getLibrary(path, arguments, true));
+        if (arguments.isLibSafeMode()) {
+            List<PgOverride> overrides = oldDatabase.getOverrides();
+            overrides.addAll(newDatabase.getOverrides());
+            if (!overrides.isEmpty()) {
+                throw new LibraryObjectDuplicationException(overrides);
+            }
         }
 
         IgnoreParser ignoreParser = new IgnoreParser();
@@ -84,48 +79,6 @@ public final class PgDiff {
         }
 
         return diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, ignoreParser.getIgnoreList());
-    }
-
-    public static PgDatabase getLibrary(String path, PgDiffArguments arguments,
-            boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
-
-        PgDiffArguments args = arguments.clone();
-        args.setIgnorePrivileges(isIgnorePriv);
-
-        if (path.startsWith("jdbc:")) {
-            return loadDatabaseSchema("db", path, args);
-        }
-
-        Path p = Paths.get(path);
-
-        if (Files.isDirectory(p)) {
-            if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
-                return loadDatabaseSchema("parsed", path, args);
-            } else {
-                PgDatabase db = new PgDatabase(false);
-                db.setArguments(args);
-                readStatementsFromDirectory(p, db, args);
-                return db;
-            }
-        }
-
-        PgDatabase dump = loadDatabaseSchema("dump", path, args);
-        // dumps are loaded with default public schema
-        dump.getSchema(ApgdiffConsts.PUBLIC).setLocation(path);
-        return dump;
-    }
-
-    private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
-            throws IOException, InterruptedException, URISyntaxException {
-        if (Files.isDirectory(f)) {
-            try (Stream<Path> stream = Files.list(f)) {
-                for (Path sub : (Iterable<Path>) stream::iterator) {
-                    readStatementsFromDirectory(sub, db, args);
-                }
-            }
-        } else {
-            db.addLib(PgDiff.loadDatabaseSchema("dump", f.toString(), args));
-        }
     }
 
     /**

@@ -453,4 +453,9 @@ public abstract class PgStatement implements IStatement {
                     : new ObjectCreationException(newSt);
         }
     }
+
+    @Override
+    public DbObjNature getStatementNature() {
+        return DbObjNature.USER;
+    }
 }

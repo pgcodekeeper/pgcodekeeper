@@ -39,13 +39,7 @@ public class PgDecorator extends LabelProvider implements ILightweightLabelDecor
     }
 
     public static void update() {
-        UiSync.exec(PlatformUI.getWorkbench().getDisplay(), new Runnable() {
-
-            @Override
-            public void run() {
-                PlatformUI.getWorkbench().getDecoratorManager()
-                .update(DECORATOR.DECORATOR);
-            }
-        });
+        UiSync.exec(PlatformUI.getWorkbench().getDisplay(),
+                () -> PlatformUI.getWorkbench().getDecoratorManager().update(DECORATOR.DECORATOR));
     }
 }

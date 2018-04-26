@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -116,6 +118,13 @@ public class PgUIDumpLoader extends PgDumpLoader {
             } catch (BadLocationException | CoreException ex) {
                 Log.log(ex);
             }
+        }
+    }
+
+    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,
+            Collection<PgLibrary> libs) throws InterruptedException, IOException, URISyntaxException {
+        for (PgLibrary lib : libs) {
+            loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
         }
     }
 

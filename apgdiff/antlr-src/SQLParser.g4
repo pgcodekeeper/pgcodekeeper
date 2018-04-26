@@ -1647,12 +1647,7 @@ unsigned_numeric_literal
 
 general_literal
   : character_string
-  | datetime_literal
   | truth_value
-  ;
-
-datetime_literal
-  : identifier character_string
   ;
 
 truth_value
@@ -1660,7 +1655,7 @@ truth_value
   ;
 
 case_expression
-  : CASE vex? (WHEN vex THEN vex)+ (ELSE r=vex)? END
+  : CASE vex? (WHEN vex THEN r+=vex)+ (ELSE r+=vex)? END
   ;
 
 cast_specification

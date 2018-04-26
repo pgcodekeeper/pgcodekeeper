@@ -809,7 +809,7 @@
               id="ru.taximaxim.codekeeper.ui.proj_objects"
               name="PostgreSQL system objects">
         </page>
-        -->
+         -->
     </extension>
     <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector
@@ -829,11 +829,22 @@
         </target>
     </extension>
     <extension point="org.eclipse.ui.views">
+    		<category
+            id="ru.taximaxim.codekeeper.ui.viewsCategory"
+            name="%view.category.name">
+    		</category>
         <view
             id="ru.taximaxim.codekeeper.ui.depcyview"
             name="%view.name.DepcyView"
             class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
-            icon="IMG_OBJ_ADD" />
+            icon="IMG_OBJ_ADD"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
+       <view
+            id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+            name="%view.name.ProjectOverrideView"
+            class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
+            icon="icons/lib.gif"
+            category="ru.taximaxim.codekeeper.ui.viewsCategory" />
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
@@ -846,6 +857,8 @@
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <perspectiveExtension targetID="ru.taximaxim.codekeeper.ui.mainperspective">
             <viewShortcut id="ru.taximaxim.codekeeper.ui.depcyview">
+            </viewShortcut>
+            <viewShortcut id="ru.taximaxim.codekeeper.ui.pgoverrideview">
             </viewShortcut>
             <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer">
             </viewShortcut>
@@ -904,6 +917,14 @@
                 minimized="false"
                 ratio="0.80"
                 relationship="right"
+                relative="org.eclipse.ui.editorss">
+            </view>
+            <view
+                id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+                minimized="false"
+                ratio="0.80"
+                relationship="bottom"
+                visible="false"
                 relative="org.eclipse.ui.editorss">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
@@ -1003,6 +1024,8 @@
                 </contentExtension>
                 <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.codekeeperOutline">
                 </contentExtension>
+                <contentExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.codekeeperLibrary">
+                </contentExtension>
             </includes>
         </viewerContentBinding>
         <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
@@ -1011,10 +1034,8 @@
                 </actionExtension>
                 <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.navigator\.codekeeperRootActionProvider">
                 </actionExtension>
-            </includes>
-        </viewerActionBinding>
-        <viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-            <includes>
+                <actionExtension pattern="ru\.taximaxim\.codekeeper\.ui\.views\.navigator\.codekeeperLibrariesActionProvider">
+                </actionExtension>
             </includes>
         </viewerActionBinding>
     </extension>
@@ -1028,14 +1049,6 @@
             </enablement>
         </consolePageParticipant>
     </extension>
-    <!--extension point="org.eclipse.ui.bindings">
-        <key
-            commandId="ru.taximaxim.codekeeper.ui.openeditor"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="Ctrl+Shift+G">
-        </key>
-    </extension-->
     <extension
         id="ru.taximaxim.codekeeper.ui.sql.errormarker"
         name="%marker.sql.error.name"
@@ -1070,7 +1083,7 @@
                     </test>
                 </adapt>
             </triggerPoints>
-            <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.NavigatorOutlineSorter">
+            <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.DisabledSorter">
             </commonSorter>
         </navigatorContent>
         <actionProvider
@@ -1078,6 +1091,38 @@
             id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperOutlineActionProvider">
             <enablement>
                 <instanceof value="ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent">
+                </instanceof>
+            </enablement>
+        </actionProvider>
+        <navigatorContent
+            id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperLibrary"
+            name="%navigator.outline.content"
+            contentProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigationLibrariesContentProvider"
+            labelProvider="ru.taximaxim.codekeeper.ui.views.navigator.NavigationLibrariesLabelProvider"
+            activeByDefault="true"
+            icon="icons/app_icon16.png"
+            priority="normal">
+            <triggerPoints>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
+                </adapt>
+            </triggerPoints>
+            <possibleChildren>
+                <or>
+                    <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer"/> 
+                </or>
+            </possibleChildren>
+            <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.DisabledSorter">
+            </commonSorter>
+        </navigatorContent>
+        <actionProvider
+            class="ru.taximaxim.codekeeper.ui.views.navigator.NavigationLibrariesActionProvider"
+            id="ru.taximaxim.codekeeper.ui.views.navigator.codekeeperLibrariesActionProvider">
+            <enablement>
+                <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer">
                 </instanceof>
             </enablement>
         </actionProvider>
@@ -1199,8 +1244,7 @@
     </extension>
     <extension
         point="org.eclipse.ui.bindings"
-        id="ru.taximaxim.codekeeper.ui.bindings"
-        name="ru.taximaxim.codekeeper.ui.bindings.hotKey">
+        id="ru.taximaxim.codekeeper.ui.bindings">
         <key
             commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
             contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"

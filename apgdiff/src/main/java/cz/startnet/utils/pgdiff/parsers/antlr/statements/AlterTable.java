@@ -168,7 +168,7 @@ public class AlterTable extends AbstractTable {
                 }
             }
         }
-        return null;
+        return tabl;
     }
 
     private void createRule(PgTable tabl, Table_actionContext tablAction) {

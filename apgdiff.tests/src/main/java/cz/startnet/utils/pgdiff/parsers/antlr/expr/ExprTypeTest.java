@@ -3,18 +3,15 @@
  *
  * Distributed under MIT license
  */
-package cz.startnet.utils.pgdiff;
+package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,12 +19,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import cz.startnet.utils.pgdiff.FILES_POSTFIX;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
  * Tests for checking column types.
@@ -35,7 +34,7 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
  * @author shamsutdinov_lr
  */
 @RunWith(value = Parameterized.class)
-public class PgDiffTypeTest {
+public class ExprTypeTest {
 
     private static final String CHECK = "check_";
     private static final String COMPARE = "compare_";
@@ -45,7 +44,7 @@ public class PgDiffTypeTest {
         return Arrays.asList(
                 new Object[][]{
                     // Compare the types between an asterisk and an ordinary in view.
-                    {COMPARE +"types_aster_ord_view"},
+                    {COMPARE+"types_aster_ord_view"},
                     // Check types in columns of asterisk in view.
                     {CHECK + "types_aster_cols_view"},
                     // Check types in columns of view.
@@ -64,26 +63,11 @@ public class PgDiffTypeTest {
      */
     private final String fileNameTemplate;
 
-    public PgDiffTypeTest(final String fileNameTemplate) {
+    public ExprTypeTest(final String fileNameTemplate) {
         this.fileNameTemplate = fileNameTemplate;
-        Locale.setDefault(Locale.ENGLISH);
-        Log.log(Log.LOG_DEBUG, fileNameTemplate);
-    }
-
-    public void runDiffSame(PgDatabase db) throws IOException, InterruptedException {
-        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-        final PgDiffArguments arguments = new PgDiffArguments();
-        PgDiff.diffDatabaseSchemas(writer, arguments, db, db, null);
-        writer.flush();
-
-        Assert.assertEquals("File name template: " + fileNameTemplate,
-                "", diffInput.toString().trim());
     }
 
     private String getRelationColumnsTypes(PgDatabase db) throws IOException, InterruptedException {
-        runDiffSame(db);
-
         StringBuilder cols = new StringBuilder();
         for (PgSchema schema : db.getSchemas()) {
             List<PgView> views = schema.getViews();
@@ -95,11 +79,7 @@ public class PgDiffTypeTest {
                 cols.append("\n\n  View: " + view.getName());
                 cols.append("\n    RelationColumns : ");
 
-                List<Entry<String, String>> colPairs = view.getRelationColumns().collect(Collectors.toList());
-
-                colPairs.sort((entry1, entry2) -> entry1.getKey().compareTo(entry2.getKey()));
-
-                for (Entry<String, String> col : colPairs) {
+                for (Entry<String, String> col : PgDiffUtils.sIter(view.getRelationColumns())) {
                     cols.append("\n     " + col.getKey() + " - " + col.getValue());
                 }
             }
@@ -114,25 +94,27 @@ public class PgDiffTypeTest {
         while ((length = inputStream.read(buffer)) != -1) {
             result.write(buffer, 0, length);
         }
-        return result.toString("UTF-8");
+        return result.toString(ApgdiffConsts.UTF_8);
     }
 
     @Test
     public void runDiff() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         PgDatabase dbNew = ApgdiffTestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, PgDiffTypeTest.class, args);
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL, ExprTypeTest.class, args);
 
         String typesForCompare = null;
         if (fileNameTemplate.startsWith(CHECK)) {
-            typesForCompare = getStringFromInpunStream(PgDiffTypeTest.class
+            // compare with a "type-dump"
+            typesForCompare = getStringFromInpunStream(ExprTypeTest.class
                     .getResourceAsStream(fileNameTemplate + FILES_POSTFIX.DIFF_SQL));
         } else if (fileNameTemplate.startsWith(COMPARE)) {
+            // compare with types with another SQL representation
             typesForCompare = getRelationColumnsTypes(ApgdiffTestUtils.loadTestDump(
-                    fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, PgDiffTypeTest.class, args));
+                    fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, ExprTypeTest.class, args));
         }
 
-        Assert.assertEquals("Compare columns types.",
+        Assert.assertEquals("File: " + fileNameTemplate,
                 typesForCompare,
                 getRelationColumnsTypes(dbNew));
     }

@@ -9,15 +9,12 @@ public class PgSystemCast implements Serializable {
     private final String source;
     private final String target;
 
-    /**
-     *  {@link cz.startnet.utils.pgdiff.schema.system.CastContext Context of the cast}.
-     */
-    private final CastContext type;
+    private final CastContext context;
 
     public PgSystemCast(String source, String target, CastContext type) {
         this.source = source;
         this.target = target;
-        this.type = type;
+        this.context = type;
     }
 
     public String getSource() {
@@ -28,10 +25,7 @@ public class PgSystemCast implements Serializable {
         return target;
     }
 
-    /**
-     *  Returns the {@link cz.startnet.utils.pgdiff.schema.system.PgSystemCast#type context of the cast}.
-     */
-    public CastContext getType() {
-        return type;
+    public CastContext getContext() {
+        return context;
     }
 }

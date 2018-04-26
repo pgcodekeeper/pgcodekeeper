@@ -1,9 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,13 +37,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
      * String-null pairs keep track of internal query names that have only the
      * Alias.
      */
-    protected final Map<String, GenericColumn> namespace = new HashMap<>();
+    protected final Map<String, GenericColumn> namespace = new LinkedHashMap<>();
     /**
      * Unaliased namespace keeps track of tables that have no Alias.<br>
      * It has to be separate since same-named unaliased tables from different
      * schemas can be used, requiring qualification.
      */
-    protected final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
+    protected final Set<GenericColumn> unaliasedNamespace = new LinkedHashSet<>();
     /**
      * Column alias' are in a separate sets (per table) since they have two
      * values as the Key. This is not a Map because we don't connect column
@@ -58,18 +59,14 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     // SELECT (SELECT a.z) FROM (SELECT 1 z, 2 x, 3 c) a
     protected final Map<String, Set<String>> columnAliases = new HashMap<>();
     /**
-     * CTE names that current level of FROM has access to.
-     *
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "WITH alias1 AS (SELECT...), alias2 AS (SELECT...) SELECT ... FROM alias1".
+     * CTEs that current level of FROM has access to stored as their names and signatures.
      */
     protected final Map<String, List<Pair<String, String>>> cte = new HashMap<>();
 
     /**
-     *  Map contains alias and list of pairs<columnName, columnType>. Pairs returned by aliased subquery.
-     *  It will be used with "...FROM (function()) alias;" and with "...FROM (subquery) alias;".
+     * Non-table from items stored as their aliases and signatures.
      */
-    protected final Map<String, List<Pair<String, String>>> complexNamespace = new HashMap<>();
+    protected final Map<String, List<Pair<String, String>>> complexNamespace = new LinkedHashMap<>();
 
     public AbstractExprWithNmspc(String schema, PgDatabase db) {
         super(schema, db);
@@ -92,9 +89,11 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
     }
 
     @Override
-    protected Entry<String, List<Pair<String, String>>> findReferenceComplex(String name) {
-        return complexNamespace.entrySet().stream().filter(p -> name.equals(p.getKey()))
-                .findFirst().orElse(super.findReferenceComplex(name));
+    protected List<Pair<String, String>> findReferenceComplex(String name) {
+        return complexNamespace.entrySet().stream()
+                .filter(p -> name.equals(p.getKey()))
+                .map(Entry::getValue)
+                .findAny().orElse(super.findReferenceComplex(name));
     }
 
     @Override
@@ -251,31 +250,13 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         }
     }
 
-    /**
-     * Associates names from parameters of recursion (if they exist) with result types
-     * of analysis of 'query-select'. Result will be placed to the CTE.
-     *
-     * @param withQuery the context which contains such template:
-     * "alias(parameters) AS (query1 UNION query2)"
-     *
-     * @param resultTypes result types of analysis of 'query-select'
-     *
-     * @return returns 'true' if CTE already contains key which equals alias from 'withQuery',
-     * otherwise returns 'false'
-     */
     protected boolean addCteSignature(With_queryContext withQuery, List<Pair<String, String>> resultTypes) {
         String withName = withQuery.query_name.getText();
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
-        if (!paramNamesIdentifers.isEmpty()) {
-            List<Pair<String, String>> columnsPairs = new ArrayList<>(paramNamesIdentifers.size());
-            for (int i = 0;  i < resultTypes.size(); i++) {
-                columnsPairs.add(new Pair<>(paramNamesIdentifers.get(i).getText(),
-                        resultTypes.get(i).getValue()));
-            }
-            return cte.put(withName, columnsPairs) != null;
-        } else {
-            return cte.put(withName, resultTypes) != null;
+        for (int i = 0;  i < paramNamesIdentifers.size(); ++i) {
+            resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
         }
+        return cte.put(withName, resultTypes) != null;
     }
 
     public abstract List<Pair<String, String>> analyze(T ruleCtx);

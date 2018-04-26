@@ -35,6 +35,10 @@ public interface UIConsts {
         String DECORATOR = PLUGIN_ID.THIS + ".decorator"; //$NON-NLS-1$
     }
 
+    interface VIEW {
+        String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+    }
+
     interface COMMAND {
         /* EGit commit command id
         (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
@@ -185,7 +189,6 @@ public interface UIConsts {
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.png"; //$NON-NLS-1$
-        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
         String ICONWRITEOUTCONSOLE = "/icons/writeout_co.png"; //$NON-NLS-1$
         String ICONFILE = "/icons/file_obj.png"; //$NON-NLS-1$
         String ICONCHECK = "/icons/header_complete.gif"; //$NON-NLS-1$
@@ -193,6 +196,7 @@ public interface UIConsts {
         String ICONFILTER = "/icons/filter_tsk.png"; //$NON-NLS-1$
         String ICONALERT = "/icons/alert_obj.gif"; //$NON-NLS-1$
         String ICONSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
+        String ICONLIB = "/icons/lib.gif"; //$NON-NLS-1$
     }
 
     interface WORKING_SET {
@@ -248,3 +252,4 @@ public interface UIConsts {
             "windows-1252" //$NON-NLS-1$
             ));
 }
+

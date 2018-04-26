@@ -93,8 +93,7 @@ public class ValueExpr extends AbstractExpr {
                 if (castPrimary != null
                         && (value = castPrimary.unsigned_value_specification()) != null
                         && (literal = value.general_literal()) != null
-                        && literal.character_string() != null
-                        && literal.character_string().Character_String_Literal() != null) {
+                        && literal.character_string() != null) {
                     regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
                             customType.getText());
                 }

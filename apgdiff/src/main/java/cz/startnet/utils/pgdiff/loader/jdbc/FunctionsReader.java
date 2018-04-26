@@ -71,8 +71,11 @@ public class FunctionsReader extends JdbcReader {
             returnType.addTypeDepcy(f);
 
             if("t".equals(aMode)) {
-                returnedTableArguments.append(argNames[i]).append(" ")
-                .append(returnType.getFullName(schemaName)).append(", ");
+                String name = argNames[i];
+                String type = returnType.getFullName(schemaName);
+                returnedTableArguments.append(PgDiffUtils.getQuotedName(name)).append(" ")
+                .append(type).append(", ");
+                f.addReturnsColumn(argNames[i], type);
                 continue;
             }
 
@@ -126,7 +129,6 @@ public class FunctionsReader extends JdbcReader {
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
                                 schema.getDatabase().getContextsForAnalyze()
                                 .add(new AbstractMap.SimpleEntry<>(f, vx));
-                                vexCtxListIterator.remove();
                             }
                         }
                     });

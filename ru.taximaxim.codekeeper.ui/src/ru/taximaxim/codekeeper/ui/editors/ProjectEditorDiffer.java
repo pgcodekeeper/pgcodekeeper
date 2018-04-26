@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -43,7 +43,9 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -77,6 +79,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.fileutils.FileUtils;
@@ -87,6 +90,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
@@ -99,6 +103,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.VIEW;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -148,8 +153,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private LocalResourceManager lrm;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
-    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
 
     public IProject getProject() {
         return proj.getProject();
@@ -216,15 +221,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
         btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
+                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
         btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
         btnDismissRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-
         btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                hideNotificationArea();
+                getChanges();
             }
         });
         // end notifications container
@@ -343,8 +347,19 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     @Override
     public void setFocus() {
-        parent.setFocus();
+        diffTable.getViewer().getControl().setFocus();
         diffTable.updateObjectsLabels();
+        updateSelection();
+    }
+
+    private void updateSelection() {
+        if (dbProject != null) {
+            ISelection selection = diffTable.getViewer().getSelection();
+            if (selection.isEmpty()) {
+                DBPair pair = new DBPair(dbProject, dbRemote);
+                sp.fireSelectionChanged(new SelectionChangedEvent(sp, new StructuredSelection(pair)), pair);
+            }
+        }
     }
 
     @Override
@@ -534,6 +549,22 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         job.schedule();
     }
 
+    private void showOverrideView(DbSource dbProject) throws PgCodekeeperUIException {
+        List<PgOverride> overrides = dbProject.getDbObject().getOverrides();
+        if (!overrides.isEmpty()) {
+            try {
+                getSite().getPage().showView(VIEW.OVERRIDE_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+                updateSelection();
+            } catch (PartInitException e) {
+                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+            }
+
+            if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
+                throw new PgCodekeeperUIException(Messages.ProjectEditorDiffer_library_duplication_exception);
+            }
+        }
+    }
+
     private void askPerspectiveChange(IEditorSite site) {
         String mode = mainPrefs.getString(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
         // if select "YES" with toggle
@@ -544,7 +575,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(site.getShell(),
                     Messages.change_perspective_title, Messages.change_perspective_message,
                     Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
-            if(dialog.getReturnCode() == IDialogConstants.YES_ID){
+            if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
                 changePerspective(site);
             }
         }
@@ -648,6 +679,16 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
+
+        if (dbProject != null) {
+            try {
+                showOverrideView(dbProject);
+            } catch (PgCodekeeperUIException e) {
+                ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+                return;
+            }
+        }
+
         diffPane.setDbSources(dbProject, dbRemote);
         diffPane.setInput(null, null);
 

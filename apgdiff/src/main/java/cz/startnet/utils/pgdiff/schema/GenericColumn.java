@@ -14,12 +14,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public final class GenericColumn implements Serializable {
 
-    public static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    private static final Collection<String> SYS_SCHEMAS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "information_schema", "pg_catalog"
             )));
 
     @Deprecated
     // TODO detect these by separating their tokens from identifiers in parser
+    // TODO might be fixed by handling these in AbstractExpr
     private static final Collection<String> SYS_COLUMNS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             )));
