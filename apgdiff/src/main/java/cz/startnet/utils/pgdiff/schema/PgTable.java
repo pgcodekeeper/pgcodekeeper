@@ -56,6 +56,24 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return false;
     }
 
+    @Override
+    public Stream<PgStatement> getChildren() {
+        // honor the export order
+        Stream<PgStatement> stream = Stream.concat(getIndexes().stream(), getTriggers().stream());
+        stream = Stream.concat(stream, getRules().stream());
+        stream = Stream.concat(stream, getConstraints().stream());
+        return stream;
+    }
+
+    public static Stream<PgStatement> columnAdder(PgStatement st) {
+        Stream<PgStatement> newStream = Stream.of(st);
+        if (st.getStatementType() == DbObjType.TABLE) {
+            newStream = Stream.concat(newStream, ((PgTable)st).getColumns().stream());
+        }
+
+        return newStream;
+    }
+
     /**
      * Generates beginning of alter table statement.
      *

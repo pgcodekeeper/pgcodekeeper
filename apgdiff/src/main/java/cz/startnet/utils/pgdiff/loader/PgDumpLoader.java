@@ -229,7 +229,7 @@ public class PgDumpLoader implements AutoCloseable {
 
         if (path.startsWith("jdbc:")) {
             PgDatabase db = new JdbcLoader(new JdbcConnector(path), args).getDbFromJdbc();
-            PgDatabase.listPgObjects(db).values().forEach(st -> st.setLocation(path));
+            db.getDescendants().forEach(st -> st.setLocation(path));
             return db;
         }
 
