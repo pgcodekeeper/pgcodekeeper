@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
-
 public class Delete extends AbstractExprWithNmspc<Delete_stmt_for_psqlContext> {
 
     protected Delete(AbstractExpr parent) {

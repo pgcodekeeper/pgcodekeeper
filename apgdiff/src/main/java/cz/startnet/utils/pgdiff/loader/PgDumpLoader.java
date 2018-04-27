@@ -35,7 +35,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
-
 /**
  * Loads PostgreSQL dump into classes.
  *

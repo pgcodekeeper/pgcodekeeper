@@ -328,6 +328,35 @@ public abstract class AbstractExpr {
         return TypesSetManually.COLUMN;
     }
 
+    /**
+     * Search the corresponding column in the 'relations' (which contains the
+     * specified scheme and table) and adding a dependency only from the column of
+     * the user object.
+     * Puts found type of column 'columnName' to the list 'resultColType'.
+     *
+     * @param columnName dependency from this column will be added
+     * (on condition that one of relations is user object and it contains the column 'columnName')
+     * @param gTableOrView data for searching user or system relations, one of which, perhaps,
+     * contains the column 'columnName'
+     * @param resultColType list in which the found type of column 'columnName' will be placed.
+     */
+    @Deprecated
+    // Offering to use this method instead of 'fillResultColType'.
+    private void fillResultColTypeWithAddingDepcy(String columnName, GenericColumn gTableOrView,
+            List<String> resultColType) {
+        for (IRelation relation : PgDiffUtils.sIter(findRelations(gTableOrView.schema, gTableOrView.table))) {
+            for (Pair<String, String> colPair :  PgDiffUtils.sIter(relation.getRelationColumns())) {
+                if (columnName.equals(colPair.getKey())) {
+                    if (DbObjNature.USER.equals(relation.getStatementNature())) {
+                        addColumnDepcy(relation.getContainingSchema().getName(),
+                                relation.getName(), columnName);
+                    }
+                    resultColType.add(colPair.getValue());
+                }
+            }
+        }
+    }
+
     private void fillResultColType(String columnName, GenericColumn gTableOrView,
             List<String> resultColType) {
         String colType = addFilteredTablelessColumnDepcy(columnName,
@@ -338,7 +367,8 @@ public abstract class AbstractExpr {
     }
 
     /**
-     * Add a dependency only from the column of the user object. Always return type
+     * Searching the corresponding column in the 'relations' and
+     * adding a dependency only from the column of the user object. Always return type
      * of column 'columnName' or null if there is no column with such name in relations.
      *
      * @param relations user or system objects, one of which, perhaps, contains the column 'columnName'

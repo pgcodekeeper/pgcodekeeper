@@ -18,9 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -73,12 +71,9 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
-                UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                        ((PgIndex) statement).getTableName(), db);
-                break;
             case CONSTRAINT:
                 UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                        ((PgConstraint) statement).getParent().getName(), db);
+                        statement.getParent().getName(), db);
                 break;
             case DOMAIN:
             case FUNCTION:
