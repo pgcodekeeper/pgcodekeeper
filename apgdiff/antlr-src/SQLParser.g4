@@ -45,6 +45,7 @@ data_statement
   | update_stmt_for_psql
   | delete_stmt_for_psql
   | notify_stmt
+  | truncate_stmt
   ;
 
 script_statement
@@ -1977,4 +1978,9 @@ using_table
 
 notify_stmt
   : NOTIFY channel=identifier (COMMA payload=character_string)?
+  ;
+  
+truncate_stmt
+  : TRUNCATE TABLE? ONLY? name=schema_qualified_name MULTIPLY? (COMMA name=schema_qualified_name MULTIPLY?)*
+  ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?  
   ;
