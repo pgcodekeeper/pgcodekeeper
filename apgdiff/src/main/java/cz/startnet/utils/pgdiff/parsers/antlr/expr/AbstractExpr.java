@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -295,103 +294,71 @@ public abstract class AbstractExpr {
     }
 
     private String processTablelessColumn(String columnName) {
-        // Contains column type with nature mark of column.
-        List<Entry<DbObjNature, String>> resultColTypeWithNatureMark = new ArrayList<>();
+        // Contains result column type.
+        List<String> resultColType = new ArrayList<>();
 
         // Comparing 'tableless column' with columns from 'unaliased namespace' and
         // getting corresponding type for 'tableless column'.
         for (GenericColumn gTableOrView : getAllUnaliasedNmsp()) {
-            Entry<DbObjNature, String> colType = getTypeOfCorrespondingColWithNatureMark(columnName,
-                    getRelationColumnsWithNatureMark(gTableOrView.schema, gTableOrView.table));
-            if (colType != null) {
-                if (DbObjNature.USER.equals(colType.getKey())) {
-                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
-                }
-                resultColTypeWithNatureMark.add(colType);
-            }
+            fillResultColType(columnName, gTableOrView, resultColType);
         }
 
         // Comparing 'tableless column' with columns from aliased table or view and
         // getting corresponding type for 'tableless column'.
         for (Entry<String, GenericColumn> nmsp : getAllReferences().entrySet()) {
             GenericColumn gTableOrView = nmsp.getValue();
-            if (gTableOrView == null) {
-                continue;
-            }
-            Entry<DbObjNature, String> colType = getTypeOfCorrespondingColWithNatureMark(columnName,
-                    getRelationColumnsWithNatureMark(gTableOrView.schema, gTableOrView.table));
-            if (colType != null) {
-                if (DbObjNature.USER.equals(colType.getKey())) {
-                    addColumnDepcy(gTableOrView.schema, gTableOrView.table, columnName);
-                }
-                resultColTypeWithNatureMark.add(colType);
+            if (gTableOrView != null) {
+                fillResultColType(columnName, gTableOrView, resultColType);
             }
         }
 
         // Comparing 'tableless column' with columns from subquery and
         // getting corresponding type for 'tableless column'.
-        resultColTypeWithNatureMark.addAll(getTypeOfCorrespondingColComplex(columnName,
-                getAllReferencesComplex()).stream()
-                .map(type -> new SimpleEntry<>(DbObjNature.USER, type))
-                .collect(Collectors.toList()));
+        resultColType.addAll(getAllReferencesComplex().entrySet().stream()
+                .flatMap(complexNmsp -> complexNmsp.getValue().stream())
+                .filter(colPair -> columnName.equals(colPair.getFirst()))
+                .map(Pair::getSecond).collect(Collectors.toList()));
 
-        if (resultColTypeWithNatureMark.size() == 1) {
-            return resultColTypeWithNatureMark.get(0).getValue();
-        } else if (resultColTypeWithNatureMark.size() > 1) {
+        if (resultColType.size() == 1) {
+            return resultColType.get(0);
+        } else if (resultColType.size() > 1) {
             // TODO Warn the user about an error of ambiguity in the dialog.
             Log.log(Log.LOG_ERROR, "Ambiguous column reference: " + columnName);
         }
         return TypesSetManually.COLUMN;
     }
 
-    private List<String> getTypeOfCorrespondingColComplex(String columnName,
-            Map<String, List<Pair<String, String>>> colsOfAlias) {
-        List<String> columnTypes = new ArrayList<>();
-        for (Entry<String, List<Pair<String, String>>> nmsp : colsOfAlias.entrySet()) {
-            String colType = getTypeOfCorrespondingCol(columnName, nmsp.getValue());
-            if (colType != null) {
-                columnTypes.add(colType);
-            }
+    private void fillResultColType(String columnName, GenericColumn gTableOrView,
+            List<String> resultColType) {
+        String colType = addFilteredTablelessColumnDepcy(columnName,
+                findRelations(gTableOrView.schema, gTableOrView.table));
+        if (colType != null) {
+            resultColType.add(colType);
         }
-        return columnTypes;
     }
 
-    private String getTypeOfCorrespondingCol(String columnName,
-            List<Pair<String, String>> tableOrViewColumns) {
-        for (Pair<String, String> colPair : tableOrViewColumns) {
-            if (columnName.equals(colPair.getKey())) {
-                return colPair.getValue();
-            }
-        }
-        return null;
-    }
-
-    private Entry<DbObjNature, String> getTypeOfCorrespondingColWithNatureMark(String columnName,
-            List<Entry<DbObjNature, List<Pair<String, String>>>> tblOrViewColsWithNatureMark) {
-        for (Entry<DbObjNature, List<Pair<String, String>>> entryColPairs : tblOrViewColsWithNatureMark) {
-            for (Pair<String, String> colPair : entryColPairs.getValue()) {
+    /**
+     * Add a dependency only from the column of the user object. Always return type
+     * of column 'columnName' or null if there is no column with such name in relations.
+     *
+     * @param relations user or system objects, one of which, perhaps, contains the column 'columnName'
+     * @param columnName dependency from this column will be added
+     * (on condition that one of relations is user object and it contains the column 'columnName')
+     * @return column type
+     */
+    private String addFilteredTablelessColumnDepcy(String columnName, Stream<IRelation> relations) {
+        for (IRelation relation : PgDiffUtils.sIter(relations)) {
+            for (Pair<String, String> colPair :  PgDiffUtils.sIter(relation.getRelationColumns())) {
                 if (columnName.equals(colPair.getKey())) {
-                    return new SimpleEntry<>(entryColPairs.getKey(), colPair.getValue());
+                    if (DbObjNature.USER.equals(relation.getStatementNature())) {
+                        addColumnDepcy(relation.getContainingSchema().getName(),
+                                relation.getName(), columnName);
+                    }
+                    return colPair.getValue();
                 }
             }
         }
         return null;
-    }
-
-    /**
-     * Gives lists of relation columns (name-type) with nature marks
-     * for given schemaName and relationName.
-     *
-     * @param qualSchemaName
-     * @param relationName
-     * @return lists of relation columns (name-type) with nature marks
-     * for given schemaName and relationName
-     */
-    protected List<Entry<DbObjNature, List<Pair<String, String>>>> getRelationColumnsWithNatureMark(String qualSchemaName,
-            String relationName) {
-        return findRelations(qualSchemaName, relationName)
-                .map(r -> new SimpleEntry<>(r.getStatementNature(), r.getRelationColumns().collect(Collectors.toList())))
-                .collect(Collectors.toList());
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
