@@ -36,9 +36,13 @@ implements IDescriptionProvider {
             if (path == null) {
                 if (container.isRoot()) {
                     return Activator.getRegisteredImage(FILE.ICONLIB);
-                } else {
-                    return Activator.getRegisteredImage(FILE.ICONDATABASE);
                 }
+
+                return Activator.getRegisteredImage(FILE.ICONDATABASE);
+            }
+
+            if (container.getParent().isRoot()) {
+                return Activator.getRegisteredImage(FILE.ICONDATABASE);
             }
 
             return Activator.getEclipseImage(Files.isDirectory(path) ?
