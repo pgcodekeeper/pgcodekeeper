@@ -9,6 +9,10 @@ public class DiffContentProvider implements IMergeViewerContentProvider {
 
     private final CompareConfiguration conf;
 
+    public DiffContentProvider() {
+        this(new CompareConfiguration());
+    }
+
     public DiffContentProvider(CompareConfiguration conf) {
         this.conf = conf;
     }

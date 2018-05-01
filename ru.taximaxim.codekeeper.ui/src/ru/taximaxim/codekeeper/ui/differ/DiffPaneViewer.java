@@ -3,13 +3,9 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.util.Collection;
 
 import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -17,8 +13,9 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.comparetools.DiffContentProvider;
+import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class DiffPaneViewer extends Composite {
 
@@ -35,28 +32,12 @@ public class DiffPaneViewer extends Composite {
     public DiffPaneViewer(Composite parent, int style) {
         super(parent, style);
 
-        CompareConfiguration conf = new CompareConfiguration();
-        conf.setLeftEditable(false);
-        conf.setRightEditable(false);
-
         setLayoutData(new GridData(GridData.FILL_BOTH));
         GridLayout filterLayout = new GridLayout();
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         setLayout(filterLayout);
 
-        diffPane = new TextMergeViewer(this, SWT.BORDER, conf) {
-
-            @Override
-            protected void configureTextViewer(TextViewer textViewer) {
-                // viewer configures itself
-            }
-
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent,
-                    int textOrientation) {
-                return new SqlSourceViewer(parent, textOrientation);
-            }
-        };
+        diffPane = new SqlMergeViewer(this, SWT.BORDER, new CompareConfiguration());
         diffPane.setContentProvider(new DiffPaneContentProvider());
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
@@ -66,7 +47,7 @@ public class DiffPaneViewer extends Composite {
         diffPane.setInput(value);
     }
 
-    private class DiffPaneContentProvider implements IMergeViewerContentProvider {
+    private class DiffPaneContentProvider extends DiffContentProvider {
 
         @Override
         public String getRightLabel(Object input) {
@@ -114,56 +95,6 @@ public class DiffPaneViewer extends Composite {
             } else {
                 return null;
             }
-        }
-
-        @Override
-        public boolean showAncestor(Object input) {
-            return false;
-        }
-
-        @Override
-        public void saveRightContent(Object input, byte[] bytes) {
-            //no impl
-        }
-
-        @Override
-        public void saveLeftContent(Object input, byte[] bytes) {
-            //no impl
-        }
-
-        @Override
-        public boolean isRightEditable(Object input) {
-            return false;
-        }
-
-        @Override
-        public boolean isLeftEditable(Object input) {
-            return false;
-        }
-
-        @Override
-        public Image getRightImage(Object input) {
-            return null;
-        }
-
-        @Override
-        public Image getLeftImage(Object input) {
-            return null;
-        }
-
-        @Override
-        public String getAncestorLabel(Object input) {
-            return null;
-        }
-
-        @Override
-        public Image getAncestorImage(Object input) {
-            return null;
-        }
-
-        @Override
-        public Object getAncestorContent(Object input) {
-            return null;
         }
     }
 }

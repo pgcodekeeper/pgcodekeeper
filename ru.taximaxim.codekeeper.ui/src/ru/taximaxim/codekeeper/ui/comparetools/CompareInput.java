@@ -13,14 +13,11 @@ import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.compare.structuremergeviewer.Differencer;
 import org.eclipse.compare.structuremergeviewer.ICompareInput;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import cz.startnet.utils.pgdiff.schema.PgOverride;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class CompareInput extends CompareEditorInput {
 
@@ -47,20 +44,7 @@ public class CompareInput extends CompareEditorInput {
     @Override
     public Viewer findContentViewer(Viewer oldViewer, ICompareInput input, Composite parent) {
         CompareConfiguration conf = getCompareConfiguration();
-        TextMergeViewer diffPane = new TextMergeViewer(parent, SWT.BORDER, conf) {
-
-            @Override
-            protected void configureTextViewer(TextViewer textViewer) {
-                // viewer configure yourself
-            }
-
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent,
-                    int textOrientation) {
-                return new SqlSourceViewer(parent, textOrientation);
-            }
-        };
-
+        TextMergeViewer diffPane = new SqlMergeViewer(parent, SWT.BORDER, conf);
         diffPane.setContentProvider(new DiffContentProvider(conf));
         return diffPane;
     }
