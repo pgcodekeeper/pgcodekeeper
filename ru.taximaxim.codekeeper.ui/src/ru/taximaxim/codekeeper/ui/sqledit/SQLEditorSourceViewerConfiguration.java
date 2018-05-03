@@ -106,11 +106,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return targets;
     }
 
-    @Override
-    public int getTabWidth(ISourceViewer sourceViewer) {
-        return 4;
-    }
-
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {
         DefaultDamagerRepairer commentDamagerRepairer= new DefaultDamagerRepairer(commentScanner);
         reconciler.setDamager(commentDamagerRepairer, contentType);
