@@ -10,12 +10,14 @@ import org.eclipse.swt.graphics.Image;
 
 public class CompareItem implements IStreamContentAccessor, ITypedElement {
 
+    public static final String SQL = "sql"; //$NON-NLS-1$
+
     private final String contents;
     private final String name;
 
     public CompareItem(String name, String contents) {
         this.name = name;
-        this.contents = contents;
+        this.contents = contents == null ? "" : contents; //$NON-NLS-1$
     }
 
     @Override
@@ -35,7 +37,29 @@ public class CompareItem implements IStreamContentAccessor, ITypedElement {
 
     @Override
     public String getType() {
-        //doesn't matter
-        return "sql"; //$NON-NLS-1$
+        return SQL;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((contents == null) ? 0 : contents.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean eq = false;
+
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof CompareItem) {
+            CompareItem val = (CompareItem) obj;
+            eq = name.equals(val.name) && contents.equals(val.contents);
+        }
+
+        return eq;
     }
 }

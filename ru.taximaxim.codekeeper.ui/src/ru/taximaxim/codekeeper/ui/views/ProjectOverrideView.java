@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.views;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
@@ -30,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -142,7 +142,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                 if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
                     Object obj = ((IStructuredSelection) selection).getFirstElement();
                     if (obj instanceof PgOverride) {
-                        CompareUI.openCompareEditor(new CompareInput((PgOverride)obj));
+                        CompareAction.openCompareEditor(new CompareInput((PgOverride)obj));
                     }
                 }
             }

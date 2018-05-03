@@ -24,4 +24,9 @@ public class SqlMergeViewer extends TextMergeViewer {
             int textOrientation) {
         return new SqlSourceViewer(parent, textOrientation);
     }
+
+    @Override
+    public String getTitle() {
+        return "SQL Compare";
+    }
 }

@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
-import org.eclipse.jface.text.Document;
+import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.comparetools.DiffContentProvider;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareItem;
 import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -37,64 +37,53 @@ public class DiffPaneViewer extends Composite {
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         setLayout(filterLayout);
 
-        diffPane = new SqlMergeViewer(this, SWT.BORDER, new CompareConfiguration());
-        diffPane.setContentProvider(new DiffPaneContentProvider());
+        CompareConfiguration conf = new CompareConfiguration() {
+
+            @Override
+            public boolean isMirrored() {
+                return false;
+            }
+        };
+
+        conf.setLeftLabel(Messages.database);
+        conf.setRightLabel(Messages.DiffPaneViewer_project);
+
+        diffPane = new SqlMergeViewer(this, SWT.BORDER, conf);
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
-    public void setInput(TreeElement value, Collection<TreeElement> availableElements) {
+    public void setInput(TreeElement el, Collection<TreeElement> availableElements) {
         this.availableElements = availableElements;
-        diffPane.setInput(value);
+        CompareItem left = new CompareItem(Messages.database, getSql(el, false));
+        CompareItem right = new CompareItem(Messages.DiffPaneViewer_project, getSql(el, true));
+        diffPane.setInput(new DiffNode(left, right));
     }
 
-    private class DiffPaneContentProvider extends DiffContentProvider {
-
-        @Override
-        public String getRightLabel(Object input) {
-            return Messages.DiffPaneViewer_project;
-        }
-
-        @Override
-        public Object getRightContent(Object input) {
-            return input != null ? new Document(getSql((TreeElement) input, true)) : null;
-        }
-
-        @Override
-        public String getLeftLabel(Object input) {
-            return Messages.database;
-        }
-
-        @Override
-        public Object getLeftContent(Object input) {
-            return input != null ? new Document(getSql((TreeElement) input, false)) : null;
-        }
-
-        private String getSql(TreeElement el, boolean project) {
-            String elSql = getElementSql(el, project);
-            if (elSql != null && availableElements != null && el.hasChildren()
-                    && DiffTableViewer.isContainer(el)) {
-                StringBuilder sb = new StringBuilder(elSql);
-                for (TreeElement child : el.getChildren()) {
-                    if (availableElements.contains(child)) {
-                        String childSql = getElementSql(child, project);
-                        if (childSql != null) {
-                            sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
-                        }
+    private String getSql(TreeElement el, boolean project) {
+        String elSql = getElementSql(el, project);
+        if (elSql != null && availableElements != null && el.hasChildren()
+                && DiffTableViewer.isContainer(el)) {
+            StringBuilder sb = new StringBuilder(elSql);
+            for (TreeElement child : el.getChildren()) {
+                if (availableElements.contains(child)) {
+                    String childSql = getElementSql(child, project);
+                    if (childSql != null) {
+                        sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
                     }
                 }
-                return sb.toString();
-            } else {
-                return elSql;
             }
+            return sb.toString();
+        } else {
+            return elSql;
         }
+    }
 
-        private String getElementSql(TreeElement el, boolean project) {
-            if (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH) {
-                DbSource db = project ? dbProject : dbRemote;
-                return el.getPgStatement(db.getDbObject()).getFullSQL();
-            } else {
-                return null;
-            }
+    private String getElementSql(TreeElement el, boolean project) {
+        if (el != null && (el.getSide() == DiffSide.LEFT == project || el.getSide() == DiffSide.BOTH)) {
+            DbSource db = project ? dbProject : dbRemote;
+            return el.getPgStatement(db.getDbObject()).getFullSQL();
+        } else {
+            return null;
         }
     }
 }

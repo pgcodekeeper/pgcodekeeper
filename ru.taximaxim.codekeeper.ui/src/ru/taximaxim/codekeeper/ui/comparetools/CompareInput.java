@@ -8,16 +8,13 @@ import java.text.MessageFormat;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
-import org.eclipse.compare.structuremergeviewer.Differencer;
-import org.eclipse.compare.structuremergeviewer.ICompareInput;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
 
 import cz.startnet.utils.pgdiff.schema.PgOverride;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class CompareInput extends CompareEditorInput {
 
@@ -41,12 +38,16 @@ public class CompareInput extends CompareEditorInput {
         setTitle(MessageFormat.format(TITLE, oldPath, newPath));
     }
 
-    @Override
-    public Viewer findContentViewer(Viewer oldViewer, ICompareInput input, Composite parent) {
-        CompareConfiguration conf = getCompareConfiguration();
-        TextMergeViewer diffPane = new SqlMergeViewer(parent, SWT.BORDER, conf);
-        diffPane.setContentProvider(new DiffContentProvider(conf));
-        return diffPane;
+    public CompareInput(String name, DbObjType type, PgStatement project, PgStatement remote) {
+        super(new CompareConfiguration());
+
+        getCompareConfiguration().setLeftLabel(Messages.database);
+        getCompareConfiguration().setRightLabel(Messages.DiffPaneViewer_project);
+
+        left = new CompareItem(name, project == null ? "" : project.getCreationSQL());
+        right =  new CompareItem(name, remote == null ? "" : remote.getCreationSQL());
+
+        setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
     }
 
     private CompareItem getContent(String path) {
@@ -66,6 +67,29 @@ public class CompareInput extends CompareEditorInput {
     @Override
     protected Object prepareInput(IProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException {
-        return new DiffNode(null, Differencer.CHANGE, null, left, right);
+        return new DiffNode(left, right);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((left == null) ? 0 : left.hashCode());
+        result = prime * result + ((right == null) ? 0 : right.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean eq = false;
+
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof CompareInput) {
+            CompareInput val = (CompareInput) obj;
+            eq = left.equals(val.left) && right.equals(val.right);
+        }
+
+        return eq;
     }
 }
