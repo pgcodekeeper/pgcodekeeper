@@ -414,7 +414,7 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER identifier (TYPE character_string)? (VERSION character_string)?
+    : SERVER (IF NOT EXISTS)? identifier (TYPE character_string)? (VERSION character_string)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options? 
     ; 
