@@ -81,6 +81,7 @@ schema_create
     | create_type_statement
     | create_domain_statement
     | create_server_statement
+    | create_user_mapping
     | create_transform_statement)
 
     | comment_on_statement
@@ -418,6 +419,12 @@ create_server_statement
     FOREIGN DATA WRAPPER identifier
     define_foreign_options? 
     ; 
+    
+create_user_mapping
+    : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
+    SERVER identifier
+    define_foreign_options? 
+    ;
 
 domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
@@ -791,7 +798,12 @@ define_foreign_options
   ;
   
 foreign_option
-  : (ADD | SET | DROP)? name=identifier value=character_string?
+  : (ADD | SET | DROP)? name=foreign_option_name value=character_string?
+  ;
+  
+foreign_option_name
+  : identifier
+  | USER
   ;
 
 list_of_type_column_def
