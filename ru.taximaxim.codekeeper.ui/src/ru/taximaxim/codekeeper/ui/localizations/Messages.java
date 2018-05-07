@@ -376,6 +376,8 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
 
+    public static String IgnoreListProperties_create_new_file;
+
     public static String ImportProjWizard_title;
 
     public static String ImprovePerformanceJdbcLoader_performance_helpers;
