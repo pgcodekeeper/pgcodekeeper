@@ -58,7 +58,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public Stream<PgStatement> getChildren() {
-        // honor the export order
         Stream<PgStatement> stream = Stream.concat(getIndexes().stream(), getTriggers().stream());
         stream = Stream.concat(stream, getRules().stream());
         stream = Stream.concat(stream, getConstraints().stream());

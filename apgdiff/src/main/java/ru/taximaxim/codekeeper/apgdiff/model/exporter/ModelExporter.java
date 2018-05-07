@@ -309,8 +309,7 @@ public class ModelExporter {
         default:
             createParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    stInNew.getStatementType());
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())));
         }
     }
 
@@ -692,11 +691,11 @@ public class ModelExporter {
                         schemaDir.getAbsolutePath()));
             }
             dumpFunctions(schema.getFunctions(), schemaDir);
-            dumpObjects(schema.getSequences(), schemaDir,  DbObjType.SEQUENCE);
-            dumpObjects(schema.getTypes(), schemaDir,  DbObjType.TYPE);
-            dumpObjects(schema.getDomains(), schemaDir,  DbObjType.DOMAIN);
-            dumpObjects(schema.getTables(), schemaDir, DbObjType.TABLE);
-            dumpObjects(schema.getViews(), schemaDir, DbObjType.VIEW);
+            dumpObjects(schema.getSequences(), schemaDir);
+            dumpObjects(schema.getTypes(), schemaDir);
+            dumpObjects(schema.getDomains(), schemaDir);
+            dumpObjects(schema.getTables(), schemaDir);
+            dumpObjects(schema.getViews(), schemaDir);
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
@@ -727,17 +726,19 @@ public class ModelExporter {
         }
     }
 
-    private void dumpObjects(List<? extends PgStatementWithSearchPath> objects, File parentOutDir,
-            DbObjType type) throws IOException {
+    private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
+            File parentOutDir) throws IOException {
         if (!objects.isEmpty()) {
             mkdirObjects(null, parentOutDir.toString());
-            File objectDir = mkdirObjects(parentOutDir, type.name());
+            File objectDir = mkdirObjects(parentOutDir, objects.get(0).getStatementType().name());
 
             for (PgStatementWithSearchPath obj : objects) {
                 String dump = getDumpSql(obj);
                 if (obj.hasChildren()) {
                     StringBuilder groupSql = new StringBuilder(dump);
-                    obj.getChildren().forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false)));
+                    // only tables and views can be here
+                    obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
+                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false)));
                     dump = groupSql.toString();
                 }
 
