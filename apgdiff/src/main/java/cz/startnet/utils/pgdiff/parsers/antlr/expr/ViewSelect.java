@@ -1,14 +1,10 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -22,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Collate_identifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
@@ -45,14 +40,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Qualified_asteriskContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
@@ -82,41 +75,6 @@ public class ViewSelect {
     private final Set<GenericColumn> depcies;
 
     /**
-     * Flags for proper FROM (subquery) analysis.<br>
-     * {@link #findReferenceInNmspc(String, String, String)} assumes that when {@link #inFrom} is set the FROM clause
-     * of that query is analyzed and skips that namespace entirely unless {@link #lateralAllowed} is also set
-     * (when analyzing a lateral FROM subquery or a function call).<br>
-     * This assumes that {@link #from(From_itemContext)} is the first method to fill the namespace.<br>
-     * Note: caller of {@link #from(From_itemContext)} is responsible for setting {@link #inFrom} flag.
-     */
-    private boolean inFrom;
-    /**
-     * @see #inFrom
-     */
-    private boolean lateralAllowed;
-    /**
-     * The local namespace of this Select.<br>
-     * String-Reference pairs keep track of external table aliases and
-     * names.<br>
-     * String-null pairs keep track of internal query names that have only the
-     * Alias.
-     */
-    private final Map<String, GenericColumn> namespace = new HashMap<>();
-    /**
-     * Unaliased namespace keeps track of tables that have no Alias.<br>
-     * It has to be separate since same-named unaliased tables from different
-     * schemas can be used, requiring qualification.
-     */
-    private final Set<GenericColumn> unaliasedNamespace = new HashSet<>();
-    /**
-     * Column alias' are in a separate sets (per table) since they have two
-     * values as the Key. This is not a Map because we don't connect column
-     * aliases with their columns.<br>
-     * Columns of non-dereferenceable objects are aliases by default and need
-     * not to be added to this set.
-     */
-    private final Map<String, Set<String>> columnAliases = new HashMap<>();
-    /**
      * CTE names that current level of FROM has access to.
      */
     private final Set<String> cte = new HashSet<>();
@@ -132,32 +90,6 @@ public class ViewSelect {
         this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
-    }
-
-    private ViewSelect findCte(String cteName) {
-        if (cte.contains(cteName)) {
-            return this;
-        }
-
-        return parent == null ? null : parent.findCte(cteName);
-    }
-
-    private boolean hasCte(String cteName) {
-        return findCte(cteName) != null;
-    }
-
-    public void analyze(ParserRuleContext ruleCtx) {
-        if (ruleCtx instanceof Select_stmtContext) {
-            analyze(new SelectStmt((Select_stmtContext) ruleCtx));
-        } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
-            analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
-        } else {
-            throw new IllegalStateException("Not a select ctx");
-        }
-    }
-
-    public Set<GenericColumn> getDepcies() {
-        return Collections.unmodifiableSet(depcies);
     }
 
     public void analyze(SelectStmt select) {
@@ -178,10 +110,9 @@ public class ViewSelect {
             if (orderBy != null) {
                 orderBy(orderBy);
             }
-            if(vexs != null) {
-                for (VexContext vexCtx : vexs) {
-                    analyze(new Vex(vexCtx));
-                }
+
+            if (vexs != null) {
+                vexs.forEach(v -> analyze(new Vex(v)));
             }
         }
 
@@ -192,123 +123,35 @@ public class ViewSelect {
         }
     }
 
-    private Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
-        if (inFrom && !lateralAllowed) {
-            return null;
+    public Set<GenericColumn> getDepcies() {
+        return Collections.unmodifiableSet(depcies);
+    }
+
+    private ViewSelect findCte(String cteName) {
+        if (cte.contains(cteName)) {
+            return this;
         }
 
-        boolean found;
-        GenericColumn dereferenced = null;
-        if (schema == null && namespace.containsKey(name)) {
-            found = true;
-            dereferenced = namespace.get(name);
-        } else if (!unaliasedNamespace.isEmpty()) {
-            // simple empty check to save some allocations
-            // it will almost always be empty
-            for (GenericColumn unaliased : unaliasedNamespace) {
-                if (unaliased.table.equals(name) &&
-                        (schema == null || unaliased.schema.equals(schema))) {
-                    if (dereferenced == null) {
-                        dereferenced = unaliased;
-                        if (schema != null) {
-                            // fully qualified, no ambiguity search needed
-                            break;
-                        }
-                    } else {
-                        Log.log(Log.LOG_WARNING, "Ambiguous reference: " + name);
-                    }
-                }
-            }
-            found = dereferenced != null;
+        return parent == null ? null : parent.findCte(cteName);
+    }
+
+    private void analyze(ParserRuleContext ruleCtx) {
+        if (ruleCtx instanceof Select_stmtContext) {
+            analyze(new SelectStmt((Select_stmtContext) ruleCtx));
+        } else if (ruleCtx instanceof Select_stmt_no_parensContext) {
+            analyze(new SelectStmt((Select_stmt_no_parensContext) ruleCtx));
         } else {
-            found = false;
-        }
-
-        if (found) {
-            // column aliases imply there must be a corresponding table alias
-            // so we may defer their lookup until here
-
-            // also, if we cannot dereference an existing name it's safe to assume
-            // all its columns are aliases
-            // this saves a lookup and extra space in columnAliases
-            if (column != null && dereferenced != null) {
-                Set<String> columns = columnAliases.get(name);
-                if (columns != null && columns.contains(column)) {
-                    dereferenced = null;
-                }
-            }
-            return new SimpleEntry<>(name, dereferenced);
-        } else {
-            return null;
+            throw new IllegalStateException("Not a select ctx");
         }
     }
 
-    /**
-     * Clients may use this to setup pseudo-variable names before expression analysis.
-     */
-    public boolean addReference(String alias, GenericColumn object) {
-        boolean exists = namespace.containsKey(alias);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate namespace entry: " + alias);
-        } else {
-            namespace.put(alias, object);
-        }
-        return !exists;
-    }
-
-    private boolean addRawTableReference(GenericColumn qualifiedTable) {
-        boolean exists = !unaliasedNamespace.add(qualifiedTable);
-        if (exists) {
-            Log.log(Log.LOG_WARNING,
-                    "Duplicate unaliased table: " + qualifiedTable.schema + ' ' + qualifiedTable.table);
-        }
-        return !exists;
-    }
-
-    private boolean addColumnReference(String alias, String column) {
-        Set<String> columns = columnAliases.get(alias);
-        if (columns == null) {
-            columns = new HashSet<>();
-            columnAliases.put(alias, columns);
-        }
-        boolean exists = !columns.add(column);
-        if (exists) {
-            Log.log(Log.LOG_WARNING, "Duplicate column alias: " + alias + ' ' + column);
-        }
-        return !exists;
-    }
-
-    private void addNameReference(Schema_qualified_nameContext name, Alias_clauseContext alias) {
-        if (alias == null) {
-            addNameReference(name, null, null);
-        } else {
-            addNameReference(name, alias.alias, alias.column_alias);
-        }
-    }
-
-    private void addNameReference(Schema_qualified_nameContext name, IdentifierContext alias,
-            List<IdentifierContext> columnAliases) {
+    private void addNameReference(Schema_qualified_nameContext name) {
         List<IdentifierContext> ids = name.identifier();
         String firstName = QNameParser.getFirstName(ids);
 
-        boolean isCte = ids.size() == 1 && hasCte(firstName);
-        GenericColumn depcy = null;
+        boolean isCte = ids.size() == 1 && findCte(firstName) != null;
         if (!isCte) {
-            depcy = addObjectDepcy(ids, DbObjType.TABLE);
-        }
-
-        if (alias != null) {
-            String aliasName = alias.getText();
-            boolean added = addReference(aliasName, depcy);
-            if (!added && !isCte && columnAliases != null && !columnAliases.isEmpty()) {
-                for (IdentifierContext columnAlias : columnAliases) {
-                    addColumnReference(aliasName, columnAlias.getText());
-                }
-            }
-        } else if (isCte) {
-            addReference(firstName, null);
-        } else {
-            addRawTableReference(depcy);
+            addObjectDepcy(ids, DbObjType.TABLE);
         }
     }
 
@@ -357,26 +200,14 @@ public class ViewSelect {
             if (primary.SELECT() != null) {
                 // from defines the namespace so it goes before everything else
                 if (primary.FROM() != null) {
-                    boolean oldFrom = inFrom;
-                    try {
-                        inFrom = true;
-                        for (From_itemContext fromItem : primary.from_item()) {
-                            from(fromItem);
-                        }
-                    } finally {
-                        inFrom = oldFrom;
-                    }
+                    primary.from_item().forEach(this::from);
                 }
 
-                for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                    analyze(new Vex(target.vex()));
-                }
+                primary.select_list().select_sublist().forEach(t -> analyze(new Vex(t.vex())));
 
                 if ((primary.set_qualifier() != null && primary.ON() != null)
                         || primary.WHERE() != null || primary.HAVING() != null) {
-                    for (VexContext v : primary.vex()) {
-                        analyze(new Vex(v));
-                    }
+                    primary.vex().forEach(v -> analyze(new Vex(v)));
                 }
 
                 Groupby_clauseContext groupBy = primary.groupby_clause();
@@ -388,9 +219,7 @@ public class ViewSelect {
                         if (groupingSet != null) {
                             groupingSet(groupingSet);
                         } else if ((groupingSets = group.grouping_set_list()) != null) {
-                            for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                                groupingSet(groupingSubset);
-                            }
+                            groupingSets.ordinary_grouping_set_list().ordinary_grouping_set().forEach(this::groupingSet);
                         }
                     }
                 }
@@ -404,9 +233,7 @@ public class ViewSelect {
                 addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
             } else if ((values = primary.values_stmt()) != null) {
                 for (Values_valuesContext vals : values.values_values()) {
-                    for (VexContext v : vals.vex()) {
-                        analyze(new Vex(v));
-                    }
+                    vals.vex().forEach(v -> analyze(new Vex(v)));
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
@@ -422,9 +249,7 @@ public class ViewSelect {
         if (v != null) {
             analyze(new Vex(v));
         } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            for (VexContext predicand : predicandList.vex()) {
-                analyze(new Vex(predicand));
-            }
+            predicandList.vex().forEach(p -> analyze(new Vex(p)));
         }
     }
 
@@ -441,9 +266,7 @@ public class ViewSelect {
                 // consequence of this method: no way to connect column references with the tables inside the join
                 // that would require analyzing the table schemas and actually "performing" the join
                 ViewSelect fromProcessor = new ViewSelect(this);
-                fromProcessor.inFrom = true;
                 fromProcessor.from(fromItem.from_item(0));
-                addReference(joinAlias.alias.getText(), null);
             } else {
                 from(fromItem.from_item(0));
             }
@@ -453,75 +276,25 @@ public class ViewSelect {
 
             if (fromItem.ON() != null) {
                 VexContext joinOn = fromItem.vex();
-                boolean oldLateral = lateralAllowed;
-                // technically incorrect simplification
-                // joinOn expr only does not have access to anything in this FROM
-                // except JOIN operand subtrees
-                // but since we're not doing expression validity checks
-                // we pretend that joinOn has access to everything
-                // that a usual LATERAL expr has access to
-                // this greatly simplifies analysis logic here
-                try {
-                    lateralAllowed = true;
-                    analyze(new Vex(joinOn));
-                } finally {
-                    lateralAllowed = oldLateral;
-                }
+                analyze(new Vex(joinOn));
             }
         } else if ((primary = fromItem.from_primary()) != null) {
             Schema_qualified_nameContext table = primary.schema_qualified_name();
-            Alias_clauseContext alias = primary.alias_clause();
             Table_subqueryContext subquery;
             Function_callContext function;
 
             if (table != null) {
-                addNameReference(table, alias);
+                addNameReference(table);
             } else if ((subquery = primary.table_subquery()) != null) {
-                boolean oldLateral = lateralAllowed;
-                try {
-                    lateralAllowed = primary.LATERAL() != null;
-                    new ViewSelect(this).analyze(subquery.select_stmt());
-                    addReference(alias.alias.getText(), null);
-                } finally {
-                    lateralAllowed = oldLateral;
-                }
+                new ViewSelect(this).analyze(subquery.select_stmt());
             } else if ((function = primary.function_call()) != null) {
-                boolean oldLateral = lateralAllowed;
-                try {
-                    lateralAllowed = true;
-                    GenericColumn func = function(function);
-                    if (func != null) {
-                        String funcAlias = primary.alias == null ? func.table :
-                            primary.alias.getText();
-                        addReference(funcAlias, null);
-                    }
-                } finally {
-                    lateralAllowed = oldLateral;
-                }
+                function(function);
             } else {
                 Log.log(Log.LOG_WARNING, "No alternative in from_primary!");
             }
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
         }
-    }
-
-    /**
-     * @param schema optional schema qualification of name, may be null
-     * @param name alias of the referenced object
-     * @param column optional referenced column alias, may be null
-     * @return a pair of (Alias, Dealiased name) where Alias is the given name.
-     *          Dealiased name can be null if the name is internal to the query
-     *          and is not a reference to external table.<br>
-     *          null if the name is not found
-     */
-    private Entry<String, GenericColumn> findReference(String schema, String name, String column) {
-        Entry<String, GenericColumn> ref = findReferenceInNmspc(schema, name, column);
-        if (ref == null) {
-            return parent == null ? null : parent.findReference(schema, name, column);
-        }
-
-        return ref;
     }
 
     private GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
@@ -549,31 +322,6 @@ public class ViewSelect {
 
             depcies.add(new GenericColumn(schema,
                     typeName.identifier_nontype().getText(), DbObjType.TYPE));
-        }
-    }
-
-    /**
-     * @return column name or null if referenced qname is not found
-     */
-    private void addColumnDepcy(Schema_qualified_nameContext qname) {
-        List<IdentifierContext> ids = qname.identifier();
-
-        // TODO table-less columns are pending full analysis
-        if (ids.size() > 1) {
-            String column = QNameParser.getFirstName(ids);
-            String schema = QNameParser.getThirdName(ids);
-            String table = QNameParser.getSecondName(ids);
-
-            Entry<String, GenericColumn> ref = findReference(schema, table, column);
-            if (ref == null) {
-                Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schema + ' ' + table + ' ' + column);
-            } else {
-                GenericColumn referencedTable = ref.getValue();
-                if (referencedTable != null) {
-                    depcies.add(new GenericColumn(referencedTable.schema, referencedTable.table, column, DbObjType.COLUMN));
-                }
-            }
         }
     }
 
@@ -622,11 +370,9 @@ public class ViewSelect {
         addObjectDepcy(new QNameParser(s).getIds(), regcastType);
     }
 
-    public void analyze(Vex vex) {
+    private void analyze(Vex vex) {
         Data_typeContext dataType = vex.dataType();
-        @SuppressWarnings("unused")
         // TODO OpCtx user-operator reference
-        Collate_identifierContext collate;
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
@@ -653,15 +399,11 @@ public class ViewSelect {
                             customType.getText());
                 }
             }
-        } else if ((collate = vex.collateIdentifier()) != null) {
-            // TODO pending DbObjType.COLLATION
         } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new ViewSelect(this).analyze(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
-            for (VexContext v : overlaps.vex()) {
-                analyze(new Vex(v));
-            }
+            overlaps.vex().forEach(v -> analyze(new Vex(v)));
         } else if ((primary = vex.primary()) != null) {
             Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
             Case_expressionContext caseExpr;
@@ -669,10 +411,7 @@ public class ViewSelect {
             Comparison_modContext compMod;
             Table_subqueryContext subquery;
             Function_callContext function;
-            Schema_qualified_nameContext qname;
             Indirection_identifierContext indirection;
-            @SuppressWarnings("unused")
-            Qualified_asteriskContext ast;
             Array_expressionContext array;
             Type_coercionContext typeCoercion;
             List<Vex> subOperands = null;
@@ -697,12 +436,8 @@ public class ViewSelect {
                 new ViewSelect(this).analyze(subquery.select_stmt());
             } else if ((function = primary.function_call()) != null) {
                 function(function);
-            } else if ((qname = primary.schema_qualified_name()) != null) {
-                addColumnDepcy(qname);
             } else if ((indirection = primary.indirection_identifier()) != null) {
                 analyze(new Vex(indirection.vex()));
-            } else if ((ast = primary.qualified_asterisk()) != null) {
-                // TODO pending full analysis
             } else if ((array = primary.array_expression()) != null) {
                 Array_bracketsContext arrayb = array.array_brackets();
                 if (arrayb != null) {
@@ -725,16 +460,13 @@ public class ViewSelect {
 
         List<Vex> operands = vex.vex();
         if (!operands.isEmpty()) {
-            for (Vex v : operands) {
-                analyze(v);
-            }
+            operands.forEach(this::analyze);
         } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
         }
     }
 
-
-    public void window(Window_definitionContext window) {
+    private void window(Window_definitionContext window) {
         Partition_by_columnsContext partition = window.partition_by_columns();
         if (partition != null) {
             for (VexContext v : partition.vex()) {
@@ -758,7 +490,7 @@ public class ViewSelect {
         }
     }
 
-    public void orderBy(Orderby_clauseContext orderBy) {
+    private void orderBy(Orderby_clauseContext orderBy) {
         for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
             analyze(new Vex(sort.vex()));
         }
@@ -767,7 +499,7 @@ public class ViewSelect {
     /**
      * @return function reference or null for internal functions
      */
-    public GenericColumn function(Function_callContext function) {
+    private GenericColumn function(Function_callContext function) {
         GenericColumn ret = null;
         List<Vex> args = null;
 
@@ -820,7 +552,6 @@ public class ViewSelect {
         }
         return ret;
     }
-
 
     private List<Vex> addVexCtxtoList(List<Vex> l, List<VexContext> ctx) {
         int toAdd = ctx.size();
