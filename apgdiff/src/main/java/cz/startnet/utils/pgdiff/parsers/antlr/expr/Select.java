@@ -320,7 +320,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    private void from(From_itemContext fromItem) {
+    void from(From_itemContext fromItem) {
         From_primaryContext primary;
 
         if (fromItem.LEFT_PAREN() != null && fromItem.RIGHT_PAREN() != null) {

@@ -1972,7 +1972,7 @@ delete_stmt_for_psql
 update_stmt_for_psql
   : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   SET update_set (COMMA update_set)*
-  (FROM using_table (COMMA using_table)*)?
+  (FROM from_item (COMMA from_item)*)?
   (WHERE (vex | WHERE CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
