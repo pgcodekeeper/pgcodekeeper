@@ -22,20 +22,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -312,8 +309,7 @@ public class ModelExporter {
         default:
             createParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew),
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
-                    stInNew.getStatementType().name());
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())));
         }
     }
 
@@ -387,7 +383,7 @@ public class ModelExporter {
      * It is expected to be popped from the {@link #changeList}.
      */
     private void processTableAndContents(TreeElement el, PgStatement st,
-            TreeElement elCause) throws IOException{
+            TreeElement elCause) throws IOException {
         if (el.getSide() == DiffSide.LEFT && el.isSelected()) {
             // table is dropped entirely
             return;
@@ -412,10 +408,8 @@ public class ModelExporter {
         if (oldParentSchema != null) {
             oldTable = oldParentSchema.getTable(st.getName());
             if (oldTable != null) {
-                contents.addAll(oldTable.getConstraints());
-                contents.addAll(oldTable.getIndexes());
-                contents.addAll(oldTable.getTriggers());
-                contents.addAll(oldTable.getRules());
+                contents.addAll(oldTable.getChildren().map(
+                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
             }
         }
         // table to dump, initially assume old unmodified state
@@ -501,7 +495,7 @@ public class ModelExporter {
             it.remove();
         }
 
-        dumpTable(tablePrimary, contents, new File(outDir, getRelativeFilePath(
+        dumpContainer(tablePrimary, contents, new File(outDir, getRelativeFilePath(
                 newParentSchema == null ? oldParentSchema : newParentSchema, false)));
     }
 
@@ -535,8 +529,8 @@ public class ModelExporter {
         if (oldParentSchema != null) {
             oldView = oldParentSchema.getView(st.getName());
             if (oldView != null) {
-                contents.addAll(oldView.getRules());
-                contents.addAll(oldView.getTriggers());
+                contents.addAll(oldView.getChildren().map(
+                        e -> (PgStatementWithSearchPath)e).collect(Collectors.toList()));
             }
         }
         // view to dump, initially assume old unmodified state
@@ -608,40 +602,31 @@ public class ModelExporter {
             it.remove();
         }
 
-        dumpView(viewPrimary, contents, new File(outDir, getRelativeFilePath(
+        dumpContainer(viewPrimary, contents, new File(outDir, getRelativeFilePath(
                 newParentSchema == null ? oldParentSchema : newParentSchema, false)));
     }
 
 
-    private void dumpTable(PgTable table, List<PgStatementWithSearchPath> contents,
+    private void dumpContainer(PgStatement obj, List<PgStatementWithSearchPath> contents,
             File parentDir) throws IOException {
         mkdirObjects(null, parentDir.toString());
-        File tablesDir = mkdirObjects(parentDir, "TABLE");
+        DbObjType type = obj.getStatementType();
 
-        Collections.sort(contents, ExportTableOrder.INSTANCE);
+        File tablesDir = mkdirObjects(parentDir, type.name());
 
-        StringBuilder groupSql = new StringBuilder(getDumpSql(table));
+        if (type == DbObjType.TABLE) {
+            Collections.sort(contents, ExportTableOrder.INSTANCE);
+        }
+
+        StringBuilder groupSql = new StringBuilder(getDumpSql(obj, true));
 
         for (PgStatementWithSearchPath st : contents) {
             groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
         }
 
-        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
+        dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(obj)));
     }
 
-    private void dumpView(PgView view, List<PgStatementWithSearchPath> contents,
-            File parentDir) throws IOException {
-        mkdirObjects(null, parentDir.toString());
-        File viewsDir = mkdirObjects(parentDir, "VIEW");
-
-        StringBuilder groupSql = new StringBuilder(getDumpSql(view));
-
-        for (PgStatementWithSearchPath st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
-        }
-
-        dumpSQL(groupSql, new File(viewsDir, getExportedFilenameSql(view)));
-    }
     /*
      * =============================================
      * FULL EXPORT PART
@@ -663,7 +648,7 @@ public class ModelExporter {
                             subdirName));
                 }
             }
-        } else if(!outDir.mkdirs()) {
+        } else if (!outDir.mkdirs()) {
             throw new DirectoryException(MessageFormat.format(
                     "Could not create output directory: {0}",
                     outDir.getAbsolutePath()));
@@ -692,7 +677,7 @@ public class ModelExporter {
                     extensionsDir.getAbsolutePath()));
         }
 
-        for(PgExtension ext : newDb.getExtensions()) {
+        for (PgExtension ext : newDb.getExtensions()) {
             File extSQL = new File(extensionsDir, getExportedFilenameSql(ext));
             dumpSQL(ext.getCreationSQL(), extSQL);
         }
@@ -706,11 +691,11 @@ public class ModelExporter {
                         schemaDir.getAbsolutePath()));
             }
             dumpFunctions(schema.getFunctions(), schemaDir);
-            dumpObjects(schema.getSequences(), schemaDir, "SEQUENCE");
-            dumpObjects(schema.getTypes(), schemaDir, "TYPE");
-            dumpObjects(schema.getDomains(), schemaDir, "DOMAIN");
-            dumpTables(schema.getTables(), schemaDir);
-            dumpViews(schema.getViews(), schemaDir);
+            dumpObjects(schema.getSequences(), schemaDir);
+            dumpObjects(schema.getTypes(), schemaDir);
+            dumpObjects(schema.getDomains(), schemaDir);
+            dumpObjects(schema.getTables(), schemaDir);
+            dumpObjects(schema.getViews(), schemaDir);
 
             // indexes, triggers, rules, constraints are dumped when tables are processed
         }
@@ -741,69 +726,24 @@ public class ModelExporter {
         }
     }
 
-    private void dumpTables(List<PgTable> tables, File parentDir) throws IOException {
-        if (tables.isEmpty()) {
-            return;
-        }
-        mkdirObjects(null, parentDir.toString());
-        File tablesDir = mkdirObjects(parentDir, "TABLE");
-
-        for (PgTable table : tables) {
-            StringBuilder groupSql = new StringBuilder(getDumpSql(table));
-
-            // please honor the order imposed by ExportTableOrder here
-            for (PgIndex idx : table.getIndexes()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
-            }
-
-            for (PgTrigger trig : table.getTriggers()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
-            }
-
-            for (PgRule rule : table.getRules()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
-            }
-
-            for (PgConstraint constr : table.getConstraints()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
-            }
-
-            dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
-        }
-    }
-
-    private void dumpViews(List<PgView> views, File parentDir) throws IOException {
-        if (views.isEmpty()) {
-            return;
-        }
-        mkdirObjects(null, parentDir.toString());
-        File tablesDir = mkdirObjects(parentDir, "VIEW");
-
-        for (PgView view : views) {
-            StringBuilder groupSql = new StringBuilder(getDumpSql(view));
-
-            for (PgRule rule : view.getRules()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(rule, false));
-            }
-
-            for (PgTrigger trigger : view.getTriggers()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trigger, false));
-            }
-
-            dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(view)));
-        }
-    }
-
     private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
-            File parentOutDir, String objectDirName) throws IOException {
-        if (objects.isEmpty()) {
-            return;
-        }
-        mkdirObjects(null, parentOutDir.toString());
-        File objectDir = mkdirObjects(parentOutDir, objectDirName);
+            File parentOutDir) throws IOException {
+        if (!objects.isEmpty()) {
+            mkdirObjects(null, parentOutDir.toString());
+            File objectDir = mkdirObjects(parentOutDir, objects.get(0).getStatementType().name());
 
-        for (PgStatementWithSearchPath obj : objects) {
-            dumpSQL(getDumpSql(obj), new File(objectDir, getExportedFilenameSql(obj)));
+            for (PgStatementWithSearchPath obj : objects) {
+                String dump = getDumpSql(obj);
+                if (obj.hasChildren()) {
+                    StringBuilder groupSql = new StringBuilder(dump);
+                    // only tables and views can be here
+                    obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
+                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false)));
+                    dump = groupSql.toString();
+                }
+
+                dumpSQL(dump, new File(objectDir, getExportedFilenameSql(obj)));
+            }
         }
     }
 
@@ -864,9 +804,10 @@ public class ModelExporter {
         return getDumpSql(statement, true);
     }
 
-    private String getDumpSql(PgStatementWithSearchPath statement, boolean searchPath) {
-        return searchPath ? statement.getSearchPath() + "\n\n" + statement.getFullSQL() : //$NON-NLS-1$
-            statement.getFullSQL();
+    private String getDumpSql(PgStatement statement, boolean searchPath) {
+        return searchPath ? ((PgStatementWithSearchPath)statement).getSearchPath()
+                + "\n\n" + statement.getFullSQL() : statement.getFullSQL();//$NON-NLS-1$
+
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {

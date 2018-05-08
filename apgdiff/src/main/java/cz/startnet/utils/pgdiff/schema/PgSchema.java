@@ -171,6 +171,31 @@ public class PgSchema extends PgStatement implements ISchema {
                 getSequences().stream());
     }
 
+    @Override
+    public Stream<PgStatement> getDescendants() {
+        Stream<PgStatement> stream = getChildren();
+
+        for (PgTable tab : getTables()) {
+            stream = Stream.concat(stream, tab.getDescendants());
+        }
+
+        for (PgView view : getViews()) {
+            stream = Stream.concat(stream, view.getDescendants());
+        }
+
+        return stream;
+    }
+
+    @Override
+    public Stream<PgStatement> getChildren() {
+        Stream<PgStatement> stream = Stream.concat(getFunctions().stream(), getSequences().stream());
+        stream = Stream.concat(stream, getTypes().stream());
+        stream = Stream.concat(stream, getDomains().stream());
+        stream = Stream.concat(stream, getTables().stream());
+        stream = Stream.concat(stream, getViews().stream());
+        return stream;
+    }
+
     /**
      * Finds sequence according to specified sequence {@code name}.
      *

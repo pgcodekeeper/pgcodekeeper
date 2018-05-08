@@ -29,8 +29,8 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -199,8 +199,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
-        return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
-                .values().stream().filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
+        return buildFiles(Arrays.asList(file), null, null).getDescendants().
+                filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
