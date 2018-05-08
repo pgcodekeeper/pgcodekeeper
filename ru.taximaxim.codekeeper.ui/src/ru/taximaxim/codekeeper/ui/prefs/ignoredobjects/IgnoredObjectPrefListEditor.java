@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.InputDialog;
@@ -189,7 +190,12 @@ class NewIgnoredObjectDialog extends InputDialog {
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
-            comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().iterator().next()));
+
+            try {
+                comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().iterator().next()));
+            } catch (NoSuchElementException e) {
+                // no action
+            }
         }
 
         return composite;

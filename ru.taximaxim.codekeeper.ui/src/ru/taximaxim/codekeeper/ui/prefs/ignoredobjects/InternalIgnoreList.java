@@ -89,6 +89,19 @@ public final class InternalIgnoreList {
         }
     }
 
+    public static IgnoreList getIgnoreListFromPath(Path filePath) {
+        try {
+            // Get IgnoreList object filled by rules.
+            IgnoreList ignoreList = new IgnoreParser().parse(filePath).getIgnoreList();
+
+            ignoreList.setPath(filePath);
+            return ignoreList;
+        } catch (IOException ex) {
+            ExceptionNotifier.notifyDefault(Messages.InternalIgnoreList_error_get_file, ex);
+            return new IgnoreList();
+        }
+    }
+
     private InternalIgnoreList() {
     }
 }
