@@ -7,17 +7,18 @@ public class PgOverride {
     private final String name;
     private final DbObjType type;
     private final String newLocation;
+    private final String newSql;
     private final String oldLocation;
+    private final String oldSql;
 
-    public PgOverride(PgStatement st, String oldLocation) {
-        this(st.getName(), st.getStatementType(), st.getLocation(), oldLocation);
-    }
 
-    public PgOverride(String name, DbObjType type, String newLocation, String oldLocation) {
-        this.name = name;
-        this.type = type;
-        this.newLocation = newLocation;
-        this.oldLocation = oldLocation;
+    public PgOverride(PgStatement newSt, PgStatement oldSt) {
+        name = newSt.getName();
+        type = newSt.getStatementType();
+        newLocation = newSt.getLocation();
+        newSql = newSt.getCreationSQL();
+        oldLocation = oldSt.getLocation();
+        oldSql = oldSt.getCreationSQL();
     }
 
     public String getName() {
@@ -28,8 +29,16 @@ public class PgOverride {
         return type;
     }
 
+    public String getNewSql() {
+        return newSql;
+    }
+
     public String getNewLocation() {
         return newLocation;
+    }
+
+    public String getOldSql() {
+        return oldSql;
     }
 
     public String getOldLocation() {

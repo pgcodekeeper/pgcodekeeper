@@ -1,9 +1,6 @@
 package ru.taximaxim.codekeeper.ui.comparetools;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 import org.eclipse.compare.CompareConfiguration;
@@ -29,8 +26,8 @@ public class CompareInput extends CompareEditorInput {
         String oldPath = override.getOldLocation();
         String newPath = override.getNewLocation();
 
-        left = getContent(oldPath);
-        right = getContent(newPath);
+        left = new CompareItem(oldPath, override.getOldSql());
+        right = new CompareItem(newPath, override.getNewSql());
 
         getCompareConfiguration().setLeftLabel(oldPath);
         getCompareConfiguration().setRightLabel(newPath);
@@ -48,20 +45,6 @@ public class CompareInput extends CompareEditorInput {
         right =  new CompareItem(name, remote == null ? "" : remote.getCreationSQL());
 
         setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
-    }
-
-    private CompareItem getContent(String path) {
-        if (path.startsWith("jdbc:")) { //$NON-NLS-1$
-            return new CompareItem(path, "JDBC content is not available"); //$NON-NLS-1$
-        }
-
-        String content;
-        try {
-            content = new String(Files.readAllBytes(Paths.get(path)));
-        } catch (IOException e) {
-            content = "File not found"; //$NON-NLS-1$
-        }
-        return new CompareItem(path, content);
     }
 
     @Override
