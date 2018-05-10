@@ -49,11 +49,9 @@ public class TablesReader extends JdbcReader {
         String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
-        boolean isPartition = false;
         String partitionBound = null;
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version) && res.getBoolean("relispartition")) {
-            isPartition = true;
             partitionBound = res.getString("partition_bound");
             checkDefinition(partitionBound, getType(), tableName);
         }
@@ -61,17 +59,17 @@ public class TablesReader extends JdbcReader {
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
-            if (isPartition) {
-                t = new PartitionForeignPgTable(tableName, "", serverName, partitionBound);
-            } else {
+            if (partitionBound == null) {
                 t = new SimpleForeignPgTable(tableName, "", serverName);
+            } else {
+                t = new PartitionForeignPgTable(tableName, "", serverName, partitionBound);
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName(schemaName);
             t = new TypedPgTable(tableName, "", ofType);
             jdbcOfType.addTypeDepcy(t);
-        } else if (isPartition) {
+        } else if (partitionBound != null) {
             t = new PartitionPgTable(tableName, "", partitionBound);
         } else {
             t = new SimplePgTable(tableName, "");
