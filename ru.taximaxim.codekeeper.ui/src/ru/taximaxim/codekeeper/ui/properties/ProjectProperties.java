@@ -57,6 +57,7 @@ public class ProjectProperties extends PropertyPage {
 
         btnForceUnixNewlines = new Button(panel, SWT.CHECK);
         btnForceUnixNewlines.setText(Messages.ProjectProperties_force_unix_newlines);
+        btnForceUnixNewlines.setToolTipText(Messages.ProjectProperties_force_unix_newlines_desc);
         btnForceUnixNewlines.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnForceUnixNewlines.setSelection(prefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
 

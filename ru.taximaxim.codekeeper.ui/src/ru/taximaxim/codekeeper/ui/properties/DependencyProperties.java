@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -63,11 +62,8 @@ public class DependencyProperties extends PropertyPage {
 
     @Override
     protected Control createContents(Composite parent) {
-        Composite area = new Composite(parent, SWT.NONE);
-        area.setLayout(new GridLayout(2, false));
-
-        editor = new DependenciesListEditor(area);
-        editor.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        editor = new DependenciesListEditor(parent);
+        editor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         List<PgLibrary> input;
         try {
@@ -78,13 +74,12 @@ public class DependencyProperties extends PropertyPage {
         }
         editor.setInputList(input);
 
-        btnSafeMode = new Button(area, SWT.CHECK);
-        btnSafeMode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        btnSafeMode = new Button(parent, SWT.CHECK);
         btnSafeMode.setText(Messages.DependencyProperties_safe_mode);
         btnSafeMode.setToolTipText(Messages.DependencyProperties_safe_mode_desc);
         btnSafeMode.setSelection(prefs.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
 
-        return area;
+        return parent;
     }
 
     @Override
