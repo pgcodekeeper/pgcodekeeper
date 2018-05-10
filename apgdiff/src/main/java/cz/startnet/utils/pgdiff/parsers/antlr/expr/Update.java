@@ -3,10 +3,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 import java.util.Collections;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Update_stmt_for_psqlContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Using_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
@@ -33,8 +33,9 @@ public class Update extends AbstractExprWithNmspc<Update_stmt_for_psqlContext> {
         addNameReference(update.update_table_name, update.alias, null);
 
         if (update.FROM() != null) {
-            for (Using_tableContext usingTable : update.using_table()) {
-                addNameReference(usingTable.schema_qualified_name(), usingTable.alias_clause());
+            for (From_itemContext fromItem : update.from_item()) {
+                //TODO collect to current namespace
+                new Select(this).from(fromItem);
             }
         }
 
