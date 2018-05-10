@@ -1,75 +1,48 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
-import java.nio.file.Path;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.io.File;
+import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.eclipse.core.resources.IProject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
-public class IgnoreListsXmlStore {
+public class IgnoreListsXmlStore extends XmlStore<String> {
 
-    private final Path storeFilePath;
-    private final IgnoreListsPathsStore store = new IgnoreListsPathsStore();
+    private static final String ROOT_TAG = "IgnoreListsPathsStore";
+    private static final String ENTRY = "IgnoreListPath";
 
-    public IgnoreListsXmlStore(Path storeFilePath) {
-        this.storeFilePath = storeFilePath;
+    private final File file;
+
+    public IgnoreListsXmlStore(File file) {
+        super(file.getName(), ROOT_TAG);
+        this.file = file;
     }
 
-    public void setIgnoreListsPaths(Set<Path> ignoreListsPaths) {
-        ignoreListsPaths.forEach(ignoreListPath -> store.getIgnoreListsPaths()
-                .add(ignoreListPath.toString()));
+    public IgnoreListsXmlStore(IProject proj) {
+        this(new File(new File(proj.getLocation().toFile(), ".settings"), FILE.IGNORE_LISTS_STORE));
     }
 
-    public void writeIgnoreListsPathsToXml() {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(IgnoreListsPathsStore.class);
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            jaxbMarshaller.marshal(store, storeFilePath.toFile());
-        } catch(JAXBException ex) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoreListProperties_error_file, storeFilePath), ex);
+    @Override
+    public File getXmlFile() {
+        return file;
+    }
+
+    @Override
+    protected String parseElement(Node node) {
+        return node.getTextContent();
+    }
+
+    @Override
+    protected void appendChildren(Document xml, Element root,
+            List<String> list) {
+        for (String path : list) {
+            Element newElement = xml.createElement(ENTRY);
+            newElement.setTextContent(path);
+            root.appendChild(newElement);
         }
-    }
-
-    public Set<String> readIgnoreListsPathsFromXML() {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(IgnoreListsPathsStore.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            return ((IgnoreListsPathsStore)jaxbUnmarshaller.unmarshal(storeFilePath.toFile()))
-                    .getIgnoreListsPaths();
-        } catch(JAXBException ex) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoreListProperties_error_file, storeFilePath), ex);
-        }
-        return Collections.emptySet();
-    }
-}
-
-@XmlRootElement(name = "IgnoreListsPathsStore")
-@XmlAccessorType(XmlAccessType.NONE)
-class IgnoreListsPathsStore {
-
-    @XmlElement(name="IgnoreListPath")
-    private Set<String> ignoreListsPaths = new LinkedHashSet<>();
-
-    public Set<String> getIgnoreListsPaths() {
-        return ignoreListsPaths;
-    }
-
-    public void setIgnoreListsPaths(Set<String> ignoreListsPaths) {
-        this.ignoreListsPaths = ignoreListsPaths;
     }
 }

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
@@ -36,10 +38,13 @@ public class IgnoreListEditorDialog extends Dialog {
     private IgnoreList currentIgnoreList;
     private Path currentIgnoreListPath;
     private IgnoredObjectPrefListEditor listEditor;
+    private final PrefListEditor<String, ListViewer> editor;
 
-    public IgnoreListEditorDialog(Shell shell, Path currentIgnoreListPath) {
+    public IgnoreListEditorDialog(Shell shell, Path currentIgnoreListPath,
+            PrefListEditor<String, ListViewer> editor) {
         super(shell);
         this.currentIgnoreListPath = currentIgnoreListPath;
+        this.editor = editor;
 
         setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE);
         setBlockOnOpen(false);
@@ -110,7 +115,8 @@ public class IgnoreListEditorDialog extends Dialog {
             String stringPath = dialog.open();
             if (stringPath != null) {
                 currentIgnoreListPath = Paths.get(stringPath);
-                currentIgnoreList.setPath(currentIgnoreListPath);
+                editor.getList().add(stringPath);
+                editor.getViewer().refresh();
             } else {
                 return;
             }

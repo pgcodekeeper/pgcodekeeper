@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -704,15 +703,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
             }
 
-            Path ignoreListsXmlStorePath = Paths.get(proj.getProject().getLocationURI())
-                    .resolve(".settings").resolve(FILE.IGNORE_LISTS_STORE); //$NON-NLS-1$
-            if (ignoreListsXmlStorePath.toFile().exists()) {
-                IgnoreListsXmlStore ignoreListsXmlStore = new IgnoreListsXmlStore(ignoreListsXmlStorePath);
-                Set<String> ignoreListsPaths = ignoreListsXmlStore.readIgnoreListsPathsFromXML();
-
-                for (String ignoreListPath : ignoreListsPaths) {
-                    InternalIgnoreList.readAppendList(Paths.get(ignoreListPath), ignoreList);
+            try {
+                for (String path : new IgnoreListsXmlStore(proj.getProject()).readObjects()) {
+                    InternalIgnoreList.readAppendList(Paths.get(path), ignoreList);
                 }
+            } catch (IOException e) {
+                Log.log(e);
             }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
