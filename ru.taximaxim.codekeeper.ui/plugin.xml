@@ -95,39 +95,39 @@
             name="%command.commandname.UpdateDdl">
         </command>
         <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
-              id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
-              name="%command.commandname.GetSystemObjects">
-        </command>        
-        <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
-              name="%command.commandname.CancelDdl">
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
+            id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
+            name="%command.commandname.GetSystemObjects">
         </command>
         <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDbStore"
-              id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
-              name="%command.commandname.OpenDbStore">
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+            name="%command.commandname.CancelDdl">
         </command>
         <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenObjectWizard"
-              id="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
-              name="%command.commandname.OpenObjectWizard">
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDbStore"
+            id="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
+            name="%command.commandname.OpenDbStore">
         </command>
         <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ConvertProject"
-              id="ru.taximaxim.codekeeper.ui.command.ConvertProject"
-              name="%command.commandname.ConvertProject">
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenObjectWizard"
+            id="ru.taximaxim.codekeeper.ui.command.OpenObjectWizard"
+            name="%command.commandname.OpenObjectWizard">
         </command>
         <command
-              categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-              defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDocs"
-              id="ru.taximaxim.codekeeper.ui.openDocs"
-              name="%command.commandname.OpenDocs">
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ConvertProject"
+            id="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+            name="%command.commandname.ConvertProject">
+        </command>
+        <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenDocs"
+            id="ru.taximaxim.codekeeper.ui.openDocs"
+            name="%command.commandname.OpenDocs">
         </command>
     </extension>
     <extension point="org.eclipse.ui.handlers">
@@ -190,20 +190,20 @@
             </enabledWhen>
         </handler>
         <handler
-              class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
-              commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl">
-           <enabledWhen>
-              <and>
-                 <with variable="activeEditorId">
-                    <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                    </equals>
-                 </with>
-                 <with variable="activeEditor">
-                    <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
-                    </test>
-                 </with>
-              </and>
-           </enabledWhen>
+            class="ru.taximaxim.codekeeper.ui.handlers.CancelDdl"
+            commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditorId">
+                        <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                        </equals>
+                    </with>
+                    <with variable="activeEditor">
+                        <test property="ru.taximaxim.codekeeper.ui.isUpdateDdlRunning">
+                        </test>
+                    </with>
+                </and>
+            </enabledWhen>
         </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
@@ -233,23 +233,22 @@
                 </visibleWhen>
             </menu>
         </menuContribution>
-        <menuContribution
-              locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-           <command
-                 commandId="org.eclipse.ui.newWizard">
-              <parameter
+        <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+            <command commandId="org.eclipse.ui.newWizard">
+                <parameter
                     name="newWizardId"
                     value="ru.taximaxim.codekeeper.ui.mockdatawizard">
-              </parameter>
-              <visibleWhen checkEnabled="false">
-                 <iterate>
-                   <adapt type="org.eclipse.core.resources.IFile">
-                      <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
-                            value="*.sql"/>
-                   </adapt>
-                </iterate>
-              </visibleWhen>
-           </command>
+                </parameter>
+                <visibleWhen checkEnabled="false">
+                    <iterate>
+                        <adapt type="org.eclipse.core.resources.IFile">
+                            <test
+                                property="ru.taximaxim.codekeeper.ui.isTableSelected"
+                                value="*.sql" />
+                        </adapt>
+                    </iterate>
+                </visibleWhen>
+            </command>
         </menuContribution>
         <menuContribution
             allPopups="false"
@@ -382,10 +381,10 @@
                     style="push">
                 </command>
                 <command
-                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
-                      icon="IMG_ELCL_STOP"
-                      label="%command.commandname.CancelDdl"
-                      style="push">
+                    commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                    icon="IMG_ELCL_STOP"
+                    label="%command.commandname.CancelDdl"
+                    style="push">
                 </command>
                 <separator
                     name="ru.taximaxim.codekeeper.ui.separator2"
@@ -433,7 +432,7 @@
                     style="push">
                 </command>
                 <command
-                    commandId = "ru.taximaxim.codekeeper.ui.openDocs"
+                    commandId="ru.taximaxim.codekeeper.ui.openDocs"
                     label="%command.label.openDocs"
                     style="push">
                 </command>
@@ -494,18 +493,18 @@
                     </visibleWhen>
                 </command>
                 <command
-                      commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
-                      icon="IMG_ELCL_STOP"
-                      label="%command.commandname.CancelDdl"
-                      style="push">
-                   <visibleWhen checkEnabled="false">
-                      <and>
-                         <with variable="activeEditorId">
-                            <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
-                            </equals>
-                         </with>
-                      </and>
-                   </visibleWhen>
+                    commandId="ru.taximaxim.codekeeper.ui.command.CancelDdl"
+                    icon="IMG_ELCL_STOP"
+                    label="%command.commandname.CancelDdl"
+                    style="push">
+                    <visibleWhen checkEnabled="false">
+                        <and>
+                            <with variable="activeEditorId">
+                                <equals value="ru.taximaxim.codekeeper.ui.SQLEditor">
+                                </equals>
+                            </with>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.GetChanges"
@@ -525,7 +524,7 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenDbStore"
                     icon="icons/editor_area.png"
                     label="%command.commandname.OpenDbStore"
-                    style="push">                    
+                    style="push">
                     <visibleWhen checkEnabled="true">
                         <with variable="activeEditorId">
                             <or>
@@ -554,45 +553,46 @@
             </toolbar>
         </menuContribution>
         <menuContribution
-              allPopups="false"
-              locationURI="popup:ru.taximaxim.codekeeper.ui.SQLEditor.EditorContext?after=additions">
-           <command commandId="org.eclipse.ui.newWizard">
-                <parameter name="newWizardId" value="ru.taximaxim.codekeeper.ui.mockdatawizard" />
-                 <visibleWhen checkEnabled="false">
-                     <with variable="activeEditorInput">
+            allPopups="false"
+            locationURI="popup:ru.taximaxim.codekeeper.ui.SQLEditor.EditorContext?after=additions">
+            <command commandId="org.eclipse.ui.newWizard">
+                <parameter
+                    name="newWizardId"
+                    value="ru.taximaxim.codekeeper.ui.mockdatawizard" />
+                <visibleWhen checkEnabled="false">
+                    <with variable="activeEditorInput">
                         <adapt type="org.eclipse.core.resources.IFile">
-                            <test property="ru.taximaxim.codekeeper.ui.isTableSelected" 
-                                value="*.sql"/>
+                            <test
+                                property="ru.taximaxim.codekeeper.ui.isTableSelected"
+                                value="*.sql" />
                         </adapt>
-                    </with>    
-                </visibleWhen> 
-           </command>
+                    </with>
+                </visibleWhen>
+            </command>
         </menuContribution>
-        <menuContribution
-              locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
-           <command
-                 commandId="ru.taximaxim.codekeeper.ui.command.ConvertProject"
-                 label="%command.commandname.ConvertProject"
-                 style="push">
-              <visibleWhen checkEnabled="false">
-                  <iterate>
-                      <not>
-                          <test
-                              property="org.eclipse.core.resources.projectNature"
-                              value="ru.taximaxim.codekeeper.ui.nature">
-                          </test>
-                      </not>
-                  </iterate>
-              </visibleWhen>
-           </command>
+        <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.command.ConvertProject"
+                label="%command.commandname.ConvertProject"
+                style="push">
+                <visibleWhen checkEnabled="false">
+                    <iterate>
+                        <not>
+                            <test
+                                property="org.eclipse.core.resources.projectNature"
+                                value="ru.taximaxim.codekeeper.ui.nature">
+                            </test>
+                        </not>
+                    </iterate>
+                </visibleWhen>
+            </command>
         </menuContribution>
-        <menuContribution
-              locationURI="menu:help?before=helpContents">
-           <command
-                 commandId="ru.taximaxim.codekeeper.ui.openDocs"
-                 label="%command.label.openDocs"
-                 style="push"
-                 icon="icons/app_icon16.png">
+        <menuContribution locationURI="menu:help?before=helpContents">
+            <command
+                commandId="ru.taximaxim.codekeeper.ui.openDocs"
+                label="%command.label.openDocs"
+                style="push"
+                icon="icons/app_icon16.png">
                 <visibleWhen checkEnabled="false">
                     <or>
                         <with variable="activeWorkbenchWindow.activePerspective">
@@ -619,7 +619,7 @@
                         </with>
                     </or>
                 </visibleWhen>
-           </command>
+            </command>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.ui.editors">
@@ -695,10 +695,10 @@
             name="%page.name.pgProjectEditor">
         </page>
         <page
-              category="ru.taximaxim.codekeeper.ui.general"
-              class="ru.taximaxim.codekeeper.ui.prefs.UsageReportPreferencePage"
-              id="ru.taximaxim.codekeeper.ui.usageReport"
-              name="%page.name.usageReport">
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.UsageReportPreferencePage"
+            id="ru.taximaxim.codekeeper.ui.usageReport"
+            name="%page.name.usageReport">
         </page>
     </extension>
     <extension point="org.eclipse.ui.importWizards">
@@ -724,12 +724,12 @@
             project="true">
         </wizard>
         <wizard
-              category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-              class="ru.taximaxim.codekeeper.ui.pgdbproject.NewObjectWizard"
-              icon="icons/pgadmin/database.png"
-              id="ru.taximaxim.codekeeper.ui.newobjwizard"
-              name="%wizard.name.newPgSqlObject"
-              project="false">
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.NewObjectWizard"
+            icon="icons/pgadmin/database.png"
+            id="ru.taximaxim.codekeeper.ui.newobjwizard"
+            name="%wizard.name.newPgSqlObject"
+            project="false">
         </wizard>
         <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
@@ -802,7 +802,7 @@
                 </and>
             </enabledWhen>
         </page>
-         <page
+        <page
             category="ru.taximaxim.codekeeper.ui.proj_properties"
             class="ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties"
             id="ru.taximaxim.codekeeper.ui.ignore_properties"
@@ -847,17 +847,17 @@
         </target>
     </extension>
     <extension point="org.eclipse.ui.views">
-    		<category
+        <category
             id="ru.taximaxim.codekeeper.ui.viewsCategory"
             name="%view.category.name">
-    		</category>
+        </category>
         <view
             id="ru.taximaxim.codekeeper.ui.depcyview"
             name="%view.name.DepcyView"
             class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
             icon="IMG_OBJ_ADD"
             category="ru.taximaxim.codekeeper.ui.viewsCategory" />
-       <view
+        <view
             id="ru.taximaxim.codekeeper.ui.pgoverrideview"
             name="%view.name.ProjectOverrideView"
             class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
@@ -892,7 +892,7 @@
             </viewShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newprojwizard">
             </newWizardShortcut>
-             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newobjwizard">
+            <newWizardShortcut id="ru.taximaxim.codekeeper.ui.newobjwizard">
             </newWizardShortcut>
             <newWizardShortcut id="ru.taximaxim.codekeeper.ui.mockdatawizard">
             </newWizardShortcut>
@@ -904,7 +904,7 @@
             </perspectiveShortcut>
             <perspectiveShortcut id="org.eclipse.team.ui.TeamSynchronizingPerspective">
             </perspectiveShortcut>
-           <view
+            <view
                 id="org.eclipse.ui.navigator.ProjectExplorer"
                 minimized="false"
                 ratio="0.25"
@@ -929,7 +929,7 @@
                 minimized="false"
                 relationship="stack"
                 relative="org.eclipse.ui.views.ProgressView">
-            </view>            
+            </view>
             <view
                 id="org.eclipse.ui.views.ContentOutline"
                 minimized="false"
@@ -1130,7 +1130,7 @@
             </triggerPoints>
             <possibleChildren>
                 <or>
-                    <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer"/> 
+                    <instanceof value="ru.taximaxim.codekeeper.ui.views.navigator.LibraryContainer" />
                 </or>
             </possibleChildren>
             <commonSorter class="ru.taximaxim.codekeeper.ui.views.navigator.DisabledSorter">
@@ -1180,16 +1180,14 @@
             </enablement>
         </commonWizard>
         <commonWizard
-              type="new"
-              wizardId="ru.taximaxim.codekeeper.ui.newobjwizard">
-           <enablement>
-              <with
-                    variable="activeWorkbenchWindow.activePerspective">
-                 <equals
-                       value="ru.taximaxim.codekeeper.ui.mainperspective">
-                 </equals>
-              </with>
-           </enablement>
+            type="new"
+            wizardId="ru.taximaxim.codekeeper.ui.newobjwizard">
+            <enablement>
+                <with variable="activeWorkbenchWindow.activePerspective">
+                    <equals value="ru.taximaxim.codekeeper.ui.mainperspective">
+                    </equals>
+                </with>
+            </enablement>
         </commonWizard>
         <commonWizard
             type="new"
@@ -1312,28 +1310,27 @@
             sequence="M3+Insert">
         </key>
     </extension>
-    <extension
-          point="org.eclipse.ui.startup">
-       <startup
-             class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
-       </startup>
+    <extension point="org.eclipse.ui.startup">
+        <startup class="ru.taximaxim.codekeeper.ui.reports.UsageReportDispatcher">
+        </startup>
     </extension>
     <extension point="org.eclipse.compare.contentMergeViewers">
-           <viewer
-                 extensions="sql, sql2"
-                 label="%mergeviewer.name.sqlMergeViewer"
-                 class="ru.taximaxim.codekeeper.ui.comparetools.SqlContentViewerCreator"                 
-                 id="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
-           </viewer>
-           <contentTypeBinding
-                 contentTypeId="ru.taximaxim.codekeeper.ui.SqlContentType"
-                 contentMergeViewerId="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
-           </contentTypeBinding>
+        <viewer
+            extensions="sql, sql2"
+            label="%mergeviewer.name.sqlMergeViewer"
+            class="ru.taximaxim.codekeeper.ui.comparetools.SqlContentViewerCreator"
+            id="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
+        </viewer>
+        <contentTypeBinding
+            contentTypeId="ru.taximaxim.codekeeper.ui.SqlContentType"
+            contentMergeViewerId="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
+        </contentTypeBinding>
     </extension>
     <extension point="org.eclipse.core.contenttype.contentTypes">
-          <content-type id="ru.taximaxim.codekeeper.ui.SqlContentType"
-           name="sql"
-           base-type="org.eclipse.core.runtime.text"
-           file-extensions="sql"/>
+        <content-type
+            id="ru.taximaxim.codekeeper.ui.SqlContentType"
+            name="SQL"
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="sql" />
     </extension>
 </plugin>

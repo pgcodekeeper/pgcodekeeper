@@ -6,6 +6,7 @@ import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class SqlMergeViewer extends TextMergeViewer {
@@ -27,6 +28,6 @@ public class SqlMergeViewer extends TextMergeViewer {
 
     @Override
     public String getTitle() {
-        return "SQL Compare";
+        return Messages.SqlMergeViewer_compare_label;
     }
 }

@@ -12,8 +12,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class IgnoreListsXmlStore extends XmlStore<String> {
 
-    private static final String ROOT_TAG = "IgnoreListsPathsStore";
-    private static final String ENTRY = "IgnoreListPath";
+    private static final String ROOT_TAG = "IgnoreListsPathsStore"; //$NON-NLS-1$
+    private static final String ENTRY = "IgnoreListPath"; //$NON-NLS-1$
 
     private final File file;
 
@@ -23,7 +23,7 @@ public class IgnoreListsXmlStore extends XmlStore<String> {
     }
 
     public IgnoreListsXmlStore(IProject proj) {
-        this(new File(new File(proj.getLocation().toFile(), ".settings"), FILE.IGNORE_LISTS_STORE));
+        this(new File(new File(proj.getLocation().toFile(), ".settings"), FILE.IGNORE_LISTS_STORE)); //$NON-NLS-1$
     }
 
     @Override

@@ -44,8 +44,8 @@ public class CompareInput extends CompareEditorInput {
         getCompareConfiguration().setLeftLabel(Messages.database);
         getCompareConfiguration().setRightLabel(Messages.DiffPaneViewer_project);
 
-        left = new CompareItem(name, project == null ? "" : project.getCreationSQL());
-        right =  new CompareItem(name, remote == null ? "" : remote.getCreationSQL());
+        left = new CompareItem(name, project == null ? "" : project.getCreationSQL()); //$NON-NLS-1$
+        right =  new CompareItem(name, remote == null ? "" : remote.getCreationSQL()); //$NON-NLS-1$
 
         setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
     }

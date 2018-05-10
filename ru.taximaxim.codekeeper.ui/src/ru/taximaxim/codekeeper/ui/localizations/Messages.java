@@ -170,7 +170,6 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_convert_dialog_title;
 
-    public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -498,6 +497,8 @@ public final class Messages extends NLS {
     public static String SqlEditor_absent_builder_message;
 
     public static String SqlEditor_absent_builder_title;
+
+    public static String SqlMergeViewer_compare_label;
 
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;

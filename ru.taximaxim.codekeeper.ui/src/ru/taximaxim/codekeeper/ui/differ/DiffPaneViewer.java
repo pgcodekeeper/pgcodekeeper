@@ -66,8 +66,8 @@ public class DiffPaneViewer extends Composite {
 
 
     private void resetInput() {
-        diffPane.setInput(new DiffNode(new CompareItem(Messages.database, ""),
-                new CompareItem(Messages.DiffPaneViewer_project, "")));
+        diffPane.setInput(new DiffNode(new CompareItem(Messages.database, ""), //$NON-NLS-1$
+                new CompareItem(Messages.DiffPaneViewer_project, ""))); //$NON-NLS-1$
     }
 
     private String getSql(TreeElement el, boolean project) {
