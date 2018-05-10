@@ -76,7 +76,7 @@ public class TypesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
         String type = res.getString("dom_basetypefmt");
-        checkDefinition(type, d.getName());
+        checkType(type);
         d.setDataType(type);
         loader.cachedTypesByOid.get(res.getLong("dom_basetype")).addTypeDepcy(d);
 
@@ -108,9 +108,10 @@ public class TypesReader extends JdbcReader {
             String[] concomments = res.getArray("dom_concomments", String.class);
 
             for (int i = 0; i < connames.length; ++i) {
-                PgConstraint c = new PgConstraint(connames[i], "");
+                String conName = connames[i];
+                PgConstraint c = new PgConstraint(conName, "");
                 String definition = condefs[i];
-                checkDefinition(definition, d.getName());
+                checkDefinition(definition, DbObjType.CONSTRAINT, conName);
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint.common_constraint()
@@ -246,7 +247,7 @@ public class TypesReader extends JdbcReader {
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
                 String type = atttypes[i];
-                checkDefinition(type, name);
+                checkType(type);
                 a.setType(type);
                 loader.cachedTypesByOid.get(atttypeids[i]).addTypeDepcy(t);
 

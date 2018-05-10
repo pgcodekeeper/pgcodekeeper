@@ -118,12 +118,23 @@ public abstract class JdbcReaderFactory {
             try (ResultSet res = runner.runScript(st)) {
                 Set<String> funcs = new HashSet<>();
                 while (res.next()) {
-                    if (!res.getBoolean("schema_access")) {
+                    boolean schemaAccess = res.getBoolean("schema_access");
+                    if (res.wasNull()) {
+                        throw new IllegalStateException("Concurrent schema modification: " + HELPER_SCHEMA);
+                    }
+
+                    if (!schemaAccess) {
                         Log.log(Log.LOG_WARNING, "No access to helper schema: " + HELPER_SCHEMA);
                         break;
                     }
+
                     String func = res.getString("proname");
-                    if (res.getBoolean("function_access")) {
+                    boolean functionAccess = res.getBoolean("function_access");
+                    if (res.wasNull()) {
+                        throw new IllegalStateException("Concurrent function modification: " + func);
+                    }
+
+                    if (functionAccess) {
                         funcs.add(func);
                     } else {
                         Log.log(Log.LOG_WARNING, "No access to helper function: " + func);

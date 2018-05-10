@@ -18,6 +18,7 @@ WITH extension_deps AS (
 SELECT  -- GENERAL
     c.oid,
     c.relname,
+    c.relkind,
     c.relowner::bigint,
     c.relacl::text AS aclarray,
     c.relpersistence AS persistence,
@@ -44,6 +45,7 @@ SELECT  -- GENERAL
    columns.col_foptions,
    columns.col_storages,
    columns.col_default_storages,
+   columns.col_has_default,
    columns.col_defaults,
    columns.col_comments,
    columns.col_type_ids,
@@ -70,6 +72,7 @@ LEFT JOIN (SELECT
             pg_catalog.array_agg(pg_catalog.array_to_string(a.attfdwoptions, ',') ORDER BY a.attnum) AS col_foptions,
             pg_catalog.array_agg(a.attstorage ORDER BY a.attnum) AS col_storages,
             pg_catalog.array_agg(t.typstorage ORDER BY a.attnum) AS col_default_storages,
+            pg_catalog.array_agg(a.atthasdef ORDER BY a.attnum) AS col_has_default,
             pg_catalog.array_agg(pg_catalog.pg_get_expr(attrdef.adbin, attrdef.adrelid) ORDER BY a.attnum) AS col_defaults,
             pg_catalog.array_agg(d.description ORDER BY a.attnum) AS col_comments,
             pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids,

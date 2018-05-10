@@ -49,26 +49,28 @@ public class TablesReader extends JdbcReader {
         String schemaName = schema.getName();
         String tableName = res.getString(CLASS_RELNAME);
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
+        boolean isPartition = res.getBoolean("relispartition");
         String partitionBound = null;
 
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (isPartition && SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             partitionBound = res.getString("partition_bound");
+            checkDefinition(partitionBound, getType(), tableName);
         }
         PgTable t;
         String serverName = res.getString("server_name");
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
-            if (partitionBound == null) {
-                t = new SimpleForeignPgTable(tableName, "", serverName);
-            } else {
+            if (isPartition) {
                 t = new PartitionForeignPgTable(tableName, "", serverName, partitionBound);
+            } else {
+                t = new SimpleForeignPgTable(tableName, "", serverName);
             }
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.cachedTypesByOid.get(ofTypeOid);
             String ofType = jdbcOfType.getFullName(schemaName);
             t = new TypedPgTable(tableName, "", ofType);
             jdbcOfType.addTypeDepcy(t);
-        } else if (partitionBound != null) {
+        } else if (isPartition) {
             t = new PartitionPgTable(tableName, "", partitionBound);
         } else {
             t = new SimplePgTable(tableName, "");
@@ -133,8 +135,10 @@ public class TablesReader extends JdbcReader {
             }
 
             // since 10 PostgreSQL
-            if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-                regTable.setPartitionBy(res.getString("partition_by"));
+            if (SupportedVersion.VERSION_10.checkVersion(loader.version) && "p".equals(res.getString("relkind"))) {
+                String partitionBy = res.getString("partition_by");
+                checkDefinition(partitionBy, getType(), tableName);
+                regTable.setPartitionBy(partitionBy);
             }
 
             // persistence: U - unlogged, P - permanent, T - temporary
@@ -158,6 +162,7 @@ public class TablesReader extends JdbcReader {
 
         Long[] colTypeIds = res.getArray("col_type_ids", Long.class);
         String[] colTypeName = res.getArray("col_type_name", String.class);
+        Boolean[] colHasDefault = res.getArray("col_has_default", Boolean.class);
         String[] colDefaults = res.getArray("col_defaults", String.class);
         String[] colComments = res.getArray("col_comments", String.class);
         Boolean[] colNotNull = res.getArray("col_notnull", Boolean.class);
@@ -179,7 +184,7 @@ public class TablesReader extends JdbcReader {
 
             if (ofTypeOid == 0 && !column.isInherit()) {
                 String type = colTypeName[i];
-                checkDefinition(type, t.getName());
+                checkType(type);
                 column.setType(type);
             }
 
@@ -216,6 +221,17 @@ public class TablesReader extends JdbcReader {
             if (collation != 0 && collation != colTypCollation[i] && column.getType() != null) {
                 column.setCollation(PgDiffUtils.getQuotedName(colCollationSchema[i])
                         + '.' + PgDiffUtils.getQuotedName(colCollationName[i]));
+            }
+
+            if (colHasDefault[i]) {
+                String columnDefault = colDefaults[i];
+                checkDefinition(columnDefault, DbObjType.COLUMN, colNames[i]);
+                if (!columnDefault.isEmpty()) {
+                    column.setDefaultValue(columnDefault);
+                    loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
+                            ctx -> schema.getDatabase().getContextsForAnalyze()
+                            .add(new SimpleEntry<>(column, ctx)));
+                }
             }
 
             String columnDefault = colDefaults[i];

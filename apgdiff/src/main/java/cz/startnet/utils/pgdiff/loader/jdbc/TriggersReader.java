@@ -156,7 +156,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkDefinition(definition, triggerName);
+        checkDefinition(definition, getType(), triggerName);
         loader.submitAntlrTask(definition, p -> p.sql().statement(0).schema_statement()
                 .schema_create().create_trigger_statement().when_trigger(),
                 ctx -> CreateTrigger.parseWhen(ctx, t, schema.getDatabase()));

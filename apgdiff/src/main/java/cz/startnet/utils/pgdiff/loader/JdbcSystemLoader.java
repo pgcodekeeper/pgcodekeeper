@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -98,12 +99,16 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     }
                 }
                 if (function.getReturnsColumns().isEmpty()) {
-                    function.setReturns(result.getString("prorettype"));
+                    String prorettype = result.getString("prorettype");
+                    JdbcReader.checkType(prorettype);
+                    function.setReturns(prorettype);
                 }
 
                 function.setSetof(result.getBoolean("proretset"));
 
                 String arguments = result.getString("proarguments");
+
+                JdbcReader.checkDefinition(arguments, DbObjType.FUNCTION, functionName);
 
                 if (!arguments.isEmpty()) {
                     submitAntlrTask('(' + arguments + ')',
@@ -170,6 +175,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     String[] colNames = (String[]) arr.getArray();
                     String[] colTypes = (String[]) result.getArray("col_types").getArray();
                     for (int i = 0; i < colNames.length; i++) {
+                        // TODO after extending of use for extensions, the null types become valid
+                        JdbcReader.checkType(colTypes[i]);
                         relation.addColumn(colNames[i], colTypes[i]);
                     }
                 }
@@ -215,7 +222,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
+                JdbcReader.checkType(source);
                 String target = result.getString("target");
+                JdbcReader.checkType(target);
                 String type = result.getString("castcontext");
                 CastContext ctx;
                 switch (type) {

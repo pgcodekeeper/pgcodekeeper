@@ -81,9 +81,7 @@ public class SequencesReader extends JdbcReader {
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
-                String dataType = res.getString("data_type");
-                checkDefinition(dataType, sequenceName);
-                s.setDataType(dataType);
+                s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
             }
         }
 
@@ -122,7 +120,12 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {
                     String schema = schemaRes.getString("nspname");
-                    if (schemaRes.getBoolean("has_priv")) {
+                    boolean hasPriv = schemaRes.getBoolean("has_priv");
+                    if (schemaRes.wasNull()) {
+                        throw new IllegalStateException("Concurrent schema modification: " + schema);
+                    }
+
+                    if (hasPriv) {
                         schemasAccess.add(schema);
                     } else {
                         loader.addError("No USAGE privileges for schema " + schema +
@@ -149,7 +152,13 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet res = loader.runner.runScript(accessQuery)) {
                 while (res.next()) {
                     String qname = res.getString("qname");
-                    if (res.getBoolean("has_priv")) {
+
+                    boolean hasPriv = res.getBoolean("has_priv");
+                    if (res.wasNull()) {
+                        throw new IllegalStateException("Concurrent sequence modification: " + qname);
+                    }
+
+                    if (hasPriv) {
                         if (sbUnionQuery.length() > 0) {
                             sbUnionQuery.append("\nUNION ALL\n");
                         }

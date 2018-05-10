@@ -58,7 +58,7 @@ public class ViewsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
-        checkDefinition(definition, viewName);
+        checkDefinition(definition, getType(), viewName);
         String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
