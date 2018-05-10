@@ -45,6 +45,7 @@ data_statement
   | update_stmt_for_psql
   | delete_stmt_for_psql
   | notify_stmt
+  | truncate_stmt
   ;
 
 script_statement
@@ -80,6 +81,7 @@ schema_create
     | create_type_statement
     | create_domain_statement
     | create_server_statement
+    | create_user_mapping
     | create_transform_statement)
 
     | comment_on_statement
@@ -413,10 +415,16 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER identifier (TYPE character_string)? (VERSION character_string)?
+    : SERVER (IF NOT EXISTS)? identifier (TYPE character_string)? (VERSION character_string)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options? 
     ; 
+    
+create_user_mapping
+    : USER MAPPING (IF NOT EXISTS)? FOR (identifier | USER | CURRENT_USER)
+    SERVER identifier
+    define_foreign_options? 
+    ;
 
 domain_constraint
     :(CONSTRAINT name=schema_qualified_name)?
@@ -790,7 +798,12 @@ define_foreign_options
   ;
   
 foreign_option
-  : (ADD | SET | DROP)? name=identifier value=character_string?
+  : (ADD | SET | DROP)? name=foreign_option_name value=character_string?
+  ;
+  
+foreign_option_name
+  : identifier
+  | USER
   ;
 
 list_of_type_column_def
@@ -1959,7 +1972,7 @@ delete_stmt_for_psql
 update_stmt_for_psql
   : with_clause? UPDATE ONLY? update_table_name=schema_qualified_name MULTIPLY? (AS? alias=identifier)?
   SET update_set (COMMA update_set)*
-  (FROM using_table (COMMA using_table)*)?
+  (FROM from_item (COMMA from_item)*)?
   (WHERE (vex | WHERE CURRENT OF cursor=identifier))?
   (RETURNING select_list)?
   ;
@@ -1977,4 +1990,9 @@ using_table
 
 notify_stmt
   : NOTIFY channel=identifier (COMMA payload=character_string)?
+  ;
+  
+truncate_stmt
+  : TRUNCATE TABLE? ONLY? name=schema_qualified_name MULTIPLY? (COMMA name=schema_qualified_name MULTIPLY?)*
+  ((RESTART | CONTINUE) IDENTITY)? (CASCADE | RESTRICT)?  
   ;

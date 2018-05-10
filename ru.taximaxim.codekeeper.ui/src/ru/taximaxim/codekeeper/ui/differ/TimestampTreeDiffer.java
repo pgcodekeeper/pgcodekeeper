@@ -83,8 +83,8 @@ public class TimestampTreeDiffer extends TreeDiffer {
 
                 pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
 
-                DiffTree tree = new DiffTree();
-                diffTree = tree.createTree(dbSrc, dbTgt, pm);
+                DiffTree tree = new DiffTree(pm);
+                diffTree = tree.createTree(dbSrc, dbTgt);
 
                 if (false) {
                     projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());

@@ -29,8 +29,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -51,11 +54,12 @@ public class DependencyProperties extends PropertyPage {
 
     private DependenciesListEditor editor;
     private Button btnSafeMode;
+    private IProject proj;
 
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
-        IProject proj = element.getAdapter(IProject.class);
+        proj = element.getAdapter(IProject.class);
         store = new DependenciesXmlStore(proj);
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
@@ -88,6 +92,7 @@ public class DependencyProperties extends PropertyPage {
             prefs.putBoolean(PROJ_PREF.LIB_SAFE_MODE, btnSafeMode.getSelection());
             prefs.flush();
             store.writeObjects(editor.getList());
+            refreshProject();
             setValid(true);
             setErrorMessage(null);
         } catch (IOException | BackingStoreException e) {
@@ -98,6 +103,14 @@ public class DependencyProperties extends PropertyPage {
             return false;
         }
         return true;
+    }
+
+    private void refreshProject() {
+        CommonNavigator view = (CommonNavigator)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getActivePage().findView(IPageLayout.ID_PROJECT_EXPLORER);
+        if (view != null) {
+            view.getCommonViewer().refresh(proj);
+        }
     }
 
     private class DependenciesListEditor extends PrefListEditor<PgLibrary, TableViewer> {

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -61,9 +62,6 @@ public abstract class PgStatement implements IStatement {
     public final String getBareName() {
         return name;
     }
-
-    @Override
-    public abstract DbObjType getStatementType();
 
     @Override
     public PgStatement getParent() {
@@ -326,6 +324,24 @@ public abstract class PgStatement implements IStatement {
      * Shallow version of {@link #equals(Object)}
      */
     public abstract boolean compare(PgStatement obj);
+
+    /**
+     * Returns all subtree elements
+     */
+    public Stream<PgStatement> getDescendants() {
+        return getChildren();
+    }
+
+    /**
+     * Returns all subelements of current element
+     */
+    public Stream<PgStatement> getChildren() {
+        return Stream.empty();
+    }
+
+    public boolean hasChildren() {
+        return getChildren().anyMatch(e -> true);
+    }
 
     /**
      * Deep part of {@link #equals(Object)}.

@@ -536,6 +536,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             loadedRemote = currentRemote;
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
                                     newDiffer.getDiffTree());
+                            if (diffTable.getElements().isEmpty()) {
+                                showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
+                            }
                         }
                     });
                 }

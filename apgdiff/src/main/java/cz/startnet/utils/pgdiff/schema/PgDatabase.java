@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -165,6 +166,22 @@ public class PgDatabase extends PgStatement {
         return getExtension(name) != null;
     }
 
+    @Override
+    public Stream<PgStatement> getDescendants() {
+        Stream<PgStatement> stream = getChildren();
+
+        for (PgSchema schema : getSchemas()) {
+            stream = Stream.concat(stream, schema.getDescendants());
+        }
+
+        return stream;
+    }
+
+    @Override
+    public Stream<PgStatement> getChildren() {
+        return Stream.concat(getSchemas().stream(), getExtensions().stream());
+    }
+
     /**
      * Returns extension of given name or null if the extension has not been found.
      *
@@ -278,7 +295,7 @@ public class PgDatabase extends PgStatement {
     }
 
     public void addLib(PgDatabase database) {
-        listPgObjects(database).values().forEach(PgStatement::markAsLib);
+        database.getDescendants().forEach(PgStatement::markAsLib);
         concat(database);
     }
 
@@ -424,62 +441,11 @@ public class PgDatabase extends PgStatement {
                 }
             }
         }
-
-
     }
 
     public static Map<String, PgStatement> listPgObjects(PgDatabase db) {
         Map<String, PgStatement> statements = new HashMap<>();
-
-        for (PgSchema schema : db.getSchemas()) {
-            mapQname(statements, schema);
-            for (PgType ty : schema.getTypes()) {
-                mapQname(statements, ty);
-            }
-            for (PgDomain domain : schema.getDomains()) {
-                mapQname(statements, domain);
-            }
-            for (PgSequence sequence : schema.getSequences()) {
-                mapQname(statements, sequence);
-            }
-            for (PgFunction function : schema.getFunctions()) {
-                mapQname(statements, function);
-            }
-            for (PgTable table : schema.getTables()) {
-                mapQname(statements, table);
-                for (PgColumn column : table.getColumns()) {
-                    mapQname(statements, column);
-                }
-                for (PgConstraint constraint : table.getConstraints()) {
-                    mapQname(statements, constraint);
-                }
-                for (PgIndex index : table.getIndexes() ){
-                    mapQname(statements, index);
-                }
-                for (PgTrigger trigger : table.getTriggers()) {
-                    mapQname(statements, trigger);
-                }
-                for (PgRule rule : table.getRules()) {
-                    mapQname(statements, rule);
-                }
-            }
-            for (PgView view : schema.getViews()) {
-                mapQname(statements, view);
-                for (PgTrigger trigger : view.getTriggers()) {
-                    mapQname(statements, trigger);
-                }
-                for (PgRule rule : view.getRules()) {
-                    mapQname(statements, rule);
-                }
-            }
-        }
-        for (PgExtension ext : db.getExtensions()) {
-            mapQname(statements, ext);
-        }
+        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> statements.put(st.getQualifiedName(), st));
         return statements;
-    }
-
-    private static void mapQname(Map<String, PgStatement> map, PgStatement st) {
-        map.put(st.getQualifiedName(), st);
     }
 }

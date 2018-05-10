@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -149,10 +150,9 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         PgDatabase dbProjectFragment =
                 PgUIDumpLoader.buildFiles(Arrays.asList(file), monitor.newChild(1), null);
-        Collection<PgStatement> listPgObjectsFragment = PgDatabase.listPgObjects(dbProjectFragment).values();
+        Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
 
-        long schemaCount = listPgObjectsFragment.stream()
-                .filter(st -> st.getStatementType() == DbObjType.SCHEMA).count();
+        long schemaCount = dbProjectFragment.getSchemas().size();
         if (schemaCount > 1) {
             // more than 1 schema, shoudln't happen
             throw new PgCodekeeperUIException(Messages.QuickUpdate_multiple_schemas);

@@ -584,6 +584,8 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorDiffer_library_duplication_exception;
 
+    public static String ProjectEditorDiffer_no_differences;
+
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
