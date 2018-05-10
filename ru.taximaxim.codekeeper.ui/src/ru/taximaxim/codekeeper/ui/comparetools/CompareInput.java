@@ -23,11 +23,14 @@ public class CompareInput extends CompareEditorInput {
     public CompareInput(PgOverride override) {
         super(new CompareConfiguration());
 
-        String oldPath = override.getOldLocation();
-        String newPath = override.getNewLocation();
+        PgStatement oldStatement = override.getOldStatement();
+        PgStatement newStatement = override.getNewStatement();
 
-        left = new CompareItem(oldPath, override.getOldSql());
-        right = new CompareItem(newPath, override.getNewSql());
+        String oldPath = oldStatement.getLocation();
+        String newPath = newStatement.getLocation();
+
+        left = new CompareItem(oldPath, oldStatement.getCreationSQL());
+        right = new CompareItem(newPath, newStatement.getCreationSQL());
 
         getCompareConfiguration().setLeftLabel(oldPath);
         getCompareConfiguration().setRightLabel(newPath);
