@@ -1,9 +1,10 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -14,6 +15,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class IgnoreListsXmlStore {
 
     private final Path storeFilePath;
@@ -23,8 +27,9 @@ public class IgnoreListsXmlStore {
         this.storeFilePath = storeFilePath;
     }
 
-    public void addNewIgnoreListPath(Path ignoreListPath) {
-        store.getIgnoreListsPaths().add(ignoreListPath.toString());
+    public void setIgnoreListsPaths(Set<Path> ignoreListsPaths) {
+        ignoreListsPaths.forEach(ignoreListPath -> store.getIgnoreListsPaths()
+                .add(ignoreListPath.toString()));
     }
 
     public void writeIgnoreListsPathsToXml() {
@@ -33,28 +38,23 @@ public class IgnoreListsXmlStore {
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             jaxbMarshaller.marshal(store, storeFilePath.toFile());
-        } catch(JAXBException e) {
-            // TODO add notification
-            e.printStackTrace();
+        } catch(JAXBException ex) {
+            ExceptionNotifier.notifyDefault(MessageFormat.format(
+                    Messages.IgnoreListProperties_error_file, storeFilePath), ex);
         }
     }
 
-    /**
-     *
-     * @return collection with ignoreLists paths
-     */
-    public List<String> readIgnoreListsPathsFromXML() {
+    public Set<String> readIgnoreListsPathsFromXML() {
         try {
-            JAXBContext jaxbContext2 = JAXBContext.newInstance(IgnoreListsPathsStore.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext2.createUnmarshaller();
-
+            JAXBContext jaxbContext = JAXBContext.newInstance(IgnoreListsPathsStore.class);
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             return ((IgnoreListsPathsStore)jaxbUnmarshaller.unmarshal(storeFilePath.toFile()))
                     .getIgnoreListsPaths();
-        } catch(JAXBException e) {
-            // TODO add notification
-            e.printStackTrace();
+        } catch(JAXBException ex) {
+            ExceptionNotifier.notifyDefault(MessageFormat.format(
+                    Messages.IgnoreListProperties_error_file, storeFilePath), ex);
         }
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 }
 
@@ -63,13 +63,13 @@ public class IgnoreListsXmlStore {
 class IgnoreListsPathsStore {
 
     @XmlElement(name="IgnoreListPath")
-    private List<String> ignoreListsPaths = new ArrayList<>();
+    private Set<String> ignoreListsPaths = new LinkedHashSet<>();
 
-    public List<String> getIgnoreListsPaths() {
+    public Set<String> getIgnoreListsPaths() {
         return ignoreListsPaths;
     }
 
-    public void setIgnoreListsPaths(List<String> ignoreListsPaths) {
+    public void setIgnoreListsPaths(Set<String> ignoreListsPaths) {
         this.ignoreListsPaths = ignoreListsPaths;
     }
 }

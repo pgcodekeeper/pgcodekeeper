@@ -215,7 +215,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         }
     }
 
-    private void deleteObject() {
+    protected void deleteObject() {
         IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
         if (selection.isEmpty()) {
             return;

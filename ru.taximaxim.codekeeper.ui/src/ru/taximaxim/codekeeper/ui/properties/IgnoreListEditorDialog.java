@@ -110,6 +110,7 @@ public class IgnoreListEditorDialog extends Dialog {
             String stringPath = dialog.open();
             if (stringPath != null) {
                 currentIgnoreListPath = Paths.get(stringPath);
+                currentIgnoreList.setPath(currentIgnoreListPath);
             } else {
                 return;
             }

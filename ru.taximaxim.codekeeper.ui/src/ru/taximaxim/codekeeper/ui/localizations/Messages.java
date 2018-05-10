@@ -378,6 +378,9 @@ public final class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
 
     public static String IgnoreListProperties_create_new_file;
+    public static String IgnoreListProperties_confirm_deletion;
+    public static String IgnoreListProperties_del_ignore_list_file;
+    public static String IgnoreListProperties_error_file;
 
     public static String IgnoreListEditorDialog_excluded_objects_list_editor;
     public static String IgnoreListEditorDialog_save;
