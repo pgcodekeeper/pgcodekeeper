@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -127,6 +128,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
+import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
@@ -700,6 +702,17 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             if (loadedRemote != null && loadedRemote instanceof DbInfo) {
                 ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            }
+
+            Path ignoreListsXmlStorePath = Paths.get(proj.getProject().getLocationURI())
+                    .resolve(".settings").resolve(FILE.IGNORE_LISTS_STORE); //$NON-NLS-1$
+            if (ignoreListsXmlStorePath.toFile().exists()) {
+                IgnoreListsXmlStore ignoreListsXmlStore = new IgnoreListsXmlStore(ignoreListsXmlStorePath);
+                Set<String> ignoreListsPaths = ignoreListsXmlStore.readIgnoreListsPathsFromXML();
+
+                for (String ignoreListPath : ignoreListsPaths) {
+                    InternalIgnoreList.readAppendList(Paths.get(ignoreListPath), ignoreList);
+                }
             }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
