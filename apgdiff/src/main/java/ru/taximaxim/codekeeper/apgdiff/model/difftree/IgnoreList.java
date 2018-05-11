@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject.AddStatus;
 
 public class IgnoreList {
 
-    private Path path;
     private final List<IgnoredObject> rules = new ArrayList<>();
 
     // black list (show all, hide some) by default
@@ -22,14 +20,6 @@ public class IgnoreList {
 
     public void setShow(boolean isShow) {
         this.isShow = isShow;
-    }
-
-    public Path getPath() {
-        return path;
-    }
-
-    public void setPath(Path path) {
-        this.path = path;
     }
 
     public List<IgnoredObject> getList() {
@@ -106,35 +96,5 @@ public class IgnoreList {
             rule.appendRuleCode(sb).append('\n');
         }
         return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        IgnoreList other = (IgnoreList) obj;
-        if (path == null) {
-            if (other.path != null) {
-                return false;
-            }
-        } else if (!path.equals(other.path)) {
-            return false;
-        }
-        return true;
     }
 }
