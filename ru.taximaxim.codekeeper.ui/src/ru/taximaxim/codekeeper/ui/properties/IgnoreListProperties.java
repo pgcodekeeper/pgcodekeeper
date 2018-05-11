@@ -1,18 +1,14 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ListViewer;
@@ -29,7 +25,6 @@ import org.eclipse.ui.dialogs.PropertyPage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -66,26 +61,6 @@ public class IgnoreListProperties extends PropertyPage {
     public boolean performOk() {
         try {
             store.writeObjects(editor.getList());
-
-            Set<String> strPathsForDel = editor.getStrPathsForDel();
-
-            if (!strPathsForDel.isEmpty()) {
-                boolean delFiles = MessageDialog.openConfirm(getShell(), Messages.IgnoreListProperties_confirm_deletion,
-                        Messages.IgnoreListProperties_del_ignore_list_file);
-
-                if (delFiles) {
-                    for (String strPath : strPathsForDel) {
-                        try {
-                            Files.delete(Paths.get(strPath));
-                        } catch (IOException ex) {
-                            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                                    Messages.IgnoreListProperties_error_file, strPath), ex);
-                        }
-                    }
-                }
-                strPathsForDel.clear();
-            }
-
             setValid(true);
             setErrorMessage(null);
         } catch (IOException e) {
@@ -100,14 +75,8 @@ public class IgnoreListProperties extends PropertyPage {
 
     private class IgnoreListEditor extends PrefListEditor<String, ListViewer> {
 
-        private final Set<String> strPathsForDel = new LinkedHashSet<>();
-
         public IgnoreListEditor(Composite parent) {
             super(parent);
-        }
-
-        public Set<String> getStrPathsForDel() {
-            return strPathsForDel;
         }
 
         @Override
@@ -138,29 +107,7 @@ public class IgnoreListProperties extends PropertyPage {
 
         @Override
         protected void createButtonsForSideBar(Composite parent) {
-            createButton(parent, ADD_ID, Messages.add,
-                    Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
-
-            Button btnDelete = createButton(parent, CLIENT_ID, Messages.delete,
-                    Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
-
-            btnDelete.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent event) {
-                    IStructuredSelection selection = (IStructuredSelection) getViewer().getSelection();
-                    if (selection.isEmpty()) {
-                        return;
-                    }
-
-                    String path = (String) selection.getFirstElement();
-                    strPathsForDel.add(path);
-
-                    if (getList().remove(path)) {
-                        getViewer().refresh();
-                    }
-                }
-            });
+            super.createButtonsForSideBar(parent);
 
             Button btnEdit = createButton(parent, CLIENT_ID, Messages.edit, FILE.ICONEDIT);
             btnEdit.addSelectionListener(new SelectionAdapter() {
