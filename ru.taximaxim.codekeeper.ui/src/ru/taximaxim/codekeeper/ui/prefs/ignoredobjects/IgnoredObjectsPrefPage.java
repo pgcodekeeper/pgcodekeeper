@@ -45,7 +45,7 @@ implements IWorkbenchPreferencePage {
 
         ignore = InternalIgnoreList.readInternalList();
 
-        listEditor = new IgnoredObjectPrefListEditor(parent, ignore);
+        listEditor = IgnoredObjectPrefListEditor.create(parent, ignore);
         listEditor.setInputList(new ArrayList<>(ignore.getList()));
 
         return parent;

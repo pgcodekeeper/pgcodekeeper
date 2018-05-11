@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -61,8 +62,8 @@ public class IgnoreListEditorDialog extends Dialog {
         data.heightHint = 400;
         composite.setLayoutData(data);
 
-        listEditor = new IgnoredObjectPrefListEditor(composite, ignoreList);
-        listEditor.setInputList(ignoreList.getList());
+        listEditor = IgnoredObjectPrefListEditor.create(composite, ignoreList);
+        listEditor.setInputList(new ArrayList<>(ignoreList.getList()));
 
         return composite;
     }
