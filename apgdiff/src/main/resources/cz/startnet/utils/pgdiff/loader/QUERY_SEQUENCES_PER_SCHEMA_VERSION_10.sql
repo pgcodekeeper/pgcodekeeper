@@ -1,5 +1,5 @@
 SELECT s.seqrelid AS oid,
-       pg_catalog.format_type(s.seqtypid, null) AS data_type,
+       s.seqtypid::bigint AS data_type,
        s.seqstart, 
        s.seqincrement, 
        s.seqmax, 

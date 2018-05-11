@@ -49,7 +49,9 @@ public class IndicesReader extends JdbcReader {
         i.setTableName(tableName);
 
         String tablespace = res.getString("table_space");
-        loader.submitAntlrTask(res.getString("definition") + ';',
+        String definition = res.getString("definition");
+        checkObjectValidity(definition, getType(), indexName);
+        loader.submitAntlrTask(definition,
                 p -> p.sql().statement(0).schema_statement().schema_create()
                 .create_index_statement().index_rest(),
                 ctx -> CreateIndex.parseIndex(ctx, tablespace, schemaName, i,
