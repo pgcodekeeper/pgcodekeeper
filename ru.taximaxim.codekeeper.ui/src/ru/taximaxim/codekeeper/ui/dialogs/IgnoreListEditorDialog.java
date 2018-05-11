@@ -72,21 +72,37 @@ public class IgnoreListEditorDialog extends Dialog {
         Label descriptionLabel = new Label(composite, SWT.NONE);
         descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
 
-        Button btnIsWhite = new Button(composite, SWT.CHECK);
-        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
-        btnIsWhite.setSelection(!currentIgnoreList.isShow());
-        btnIsWhite.addSelectionListener(new SelectionAdapter() {
+        Composite compositeRadio = new Composite(composite, SWT.NONE);
+        GridLayout gridRadioLayout = new GridLayout(2, false);
+        gridRadioLayout.marginHeight = 0;
+        gridRadioLayout.marginWidth = 0;
+        compositeRadio.setLayout(gridRadioLayout);
+        compositeRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+
+        SelectionAdapter radioWhiteBlackListener = new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent event) {
-                boolean isWhite = ((Button) event.getSource()).getSelection();
+                Button source =  (Button) event.getSource();
+                String srcText = source.getText();
 
-                descriptionLabel.setText(isWhite ? Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white
-                        : Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+                boolean isBlack = Messages.IgnoredObjectsPrefPage_convert_to_black_list.equals(srcText) ? true : false;
+                currentIgnoreList.setShow(isBlack);
 
-                currentIgnoreList.setShow(!isWhite);
+                descriptionLabel.setText(isBlack ? Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info :
+                    Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
             }
-        });
+        };
+
+        Button btnIsBlack = new Button (compositeRadio, SWT.RADIO);
+        btnIsBlack.setText (Messages.IgnoredObjectsPrefPage_convert_to_black_list);
+        btnIsBlack.setSelection(currentIgnoreList.isShow());
+        btnIsBlack.addSelectionListener(radioWhiteBlackListener);
+
+        Button btnIsWhite = new Button(compositeRadio, SWT.RADIO);
+        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
+        btnIsWhite.setSelection(!currentIgnoreList.isShow());
+        btnIsWhite.addSelectionListener(radioWhiteBlackListener);
 
         listEditor = new IgnoredObjectPrefListEditor(composite);
         listEditor.setInputList(new ArrayList<>(currentIgnoreList.getList()));
@@ -148,7 +164,7 @@ public class IgnoreListEditorDialog extends Dialog {
         shell.setText(Messages.IgnoreListEditorDialog_excluded_objects_list_editor);
 
         shell.layout(true, true);
-        final Point newSize = shell.computeSize(600, 400, true);
+        final Point newSize = shell.computeSize(800, 600, true);
         shell.setSize(newSize);
     }
 
