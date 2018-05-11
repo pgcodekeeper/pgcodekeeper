@@ -67,7 +67,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                                     .map(e -> (TreeElement)e)
                                     .filter(e -> e.getSide() != DiffSide.RIGHT)
                                     .map(e -> e.getPgStatement(db))
-                                    .anyMatch(o::checkStatement))
+                                    .anyMatch(st -> o.getNewStatement().equals(st)))
                             .collect(Collectors.toList()));
                 }
             } else {

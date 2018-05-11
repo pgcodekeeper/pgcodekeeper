@@ -35,8 +35,4 @@ public class PgOverride {
     public String getOldLocation() {
         return oldStatement.getLocation();
     }
-
-    public boolean checkStatement(PgStatement st) {
-        return newStatement.equals(st);
-    }
 }
