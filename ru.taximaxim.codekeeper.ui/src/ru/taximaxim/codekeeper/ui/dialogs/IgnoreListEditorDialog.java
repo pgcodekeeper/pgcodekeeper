@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;
@@ -45,7 +46,7 @@ public class IgnoreListEditorDialog extends Dialog {
         this.currentIgnoreListPath = currentIgnoreListPath;
         this.editor = editor;
 
-        setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE);
+        setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE | SWT.RESIZE);
         setBlockOnOpen(false);
     }
 
@@ -130,8 +131,11 @@ public class IgnoreListEditorDialog extends Dialog {
             String stringPath = dialog.open();
             if (stringPath != null) {
                 currentIgnoreListPath = Paths.get(stringPath);
-                editor.getList().add(stringPath);
-                editor.getViewer().refresh();
+                List<String> list = editor.getList();
+                if (!list.contains(stringPath)) {
+                    list.add(stringPath);
+                    editor.getViewer().refresh();
+                }
             } else {
                 return;
             }
@@ -164,7 +168,7 @@ public class IgnoreListEditorDialog extends Dialog {
         shell.setText(Messages.IgnoreListEditorDialog_excluded_objects_list_editor);
 
         shell.layout(true, true);
-        final Point newSize = shell.computeSize(800, 600, true);
+        final Point newSize = shell.computeSize(600, 400, true);
         shell.setSize(newSize);
     }
 
