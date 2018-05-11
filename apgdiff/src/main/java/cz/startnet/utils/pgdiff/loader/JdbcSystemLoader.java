@@ -100,7 +100,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 }
                 if (function.getReturnsColumns().isEmpty()) {
                     String prorettype = result.getString("prorettype");
-                    JdbcReader.checkType(prorettype);
+                    JdbcReader.checkTypeValidity(prorettype);
                     function.setReturns(prorettype);
                 }
 
@@ -108,7 +108,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                 String arguments = result.getString("proarguments");
 
-                JdbcReader.checkDefinition(arguments, DbObjType.FUNCTION, functionName);
+                JdbcReader.checkObjectValidity(arguments, DbObjType.FUNCTION, functionName);
 
                 if (!arguments.isEmpty()) {
                     submitAntlrTask('(' + arguments + ')',
@@ -176,7 +176,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     String[] colTypes = (String[]) result.getArray("col_types").getArray();
                     for (int i = 0; i < colNames.length; i++) {
                         // TODO after extending of use for extensions, the null types become valid
-                        JdbcReader.checkType(colTypes[i]);
+                        JdbcReader.checkTypeValidity(colTypes[i]);
                         relation.addColumn(colNames[i], colTypes[i]);
                     }
                 }
@@ -222,9 +222,9 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
-                JdbcReader.checkType(source);
+                JdbcReader.checkTypeValidity(source);
                 String target = result.getString("target");
-                JdbcReader.checkType(target);
+                JdbcReader.checkTypeValidity(target);
                 String type = result.getString("castcontext");
                 CastContext ctx;
                 switch (type) {

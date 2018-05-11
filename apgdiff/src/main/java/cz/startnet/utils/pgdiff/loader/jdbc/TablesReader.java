@@ -53,7 +53,7 @@ public class TablesReader extends JdbcReader {
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version) && res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
-            checkDefinition(partitionBound, getType(), tableName);
+            checkObjectValidity(partitionBound, getType(), tableName);
         }
         PgTable t;
         String serverName = res.getString("server_name");
@@ -136,7 +136,7 @@ public class TablesReader extends JdbcReader {
             // since 10 PostgreSQL
             if (SupportedVersion.VERSION_10.checkVersion(loader.version) && "p".equals(res.getString("relkind"))) {
                 String partitionBy = res.getString("partition_by");
-                checkDefinition(partitionBy, getType(), tableName);
+                checkObjectValidity(partitionBy, getType(), tableName);
                 regTable.setPartitionBy(partitionBy);
             }
 
@@ -183,7 +183,7 @@ public class TablesReader extends JdbcReader {
 
             if (ofTypeOid == 0 && !column.isInherit()) {
                 String type = colTypeName[i];
-                checkType(type);
+                checkTypeValidity(type);
                 column.setType(type);
             }
 
@@ -224,21 +224,13 @@ public class TablesReader extends JdbcReader {
 
             if (colHasDefault[i]) {
                 String columnDefault = colDefaults[i];
-                checkDefinition(columnDefault, DbObjType.COLUMN, colNames[i]);
+                checkObjectValidity(columnDefault, DbObjType.COLUMN, colNames[i]);
                 if (!columnDefault.isEmpty()) {
                     column.setDefaultValue(columnDefault);
                     loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> schema.getDatabase().getContextsForAnalyze()
                             .add(new SimpleEntry<>(column, ctx)));
                 }
-            }
-
-            String columnDefault = colDefaults[i];
-            if (columnDefault != null && !columnDefault.isEmpty()) {
-                column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
-                        ctx -> schema.getDatabase().getContextsForAnalyze()
-                        .add(new SimpleEntry<>(column, ctx)));
             }
 
             if (colNotNull[i]) {

@@ -50,7 +50,7 @@ public class IndicesReader extends JdbcReader {
 
         String tablespace = res.getString("table_space");
         String definition = res.getString("definition");
-        checkDefinition(definition, getType(), indexName);
+        checkObjectValidity(definition, getType(), indexName);
         loader.submitAntlrTask(definition,
                 p -> p.sql().statement(0).schema_statement().schema_create()
                 .create_index_statement().index_rest(),

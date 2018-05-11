@@ -120,12 +120,10 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {
                     String schema = schemaRes.getString("nspname");
-                    boolean hasPriv = schemaRes.getBoolean("has_priv");
-                    if (schemaRes.wasNull()) {
-                        throw new IllegalStateException("Concurrent schema modification: " + schema);
-                    }
+                    Object hasPriv = schemaRes.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SCHEMA, schema);
 
-                    if (hasPriv) {
+                    if ((boolean)hasPriv) {
                         schemasAccess.add(schema);
                     } else {
                         loader.addError("No USAGE privileges for schema " + schema +
@@ -152,13 +150,10 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet res = loader.runner.runScript(accessQuery)) {
                 while (res.next()) {
                     String qname = res.getString("qname");
+                    Object hasPriv = res.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SEQUENCE, qname);
 
-                    boolean hasPriv = res.getBoolean("has_priv");
-                    if (res.wasNull()) {
-                        throw new IllegalStateException("Concurrent sequence modification: " + qname);
-                    }
-
-                    if (hasPriv) {
+                    if ((boolean)hasPriv) {
                         if (sbUnionQuery.length() > 0) {
                             sbUnionQuery.append("\nUNION ALL\n");
                         }

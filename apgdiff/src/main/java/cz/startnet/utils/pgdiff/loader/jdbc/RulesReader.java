@@ -47,7 +47,7 @@ public class RulesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, ruleName, DbObjType.RULE));
 
         String command = res.getString("rule_string");
-        checkDefinition(command, getType(), ruleName);
+        checkObjectValidity(command, getType(), ruleName);
         PgRule r = new PgRule(ruleName, command);
 
         switch (res.getString("ev_type")) {
