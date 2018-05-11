@@ -175,7 +175,6 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     String[] colNames = (String[]) arr.getArray();
                     String[] colTypes = (String[]) result.getArray("col_types").getArray();
                     for (int i = 0; i < colNames.length; i++) {
-                        // TODO after extending of use for extensions, the null types become valid
                         JdbcReader.checkTypeValidity(colTypes[i]);
                         relation.addColumn(colNames[i], colTypes[i]);
                     }
