@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -15,7 +14,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -24,6 +22,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor;
@@ -31,56 +30,53 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class IgnoreListEditorDialog extends Dialog {
 
-    private IgnoreList currentIgnoreList;
-    private Path currentIgnoreListPath;
-    private IgnoredObjectPrefListEditor listEditor;
+    private final IgnoreList ignoreList;
     private final PrefListEditor<String, ListViewer> editor;
+    private Path path;
+    private IgnoredObjectPrefListEditor listEditor;
 
-    public IgnoreListEditorDialog(Shell shell, Path currentIgnoreListPath,
+    public IgnoreListEditorDialog(Shell shell, Path path,
             PrefListEditor<String, ListViewer> editor) {
         super(shell);
-        this.currentIgnoreListPath = currentIgnoreListPath;
+        this.path = path;
         this.editor = editor;
+        ignoreList = path == null ? new IgnoreList() : InternalIgnoreList.readIgnoreList(path);
 
         setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE | SWT.RESIZE);
         setBlockOnOpen(false);
     }
 
-    public IgnoreList getCurrentIgnoreList() {
-        return currentIgnoreList;
+    public IgnoreList getIgnoreList() {
+        return ignoreList;
     }
 
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-
-        if (currentIgnoreListPath == null) {
-            currentIgnoreList = new IgnoreList();
-        } else {
-            currentIgnoreList = InternalIgnoreList.readIgnoreList(currentIgnoreListPath);
-        }
-
         GridLayout gridLayout = new GridLayout();
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
+        gridLayout.marginHeight = gridLayout.marginWidth = 0;
         composite.setLayout(gridLayout);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        data.widthHint = 600;
+        data.heightHint = 400;
+        composite.setLayoutData(data);
 
-        listEditor = new IgnoredObjectPrefListEditor(composite, currentIgnoreList);
-        listEditor.setInputList(new ArrayList<>(currentIgnoreList.getList()));
+        listEditor = new IgnoredObjectPrefListEditor(composite, ignoreList);
+        listEditor.setInputList(ignoreList.getList());
 
         return composite;
     }
 
     @Override
     protected void okPressed() {
-        listEditor.getList().forEach(r -> r.setShow(!currentIgnoreList.isShow()));
-        currentIgnoreList.clearList();
-        currentIgnoreList.addAll(listEditor.getList());
+        ignoreList.clearList();
 
-        byte[] out = currentIgnoreList.getListCode().getBytes(StandardCharsets.UTF_8);
+        for (IgnoredObject r : listEditor.getList()) {
+            r.setShow(!ignoreList.isShow());
+            ignoreList.add(r);
+        }
 
-        if (currentIgnoreListPath == null) {
+        if (path == null) {
             FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
             dialog.setText(Messages.IgnoreListEditorDialog_save_ignore_file);
             dialog.setFilterExtensions(new String[] {"*.pgcodekeeperignore", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
@@ -91,7 +87,7 @@ public class IgnoreListEditorDialog extends Dialog {
 
             String stringPath = dialog.open();
             if (stringPath != null) {
-                currentIgnoreListPath = Paths.get(stringPath);
+                path = Paths.get(stringPath);
                 List<String> list = editor.getList();
                 if (!list.contains(stringPath)) {
                     list.add(stringPath);
@@ -103,15 +99,15 @@ public class IgnoreListEditorDialog extends Dialog {
         }
 
         try {
-            if (!currentIgnoreListPath.toFile().exists()) {
-                Files.createFile(currentIgnoreListPath);
+            if (!Files.exists(path)) {
+                Files.createFile(path);
             }
 
-            Files.write(currentIgnoreListPath, out, StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(path, ignoreList.getListCode().getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException ex) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoreListEditorDialog_error_file, currentIgnoreListPath), ex);
+                    Messages.IgnoreListEditorDialog_error_file, path), ex);
         }
 
         super.okPressed();
@@ -125,12 +121,7 @@ public class IgnoreListEditorDialog extends Dialog {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-
         shell.setText(Messages.IgnoreListEditorDialog_excluded_objects_list_editor);
-
-        shell.layout(true, true);
-        final Point newSize = shell.computeSize(600, 400, true);
-        shell.setSize(newSize);
     }
 
     @Override
