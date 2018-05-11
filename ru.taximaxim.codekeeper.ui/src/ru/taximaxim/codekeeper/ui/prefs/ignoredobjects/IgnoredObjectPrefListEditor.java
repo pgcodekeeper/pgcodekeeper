@@ -15,6 +15,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -24,6 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -36,8 +39,49 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         REGULAR, IGNORE_CONTENT;
     }
 
-    public IgnoredObjectPrefListEditor(Composite parent) {
-        super(parent);
+    public IgnoredObjectPrefListEditor(Composite parent, IgnoreList currentIgnoreList) {
+        super(getCompositeWithLabelAndRadioBtn(parent, currentIgnoreList));
+    }
+
+    private static Composite getCompositeWithLabelAndRadioBtn(Composite composite,
+            IgnoreList currentIgnoreList) {
+        Label descriptionLabel = new Label(composite, SWT.NONE);
+        descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+
+        Composite compositeRadio = new Composite(composite, SWT.NONE);
+        GridLayout gridRadioLayout = new GridLayout(2, false);
+        gridRadioLayout.marginHeight = 0;
+        gridRadioLayout.marginWidth = 0;
+        compositeRadio.setLayout(gridRadioLayout);
+        compositeRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+
+        SelectionAdapter radioWhiteBlackListener = new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                Button source =  (Button) event.getSource();
+                String srcText = source.getText();
+
+                boolean isBlack = Messages.IgnoredObjectsPrefPage_convert_to_black_list
+                        .equals(srcText) ? true : false;
+                currentIgnoreList.setShow(isBlack);
+
+                descriptionLabel.setText(isBlack ? Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info :
+                    Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
+            }
+        };
+
+        Button btnIsBlack = new Button (compositeRadio, SWT.RADIO);
+        btnIsBlack.setText (Messages.IgnoredObjectsPrefPage_convert_to_black_list);
+        btnIsBlack.setSelection(currentIgnoreList.isShow());
+        btnIsBlack.addSelectionListener(radioWhiteBlackListener);
+
+        Button btnIsWhite = new Button(compositeRadio, SWT.RADIO);
+        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
+        btnIsWhite.setSelection(!currentIgnoreList.isShow());
+        btnIsWhite.addSelectionListener(radioWhiteBlackListener);
+
+        return composite;
     }
 
     @Override
