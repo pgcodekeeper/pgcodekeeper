@@ -51,20 +51,27 @@ public final class InternalIgnoreList {
         return list;
     }
 
+    public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo) {
+        return readAppendList(listFile, appendTo, false);
+    }
+
     /**
-     * This method treats {@link FileNotFoundException} as not-an-error,
-     * since both internal and project's <code>.pgcodekeeperignore</code> files may be absent.<br>
-     * It uses {@link ExceptionNotifier} to notify all other {@link IOException}s.
+     * Append to given ignore list new ignore list from given path
      *
      * @param listFile path to the black-white list file
      * @param appendTo existing {@link IgnoreList} to fill with new entries
+     * @param showNotFound if false this method treats {@link FileNotFoundException} as not-an-error,
+     * since both internal and project's <code>.pgcodekeeperignore</code> files may be absent
      * @return <code>appendTo</code> {@link IgnoreList} filled with entries read from <code>listFile</code>
      */
-    public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo) {
+    public static IgnoreList readAppendList(Path listFile, IgnoreList appendTo, boolean showNotFound) {
         try {
             new IgnoreParser(appendTo).parse(listFile);
         } catch (FileNotFoundException | NoSuchFileException ex) {
-            // no action
+            if (showNotFound) {
+                ExceptionNotifier.notifyDefault(MessageFormat.format(
+                        Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile), ex);
+            }
         } catch (IOException ex) {
             ExceptionNotifier.notifyDefault(MessageFormat.format(
                     Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile), ex);
@@ -86,15 +93,6 @@ public final class InternalIgnoreList {
         } catch (URISyntaxException ex) {
             ExceptionNotifier.notifyDefault(Messages.InternalIgnoreList_error_workspace_path, ex);
             return null;
-        }
-    }
-
-    public static IgnoreList readIgnoreList(Path filePath) {
-        try {
-            return new IgnoreParser().parse(filePath).getIgnoreList();
-        } catch (IOException ex) {
-            ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
-            return new IgnoreList();
         }
     }
 

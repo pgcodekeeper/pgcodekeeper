@@ -31,17 +31,18 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class IgnoreListEditorDialog extends Dialog {
 
-    private final IgnoreList ignoreList;
+    private final IgnoreList ignoreList = new IgnoreList();
     private final PrefListEditor<String, ListViewer> editor;
     private Path path;
     private IgnoredObjectPrefListEditor listEditor;
 
-    public IgnoreListEditorDialog(Shell shell, Path path,
-            PrefListEditor<String, ListViewer> editor) {
+    public IgnoreListEditorDialog(Shell shell, Path path, PrefListEditor<String, ListViewer> editor) {
         super(shell);
         this.path = path;
         this.editor = editor;
-        ignoreList = path == null ? new IgnoreList() : InternalIgnoreList.readIgnoreList(path);
+        if (path != null) {
+            InternalIgnoreList.readAppendList(path, ignoreList, true);
+        }
 
         setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE | SWT.RESIZE);
         setBlockOnOpen(false);
@@ -54,9 +55,7 @@ public class IgnoreListEditorDialog extends Dialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        GridLayout gridLayout = new GridLayout();
-        gridLayout.marginHeight = gridLayout.marginWidth = 0;
-        composite.setLayout(gridLayout);
+        composite.setLayout(new GridLayout());
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
         data.widthHint = 600;
         data.heightHint = 400;
