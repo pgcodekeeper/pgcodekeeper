@@ -349,6 +349,8 @@ public final class Messages extends NLS {
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
 
     public static String ProjectProperties_force_unix_newlines;
+
+    public static String ProjectProperties_force_unix_newlines_desc;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_switch;
     public static String generalPrefPage_pg_dump_executable;

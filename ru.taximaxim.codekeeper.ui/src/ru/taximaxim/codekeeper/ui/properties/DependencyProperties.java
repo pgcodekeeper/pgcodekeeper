@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -69,10 +68,10 @@ public class DependencyProperties extends PropertyPage {
     @Override
     protected Control createContents(Composite parent) {
         Composite area = new Composite(parent, SWT.NONE);
-        area.setLayout(new GridLayout(2, false));
+        area.setLayout(new GridLayout());
 
         editor = new DependenciesListEditor(area);
-        editor.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        editor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         List<PgLibrary> input;
         try {
@@ -83,11 +82,9 @@ public class DependencyProperties extends PropertyPage {
         }
         editor.setInputList(input);
 
-        new Label(area, SWT.NONE).setText(Messages.DependencyProperties_safe_mode);
-
         btnSafeMode = new Button(area, SWT.CHECK);
-        btnSafeMode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        btnSafeMode.setText(Messages.DependencyProperties_safe_mode_desc);
+        btnSafeMode.setText(Messages.DependencyProperties_safe_mode);
+        btnSafeMode.setToolTipText(Messages.DependencyProperties_safe_mode_desc);
         btnSafeMode.setSelection(prefs.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
 
         return area;
