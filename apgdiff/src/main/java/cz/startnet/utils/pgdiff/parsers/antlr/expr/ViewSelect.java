@@ -46,7 +46,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_no
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
@@ -450,9 +449,7 @@ public class ViewSelect {
             }
 
             if (subOperands != null) {
-                for (Vex v : subOperands) {
-                    analyze(v);
-                }
+                subOperands.forEach(this::analyze);
             }
         } else {
             doneWork = false;
@@ -469,9 +466,7 @@ public class ViewSelect {
     private void window(Window_definitionContext window) {
         Partition_by_columnsContext partition = window.partition_by_columns();
         if (partition != null) {
-            for (VexContext v : partition.vex()) {
-                analyze(new Vex(v));
-            }
+            partition.vex().forEach(v -> analyze(new Vex(v)));
         }
 
         Orderby_clauseContext orderBy = window.orderby_clause();
@@ -491,9 +486,7 @@ public class ViewSelect {
     }
 
     private void orderBy(Orderby_clauseContext orderBy) {
-        for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
-            analyze(new Vex(sort.vex()));
-        }
+        orderBy.sort_specifier_list().sort_specifier().forEach(sort -> analyze(new Vex(sort.vex())));
     }
 
     /**
@@ -515,7 +508,6 @@ public class ViewSelect {
             if (type != null &&
                     (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
                 ret = addFunctionDepcy(funcNameCtx);
-
             }
 
             args = addVexCtxtoList(args, function.vex());
@@ -546,14 +538,13 @@ public class ViewSelect {
         }
 
         if (args != null) {
-            for (Vex v : args) {
-                analyze(v);
-            }
+            args.forEach(this::analyze);
         }
         return ret;
     }
 
-    private List<Vex> addVexCtxtoList(List<Vex> l, List<VexContext> ctx) {
+    private List<Vex> addVexCtxtoList(List<Vex> list, List<VexContext> ctx) {
+        List<Vex> l = list;
         int toAdd = ctx.size();
         if (toAdd != 0) {
             if (l == null) {
