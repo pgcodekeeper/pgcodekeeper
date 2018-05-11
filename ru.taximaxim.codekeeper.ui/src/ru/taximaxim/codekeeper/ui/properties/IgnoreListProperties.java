@@ -30,6 +30,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
