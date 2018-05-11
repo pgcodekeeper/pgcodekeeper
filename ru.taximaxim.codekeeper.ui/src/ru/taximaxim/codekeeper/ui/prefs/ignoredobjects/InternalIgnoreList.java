@@ -89,7 +89,7 @@ public final class InternalIgnoreList {
         }
     }
 
-    public static IgnoreList getIgnoreListFromPath(Path filePath) {
+    public static IgnoreList readIgnoreList(Path filePath) {
         try {
             // Get IgnoreList object filled by rules.
             IgnoreList ignoreList = new IgnoreParser().parse(filePath).getIgnoreList();
@@ -97,7 +97,7 @@ public final class InternalIgnoreList {
             ignoreList.setPath(filePath);
             return ignoreList;
         } catch (IOException ex) {
-            ExceptionNotifier.notifyDefault(Messages.InternalIgnoreList_error_get_file, ex);
+            ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
             return new IgnoreList();
         }
     }

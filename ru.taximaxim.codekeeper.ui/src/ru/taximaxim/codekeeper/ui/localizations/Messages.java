@@ -391,7 +391,6 @@ public final class Messages extends NLS {
     public static String ImprovePerformanceJdbcLoader_performance_helpers;
 
     public static String InternalIgnoreList_error_workspace_path;
-    public static String InternalIgnoreList_error_get_file;
 
     public static String ManualDepciesDialog_set_add_depcies;
     public static String MockDataPage_add_column;

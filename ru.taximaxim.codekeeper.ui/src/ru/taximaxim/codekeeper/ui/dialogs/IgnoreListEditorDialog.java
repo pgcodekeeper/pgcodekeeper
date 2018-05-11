@@ -57,7 +57,7 @@ public class IgnoreListEditorDialog extends Dialog {
         if (currentIgnoreListPath == null) {
             currentIgnoreList = new IgnoreList();
         } else {
-            currentIgnoreList = InternalIgnoreList.getIgnoreListFromPath(currentIgnoreListPath);
+            currentIgnoreList = InternalIgnoreList.readIgnoreList(currentIgnoreListPath);
         }
 
         GridLayout gridLayout = new GridLayout();
