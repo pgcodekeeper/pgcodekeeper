@@ -4,41 +4,35 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgOverride {
 
-    private final String name;
-    private final DbObjType type;
-    private final String newLocation;
-    private final String oldLocation;
+    private final PgStatement newStatement;
+    private final PgStatement oldStatement;
 
-    public PgOverride(PgStatement st, String oldLocation) {
-        this(st.getName(), st.getStatementType(), st.getLocation(), oldLocation);
+    public PgOverride(PgStatement newStatement, PgStatement oldStatement) {
+        this.newStatement = newStatement;
+        this.oldStatement = oldStatement;
     }
 
-    public PgOverride(String name, DbObjType type, String newLocation, String oldLocation) {
-        this.name = name;
-        this.type = type;
-        this.newLocation = newLocation;
-        this.oldLocation = oldLocation;
+    public PgStatement getOldStatement() {
+        return oldStatement;
+    }
+
+    public PgStatement getNewStatement() {
+        return newStatement;
     }
 
     public String getName() {
-        return name;
+        return newStatement.getName();
     }
 
     public DbObjType getType() {
-        return type;
+        return newStatement.getStatementType();
     }
 
     public String getNewLocation() {
-        return newLocation;
+        return newStatement.getLocation();
     }
 
     public String getOldLocation() {
-        return oldLocation;
-    }
-
-    public boolean checkStatement(PgStatement st) {
-        return name.equals(st.getName())
-                && type.equals(st.getStatementType())
-                && newLocation.equals(st.getLocation());
+        return oldStatement.getLocation();
     }
 }

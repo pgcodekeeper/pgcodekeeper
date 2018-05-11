@@ -73,6 +73,8 @@ public interface UIConsts {
         String LAST_CREATED_OBJECT_TYPE = "prefLastCreatedObjectType"; //$NON-NLS-1$
 
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
+
+        String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {

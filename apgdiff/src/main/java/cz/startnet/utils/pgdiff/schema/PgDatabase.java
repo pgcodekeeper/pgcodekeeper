@@ -306,7 +306,7 @@ public class PgDatabase extends PgStatement {
                 e.dropParent();
                 addExtension(e);
             } else if (!"plpgsql".equals(e.getName())) {
-                overrides.add(new PgOverride(ext, e.getLocation()));
+                overrides.add(new PgOverride(ext, e));
             }
         }
 
@@ -318,7 +318,7 @@ public class PgDatabase extends PgStatement {
                 // skip empty public schema
             } else if (!ApgdiffConsts.PUBLIC.equals(s.getName())
                     || !s.compareChildren(new PgSchema(ApgdiffConsts.PUBLIC, ""))) {
-                overrides.add(new PgOverride(schema, s.getLocation()));
+                overrides.add(new PgOverride(schema, s));
 
                 for (PgType ty : s.getTypes()) {
                     PgType type = schema.getType(ty.getName());
@@ -326,7 +326,7 @@ public class PgDatabase extends PgStatement {
                         ty.dropParent();
                         schema.addType(ty);
                     } else {
-                        overrides.add(new PgOverride(type, ty.getLocation()));
+                        overrides.add(new PgOverride(type, ty));
                     }
                 }
 
@@ -336,7 +336,7 @@ public class PgDatabase extends PgStatement {
                         dom.dropParent();
                         schema.addDomain(dom);
                     } else {
-                        overrides.add(new PgOverride(domain, dom.getLocation()));
+                        overrides.add(new PgOverride(domain, dom));
                     }
                 }
 
@@ -346,7 +346,7 @@ public class PgDatabase extends PgStatement {
                         seq.dropParent();
                         schema.addSequence(seq);
                     } else {
-                        overrides.add(new PgOverride(sequence, seq.getLocation()));
+                        overrides.add(new PgOverride(sequence, seq));
                     }
                 }
 
@@ -356,7 +356,7 @@ public class PgDatabase extends PgStatement {
                         func.dropParent();
                         schema.addFunction(func);
                     } else {
-                        overrides.add(new PgOverride(function, func.getLocation()));
+                        overrides.add(new PgOverride(function, func));
                     }
                 }
 
@@ -366,7 +366,7 @@ public class PgDatabase extends PgStatement {
                         t.dropParent();
                         schema.addTable(t);
                     } else {
-                        overrides.add(new PgOverride(table, t.getLocation()));
+                        overrides.add(new PgOverride(table, t));
 
                         for (PgConstraint con : t.getConstraints()) {
                             PgConstraint constraint = table.getConstraint(con.getName());
@@ -374,7 +374,7 @@ public class PgDatabase extends PgStatement {
                                 con.dropParent();
                                 table.addConstraint(con);
                             } else {
-                                overrides.add(new PgOverride(constraint, con.getLocation()));
+                                overrides.add(new PgOverride(constraint, con));
                             }
                         }
 
@@ -384,7 +384,7 @@ public class PgDatabase extends PgStatement {
                                 ind.dropParent();
                                 table.addIndex(ind);
                             } else {
-                                overrides.add(new PgOverride(index, ind.getLocation()));
+                                overrides.add(new PgOverride(index, ind));
                             }
                         }
 
@@ -394,7 +394,7 @@ public class PgDatabase extends PgStatement {
                                 tr.dropParent();
                                 table.addTrigger(tr);
                             } else {
-                                overrides.add(new PgOverride(trigger, tr.getLocation()));
+                                overrides.add(new PgOverride(trigger, tr));
                             }
                         }
 
@@ -404,7 +404,7 @@ public class PgDatabase extends PgStatement {
                                 r.dropParent();
                                 table.addRule(r);
                             } else {
-                                overrides.add(new PgOverride(rule, r.getLocation()));
+                                overrides.add(new PgOverride(rule, r));
                             }
                         }
                     }
@@ -416,7 +416,7 @@ public class PgDatabase extends PgStatement {
                         v.dropParent();
                         schema.addView(v);
                     } else {
-                        overrides.add(new PgOverride(view, v.getLocation()));
+                        overrides.add(new PgOverride(view, v));
 
                         for (PgTrigger tr : v.getTriggers()) {
                             PgTrigger trigger = view.getTrigger(tr.getName());
@@ -424,7 +424,7 @@ public class PgDatabase extends PgStatement {
                                 tr.dropParent();
                                 view.addTrigger(tr);
                             } else {
-                                overrides.add(new PgOverride(trigger, tr.getLocation()));
+                                overrides.add(new PgOverride(trigger, tr));
                             }
                         }
 
@@ -434,7 +434,7 @@ public class PgDatabase extends PgStatement {
                                 r.dropParent();
                                 view.addRule(r);
                             } else {
-                                overrides.add(new PgOverride(rule, r.getLocation()));
+                                overrides.add(new PgOverride(rule, r));
                             }
                         }
                     }

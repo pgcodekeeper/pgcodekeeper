@@ -726,6 +726,8 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
+    public static String GeneralPrefPage_reuse_open_compare_editor;
+
     public static String GetChanges_select_source;
 
     public static String GetChanges_select_source_msg;
