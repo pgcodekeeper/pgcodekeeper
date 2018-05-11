@@ -371,12 +371,22 @@ public final class Messages extends NLS {
     public static String IgnoredObjectPrefListEditor_pattern;
 
     public static String IgnoredObjectsPrefPage_convert_to_white_list;
+    public static String IgnoredObjectsPrefPage_convert_to_black_list;
 
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
     public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
+    public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
+
+    public static String IgnoreListProperties_create_new_file;
+
+    public static String IgnoreListEditorDialog_excluded_objects_list_editor;
+    public static String IgnoreListEditorDialog_save;
+    public static String IgnoreListEditorDialog_cancel;
+    public static String IgnoreListEditorDialog_error_file;
+    public static String IgnoreListEditorDialog_save_ignore_file;
 
     public static String ImportProjWizard_title;
 

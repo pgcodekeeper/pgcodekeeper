@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.InputDialog;
@@ -9,11 +10,12 @@ import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -23,6 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -35,7 +38,50 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
         REGULAR, IGNORE_CONTENT;
     }
 
-    public IgnoredObjectPrefListEditor(Composite parent) {
+    public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
+        return new IgnoredObjectPrefListEditor(createComposite(parent, ignoreList));
+    }
+
+    private static Composite createComposite(Composite composite, IgnoreList ignoreList) {
+        Label descriptionLabel = new Label(composite, SWT.NONE);
+        descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+
+        Composite compositeRadio = new Composite(composite, SWT.NONE);
+        GridLayout gridRadioLayout = new GridLayout(2, false);
+        gridRadioLayout.marginHeight = 0;
+        gridRadioLayout.marginWidth = 0;
+        compositeRadio.setLayout(gridRadioLayout);
+        compositeRadio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+
+        Button btnIsBlack = new Button (compositeRadio, SWT.RADIO);
+
+        btnIsBlack.setText (Messages.IgnoredObjectsPrefPage_convert_to_black_list);
+        btnIsBlack.setSelection(ignoreList.isShow());
+        btnIsBlack.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ignoreList.setShow(true);
+                descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
+            }
+        });
+
+        Button btnIsWhite = new Button(compositeRadio, SWT.RADIO);
+        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
+        btnIsWhite.setSelection(!ignoreList.isShow());
+        btnIsWhite.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ignoreList.setShow(false);
+                descriptionLabel.setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
+            }
+        });
+
+        return composite;
+    }
+
+    private IgnoredObjectPrefListEditor(Composite parent) {
         super(parent);
     }
 
@@ -171,12 +217,6 @@ class NewIgnoredObjectDialog extends InputDialog {
         comboType = new ComboViewer(c, SWT.READ_ONLY);
         comboType.setContentProvider(ArrayContentProvider.getInstance());
         comboType.setInput(TypesEditingSupport.comboTypes());
-        comboType.setLabelProvider(new LabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return (String) element;
-            }
-        });
         comboType.setContentProvider(ArrayContentProvider.getInstance());
         comboType.setSelection(new StructuredSelection(TypesEditingSupport.COMBO_TYPE_ALL));
 
@@ -189,7 +229,11 @@ class NewIgnoredObjectDialog extends InputDialog {
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());
             btnContent.setSelection(objInitial.isIgnoreContent());
-            comboType.setSelection(new StructuredSelection(objInitial.getObjTypes().iterator().next()));
+
+            Iterator<DbObjType> iterator = objInitial.getObjTypes().iterator();
+            if (iterator.hasNext()) {
+                comboType.setSelection(new StructuredSelection(iterator.next()));
+            }
         }
 
         return composite;
