@@ -115,8 +115,10 @@ public class IgnoreListProperties extends PropertyPage {
                 @Override
                 public void widgetSelected(SelectionEvent event) {
                     IStructuredSelection sel = getViewer().getStructuredSelection();
-                    String path = (String) sel.getFirstElement();
-                    new IgnoreListEditorDialog(getShell(), Paths.get(path), IgnoreListEditor.this).open();
+                    if (!sel.isEmpty()) {
+                        String path = (String) sel.getFirstElement();
+                        new IgnoreListEditorDialog(getShell(), Paths.get(path), IgnoreListEditor.this).open();
+                    }
                 }
             });
 
