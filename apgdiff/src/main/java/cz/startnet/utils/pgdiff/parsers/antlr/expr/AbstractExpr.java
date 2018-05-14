@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -34,9 +33,11 @@ import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
 public abstract class AbstractExpr {
 
-    // TODO get postgresql version.
-    // Need to get version. I can get it from JdbcLoader(READER),
-    // but I can't get it from PgDumpLoader(WRITER).
+    // TODO get current postgresql version.
+    // Need to get version. I already got it from JdbcLoader(READER)
+    // and put it to the 'PgDatabase' as currentPostgreSqlVersion,
+    // but I couldn't get it from PgDumpLoader(WRITER), that's why for
+    // cases with 'PgDumpLoader(WRITER)' the version was hard-coded in 'PgDatabase'.
     protected final PgSystemStorage systemStorage;
     protected final String schema;
     private final AbstractExpr parent;
@@ -53,7 +54,7 @@ public abstract class AbstractExpr {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
-        systemStorage = PgSystemStorage.getObjectsFromResources(SupportedVersion.VERSION_9_5);
+        systemStorage = PgSystemStorage.getObjectsFromResources(db.getPostgresVersion());
     }
 
     protected AbstractExpr(AbstractExpr parent) {
