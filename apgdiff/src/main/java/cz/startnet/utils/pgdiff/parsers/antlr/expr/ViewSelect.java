@@ -9,17 +9,13 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_bracketsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Array_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Case_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Cast_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comparison_modContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Datetime_overlapsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Extract_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Filter_clauseContext;
@@ -27,10 +23,8 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_boundContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Frame_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_itemContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.From_primaryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_args_parserContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_callContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Groupby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_elementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grouping_set_listContext;
@@ -39,17 +33,14 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Indirection_identifierCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Orderby_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Ordinary_grouping_setContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Partition_by_columnsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Row_value_predicand_listContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Type_coercionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Unsigned_value_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Values_valuesContext;
@@ -62,7 +53,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Xml_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectOps;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -73,11 +63,14 @@ public class ViewSelect {
     private final ViewSelect parent;
     private final Set<GenericColumn> depcies;
 
+    public Set<GenericColumn> getDepcies() {
+        return Collections.unmodifiableSet(depcies);
+    }
+
     /**
      * CTE names that current level of FROM has access to.
      */
     private final Set<String> cte = new HashSet<>();
-
 
     public ViewSelect(String schema) {
         this.schema = schema;
@@ -89,6 +82,29 @@ public class ViewSelect {
         this.schema = parent.schema;
         this.parent = parent;
         depcies = parent.depcies;
+    }
+
+    private ViewSelect findCte(String cteName) {
+        if (cte.contains(cteName)) {
+            return this;
+        }
+
+        return parent == null ? null : parent.findCte(cteName);
+    }
+
+    private void addNameReference(Schema_qualified_nameContext name) {
+        List<IdentifierContext> ids = name.identifier();
+        String firstName = QNameParser.getFirstName(ids);
+
+        boolean isCte = ids.size() == 1 && findCte(firstName) != null;
+        if (!isCte) {
+            addObjectDepcy(ids, DbObjType.TABLE);
+        }
+    }
+
+    private void addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
+        depcies.add(new GenericColumn(
+                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type));
     }
 
     public void analyze(SelectStmt select) {
@@ -114,24 +130,6 @@ public class ViewSelect {
                 vexs.forEach(v -> analyze(new Vex(v)));
             }
         }
-
-        if (select.of(0) != null) {
-            for (Schema_qualified_nameContext tableLock : select.schemaQualifiedName()) {
-                addObjectDepcy(tableLock.identifier(), DbObjType.TABLE);
-            }
-        }
-    }
-
-    public Set<GenericColumn> getDepcies() {
-        return Collections.unmodifiableSet(depcies);
-    }
-
-    private ViewSelect findCte(String cteName) {
-        if (cte.contains(cteName)) {
-            return this;
-        }
-
-        return parent == null ? null : parent.findCte(cteName);
     }
 
     private void analyze(ParserRuleContext ruleCtx) {
@@ -144,18 +142,7 @@ public class ViewSelect {
         }
     }
 
-    private void addNameReference(Schema_qualified_nameContext name) {
-        List<IdentifierContext> ids = name.identifier();
-        String firstName = QNameParser.getFirstName(ids);
-
-        boolean isCte = ids.size() == 1 && findCte(firstName) != null;
-        if (!isCte) {
-            addObjectDepcy(ids, DbObjType.TABLE);
-        }
-    }
-
     private void analyzeCte(With_clauseContext with) {
-        boolean recursive = with.RECURSIVE() != null;
         for (With_queryContext withQuery : with.with_query()) {
             String withName = withQuery.query_name.getText();
 
@@ -165,18 +152,8 @@ public class ViewSelect {
                 continue;
             }
 
-            // add CTE name to the visible CTEs list after processing the query for normal CTEs
-            // and before for recursive ones
-            ViewSelect withProcessor = new ViewSelect(this);
-            boolean duplicate;
-            if (recursive) {
-                duplicate = !cte.add(withName);
-                withProcessor.analyze(withSelect);
-            } else {
-                withProcessor.analyze(withSelect);
-                duplicate = !cte.add(withName);
-            }
-            if (duplicate) {
+            new ViewSelect(this).analyze(withSelect);
+            if (!cte.add(withName)) {
                 Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
@@ -190,7 +167,6 @@ public class ViewSelect {
             analyze(selectStmt);
         } else if (selectOps.intersect() != null || selectOps.union() != null || selectOps.except() != null) {
             // analyze each in a separate scope
-            // use column names from the first one
             new ViewSelect(this).selectOps(selectOps.selectOps(0));
             new ViewSelect(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
@@ -296,109 +272,13 @@ public class ViewSelect {
         }
     }
 
-    private GenericColumn addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
-        GenericColumn depcy = new GenericColumn(
-                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type);
-        depcies.add(depcy);
-        return depcy;
-    }
-
-    private GenericColumn addFunctionDepcy(Schema_qualified_name_nontypeContext funcNameCtx){
-        IdentifierContext sch = funcNameCtx.schema;
-        String funcSchema = sch != null ? sch.getText() : schema;
-        String funcName = funcNameCtx.identifier_nontype().getText();
-        GenericColumn depcy = new GenericColumn(funcSchema, funcName, DbObjType.FUNCTION);
-        depcies.add(depcy);
-        return depcy;
-    }
-
-    private void addTypeDepcy(Data_typeContext type) {
-        Schema_qualified_name_nontypeContext typeName = type.predefined_type().schema_qualified_name_nontype();
-
-        if (typeName != null) {
-            IdentifierContext qual = typeName.identifier();
-            String schema = qual == null ? this.schema : qual.getText();
-
-            depcies.add(new GenericColumn(schema,
-                    typeName.identifier_nontype().getText(), DbObjType.TYPE));
-        }
-    }
-
-    private void addFunctionSigDepcy(String signature) {
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "function signature");
-        Function_args_parserContext sig = p.function_args_parser();
-        List<IdentifierContext> ids = sig.schema_qualified_name().identifier();
-        depcies.add(new GenericColumn(QNameParser.getSchemaName(ids, schema),
-                PgDiffUtils.getQuotedName(QNameParser.getFirstName(ids)) +
-                ParserAbstract.getFullCtxText(sig.function_args()),
-                DbObjType.FUNCTION));
-    }
-
-    private void addSchemaDepcy(List<IdentifierContext> ids) {
-        depcies.add(new GenericColumn(QNameParser.getFirstName(ids), DbObjType.SCHEMA));
-    }
-
-    private void regCast(String s, String regcast) {
-        DbObjType regcastType;
-        switch (regcast) {
-        case "regproc":
-            regcastType = DbObjType.FUNCTION;
-            break;
-        case "regclass":
-            regcastType = DbObjType.TABLE;
-            break;
-        case "regtype":
-            regcastType = DbObjType.TYPE;
-            break;
-
-        case "regnamespace":
-            addSchemaDepcy(new QNameParser(s).getIds());
-            return;
-
-        case "regprocedure":
-            addFunctionSigDepcy(s);
-            return;
-
-        case "regoper":
-        case "regoperator":
-            // TODO pending DbObjType.OPERATOR
-        default:
-            return;
-        }
-
-        addObjectDepcy(new QNameParser(s).getIds(), regcastType);
-    }
-
     private void analyze(Vex vex) {
-        Data_typeContext dataType = vex.dataType();
-        // TODO OpCtx user-operator reference
         Select_stmt_no_parensContext selectStmt;
         Datetime_overlapsContext overlaps;
         Value_expression_primaryContext primary;
         boolean doneWork = true;
 
-        if (vex.castExpression() != null && dataType != null) {
-            addTypeDepcy(dataType);
-
-            Predefined_typeContext pType = dataType.predefined_type();
-            Schema_qualified_name_nontypeContext customType = pType.schema_qualified_name_nontype();
-            IdentifierContext typeSchema = customType == null ? null : customType.identifier();
-            // TODO remove when tokens are refactored
-            if (dataType.LEFT_BRACKET() == null && dataType.SETOF() == null && customType != null &&
-                    (typeSchema == null || "pg_catalog".equals(typeSchema.getText()))) {
-                // check simple built-in types for reg*** casts
-                Value_expression_primaryContext castPrimary = vex.vex().get(0).primary();
-                Unsigned_value_specificationContext value;
-                General_literalContext literal;
-                if (castPrimary != null
-                        && (value = castPrimary.unsigned_value_specification()) != null
-                        && (literal = value.general_literal()) != null
-                        && literal.character_string() != null) {
-                    regCast(PgDiffUtils.unquoteQuotedString(literal.getText()),
-                            customType.getText());
-                }
-            }
-        } else if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
+        if (vex.in() != null && vex.leftParen() != null && vex.rightParen() != null &&
                 (selectStmt = vex.selectStmt()) != null) {
             new ViewSelect(this).analyze(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
@@ -412,7 +292,6 @@ public class ViewSelect {
             Function_callContext function;
             Indirection_identifierContext indirection;
             Array_expressionContext array;
-            Type_coercionContext typeCoercion;
             List<Vex> subOperands = null;
 
             if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
@@ -422,7 +301,6 @@ public class ViewSelect {
                 subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
             } else if ((cast = primary.cast_specification()) != null) {
                 analyze(new Vex(cast.vex()));
-                addTypeDepcy(cast.data_type());
             } else if ((compMod = primary.comparison_mod()) != null) {
                 VexContext compModVex = compMod.vex();
                 if (compModVex != null) {
@@ -444,12 +322,12 @@ public class ViewSelect {
                 } else {
                     new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
                 }
-            } else if ((typeCoercion = primary.type_coercion()) != null) {
-                addTypeDepcy(typeCoercion.data_type());
             }
 
             if (subOperands != null) {
-                subOperands.forEach(this::analyze);
+                for (Vex v : subOperands) {
+                    analyze(v);
+                }
             }
         } else {
             doneWork = false;
@@ -466,7 +344,9 @@ public class ViewSelect {
     private void window(Window_definitionContext window) {
         Partition_by_columnsContext partition = window.partition_by_columns();
         if (partition != null) {
-            partition.vex().forEach(v -> analyze(new Vex(v)));
+            for (VexContext v : partition.vex()) {
+                analyze(new Vex(v));
+            }
         }
 
         Orderby_clauseContext orderBy = window.orderby_clause();
@@ -486,7 +366,9 @@ public class ViewSelect {
     }
 
     private void orderBy(Orderby_clauseContext orderBy) {
-        orderBy.sort_specifier_list().sort_specifier().forEach(sort -> analyze(new Vex(sort.vex())));
+        for (Sort_specifierContext sort : orderBy.sort_specifier_list().sort_specifier()) {
+            analyze(new Vex(sort.vex()));
+        }
     }
 
     /**
@@ -503,13 +385,6 @@ public class ViewSelect {
         Xml_functionContext xml;
 
         if (name != null){
-            Data_typeContext type = name.data_type();
-            Schema_qualified_name_nontypeContext funcNameCtx;
-            if (type != null &&
-                    (funcNameCtx = type.predefined_type().schema_qualified_name_nontype()) != null) {
-                ret = addFunctionDepcy(funcNameCtx);
-            }
-
             args = addVexCtxtoList(args, function.vex());
 
             Orderby_clauseContext orderBy = function.orderby_clause();
@@ -538,7 +413,9 @@ public class ViewSelect {
         }
 
         if (args != null) {
-            args.forEach(this::analyze);
+            for (Vex v : args) {
+                analyze(v);
+            }
         }
         return ret;
     }
