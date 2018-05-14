@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameterContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Storage_parameter_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_spaceContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -65,7 +65,7 @@ public class CreateView extends ParserAbstract {
         if (vQuery != null) {
             view.setQuery(getFullCtxText(vQuery));
             db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
-            Select select = new Select(schema.getName());
+            ViewSelect select = new ViewSelect(schema.getName());
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());
         }
