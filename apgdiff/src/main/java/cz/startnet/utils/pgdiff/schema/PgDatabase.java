@@ -50,7 +50,7 @@ public class PgDatabase extends PgStatement {
     private DBTimestamp dbTimestamp;
 
     private final List<PgOverride> overrides = new ArrayList<>();
-    private SupportedVersion currentPostgreSqlVersion;
+    private SupportedVersion postgresVersion;
 
     @Override
     public DbObjType getStatementType() {
@@ -116,12 +116,12 @@ public class PgDatabase extends PgStatement {
         return dbTimestamp;
     }
 
-    public SupportedVersion getCurrentPostgreSqlVersion() {
-        return currentPostgreSqlVersion != null ? currentPostgreSqlVersion : SupportedVersion.VERSION_9_5;
+    public SupportedVersion getPostgresVersion() {
+        return postgresVersion != null ? postgresVersion : SupportedVersion.VERSION_10;
     }
 
-    public void setCurrentPostgreSqlVersion(SupportedVersion postgreSqlVersion) {
-        this.currentPostgreSqlVersion = postgreSqlVersion;
+    public void setPostgresVersion(SupportedVersion postgresVersion) {
+        this.postgresVersion = postgresVersion;
     }
 
     public List<PgOverride> getOverrides() {
@@ -289,7 +289,7 @@ public class PgDatabase extends PgStatement {
         PgDatabase dbDst = new PgDatabase(false);
         dbDst.setArguments(getArguments());
         dbDst.setComment(getComment());
-        dbDst.setCurrentPostgreSqlVersion(getCurrentPostgreSqlVersion());
+        dbDst.setPostgresVersion(getPostgresVersion());
         return dbDst;
     }
 

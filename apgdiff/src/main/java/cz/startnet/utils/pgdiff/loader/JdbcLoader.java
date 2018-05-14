@@ -91,7 +91,7 @@ public class JdbcLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            d.setCurrentPostgreSqlVersion(SupportedVersion.valueOf(version));
+            d.setPostgresVersion(SupportedVersion.valueOf(version));
 
             FullAnalyze.fullAnalyze(d);
 

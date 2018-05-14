@@ -54,7 +54,7 @@ public abstract class AbstractExpr {
         parent = null;
         depcies = new LinkedHashSet<>();
         this.db = db;
-        systemStorage = PgSystemStorage.getObjectsFromResources(db.getCurrentPostgreSqlVersion());
+        systemStorage = PgSystemStorage.getObjectsFromResources(db.getPostgresVersion());
     }
 
     protected AbstractExpr(AbstractExpr parent) {
