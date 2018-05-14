@@ -147,8 +147,18 @@ public class ViewSelect {
 
             Select_stmtContext withSelect = withQuery.select_stmt();
             if (withSelect != null) {
-                new ViewSelect(this).analyze(withSelect);
-                if (!cte.add(withName)) {
+                // add CTE name to the visible CTEs list after processing the query for normal CTEs
+                // and before for recursive ones
+                ViewSelect withProcessor = new ViewSelect(this);
+                boolean added;
+                if (with.RECURSIVE() != null) {
+                    added = cte.add(withName);
+                    withProcessor.analyze(withSelect);
+                } else {
+                    withProcessor.analyze(withSelect);
+                    added = cte.add(withName);
+                }
+                if (!added) {
                     Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
                 }
             } else {
