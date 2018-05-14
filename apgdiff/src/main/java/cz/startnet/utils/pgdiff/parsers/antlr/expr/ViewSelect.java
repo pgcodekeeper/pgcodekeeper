@@ -38,6 +38,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmt_no_parensContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_sublistContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.String_value_functionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_subqueryContext;
@@ -127,7 +128,9 @@ public class ViewSelect {
             }
 
             if (vexs != null) {
-                vexs.forEach(v -> analyze(new Vex(v)));
+                for (VexContext v : vexs) {
+                    analyze(new Vex(v));
+                }
             }
         }
     }
@@ -147,14 +150,13 @@ public class ViewSelect {
             String withName = withQuery.query_name.getText();
 
             Select_stmtContext withSelect = withQuery.select_stmt();
-            if (withSelect == null) {
+            if (withSelect != null) {
+                new ViewSelect(this).analyze(withSelect);
+                if (!cte.add(withName)) {
+                    Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
+                }
+            } else {
                 Log.log(Log.LOG_WARNING, "Skipped analisys of modifying CTE " + withName);
-                continue;
-            }
-
-            new ViewSelect(this).analyze(withSelect);
-            if (!cte.add(withName)) {
-                Log.log(Log.LOG_WARNING, "Duplicate CTE " + withName);
             }
         }
     }
@@ -170,51 +172,69 @@ public class ViewSelect {
             new ViewSelect(this).selectOps(selectOps.selectOps(0));
             new ViewSelect(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
-            Values_stmtContext values;
-
-            if (primary.SELECT() != null) {
-                // from defines the namespace so it goes before everything else
-                if (primary.FROM() != null) {
-                    primary.from_item().forEach(this::from);
-                }
-
-                primary.select_list().select_sublist().forEach(t -> analyze(new Vex(t.vex())));
-
-                if ((primary.set_qualifier() != null && primary.ON() != null)
-                        || primary.WHERE() != null || primary.HAVING() != null) {
-                    primary.vex().forEach(v -> analyze(new Vex(v)));
-                }
-
-                Groupby_clauseContext groupBy = primary.groupby_clause();
-                if (groupBy != null) {
-                    for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                        Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                        Grouping_set_listContext groupingSets;
-
-                        if (groupingSet != null) {
-                            groupingSet(groupingSet);
-                        } else if ((groupingSets = group.grouping_set_list()) != null) {
-                            groupingSets.ordinary_grouping_set_list().ordinary_grouping_set().forEach(this::groupingSet);
-                        }
-                    }
-                }
-
-                if (primary.WINDOW() != null) {
-                    for (Window_definitionContext window : primary.window_definition()) {
-                        window(window);
-                    }
-                }
-            } else if (primary.TABLE() != null) {
-                addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
-            } else if ((values = primary.values_stmt()) != null) {
-                for (Values_valuesContext vals : values.values_values()) {
-                    vals.vex().forEach(v -> analyze(new Vex(v)));
-                }
-            } else {
-                Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
-            }
+            selectPrimary(primary);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
+        }
+    }
+
+    private void selectPrimary(Select_primaryContext primary) {
+        Values_stmtContext values;
+
+        if (primary.SELECT() != null) {
+            // from defines the namespace so it goes before everything else
+            if (primary.FROM() != null) {
+                for (From_itemContext fromItem : primary.from_item()) {
+                    from(fromItem);
+                }
+            }
+
+            for (Select_sublistContext t : primary.select_list().select_sublist()) {
+                analyze(new Vex(t.vex()));
+            }
+
+            if ((primary.set_qualifier() != null && primary.ON() != null)
+                    || primary.WHERE() != null || primary.HAVING() != null) {
+                for (VexContext v : primary.vex()) {
+                    analyze(new Vex(v));
+                }
+            }
+
+            groupBy(primary);
+
+            if (primary.WINDOW() != null) {
+                for (Window_definitionContext window : primary.window_definition()) {
+                    window(window);
+                }
+            }
+        } else if (primary.TABLE() != null) {
+            addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
+        } else if ((values = primary.values_stmt()) != null) {
+            for (Values_valuesContext vals : values.values_values()) {
+                for (VexContext v : vals.vex()) {
+                    analyze(new Vex(v));
+                }
+            }
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
+        }
+    }
+
+    private void groupBy(Select_primaryContext primary) {
+        Groupby_clauseContext groupBy = primary.groupby_clause();
+        if (groupBy != null) {
+            for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
+                Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
+                Grouping_set_listContext groupingSets;
+
+                if (groupingSet != null) {
+                    groupingSet(groupingSet);
+                } else if ((groupingSets = group.grouping_set_list()) != null) {
+                    for (Ordinary_grouping_setContext s : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
+                        groupingSet(s);
+                    }
+                }
+            }
         }
     }
 
@@ -224,7 +244,9 @@ public class ViewSelect {
         if (v != null) {
             analyze(new Vex(v));
         } else if ((predicandList = groupingSet.row_value_predicand_list()) != null) {
-            predicandList.vex().forEach(p -> analyze(new Vex(p)));
+            for (VexContext vex : predicandList.vex()) {
+                analyze(vex);
+            }
         }
     }
 
@@ -282,62 +304,70 @@ public class ViewSelect {
                 (selectStmt = vex.selectStmt()) != null) {
             new ViewSelect(this).analyze(selectStmt);
         } else if ((overlaps = vex.datetimeOverlaps()) != null) {
-            overlaps.vex().forEach(v -> analyze(new Vex(v)));
+            for (VexContext v : overlaps.vex()) {
+                analyze(new Vex(v));
+            }
         } else if ((primary = vex.primary()) != null) {
-            Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
-            Case_expressionContext caseExpr;
-            Cast_specificationContext cast;
-            Comparison_modContext compMod;
-            Table_subqueryContext subquery;
-            Function_callContext function;
-            Indirection_identifierContext indirection;
-            Array_expressionContext array;
-            List<Vex> subOperands = null;
-
-            if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
-                    subSelectStmt != null) {
-                new ViewSelect(this).analyze(subSelectStmt);
-            } else if ((caseExpr = primary.case_expression()) != null) {
-                subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
-            } else if ((cast = primary.cast_specification()) != null) {
-                analyze(new Vex(cast.vex()));
-            } else if ((compMod = primary.comparison_mod()) != null) {
-                VexContext compModVex = compMod.vex();
-                if (compModVex != null) {
-                    analyze(new Vex(compModVex));
-                } else {
-                    new ViewSelect(this).analyze(compMod.select_stmt_no_parens());
-                }
-            } else if (primary.EXISTS() != null &&
-                    (subquery = primary.table_subquery()) != null) {
-                new ViewSelect(this).analyze(subquery.select_stmt());
-            } else if ((function = primary.function_call()) != null) {
-                function(function);
-            } else if ((indirection = primary.indirection_identifier()) != null) {
-                analyze(new Vex(indirection.vex()));
-            } else if ((array = primary.array_expression()) != null) {
-                Array_bracketsContext arrayb = array.array_brackets();
-                if (arrayb != null) {
-                    subOperands = addVexCtxtoList(subOperands, arrayb.vex());
-                } else {
-                    new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
-                }
-            }
-
-            if (subOperands != null) {
-                for (Vex v : subOperands) {
-                    analyze(v);
-                }
-            }
+            analysePrimary(primary);
         } else {
             doneWork = false;
         }
 
         List<Vex> operands = vex.vex();
         if (!operands.isEmpty()) {
-            operands.forEach(this::analyze);
+            for (Vex v : operands) {
+                analyze(v);
+            }
         } else if (!doneWork) {
             Log.log(Log.LOG_WARNING, "No alternative in Vex!");
+        }
+    }
+
+    private void analysePrimary(Value_expression_primaryContext primary) {
+        Select_stmt_no_parensContext subSelectStmt = primary.select_stmt_no_parens();
+        Case_expressionContext caseExpr;
+        Cast_specificationContext cast;
+        Comparison_modContext compMod;
+        Table_subqueryContext subquery;
+        Function_callContext function;
+        Indirection_identifierContext indirection;
+        Array_expressionContext array;
+        List<Vex> subOperands = null;
+
+        if (primary.LEFT_PAREN() != null && primary.RIGHT_PAREN() != null &&
+                subSelectStmt != null) {
+            new ViewSelect(this).analyze(subSelectStmt);
+        } else if ((caseExpr = primary.case_expression()) != null) {
+            subOperands = addVexCtxtoList(subOperands, caseExpr.vex());
+        } else if ((cast = primary.cast_specification()) != null) {
+            analyze(new Vex(cast.vex()));
+        } else if ((compMod = primary.comparison_mod()) != null) {
+            VexContext compModVex = compMod.vex();
+            if (compModVex != null) {
+                analyze(new Vex(compModVex));
+            } else {
+                new ViewSelect(this).analyze(compMod.select_stmt_no_parens());
+            }
+        } else if (primary.EXISTS() != null &&
+                (subquery = primary.table_subquery()) != null) {
+            new ViewSelect(this).analyze(subquery.select_stmt());
+        } else if ((function = primary.function_call()) != null) {
+            function(function);
+        } else if ((indirection = primary.indirection_identifier()) != null) {
+            analyze(new Vex(indirection.vex()));
+        } else if ((array = primary.array_expression()) != null) {
+            Array_bracketsContext arrayb = array.array_brackets();
+            if (arrayb != null) {
+                subOperands = addVexCtxtoList(subOperands, arrayb.vex());
+            } else {
+                new ViewSelect(this).analyze(array.array_query().table_subquery().select_stmt());
+            }
+        }
+
+        if (subOperands != null) {
+            for (Vex v : subOperands) {
+                analyze(v);
+            }
         }
     }
 
