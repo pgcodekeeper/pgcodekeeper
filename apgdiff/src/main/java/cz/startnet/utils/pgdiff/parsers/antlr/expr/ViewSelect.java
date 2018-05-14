@@ -99,13 +99,9 @@ public class ViewSelect {
 
         boolean isCte = ids.size() == 1 && findCte(firstName) != null;
         if (!isCte) {
-            addObjectDepcy(ids, DbObjType.TABLE);
+            depcies.add(new GenericColumn(
+                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
         }
-    }
-
-    private void addObjectDepcy(List<IdentifierContext> ids, DbObjType type) {
-        depcies.add(new GenericColumn(
-                QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), type));
     }
 
     public void analyze(SelectStmt select) {
@@ -208,7 +204,9 @@ public class ViewSelect {
                 }
             }
         } else if (primary.TABLE() != null) {
-            addObjectDepcy(primary.schema_qualified_name().identifier(), DbObjType.TABLE);
+            List<IdentifierContext> ids = primary.schema_qualified_name().identifier();
+            depcies.add(new GenericColumn(
+                    QNameParser.getSchemaName(ids, schema), QNameParser.getFirstName(ids), DbObjType.TABLE));
         } else if ((values = primary.values_stmt()) != null) {
             for (Values_valuesContext vals : values.values_values()) {
                 for (VexContext v : vals.vex()) {
@@ -404,8 +402,7 @@ public class ViewSelect {
     /**
      * @return function reference or null for internal functions
      */
-    private GenericColumn function(Function_callContext function) {
-        GenericColumn ret = null;
+    private void function(Function_callContext function) {
         List<Vex> args = null;
 
         Function_nameContext name = function.function_name();
@@ -447,7 +444,6 @@ public class ViewSelect {
                 analyze(v);
             }
         }
-        return ret;
     }
 
     private List<Vex> addVexCtxtoList(List<Vex> list, List<VexContext> ctx) {
