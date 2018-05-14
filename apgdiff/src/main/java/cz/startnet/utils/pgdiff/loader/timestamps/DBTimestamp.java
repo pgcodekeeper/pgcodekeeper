@@ -16,11 +16,9 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -97,36 +95,18 @@ public class DBTimestamp implements Serializable {
         }
 
         Map<GenericColumn, byte[]> statements = new HashMap<>();
-        db.getExtensions().forEach(e -> statements.put(
-                new GenericColumn(e.getName(), DbObjType.EXTENSION),
-                PgDiffUtils.sha(e.getRawStatement())));
-        for (PgSchema s : db.getSchemas()) {
-            s.getTypes().forEach(t -> statements.put(createGC(t), PgDiffUtils.sha(t.getRawStatement())));
-            s.getDomains().forEach(d -> statements.put(createGC(d), PgDiffUtils.sha(d.getRawStatement())));
-            s.getSequences().forEach(seq -> statements.put(createGC(seq), PgDiffUtils.sha(seq.getRawStatement())));
-            s.getFunctions().forEach(f -> statements.put(createGC(f), PgDiffUtils.sha(f.getRawStatement())));
-            for (PgTable t : s.getTables()) {
-                t.getIndexes().forEach(i -> statements.put(createGC(i), PgDiffUtils.sha(i.getRawStatement())));
-                t.getTriggers().forEach(tr -> statements.put(createGC(tr), PgDiffUtils.sha(tr.getRawStatement())));
-                t.getRules().forEach(r -> statements.put(createGC(r), PgDiffUtils.sha(r.getRawStatement())));
-
-                String hash = t.getRawStatement();
-                List<PgConstraint> cons = t.getConstraints();
+        db.getDescendants().filter(st -> st.getStatementType() != DbObjType.CONSTRAINT).forEach(st -> {
+            String hash = st.getRawStatement();
+            if (st.getStatementType() == DbObjType.TABLE) {
+                List<PgConstraint> cons = ((PgTable)st).getConstraints();
                 if (!cons.isEmpty()) {
                     StringBuilder tableHash = new StringBuilder(hash);
                     cons.forEach(con -> tableHash.append(con.getRawStatement()));
                     hash = tableHash.toString();
                 }
-
-                statements.put(createGC(t), PgDiffUtils.sha(hash));
             }
-            for (PgView v : s.getViews()) {
-                v.getTriggers().forEach(tr -> statements.put(createGC(tr), PgDiffUtils.sha(tr.getRawStatement())));
-                v.getRules().forEach(r -> statements.put(createGC(r), PgDiffUtils.sha(r.getRawStatement())));
-                statements.put(createGC(v), PgDiffUtils.sha(v.getRawStatement()));
-            }
-            statements.put(createGC(s), PgDiffUtils.sha(s.getRawStatement()));
-        }
+            statements.put(createGC(st), PgDiffUtils.sha(st.getRawStatement()));
+        });
 
         for (Iterator<Entry<GenericColumn, ObjectTimestamp>> iterator = objects.entrySet().iterator();
                 iterator.hasNext();) {

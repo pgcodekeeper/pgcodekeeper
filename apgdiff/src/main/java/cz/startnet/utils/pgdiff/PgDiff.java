@@ -19,7 +19,9 @@ import java.util.Map.Entry;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.exception.LibraryObjectDuplicationException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgOverride;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ignoreparser.IgnoreParser;
@@ -54,8 +56,22 @@ public final class PgDiff {
             throws InterruptedException, IOException, URISyntaxException {
         PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
+
         PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+
+        PgDumpLoader.loadLibraries(oldDatabase, arguments, false, arguments.getTargetLibs());
+        PgDumpLoader.loadLibraries(oldDatabase, arguments, true, arguments.getTargetLibsWithoutPriv());
+        PgDumpLoader.loadLibraries(newDatabase, arguments, false, arguments.getSourceLibs());
+        PgDumpLoader.loadLibraries(newDatabase, arguments, true, arguments.getSourceLibsWithoutPriv());
+
+        if (arguments.isLibSafeMode()) {
+            List<PgOverride> overrides = oldDatabase.getOverrides();
+            overrides.addAll(newDatabase.getOverrides());
+            if (!overrides.isEmpty()) {
+                throw new LibraryObjectDuplicationException(overrides);
+            }
+        }
 
         IgnoreParser ignoreParser = new IgnoreParser();
         for (String listFilename : arguments.getIgnoreLists()) {
@@ -80,13 +96,13 @@ public final class PgDiff {
      */
     public static PgDatabase loadDatabaseSchema(String format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException, URISyntaxException {
-        if("dump".equals(format)) {
+        if ("dump".equals(format)) {
             try (PgDumpLoader loader = new PgDumpLoader(new File(srcPath), arguments)) {
                 return loader.load();
             }
-        } else if("parsed".equals(format)) {
+        } else if ("parsed".equals(format)) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,  arguments, null, null);
-        } else if("db".equals(format)) {
+        } else if ("db".equals(format)) {
             JdbcLoader loader = new JdbcLoader(new JdbcConnector(srcPath), arguments);
             return loader.getDbFromJdbc();
         }

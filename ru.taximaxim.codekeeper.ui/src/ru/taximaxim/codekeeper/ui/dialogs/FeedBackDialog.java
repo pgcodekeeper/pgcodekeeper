@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
@@ -119,7 +120,7 @@ public class FeedBackDialog extends Dialog {
 
         try {
             sendMail(emailFrom.getText(), txtMessage.getText(),
-                    txtSubject.getText(), btnCheckLog.getSelection());
+                    txtSubject.getText(), btnCheckLog.getSelection(), null);
             super.okPressed();
 
             MessageBox mb = new MessageBox(getParentShell(), SWT.ICON_INFORMATION);
@@ -135,8 +136,18 @@ public class FeedBackDialog extends Dialog {
         }
     }
 
-    private void sendMail(String emailFrom, String txtMessage, String subject,
-            boolean appendLog) throws IOException {
+    /**
+     * Send feedback
+     *
+     * @param emailFrom - email
+     * @param txtMessage - feedback message
+     * @param subject - feedback subject
+     * @param appendLog - if true append log file to mail
+     * @param params - optional params
+     * @throws IOException - error sending feedback
+     */
+    public static void sendMail(String emailFrom, String txtMessage, String subject,
+            boolean appendLog, Map<String, String> params) throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault();) {
             HttpPost uploadFile = new HttpPost(URL);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -150,6 +161,9 @@ public class FeedBackDialog extends Dialog {
             builder.addTextBody(POST_SUBJECT, subject, utf);
             builder.addTextBody(POST_EMAIL, emailFrom, utf);
             builder.addTextBody(POST_BODY, sbMessage.toString(), utf);
+            if (params!= null) {
+                params.forEach((k, v) -> builder.addTextBody(k, v, utf));
+            }
 
             if (appendLog) {
                 Path log = Platform.getLogFileLocation().toFile().toPath();
@@ -180,6 +194,11 @@ public class FeedBackDialog extends Dialog {
                 }
             }
         }
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     private static StringBuilder appendCodeKeeperPluginsInformation(StringBuilder sb) {

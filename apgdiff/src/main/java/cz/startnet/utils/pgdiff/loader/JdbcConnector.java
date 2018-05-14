@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,9 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Locale;
 import java.util.Properties;
-import java.util.Scanner;
 
 import org.osgi.framework.BundleContext;
 
@@ -19,6 +15,8 @@ import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.pgpass.PgPass;
+import ru.taximaxim.pgpass.PgPassException;
 
 public class JdbcConnector {
 
@@ -115,9 +113,7 @@ public class JdbcConnector {
             throw new IOException(MessageFormat.format(
                     Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);
         } catch (SQLException e) {
-            throw new IOException(MessageFormat.format(
-                    Messages.Connection_DatabaseJdbcAccessError,
-                    e.getLocalizedMessage(), Messages.JdbcConnector_in_jdbc_connection), e);
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
@@ -144,44 +140,18 @@ public class JdbcConnector {
 
     private String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file."); //$NON-NLS-1$
-        File pgPassFile;
-        if (System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH).contains("win")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            pgPassFile = new File(System.getenv("APPDATA"),"\\postgresql\\pgpass.conf"); //$NON-NLS-1$ //$NON-NLS-2$
-        }else{
-            pgPassFile = new File(System.getProperty("user.home"), "/.pgpass"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFile.getAbsolutePath()); //$NON-NLS-1$
 
-        if (!pgPassFile.isFile() || !pgPassFile.exists()){
-            Log.log(Log.LOG_INFO, "Using empty password, because pgpass file either " //$NON-NLS-1$
-                    + "does not exist or is not a file: " + pgPassFile.getAbsolutePath()); //$NON-NLS-1$
-            return ""; //$NON-NLS-1$
-        }
-
-        String [] expectedTokens = {host, String.valueOf(port), dbName, user};
-        try (Scanner sc = new Scanner(pgPassFile)){
-            sc.useDelimiter(":|\n"); //$NON-NLS-1$
-            while (sc.hasNextLine()) {
-                int tokenCounter = 0;
-
-                while (sc.hasNext()) {
-                    if (tokenCounter > 3) {
-                        return sc.skip(":").nextLine(); //$NON-NLS-1$
-                    }
-
-                    String token = sc.next();
-                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")) { //$NON-NLS-1$
-                        break;
-                    }
-                }
-                sc.nextLine();
+        try {
+            String pass = PgPass.get(host, String.valueOf(port), dbName, user);
+            if (pass != null) {
+                return pass;
             }
-        } catch (FileNotFoundException e) {
+        } catch (PgPassException e) {
             Log.log(e);
-            return "";
         }
+
         Log.log(Log.LOG_INFO, "Using empty password, because no password has been found " //$NON-NLS-1$
                 + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        return ""; //$NON-NLS-1$
+        return "";
     }
 }

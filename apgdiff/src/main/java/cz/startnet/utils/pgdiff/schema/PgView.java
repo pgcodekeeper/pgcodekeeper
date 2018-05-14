@@ -46,6 +46,11 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return DbObjType.VIEW;
     }
 
+    @Override
+    public Stream<PgStatement> getChildren() {
+        return Stream.concat(getRules().stream(), getTriggers().stream());
+    }
+
     /**
      * Finds rule according to specified rule {@code name}.
      *

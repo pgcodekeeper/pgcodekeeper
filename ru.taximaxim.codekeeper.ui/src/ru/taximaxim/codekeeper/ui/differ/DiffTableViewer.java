@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -51,6 +52,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -83,7 +85,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -98,8 +102,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
-import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
@@ -107,6 +111,9 @@ import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
+import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
  * Use {@link #setChecked(TreeElement, boolean)} for any kind of checkbox work.
@@ -118,7 +125,7 @@ public class DiffTableViewer extends Composite {
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
-    private static final XmlHistory XML_HISTORY = new XmlHistory.Builder(200, "fhistory.xml", "history", "element").build(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    private static final ListXmlStore XML_HISTORY = new ListXmlStore(200, "fhistory.xml", "history", "element"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     private final boolean showGitUser;
     private boolean showDbUser;
@@ -262,7 +269,8 @@ public class DiffTableViewer extends Composite {
                     FilterDialog dialog = new FilterDialog(getShell(),
                             viewerFilter.schemaFilter, viewerFilter.codeFilter,
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
-                            viewerFilter.types, viewerFilter.sides, viewerFilter.isLocalChange);
+                            viewerFilter.types, viewerFilter.sides,
+                            viewerFilter.isLocalChange, viewerFilter.isHideLibs);
                     if (dialog.open() == Dialog.OK) {
                         btnTypeFilter.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                                 Activator.getContext().getBundle().getResource(
@@ -279,9 +287,9 @@ public class DiffTableViewer extends Composite {
         txtFilterName.setLayoutData(gd);
         txtFilterName.setMessage(Messages.DiffTableViewer_filter_placeholder);
 
-        List<String> history = new LinkedList<>();
+        List<String> history = new ArrayList<>();
         try {
-            history = XML_HISTORY.getHistory();
+            history = XML_HISTORY.readObjects();
         } catch (IOException ex) {
             Log.log(ex);
         }
@@ -347,7 +355,7 @@ public class DiffTableViewer extends Composite {
                     if (text != null && !text.isEmpty()) {
                         XML_HISTORY.addHistoryEntry(text);
                     }
-                    LinkedList<String> history = XML_HISTORY.getHistory();
+                    List<String> history = XML_HISTORY.readObjects();
                     scp.setProposals(history.toArray(new String[history.size()]));
                 } catch (IOException e) {
                     Log.log(e);
@@ -455,7 +463,12 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote).open();
+                PgStatement remote = el.getSide() == DiffSide.LEFT ? null
+                        : el.getPgStatement(dbRemote.getDbObject());
+                PgStatement project = el.getSide() == DiffSide.RIGHT ? null
+                        : el.getPgStatement(dbProject.getDbObject());
+                CompareAction.openCompareEditor(new CompareInput(el.getName(),
+                        el.getType(), remote, project));
             }
         });
 
@@ -472,6 +485,8 @@ public class DiffTableViewer extends Composite {
     }
 
     private void initColumns() {
+        ColumnViewerToolTipSupport.enableFor(viewer);
+
         columnCheck = new TreeViewerColumn(viewer, SWT.LEFT);
         columnCheck.getColumn().setResizable(!viewOnly);
         columnCheck.getColumn().setMoveable(!viewOnly);
@@ -484,14 +499,34 @@ public class DiffTableViewer extends Composite {
             public String getText(Object element) {
                 return ""; //$NON-NLS-1$
             }
+
+            @Override
+            public Image getImage(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                return meta != null && meta.getLibLocation() != null ?
+                        Activator.getRegisteredImage(FILE.ICONLIB) : null;
+            }
+
+            @Override
+            public String getToolTipText(Object element) {
+                ElementMetaInfo meta = elementInfoMap.get(element);
+                if (meta != null) {
+                    String libLocation = meta.getLibLocation();
+                    if (libLocation != null) {
+                        return libLocation;
+                    }
+                }
+
+                return null;
+            }
         });
 
         columnType = new TreeViewerColumn(viewer, SWT.LEFT);
         columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
         columnName = new TreeViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
         columnDbUser = new TreeViewerColumn(viewer, SWT.LEFT);
+        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
 
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
@@ -765,6 +800,10 @@ public class DiffTableViewer extends Composite {
             readGitUsers();
         }
 
+        if (!elementInfoMap.isEmpty() && location != null) {
+            setLibLocations();
+        }
+
         if (dbRemote != null) {
             DBTimestamp dbTime = dbRemote.getDbObject().getDbTimestamp();
             if (dbTime != null) {
@@ -777,6 +816,55 @@ public class DiffTableViewer extends Composite {
         updateColumnsWidth();
 
         updateObjectsLabels();
+    }
+
+    private void setLibLocations() {
+        Path p = location.resolve(DependenciesXmlStore.FILE_NAME);
+        if (!Files.exists(p)) {
+            return;
+        }
+
+        List<PgLibrary> libs;
+        try {
+            libs = new DependenciesXmlStore(p.toFile()).readObjects();
+        } catch (IOException e) {
+            Log.log(e);
+            return;
+        }
+
+        elementInfoMap.forEach((k,v) -> {
+            if (k.getSide() != DiffSide.RIGHT) {
+                PgStatement st = k.getPgStatement(dbProject.getDbObject());
+                if (!st.isLib()) {
+                    return;
+                }
+
+                String name;
+                String type;
+                String loc = st.getLocation();
+                if (loc.startsWith("jdbc:")) { //$NON-NLS-1$
+                    type = Messages.DiffTableViewer_database;
+                    name = JdbcConnector.dbNameFromUrl(loc);
+                    loc = ModelExporter.getRelativeFilePath(st, false);
+                } else {
+                    Path lib = libs.stream().map(PgLibrary::getPath)
+                            .filter(loc::startsWith).findFirst().map(Paths::get).get();
+                    Path location = Paths.get(loc);
+                    name = lib.getFileName().toString();
+
+                    if (!lib.equals(location)) {
+                        type = Messages.DiffTableViewer_directory;
+                        loc = lib.relativize(location).toString();
+                    } else {
+                        type = Messages.DiffTableViewer_dump;
+                        loc = null;
+                    }
+                }
+
+                v.setLibLocation(Messages.DiffTableViewer_library + name + '\n' + Messages.DiffTableViewer_type + type
+                        + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
+            }
+        });
     }
 
     private void readDbUsers(DBTimestamp dbTime) {
@@ -899,6 +987,17 @@ public class DiffTableViewer extends Composite {
             }
         }
         return count;
+    }
+
+    public boolean checkLibChange() {
+        for (TreeElement el : elements) {
+            if (el.isSelected() && el.getSide() != DiffSide.RIGHT
+                    && el.getPgStatement(dbProject.getDbObject()).isLib()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void setElementsChecked(Collection<?> elements, boolean state,
@@ -1191,6 +1290,7 @@ public class DiffTableViewer extends Composite {
         private final AbstractFilter dbUserFilter = new UserFilter(m -> m.getDbUser());
 
         private final AtomicBoolean isLocalChange = new AtomicBoolean(false);
+        private final AtomicBoolean isHideLibs = new AtomicBoolean(false);
 
         private String filterName;
         private boolean useRegEx;
@@ -1216,7 +1316,8 @@ public class DiffTableViewer extends Composite {
                     && dbUserFilter.isEmpty()
                     && gitUserFilter.isEmpty()
                     && schemaFilter.isEmpty()
-                    && !isLocalChange.get();
+                    && !isLocalChange.get()
+                    && !isHideLibs.get();
         }
 
         public void setUseRegEx(Boolean useRegEx) {
@@ -1243,6 +1344,10 @@ public class DiffTableViewer extends Composite {
             }
 
             if (isLocalChange.get() && !hasLocalChanges(el)) {
+                return false;
+            }
+
+            if (isHideLibs.get() && isLibElement(el)) {
                 return false;
             }
 
@@ -1325,8 +1430,17 @@ public class DiffTableViewer extends Composite {
                 }
 
                 return isContainer(el) && el.getChildren().stream().filter(elementInfoMap::containsKey)
-                        .map(e -> elementInfoMap.get(e))
-                        .anyMatch(m -> m != null && m.isChanged());
+                        .map(elementInfoMap::get).anyMatch(m -> m != null && m.isChanged());
+            }
+
+            return false;
+        }
+
+        private boolean isLibElement(TreeElement el) {
+            ElementMetaInfo meta = elementInfoMap.get(el);
+
+            if (meta != null) {
+                return meta.getLibLocation() != null;
             }
 
             return false;

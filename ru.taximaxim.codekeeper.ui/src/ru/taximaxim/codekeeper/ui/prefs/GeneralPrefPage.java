@@ -4,7 +4,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -22,11 +21,6 @@ implements IWorkbenchPreferencePage  {
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-    }
-
-    @Override
-    public void createControl(Composite parent) {
-        super.createControl(parent);
     }
 
     @Override
@@ -53,5 +47,8 @@ implements IWorkbenchPreferencePage  {
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
+                Messages.GeneralPrefPage_reuse_open_compare_editor,
+                getFieldEditorParent()));
     }
 }

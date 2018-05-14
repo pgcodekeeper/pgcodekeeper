@@ -61,9 +61,8 @@ public class PgSystemStorage implements Serializable {
      * @return true if storage contains cast
      */
     public boolean containsCastImplicit(String source, String target) {
-        return casts.stream().filter(c -> CastContext.I.equals(c.getType())
-                && source.equals(c.getSource()) && target.equals(c.getTarget()))
-                .findAny().isPresent();
+        return casts.stream().anyMatch(c -> CastContext.IMPLICIT == c.getContext()
+                && source.equals(c.getSource()) && target.equals(c.getTarget()));
     }
 
     public void addCast(PgSystemCast cast) {
@@ -83,7 +82,7 @@ public class PgSystemStorage implements Serializable {
         } else if (SCHEMA_INFORMATION_SCHEMA.equals(schemaName)) {
             return informationSchema;
         }
-        throw new IllegalArgumentException("Unknown schema name");
+        return null;
     }
 
     public PgSystemSchema getPgCatalog() {

@@ -9,9 +9,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -21,9 +27,9 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -56,7 +62,7 @@ public class PgDumpLoader implements AutoCloseable {
 
     private boolean loadSchema = true;
     private boolean loadReferences;
-    private List<FunctionBodyContainer> funcBodyReferences;
+    private List<StatementBodyContainer> statementBodyReferences;
 
     public List<AntlrError> getErrors() {
         return errors;
@@ -70,8 +76,8 @@ public class PgDumpLoader implements AutoCloseable {
         this.loadReferences = loadReferences;
     }
 
-    public List<FunctionBodyContainer> getFuncBodyReferences() {
-        return funcBodyReferences;
+    public List<StatementBodyContainer> getStatementBodyReferences() {
+        return statementBodyReferences;
     }
 
     public PgDumpLoader(InputStream input, String inputObjectName,
@@ -131,9 +137,10 @@ public class PgDumpLoader implements AutoCloseable {
      * The same as {@link #load(boolean)} with <code>false<code> argument.
      */
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = new PgDatabase();
+        PgDatabase d = new PgDatabase(true);
         d.setArguments(args);
         load(d);
+        d.getSchema(ApgdiffConsts.PUBLIC).setLocation(inputObjectName);
         FullAnalyze.fullAnalyze(d);
         return d;
     }
@@ -147,7 +154,7 @@ public class PgDumpLoader implements AutoCloseable {
         }
         if (loadReferences) {
             ReferenceListener refListener = new ReferenceListener(intoDb, inputObjectName, monitor);
-            funcBodyReferences = refListener.getFunctionBodies();
+            statementBodyReferences = refListener.getStatementBodies();
             listeners.add(refListener);
         }
         AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
@@ -201,6 +208,65 @@ public class PgDumpLoader implements AutoCloseable {
         FullAnalyze.fullAnalyze(db);
         return db;
     }
+
+    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,
+            boolean isIgnorePriv, Collection<String> paths) throws InterruptedException, IOException, URISyntaxException {
+        for (String path : paths) {
+            loadLibrary(db, arguments, isIgnorePriv, path);
+        }
+    }
+
+    protected static void loadLibrary(PgDatabase db, PgDiffArguments arguments,
+            boolean isIgnorePriv, String path) throws InterruptedException, IOException, URISyntaxException {
+        db.addLib(getLibrary(path, arguments, isIgnorePriv));
+    }
+
+    private static PgDatabase getLibrary(String path, PgDiffArguments arguments,
+            boolean isIgnorePriv) throws InterruptedException, IOException, URISyntaxException {
+
+        PgDiffArguments args = arguments.clone();
+        args.setIgnorePrivileges(isIgnorePriv);
+
+        if (path.startsWith("jdbc:")) {
+            PgDatabase db = new JdbcLoader(new JdbcConnector(path), args).getDbFromJdbc();
+            db.getDescendants().forEach(st -> st.setLocation(path));
+            return db;
+        }
+
+        Path p = Paths.get(path);
+
+        if (Files.isDirectory(p)) {
+            if (Files.exists(p.resolve(ApgdiffConsts.FILENAME_WORKING_DIR_MARKER))) {
+                return PgDumpLoader.loadDatabaseSchemaFromDirTree(path,  args, null, null);
+            } else {
+                PgDatabase db = new PgDatabase(false);
+                db.setArguments(args);
+                readStatementsFromDirectory(p, db, args);
+                return db;
+            }
+        }
+
+        try (PgDumpLoader loader = new PgDumpLoader(new File(path), args)) {
+            return loader.load();
+        }
+    }
+
+    private static void readStatementsFromDirectory(final Path f, PgDatabase db, PgDiffArguments args)
+            throws IOException, InterruptedException, URISyntaxException {
+        if (Files.isDirectory(f)) {
+            try (Stream<Path> stream = Files.list(f)) {
+                for (Path sub : (Iterable<Path>) stream::iterator) {
+                    readStatementsFromDirectory(sub, db, args);
+                }
+            }
+        } else {
+            try (PgDumpLoader loader = new PgDumpLoader(f.toFile(), args)) {
+                db.addLib(loader.load());
+            }
+        }
+    }
+
+    //protected static void load
 
     private static void loadSubdir(File dir, PgDiffArguments arguments, String sub, PgDatabase db,
             IProgressMonitor monitor, List<AntlrError> errors)

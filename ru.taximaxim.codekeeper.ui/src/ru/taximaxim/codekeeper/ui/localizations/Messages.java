@@ -77,6 +77,10 @@ public final class Messages extends NLS {
 
     public static String SqlEditor_update_ddl;
 
+    public static String UpdateDdl_read_only_db_message;
+
+    public static String UpdateDdl_read_only_db_title;
+
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
 
@@ -155,6 +159,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+
+    public static String copy;
     public static String CodeFilter_search_by_code;
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
@@ -164,7 +170,6 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_convert_dialog_title;
 
-    public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -179,6 +184,8 @@ public final class Messages extends NLS {
 
     public static String ignoredObjectPrefListEditor_regular;
 
+    public static String ignoredObjectPrefListEditor_type;
+
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
@@ -187,7 +194,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_new_pg_db_project;
 
     // ui.prefs
-    public static String dbStorePrefPage_clear_db_store;
     public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
@@ -201,6 +207,26 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_script_add_transaction;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbStoreEditorDialog_failed_connection;
+
+    public static String DbStoreEditorDialog_failed_connection_reason;
+
+    public static String DbStoreEditorDialog_ignore_file_list;
+
+    public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
+
+    public static String DbStoreEditorDialog_read_only;
+
+    public static String DbStoreEditorDialog_read_only_description;
+
+    public static String DbStoreEditorDialog_select_ignore_file;
+
+    public static String DbStoreEditorDialog_success;
+
+    public static String DbStoreEditorDialog_successfull_connection;
+
+    public static String DbStoreEditorDialog_test_connection;
+
     public static String DbStorePicker_choose_dir;
 
     public static String DbStorePicker_db_connection;
@@ -212,6 +238,12 @@ public final class Messages extends NLS {
     public static String DbStorePicker_load_from_file;
 
     public static String DbStorePrefPage_already_present;
+
+    public static String DbStorePrefPage_pg_pass_file_filter;
+
+    public static String DbStorePrefPage_pg_pass_file_select_title;
+
+    public static String DbStorePrefPage_pg_pass_import_tooltip;
 
     public static String DbUpdatePrefPage_alter_seq_restart_statement;
 
@@ -230,6 +262,24 @@ public final class Messages extends NLS {
     public static String DepcyGraphView_project;
 
     public static String DepcyGraphView_remote;
+
+    public static String DependencyProperties_add_database;
+
+    public static String DependencyProperties_add_directory;
+
+    public static String DependencyProperties_add_dump;
+
+    public static String DependencyProperties_enter_connection_string;
+
+    public static String DependencyProperties_ignore_privileges;
+
+    public static String DependencyProperties_path;
+
+    public static String DependencyProperties_safe_mode;
+
+    public static String DependencyProperties_safe_mode_desc;
+
+    public static String DependencyProperties_select_directory;
 
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_any_file_filter;
@@ -251,7 +301,13 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_copy_as_regex;
 
+    public static String DiffTableViewer_database;
+
     public static String DiffTableViewer_db_user;
+
+    public static String DiffTableViewer_directory;
+
+    public static String DiffTableViewer_dump;
 
     public static String DiffTableViewer_error_reading_git_history;
 
@@ -259,6 +315,10 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_filter_placeholder;
     public static String DiffTableViewer_get_changes;
+
+    public static String DiffTableViewer_library;
+
+    public static String DiffTableViewer_path;
 
     public static String DiffTableViewer_reading_git_history;
 
@@ -273,6 +333,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_to_project;
 
+    public static String DiffTableViewer_type;
+
     public static String DiffTableViewer_user;
 
     public static String DiffWizard_db_tz;
@@ -286,6 +348,8 @@ public final class Messages extends NLS {
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
 
     public static String ProjectProperties_force_unix_newlines;
+
+    public static String ProjectProperties_force_unix_newlines_desc;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_switch;
     public static String generalPrefPage_pg_dump_executable;
@@ -306,12 +370,22 @@ public final class Messages extends NLS {
     public static String IgnoredObjectPrefListEditor_pattern;
 
     public static String IgnoredObjectsPrefPage_convert_to_white_list;
+    public static String IgnoredObjectsPrefPage_convert_to_black_list;
 
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
     public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
+    public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
+
+    public static String IgnoreListProperties_create_new_file;
+
+    public static String IgnoreListEditorDialog_excluded_objects_list_editor;
+    public static String IgnoreListEditorDialog_save;
+    public static String IgnoreListEditorDialog_cancel;
+    public static String IgnoreListEditorDialog_error_file;
+    public static String IgnoreListEditorDialog_save_ignore_file;
 
     public static String ImportProjWizard_title;
 
@@ -373,6 +447,10 @@ public final class Messages extends NLS {
 
     public static String MockDataWizard_create_data_table;
 
+    public static String NavigationLibrariesActionProvider_failed_to_open_library;
+
+    public static String NavigationLibrariesActionProvider_open_library;
+
     public static String NavigatorRootActionProvider_open_action;
 
     public static String NavigatorRootLabelProvider_open_editor;
@@ -419,6 +497,8 @@ public final class Messages extends NLS {
     public static String SqlEditor_absent_builder_message;
 
     public static String SqlEditor_absent_builder_title;
+
+    public static String SqlMergeViewer_compare_label;
 
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
@@ -489,9 +569,13 @@ public final class Messages extends NLS {
 
     public static String PgObject_wizard_title;
 
-    public static String PrefListEditor_cannot_add;
+    public static String PgPassDialog_close;
 
-    public static String PrefListEditor_cannot_edit;
+    public static String PgPassDialog_import;
+
+    public static String PgPassDialog_title;
+
+    public static String PrefListEditor_cannot_add;
 
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
@@ -503,6 +587,16 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
+    public static String ProjectEditorDiffer_lib_change_error_message;
+
+    public static String ProjectEditorDiffer_lib_change_warning_message;
+
+    public static String ProjectEditorDiffer_lib_change_warning_title;
+
+    public static String ProjectEditorDiffer_library_duplication_exception;
+
+    public static String ProjectEditorDiffer_no_differences;
+
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
 
@@ -522,6 +616,16 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_show_git_user;
 
+    public static String ProjectOverrideView_link_with_editor;
+
+    public static String ProjectOverrideView_new_location;
+
+    public static String ProjectOverrideView_old_location;
+
+    public static String ProjectOverrideView_open_new_location;
+
+    public static String ProjectOverrideView_open_old_location;
+
     public static String dbUpdatePrefPage_script_deleting_status;
 
     public static String dbUpdatePrefPage_status_always_delete;
@@ -531,6 +635,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_status_never_delete;
 
     public static String ProjectProperties_change_projprefs_warn;
+
+    public static String ProjectProperties_disable_parser_in_external_files;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;
@@ -544,6 +650,10 @@ public final class Messages extends NLS {
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String StoragePrefListEditor_file_already_added;
+
+    public static String StoragePrefListEditor_open_snapshot;
 
     public static String Duration_expected_format;
 
@@ -565,6 +675,8 @@ public final class Messages extends NLS {
     public static String yesNoEditingSupport_yes;
 
     public static String e_mail;
+
+    public static String edit;
     public static String feedback_message;
     public static String add_log;
 
@@ -601,6 +713,8 @@ public final class Messages extends NLS {
 
     public static String FilterDialog_only_local_changes;
 
+    public static String FilterDialog_only_non_library_objects;
+
     public static String FilterDialog_reset;
 
     public static String FilterDialog_schema_filter_placeholder;
@@ -623,6 +737,8 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
+    public static String GeneralPrefPage_reuse_open_compare_editor;
+
     public static String GetChanges_select_source;
 
     public static String GetChanges_select_source_msg;
@@ -639,6 +755,8 @@ public final class Messages extends NLS {
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String LibraryContainer_root;
 
     public static String UsageReport_Reporting_Usage;
     public static String UsageReport_Querying_Enablement;

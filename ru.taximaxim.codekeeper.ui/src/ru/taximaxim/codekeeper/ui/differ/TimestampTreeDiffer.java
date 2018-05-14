@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 
 import org.eclipse.core.runtime.CoreException;
@@ -63,7 +64,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
     }
 
     @Override
-    public void run(IProgressMonitor monitor) throws InterruptedException {
+    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor,
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
         try {
@@ -82,8 +83,8 @@ public class TimestampTreeDiffer extends TreeDiffer {
 
                 pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
 
-                DiffTree tree = new DiffTree();
-                diffTree = tree.createTree(dbSrc, dbTgt, pm);
+                DiffTree tree = new DiffTree(pm);
+                diffTree = tree.createTree(dbSrc, dbTgt);
 
                 if (false) {
                     projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());
@@ -91,7 +92,7 @@ public class TimestampTreeDiffer extends TreeDiffer {
                 }
             }
         } catch (CoreException | IOException ex) {
-            Log.log(Log.LOG_ERROR, Messages.TreeDiffer_schema_load_error, ex);
+            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
 
         PgDiffUtils.checkCancelled(pm);

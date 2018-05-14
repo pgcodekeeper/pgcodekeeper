@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.antlr.v4.runtime.RuleContext;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser;
@@ -15,6 +20,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Rule_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.Show_ruleContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.IgnoreListParser.WhiteContext;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 
@@ -64,18 +70,19 @@ public class IgnoreParser {
 
     private void white(WhiteContext white) {
         for (Show_ruleContext showRule : white.show_rule()) {
-            rule_rest(showRule.rule_rest(), true);
+            ruleRest(showRule.rule_rest(), true);
         }
     }
 
     private void black(BlackContext black) {
         for (Hide_ruleContext hideRule : black.hide_rule()) {
-            rule_rest(hideRule.rule_rest(), false);
+            ruleRest(hideRule.rule_rest(), false);
         }
     }
 
-    private void rule_rest(Rule_restContext ruleRest, boolean isShow) {
-        boolean isRegular = false, ignoreContent = false;
+    private void ruleRest(Rule_restContext ruleRest, boolean isShow) {
+        boolean isRegular = false;
+        boolean ignoreContent = false;
         for (FlagContext flag : ruleRest.flags().flag()) {
             if (flag.CONTENT() != null) {
                 ignoreContent = true;
@@ -84,7 +91,12 @@ public class IgnoreParser {
             }
         }
         String dbRegex = ruleRest.db == null ? null : ruleRest.db.getText();
+
+        Set<DbObjType> objTypes = ruleRest.type.stream().map(RuleContext::getText)
+                .map(DbObjType::valueOf)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(DbObjType.class)));
+
         list.add(new IgnoredObject(ruleRest.obj.getText(), dbRegex,
-                isShow, isRegular, ignoreContent));
+                isShow, isRegular, ignoreContent, objTypes));
     }
 }

@@ -8,14 +8,14 @@ SELECT ccc.oid::bigint,
     (SELECT nsp.nspname
      FROM pg_catalog.pg_namespace nsp
      WHERE nsp.oid = cf.relnamespace) AS foreign_schema_name,
-    (SELECT array_agg(attname ORDER BY attnum) 
-     FROM pg_attribute a
+    (SELECT pg_catalog.array_agg(attname ORDER BY attnum) 
+     FROM pg_catalog.pg_attribute a
      WHERE a.attrelid = cf.oid AND a.attnum = ANY(c.confkey)) AS foreign_cols,
-    (SELECT array_agg(attname ORDER BY attnum) 
-     FROM pg_attribute a
+    (SELECT pg_catalog.array_agg(attname ORDER BY attnum) 
+     FROM pg_catalog.pg_attribute a
      WHERE a.attrelid = ccc.oid AND a.attnum = ANY(c.conkey)) AS cols,
     d.description,
-    pg_get_constraintdef(c.oid) as definition
+    pg_catalog.pg_get_constraintdef(c.oid) AS definition
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_constraint c ON (ccc.oid = c.conrelid AND c.coninhcount = 0)
 LEFT JOIN pg_catalog.pg_class cf ON cf.oid = c.confrelid

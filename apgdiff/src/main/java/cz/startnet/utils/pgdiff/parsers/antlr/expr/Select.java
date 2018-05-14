@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -100,7 +101,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         return ret;
     }
 
-    protected void selectAfterOps(SelectStmt select) {
+    private void selectAfterOps(SelectStmt select) {
         Orderby_clauseContext orderBy = select.orderBy();
 
         List<VexContext> vexs = null;
@@ -128,12 +129,12 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    protected List<Pair<String, String>> selectOps(SelectOps selectOps) {
+    private List<Pair<String, String>> selectOps(SelectOps selectOps) {
         return selectOps(selectOps, null);
     }
 
-    protected List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
-        List<Pair<String, String>> ret = Collections.emptyList();
+    private List<Pair<String, String>> selectOps(SelectOps selectOps, With_queryContext recursiveCteCtx) {
+        List<Pair<String, String>> ret;
         Select_stmtContext selectStmt = selectOps.selectStmt();
         Select_primaryContext primary;
 
@@ -144,11 +145,17 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
             // use column names from the first one
             ret = new Select(this).selectOps(selectOps.selectOps(0));
 
-            // 'recursiveCteCtx != null' means that program at this moment
-            // situated inside recursion which contains 'UNION',
+            // when a recursive CTE is encountered, its SELECT is guaranteed
+            // to have a "SelectOps" on top level
             //
-            // for example:
-            // "WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a;".
+            // WITH RECURSIVE a(b) AS (select1 UNION select2) SELECT a.b FROM a
+            //
+            // CTE analysis creates a new child namespace to recurse through SelectOps
+            // and this is where we are now.
+            // Since current namespace is independent of its parent and SelectOps operands
+            // well be analyzed on further separate child namespaces
+            // we can safely store "select1"s signature as a CTE on the current pseudo-namespace
+            // so that it's visible to the recursive "select2" and doesn't pollute any other namespaces.
             //
             // Results of select1 (non-recursive part) analysis are used
             // as CTE by select2's (potentially recursive part) analysis.
@@ -160,145 +167,144 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
 
             new Select(this).selectOps(selectOps.selectOps(1));
         } else if ((primary = selectOps.selectPrimary()) != null) {
-            Values_stmtContext values;
-
-            if (primary.SELECT() != null) {
-                // from defines the namespace so it goes before everything else
-                if (primary.FROM() != null) {
-                    boolean oldFrom = inFrom;
-                    try {
-                        inFrom = true;
-                        for (From_itemContext fromItem : primary.from_item()) {
-                            from(fromItem);
-                        }
-                    } finally {
-                        inFrom = oldFrom;
-                    }
-                }
-
-                Qualified_asteriskContext ast = null;
-                ret = new ArrayList<>();
-                for (Select_sublistContext target : primary.select_list().select_sublist()) {
-                    ValueExpr vexCol = new ValueExpr(this);
-                    Vex selectSublistVex = new Vex(target.vex());
-
-                    Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
-                    if (valExprPrimary != null
-                            && (ast = valExprPrimary.qualified_asterisk()) != null) {
-                        Schema_qualified_nameContext qNameAst = ast.tb_name;
-                        ret.addAll(qNameAst == null ? getColsOfNotQualAster() : getColsOfQualAster(qNameAst));
-                    } else {
-                        Pair<String, String> columnPair = vexCol.analyze(selectSublistVex);
-
-                        if (target.alias != null && columnPair != null) {
-                            columnPair.setFirst(target.alias.getText());
-                        }
-
-                        ret.add(columnPair);
-                    }
-                }
-
-                ValueExpr vex = new ValueExpr(this);
-
-                if ((primary.set_qualifier() != null && primary.ON() != null)
-                        || primary.WHERE() != null || primary.HAVING() != null) {
-                    for (VexContext v : primary.vex()) {
-                        vex.analyze(new Vex(v));
-                    }
-                }
-
-                Groupby_clauseContext groupBy = primary.groupby_clause();
-                if (groupBy != null) {
-                    for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
-                        Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
-                        Grouping_set_listContext groupingSets;
-
-                        if (groupingSet != null) {
-                            groupingSet(groupingSet, vex);
-                        } else if ((groupingSets = group.grouping_set_list()) != null) {
-                            for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
-                                groupingSet(groupingSubset, vex);
-                            }
-                        }
-                    }
-                }
-
-                if (primary.WINDOW() != null) {
-                    for (Window_definitionContext window : primary.window_definition()) {
-                        vex.window(window);
-                    }
-                }
-            } else if (primary.TABLE() != null) {
-                addRelationDepcy(primary.schema_qualified_name().identifier());
-            } else if ((values = primary.values_stmt()) != null) {
-                ret = new ArrayList<>();
-                ValueExpr vex = new ValueExpr(this);
-                for (Values_valuesContext vals : values.values_values()) {
-                    for (VexContext v : vals.vex()) {
-                        ret.add(vex.analyze(new Vex(v)));
-                    }
-                }
-            } else {
-                Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
-            }
+            ret = primary(primary);
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in SelectOps!");
+            ret = Collections.emptyList();
         }
         return ret;
     }
 
-    private List<Pair<String, String>> getColsWithAddedDepcies(GenericColumn gTablerOrView) {
-        String schemaName = gTablerOrView.schema;
-        String tableOrView = gTablerOrView.table;
-        return getColsWithAddedDepcies(schemaName, tableOrView,
-                getColumnsOfRelations(schemaName, tableOrView));
+    private List<Pair<String, String>> primary(Select_primaryContext primary) {
+        List<Pair<String, String>> ret;
+        Values_stmtContext values;
+        if (primary.SELECT() != null) {
+            // from defines the namespace so it goes before everything else
+            if (primary.FROM() != null) {
+                boolean oldFrom = inFrom;
+                try {
+                    inFrom = true;
+                    for (From_itemContext fromItem : primary.from_item()) {
+                        from(fromItem);
+                    }
+                } finally {
+                    inFrom = oldFrom;
+                }
+            }
+
+            ret = new ArrayList<>();
+            ValueExpr vex = new ValueExpr(this);
+            for (Select_sublistContext target : primary.select_list().select_sublist()) {
+                Vex selectSublistVex = new Vex(target.vex());
+
+                Qualified_asteriskContext ast;
+                Value_expression_primaryContext valExprPrimary = selectSublistVex.primary();
+                if (valExprPrimary != null
+                        && (ast = valExprPrimary.qualified_asterisk()) != null) {
+                    Schema_qualified_nameContext qNameAst = ast.tb_name;
+                    ret.addAll(qNameAst == null ? unqualAster() : qualAster(qNameAst));
+                } else {
+                    Pair<String, String> columnPair = vex.analyze(selectSublistVex);
+
+                    if (target.alias != null && columnPair != null) {
+                        columnPair.setFirst(target.alias.getText());
+                    }
+
+                    ret.add(columnPair);
+                }
+            }
+
+
+            if ((primary.set_qualifier() != null && primary.ON() != null)
+                    || primary.WHERE() != null || primary.HAVING() != null) {
+                for (VexContext v : primary.vex()) {
+                    vex.analyze(new Vex(v));
+                }
+            }
+
+            Groupby_clauseContext groupBy = primary.groupby_clause();
+            if (groupBy != null) {
+                for (Grouping_elementContext group : groupBy.grouping_element_list().grouping_element()) {
+                    Ordinary_grouping_setContext groupingSet = group.ordinary_grouping_set();
+                    Grouping_set_listContext groupingSets;
+
+                    if (groupingSet != null) {
+                        groupingSet(groupingSet, vex);
+                    } else if ((groupingSets = group.grouping_set_list()) != null) {
+                        for (Ordinary_grouping_setContext groupingSubset : groupingSets.ordinary_grouping_set_list().ordinary_grouping_set()) {
+                            groupingSet(groupingSubset, vex);
+                        }
+                    }
+                }
+            }
+
+            if (primary.WINDOW() != null) {
+                for (Window_definitionContext window : primary.window_definition()) {
+                    vex.window(window);
+                }
+            }
+        } else if (primary.TABLE() != null) {
+            Schema_qualified_nameContext table = primary.schema_qualified_name();
+            addRelationDepcy(table.identifier());
+            ret = qualAster(table);
+        } else if ((values = primary.values_stmt()) != null) {
+            ret = new ArrayList<>();
+            ValueExpr vex = new ValueExpr(this);
+            for (Values_valuesContext vals : values.values_values()) {
+                for (VexContext v : vals.vex()) {
+                    ret.add(vex.analyze(new Vex(v)));
+                }
+            }
+        } else {
+            Log.log(Log.LOG_WARNING, "No alternative in select_primary!");
+            ret = Collections.emptyList();
+        }
+        return ret;
     }
 
-    private List<Pair<String, String>> getColsWithAddedDepcies(String schemaName,
-            String relationName, List<Pair<String, String>> colsOfRelations) {
-        addColumnsDepcies(schemaName, relationName, colsOfRelations);
-        return colsOfRelations;
-    }
+    private static final Predicate<String> ANY = s -> true;
 
-    private List<Pair<String, String>> getColsOfNotQualAster() {
-        List<Pair<String, String>> retNotQualAsterCols = new ArrayList<>();
+    private List<Pair<String, String>> unqualAster() {
+        List<Pair<String, String>> cols = new ArrayList<>();
 
-        for (GenericColumn gTablerOrView : unaliasedNamespace) {
-            retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
+        for (GenericColumn gc : unaliasedNamespace) {
+            addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
         }
 
         for (Entry<String, GenericColumn> nmsp : namespace.entrySet()) {
-            GenericColumn gTablerOrView = nmsp.getValue();
-            if (gTablerOrView != null) {
-                retNotQualAsterCols.addAll(getColsWithAddedDepcies(gTablerOrView));
+            GenericColumn gc = nmsp.getValue();
+            if (gc != null) {
+                addFilteredRelationColumnsDepcies(gc.schema, gc.table, ANY).forEach(cols::add);
             }
         }
 
-        complexNamespace.entrySet().forEach(complexNmsp -> retNotQualAsterCols.addAll(complexNmsp.getValue()));
+        complexNamespace.values().forEach(cols::addAll);
 
-        return retNotQualAsterCols;
+        return cols;
     }
 
-    private List<Pair<String, String>> getColsOfQualAster(Schema_qualified_nameContext qNameAst) {
+    private List<Pair<String, String>> qualAster(Schema_qualified_nameContext qNameAst) {
         List<IdentifierContext> ids = qNameAst.identifier();
-        String qualSchema = QNameParser.getSecondName(ids);
-        String srcOrTblOrView = QNameParser.getFirstName(ids);
+        String schema = QNameParser.getSecondName(ids);
+        String relation = QNameParser.getFirstName(ids);
 
-        List<Pair<String, String>> colsOfRelations = getColumnsOfRelations(
-                qualSchema, srcOrTblOrView);
-        // For cases when: SELECT (schemaName.)?tableName.* From (schemaName.)?tableName;
-        if (!colsOfRelations.isEmpty()) {
-            return getColsWithAddedDepcies(qualSchema, srcOrTblOrView, colsOfRelations);
+        Entry<String, GenericColumn> ref = findReference(schema, relation, null);
+        if (ref == null) {
+            Log.log(Log.LOG_WARNING, "Asterisk qualification not found: " + qNameAst.getText());
+            return Collections.emptyList();
         }
-
-        Entry<String, GenericColumn> srcOfAlias = findReference(qualSchema, srcOrTblOrView, null);
-        GenericColumn gTablerOrView = srcOfAlias != null ? srcOfAlias.getValue() : null;
-        if (gTablerOrView != null) {
-            // if FROM has table or view with alias
-            return getColsWithAddedDepcies(gTablerOrView);
+        GenericColumn relationGc = ref.getValue();
+        if (relationGc != null) {
+            return addFilteredRelationColumnsDepcies(relationGc.schema, relationGc.table, ANY)
+                    .collect(Collectors.toList());
         } else {
-            // if FROM has subquery with alias
-            return findReferenceComplex(srcOrTblOrView).getValue();
+            List<Pair<String, String>> complexNsp = findReferenceComplex(relation);
+            if (complexNsp != null) {
+                return complexNsp;
+            } else {
+                Log.log(Log.LOG_WARNING, "Complex not found: " + relation);
+                return Collections.emptyList();
+            }
         }
     }
 
@@ -314,7 +320,7 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         }
     }
 
-    private void from(From_itemContext fromItem) {
+    void from(From_itemContext fromItem) {
         From_primaryContext primary;
 
         if (fromItem.LEFT_PAREN() != null && fromItem.RIGHT_PAREN() != null) {
@@ -397,20 +403,5 @@ public class Select extends AbstractExprWithNmspc<SelectStmt> {
         } else {
             Log.log(Log.LOG_WARNING, "No alternative in from_item!");
         }
-    }
-
-    /**
-     * Gives lists of relations columns (name-type) for given schemaName and relationName.
-     *
-     * @param qualSchemaName
-     * @param relationName
-     * @return lists of relations columns (name-type) for given schemaName and relationName
-     */
-    private List<Pair<String, String>> getColumnsOfRelations(String schemaName,
-            String relationName) {
-        List<Pair<String, String>> ret = new ArrayList<>();
-        findRelations(schemaName, relationName)
-        .forEach(r -> ret.addAll(r.getRelationColumns().collect(Collectors.toList())));
-        return ret;
     }
 }

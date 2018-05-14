@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,7 +18,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ISelection;
@@ -49,8 +47,11 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public class DbStorePicker extends Composite {
+
+    private static final String DELIM_ENTRY = "\n"; //$NON-NLS-1$
 
     private static final LoadFileElement LOAD_FILE = new LoadFileElement(false);
     private static final LoadFileElement LOAD_DIR = new LoadFileElement(true);
@@ -106,20 +107,14 @@ public class DbStorePicker extends Composite {
             });
         }
 
-        final IPropertyChangeListener dbStoreChangeListener = (PropertyChangeEvent event) -> {
-            if (PREF.DB_STORE.equals(event.getProperty())
-                    && !Objects.equals(event.getNewValue(), event.getOldValue())) {
-                UiSync.exec(DbStorePicker.this, () ->  {
-                    if (!isDisposed()) {
-                        loadStore();
-                    }
-                });
+        final IPropertyChangeListener listener = e -> UiSync.exec(this, () -> {
+            if (!isDisposed()) {
+                loadStore();
             }
-        };
+        });
 
-        prefStore.addPropertyChangeListener(dbStoreChangeListener);
-        cmbDbNames.getControl().addDisposeListener(e -> prefStore
-                .removePropertyChangeListener(dbStoreChangeListener));
+        DbXmlStore.INSTANCE.addListener(listener);
+        cmbDbNames.getControl().addDisposeListener(e -> DbXmlStore.INSTANCE.deleteListener(listener));
 
         if (useDirSources) {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
@@ -153,7 +148,7 @@ public class DbStorePicker extends Composite {
     private void loadStore(ISelection newSelection) {
         ISelection selection = newSelection == null ? cmbDbNames.getSelection() : newSelection;
 
-        List<DbInfo> store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
+        List<DbInfo> store = DbInfo.readStoreFromXml(prefStore.getString(PREF.DB_STORE));
         Collection<File> files;
         if (useFileSources || useDirSources) {
             files = stringToDumpFileHistory(prefStore.getString(PREF.DB_STORE_FILES));
@@ -327,7 +322,7 @@ public class DbStorePicker extends Composite {
     }
 
     public static Deque<File> stringToDumpFileHistory(String preference, boolean allowDirs) {
-        String[] coordStrings = preference.split(DbInfo.DELIM_ENTRY);
+        String[] coordStrings = preference.split(DELIM_ENTRY);
         Deque<File> paths = new LinkedList<>();
         for (String path : coordStrings){
             File f = new File(path);
@@ -342,7 +337,7 @@ public class DbStorePicker extends Composite {
         StringBuilder sb = new StringBuilder();
         for (File path : dumps){
             sb.append(path.getAbsolutePath());
-            sb.append(DbInfo.DELIM_ENTRY);
+            sb.append(DELIM_ENTRY);
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

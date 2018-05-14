@@ -59,10 +59,9 @@ public abstract class JdbcReader implements PgCatalogStrings {
 
             st.setArray(1, loader.schemas.oids);
             st.setArray(2, loader.schemas.names);
-            try (ResultSet result = st.executeQuery()) {
+            try (ResultSet result = loader.runner.runScript(st)) {
                 while (result.next()) {
                     ResultSetWrapper wrapper = new JsonResultSetWrapper(result.getString(1));
-                    PgDiffUtils.checkCancelled(loader.monitor);
                     processResult(wrapper, loader.schemas.map.get(result.getLong("schema_oid")));
                 }
             }
@@ -93,15 +92,14 @@ public abstract class JdbcReader implements PgCatalogStrings {
         try (PreparedStatement st = loader.connection.prepareStatement(query)) {
             for (Entry<Long, PgSchema> schema : schemas) {
                 loader.setCurrentOperation("set search_path query");
-                loader.statement.execute("SET search_path TO " +
+                loader.runner.run(loader.statement, "SET search_path TO " +
                         PgDiffUtils.getQuotedName(schema.getValue().getName()) + ", pg_catalog;");
 
                 loader.setCurrentOperation(factory.helperFunction + " query for schema " + schema.getValue().getName());
                 st.setLong(1, schema.getKey());
-                try (ResultSet result = st.executeQuery()) {
+                try (ResultSet result = loader.runner.runScript(st)) {
                     while (result.next()) {
                         ResultSetWrapper wrapper = new SQLResultSetWrapper(result);
-                        PgDiffUtils.checkCancelled(loader.monitor);
                         processResult(wrapper, schema.getValue());
                     }
                 }
@@ -164,6 +162,28 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * The functions that accept the oid / object name and return the set / processing of its metadata are considered unsafe.
+     * These functions can return null if the object was deleted outside the transaction block.
+     * This method checks the returned values.
+     */
+    public static void checkObjectValidity(Object object, DbObjType type, String name) {
+        if (object == null) {
+            throw new IllegalStateException("Statement concurrent modification: " + type + ' ' + name);
+        }
+    }
+
+    /**
+     * Checks type for a match with null and unknown types that can come from
+     * functions that accept the oid / object name and return the set / processing of its metadata
+     */
+    public static void checkTypeValidity(String type) {
+        checkObjectValidity(type, DbObjType.TYPE, "");
+        if ("???".equals(type) || "???[]".equals(type)) {
+            throw new IllegalStateException("Concurrent type modification");
         }
     }
 

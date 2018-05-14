@@ -9,6 +9,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -20,14 +21,19 @@ public class UpdateDdl extends AbstractHandler {
 
         if (part instanceof SQLEditor){
             SQLEditor sqlEditor = (SQLEditor) part;
-
-            if (sqlEditor.getCurrentDb() != null) {
-                sqlEditor.updateDdl();
-            } else {
+            DbInfo dbInfo = sqlEditor.getCurrentDb();
+            if (dbInfo == null) {
                 MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
                 mb.setText(Messages.UpdateDdl_select_source);
                 mb.setMessage(Messages.UpdateDdl_select_source_msg);
                 mb.open();
+            } else if (dbInfo.isReadOnly()) {
+                MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
+                mb.setText(Messages.UpdateDdl_read_only_db_title);
+                mb.setMessage(Messages.UpdateDdl_read_only_db_message);
+                mb.open();
+            } else {
+                sqlEditor.updateDdl();
             }
         }
         return null;

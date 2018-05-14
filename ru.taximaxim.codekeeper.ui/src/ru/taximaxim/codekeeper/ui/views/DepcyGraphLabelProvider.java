@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.views;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.text.FlowPage;
+import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -62,7 +64,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
             case EXTENSION:
                 return "EXT " + st.getBareName(); //$NON-NLS-1$
             case FUNCTION:
-                return "FUNC " + st.getName(); //$NON-NLS-1$
+                return "FUNC " + st.getBareName(); //$NON-NLS-1$
             case INDEX:
                 return "IDX " + st.getBareName(); //$NON-NLS-1$
             case SCHEMA:
@@ -132,7 +134,14 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public IFigure getTooltip(Object entity) {
-        return null;
+        if (entity instanceof PgStatement) {
+            TextFlow text = new TextFlow(((PgStatement) entity).getName());
+            FlowPage page = new FlowPage();
+            page.add(text);
+            return page;
+        } else {
+            return null;
+        }
     }
 
     @Override

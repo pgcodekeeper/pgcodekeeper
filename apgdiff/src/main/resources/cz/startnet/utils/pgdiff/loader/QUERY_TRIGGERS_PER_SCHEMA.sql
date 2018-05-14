@@ -12,10 +12,10 @@ SELECT t.oid::bigint,
        t.tginitdeferred,
        relcon.relname as refrelname,
        refnsp.nspname as refnspname,
-       (SELECT array_agg(attname ORDER BY attnum) 
-        FROM pg_attribute a
+       (SELECT pg_catalog.array_agg(attname ORDER BY attnum) 
+        FROM pg_catalog.pg_attribute a
         WHERE a.attrelid = ccc.oid AND a.attnum = ANY(t.tgattr)) AS cols,
-       pg_get_triggerdef(t.oid,false) || ';' AS definition,
+       pg_catalog.pg_get_triggerdef(t.oid,false) || ';' AS definition,
        d.description as comment
 FROM pg_catalog.pg_class ccc
 RIGHT JOIN pg_catalog.pg_trigger t ON ccc.oid = t.tgrelid
@@ -25,6 +25,6 @@ LEFT JOIN pg_catalog.pg_description d ON t.oid = d.objoid
     AND d.objsubid = 0
 JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
 JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid
-WHERE ccc.relkind IN ('r', 'f', 'p', 'v', 'm')
+WHERE ccc.relkind IN ('r', 'f', 'p', 'm', 'v')
     AND ccc.relnamespace = ?
-    AND tgisinternal = FALSE
+    AND t.tgisinternal = FALSE

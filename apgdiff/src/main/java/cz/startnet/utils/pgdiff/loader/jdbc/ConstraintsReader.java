@@ -63,6 +63,7 @@ public class ConstraintsReader extends JdbcReader {
         }
 
         String definition = res.getString("definition");
+        checkObjectValidity(definition, getType(), constraintName);
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> p.sql().statement(0).schema_statement().schema_alter()
                 .alter_table_statement().table_action(0),

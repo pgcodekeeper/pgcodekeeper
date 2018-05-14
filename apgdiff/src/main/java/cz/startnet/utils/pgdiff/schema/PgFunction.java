@@ -8,7 +8,9 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +29,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+    private final Map<String, String> returnsColumns = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -118,6 +121,18 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public void setReturns(String returns) {
         this.returns = returns;
         resetHash();
+    }
+
+    /**
+     * @return unmodifiable RETURNS TABLE map
+     */
+    @Override
+    public Map<String, String> getReturnsColumns() {
+        return Collections.unmodifiableMap(returnsColumns);
+    }
+
+    public void addReturnsColumn(String name, String type) {
+        returnsColumns.put(name, type);
     }
 
     @Override
@@ -252,12 +267,12 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
+        result = prime * result + grants.hashCode();
+        result = prime * result + revokes.hashCode();
+        result = prime * result + arguments.hashCode();
         result = prime * result + ((returns == null) ? 0 : returns.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + name.hashCode();
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
@@ -287,6 +302,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
+        functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {

@@ -58,6 +58,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
@@ -77,21 +78,27 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         this.filename = filename;
     }
 
-    private PgStatement safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
+    private void safeParseStatement(ParserAbstract p, ParserRuleContext ctx) {
         try {
             PgDiffUtils.checkCancelled(monitor);
-            return p.getObject();
+            PgStatement st = p.getObject();
+            if (st != null) {
+                st.setLocation(filename);
+
+                if (st instanceof PgTable) {
+                    ((PgTable) st).getConstraints().stream()
+                    .filter(con -> con.getLocation() == null)
+                    .forEach(con -> con.setLocation(filename));
+                }
+            }
         } catch (UnresolvedReferenceException ex) {
             errors.add(handleUnresolvedReference(ex, filename));
-            return null;
         } catch (ObjectCreationException ex) {
             errors.add(handleCreationException(ex, filename, ctx.getParent()));
-            return null;
         } catch (InterruptedException ex) {
             throw new MonitorCancelledRuntimeException();
         } catch (Exception e) {
             Log.log(Log.LOG_ERROR, e.getLocalizedMessage());
-            return null;
         }
     }
 

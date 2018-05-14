@@ -7,16 +7,14 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -30,7 +28,7 @@ public class IgnoredObjectsPrefPage extends PreferencePage
 implements IWorkbenchPreferencePage {
 
     private IgnoredObjectPrefListEditor listEditor;
-    private Button btnIsWhite;
+    private IgnoreList ignore;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -45,22 +43,17 @@ implements IWorkbenchPreferencePage {
         parent.setLayout(gridLayout);
         parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
-        btnIsWhite = new Button(parent, SWT.CHECK);
-        btnIsWhite.setText(Messages.IgnoredObjectsPrefPage_convert_to_white_list);
+        ignore = InternalIgnoreList.readInternalList();
 
-        IgnoreList ignore = InternalIgnoreList.readInternalList();
-        btnIsWhite.setSelection(!ignore.isShow());
-
-        listEditor = new IgnoredObjectPrefListEditor(parent);
-        listEditor.setInputList(new LinkedList<>(ignore.getList()));
+        listEditor = IgnoredObjectPrefListEditor.create(parent, ignore);
+        listEditor.setInputList(new ArrayList<>(ignore.getList()));
 
         return parent;
     }
 
     @Override
     protected void performDefaults() {
-        listEditor.setInputList(new LinkedList<IgnoredObject>());
+        listEditor.setInputList(new ArrayList<>());
         super.performDefaults();
     }
 
@@ -79,7 +72,7 @@ implements IWorkbenchPreferencePage {
 
     private void writeList() throws IOException, URISyntaxException {
         IgnoreList list = new IgnoreList();
-        boolean isWhite = btnIsWhite.getSelection();
+        boolean isWhite = !ignore.isShow();
         list.setShow(!isWhite);
         for (IgnoredObject rule : listEditor.getList()){
             rule.setShow(isWhite);

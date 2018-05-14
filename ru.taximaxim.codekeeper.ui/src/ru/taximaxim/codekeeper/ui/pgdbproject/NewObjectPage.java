@@ -36,11 +36,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -55,9 +57,7 @@ public final class NewObjectPage extends WizardPage {
     private static final String NAME = "name"; //$NON-NLS-1$
     private static final String SCHEMA = "schema"; //$NON-NLS-1$
     private static final String CONTAINER = "container"; //$NON-NLS-1$
-    private static final String DEFAULT_SCHEMA = "public"; //$NON-NLS-1$
 
-    private static final String POSTFIX = ".sql"; //$NON-NLS-1$
     private static final String GROUP_DELIMITER =
             "\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
     private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
@@ -71,7 +71,7 @@ public final class NewObjectPage extends WizardPage {
 
     private DbObjType type;
     private String name = NAME;
-    private String schema = DEFAULT_SCHEMA;
+    private String schema = "public"; //$NON-NLS-1$
     private String container = CONTAINER;
     private String expectedFormat;
     private IProject currentProj;
@@ -297,7 +297,7 @@ public final class NewObjectPage extends WizardPage {
             return;
         }
         txtName.setText(path);
-        txtName.selectAll();
+        txtName.setSelection(path.length());
     }
 
     @Override
@@ -324,17 +324,18 @@ public final class NewObjectPage extends WizardPage {
                 String second = parser.getSecondName();
                 if ((type == DbObjType.SCHEMA || type == DbObjType.EXTENSION) && second != null) {
                     err = Messages.NewObjectWizard_invalid_schema_format;
-                } else if (isSubElement() == (third == null)) {
+                } else if (isSubElement() == (third == null)
+                        || (second == null && type != DbObjType.SCHEMA && type != DbObjType.EXTENSION)) {
                     err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
                 }
 
                 if (err == null) {
                     name = parser.getFirstName();
                     if (isSubElement()) {
-                        container = parser.getSecondName();
-                        schema = parser.getThirdName();
+                        container = second;
+                        schema = third;
                     } else if (type != DbObjType.EXTENSION && type != DbObjType.SCHEMA) {
-                        schema = parser.getSecondName();
+                        schema = second;
                     }
                 }
             }
@@ -386,14 +387,14 @@ public final class NewObjectPage extends WizardPage {
         if (!projectFolder.exists()) {
             projectFolder.create(false, true, null);
         }
-        IFolder schemaFolder = projectFolder.getFolder(name);
+        IFolder schemaFolder = projectFolder.getFolder(ModelExporter.getExportedFilename(name));
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
-        IFile file = projectFolder.getFile(name + POSTFIX);
+        IFile file = projectFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
-            sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, name));
+            sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
             file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
         }
         if (open) {
@@ -407,9 +408,9 @@ public final class NewObjectPage extends WizardPage {
         if (!folder.exists()) {
             folder.create(false, true, null);
         }
-        IFile extFile = folder.getFile(name + POSTFIX);
+        IFile extFile = folder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!extFile.exists()) {
-            String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, name);
+            String code = MessageFormat.format(PATTERN, DbObjType.EXTENSION, PgDiffUtils.getQuotedName(name));
             extFile.create(new ByteArrayInputStream(code.getBytes()), false, null);
         }
         openFileInEditor(extFile);
@@ -417,43 +418,39 @@ public final class NewObjectPage extends WizardPage {
 
     private IFile createObject(String schema, String name, DbObjType type,
             boolean open, IProject project) throws CoreException {
-        String objectName = name;
+        String objectName = PgDiffUtils.getQuotedName(name);
         IFolder folder = getFolder(schema, type, project);
-        IFile file = folder.getFile(name + POSTFIX);
-        if (type == DbObjType.FUNCTION) {
-            int paren = name.indexOf('(');
-            if (paren != -1) {
-                file = folder.getFile(name.substring(0, paren) + POSTFIX);
-            } else {
-                objectName +="()"; //$NON-NLS-1$
-            }
-        }
-        StringBuilder sb = new StringBuilder("SET search_path = " + schema + ", pg_catalog;"); //$NON-NLS-1$ //$NON-NLS-2$
-        sb.append("\n\nCREATE "); //$NON-NLS-1$
-        if (type == DbObjType.FUNCTION) {
-            sb.append("OR REPLACE "); //$NON-NLS-1$
-        }
-        sb.append(type + " " + objectName); //$NON-NLS-1$
-
-        switch (type) {
-        case TYPE:
-            sb.append(';');
-            break;
-        case DOMAIN:
-            sb.append(" AS datatype;"); //$NON-NLS-1$
-            break;
-        case FUNCTION:
-            sb.append(" RETURNS void\n\tLANGUAGE sql\n\tAS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
-            break;
-        case TABLE:
-            sb.append(" (\n);"); //$NON-NLS-1$
-            break;
-        default:
-            sb.append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
-            break;
-        }
+        IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
+            StringBuilder sb = new StringBuilder("SET search_path = " //$NON-NLS-1$
+                    + PgDiffUtils.getQuotedName(schema)
+                    + ", pg_catalog;"); //$NON-NLS-1$
+            sb.append("\n\nCREATE "); //$NON-NLS-1$
+            if (type == DbObjType.FUNCTION) {
+                sb.append("OR REPLACE "); //$NON-NLS-1$
+                objectName +="()"; //$NON-NLS-1$
+            }
+            sb.append(type + " " + objectName); //$NON-NLS-1$
+
+            switch (type) {
+            case TYPE:
+                sb.append(';');
+                break;
+            case DOMAIN:
+                sb.append(" AS datatype;"); //$NON-NLS-1$
+                break;
+            case FUNCTION:
+                sb.append(" RETURNS void\n\tLANGUAGE sql\n    AS $$\n\t--function body \n$$;\n"); //$NON-NLS-1$
+                break;
+            case TABLE:
+                sb.append(" (\n);"); //$NON-NLS-1$
+                break;
+            default:
+                sb.append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
+                break;
+            }
+
             file.create(new ByteArrayInputStream(sb.toString().getBytes()), false, null);
         }
         if (open) {
@@ -467,14 +464,15 @@ public final class NewObjectPage extends WizardPage {
         DbObjType parentType = parentIsTable? DbObjType.TABLE : DbObjType.VIEW;
         IFile file = createObject(schema, parent, parentType, false, project);
         StringBuilder sb = new StringBuilder(GROUP_DELIMITER);
+        String objectName = PgDiffUtils.getQuotedName(name);
         if (type == DbObjType.RULE) {
-            sb.append(MessageFormat.format(RULE_PATTERN, name, parent));
+            sb.append(MessageFormat.format(RULE_PATTERN, objectName, parent));
         } else if (type == DbObjType.TRIGGER) {
-            sb.append(MessageFormat.format(TRIGGER_PATTERN, name, parent));
+            sb.append(MessageFormat.format(TRIGGER_PATTERN, objectName, parent));
         } else if (type == DbObjType.CONSTRAINT) {
-            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parent, name));
+            sb.append(MessageFormat.format(CONSTRAINT_PATTERN, parent, objectName));
         } else {
-            sb.append(MessageFormat.format(INDEX_PATTERN, name, parent));
+            sb.append(MessageFormat.format(INDEX_PATTERN, objectName, parent));
         }
         file.appendContents(new ByteArrayInputStream(sb.toString().getBytes()), true, true, null);
         openFileInEditor(file);

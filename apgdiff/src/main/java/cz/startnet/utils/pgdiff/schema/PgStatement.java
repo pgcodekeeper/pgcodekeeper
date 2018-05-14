@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -35,6 +36,9 @@ public abstract class PgStatement implements IStatement {
     private PgStatement parent;
     protected final Set<GenericColumn> deps = new LinkedHashSet<>();
 
+    private String location;
+    private boolean isLib;
+
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
 
@@ -60,11 +64,24 @@ public abstract class PgStatement implements IStatement {
     }
 
     @Override
-    public abstract DbObjType getStatementType();
-
-    @Override
     public PgStatement getParent() {
         return parent;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public boolean isLib() {
+        return isLib;
+    }
+
+    public void markAsLib() {
+        this.isLib = true;
     }
 
     public abstract PgDatabase getDatabase();
@@ -307,6 +324,24 @@ public abstract class PgStatement implements IStatement {
      * Shallow version of {@link #equals(Object)}
      */
     public abstract boolean compare(PgStatement obj);
+
+    /**
+     * Returns all subtree elements
+     */
+    public Stream<PgStatement> getDescendants() {
+        return getChildren();
+    }
+
+    /**
+     * Returns all subelements of current element
+     */
+    public Stream<PgStatement> getChildren() {
+        return Stream.empty();
+    }
+
+    public boolean hasChildren() {
+        return getChildren().anyMatch(e -> true);
+    }
 
     /**
      * Deep part of {@link #equals(Object)}.

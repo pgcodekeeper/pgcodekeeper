@@ -33,6 +33,7 @@ public class CreateFunction extends ParserAbstract {
             function.setReturns(getFullCtxText(ctx.ret_table));
             for (Function_column_name_typeContext ret_col : ctx.ret_table.function_column_name_type()) {
                 addTypeAsDepcy(ret_col.column_type, function, getDefSchemaName());
+                function.addReturnsColumn(ret_col.column_name.getText(), getFullCtxText(ret_col.column_type));
             }
         } else if(ctx.rettype_data != null) {
             function.setReturns(getFullCtxText(ctx.rettype_data));

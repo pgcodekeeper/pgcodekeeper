@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema.system;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -26,7 +27,7 @@ public class PgSystemSchema extends PgSystemStatement implements ISchema, Serial
 
     @Override
     public List<PgSystemFunction> getFunctions() {
-        return functions;
+        return Collections.unmodifiableList(functions);
     }
 
     public void addRelation(PgSystemRelation relation) {

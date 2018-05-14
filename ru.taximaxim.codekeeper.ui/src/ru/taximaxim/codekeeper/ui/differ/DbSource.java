@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +34,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgUIDumpLoader;
+import ru.taximaxim.codekeeper.ui.xmlstore.DependenciesXmlStore;
 
 public abstract class DbSource {
 
@@ -209,10 +211,16 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
         List<AntlrError> er = new ArrayList<>();
-        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(
-                project.getProject(),
-                getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true)),
-                monitor, null, er);
+        PgDiffArguments arguments = getPgDiffArgs(charset, pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true));
+        PgDatabase db = PgUIDumpLoader.loadDatabaseSchemaFromIProject(project,
+                arguments, monitor, null, er);
+
+        try {
+            PgUIDumpLoader.loadLibraries(db, arguments, new DependenciesXmlStore(project).readObjects());
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex.getLocalizedMessage(), ex);
+        }
+
         errors = er;
         return db;
     }

@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,10 +29,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.FullAnalyze;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrError;
-import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.StatementBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -42,6 +43,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.properties.PgLibrary;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -119,6 +121,13 @@ public class PgUIDumpLoader extends PgDumpLoader {
         }
     }
 
+    public static void loadLibraries(PgDatabase db, PgDiffArguments arguments,
+            Collection<PgLibrary> libs) throws InterruptedException, IOException, URISyntaxException {
+        for (PgLibrary lib : libs) {
+            loadLibrary(db, arguments, lib.isIgnorePriv(), lib.getPath());
+        }
+    }
+
     /**
      * Loads database schema from a ModelExporter directory tree.
      *
@@ -126,14 +135,14 @@ public class PgUIDumpLoader extends PgDumpLoader {
      */
     public static PgDatabase loadDatabaseSchemaFromIProject(IProject iProject,
             PgDiffArguments arguments, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
+            List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
         PgDatabase db = new PgDatabase(false);
         db.setArguments(arguments);
         for (WORK_DIR_NAMES workDirName : WORK_DIR_NAMES.values()) {
             IFolder iFolder = iProject.getFolder(workDirName.name());
             if (iFolder.exists()) {
-                loadSubdir(iFolder, db, monitor, funcBodies, errors);
+                loadSubdir(iFolder, db, monitor, statementBodies, errors);
             }
         }
 
@@ -150,7 +159,7 @@ public class PgUIDumpLoader extends PgDumpLoader {
             for (String dirSub : DIR_LOAD_ORDER) {
                 IFolder iFolder = schemaFolder.getFolder(dirSub);
                 if (iFolder.exists()) {
-                    loadSubdir(iFolder, db, monitor, funcBodies, errors);
+                    loadSubdir(iFolder, db, monitor, statementBodies, errors);
                 }
             }
         }
@@ -159,17 +168,17 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     private static void loadSubdir(IFolder folder, PgDatabase db, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
+            List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws InterruptedException, IOException, CoreException {
         for (IResource resource : folder.members()) {
             if (resource.getType() == IResource.FILE && "sql".equals(resource.getFileExtension())) { //$NON-NLS-1$
-                loadFile((IFile) resource, monitor, db, funcBodies, errors);
+                loadFile((IFile) resource, monitor, db, statementBodies, errors);
             }
         }
     }
 
     private static void loadFile(IFile file, IProgressMonitor monitor, PgDatabase db,
-            List<FunctionBodyContainer> funcBodies, List<AntlrError> errors)
+            List<StatementBodyContainer> statementBodies, List<AntlrError> errors)
                     throws IOException, CoreException, InterruptedException {
         PgDiffArguments arguments = new PgDiffArguments();
         arguments.setInCharsetName(file.getCharset());
@@ -177,10 +186,10 @@ public class PgUIDumpLoader extends PgDumpLoader {
         List<AntlrError> errList = null;
         try (PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor)) {
             errList = loader.getErrors();
-            loader.setLoadReferences(funcBodies != null);
+            loader.setLoadReferences(statementBodies != null);
             loader.loadFile(db);
-            if (funcBodies != null) {
-                funcBodies.addAll(loader.getFuncBodyReferences());
+            if (statementBodies != null) {
+                statementBodies.addAll(loader.getStatementBodyReferences());
             }
         } finally {
             if (errors != null && errList != null && !errList.isEmpty()) {
@@ -190,12 +199,12 @@ public class PgUIDumpLoader extends PgDumpLoader {
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types) throws InterruptedException, IOException, CoreException {
-        return PgDatabase.listPgObjects(buildFiles(Arrays.asList(file), null, null))
-                .values().stream().filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
+        return buildFiles(Arrays.asList(file), null, null).getDescendants().
+                filter(e -> types.contains(e.getStatementType())).findAny().orElse(null);
     }
 
     public static PgDatabase buildFiles(Collection<IFile> files, IProgressMonitor monitor,
-            List<FunctionBodyContainer> funcBodies) throws InterruptedException, IOException, CoreException {
+            List<StatementBodyContainer> statementBodies) throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(WORK_DIR_NAMES.SCHEMA.name());
@@ -235,11 +244,11 @@ public class PgUIDumpLoader extends PgDumpLoader {
                     // otherwise we're dealing with the schema file itself, allow it to load normally
                     // don't pass progress monitor since this file isn't in the original load-set
                     loadFile(file.getProject().getFile(schemasPath.append(schemaDirname + ".sql")), //$NON-NLS-1$
-                            null, db, funcBodies, null);
+                            null, db, statementBodies, null);
                 }
             }
 
-            loadFile(file, mon, db, funcBodies, null);
+            loadFile(file, mon, db, statementBodies, null);
         }
         return db;
     }

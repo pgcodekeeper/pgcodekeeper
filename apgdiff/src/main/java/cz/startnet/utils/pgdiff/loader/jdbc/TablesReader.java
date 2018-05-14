@@ -51,8 +51,9 @@ public class TablesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
         String partitionBound = null;
 
-        if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
+        if (SupportedVersion.VERSION_10.checkVersion(loader.version) && res.getBoolean("relispartition")) {
             partitionBound = res.getString("partition_bound");
+            checkObjectValidity(partitionBound, getType(), tableName);
         }
         PgTable t;
         String serverName = res.getString("server_name");
@@ -133,8 +134,10 @@ public class TablesReader extends JdbcReader {
             }
 
             // since 10 PostgreSQL
-            if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-                regTable.setPartitionBy(res.getString("partition_by"));
+            if (SupportedVersion.VERSION_10.checkVersion(loader.version) && "p".equals(res.getString("relkind"))) {
+                String partitionBy = res.getString("partition_by");
+                checkObjectValidity(partitionBy, getType(), tableName);
+                regTable.setPartitionBy(partitionBy);
             }
 
             // persistence: U - unlogged, P - permanent, T - temporary
@@ -158,6 +161,7 @@ public class TablesReader extends JdbcReader {
 
         Long[] colTypeIds = res.getArray("col_type_ids", Long.class);
         String[] colTypeName = res.getArray("col_type_name", String.class);
+        Boolean[] colHasDefault = res.getArray("col_has_default", Boolean.class);
         String[] colDefaults = res.getArray("col_defaults", String.class);
         String[] colComments = res.getArray("col_comments", String.class);
         Boolean[] colNotNull = res.getArray("col_notnull", Boolean.class);
@@ -178,7 +182,9 @@ public class TablesReader extends JdbcReader {
             column.setInherit(!colIsLocal[i]);
 
             if (ofTypeOid == 0 && !column.isInherit()) {
-                column.setType(colTypeName[i]);
+                String type = colTypeName[i];
+                checkTypeValidity(type);
+                column.setType(type);
             }
 
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
@@ -216,12 +222,15 @@ public class TablesReader extends JdbcReader {
                         + '.' + PgDiffUtils.getQuotedName(colCollationName[i]));
             }
 
-            String columnDefault = colDefaults[i];
-            if (columnDefault != null && !columnDefault.isEmpty()) {
-                column.setDefaultValue(columnDefault);
-                loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
-                        ctx -> schema.getDatabase().getContextsForAnalyze()
-                        .add(new SimpleEntry<>(column, ctx)));
+            if (colHasDefault[i]) {
+                String columnDefault = colDefaults[i];
+                checkObjectValidity(columnDefault, DbObjType.COLUMN, colNames[i]);
+                if (!columnDefault.isEmpty()) {
+                    column.setDefaultValue(columnDefault);
+                    loader.submitAntlrTask(columnDefault, p -> p.vex_eof().vex().get(0),
+                            ctx -> schema.getDatabase().getContextsForAnalyze()
+                            .add(new SimpleEntry<>(column, ctx)));
+                }
             }
 
             if (colNotNull[i]) {

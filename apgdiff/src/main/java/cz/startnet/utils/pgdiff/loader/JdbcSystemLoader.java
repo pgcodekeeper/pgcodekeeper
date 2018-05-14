@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcReader;
 import cz.startnet.utils.pgdiff.loader.jdbc.JdbcType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -93,16 +94,21 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
                         IntStream.range(0, argModes.size()).filter(i -> "t".equals(argModes.get(i))).forEach(e -> {
                             JdbcType returnType = cachedTypesByOid.get(argTypeOids[e]);
-                            function.addReturnsColumns(argNames[e], returnType.getFullName(schemaName));
+                            function.addReturnsColumn(argNames[e], returnType.getFullName(schemaName));
                         });
                     }
-                } else {
-                    function.setReturns(result.getString("prorettype"));
+                }
+                if (function.getReturnsColumns().isEmpty()) {
+                    String prorettype = result.getString("prorettype");
+                    JdbcReader.checkTypeValidity(prorettype);
+                    function.setReturns(prorettype);
                 }
 
                 function.setSetof(result.getBoolean("proretset"));
 
                 String arguments = result.getString("proarguments");
+
+                JdbcReader.checkObjectValidity(arguments, DbObjType.FUNCTION, functionName);
 
                 if (!arguments.isEmpty()) {
                     submitAntlrTask('(' + arguments + ')',
@@ -169,6 +175,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                     String[] colNames = (String[]) arr.getArray();
                     String[] colTypes = (String[]) result.getArray("col_types").getArray();
                     for (int i = 0; i < colNames.length; i++) {
+                        JdbcReader.checkTypeValidity(colTypes[i]);
                         relation.addColumn(colNames[i], colTypes[i]);
                     }
                 }
@@ -214,9 +221,25 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             while (result.next()) {
                 PgDiffUtils.checkCancelled(monitor);
                 String source = result.getString("source");
+                JdbcReader.checkTypeValidity(source);
                 String target = result.getString("target");
+                JdbcReader.checkTypeValidity(target);
                 String type = result.getString("castcontext");
-                storage.addCast(new PgSystemCast(source, target, CastContext.getEnumByValue(type)));
+                CastContext ctx;
+                switch (type) {
+                case "e":
+                    ctx = CastContext.EXPLICIT;
+                    break;
+                case "a":
+                    ctx = CastContext.ASSIGNMENT;
+                    break;
+                case "i":
+                    ctx = CastContext.IMPLICIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown cast context: " + type);
+                }
+                storage.addCast(new PgSystemCast(source, target, ctx));
             }
         }
     }

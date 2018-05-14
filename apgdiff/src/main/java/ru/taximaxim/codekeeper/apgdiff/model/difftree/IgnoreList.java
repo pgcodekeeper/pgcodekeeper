@@ -26,6 +26,10 @@ public class IgnoreList {
         return Collections.unmodifiableList(rules);
     }
 
+    public void clearList() {
+        rules.clear();
+    }
+
     public void add(IgnoredObject rule) {
         IgnoredObject existing = findSameMatchingRule(rule);
         if (existing != null) {
@@ -60,14 +64,14 @@ public class IgnoreList {
         }
     }
 
-    public AddStatus getNameStatus(String name, boolean inAddSubtree) {
-        return getNameStatus(name, inAddSubtree, (String[]) null);
+    public AddStatus getNameStatus(String name, DbObjType type, boolean inAddSubtree) {
+        return getNameStatus(name, type, inAddSubtree, (String[]) null);
     }
 
-    public AddStatus getNameStatus(String name, boolean inAddSubtree, String... dbNames) {
+    public AddStatus getNameStatus(String name, DbObjType type, boolean inAddSubtree, String... dbNames) {
         AddStatus status = null;
         for (IgnoredObject rule : rules) {
-            if (rule.match(name, dbNames)) {
+            if (rule.match(name, type, dbNames)) {
                 AddStatus newStatus = rule.getAddStatus();
                 if (status == null) {
                     status = newStatus;

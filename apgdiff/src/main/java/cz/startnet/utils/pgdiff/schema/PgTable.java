@@ -56,6 +56,23 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         return false;
     }
 
+    @Override
+    public Stream<PgStatement> getChildren() {
+        Stream<PgStatement> stream = Stream.concat(getIndexes().stream(), getTriggers().stream());
+        stream = Stream.concat(stream, getRules().stream());
+        stream = Stream.concat(stream, getConstraints().stream());
+        return stream;
+    }
+
+    public static Stream<PgStatement> columnAdder(PgStatement st) {
+        Stream<PgStatement> newStream = Stream.of(st);
+        if (st.getStatementType() == DbObjType.TABLE) {
+            newStream = Stream.concat(newStream, ((PgTable)st).getColumns().stream());
+        }
+
+        return newStream;
+    }
+
     /**
      * Generates beginning of alter table statement.
      *
@@ -93,17 +110,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
-        Stream<Pair<String, String>> allColumns = columns.stream()
+        Stream<Pair<String, String>> localColumns = columns.stream()
                 .filter(c -> c.getType() != null)
                 .map(c -> new Pair<>(c.getName(), c.getType()));
+        if (inherits.isEmpty()) {
+            return localColumns;
+        }
+
+        Stream<Pair<String, String>> inhColumns = Stream.empty();
         for (Inherits inht : inherits) {
             String schemaName = inht.getKey();
             PgSchema inhtSchema = schemaName == null ? getContainingSchema()
                     : getDatabase().getSchema(schemaName);
-            allColumns = Stream.concat(allColumns, inhtSchema
+            inhColumns = Stream.concat(inhColumns, inhtSchema
                     .getTable(inht.getValue()).getRelationColumns());
         }
-        return allColumns;
+        return Stream.concat(inhColumns, localColumns);
     }
 
     /**
@@ -539,14 +561,6 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     public boolean containsIndex(final String name) {
         return getIndex(name) != null;
-    }
-
-    public boolean containsTrigger(String name) {
-        return getTrigger(name) != null;
-    }
-
-    public boolean containsRule(String name) {
-        return getRule(name) != null;
     }
 
     @Override

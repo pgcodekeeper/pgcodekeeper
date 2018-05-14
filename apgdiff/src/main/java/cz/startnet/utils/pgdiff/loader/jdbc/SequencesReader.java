@@ -81,7 +81,7 @@ public class SequencesReader extends JdbcReader {
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
-                s.setDataType(res.getString("data_type"));
+                s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
             }
         }
 
@@ -109,7 +109,7 @@ public class SequencesReader extends JdbcReader {
                         + " FROM test_id78901234567890123456789.test_id78901234567890123456789 UNION ALL ").length();
     }
 
-    public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException {
+    public static void querySequencesData(PgDatabase db, JdbcLoaderBase loader) throws SQLException, InterruptedException {
         loader.setCurrentOperation("sequences data query");
 
         List<String> schemasAccess = new ArrayList<>();
@@ -117,10 +117,13 @@ public class SequencesReader extends JdbcReader {
             Array arrSchemas = loader.connection.createArrayOf("text",
                     db.getSchemas().stream().filter(s -> !s.getSequences().isEmpty()).map(PgSchema::getName).toArray());
             schemasAccessQuery.setArray(1, arrSchemas);
-            try (ResultSet schemaRes = schemasAccessQuery.executeQuery()) {
+            try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {
                     String schema = schemaRes.getString("nspname");
-                    if (schemaRes.getBoolean("has_priv")) {
+                    Object hasPriv = schemaRes.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SCHEMA, schema);
+
+                    if ((boolean)hasPriv) {
                         schemasAccess.add(schema);
                     } else {
                         loader.addError("No USAGE privileges for schema " + schema +
@@ -144,10 +147,13 @@ public class SequencesReader extends JdbcReader {
         try (PreparedStatement accessQuery = loader.connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_ACCESS)) {
             Array arrSeqs = loader.connection.createArrayOf("text", seqs.keySet().toArray());
             accessQuery.setArray(1, arrSeqs);
-            try (ResultSet res = accessQuery.executeQuery()) {
+            try (ResultSet res = loader.runner.runScript(accessQuery)) {
                 while (res.next()) {
                     String qname = res.getString("qname");
-                    if (res.getBoolean("has_priv")) {
+                    Object hasPriv = res.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SEQUENCE, qname);
+
+                    if ((boolean)hasPriv) {
                         if (sbUnionQuery.length() > 0) {
                             sbUnionQuery.append("\nUNION ALL\n");
                         }
@@ -169,7 +175,7 @@ public class SequencesReader extends JdbcReader {
             return;
         }
 
-        try (ResultSet res = loader.statement.executeQuery(sbUnionQuery.toString())) {
+        try (ResultSet res = loader.runner.runScript(loader.statement, sbUnionQuery.toString())) {
             while (res.next()) {
                 PgSequence seq = seqs.get(res.getString("qname"));
                 seq.setStartWith(res.getString("start_value"));
