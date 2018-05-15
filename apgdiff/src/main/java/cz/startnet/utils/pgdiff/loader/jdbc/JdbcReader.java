@@ -46,6 +46,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 loader.addError(Messages.JdbcReader_helper_function_error);
                 Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
                         + "falling back to old queries: " + factory.helperFunction, ex);
+                loader.connection.rollback();
             }
         }
         if (!helperSuccess) {
