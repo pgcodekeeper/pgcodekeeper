@@ -1321,16 +1321,5 @@
             class="ru.taximaxim.codekeeper.ui.comparetools.SqlContentViewerCreator"
             id="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
         </viewer>
-        <contentTypeBinding
-            contentTypeId="ru.taximaxim.codekeeper.ui.SqlContentType"
-            contentMergeViewerId="ru.taximaxim.codekeeper.ui.SqlContentViewerCreator">
-        </contentTypeBinding>
-    </extension>
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            id="ru.taximaxim.codekeeper.ui.SqlContentType"
-            name="SQL"
-            base-type="org.eclipse.core.runtime.text"
-            file-extensions="sql" />
     </extension>
 </plugin>
