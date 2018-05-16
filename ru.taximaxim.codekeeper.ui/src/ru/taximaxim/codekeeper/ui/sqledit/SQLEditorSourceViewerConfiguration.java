@@ -92,6 +92,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT);
         addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT);
         addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
+        addDamagerRepairer(reconciler, createQuotedIdentifierScanner(), SQLEditorCommonDocumentProvider.SQL_QUOTED_IDENTIFIER);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
 
         return reconciler;
@@ -149,12 +150,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                     getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
         }
 
-        // Add the SQL constants to the word rule.
-        for (String constant : sqlSyntax.getConstants()) {
-            wordRule.addWord(constant, new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
-        }
-
         return wordRule;
     }
 
@@ -169,23 +164,30 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     private RuleBasedScanner createCommentScanner() {
-        RuleBasedScanner commentScanner= new RuleBasedScanner();
+        RuleBasedScanner commentScanner = new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
                 getTextAttribute(prefs, SQLEditorStatementTypes.SINGLE_LINE_COMMENTS)));
         return commentScanner;
     }
 
     private RuleBasedScanner createMultiCommentScanner() {
-        RuleBasedScanner commentScanner= new RuleBasedScanner();
+        RuleBasedScanner commentScanner = new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
                 getTextAttribute(prefs, SQLEditorStatementTypes.MULTI_LINE_COMMENTS)));
         return commentScanner;
     }
 
     private RuleBasedScanner createCharacterStringLiteralCommentScanner() {
-        RuleBasedScanner commentScanner= new RuleBasedScanner();
+        RuleBasedScanner commentScanner = new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
                 getTextAttribute(prefs, SQLEditorStatementTypes.CHARACTER_STRING_LITERAL)));
+        return commentScanner;
+    }
+
+    private RuleBasedScanner createQuotedIdentifierScanner() {
+        RuleBasedScanner commentScanner = new RuleBasedScanner();
+        commentScanner.setDefaultReturnToken(new Token(
+                getTextAttribute(prefs, SQLEditorStatementTypes.QUOTED_IDENTIFIER)));
         return commentScanner;
     }
 }

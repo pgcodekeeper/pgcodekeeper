@@ -107,6 +107,12 @@ public interface UIConsts {
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
+    interface SQL_EDITOR_PREF {
+        String MATCHING_BRACKETS = "matchingBrackets"; //$NON-NLS-1$
+        String MATCHING_BRACKETS_COLOR = "matchingBracketsColor"; //$NON-NLS-1$
+        String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
+        String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
+    }
 
     interface USAGE_REPORT_PREF {
         String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
