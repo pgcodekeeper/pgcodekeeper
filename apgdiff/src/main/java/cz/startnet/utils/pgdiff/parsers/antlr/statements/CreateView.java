@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 
 import java.text.MessageFormat;
-import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
@@ -64,7 +63,7 @@ public class CreateView extends ParserAbstract {
         Select_stmtContext vQuery = ctx.v_query;
         if (vQuery != null) {
             view.setQuery(getFullCtxText(vQuery));
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(view, vQuery));
+            db.addContextForAnalyze(view, vQuery);
             ViewSelect select = new ViewSelect(schema.getName());
             select.analyze(new SelectStmt(vQuery));
             view.addAllDeps(select.getDepcies());

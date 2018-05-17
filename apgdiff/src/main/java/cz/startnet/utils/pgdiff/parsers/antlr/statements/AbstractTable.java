@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -70,7 +69,7 @@ public abstract class AbstractTable extends ParserAbstract {
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-            db.getContextsForAnalyze().add(new SimpleEntry<>(col, def));
+            db.addContextForAnalyze(col, def);
         } else if (comConstr != null && comConstr.null_value != null) {
             col.setNullValue(comConstr.null_false == null);
         } else if (ctx.constr_body().table_references() != null) {
@@ -129,7 +128,7 @@ public abstract class AbstractTable extends ParserAbstract {
             constr = new PgConstraint(constrName, getFullCtxText(ctx));
             VexContext expCtx = comConstr.check_boolean_expression().expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
-            db.getContextsForAnalyze().add(new SimpleEntry<>(constr, expCtx));
+            db.addContextForAnalyze(constr, expCtx);
         }
 
         if (constr != null) {
@@ -227,7 +226,7 @@ public abstract class AbstractTable extends ParserAbstract {
             exp = constrBody.vex();
         }
         if (exp != null) {
-            db.getContextsForAnalyze().add(new SimpleEntry<>(constrBlank, exp));
+            db.addContextForAnalyze(constrBlank, exp);
         }
     }
 

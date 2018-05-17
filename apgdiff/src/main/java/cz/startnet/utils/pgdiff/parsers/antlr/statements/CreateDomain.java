@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -36,7 +35,7 @@ public class CreateDomain extends ParserAbstract {
         }
         VexContext exp = ctx.def_value;
         if (exp != null) {
-            db.getContextsForAnalyze().add(new SimpleEntry<>(domain, exp));
+            db.addContextForAnalyze(domain, exp);
             domain.setDefaultValue(getFullCtxText(exp));
         }
         for (Domain_constraintContext constrCtx : ctx.dom_constraint) {
@@ -67,6 +66,6 @@ public class CreateDomain extends ParserAbstract {
     public static void parseDomainConstraint(PgDomain domain, PgConstraint constr,
             Check_boolean_expressionContext boolExpCtx, PgDatabase db) {
         constr.setDefinition(getFullCtxText(boolExpCtx));
-        db.getContextsForAnalyze().add(new SimpleEntry<>(domain, boolExpCtx.expression));
+        db.addContextForAnalyze(domain, boolExpCtx.expression);
     }
 }

@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -106,6 +107,16 @@ public class PgDatabase extends PgStatement {
 
     public List<Entry<PgStatement, ParserRuleContext>> getContextsForAnalyze() {
         return contextsForAnalyze;
+    }
+
+    /**
+     * Add context to the map for analyze.
+     *
+     * @param stmt statement to which the context belongs
+     * @param ctx context for analyze
+     */
+    public void addContextForAnalyze(PgStatement stmt, ParserRuleContext ctx) {
+        contextsForAnalyze.add(new SimpleEntry<>(stmt, ctx));
     }
 
     public void setDbTimestamp(DBTimestamp dbTimestamp) {

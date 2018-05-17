@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -96,7 +95,7 @@ public class TypesReader extends JdbcReader {
             }
         } else {
             loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
-                    ctx -> dataBase.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
+                    ctx -> dataBase.addContextForAnalyze(d, ctx));
         }
 
         d.setDefaultValue(def);
