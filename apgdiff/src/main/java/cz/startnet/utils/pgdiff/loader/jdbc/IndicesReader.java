@@ -64,6 +64,8 @@ public class IndicesReader extends JdbcReader {
             i.setComment(loader.args, PgDiffUtils.quoteString(comment));
         }
 
+        i.addDep(new GenericColumn(schemaName, tableName, DbObjType.TABLE));
+
         return i;
     }
 
