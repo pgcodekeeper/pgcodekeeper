@@ -42,7 +42,9 @@ public final class Messages extends NLS {
 
     public static String SQLEditorMainPage_enclosing_brackets;
 
-    public static String SQLEditorMainPage_highlight_bracket_at_caret_location;
+    public static String SQLEditorMainPage_matching_bracket_and_caret_location;
+
+    public static String SQLEditorMainPage_matching_bracket;
 
     public static String SQLEditorMainPage_matching_bracket_highlighting_color;
 
