@@ -7,8 +7,6 @@ import ru.taximaxim.codekeeper.apgdiff.sql.Keyword.KeywordCategory;
 
 public class SqlPostgresSyntax {
 
-    private static final String EMPTY[] = {};
-
     private final String[] comment = {
             "--" //$NON-NLS-1$
     };
@@ -2144,12 +2142,6 @@ public class SqlPostgresSyntax {
         return functions;
     }
 
-    public String[] getPredicates() {
-        // not used by the api anyway
-        // no clear idea what to put here either
-        return EMPTY;
-    }
-
     public String[] getReservedwords() {
         return reserved;
     }
@@ -2162,22 +2154,13 @@ public class SqlPostgresSyntax {
         return types;
     }
 
-    public String[] getConstants() {
-        return EMPTY;
-    }
-
     public Object[] getAllWords() {
-        return new Object[] {
-                getConstants(), getFunctions(), getGlobalVariables(), getPredicates(),
-                getReservedwords(), getSingleLineComments(), getTypes(), getUnreservedwords()
+        return new Object[] {getFunctions(), getReservedwords(),
+                getSingleLineComments(), getTypes(), getUnreservedwords()
         };
     }
 
     public String[] getSingleLineComments() {
         return comment;
-    }
-
-    public String[] getGlobalVariables() {
-        return EMPTY;
     }
 }
