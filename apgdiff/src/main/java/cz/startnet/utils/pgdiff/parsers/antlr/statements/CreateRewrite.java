@@ -1,7 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
-
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
@@ -44,6 +42,6 @@ public class CreateRewrite extends ParserAbstract {
             rule.addCommand(db.getArguments(), getFullCtxText(cmd));
         }
 
-        db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(rule, ctx));
+        db.addContextForAnalyze(rule, ctx);
     }
 }

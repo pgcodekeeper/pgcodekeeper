@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -53,8 +52,7 @@ public class CreateFunction extends ParserAbstract {
 
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
-                db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(function,
-                        argument.function_def_value().def_value));
+                db.addContextForAnalyze(function, argument.function_def_value().def_value);
             }
 
             function.addArgument(arg);

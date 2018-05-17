@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -28,7 +27,7 @@ public class AlterView extends ParserAbstract {
         if (ctx.set_def_column() != null) {
             VexContext exp = ctx.set_def_column().expression;
             dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(exp));
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(dbView, exp));
+            db.addContextForAnalyze(dbView, exp);
         }
         if (ctx.drop_def() != null) {
             dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));

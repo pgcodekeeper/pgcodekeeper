@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -60,7 +59,7 @@ public class CreateIndex extends ParserAbstract {
         }
         if (rest.index_where() != null){
             Index_whereContext whereCtx = rest.index_where();
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, whereCtx.vex()));
+            db.addContextForAnalyze(ind, whereCtx.vex());
             sb.append(' ').append(ParserAbstract.getFullCtxText(whereCtx));
         }
         ind.setDefinition(sb.toString());
