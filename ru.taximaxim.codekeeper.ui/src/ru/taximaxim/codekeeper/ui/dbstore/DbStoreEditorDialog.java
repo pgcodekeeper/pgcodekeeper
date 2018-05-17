@@ -22,10 +22,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
@@ -91,34 +92,28 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
-        area.setLayout(new GridLayout(2, true));
-        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        TabFolder tabFolder = new TabFolder(area, SWT.BORDER);
 
-        final Group grpDbData = new Group(area, SWT.NONE);
-        grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
-        grpDbData.setLayout(new GridLayout(2, false));
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 480;
-        grpDbData.setLayoutData(gd);
+        Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info);
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.entry_name);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
 
-        txtName = new Text(grpDbData, SWT.BORDER);
+        txtName = new Text(tabAreaDb, SWT.BORDER);
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_name);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
-        txtDbName = new Text(grpDbData, SWT.BORDER);
+        txtDbName = new Text(tabAreaDb, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_user);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
 
-        txtDbUser = new Text(grpDbData, SWT.BORDER);
+        txtDbUser = new Text(tabAreaDb, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_password);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
 
-        txtDbPass = new Text(grpDbData, SWT.BORDER | SWT.PASSWORD);
+        txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
         txtDbPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
@@ -132,20 +127,20 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         });
 
-        lblWarnDbPass = new CLabel(grpDbData, SWT.NONE);
+        lblWarnDbPass = new CLabel(tabAreaDb, SWT.NONE);
         lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_host);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
-        txtDbHost = new Text(grpDbData, SWT.BORDER);
+        txtDbHost = new Text(tabAreaDb, SWT.BORDER);
         txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dbPicker_port);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
-        txtDbPort = new Text(grpDbData, SWT.BORDER);
-        gd = new GridData(60, SWT.DEFAULT);
+        txtDbPort = new Text(tabAreaDb, SWT.BORDER);
+        GridData gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
         txtDbPort.addVerifyListener(e -> {
 
@@ -158,20 +153,40 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         });
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
 
-        btnReadOnly = new Button(grpDbData, SWT.CHECK);
+        btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
         btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        final Group grpDbIgnoreList = new Group(area, SWT.NONE);
-        grpDbIgnoreList.setText(Messages.DbStoreEditorDialog_ignore_file_list);
-        grpDbIgnoreList.setLayout(new GridLayout(2, false));
-        grpDbIgnoreList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        listEditor = new DbIgnoreListEditor(grpDbIgnoreList);
+        listEditor = new DbIgnoreListEditor(createTabItemWithComposite(tabFolder,
+                Messages.DbStoreEditorDialog_ignore_file_list));
 
         return area;
+    }
+
+    /**
+     * Creates a tab item with its own composite.
+     *
+     * @param tabFolder TabFolder object
+     * @param tabText text for tab item
+     * @return the composite belonging to the created tab item
+     */
+    private Composite createTabItemWithComposite(TabFolder tabFolder, String tabText) {
+        Composite tabComposite = new Composite(tabFolder, SWT.NULL);
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
+        tabComposite.setLayout(gl);
+
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 480;
+        tabComposite.setLayoutData(gd);
+
+        TabItem tabItem = new TabItem(tabFolder, SWT.NULL);
+        tabItem.setText(tabText);
+        tabItem.setControl(tabComposite);
+        return tabComposite;
     }
 
     @Override
