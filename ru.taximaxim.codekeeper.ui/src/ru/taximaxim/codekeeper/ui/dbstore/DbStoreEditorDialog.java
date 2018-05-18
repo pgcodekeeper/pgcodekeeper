@@ -94,10 +94,35 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
-        txtName = new Text(tabAreaDb, SWT.BORDER);
-        txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite areaHostPort = new Composite(tabAreaDb, SWT.NULL);
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        areaHostPort.setLayout(gl);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 500;
+        areaHostPort.setLayoutData(gd);
+
+        txtDbHost = new Text(areaHostPort, SWT.BORDER);
+        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        new Label(areaHostPort, SWT.NONE).setText(Messages.dbPicker_port);
+
+        txtDbPort = new Text(areaHostPort, SWT.BORDER);
+        gd = new GridData(60, SWT.DEFAULT);
+        txtDbPort.setLayoutData(gd);
+        txtDbPort.addVerifyListener(e -> {
+
+            try {
+                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
+                    e.doit = false;
+                }
+            } catch(NumberFormatException ex) {
+                e.doit = false;
+            }
+        });
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
@@ -130,32 +155,22 @@ public class DbStoreEditorDialog extends TrayDialog {
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
-
-        txtDbHost = new Text(tabAreaDb, SWT.BORDER);
-        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
-
-        txtDbPort = new Text(tabAreaDb, SWT.BORDER);
-        GridData gd = new GridData(60, SWT.DEFAULT);
-        txtDbPort.setLayoutData(gd);
-        txtDbPort.addVerifyListener(e -> {
-
-            try {
-                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
-                    e.doit = false;
-                }
-            } catch(NumberFormatException ex) {
-                e.doit = false;
-            }
-        });
-
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
-
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        btnReadOnly.setLayoutData(gd);
+        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only);
+        btnReadOnly.setToolTipText(Messages.DbStoreEditorDialog_read_only_description);
+
+        Label separator = new Label(tabAreaDb, SWT.HORIZONTAL | SWT.SEPARATOR);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        separator.setLayoutData(gd);
+
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
+
+        txtName = new Text(tabAreaDb, SWT.BORDER);
+        txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
@@ -178,10 +193,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         gl.marginHeight = 10;
         gl.marginWidth = 10;
         tabComposite.setLayout(gl);
-
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 480;
-        tabComposite.setLayoutData(gd);
+        tabComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         TabItem tabItem = new TabItem(tabFolder, SWT.NULL);
         tabItem.setText(tabText);
