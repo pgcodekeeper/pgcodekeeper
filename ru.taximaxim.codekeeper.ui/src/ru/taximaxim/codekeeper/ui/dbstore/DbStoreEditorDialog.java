@@ -35,8 +35,12 @@ import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEdit
 
 public class DbStoreEditorDialog extends TrayDialog {
 
+    private static final String DEFAULT_HOST = "127.0.0.1";
+    private static final int DEFAULT_PORT = 5432;
+
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
+    private String entryNameDefinedByUser;
 
     private Text txtName;
     private Text txtDbName;
@@ -46,6 +50,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Text txtDbPort;
     private CLabel lblWarnDbPass;
     private Button btnReadOnly;
+    private Button btnGenerateName;
 
     private IgnoreListEditor listEditor;
 
@@ -69,20 +74,77 @@ public class DbStoreEditorDialog extends TrayDialog {
                 // one time listener
                 newShell.removeShellListener(this);
 
+                boolean generateEntryName = true;
+                String dbHost = DEFAULT_HOST;
+                int dbPort = DEFAULT_PORT;
+                String dbName = null;
+                String dbUser = null;
+
                 if (dbInitial != null) {
-                    txtName.setText(dbInitial.getName());
-                    txtDbName.setText(dbInitial.getDbName());
-                    txtDbUser.setText(dbInitial.getDbUser());
+                    dbHost = dbInitial.getDbHost();
+                    dbHost = !dbHost.isEmpty() ? dbHost : DEFAULT_HOST;
+                    txtDbHost.setText(dbHost);
+
+                    dbPort = dbInitial.getDbPort();
+                    dbPort = dbPort != 0 ? dbPort : DEFAULT_PORT;
+                    txtDbPort.setText("" + dbPort); //$NON-NLS-1$
+
+                    dbName = dbInitial.getDbName();
+                    txtDbName.setText(dbName);
+
+                    dbUser = dbInitial.getDbUser();
+                    txtDbUser.setText(dbUser);
+
                     txtDbPass.setText(dbInitial.getDbPass());
-                    txtDbHost.setText(dbInitial.getDbHost());
-                    txtDbPort.setText("" + dbInitial.getDbPort()); //$NON-NLS-1$
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                     listEditor.setInputList(dbInitial.getIgnoreFiles());
+
+                    generateEntryName = dbInitial.isGeneratedName();
+                    btnGenerateName.setSelection(generateEntryName);
+
+                    String entryName = dbInitial.getName();
+                    if (!generateEntryName) {
+                        entryNameDefinedByUser = entryName;
+                    }
                 } else {
+                    txtDbHost.setText(dbHost);
+                    txtDbPort.setText("" + dbPort); //$NON-NLS-1$
                     txtDbPass.setText("");//$NON-NLS-1$
                 }
+
+                fillTxtNameField(generateEntryName, dbUser, dbHost, dbPort, dbName);
             }
         });
+    }
+
+    private String generateEntryName(String dbUser, String dbHost, int dbPort, String dbName) {
+        StringBuilder entryNameSb = new StringBuilder();
+
+        if (dbUser != null && !dbUser.isEmpty()) {
+            entryNameSb.append(dbUser).append('@');
+        }
+
+        entryNameSb.append(dbHost == null || dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
+
+        if (DEFAULT_PORT != dbPort) {
+            entryNameSb.append(':').append(dbPort);
+        }
+
+        if (dbName != null && !dbName.isEmpty()) {
+            entryNameSb.append("//").append(dbName);
+        }
+
+        return entryNameSb.toString();
+    }
+
+    private void fillTxtNameField(boolean generateEntryName, String dbUser, String dbHost,
+            int dbPort, String dbName) {
+        if (generateEntryName) {
+            txtName.setText(generateEntryName(dbUser, dbHost, dbPort, dbName));
+        } else {
+            txtName.setText(entryNameDefinedByUser != null ? entryNameDefinedByUser
+                    : generateEntryName(dbUser, dbHost, dbPort, dbName));
+        }
     }
 
     @Override
@@ -169,8 +231,32 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
 
-        txtName = new Text(tabAreaDb, SWT.BORDER);
+        Composite areaEntryName = new Composite(tabAreaDb, SWT.NULL);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        areaEntryName.setLayout(gl);
+        areaEntryName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        txtName = new Text(areaEntryName, SWT.BORDER);
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        btnGenerateName = new Button(areaEntryName, SWT.CHECK);
+        gd = new GridData(130, SWT.DEFAULT);
+        btnGenerateName.setLayoutData(gd);
+        btnGenerateName.setText(Messages.DbStoreEditorDialog_auto_generation);
+        btnGenerateName.setToolTipText(Messages.DbStoreEditorDialog_auto_generation_description);
+        btnGenerateName.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String dbPort = txtDbPort.getText();
+                fillTxtNameField(btnGenerateName.getSelection(), txtDbUser.getText(),
+                        txtDbHost.getText(),
+                        Integer.valueOf(dbPort.isEmpty() || "0".equals(dbPort) ? "" + DEFAULT_PORT : dbPort),
+                        txtDbName.getText());
+            }
+        });
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
@@ -264,7 +350,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                listEditor.getList());
+                btnGenerateName.getSelection(), listEditor.getList());
         super.okPressed();
     }
 
