@@ -5,11 +5,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,7 +18,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -35,7 +31,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
+import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 
 public class DbStoreEditorDialog extends TrayDialog {
 
@@ -51,7 +47,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     private CLabel lblWarnDbPass;
     private Button btnReadOnly;
 
-    private DbIgnoreListEditor listEditor;
+    private IgnoreListEditor listEditor;
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -93,6 +89,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
         TabFolder tabFolder = new TabFolder(area, SWT.BORDER);
+
+        //// Creating tab item "Db Info" and fill it by components.
 
         Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info);
 
@@ -159,7 +157,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        listEditor = new DbIgnoreListEditor(createTabItemWithComposite(tabFolder,
+        //// Creating tab item "Ignored objects files" and fill it by components.
+
+        listEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_ignore_file_list));
 
         return area;
@@ -259,38 +259,5 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected boolean isResizable() {
         return true;
-    }
-}
-
-class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {
-
-    public DbIgnoreListEditor(Composite parent) {
-        super(parent);
-    }
-
-    @Override
-    protected String getNewObject(String oldObject) {
-        FileDialog dialog = new FileDialog(getShell());
-        dialog.setText(Messages.DbStoreEditorDialog_select_ignore_file);
-        dialog.setFilterExtensions(new String[] {"*.pgcodekeeperignore", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-        dialog.setFilterNames(new String[] {
-                Messages.DbStoreEditorDialog_pgcodekeeperignore_files_filter,
-                Messages.DiffPresentationPane_any_file_filter});
-        dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
-        return dialog.open();
-    }
-
-    @Override
-    protected String errorAlreadyExists(String obj) {
-        return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj);
-    }
-
-    @Override
-    protected ListViewer createViewer(Composite parent) {
-        ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-        viewerObjs.getControl().setLayoutData(gd);
-        viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
-        return viewerObjs;
     }
 }
