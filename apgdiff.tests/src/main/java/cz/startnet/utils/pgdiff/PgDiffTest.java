@@ -368,6 +368,9 @@ public class PgDiffTest {
                     {"modify_empty_foreign_table"},
                     // Tests scenario where materialized VIEW options is changed.
                     {"modify_materialized_view_options"},
+                    // Tests scenario where materialized VIEW is changed.
+                    // TODO изменить после добавления поддержки ALTER MATERIALIZED VIEW
+                    {"modify_materialized_view"},
                 });
     }
 
