@@ -364,6 +364,8 @@ public class PgDiffTest {
                     {"modify_partition_table_type"},
                     // Tests scenario where foreign TABLE type is changed.
                     {"modify_foreign_table_type"},
+                    // Tests scenario where empty foreign TABLE is changed.
+                    {"modify_empty_foreign_table"},
                 });
     }
 
