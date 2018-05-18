@@ -265,6 +265,9 @@ public class ModelExporter {
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
+            // delete schema if already exists
+            deleteStatementIfExists(stInNew);
+            // FALLTHROUGH
         case EXTENSION:
             // export schema/extension sql file
             dumpSQL(stInNew.getFullSQL(),
