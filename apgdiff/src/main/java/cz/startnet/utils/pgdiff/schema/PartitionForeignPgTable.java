@@ -47,6 +47,8 @@ public class PartitionForeignPgTable extends ForeignPgTable {
             if (start != sbSQL.length()) {
                 sbSQL.setLength(sbSQL.length() - 2);
                 sbSQL.append("\n)");
+            } else {
+                sbSQL.setLength(sbSQL.length() - 3);
             }
         }
 

@@ -376,7 +376,11 @@ public class PgDiffTest {
                     //Tests scenario where TRIGGER with multiple events is added.
                     {"add_multiple_events_trigger"},
                     // Tests scenario where RULE is disabled.
-                    {"disable_rule"}
+                    {"disable_rule"},
+                    // Tests scenario where REGULAR TABLE is converted to PARTITION TABLE.
+                    {"chg_reg_table_to_partition"},
+                    // Tests scenario where PARTITION FOREIGN TABLE inherit is modified.
+                    {"modify_partition_ftable_inherit"}
                 });
     }
 
