@@ -373,8 +373,10 @@ public class PgDiffTest {
                     {"modify_materialized_view"},
                     //Tests scenario where empty SEQUENCE is compared.
                     {"compare_empty_sequence"},
-                    //Tests scenario where TRIGGER with multiple events is add.
-                    {"add_multiple_events_trigger"}
+                    //Tests scenario where TRIGGER with multiple events is added.
+                    {"add_multiple_events_trigger"},
+                    // Tests scenario where RULE is disabled.
+                    {"disable_rule"}
                 });
     }
 
