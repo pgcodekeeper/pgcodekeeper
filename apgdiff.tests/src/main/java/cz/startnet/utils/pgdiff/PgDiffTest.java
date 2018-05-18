@@ -371,6 +371,8 @@ public class PgDiffTest {
                     // Tests scenario where materialized VIEW is changed.
                     // TODO изменить после добавления поддержки ALTER MATERIALIZED VIEW
                     {"modify_materialized_view"},
+                    //Tests scenario where empty SEQUENCE is compared.
+                    {"compare_empty_sequence"},
                 });
     }
 
