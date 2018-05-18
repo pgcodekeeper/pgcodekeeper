@@ -267,13 +267,13 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         PgView oldView = this;
         // TODO add alter for materialized view
         // after merge view columns dependencies branch
-        if (PgView.isViewModified(oldView, newView)
+        if (isViewModified(newView)
                 || oldView.isWithData() != newView.isWithData()
                 || oldView.getTablespace() != newView.getTablespace()) {
             isNeedDepcies.set(true);
             return true;
         }
-        PgView.diffDefaultValues(sb, oldView, newView);
+        diffDefaultValues(sb, newView);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
             sb.append(newView.getOwnerSQL());
@@ -648,37 +648,29 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
      * Returns true if either column names or query of the view has been
      * modified.
      *
-     * @param oldView old view
      * @param newView new view
      *
      * @return true if view has been modified, otherwise false
      */
-    public static boolean isViewModified(final PgView oldView,
-            final PgView newView) {
-        List<String> oldColumnNames = oldView.getColumnNames();
+    private boolean isViewModified(final PgView newView) {
+        List<String> oldColumnNames = getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 
-        if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
-            String nOldQuery = oldView.getNormalizedQuery();
-            String nNewQuery = newView.getNormalizedQuery();
-            return !nOldQuery.equals(nNewQuery);
+        if (oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
+            return !getNormalizedQuery().equals(newView.getNormalizedQuery());
         } else {
             return !oldColumnNames.equals(newColumnNames);
         }
     }
 
     /**
-     * Diffs default values in views.
+     * Compares default values with values in new view.
      *
-     * @param writer           writer
-     * @param oldView          old view
+     * @param sb               writer
      * @param newView          new view
-     * @param searchPathHelper search path helper
      */
-    public static void diffDefaultValues(final StringBuilder sb,
-            final PgView oldView, final PgView newView) {
-        final List<DefaultValue> oldValues =
-                oldView.getDefaultValues();
+    private void diffDefaultValues(final StringBuilder sb, final PgView newView) {
+        final List<DefaultValue> oldValues = getDefaultValues();
         final List<DefaultValue> newValues =
                 newView.getDefaultValues();
 

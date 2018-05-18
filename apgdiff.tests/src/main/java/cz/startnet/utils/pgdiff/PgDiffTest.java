@@ -366,6 +366,8 @@ public class PgDiffTest {
                     {"modify_foreign_table_type"},
                     // Tests scenario where empty foreign TABLE is changed.
                     {"modify_empty_foreign_table"},
+                    // Tests scenario where materialized VIEW options is changed.
+                    {"modify_materialized_view_options"},
                 });
     }
 

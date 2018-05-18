@@ -47,15 +47,19 @@ public interface PgOptionContainer extends IStatement {
             });
         }
 
+        DbObjType type = getStatementType();
+
         if (setOptions.length() > 0) {
             setOptions.setLength(setOptions.length() - 2);
             sb.append("\n\nALTER ");
-            if (getStatementType() == DbObjType.COLUMN) {
+            if (type == DbObjType.COLUMN) {
                 sb.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
+            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
+                sb.append("MATERIALIZED ");
             }
-            sb.append(getStatementType())
+            sb.append(type)
             .append(' ')
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET (").append(setOptions).append(");");
@@ -64,12 +68,14 @@ public interface PgOptionContainer extends IStatement {
         if (resetOptions.length() > 0) {
             resetOptions.setLength(resetOptions.length() - 2);
             sb.append("\n\nALTER ");
-            if (getStatementType() == DbObjType.COLUMN) {
+            if (type == DbObjType.COLUMN) {
                 sb.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
+            } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
+                sb.append("MATERIALIZED ");
             }
-            sb.append(getStatementType())
+            sb.append(type)
             .append(' ')
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" RESET (").append(resetOptions).append(");");
