@@ -81,7 +81,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE");
-        if (constraint) {
+        if (isConstraint()) {
             sbSQL.append(" CONSTRAINT");
         }
         sbSQL.append(" TRIGGER ");
@@ -106,20 +106,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
             sbSQL.append(" UPDATE");
 
             if (!updateColumns.isEmpty()) {
-                sbSQL.append(" OF");
-
-                boolean first = true;
-
-                for (final String columnName : updateColumns) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        sbSQL.append(',');
-                    }
-
-                    sbSQL.append(' ');
-                    sbSQL.append(columnName);
-                }
+                sbSQL.append(" OF ");
+                sbSQL.append(String.join(", ", updateColumns));
             }
         }
 
@@ -142,7 +130,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         sbSQL.append(" ON ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
 
-        if (constraint) {
+        if (isConstraint()) {
             if (refTableName != null){
                 sbSQL.append("\n\tFROM ").append(refTableName);
             }
@@ -169,7 +157,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         sbSQL.append("\n\tFOR EACH ");
         sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
 
-        if (when != null && !when.isEmpty()) {
+        if (when != null) {
             sbSQL.append("\n\tWHEN (");
             sbSQL.append(when);
             sbSQL.append(')');
@@ -419,7 +407,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         triggerDst.setNewTable(getNewTable());
         triggerDst.setOldTable(getOldTable());
         triggerDst.setComment(getComment());
-        triggerDst.updateColumns.addAll(updateColumns);
+        triggerDst.updateColumns.addAll(getUpdateColumns());
         triggerDst.deps.addAll(deps);
         return triggerDst;
     }
