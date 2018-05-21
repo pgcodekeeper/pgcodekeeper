@@ -172,14 +172,12 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
         txtDbHost = new Text(tabAreaDb, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        txtDbHost.setLayoutData(gd);
+        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
         txtDbPort = new Text(tabAreaDb, SWT.BORDER);
-        gd = new GridData(SWT.FILL, SWT.NONE, false, false);
-        txtDbPort.setLayoutData(gd);
+        txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false));
         txtDbPort.addVerifyListener(e -> {
 
             try {
@@ -194,23 +192,17 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
         txtDbName = new Text(tabAreaDb, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        txtDbName.setLayoutData(gd);
+        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
 
         txtDbUser = new Text(tabAreaDb, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        txtDbUser.setLayoutData(gd);
+        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
 
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        txtDbPass.setLayoutData(gd);
+        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
@@ -231,9 +223,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        btnReadOnly.setLayoutData(gd);
+        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
