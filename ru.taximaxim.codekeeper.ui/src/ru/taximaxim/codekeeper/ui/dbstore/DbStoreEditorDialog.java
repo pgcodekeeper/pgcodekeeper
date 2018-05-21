@@ -36,7 +36,7 @@ import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEdit
 public class DbStoreEditorDialog extends TrayDialog {
 
     private static final String DEFAULT_HOST = "127.0.0.1";
-    private static final int DEFAULT_PORT = 5432;
+    private static final String DEFAULT_PORT = "5432";
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
@@ -76,7 +76,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                 boolean generateEntryName = true;
                 String dbHost = DEFAULT_HOST;
-                int dbPort = DEFAULT_PORT;
+                String dbPort = DEFAULT_PORT;
                 String dbName = null;
                 String dbUser = null;
 
@@ -85,9 +85,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbHost = !dbHost.isEmpty() ? dbHost : DEFAULT_HOST;
                     txtDbHost.setText(dbHost);
 
-                    dbPort = dbInitial.getDbPort();
-                    dbPort = dbPort != 0 ? dbPort : DEFAULT_PORT;
-                    txtDbPort.setText("" + dbPort); //$NON-NLS-1$
+                    dbPort = getVerifiedPort(Integer.toString(dbInitial.getDbPort()));
+                    txtDbPort.setText(dbPort);
 
                     dbName = dbInitial.getDbName();
                     txtDbName.setText(dbName);
@@ -100,7 +99,6 @@ public class DbStoreEditorDialog extends TrayDialog {
                     listEditor.setInputList(dbInitial.getIgnoreFiles());
 
                     generateEntryName = dbInitial.isGeneratedName();
-                    btnGenerateName.setSelection(generateEntryName);
 
                     String entryName = dbInitial.getName();
                     if (!generateEntryName) {
@@ -108,16 +106,22 @@ public class DbStoreEditorDialog extends TrayDialog {
                     }
                 } else {
                     txtDbHost.setText(dbHost);
-                    txtDbPort.setText("" + dbPort); //$NON-NLS-1$
+                    txtDbPort.setText(dbPort);
                     txtDbPass.setText("");//$NON-NLS-1$
                 }
+
+                btnGenerateName.setSelection(generateEntryName);
 
                 fillTxtNameField(generateEntryName, dbUser, dbHost, dbPort, dbName);
             }
         });
     }
 
-    private String generateEntryName(String dbUser, String dbHost, int dbPort, String dbName) {
+    private String getVerifiedPort(String dbPort) {
+        return dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
+    }
+
+    private String generateEntryName(String dbUser, String dbHost, String dbPort, String dbName) {
         StringBuilder entryNameSb = new StringBuilder();
 
         if (dbUser != null && !dbUser.isEmpty()) {
@@ -126,7 +130,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         entryNameSb.append(dbHost == null || dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
-        if (DEFAULT_PORT != dbPort) {
+        if (!DEFAULT_PORT.equals(dbPort)) {
             entryNameSb.append(':').append(dbPort);
         }
 
@@ -138,13 +142,15 @@ public class DbStoreEditorDialog extends TrayDialog {
     }
 
     private void fillTxtNameField(boolean generateEntryName, String dbUser, String dbHost,
-            int dbPort, String dbName) {
+            String dbPort, String dbName) {
         if (generateEntryName) {
             txtName.setText(generateEntryName(dbUser, dbHost, dbPort, dbName));
         } else {
             txtName.setText(entryNameDefinedByUser != null ? entryNameDefinedByUser
                     : generateEntryName(dbUser, dbHost, dbPort, dbName));
         }
+
+        txtName.setEnabled(!generateEntryName);
     }
 
     @Override
@@ -250,10 +256,8 @@ public class DbStoreEditorDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String dbPort = txtDbPort.getText();
                 fillTxtNameField(btnGenerateName.getSelection(), txtDbUser.getText(),
-                        txtDbHost.getText(),
-                        Integer.valueOf(dbPort.isEmpty() || "0".equals(dbPort) ? "" + DEFAULT_PORT : dbPort),
+                        txtDbHost.getText(), getVerifiedPort(txtDbPort.getText()),
                         txtDbName.getText());
             }
         });
