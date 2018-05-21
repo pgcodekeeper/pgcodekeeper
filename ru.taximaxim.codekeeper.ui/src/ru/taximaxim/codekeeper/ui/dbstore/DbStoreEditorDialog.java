@@ -153,11 +153,26 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtName.setEnabled(!generateEntryName);
     }
 
+    private void addLabel(Composite parent, String text, boolean leftColumnLabel,
+            boolean addVerticalIndent) {
+        Label lblDbHost = new Label(parent, SWT.NONE);
+        lblDbHost.setText(text);
+
+        GridData gd = new GridData(leftColumnLabel ? 150 : 40, SWT.DEFAULT);
+        if (addVerticalIndent) {
+            gd.verticalIndent = 10;
+        }
+
+        lblDbHost.setLayoutData(gd);
+    }
+
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
-        area.setLayout(new GridLayout(1, false));
-        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        area.setLayout(new GridLayout());
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumWidth = 700;
+        area.setLayoutData(gd);
 
         TabFolder tabFolder = new TabFolder(area, SWT.BORDER);
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -165,26 +180,18 @@ public class DbStoreEditorDialog extends TrayDialog {
         //// Creating tab item "Db Info" and fill it by components.
 
         Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info,
-                new GridLayout(2, false));
+                new GridLayout(4, false));
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
+        addLabel(tabAreaDb, Messages.dB_host, true, false);
 
-        Composite areaHostPort = new Composite(tabAreaDb, SWT.NONE);
-        GridLayout gl = new GridLayout(3, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        areaHostPort.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 500;
-        areaHostPort.setLayoutData(gd);
+        txtDbHost = new Text(tabAreaDb, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        txtDbHost.setLayoutData(gd);
 
-        txtDbHost = new Text(areaHostPort, SWT.BORDER);
-        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        addLabel(tabAreaDb, Messages.dbPicker_port, false, false);
 
-        new Label(areaHostPort, SWT.NONE).setText(Messages.dbPicker_port);
-
-        txtDbPort = new Text(areaHostPort, SWT.BORDER);
-        gd = new GridData(60, SWT.DEFAULT);
+        txtDbPort = new Text(tabAreaDb, SWT.BORDER);
+        gd = new GridData(SWT.FILL, SWT.NONE, false, false);
         txtDbPort.setLayoutData(gd);
         txtDbPort.addVerifyListener(e -> {
 
@@ -197,20 +204,26 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         });
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
+        addLabel(tabAreaDb, Messages.dB_name, true, false);
 
         txtDbName = new Text(tabAreaDb, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        txtDbName.setLayoutData(gd);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
+        addLabel(tabAreaDb, Messages.dB_user, true, false);
 
         txtDbUser = new Text(tabAreaDb, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        txtDbUser.setLayoutData(gd);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
+        addLabel(tabAreaDb, Messages.dB_password, true, false);
 
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
-        txtDbPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        txtDbPass.setLayoutData(gd);
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
@@ -226,34 +239,27 @@ public class DbStoreEditorDialog extends TrayDialog {
         lblWarnDbPass = new CLabel(tabAreaDb, SWT.NONE);
         lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
-        lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+        lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+        addLabel(tabAreaDb, Messages.DbStoreEditorDialog_read_only, true, false);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        btnReadOnly.setLayoutData(gd);
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
-        lblEntryName.setText(Messages.entry_name);
+        addLabel(tabAreaDb, Messages.entry_name, true, true);
+
+        txtName = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 10;
-        lblEntryName.setLayoutData(gd);
+        txtName.setLayoutData(gd);
 
-        Composite areaEntryName = new Composite(tabAreaDb, SWT.NONE);
-        gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        areaEntryName.setLayout(gl);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 10;
-        areaEntryName.setLayoutData(gd);
-
-        txtName = new Text(areaEntryName, SWT.BORDER);
-        txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        btnGenerateName = new Button(areaEntryName, SWT.CHECK);
+        btnGenerateName = new Button(tabAreaDb, SWT.CHECK);
         gd = new GridData(130, SWT.DEFAULT);
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 10;
         btnGenerateName.setLayoutData(gd);
         btnGenerateName.setText(Messages.DbStoreEditorDialog_auto_generation);
         btnGenerateName.setToolTipText(Messages.DbStoreEditorDialog_auto_generation_description);
