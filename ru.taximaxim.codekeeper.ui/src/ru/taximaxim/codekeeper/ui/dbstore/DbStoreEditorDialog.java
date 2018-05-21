@@ -156,21 +156,26 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
+        area.setLayout(new GridLayout(1, false));
+        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
         TabFolder tabFolder = new TabFolder(area, SWT.BORDER);
+        tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         //// Creating tab item "Db Info" and fill it by components.
 
-        Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info);
+        Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info,
+                new GridLayout(2, false));
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
-        Composite areaHostPort = new Composite(tabAreaDb, SWT.NULL);
+        Composite areaHostPort = new Composite(tabAreaDb, SWT.NONE);
         GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         areaHostPort.setLayout(gl);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 500;
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 500;
         areaHostPort.setLayoutData(gd);
 
         txtDbHost = new Text(areaHostPort, SWT.BORDER);
@@ -223,26 +228,26 @@ public class DbStoreEditorDialog extends TrayDialog {
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
+        btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
+
+        Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
+        lblEntryName.setText(Messages.entry_name);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        btnReadOnly.setLayoutData(gd);
-        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only);
-        btnReadOnly.setToolTipText(Messages.DbStoreEditorDialog_read_only_description);
+        gd.verticalIndent = 10;
+        lblEntryName.setLayoutData(gd);
 
-        Label separator = new Label(tabAreaDb, SWT.HORIZONTAL | SWT.SEPARATOR);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        separator.setLayoutData(gd);
-
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
-
-        Composite areaEntryName = new Composite(tabAreaDb, SWT.NULL);
+        Composite areaEntryName = new Composite(tabAreaDb, SWT.NONE);
         gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         areaEntryName.setLayout(gl);
-        areaEntryName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 10;
+        areaEntryName.setLayoutData(gd);
 
         txtName = new Text(areaEntryName, SWT.BORDER);
         txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -265,7 +270,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         //// Creating tab item "Ignored objects files" and fill it by components.
 
         listEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
-                Messages.DbStoreEditorDialog_ignore_file_list));
+                Messages.DbStoreEditorDialog_ignore_file_list, new GridLayout()));
 
         return area;
     }
@@ -275,17 +280,16 @@ public class DbStoreEditorDialog extends TrayDialog {
      *
      * @param tabFolder TabFolder object
      * @param tabText text for tab item
+     * @param gl GridLayout for the composite
      * @return the composite belonging to the created tab item
      */
-    private Composite createTabItemWithComposite(TabFolder tabFolder, String tabText) {
-        Composite tabComposite = new Composite(tabFolder, SWT.NULL);
-        GridLayout gl = new GridLayout(2, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
+    private Composite createTabItemWithComposite(TabFolder tabFolder, String tabText,
+            GridLayout gl) {
+        Composite tabComposite = new Composite(tabFolder, SWT.NONE);
         tabComposite.setLayout(gl);
         tabComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        TabItem tabItem = new TabItem(tabFolder, SWT.NULL);
+        TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
         tabItem.setText(tabText);
         tabItem.setControl(tabComposite);
         return tabComposite;
