@@ -153,19 +153,6 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtName.setEnabled(!generateEntryName);
     }
 
-    private void addLabel(Composite parent, String text, boolean leftColumnLabel,
-            boolean addVerticalIndent) {
-        Label lblDbHost = new Label(parent, SWT.NONE);
-        lblDbHost.setText(text);
-
-        GridData gd = new GridData(leftColumnLabel ? 150 : 40, SWT.DEFAULT);
-        if (addVerticalIndent) {
-            gd.verticalIndent = 10;
-        }
-
-        lblDbHost.setLayoutData(gd);
-    }
-
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
@@ -182,13 +169,13 @@ public class DbStoreEditorDialog extends TrayDialog {
         Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info,
                 new GridLayout(4, false));
 
-        addLabel(tabAreaDb, Messages.dB_host, true, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
         txtDbHost = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         txtDbHost.setLayoutData(gd);
 
-        addLabel(tabAreaDb, Messages.dbPicker_port, false, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
         txtDbPort = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(SWT.FILL, SWT.NONE, false, false);
@@ -204,21 +191,21 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         });
 
-        addLabel(tabAreaDb, Messages.dB_name, true, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
         txtDbName = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         txtDbName.setLayoutData(gd);
 
-        addLabel(tabAreaDb, Messages.dB_user, true, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
 
         txtDbUser = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         txtDbUser.setLayoutData(gd);
 
-        addLabel(tabAreaDb, Messages.dB_password, true, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
 
         txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -241,7 +228,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
 
-        addLabel(tabAreaDb, Messages.DbStoreEditorDialog_read_only, true, false);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
 
         btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -249,7 +236,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnReadOnly.setLayoutData(gd);
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        addLabel(tabAreaDb, Messages.entry_name, true, true);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
 
         txtName = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
