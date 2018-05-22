@@ -234,7 +234,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         txtName.setLayoutData(gd);
 
         btnGenerateName = new Button(tabAreaDb, SWT.CHECK);
-        gd = new GridData(130, SWT.DEFAULT);
+        gd = new GridData(135, SWT.DEFAULT);
         gd.horizontalSpan = 2;
         gd.verticalIndent = 10;
         btnGenerateName.setLayoutData(gd);
