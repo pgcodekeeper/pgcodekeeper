@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_name_nontypeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -166,5 +167,12 @@ public abstract class ParserAbstract {
             quotedOption = "toast."+ option;
         }
         c.accept(quotedOption, value);
+    }
+
+    static void fillIncludingDepcy(Including_indexContext incl, PgStatement st,
+            String schema, String table) {
+        for (IdentifierContext inclCol : incl.identifier()) {
+            st.addDep(new GenericColumn(schema, table, inclCol.getText(), DbObjType.COLUMN));
+        }
     }
 }

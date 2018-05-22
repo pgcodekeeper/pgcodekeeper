@@ -96,6 +96,14 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        return parent == null ? null : parent.findColumn(name);
+    }
+
+    protected Pair<String, String> findColumnInComplex(String name) {
+        return parent == null ? null : parent.findColumnInComplex(name);
+    }
+
     protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
         String schemaName = null;
         IdentifierContext schemaNameCtx = QNameParser.getSchemaNameCtx(ids);
@@ -141,31 +149,30 @@ public abstract class AbstractExpr {
     /**
      * @return column with its type
      */
-    protected Pair<String, String> addColumnDepcy(Schema_qualified_nameContext qname) {
+    protected Pair<String, String> processColumn(Schema_qualified_nameContext qname) {
         List<IdentifierContext> ids = qname.identifier();
-        String column = QNameParser.getFirstName(ids);
+        String columnName = QNameParser.getFirstName(ids);
         String columnType = TypesSetManually.COLUMN;
-        Pair<String, String> pair = new Pair<>(column, null);
+        Pair<String, String> pair = new Pair<>(columnName, null);
 
-        // TODO table-less columns are pending full analysis
         if (ids.size() > 1) {
             String schemaName = QNameParser.getThirdName(ids);
             String columnParent = QNameParser.getSecondName(ids);
 
-            Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, column);
+            Entry<String, GenericColumn> ref = findReference(schemaName, columnParent, columnName);
             List<Pair<String, String>> refComplex;
             if (ref != null) {
                 GenericColumn referencedTable = ref.getValue();
                 if (referencedTable != null) {
                     columnType = addFilteredColumnDepcy(
-                            referencedTable.schema, referencedTable.table, column);
+                            referencedTable.schema, referencedTable.table, columnName);
                 } else if ((refComplex = findReferenceComplex(columnParent)) != null) {
                     columnType = refComplex.stream()
-                            .filter(entry -> column.equals(entry.getKey()))
+                            .filter(entry -> columnName.equals(entry.getKey()))
                             .map(Entry::getValue)
                             .findAny()
                             .orElseGet(() -> {
-                                Log.log(Log.LOG_WARNING, "Column " + column +
+                                Log.log(Log.LOG_WARNING, "Column " + columnName +
                                         " not found in complex " + columnParent);
                                 return TypesSetManually.COLUMN;
                             });
@@ -174,8 +181,11 @@ public abstract class AbstractExpr {
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Unknown column reference: "
-                        + schemaName + ' ' + columnParent + ' ' + column);
+                        + schemaName + ' ' + columnParent + ' ' + columnName);
             }
+        } else {
+            // table-less columns analysis
+            columnType = processTablelessColumn(columnName);
         }
 
         pair.setValue(columnType);
@@ -263,6 +273,24 @@ public abstract class AbstractExpr {
                             relation.getName(), col.getFirst(), DbObjType.COLUMN)));
         }
         return cols;
+    }
+
+    private String processTablelessColumn(String name) {
+        Pair<String, String> col = findColumnInComplex(name);
+        if (col == null) {
+            Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
+            if (relCol == null) {
+                Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
+                return TypesSetManually.COLUMN;
+            }
+            IRelation rel = relCol.getFirst();
+            col = relCol.getSecond();
+            if (rel.getStatementNature() == DbObjNature.USER) {
+                depcies.add(new GenericColumn(rel.getContainingSchema().getName(), rel.getName(),
+                        col.getFirst(), DbObjType.COLUMN));
+            }
+        }
+        return col.getSecond();
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {

@@ -71,10 +71,13 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
+            case CONSTRAINT:
+                UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
+                        statement.getParent().getName(), db);
+                break;
             case DOMAIN:
             case FUNCTION:
             case COLUMN:
-            case CONSTRAINT:
                 UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
                         db), statement);
                 break;

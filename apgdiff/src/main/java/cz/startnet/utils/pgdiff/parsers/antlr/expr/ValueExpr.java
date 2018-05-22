@@ -71,6 +71,7 @@ public class ValueExpr extends AbstractExpr {
         super(parent);
     }
 
+
     public Pair<String, String> analyze(Vex vex) {
         Pair<String, String> ret ;
         Data_typeContext dataType = vex.dataType();
@@ -240,7 +241,7 @@ public class ValueExpr extends AbstractExpr {
             } else if ((function = primary.function_call()) != null) {
                 ret = function(function);
             } else if ((qname = primary.schema_qualified_name()) != null) {
-                ret = addColumnDepcy(qname);
+                ret = processColumn(qname);
             } else if ((indirection = primary.indirection_identifier()) != null) {
                 analyze(new Vex(indirection.vex()));
                 ret = new Pair<>(null, TypesSetManually.UNKNOWN);
