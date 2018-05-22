@@ -87,6 +87,8 @@ public final class FullAnalyze {
                         + "' is not defined!"); //$NON-NLS-1$
             }
         }
+
+        db.getContextsForAnalyze().clear();
     }
 
     private static class AnalyzeTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {

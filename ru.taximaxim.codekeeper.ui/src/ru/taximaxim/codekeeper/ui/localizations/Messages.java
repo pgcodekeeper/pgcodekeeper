@@ -38,15 +38,21 @@ public final class Messages extends NLS {
 
     public static String SQLEditorContentOutlinePage_sort_alphabetically;
 
-    public static String SQLEditorStatementTypes_consts;
+    public static String SQLEditorMainPage_bracket_highlighting;
+
+    public static String SQLEditorMainPage_enclosing_brackets;
+
+    public static String SQLEditorMainPage_matching_bracket_and_caret_location;
+
+    public static String SQLEditorMainPage_matching_bracket;
+
+    public static String SQLEditorMainPage_matching_bracket_highlighting_color;
 
     public static String SQLEditorStatementTypes_funcs;
 
-    public static String SQLEditorStatementTypes_global_vars;
-
     public static String SQLEditorStatementTypes_multi_comments;
 
-    public static String SQLEditorStatementTypes_predicates;
+    public static String SQLEditorStatementTypes_quoted_identifier;
 
     public static String SQLEditorStatementTypes_reserved;
 
@@ -170,7 +176,6 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_convert_dialog_title;
 
-    public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -349,6 +354,8 @@ public final class Messages extends NLS {
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
 
     public static String ProjectProperties_force_unix_newlines;
+
+    public static String ProjectProperties_force_unix_newlines_desc;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_switch;
     public static String generalPrefPage_pg_dump_executable;
@@ -369,12 +376,22 @@ public final class Messages extends NLS {
     public static String IgnoredObjectPrefListEditor_pattern;
 
     public static String IgnoredObjectsPrefPage_convert_to_white_list;
+    public static String IgnoredObjectsPrefPage_convert_to_black_list;
 
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
     public static String IgnoredObjectsPrefPage_error_workspace_path;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
+    public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info_white;
+
+    public static String IgnoreListProperties_create_new_file;
+
+    public static String IgnoreListEditorDialog_excluded_objects_list_editor;
+    public static String IgnoreListEditorDialog_save;
+    public static String IgnoreListEditorDialog_cancel;
+    public static String IgnoreListEditorDialog_error_file;
+    public static String IgnoreListEditorDialog_save_ignore_file;
 
     public static String ImportProjWizard_title;
 
@@ -487,6 +504,8 @@ public final class Messages extends NLS {
 
     public static String SqlEditor_absent_builder_title;
 
+    public static String SqlMergeViewer_compare_label;
+
     public static String OpenEditor_error_open_project_editor;
     public static String OpenProjectUtils_file;
 
@@ -581,6 +600,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_lib_change_warning_title;
 
     public static String ProjectEditorDiffer_library_duplication_exception;
+
+    public static String ProjectEditorDiffer_no_differences;
 
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorDiffer_script_creation_message;
@@ -721,6 +742,8 @@ public final class Messages extends NLS {
     public static String diffwizard_pagepartial_description;
 
     public static String generalPrefPage_perspective_changing_status;
+
+    public static String GeneralPrefPage_reuse_open_compare_editor;
 
     public static String GetChanges_select_source;
 

@@ -46,6 +46,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
                 loader.addError(Messages.JdbcReader_helper_function_error);
                 Log.log(Log.LOG_WARNING, "Error trying to use server JDBC helper, "
                         + "falling back to old queries: " + factory.helperFunction, ex);
+                loader.connection.rollback();
             }
         }
         if (!helperSuccess) {
@@ -162,6 +163,28 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * The functions that accept the oid / object name and return the set / processing of its metadata are considered unsafe.
+     * These functions can return null if the object was deleted outside the transaction block.
+     * This method checks the returned values.
+     */
+    public static void checkObjectValidity(Object object, DbObjType type, String name) {
+        if (object == null) {
+            throw new IllegalStateException("Statement concurrent modification: " + type + ' ' + name);
+        }
+    }
+
+    /**
+     * Checks type for a match with null and unknown types that can come from
+     * functions that accept the oid / object name and return the set / processing of its metadata
+     */
+    public static void checkTypeValidity(String type) {
+        checkObjectValidity(type, DbObjType.TYPE, "");
+        if ("???".equals(type) || "???[]".equals(type)) {
+            throw new IllegalStateException("Concurrent type modification");
         }
     }
 

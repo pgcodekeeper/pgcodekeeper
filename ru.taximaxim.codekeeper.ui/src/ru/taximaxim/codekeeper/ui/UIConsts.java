@@ -73,6 +73,8 @@ public interface UIConsts {
         String LAST_CREATED_OBJECT_TYPE = "prefLastCreatedObjectType"; //$NON-NLS-1$
 
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
+
+        String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -105,6 +107,12 @@ public interface UIConsts {
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$
     }
 
+    interface SQL_EDITOR_PREF {
+        String MATCHING_BRACKETS = "matchingBrackets"; //$NON-NLS-1$
+        String MATCHING_BRACKETS_COLOR = "matchingBracketsColor"; //$NON-NLS-1$
+        String HIGHLIGHT_BRACKET_AT_CARET_LOCATION = "highlightBracketAtCaretLocation"; //$NON-NLS-1$
+        String ENCLOSING_BRACKETS = "enclosingBrackets"; //$NON-NLS-1$
+    }
 
     interface USAGE_REPORT_PREF {
         String USAGEREPORT_ENABLED_ID = "allow_usage_report_preference"; //$NON-NLS-1$
@@ -164,6 +172,7 @@ public interface UIConsts {
 
     interface FILE {
         String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
+        String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
 
         // external icons

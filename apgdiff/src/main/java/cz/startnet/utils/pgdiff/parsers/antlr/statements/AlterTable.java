@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -94,7 +93,7 @@ public class AlterTable extends AbstractTable {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
                     col.setDefaultValue(getFullCtxText(exp));
-                    db.getContextsForAnalyze().add(new SimpleEntry<>(col, exp));
+                    db.addContextForAnalyze(col, exp);
                 }
 
                 // column options

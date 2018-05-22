@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -75,7 +74,9 @@ public class TypesReader extends JdbcReader {
         PgDomain d = new PgDomain(res.getString("typname"), "");
         loader.setCurrentObject(new GenericColumn(schemaName, d.getName(), DbObjType.DOMAIN));
 
-        d.setDataType(res.getString("dom_basetypefmt"));
+        String type = res.getString("dom_basetypefmt");
+        checkTypeValidity(type);
+        d.setDataType(type);
         loader.cachedTypesByOid.get(res.getLong("dom_basetype")).addTypeDepcy(d);
 
         long collation = res.getLong("typcollation");
@@ -94,7 +95,7 @@ public class TypesReader extends JdbcReader {
             }
         } else {
             loader.submitAntlrTask(def, p -> p.vex_eof().vex().get(0),
-                    ctx -> dataBase.getContextsForAnalyze().add(new SimpleEntry<>(d, ctx)));
+                    ctx -> dataBase.addContextForAnalyze(d, ctx));
         }
 
         d.setDefaultValue(def);
@@ -106,8 +107,11 @@ public class TypesReader extends JdbcReader {
             String[] concomments = res.getArray("dom_concomments", String.class);
 
             for (int i = 0; i < connames.length; ++i) {
-                PgConstraint c = new PgConstraint(connames[i], "");
-                loader.submitAntlrTask(ADD_CONSTRAINT + condefs[i] + ';',
+                String conName = connames[i];
+                PgConstraint c = new PgConstraint(conName, "");
+                String definition = condefs[i];
+                checkObjectValidity(definition, DbObjType.CONSTRAINT, conName);
+                loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint.common_constraint()
                         .check_boolean_expression(),
@@ -241,7 +245,9 @@ public class TypesReader extends JdbcReader {
 
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
-                a.setType(atttypes[i]);
+                String type = atttypes[i];
+                checkTypeValidity(type);
+                a.setType(type);
                 loader.cachedTypesByOid.get(atttypeids[i]).addTypeDepcy(t);
 
                 // unbox

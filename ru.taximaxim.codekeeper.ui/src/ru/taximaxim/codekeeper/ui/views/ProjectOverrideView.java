@@ -29,6 +29,8 @@ import cz.startnet.utils.pgdiff.schema.PgOverride;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -65,7 +67,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                                     .map(e -> (TreeElement)e)
                                     .filter(e -> e.getSide() != DiffSide.RIGHT)
                                     .map(e -> e.getPgStatement(db))
-                                    .anyMatch(o::checkStatement))
+                                    .anyMatch(st -> o.getNewStatement().equals(st)))
                             .collect(Collectors.toList()));
                 }
             } else {
@@ -129,6 +131,20 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             @Override
             public void run() {
                 openFile(true);
+            }
+        });
+
+        menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
+
+            @Override
+            public void run() {
+                ISelection selection = viewer.getSelection();
+                if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                    Object obj = ((IStructuredSelection) selection).getFirstElement();
+                    if (obj instanceof PgOverride) {
+                        CompareAction.openCompareEditor(new CompareInput((PgOverride)obj));
+                    }
+                }
             }
         });
 

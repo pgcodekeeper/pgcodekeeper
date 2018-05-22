@@ -127,6 +127,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
+import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
 public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
@@ -536,6 +537,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                             loadedRemote = currentRemote;
                             setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
                                     newDiffer.getDiffTree());
+                            if (diffTable.getElements().isEmpty()) {
+                                showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
+                            }
                         }
                     });
                 }
@@ -700,6 +704,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
             if (loadedRemote != null && loadedRemote instanceof DbInfo) {
                 ((DbInfo)loadedRemote).appendIgnoreFiles(ignoreList);
+            }
+
+            try {
+                for (String path : new IgnoreListsXmlStore(proj.getProject()).readObjects()) {
+                    InternalIgnoreList.readAppendList(Paths.get(path), ignoreList);
+                }
+            } catch (IOException e) {
+                Log.log(e);
             }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);

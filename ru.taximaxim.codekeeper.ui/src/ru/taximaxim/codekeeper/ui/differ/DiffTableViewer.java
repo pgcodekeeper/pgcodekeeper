@@ -102,7 +102,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
+import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
@@ -462,7 +463,12 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                new DiffPaneDialog(getShell(), el, getElements(), dbProject, dbRemote).open();
+                PgStatement remote = el.getSide() == DiffSide.LEFT ? null
+                        : el.getPgStatement(dbRemote.getDbObject());
+                PgStatement project = el.getSide() == DiffSide.RIGHT ? null
+                        : el.getPgStatement(dbProject.getDbObject());
+                CompareAction.openCompareEditor(new CompareInput(el.getName(),
+                        el.getType(), remote, project));
             }
         });
 

@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.loader.jdbc.TriggersReader.TriggersReaderFactory
 import cz.startnet.utils.pgdiff.loader.jdbc.TypesReader.TypesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.ViewsReader.ViewsReaderFactory;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public abstract class JdbcReaderFactory {
 
@@ -118,12 +119,19 @@ public abstract class JdbcReaderFactory {
             try (ResultSet res = runner.runScript(st)) {
                 Set<String> funcs = new HashSet<>();
                 while (res.next()) {
-                    if (!res.getBoolean("schema_access")) {
+                    Object schemaAccess = res.getObject("schema_access");
+                    JdbcReader.checkObjectValidity(schemaAccess, DbObjType.SCHEMA, HELPER_SCHEMA);
+
+                    if (!(boolean)schemaAccess) {
                         Log.log(Log.LOG_WARNING, "No access to helper schema: " + HELPER_SCHEMA);
                         break;
                     }
+
                     String func = res.getString("proname");
-                    if (res.getBoolean("function_access")) {
+                    Object functionAccess = res.getObject("function_access");
+                    JdbcReader.checkObjectValidity(functionAccess, DbObjType.FUNCTION, func);
+
+                    if ((boolean)functionAccess) {
                         funcs.add(func);
                     } else {
                         Log.log(Log.LOG_WARNING, "No access to helper function: " + func);

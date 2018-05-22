@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -70,7 +69,7 @@ public class CreateIndex extends ParserAbstract {
         }
         if (rest.index_where() != null){
             Index_whereContext whereCtx = rest.index_where();
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, whereCtx.vex()));
+            db.addContextForAnalyze(ind, whereCtx.vex());
             sb.append(' ').append(getFullCtxText(whereCtx));
         }
         ind.setDefinition(sb.toString());
@@ -78,7 +77,7 @@ public class CreateIndex extends ParserAbstract {
 
     private static void parseColumns(Index_sortContext sort, PgIndex ind, PgDatabase db) {
         for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()){
-            db.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(ind, sort_ctx.key));
+            db.addContextForAnalyze(ind, sort_ctx.key);
 
             Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
             if (vexPrimary != null) {

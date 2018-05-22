@@ -81,7 +81,7 @@ public class SequencesReader extends JdbcReader {
             s.setCache(res.getString("seqcache"));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
-                s.setDataType(res.getString("data_type"));
+                s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
             }
         }
 
@@ -120,7 +120,10 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet schemaRes = loader.runner.runScript(schemasAccessQuery)) {
                 while (schemaRes.next()) {
                     String schema = schemaRes.getString("nspname");
-                    if (schemaRes.getBoolean("has_priv")) {
+                    Object hasPriv = schemaRes.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SCHEMA, schema);
+
+                    if ((boolean)hasPriv) {
                         schemasAccess.add(schema);
                     } else {
                         loader.addError("No USAGE privileges for schema " + schema +
@@ -147,7 +150,10 @@ public class SequencesReader extends JdbcReader {
             try (ResultSet res = loader.runner.runScript(accessQuery)) {
                 while (res.next()) {
                     String qname = res.getString("qname");
-                    if (res.getBoolean("has_priv")) {
+                    Object hasPriv = res.getObject("has_priv");
+                    JdbcReader.checkObjectValidity(hasPriv, DbObjType.SEQUENCE, qname);
+
+                    if ((boolean)hasPriv) {
                         if (sbUnionQuery.length() > 0) {
                             sbUnionQuery.append("\nUNION ALL\n");
                         }

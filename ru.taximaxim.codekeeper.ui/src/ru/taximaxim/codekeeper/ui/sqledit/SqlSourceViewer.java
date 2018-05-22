@@ -11,8 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 
-import ru.taximaxim.codekeeper.ui.Activator;
-
 public class SqlSourceViewer extends SourceViewer {
 
     private final IDocumentPartitioner partitioner = new SQLEditorCommonDocumentProvider()
@@ -21,12 +19,11 @@ public class SqlSourceViewer extends SourceViewer {
     public SqlSourceViewer(Composite parent, int style) {
         super(parent, new CompositeRuler(),
                 SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER | style);
-        this.setRangeIndicator(new DefaultRangeIndicator());
-        this.configure(new SQLEditorSourceViewerConfiguration(EditorsUI
-                .getSharedTextColors(), Activator.getDefault()
-                .getPreferenceStore(), null));
+        setRangeIndicator(new DefaultRangeIndicator());
+        configure(new SQLEditorSourceViewerConfiguration(EditorsUI
+                .getSharedTextColors(), EditorsUI.getPreferenceStore(), null));
 
-        this.getTextWidget().setFont(JFaceResources.getTextFont());
+        getTextWidget().setFont(JFaceResources.getTextFont());
     }
 
     @Override

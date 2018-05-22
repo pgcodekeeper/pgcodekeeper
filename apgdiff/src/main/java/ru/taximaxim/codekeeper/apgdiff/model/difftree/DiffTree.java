@@ -1,265 +1,114 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 
 public final class DiffTree {
 
     public static TreeElement create(PgDatabase left, PgDatabase right, SubMonitor sMonitor) throws InterruptedException {
-        return new DiffTree().createTree(left, right, sMonitor);
+        return new DiffTree(sMonitor).createTree(left, right);
     }
 
     @Deprecated
-    public static void addColumns(List<? extends PgStatement> left,
-            List<? extends PgStatement> right, TreeElement parent,
-            List<TreeElement> list) {
-        for (CompareResult col : new DiffTree().compareLists(left, right)) {
-            TreeElement colEl = new TreeElement(col.getStatement(), col.getSide());
-            colEl.setParent(parent);
-            list.add(colEl);
+    public static void addColumns(List<PgColumn> left, List<PgColumn> right,
+            TreeElement parent, List<TreeElement> list) {
+        for (PgColumn sLeft : left) {
+            PgColumn foundRight = right.stream().filter(
+                    sRight -> sLeft.getName().equals(sRight.getName()))
+                    .findAny().orElse(null);
+
+            if (!sLeft.equals(foundRight)) {
+                TreeElement col = new TreeElement(sLeft, foundRight != null ? DiffSide.BOTH : DiffSide.LEFT);
+                col.setParent(parent);
+                list.add(col);
+            }
+        }
+
+        for (PgColumn sRight : right) {
+            if (!left.stream().anyMatch(sLeft -> sRight.getName().equals(sLeft.getName()))) {
+                TreeElement col = new TreeElement(sRight, DiffSide.RIGHT);
+                col.setParent(parent);
+                list.add(col);
+            }
         }
     }
 
     private final List<PgStatement> equalsStatements = new ArrayList<>();
+    private final IProgressMonitor monitor;
 
-    public TreeElement createTree(PgDatabase left, PgDatabase right, IProgressMonitor monitor) throws InterruptedException {
+    public DiffTree(IProgressMonitor monitor) {
+        this.monitor = monitor;
+    }
+
+    public TreeElement createTree(PgDatabase left, PgDatabase right) throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
-
         TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
-
-        for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions())) {
-            db.addChild(new TreeElement(res.getStatement(), res.getSide()));
-        }
-
-        for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas())) {
-            PgDiffUtils.checkCancelled(monitor);
-
-            TreeElement elSchema = new TreeElement(resSchema.getStatement(), resSchema.getSide());
-            db.addChild(elSchema);
-
-            List<? extends PgStatement> leftSub = Collections.emptyList();
-            List<? extends PgStatement> rightSub = Collections.emptyList();
-
-            PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
-            PgSchema schemaRight = (PgSchema) resSchema.getRight();
-            // functions
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getFunctions();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getFunctions();
-            }
-
-            for (CompareResult func : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(func.getStatement(), func.getSide()));
-            }
-
-            // sequences
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getSequences();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getSequences();
-            }
-
-            for (CompareResult seq : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(seq.getStatement(), seq.getSide()));
-            }
-
-            // types
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getTypes();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getTypes();
-            }
-
-            for (CompareResult type : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(type.getStatement(), type.getSide()));
-            }
-
-            // domains
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getDomains();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getDomains();
-            }
-
-            for (CompareResult dom : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(dom.getStatement(), dom.getSide()));
-            }
-
-            // view
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getViews();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getViews();
-            }
-
-            for (CompareResult view : compareLists(leftSub, rightSub)) {
-                TreeElement vw = new TreeElement(view.getStatement(), view.getSide());
-                elSchema.addChild(vw);
-
-                List<? extends PgStatement> leftViewSub = Collections.emptyList();
-                List<? extends PgStatement> rightViewSub = Collections.emptyList();
-
-                PgView viewLeft = (PgView) view.getLeft();
-                PgView viewRight = (PgView) view.getRight();
-
-                // rules
-                if (viewLeft != null) {
-                    leftViewSub = viewLeft.getRules();
-                }
-                if (viewRight != null) {
-                    rightViewSub = viewRight.getRules();
-                }
-
-                for (CompareResult rule : compareLists(leftViewSub, rightViewSub)) {
-                    vw.addChild(new TreeElement(rule.getStatement(), rule.getSide()));
-                }
-
-                // triggers
-                if (viewLeft != null) {
-                    leftViewSub = viewLeft.getTriggers();
-                }
-                if (viewRight != null) {
-                    rightViewSub = viewRight.getTriggers();
-                }
-
-                for (CompareResult trg : compareLists(leftViewSub, rightViewSub)) {
-                    vw.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
-                }
-            }
-
-            // tables
-            if (schemaLeft != null) {
-                leftSub = schemaLeft.getTables();
-            }
-            if (schemaRight != null) {
-                rightSub = schemaRight.getTables();
-            }
-
-            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                PgDiffUtils.checkCancelled(monitor);
-
-                TreeElement tbl = new TreeElement(resSub.getStatement(), resSub.getSide());
-                elSchema.addChild(tbl);
-
-                List<? extends PgStatement> leftTableSub = Collections.emptyList();
-                List<? extends PgStatement> rightTableSub = Collections.emptyList();
-
-                PgTable tableLeft = (PgTable) resSub.getLeft();
-                PgTable tableRight = (PgTable) resSub.getRight();
-
-                // indexes
-                if (tableLeft != null) {
-                    leftTableSub = tableLeft.getIndexes();
-                }
-                if (tableRight != null) {
-                    rightTableSub = tableRight.getIndexes();
-                }
-
-                for (CompareResult ind : compareLists(leftTableSub, rightTableSub)) {
-                    tbl.addChild(new TreeElement(ind.getStatement(), ind.getSide()));
-                }
-
-                // triggers
-                if (tableLeft != null) {
-                    leftTableSub = tableLeft.getTriggers();
-                }
-                if (tableRight != null) {
-                    rightTableSub = tableRight.getTriggers();
-                }
-
-                for (CompareResult trg : compareLists(leftTableSub, rightTableSub)) {
-                    tbl.addChild(new TreeElement(trg.getStatement(), trg.getSide()));
-                }
-
-                // rules
-                if (tableLeft != null) {
-                    leftTableSub = tableLeft.getRules();
-                }
-                if (tableRight != null) {
-                    rightTableSub = tableRight.getRules();
-                }
-
-                for (CompareResult rule : compareLists(leftTableSub, rightTableSub)) {
-                    tbl.addChild(new TreeElement(rule.getStatement(), rule.getSide()));
-                }
-
-                // constraints
-                if (tableLeft != null) {
-                    leftTableSub = tableLeft.getConstraints();
-                }
-                if (tableRight != null) {
-                    rightTableSub = tableRight.getConstraints();
-                }
-
-                for (CompareResult constr : compareLists(leftTableSub, rightTableSub)) {
-                    tbl.addChild(new TreeElement(constr.getStatement(), constr.getSide()));
-                }
-            }
-        }
+        addChildren(left, right, db);
 
         return db;
+    }
+
+    private void addChildren(PgStatement left, PgStatement right, TreeElement parent) throws InterruptedException {
+        for (CompareResult res : compareStatements(left, right)) {
+            PgDiffUtils.checkCancelled(monitor);
+            TreeElement child = new TreeElement(res.getStatement(), res.getSide());
+            parent.addChild(child);
+
+            if (res.hasChildren()) {
+                addChildren(res.getLeft(), res.getRight(), child);
+            }
+        }
     }
 
     /**
      * Compare lists and put elements onto appropriate sides.
      */
-    private List<CompareResult> compareLists(List<? extends PgStatement> left,
-            List<? extends PgStatement> right) {
+    private List<CompareResult> compareStatements(PgStatement left, PgStatement right) {
         List<CompareResult> rv = new ArrayList<>();
 
         // add LEFT and BOTH here
         // and RIGHT in a separate pass
-        for (PgStatement sLeft : left) {
-            PgStatement foundRight = null;
-            for (PgStatement sRight : right) {
-                if (sLeft.getName().equals(sRight.getName())) {
-                    foundRight = sRight;
-                    break;
+        if (left != null) {
+            left.getChildren().forEach(sLeft -> {
+                PgStatement foundRight = null;
+                if (right != null) {
+                    foundRight = right.getChildren().filter(
+                            sRight -> sLeft.getName().equals(sRight.getName())
+                            && sLeft.getStatementType() == sRight.getStatementType())
+                            .findAny().orElse(null);
                 }
-            }
 
-            if(foundRight == null) {
-                rv.add(new CompareResult(sLeft, null));
-            } else if(!sLeft.equals(foundRight)) {
-                rv.add(new CompareResult(sLeft, foundRight));
-            } else {
-                equalsStatements.add(sLeft);
-            }
+                if (foundRight == null) {
+                    rv.add(new CompareResult(sLeft, null));
+                } else if(!sLeft.equals(foundRight)) {
+                    rv.add(new CompareResult(sLeft, foundRight));
+                } else {
+                    equalsStatements.add(sLeft);
+                }
+            });
         }
 
-        for (PgStatement sRight : right) {
-            boolean foundLeft = false;
-            for (PgStatement sLeft : left) {
-                if (sRight.getName().equals(sLeft.getName())) {
-                    foundLeft = true;
-                    break;
+        if (right != null) {
+            right.getChildren().forEach(sRight -> {
+                if (left == null || !left.getChildren().anyMatch(
+                        sLeft -> sRight.getName().equals(sLeft.getName())
+                        && sLeft.getStatementType() == sRight.getStatementType())) {
+                    rv.add(new CompareResult(null, sRight));
                 }
-            }
-            if (!foundLeft) {
-                rv.add(new CompareResult(null, sRight));
-            }
+            });
         }
+
         return rv;
     }
-
 
     public List<PgStatement> getEqualsObjects() {
         return equalsStatements;
@@ -305,5 +154,13 @@ class CompareResult {
             return right;
         }
         throw new IllegalStateException("Both diff sides are null!");
+    }
+
+    public boolean hasChildren() {
+        if (left != null && left.hasChildren()) {
+            return true;
+        }
+
+        return right != null && right.hasChildren();
     }
 }

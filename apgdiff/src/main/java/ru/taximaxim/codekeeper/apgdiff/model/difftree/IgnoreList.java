@@ -26,6 +26,10 @@ public class IgnoreList {
         return Collections.unmodifiableList(rules);
     }
 
+    public void clearList() {
+        rules.clear();
+    }
+
     public void add(IgnoredObject rule) {
         IgnoredObject existing = findSameMatchingRule(rule);
         if (existing != null) {

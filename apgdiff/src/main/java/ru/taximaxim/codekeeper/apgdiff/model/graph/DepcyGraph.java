@@ -10,21 +10,12 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgDomain;
-import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgRule;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgType;
-import cz.startnet.utils.pgdiff.schema.PgView;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class DepcyGraph {
 
@@ -67,130 +58,19 @@ public class DepcyGraph {
         graph.addVertex(db);
 
         // first pass: object tree
-        for(PgSchema schema : db.getSchemas()) {
-            graph.addVertex(schema);
-            graph.addEdge(schema, db);
+        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> {
+            graph.addVertex(st);
+            graph.addEdge(st, st.getParent());
+        });
 
-            for(PgFunction func : schema.getFunctions()) {
-                graph.addVertex(func);
-                graph.addEdge(func, schema);
-            }
-
-            for(PgSequence seq : schema.getSequences()) {
-                graph.addVertex(seq);
-                graph.addEdge(seq, schema);
-            }
-
-            for (PgType type : schema.getTypes()) {
-                graph.addVertex(type);
-                graph.addEdge(type, schema);
-            }
-
-            for (PgDomain domain : schema.getDomains()) {
-                graph.addVertex(domain);
-                graph.addEdge(domain, schema);
-            }
-
-            for(PgTable table : schema.getTables()) {
-                graph.addVertex(table);
-                graph.addEdge(table, schema);
-
-                for(PgColumn col : table.getColumns()) {
-                    graph.addVertex(col);
-                    graph.addEdge(col, table);
-                }
-
-                for(PgIndex idx : table.getIndexes()) {
-                    graph.addVertex(idx);
-                    graph.addEdge(idx, table);
-                }
-
-                for (PgConstraint cons : table.getConstraints()) {
-                    graph.addVertex(cons);
-                    graph.addEdge(cons, table);
-                }
-
-                for (PgTrigger trg : table.getTriggers()) {
-                    graph.addVertex(trg);
-                    graph.addEdge(trg, table);
-                }
-
-                for (PgRule rule : table.getRules()) {
-                    graph.addVertex(rule);
-                    graph.addEdge(rule, table);
-                }
-            }
-
-            for(PgView view : schema.getViews()) {
-                graph.addVertex(view);
-                graph.addEdge(view, schema);
-
-                for (PgRule rule : view.getRules()) {
-                    graph.addVertex(rule);
-                    graph.addEdge(rule, view);
-                }
-
-                for (PgTrigger trigger : view.getTriggers()) {
-                    graph.addVertex(trigger);
-                    graph.addEdge(trigger, view);
-                }
-            }
-        }
-        for(PgExtension ext : db.getExtensions()) {
-            graph.addVertex(ext);
-            graph.addEdge(ext, db);
-        }
 
         // second pass: dependency graph
-        for(PgSchema schema : db.getSchemas()) {
-            processDeps(schema);
-
-            for(PgFunction func : schema.getFunctions()) {
-                processDeps(func);
+        db.getDescendants().flatMap(PgTable::columnAdder).forEach(st -> {
+            processDeps(st);
+            if (st.getStatementType() == DbObjType.CONSTRAINT) {
+                createFkeyToUnique((PgConstraint)st);
             }
-            for(PgSequence seq : schema.getSequences()) {
-                processDeps(seq);
-            }
-            for (PgType type : schema.getTypes()) {
-                processDeps(type);
-            }
-            for (PgDomain domain : schema.getDomains()) {
-                processDeps(domain);
-            }
-            for(PgTable table : schema.getTables()) {
-                processDeps(table);
-
-                for(PgColumn col : table.getColumns()) {
-                    processDeps(col);
-                }
-                for(PgIndex idx : table.getIndexes()) {
-                    processDeps(idx);
-                }
-                for (PgConstraint cons : table.getConstraints()) {
-                    processDeps(cons);
-                    createFkeyToUnique(cons);
-                }
-                for (PgTrigger trg : table.getTriggers()) {
-                    processDeps(trg);
-                }
-                for (PgRule rule : table.getRules()) {
-                    processDeps(rule);
-                }
-            }
-            for(PgView view : schema.getViews()) {
-                processDeps(view);
-
-                for (PgRule rule : view.getRules()) {
-                    processDeps(rule);
-                }
-                for (PgTrigger trg : view.getTriggers()) {
-                    processDeps(trg);
-                }
-            }
-        }
-        for(PgExtension ext : db.getExtensions()) {
-            processDeps(ext);
-        }
+        });
     }
 
     private void processDeps(PgStatement st) {

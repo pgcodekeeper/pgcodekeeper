@@ -1,11 +1,10 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
-import cz.startnet.utils.pgdiff.parsers.antlr.exprold.Select;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.ViewSelect;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -57,7 +56,9 @@ public class ViewsReader extends JdbcReader {
             }
         }
 
-        String viewDef = res.getString("definition").trim();
+        String definition = res.getString("definition");
+        checkObjectValidity(definition, getType(), viewName);
+        String viewDef = definition.trim();
         int semicolonPos = viewDef.length() - 1;
         v.setQuery(viewDef.charAt(semicolonPos) == ';' ? viewDef.substring(0, semicolonPos) : viewDef);
 
@@ -66,11 +67,11 @@ public class ViewsReader extends JdbcReader {
         loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
                 .select_stmt(),
                 ctx -> {
-                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+                    dataBase.addContextForAnalyze(v, ctx);
 
                     // collect basic FROM dependencies between VIEW objects themselves
                     // to ensure correct order during the main analysis phase
-                    Select select = new Select(schemaName);
+                    ViewSelect select = new ViewSelect(schemaName);
                     select.analyze(new SelectStmt(ctx));
                     v.addAllDeps(select.getDepcies());
                 });
@@ -91,9 +92,7 @@ public class ViewsReader extends JdbcReader {
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
-                            ctx -> {
-                                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
-                            });
+                            ctx -> dataBase.addContextForAnalyze(v, ctx));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {
