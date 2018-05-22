@@ -226,17 +226,23 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
         btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        new Label(tabAreaDb, SWT.NONE).setText(Messages.entry_name);
+        int verticalIndent = 15;
+
+        Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
+        lblEntryName.setText(Messages.entry_name);
+        gd = new GridData();
+        gd.verticalIndent = verticalIndent;
+        lblEntryName.setLayoutData(gd);
 
         txtName = new Text(tabAreaDb, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 10;
+        gd.verticalIndent = verticalIndent;
         txtName.setLayoutData(gd);
 
         btnGenerateName = new Button(tabAreaDb, SWT.CHECK);
         gd = new GridData(135, SWT.DEFAULT);
         gd.horizontalSpan = 2;
-        gd.verticalIndent = 10;
+        gd.verticalIndent = verticalIndent;
         btnGenerateName.setLayoutData(gd);
         btnGenerateName.setText(Messages.DbStoreEditorDialog_auto_generation);
         btnGenerateName.setToolTipText(Messages.DbStoreEditorDialog_auto_generation_description);
