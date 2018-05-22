@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alias_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -19,6 +21,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.With_queryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.SelectStmt;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.IRelation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
@@ -96,21 +99,6 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
                 .findAny().orElse(super.findReferenceComplex(name));
     }
 
-    @Override
-    protected Set<GenericColumn> getAllUnaliasedNmsp() {
-        return unaliasedNamespace;
-    }
-
-    @Override
-    protected Map<String, GenericColumn> getAllReferences() {
-        return namespace;
-    }
-
-    @Override
-    protected Map<String, List<Pair<String, String>>> getAllReferencesComplex() {
-        return complexNamespace;
-    }
-
     protected Entry<String, GenericColumn> findReferenceInNmspc(String schema, String name, String column) {
         boolean found;
         GenericColumn dereferenced = null;
@@ -156,6 +144,43 @@ public abstract class AbstractExprWithNmspc<T> extends AbstractExpr {
         } else {
             return null;
         }
+    }
+
+    @Override
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        Pair<IRelation, Pair<String, String>> ret = findColumn(name, namespace.values());
+        if (ret == null) {
+            ret = findColumn(name, unaliasedNamespace);
+        }
+        return ret != null ? ret : super.findColumn(name);
+    }
+
+    private Pair<IRelation, Pair<String, String>> findColumn(String name, Collection<GenericColumn> refs) {
+        for (GenericColumn ref : refs) {
+            if (ref == null) {
+                continue;
+            }
+            for (IRelation rel : PgDiffUtils.sIter(findRelations(ref.schema, ref.table))) {
+                for (Pair<String, String> col : PgDiffUtils.sIter(rel.getRelationColumns())) {
+                    if (col.getFirst().equals(name)) {
+                        return new Pair<>(rel, col);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected Pair<String, String> findColumnInComplex(String name) {
+        for (List<Pair<String, String>> compl : complexNamespace.values()) {
+            for (Pair<String, String> col : compl) {
+                if (col.getFirst().equals(name)) {
+                    return col;
+                }
+            }
+        }
+        return super.findColumnInComplex(name);
     }
 
     /**

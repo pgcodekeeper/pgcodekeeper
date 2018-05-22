@@ -1,15 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.expr;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -98,28 +95,12 @@ public abstract class AbstractExpr {
         return parent == null ? null : parent.findReferenceComplex(name);
     }
 
-    /**
-     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc#unaliasedNamespace
-     * unaliased namespaces}
-     */
-    protected Set<GenericColumn> getAllUnaliasedNmsp() {
-        return parent == null ? Collections.emptySet() : parent.getAllUnaliasedNmsp();
+    protected Pair<IRelation, Pair<String, String>> findColumn(String name) {
+        return parent == null ? null : parent.findColumn(name);
     }
 
-    /**
-     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc#namespace
-     * The local namespace of this Select.}
-     */
-    protected Map<String, GenericColumn> getAllReferences() {
-        return parent == null ? Collections.emptyMap() : parent.getAllReferences();
-    }
-
-    /**
-     * @return {@link cz.startnet.utils.pgdiff.parsers.antlr.expr.AbstractExprWithNmspc#complexNamespace
-     * Map contains alias and list of pairs. Pairs returned by aliased subquery.}
-     */
-    protected Map<String, List<Pair<String, String>>> getAllReferencesComplex() {
-        return parent == null ? Collections.emptyMap() : parent.getAllReferencesComplex();
+    protected Pair<String, String> findColumnInComplex(String name) {
+        return parent == null ? null : parent.findColumnInComplex(name);
     }
 
     protected GenericColumn addRelationDepcy(List<IdentifierContext> ids) {
@@ -293,102 +274,22 @@ public abstract class AbstractExpr {
         return cols;
     }
 
-    private String processTablelessColumn(String columnName) {
-        // Contains result column type.
-        List<String> resultColType = new ArrayList<>();
-
-        // Comparing 'tableless column' with columns from 'unaliased namespace' and
-        // getting corresponding type for 'tableless column'.
-        for (GenericColumn gTableOrView : getAllUnaliasedNmsp()) {
-            fillResultColType(columnName, gTableOrView, resultColType);
-        }
-
-        // Comparing 'tableless column' with columns from aliased table or view and
-        // getting corresponding type for 'tableless column'.
-        for (Entry<String, GenericColumn> nmsp : getAllReferences().entrySet()) {
-            GenericColumn gTableOrView = nmsp.getValue();
-            if (gTableOrView != null) {
-                fillResultColType(columnName, gTableOrView, resultColType);
+    private String processTablelessColumn(String name) {
+        Pair<String, String> col = findColumnInComplex(name);
+        if (col == null) {
+            Pair<IRelation, Pair<String, String>> relCol = findColumn(name);
+            if (relCol == null) {
+                Log.log(Log.LOG_WARNING, "Tableless column not resolved: " + name);
+                return TypesSetManually.COLUMN;
+            }
+            IRelation rel = relCol.getFirst();
+            col = relCol.getSecond();
+            if (rel.getStatementNature() == DbObjNature.USER) {
+                depcies.add(new GenericColumn(rel.getContainingSchema().getName(), rel.getName(),
+                        col.getFirst(), DbObjType.COLUMN));
             }
         }
-
-        // Comparing 'tableless column' with columns from subquery and
-        // getting corresponding type for 'tableless column'.
-        resultColType.addAll(getAllReferencesComplex().entrySet().stream()
-                .flatMap(complexNmsp -> complexNmsp.getValue().stream())
-                .filter(colPair -> columnName.equals(colPair.getFirst()))
-                .map(Pair::getSecond).collect(Collectors.toList()));
-
-        if (resultColType.size() == 1) {
-            return resultColType.get(0);
-        } else if (resultColType.size() > 1) {
-            // TODO Warn the user about an error of ambiguity in the dialog.
-            Log.log(Log.LOG_ERROR, "Ambiguous column reference: " + columnName);
-        }
-        return TypesSetManually.COLUMN;
-    }
-
-    /**
-     * Search the corresponding column in the 'relations' (which contains the
-     * specified scheme and table) and adding a dependency only from the column of
-     * the user object.
-     * Puts found type of column 'columnName' to the list 'resultColType'.
-     *
-     * @param columnName dependency from this column will be added
-     * (on condition that one of relations is user object and it contains the column 'columnName')
-     * @param gTableOrView data for searching user or system relations, one of which, perhaps,
-     * contains the column 'columnName'
-     * @param resultColType list in which the found type of column 'columnName' will be placed.
-     */
-    @Deprecated
-    // Offering to use this method instead of 'fillResultColType'.
-    private void fillResultColTypeWithAddingDepcy(String columnName, GenericColumn gTableOrView,
-            List<String> resultColType) {
-        for (IRelation relation : PgDiffUtils.sIter(findRelations(gTableOrView.schema, gTableOrView.table))) {
-            for (Pair<String, String> colPair :  PgDiffUtils.sIter(relation.getRelationColumns())) {
-                if (columnName.equals(colPair.getKey())) {
-                    if (DbObjNature.USER.equals(relation.getStatementNature())) {
-                        addColumnDepcy(relation.getContainingSchema().getName(),
-                                relation.getName(), columnName);
-                    }
-                    resultColType.add(colPair.getValue());
-                }
-            }
-        }
-    }
-
-    private void fillResultColType(String columnName, GenericColumn gTableOrView,
-            List<String> resultColType) {
-        String colType = addFilteredTablelessColumnDepcy(columnName,
-                findRelations(gTableOrView.schema, gTableOrView.table));
-        if (colType != null) {
-            resultColType.add(colType);
-        }
-    }
-
-    /**
-     * Searching the corresponding column in the 'relations' and
-     * adding a dependency only from the column of the user object. Always return type
-     * of column 'columnName' or null if there is no column with such name in relations.
-     *
-     * @param relations user or system objects, one of which, perhaps, contains the column 'columnName'
-     * @param columnName dependency from this column will be added
-     * (on condition that one of relations is user object and it contains the column 'columnName')
-     * @return column type
-     */
-    private String addFilteredTablelessColumnDepcy(String columnName, Stream<IRelation> relations) {
-        for (IRelation relation : PgDiffUtils.sIter(relations)) {
-            for (Pair<String, String> colPair :  PgDiffUtils.sIter(relation.getRelationColumns())) {
-                if (columnName.equals(colPair.getKey())) {
-                    if (DbObjNature.USER.equals(relation.getStatementNature())) {
-                        addColumnDepcy(relation.getContainingSchema().getName(),
-                                relation.getName(), columnName);
-                    }
-                    return colPair.getValue();
-                }
-            }
-        }
-        return null;
+        return col.getSecond();
     }
 
     protected void addColumnsDepcies(Schema_qualified_nameContext table, List<IdentifierContext> cols) {
@@ -431,13 +332,6 @@ public abstract class AbstractExpr {
         if (function != null) {
             depcies.add(new GenericColumn(schemaName, function.getName(), DbObjType.FUNCTION));
         }
-    }
-
-    protected GenericColumn addColumnDepcy(String schemaName, String tableOrView, String columnName) {
-        String sName = schemaName != null ? schemaName : this.schema;
-        GenericColumn genericColumn = new GenericColumn(sName, tableOrView, columnName, DbObjType.COLUMN);
-        depcies.add(genericColumn);
-        return genericColumn;
     }
 
     protected void addFunctionSigDepcy(String signature) {
