@@ -297,7 +297,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         linkRefresh = new Link(contNotifications, SWT.NONE);
         linkRefresh.setText(Messages.DiffPresentationPane_refresh_link);
-        linkRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        gd = new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true);
+        gd.horizontalIndent = 10;
+        linkRefresh.setLayoutData(gd);
 
         // Event handling when users click on links.
         linkRefresh.addSelectionListener(new SelectionAdapter()  {
@@ -309,9 +311,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         });
 
-        Link linkClose = new Link(contNotifications, SWT.NONE);
+        Link linkClose = new Link(contNotifications, SWT.RIGHT |SWT.WRAP | SWT.BORDER);
         linkClose.setText(Messages.DiffPresentationPane_close_link);
-        linkClose.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        gd = new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true);
+        gd.horizontalIndent = 5;
+        linkClose.setLayoutData(gd);
 
         // Event handling when users click on links.
         linkClose.addSelectionListener(new SelectionAdapter()  {
