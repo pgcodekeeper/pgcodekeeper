@@ -821,7 +821,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             lblNotificationText.setText(message);
 
             // Updates the size of the composite when replacing text.
-            lblNotificationText.getParent().layout();
+            // ('layout' method doesn't set correct height for the composit in
+            // first request of this composite)
+            contNotifications.pack();
         }
         ((GridData) contNotifications.getLayoutData()).exclude = !visible;
         contNotifications.setVisible(visible);
