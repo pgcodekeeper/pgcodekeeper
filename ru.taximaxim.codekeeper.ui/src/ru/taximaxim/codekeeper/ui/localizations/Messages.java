@@ -293,7 +293,8 @@ public final class Messages extends NLS {
     public static String DiffPresentationPane_attention;
 
 
-    public static String DiffPresentationPane_dismiss;
+    public static String DiffPresentationPane_refresh_link;
+    public static String DiffPresentationPane_close_link;
     public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;

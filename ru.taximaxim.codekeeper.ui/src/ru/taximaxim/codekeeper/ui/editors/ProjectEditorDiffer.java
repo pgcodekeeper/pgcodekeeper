@@ -57,12 +57,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -145,7 +145,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
     private Composite contNotifications;
     private Label lblNotificationText;
-    private Button btnDismissRefresh;
+    private Link linkRefresh;
     private Button btnGetChanges;
 
     private DiffTableViewer diffTable;
@@ -193,46 +193,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         parent.setLayout(new GridLayout());
         lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
-
-        // notifications container
-        // simplified for 1 static notification
-        // refactor into multiple child composites w/ description class
-        // for multiple dynamic notifications if necessary
-        contNotifications = new Group(parent, SWT.NONE);
-        contNotifications.setLayout(new GridLayout(4, false));
-
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.exclude = true;
-        contNotifications.setVisible(false);
-        contNotifications.setLayoutData(gd);
-
-        Label lblWarnIcon = new Label(contNotifications, SWT.NONE);
-        lblWarnIcon.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
-        lblWarnIcon.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-
-        Label lblNotification = new Label(contNotifications, SWT.NONE);
-        lblNotification.setText(Messages.DiffPresentationPane_attention);
-        lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-        lblNotification.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-        lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
-                lblNotification.getFont()).withStyle(SWT.BOLD).increaseHeight(2)));
-
-        lblNotificationText = new Label(contNotifications, SWT.NONE);
-        lblNotificationText.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-
-        btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
-        btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
-        btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
-        btnDismissRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
-        btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                getChanges();
-            }
-        });
-        // end notifications container
 
         SashForm sashOuter = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -313,6 +273,56 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                 e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
+
+        // notifications container
+        // simplified for 1 static notification
+        // refactor into multiple child composites w/ description class
+        // for multiple dynamic notifications if necessary
+        contNotifications = new Group(parent, SWT.NONE);
+        contNotifications.setLayout(new GridLayout(4, false));
+
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = true;
+        contNotifications.setVisible(false);
+        contNotifications.setLayoutData(gd);
+
+        Label lblNotification = new Label(contNotifications, SWT.NONE);
+        lblNotification.setText(Messages.DiffPresentationPane_attention);
+        lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
+                lblNotification.getFont()).withStyle(SWT.BOLD)));
+
+        lblNotificationText = new Label(contNotifications, SWT.NONE);
+        lblNotificationText.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+
+        linkRefresh = new Link(contNotifications, SWT.NONE);
+        linkRefresh.setText(Messages.DiffPresentationPane_refresh_link);
+        linkRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+
+        // Event handling when users click on links.
+        linkRefresh.addSelectionListener(new SelectionAdapter()  {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                getChanges();
+            }
+
+        });
+
+        Link linkClose = new Link(contNotifications, SWT.NONE);
+        linkClose.setText(Messages.DiffPresentationPane_close_link);
+        linkClose.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+
+        // Event handling when users click on links.
+        linkClose.addSelectionListener(new SelectionAdapter()  {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                hideNotificationArea();
+            }
+
+        });
+        // end notifications container
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this,
                 IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE
@@ -809,12 +819,15 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         if (message != null) {
             lblNotificationText.setText(message);
+
+            // Updates the size of the composite when replacing text.
+            lblNotificationText.getParent().layout();
         }
         ((GridData) contNotifications.getLayoutData()).exclude = !visible;
         contNotifications.setVisible(visible);
         parent.layout();
         if (visible) {
-            btnDismissRefresh.setFocus();
+            linkRefresh.setFocus();
         }
     }
 
