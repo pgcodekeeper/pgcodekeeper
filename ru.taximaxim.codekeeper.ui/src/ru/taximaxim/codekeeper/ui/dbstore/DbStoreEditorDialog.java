@@ -40,7 +40,6 @@ public class DbStoreEditorDialog extends TrayDialog {
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
-    private String entryNameDefinedByUser;
 
     private Text txtName;
     private Text txtDbName;
@@ -77,42 +76,34 @@ public class DbStoreEditorDialog extends TrayDialog {
                 boolean generateEntryName = true;
                 String dbHost = DEFAULT_HOST;
                 String dbPort = DEFAULT_PORT;
-                String dbName = null;
-                String dbUser = null;
+                String dbName = ""; //$NON-NLS-1$
+                String dbUser = ""; //$NON-NLS-1$
+                String dbPass = ""; //$NON-NLS-1$
+                String entryName = ""; //$NON-NLS-1$;
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
                     dbHost = !dbHost.isEmpty() ? dbHost : DEFAULT_HOST;
-                    txtDbHost.setText(dbHost);
 
                     dbPort = getVerifiedPort(Integer.toString(dbInitial.getDbPort()));
-                    txtDbPort.setText(dbPort);
-
                     dbName = dbInitial.getDbName();
-                    txtDbName.setText(dbName);
-
                     dbUser = dbInitial.getDbUser();
-                    txtDbUser.setText(dbUser);
+                    dbPass = dbInitial.getDbPass();
+                    generateEntryName = dbInitial.isGeneratedName();
+                    entryName = dbInitial.getName();
 
-                    txtDbPass.setText(dbInitial.getDbPass());
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                     listEditor.setInputList(dbInitial.getIgnoreFiles());
-
-                    generateEntryName = dbInitial.isGeneratedName();
-
-                    String entryName = dbInitial.getName();
-                    if (!generateEntryName) {
-                        entryNameDefinedByUser = entryName;
-                    }
-                } else {
-                    txtDbHost.setText(dbHost);
-                    txtDbPort.setText(dbPort);
-                    txtDbPass.setText("");//$NON-NLS-1$
                 }
 
+                txtDbHost.setText(dbHost);
+                txtDbPort.setText(dbPort);
+                txtDbName.setText(dbName);
+                txtDbUser.setText(dbUser);
+                txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
 
-                fillTxtNameField(generateEntryName, dbUser, dbHost, dbPort, dbName);
+                fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }
         });
     }
@@ -121,35 +112,30 @@ public class DbStoreEditorDialog extends TrayDialog {
         return dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
     }
 
-    private String generateEntryName(String dbUser, String dbHost, String dbPort, String dbName) {
+    private String generateEntryName(String dbHost, String dbPort, String dbName, String dbUser) {
         StringBuilder entryNameSb = new StringBuilder();
 
-        if (dbUser != null && !dbUser.isEmpty()) {
+        if (!dbUser.isEmpty()) {
             entryNameSb.append(dbUser).append('@');
         }
 
-        entryNameSb.append(dbHost == null || dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
+        entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
         if (!DEFAULT_PORT.equals(dbPort)) {
             entryNameSb.append(':').append(dbPort);
         }
 
-        if (dbName != null && !dbName.isEmpty()) {
+        if (!dbName.isEmpty()) {
             entryNameSb.append("//").append(dbName);
         }
 
         return entryNameSb.toString();
     }
 
-    private void fillTxtNameField(boolean generateEntryName, String dbUser, String dbHost,
-            String dbPort, String dbName) {
-        if (generateEntryName) {
-            txtName.setText(generateEntryName(dbUser, dbHost, dbPort, dbName));
-        } else {
-            txtName.setText(entryNameDefinedByUser != null ? entryNameDefinedByUser
-                    : generateEntryName(dbUser, dbHost, dbPort, dbName));
-        }
-
+    private void fillTxtNameField(boolean generateEntryName, String dbHost, String dbPort,
+            String dbName, String dbUser, String entryName) {
+        txtName.setText(!generateEntryName ? entryName : generateEntryName(dbHost,
+                dbPort, dbName, dbUser));
         txtName.setEnabled(!generateEntryName);
     }
 
@@ -161,7 +147,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         gd.minimumWidth = 700;
         area.setLayoutData(gd);
 
-        TabFolder tabFolder = new TabFolder(area, SWT.BORDER);
+        TabFolder tabFolder = new TabFolder(area, SWT.NONE);
         tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         //// Creating tab item "Db Info" and fill it by components.
@@ -250,9 +236,9 @@ public class DbStoreEditorDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                fillTxtNameField(btnGenerateName.getSelection(), txtDbUser.getText(),
-                        txtDbHost.getText(), getVerifiedPort(txtDbPort.getText()),
-                        txtDbName.getText());
+                fillTxtNameField(btnGenerateName.getSelection(), txtDbHost.getText(),
+                        getVerifiedPort(txtDbPort.getText()), txtDbName.getText(),
+                        txtDbUser.getText(), txtName.getText());
             }
         });
 
