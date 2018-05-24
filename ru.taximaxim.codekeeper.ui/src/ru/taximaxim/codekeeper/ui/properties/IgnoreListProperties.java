@@ -73,7 +73,7 @@ public class IgnoreListProperties extends PropertyPage {
         return true;
     }
 
-    private class IgnoreListEditor extends PrefListEditor<String, ListViewer> {
+    public static class IgnoreListEditor extends PrefListEditor<String, ListViewer> {
 
         public IgnoreListEditor(Composite parent) {
             super(parent);

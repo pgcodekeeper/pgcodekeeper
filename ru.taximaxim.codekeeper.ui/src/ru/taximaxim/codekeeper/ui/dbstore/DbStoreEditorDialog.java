@@ -5,11 +5,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,11 +18,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 
@@ -34,9 +31,12 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
+import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 
 public class DbStoreEditorDialog extends TrayDialog {
+
+    private static final String DEFAULT_HOST = "127.0.0.1";
+    private static final String DEFAULT_PORT = "5432";
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
@@ -49,8 +49,9 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Text txtDbPort;
     private CLabel lblWarnDbPass;
     private Button btnReadOnly;
+    private Button btnGenerateName;
 
-    private DbIgnoreListEditor listEditor;
+    private IgnoreListEditor listEditor;
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -72,54 +73,116 @@ public class DbStoreEditorDialog extends TrayDialog {
                 // one time listener
                 newShell.removeShellListener(this);
 
+                boolean generateEntryName = true;
+                String dbHost = DEFAULT_HOST;
+                String dbPort = DEFAULT_PORT;
+                String dbName = ""; //$NON-NLS-1$
+                String dbUser = ""; //$NON-NLS-1$
+                String dbPass = ""; //$NON-NLS-1$
+                String entryName = ""; //$NON-NLS-1$;
+
                 if (dbInitial != null) {
-                    txtName.setText(dbInitial.getName());
-                    txtDbName.setText(dbInitial.getDbName());
-                    txtDbUser.setText(dbInitial.getDbUser());
-                    txtDbPass.setText(dbInitial.getDbPass());
-                    txtDbHost.setText(dbInitial.getDbHost());
-                    txtDbPort.setText("" + dbInitial.getDbPort()); //$NON-NLS-1$
+                    dbHost = dbInitial.getDbHost();
+                    dbPort = Integer.toString(dbInitial.getDbPort());
+                    dbName = dbInitial.getDbName();
+                    dbUser = dbInitial.getDbUser();
+                    dbPass = dbInitial.getDbPass();
+                    generateEntryName = dbInitial.isGeneratedName();
+                    entryName = dbInitial.getName();
+
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                     listEditor.setInputList(dbInitial.getIgnoreFiles());
-                } else {
-                    txtDbPass.setText("");//$NON-NLS-1$
                 }
+
+                txtDbHost.setText(dbHost);
+                txtDbPort.setText(dbPort);
+                txtDbName.setText(dbName);
+                txtDbUser.setText(dbUser);
+                txtDbPass.setText(dbPass);
+                btnGenerateName.setSelection(generateEntryName);
+
+                fillTxtNameField(generateEntryName, dbHost, dbPort,
+                        dbName, dbUser, entryName);
             }
         });
+    }
+
+    private String generateEntryName(String dbHost, String dbPort, String dbName, String dbUser) {
+        StringBuilder entryNameSb = new StringBuilder();
+
+        if (!dbUser.isEmpty()) {
+            entryNameSb.append(dbUser).append('@');
+        }
+
+        entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
+
+        String verifiedDbPort = dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
+        if (!DEFAULT_PORT.equals(verifiedDbPort)) {
+            entryNameSb.append(':').append(verifiedDbPort);
+        }
+
+        if (!dbName.isEmpty()) {
+            entryNameSb.append('/').append(dbName);
+        }
+
+        return entryNameSb.toString();
+    }
+
+    private void fillTxtNameField(boolean generateEntryName, String dbHost, String dbPort,
+            String dbName, String dbUser, String entryName) {
+        txtName.setText(!generateEntryName ? entryName : generateEntryName(dbHost,
+                dbPort, dbName, dbUser));
+        txtName.setEnabled(!generateEntryName);
     }
 
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
-        area.setLayout(new GridLayout(2, true));
-        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        final Group grpDbData = new Group(area, SWT.NONE);
-        grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
-        grpDbData.setLayout(new GridLayout(2, false));
+        TabFolder tabFolder = new TabFolder(area, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 480;
-        grpDbData.setLayoutData(gd);
+        gd.minimumWidth = 700;
+        tabFolder.setLayoutData(gd);
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.entry_name);
+        //// Creating tab item "Db Info" and fill it by components.
 
-        txtName = new Text(grpDbData, SWT.BORDER);
-        txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info,
+                new GridLayout(4, false));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_name);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
-        txtDbName = new Text(grpDbData, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtDbHost = new Text(tabAreaDb, SWT.BORDER);
+        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_user);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
-        txtDbUser = new Text(grpDbData, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtDbPort = new Text(tabAreaDb, SWT.BORDER);
+        txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false));
+        txtDbPort.addVerifyListener(e -> {
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_password);
+            try {
+                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
+                    e.doit = false;
+                }
+            } catch(NumberFormatException ex) {
+                e.doit = false;
+            }
+        });
 
-        txtDbPass = new Text(grpDbData, SWT.BORDER | SWT.PASSWORD);
-        txtDbPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
+
+        txtDbName = new Text(tabAreaDb, SWT.BORDER);
+        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
+
+        txtDbUser = new Text(tabAreaDb, SWT.BORDER);
+        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
+
+        txtDbPass = new Text(tabAreaDb, SWT.BORDER | SWT.PASSWORD);
+        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
         txtDbPass.addModifyListener(e -> {
             GridData data = (GridData) lblWarnDbPass.getLayoutData();
 
@@ -132,46 +195,73 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         });
 
-        lblWarnDbPass = new CLabel(grpDbData, SWT.NONE);
+        lblWarnDbPass = new CLabel(tabAreaDb, SWT.NONE);
         lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
         lblWarnDbPass.setText(Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
-        lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+        lblWarnDbPass.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dB_host);
+        new Label(tabAreaDb, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
 
-        txtDbHost = new Text(grpDbData, SWT.BORDER);
-        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        btnReadOnly = new Button(tabAreaDb, SWT.CHECK);
+        btnReadOnly.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.dbPicker_port);
+        int verticalIndent = 15;
 
-        txtDbPort = new Text(grpDbData, SWT.BORDER);
-        gd = new GridData(60, SWT.DEFAULT);
-        txtDbPort.setLayoutData(gd);
-        txtDbPort.addVerifyListener(e -> {
+        Label lblEntryName = new Label(tabAreaDb, SWT.NONE);
+        lblEntryName.setText(Messages.entry_name);
+        gd = new GridData();
+        gd.verticalIndent = verticalIndent;
+        lblEntryName.setLayoutData(gd);
 
-            try {
-                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
-                    e.doit = false;
-                }
-            } catch(NumberFormatException ex) {
-                e.doit = false;
+        txtName = new Text(tabAreaDb, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = verticalIndent;
+        txtName.setLayoutData(gd);
+
+        btnGenerateName = new Button(tabAreaDb, SWT.CHECK);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = verticalIndent;
+        btnGenerateName.setLayoutData(gd);
+        btnGenerateName.setText(Messages.DbStoreEditorDialog_auto_generation);
+        btnGenerateName.setToolTipText(Messages.DbStoreEditorDialog_auto_generation_description);
+        btnGenerateName.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                fillTxtNameField(btnGenerateName.getSelection(), txtDbHost.getText(),
+                        txtDbPort.getText(), txtDbName.getText(), txtDbUser.getText(),
+                        txtName.getText());
             }
         });
 
-        new Label(grpDbData, SWT.NONE).setText(Messages.DbStoreEditorDialog_read_only);
+        //// Creating tab item "Ignored objects files" and fill it by components.
 
-        btnReadOnly = new Button(grpDbData, SWT.CHECK);
-        btnReadOnly.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        btnReadOnly.setText(Messages.DbStoreEditorDialog_read_only_description);
-
-        final Group grpDbIgnoreList = new Group(area, SWT.NONE);
-        grpDbIgnoreList.setText(Messages.DbStoreEditorDialog_ignore_file_list);
-        grpDbIgnoreList.setLayout(new GridLayout(2, false));
-        grpDbIgnoreList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-        listEditor = new DbIgnoreListEditor(grpDbIgnoreList);
+        listEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
+                Messages.DbStoreEditorDialog_ignore_file_list, new GridLayout()));
 
         return area;
+    }
+
+    /**
+     * Creates a tab item with its own composite.
+     *
+     * @param tabFolder TabFolder object
+     * @param tabText text for tab item
+     * @param gl GridLayout for the composite
+     * @return the composite belonging to the created tab item
+     */
+    private Composite createTabItemWithComposite(TabFolder tabFolder, String tabText,
+            GridLayout gl) {
+        Composite tabComposite = new Composite(tabFolder, SWT.NONE);
+        tabComposite.setLayout(gl);
+        tabComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+        tabItem.setText(tabText);
+        tabItem.setControl(tabComposite);
+        return tabComposite;
     }
 
     @Override
@@ -237,45 +327,12 @@ public class DbStoreEditorDialog extends TrayDialog {
         dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                listEditor.getList());
+                btnGenerateName.getSelection(), listEditor.getList());
         super.okPressed();
     }
 
     @Override
     protected boolean isResizable() {
         return true;
-    }
-}
-
-class DbIgnoreListEditor extends PrefListEditor<String, ListViewer> {
-
-    public DbIgnoreListEditor(Composite parent) {
-        super(parent);
-    }
-
-    @Override
-    protected String getNewObject(String oldObject) {
-        FileDialog dialog = new FileDialog(getShell());
-        dialog.setText(Messages.DbStoreEditorDialog_select_ignore_file);
-        dialog.setFilterExtensions(new String[] {"*.pgcodekeeperignore", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-        dialog.setFilterNames(new String[] {
-                Messages.DbStoreEditorDialog_pgcodekeeperignore_files_filter,
-                Messages.DiffPresentationPane_any_file_filter});
-        dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
-        return dialog.open();
-    }
-
-    @Override
-    protected String errorAlreadyExists(String obj) {
-        return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj);
-    }
-
-    @Override
-    protected ListViewer createViewer(Composite parent) {
-        ListViewer viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        GridData gd =  new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
-        viewerObjs.getControl().setLayoutData(gd);
-        viewerObjs.setContentProvider(ArrayContentProvider.getInstance());
-        return viewerObjs;
     }
 }

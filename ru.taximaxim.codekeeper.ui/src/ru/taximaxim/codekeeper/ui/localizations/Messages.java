@@ -225,6 +225,10 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_read_only_description;
 
+    public static String DbStoreEditorDialog_auto_generation;
+
+    public static String DbStoreEditorDialog_auto_generation_description;
+
     public static String DbStoreEditorDialog_select_ignore_file;
 
     public static String DbStoreEditorDialog_success;

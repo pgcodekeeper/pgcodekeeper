@@ -42,6 +42,7 @@ public class DbInfo {
     private final String dbhost;
     private final int dbport;
     private final boolean readOnly;
+    private final boolean generateName;
     private final List<String> ignoreFiles;
 
     public String getName() {
@@ -72,12 +73,17 @@ public class DbInfo {
         return readOnly;
     }
 
+    public boolean isGeneratedName() {
+        return generateName;
+    }
+
     public List<String> getIgnoreFiles() {
         return ignoreFiles;
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
-            String dbhost, int dbport, boolean readOnly, List<String> ignoreFiles) {
+            String dbhost, int dbport, boolean readOnly, boolean generateName,
+            List<String> ignoreFiles) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -85,6 +91,7 @@ public class DbInfo {
         this.dbhost = dbhost;
         this.dbport = dbport;
         this.readOnly = readOnly;
+        this.generateName = generateName;
         this.ignoreFiles = ignoreFiles;
     }
 
@@ -109,6 +116,7 @@ public class DbInfo {
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
             this.readOnly = false;
+            this.generateName = false;
             this.ignoreFiles = new ArrayList<>();
             // SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {

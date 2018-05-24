@@ -40,6 +40,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         DBHOST("dbhost"), //$NON-NLS-1$
         DBPORT("dbport"), //$NON-NLS-1$
         READ_ONLY("read_only"), //$NON-NLS-1$
+        GENERATE_NAME("generate_name"), //$NON-NLS-1$
         IGNORE_LIST("ignore_list"), //$NON-NLS-1$
         IGNORE_FILE("ignore_file"); //$NON-NLS-1$
 
@@ -95,6 +96,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
             createSubElement(xml, keyElement, Tags.READ_ONLY.toString(), String.valueOf(dbInfo.isReadOnly()));
+            createSubElement(xml, keyElement, Tags.GENERATE_NAME.toString(), String.valueOf(dbInfo.isGeneratedName()));
+
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -122,6 +125,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case DBHOST:
                 case DBPORT:
                 case READ_ONLY:
+                case GENERATE_NAME:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -136,7 +140,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
                 object.get(Tags.DBUSER), object.get(Tags.DBPASS), object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
-                Boolean.parseBoolean(object.get(Tags.READ_ONLY)), ignoreFiles);
+                Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
+                Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
+                ignoreFiles);
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {
