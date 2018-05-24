@@ -83,9 +83,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
-                    dbHost = !dbHost.isEmpty() ? dbHost : DEFAULT_HOST;
-
-                    dbPort = getVerifiedPort(Integer.toString(dbInitial.getDbPort()));
+                    dbPort = Integer.toString(dbInitial.getDbPort());
                     dbName = dbInitial.getDbName();
                     dbUser = dbInitial.getDbUser();
                     dbPass = dbInitial.getDbPass();
@@ -103,13 +101,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
 
-                fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
+                fillTxtNameField(generateEntryName, dbHost, dbPort,
+                        dbName, dbUser, entryName);
             }
         });
-    }
-
-    private String getVerifiedPort(String dbPort) {
-        return dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
     }
 
     private String generateEntryName(String dbHost, String dbPort, String dbName, String dbUser) {
@@ -121,12 +116,13 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
-        if (!DEFAULT_PORT.equals(dbPort)) {
-            entryNameSb.append(':').append(dbPort);
+        String verifiedDbPort = dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
+        if (!DEFAULT_PORT.equals(verifiedDbPort)) {
+            entryNameSb.append(':').append(verifiedDbPort);
         }
 
         if (!dbName.isEmpty()) {
-            entryNameSb.append("//").append(dbName);
+            entryNameSb.append('/').append(dbName);
         }
 
         return entryNameSb.toString();
@@ -143,12 +139,11 @@ public class DbStoreEditorDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
         area.setLayout(new GridLayout());
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.minimumWidth = 700;
-        area.setLayoutData(gd);
 
         TabFolder tabFolder = new TabFolder(area, SWT.NONE);
-        tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumWidth = 700;
+        tabFolder.setLayoutData(gd);
 
         //// Creating tab item "Db Info" and fill it by components.
 
@@ -237,8 +232,8 @@ public class DbStoreEditorDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 fillTxtNameField(btnGenerateName.getSelection(), txtDbHost.getText(),
-                        getVerifiedPort(txtDbPort.getText()), txtDbName.getText(),
-                        txtDbUser.getText(), txtName.getText());
+                        txtDbPort.getText(), txtDbName.getText(), txtDbUser.getText(),
+                        txtName.getText());
             }
         });
 

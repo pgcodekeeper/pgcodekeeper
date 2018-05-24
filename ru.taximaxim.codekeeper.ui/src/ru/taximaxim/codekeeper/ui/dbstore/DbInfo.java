@@ -116,7 +116,7 @@ public class DbInfo {
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
             this.readOnly = false;
-            this.generateName = true;
+            this.generateName = false;
             this.ignoreFiles = new ArrayList<>();
             // SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
