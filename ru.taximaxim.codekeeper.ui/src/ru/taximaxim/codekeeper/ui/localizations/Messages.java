@@ -207,11 +207,23 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_script_add_transaction;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+
+    public static String DbPropertyListEditor_properties_hint;
+    public static String DbPropertyListEditor_new_property;
+    public static String DbPropertyListEditor_property_name;
+    public static String DbPropertyListEditor_enter_name;
+    public static String DbPropertyListEditor_property_value;
+    public static String DbPropertyListEditor_already_present;
+    public static String DbPropertyListEditor_name;
+    public static String DbPropertyListEditor_value;
+
     public static String DbStoreEditorDialog_failed_connection;
 
     public static String DbStoreEditorDialog_failed_connection_reason;
 
     public static String DbStoreEditorDialog_ignore_file_list;
+
+    public static String DbStoreEditorDialog_connection_properties;
 
     public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
 

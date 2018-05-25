@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -44,6 +45,7 @@ public class DbInfo {
     private final boolean readOnly;
     private final boolean generateName;
     private final List<String> ignoreFiles;
+    private final List<Entry<String, String>> propertyList;
 
     public String getName() {
         return name;
@@ -81,9 +83,13 @@ public class DbInfo {
         return ignoreFiles;
     }
 
+    public List<Entry<String, String>> getPropertyList() {
+        return propertyList;
+    }
+
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
-            List<String> ignoreFiles) {
+            List<String> ignoreFiles, List<Entry<String,String>> propertyList) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -93,6 +99,7 @@ public class DbInfo {
         this.readOnly = readOnly;
         this.generateName = generateName;
         this.ignoreFiles = ignoreFiles;
+        this.propertyList = propertyList;
     }
 
     /**
@@ -118,6 +125,7 @@ public class DbInfo {
             this.readOnly = false;
             this.generateName = false;
             this.ignoreFiles = new ArrayList<>();
+            this.propertyList = new ArrayList<>();
             // SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
             throw new IllegalArgumentException(

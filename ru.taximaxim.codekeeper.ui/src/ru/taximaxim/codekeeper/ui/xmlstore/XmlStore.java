@@ -52,6 +52,14 @@ public abstract class XmlStore<T> {
         parent.appendChild(newElement);
     }
 
+    protected void createSubElementWithAttrib(Document xml, Element parent, String name,
+            String value, String attrName, String attrValue) {
+        Element newElement = xml.createElement(name);
+        newElement.setTextContent(value);
+        newElement.setAttribute(attrName, attrValue);
+        parent.appendChild(newElement);
+    }
+
     protected File getXmlFile() throws IOException {
         File fileHistory;
         try {

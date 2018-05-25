@@ -51,7 +51,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnReadOnly;
     private Button btnGenerateName;
 
-    private IgnoreListEditor listEditor;
+    private IgnoreListEditor ignoreListEditor;
+    private DbPropertyListEditor propertyListEditor;
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -91,7 +92,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                     entryName = dbInitial.getName();
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
-                    listEditor.setInputList(dbInitial.getIgnoreFiles());
+                    ignoreListEditor.setInputList(dbInitial.getIgnoreFiles());
+                    propertyListEditor.setInputList(dbInitial.getPropertyList());
                 }
 
                 txtDbHost.setText(dbHost);
@@ -239,8 +241,13 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
-        listEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
+        ignoreListEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_ignore_file_list, new GridLayout()));
+
+        //// Creating tab item "Connection properties" and fill it by components.
+
+        propertyListEditor = DbPropertyListEditor.create(createTabItemWithComposite(tabFolder,
+                Messages.DbStoreEditorDialog_connection_properties, new GridLayout()));
 
         return area;
     }
@@ -328,7 +335,8 @@ public class DbStoreEditorDialog extends TrayDialog {
         dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                btnGenerateName.getSelection(), listEditor.getList());
+                btnGenerateName.getSelection(), ignoreListEditor.getList(),
+                propertyListEditor.getList());
         super.okPressed();
     }
 
