@@ -113,8 +113,8 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             Element propertyList = xml.createElement(Tags.PROPERTY_LIST.toString());
             keyElement.appendChild(propertyList);
             for (Entry<String, String> property : dbInfo.getPropertyList()) {
-                createSubElementWithAttrib(xml, propertyList, Tags.PROPERTY.toString(), null,
-                        property.getKey(), property.getValue());
+                createSubElement(xml, propertyList, Tags.PROPERTY.toString(), null)
+                .setAttribute(property.getKey(), property.getValue());
             }
         }
     }
