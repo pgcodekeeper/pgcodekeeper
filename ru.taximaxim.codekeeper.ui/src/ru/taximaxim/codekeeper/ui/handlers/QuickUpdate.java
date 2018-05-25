@@ -195,7 +195,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
                 dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                ApgdiffConsts.UTF_8);
+                dbinfo.getPropertyList(), ApgdiffConsts.UTF_8);
 
         try {
             new JdbcRunner(monitor).run(connector, differ.getDiffDirect());

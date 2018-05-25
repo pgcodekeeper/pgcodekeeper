@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -131,8 +132,9 @@ public class JdbcLoader extends JdbcLoaderBase {
      * @param timezone - db timezone
      * @return extension schema or null, if not found
      */
-    public static String getExtensionSchema(String host, int port, String user, String pass, String dbname, String timezone) {
-        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname, timezone);
+    public static String getExtensionSchema(String host, int port, String user,
+            String pass, String dbname, List<Entry<String, String>> properties, String timezone) {
+        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname, properties, timezone);
         String schema = null;
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement();

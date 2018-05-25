@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -127,7 +128,7 @@ public abstract class DbSource {
         } else {
             return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    timezone, forceUnixNewlines);
+                    dbinfo.getPropertyList(), timezone, forceUnixNewlines);
         }
     }
 
@@ -140,8 +141,8 @@ public abstract class DbSource {
     }
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            String timezone, boolean forceUnixNewlines) {
-        return new DbSourceJdbc(host, port, user, pass, dbname, timezone, forceUnixNewlines);
+            List<Entry<String, String>> propertyList, String timezone, boolean forceUnixNewlines) {
+        return new DbSourceJdbc(host, port, user, pass, dbname, propertyList, timezone, forceUnixNewlines);
     }
 
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -158,8 +159,8 @@ public abstract class DbSource {
     public static DbSource fromDbTimestamp(DbInfo dbInfo, boolean forceUnixNewlines, String charset,
             String timezone, PgDatabase dbSrc, String extSchema) {
         return new DbSourceTimestamp(new JdbcConnector(dbInfo.getDbHost(), dbInfo.getDbPort(),
-                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), timezone),
-                dbSrc, extSchema, dbInfo.getDbName(), charset, forceUnixNewlines);
+                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getPropertyList(),
+                timezone), dbSrc, extSchema, dbInfo.getDbName(), charset, forceUnixNewlines);
     }
 }
 
@@ -370,11 +371,11 @@ class DbSourceJdbc extends DbSource {
     }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
-            String timezone, boolean forceUnixNewlines) {
+            List<Entry<String, String>> propertyList, String timezone, boolean forceUnixNewlines) {
         super(dbName);
         this.dbName = dbName;
         this.forceUnixNewlines = forceUnixNewlines;
-        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, timezone);
+        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, propertyList, timezone);
     }
 
     @Override

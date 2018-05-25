@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.osgi.framework.BundleContext;
@@ -26,6 +28,7 @@ public class JdbcConnector {
     private final String pass;
     private final String dbName;
     private final String url;
+    private List<Entry<String, String>> properties;
     private final String timezone;
 
     /**
@@ -39,6 +42,12 @@ public class JdbcConnector {
         }
     }
 
+    public JdbcConnector(String host, int port, String user, String pass, String dbName,
+            List<Entry<String, String>> properties, String timezone) {
+        this(host, port, user, pass, dbName, timezone);
+        this.properties = properties;
+    }
+
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
@@ -48,6 +57,11 @@ public class JdbcConnector {
         this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
 
         this.timezone = timezone;
+    }
+
+    public JdbcConnector(String url, List<Entry<String, String>> properties) throws URISyntaxException {
+        this(url);
+        this.properties = properties;
     }
 
     public JdbcConnector(String url) throws URISyntaxException {
@@ -127,6 +141,10 @@ public class JdbcConnector {
             apgdiffVer = bctx.getBundle().getVersion().toString();
         }
         props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
+
+        if (properties != null) {
+            properties.forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
+        }
 
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +
