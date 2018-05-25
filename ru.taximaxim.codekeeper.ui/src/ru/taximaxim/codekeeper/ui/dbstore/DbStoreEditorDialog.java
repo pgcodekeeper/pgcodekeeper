@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -81,6 +84,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$;
+                List<String> ignoreList = null;
+                List<Entry<String, String>> propertyList = null;
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
@@ -90,10 +95,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbPass = dbInitial.getDbPass();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
+                    ignoreList = dbInitial.getIgnoreFiles();
+                    propertyList = dbInitial.getPropertyList();
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
-                    ignoreListEditor.setInputList(dbInitial.getIgnoreFiles());
-                    propertyListEditor.setInputList(dbInitial.getPropertyList());
                 }
 
                 txtDbHost.setText(dbHost);
@@ -102,9 +107,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbUser.setText(dbUser);
                 txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
+                ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
+                propertyListEditor.setInputList(propertyList != null ? propertyList : new ArrayList<>());
 
-                fillTxtNameField(generateEntryName, dbHost, dbPort,
-                        dbName, dbUser, entryName);
+                fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }
         });
     }
