@@ -288,16 +288,14 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         Label lblNotification = new Label(contNotifications, SWT.NONE);
         lblNotification.setText(Messages.DiffPresentationPane_attention);
-        lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
                 lblNotification.getFont()).withStyle(SWT.BOLD)));
 
         lblNotificationText = new Label(contNotifications, SWT.NONE);
-        lblNotificationText.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
 
         linkRefresh = new Link(contNotifications, SWT.NONE);
         linkRefresh.setText(Messages.DiffPresentationPane_refresh_link);
-        gd = new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true);
+        gd = new GridData();
         gd.horizontalIndent = 10;
         linkRefresh.setLayoutData(gd);
 
@@ -311,9 +309,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         });
 
-        Link linkClose = new Link(contNotifications, SWT.RIGHT |SWT.WRAP | SWT.BORDER);
+        Link linkClose = new Link(contNotifications, SWT.NONE);
         linkClose.setText(Messages.DiffPresentationPane_close_link);
-        gd = new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true);
+        gd = new GridData();
         gd.horizontalIndent = 5;
         linkClose.setLayoutData(gd);
 
