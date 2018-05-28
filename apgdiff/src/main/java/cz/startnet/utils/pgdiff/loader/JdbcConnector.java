@@ -30,6 +30,7 @@ public class JdbcConnector {
     private final String url;
     private List<Entry<String, String>> properties;
     private final String timezone;
+    private boolean readOnly;
 
     /**
      * @throws IllegalArgumentException url isn't valid
@@ -43,9 +44,10 @@ public class JdbcConnector {
     }
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName,
-            List<Entry<String, String>> properties, String timezone) {
+            List<Entry<String, String>> properties, boolean readOnly, String timezone) {
         this(host, port, user, pass, dbName, timezone);
         this.properties = properties;
+        this.readOnly = readOnly;
     }
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
@@ -59,9 +61,11 @@ public class JdbcConnector {
         this.timezone = timezone;
     }
 
-    public JdbcConnector(String url, List<Entry<String, String>> properties) throws URISyntaxException {
+    public JdbcConnector(String url, List<Entry<String, String>> properties,
+            boolean readOnly) throws URISyntaxException {
         this(url);
         this.properties = properties;
+        this.readOnly = readOnly;
     }
 
     public JdbcConnector(String url) throws URISyntaxException {
@@ -122,7 +126,9 @@ public class JdbcConnector {
      */
     public Connection getConnection() throws IOException{
         try{
-            return establishConnection();
+            Connection connection = establishConnection();
+            connection.setReadOnly(readOnly);
+            return connection;
         } catch (ClassNotFoundException e) {
             throw new IOException(MessageFormat.format(
                     Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);

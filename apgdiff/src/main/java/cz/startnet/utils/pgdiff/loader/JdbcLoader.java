@@ -133,8 +133,10 @@ public class JdbcLoader extends JdbcLoaderBase {
      * @return extension schema or null, if not found
      */
     public static String getExtensionSchema(String host, int port, String user,
-            String pass, String dbname, List<Entry<String, String>> properties, String timezone) {
-        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname, properties, timezone);
+            String pass, String dbname, List<Entry<String, String>> properties,
+            boolean readOnly, String timezone) {
+        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname,
+                properties, readOnly, timezone);
         String schema = null;
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement();

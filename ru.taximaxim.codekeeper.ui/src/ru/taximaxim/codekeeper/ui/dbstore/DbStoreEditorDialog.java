@@ -294,7 +294,8 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                     try (Connection connection = new JdbcConnector(txtDbHost.getText(), dbport,
                             txtDbUser.getText(), txtDbPass.getText(),
-                            txtDbName.getText(), propertyListEditor.getList(), ApgdiffConsts.UTC)
+                            txtDbName.getText(), propertyListEditor.getList(),
+                            btnReadOnly.getSelection() , ApgdiffConsts.UTC)
                             .getConnection()) {
                         style = SWT.OK;
                         message = Messages.DbStoreEditorDialog_successfull_connection;
