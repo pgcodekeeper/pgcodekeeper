@@ -372,6 +372,23 @@ public class PgDiffTest {
                     {"modify_partition_table_type"},
                     // Tests scenario where foreign TABLE type is changed.
                     {"modify_foreign_table_type"},
+                    // Tests scenario where empty foreign TABLE is changed.
+                    {"modify_empty_foreign_table"},
+                    // Tests scenario where materialized VIEW options is changed.
+                    {"modify_materialized_view_options"},
+                    // Tests scenario where materialized VIEW is changed.
+                    // TODO изменить после добавления поддержки ALTER MATERIALIZED VIEW
+                    {"modify_materialized_view"},
+                    //Tests scenario where empty SEQUENCE is compared.
+                    {"compare_empty_sequence"},
+                    //Tests scenario where TRIGGER with multiple events is added.
+                    {"add_multiple_events_trigger"},
+                    // Tests scenario where RULE is disabled.
+                    {"disable_rule"},
+                    // Tests scenario where REGULAR TABLE is converted to PARTITION TABLE.
+                    {"chg_reg_table_to_partition"},
+                    // Tests scenario where PARTITION FOREIGN TABLE inherit is modified.
+                    {"modify_partition_ftable_inherit"}
                 });
     }
 

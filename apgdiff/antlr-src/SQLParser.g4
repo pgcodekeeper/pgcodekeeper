@@ -721,8 +721,10 @@ create_foreign_table_statement
    ;
    
 define_foreign_table
-   : LEFT_PAREN columns+=foreign_column_def (COMMA columns+=foreign_column_def)* RIGHT_PAREN
-   (INHERITS parent_table=column_references)?
+   : LEFT_PAREN 
+       (columns+=foreign_column_def (COMMA columns+=foreign_column_def)*)? 
+     RIGHT_PAREN
+     (INHERITS parent_table=column_references)?
    ;
 
 foreign_column_def

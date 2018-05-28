@@ -346,6 +346,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     protected void compareInherits(PgTable newTable, StringBuilder sb) {
         List<Inherits> newInherits = newTable.getInherits();
 
+        if (newTable instanceof PartitionPgTable) {
+            return;
+        }
+
         for (final Inherits tableName : inherits) {
             if (!newInherits.contains(tableName)) {
                 sb.append(getAlterTable(true, false))
