@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 
-import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -87,7 +87,7 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
     private void addColumns(TableViewer tableViewer) {
         TableViewerColumn name = new TableViewerColumn(tableViewer, SWT.NONE);
         name.getColumn().setResizable(true);
-        name.getColumn().setText(Messages.DbPropertyListEditor_name);
+        name.getColumn().setText(Messages.DbPropertyListEditor_tbl_col_name);
         name.getColumn().setMoveable(true);
         name.setLabelProvider(new ColumnLabelProvider() {
 
@@ -100,7 +100,7 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
 
         TableViewerColumn value = new TableViewerColumn(tableViewer, SWT.NONE);
         value.getColumn().setResizable(true);
-        value.getColumn().setText(Messages.DbPropertyListEditor_value);
+        value.getColumn().setText(Messages.DbPropertyListEditor_tbl_col_value);
         value.getColumn().setMoveable(true);
         value.setLabelProvider(new ColumnLabelProvider() {
 
@@ -123,11 +123,11 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
     }
 }
 
-// TODO change 'InputDialog' into 'Dialog'
-class NewDbPropertyDialog extends InputDialog {
+class NewDbPropertyDialog extends Dialog {
 
     private final Entry<String, String> objInitial;
     private Entry<String, String> property;
+    private Text txtPropertyName;
     private Text txtPropertyValue;
 
     public Entry<String, String> getProperty() {
@@ -135,9 +135,7 @@ class NewDbPropertyDialog extends InputDialog {
     }
 
     public NewDbPropertyDialog(Shell shell, Entry<String, String> objInitial) {
-        super(shell, Messages.DbPropertyListEditor_new_property, Messages.DbPropertyListEditor_property_name,
-                objInitial == null ? null : objInitial.getKey(),
-                        text ->  text.isEmpty() ? Messages.DbPropertyListEditor_enter_name : null);
+        super(shell);
         this.objInitial = objInitial;
     }
 
@@ -146,16 +144,23 @@ class NewDbPropertyDialog extends InputDialog {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         Composite c = new Composite(composite, SWT.NONE);
-        c.setLayout(new GridLayout(1,  false));
-        c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        c.setLayout(new GridLayout(2,  false));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        c.setLayoutData(gd);
 
-        Label label = new Label(c, SWT.LEFT);
-        label.setText(Messages.DbPropertyListEditor_property_value);
+        new Label(c, SWT.LEFT).setText(Messages.DbPropertyListEditor_field_name);
+
+        txtPropertyName = new Text(c, SWT.NONE);
+        txtPropertyName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        new Label(c, SWT.LEFT).setText(Messages.DbPropertyListEditor_field_value);
 
         txtPropertyValue = new Text(c, SWT.NONE);
         txtPropertyValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         if (objInitial != null) {
+            txtPropertyName.setText(objInitial.getKey());
             txtPropertyValue.setText(objInitial.getValue());
         }
 
@@ -164,7 +169,18 @@ class NewDbPropertyDialog extends InputDialog {
 
     @Override
     protected void okPressed() {
-        property = new SimpleEntry<>(getValue(), txtPropertyValue.getText());
+        property = new SimpleEntry<>(txtPropertyName.getText(), txtPropertyValue.getText());
         super.okPressed();
+    }
+
+    @Override
+    protected void configureShell(Shell shell) {
+        super.configureShell(shell);
+        shell.setText(Messages.DbPropertyListEditor_new_property);
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 }
