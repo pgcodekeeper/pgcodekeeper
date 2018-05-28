@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -14,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Data_typeContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Define_foreign_optionsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Foreign_optionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Including_indexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.List_of_type_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_of_type_column_defContext;
@@ -43,7 +43,7 @@ public abstract class AbstractTable extends ParserAbstract {
         }
         for (Table_of_type_column_defContext colCtx : columns.table_col_def) {
             if (colCtx.tabl_constraint != null) {
-                addTableConstraint(colCtx.tabl_constraint, table);
+                addTableConstraint(colCtx.tabl_constraint, table, schemaName);
             } else if (colCtx.table_of_type_column_definition() != null) {
                 Table_of_type_column_definitionContext column = colCtx.table_of_type_column_definition();
                 addColumn(column.column_name.getText(), column.colmn_constraint, table);
@@ -52,9 +52,9 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     protected void addTableConstraint(Constraint_commonContext tblConstrCtx,
-            PgTable table) {
+            PgTable table, String schemaName) {
         PgConstraint constrBlank = createTableConstraintBlank(tblConstrCtx);
-        processTableConstraintBlank(tblConstrCtx, constrBlank, db);
+        processTableConstraintBlank(tblConstrCtx, constrBlank, db, schemaName, table.getName());
         table.addConstraint(constrBlank);
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractTable extends ParserAbstract {
         VexContext def = body.default_expr;
         if (def != null) {
             col.setDefaultValue(getFullCtxText(def));
-            db.getContextsForAnalyze().add(new SimpleEntry<>(col, def));
+            db.addContextForAnalyze(col, def);
         } else if (comConstr != null && comConstr.null_value != null) {
             col.setNullValue(comConstr.null_false == null);
         } else if (ctx.constr_body().table_references() != null) {
@@ -129,7 +129,7 @@ public abstract class AbstractTable extends ParserAbstract {
             constr = new PgConstraint(constrName, getFullCtxText(ctx));
             VexContext expCtx = comConstr.check_boolean_expression().expression;
             constr.setDefinition("CHECK ((" + getFullCtxText(expCtx) + "))");
-            db.getContextsForAnalyze().add(new SimpleEntry<>(constr, expCtx));
+            db.addContextForAnalyze(constr, expCtx);
         }
 
         if (constr != null) {
@@ -187,7 +187,7 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     protected static void processTableConstraintBlank(Constraint_commonContext ctx,
-            PgConstraint constrBlank, PgDatabase db) {
+            PgConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
         if (constrBody.FOREIGN() != null) {
@@ -211,9 +211,9 @@ public abstract class AbstractTable extends ParserAbstract {
             }
         }
 
-        Table_unique_prkeyContext tableUniquePrkey =  constrBody.table_unique_prkey();
+        Table_unique_prkeyContext tableUniquePrkey = constrBody.table_unique_prkey();
         if (tableUniquePrkey != null) {
-            setPrimaryUniq(tableUniquePrkey, constrBlank);
+            setPrimaryUniq(tableUniquePrkey, constrBlank, schemaName, tableName);
         }
 
         constrBlank.setDefinition(getFullCtxText(constrBody));
@@ -227,7 +227,7 @@ public abstract class AbstractTable extends ParserAbstract {
             exp = constrBody.vex();
         }
         if (exp != null) {
-            db.getContextsForAnalyze().add(new SimpleEntry<>(constrBlank, exp));
+            db.addContextForAnalyze(constrBlank, exp);
         }
     }
 
@@ -235,12 +235,16 @@ public abstract class AbstractTable extends ParserAbstract {
      * Вычитать PrimaryKey или Unique со списком колонок
      */
     private static void setPrimaryUniq(Table_unique_prkeyContext ctx,
-            PgConstraint constr) {
+            PgConstraint constr, String schemaName, String tableName) {
         constr.setUnique(ctx.UNIQUE() != null);
         constr.setPrimaryKey(ctx.PRIMARY() != null);
-        for (Schema_qualified_nameContext name : ctx.column_references()
-                .names_references().name) {
+        for (Schema_qualified_nameContext name :
+            ctx.column_references().names_references().name) {
             constr.addColumn(QNameParser.getFirstName(name.identifier()));
+        }
+        Including_indexContext incl = ctx.including_index();
+        if (incl != null) {
+            fillIncludingDepcy(incl, constr, schemaName, tableName);
         }
     }
 }

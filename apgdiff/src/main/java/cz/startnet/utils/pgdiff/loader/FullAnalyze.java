@@ -71,10 +71,13 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
+            case CONSTRAINT:
+                UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
+                        statement.getParent().getName(), db);
+                break;
             case DOMAIN:
             case FUNCTION:
             case COLUMN:
-            case CONSTRAINT:
                 UtilAnalyzeExpr.analyze((VexContext) ctx, new ValueExpr(schemaName,
                         db), statement);
                 break;
@@ -84,6 +87,8 @@ public final class FullAnalyze {
                         + "' is not defined!"); //$NON-NLS-1$
             }
         }
+
+        db.getContextsForAnalyze().clear();
     }
 
     private static class AnalyzeTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {

@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.Map;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -68,7 +67,7 @@ public class ViewsReader extends JdbcReader {
         loader.submitAntlrTask(viewDef, p -> p.sql().statement(0).data_statement()
                 .select_stmt(),
                 ctx -> {
-                    dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
+                    dataBase.addContextForAnalyze(v, ctx);
 
                     // collect basic FROM dependencies between VIEW objects themselves
                     // to ensure correct order during the main analysis phase
@@ -93,9 +92,7 @@ public class ViewsReader extends JdbcReader {
                 if (colDefault != null) {
                     v.addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
-                            ctx -> {
-                                dataBase.getContextsForAnalyze().add(new AbstractMap.SimpleEntry<>(v, ctx));
-                            });
+                            ctx -> dataBase.addContextForAnalyze(v, ctx));
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {

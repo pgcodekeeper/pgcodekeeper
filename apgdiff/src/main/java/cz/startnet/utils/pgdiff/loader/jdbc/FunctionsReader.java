@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.loader.jdbc;
 
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -127,8 +126,7 @@ public class FunctionsReader extends JdbcReader {
                             if ("IN".equals(a.getMode()) || "INOUT".equals(a.getMode())) {
                                 VexContext vx = vexCtxListIterator.previous();
                                 a.setDefaultExpression(ParserAbstract.getFullCtxText(vx));
-                                schema.getDatabase().getContextsForAnalyze()
-                                .add(new AbstractMap.SimpleEntry<>(f, vx));
+                                schema.getDatabase().addContextForAnalyze(f, vx);
                             }
                         }
                     });

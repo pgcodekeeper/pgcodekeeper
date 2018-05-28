@@ -434,15 +434,17 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     public void addColumnComment(String columnName, String comment) {
         removeColumnComment(columnName);
         columnComments.add(new ColumnComment(columnName, comment));
+        resetHash();
     }
 
     public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
         removeColumnComment(columnName);
         columnComments.add(new ColumnComment(columnName,
                 args.isKeepNewlines() ? comment : comment.replace("\r", "")));
+        resetHash();
     }
 
-    public void removeColumnComment(final String columnName) {
+    private void removeColumnComment(final String columnName) {
         for (final ColumnComment item : columnComments) {
             if (item.getColumnName().equals(columnName)) {
                 columnComments.remove(item);
@@ -463,11 +465,10 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             eq = true;
         } else if(obj instanceof PgView) {
             PgView view = (PgView) obj;
-            eq = Objects.equals(name, view.getName())
+            eq = Objects.equals(name, view.name)
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && columnNames.equals(view.columnNames)
                     && PgDiffUtils.setlikeEquals(defaultValues, view.defaultValues)
-                    && defaultValues.equals(view.defaultValues)
                     && grants.equals(view.grants)
                     && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())

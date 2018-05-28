@@ -146,7 +146,6 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
-        area.setLayout(new GridLayout());
 
         TabFolder tabFolder = new TabFolder(area, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);

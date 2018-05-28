@@ -38,7 +38,9 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.swt.SWT;
@@ -61,10 +63,13 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -87,6 +92,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -248,8 +254,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
-                getSharedColors(), getPreferenceStore(), this));
         setDocumentProvider(new SQLEditorCommonDocumentProvider());
 
         super.init(site, input);
@@ -273,6 +277,47 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
         partListener = new SqlEditorPartListener();
         getSite().getPage().addPartListener(partListener);
+    }
+
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException {
+        setPreferenceStore(createCombinedPreferenceStore());
+        super.doSetInput(input);
+    }
+
+    private IPreferenceStore createCombinedPreferenceStore() {
+        List<IPreferenceStore> stores = new ArrayList<>(2);
+        stores.add(mainPrefs);
+        stores.add(EditorsUI.getPreferenceStore());
+        return new ChainedPreferenceStore(stores.toArray(new IPreferenceStore[stores.size()]));
+    }
+
+    @Override
+    protected void initializeEditor() {
+        // already initialize in this moment
+    }
+
+    @Override
+    protected void setPreferenceStore(IPreferenceStore store) {
+        super.setPreferenceStore(store);
+        if (getSourceViewerConfiguration() == null) {
+            setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
+                    getSharedColors(), store, this));
+        }
+    }
+
+    @Override
+    protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
+        char[] brackets = {'(', ')', '[', ']'};
+        ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(brackets,
+                SQLEditorCommonDocumentProvider.SQL_PARTITIONING);
+        support.setCharacterPairMatcher(matcher);
+        support.setMatchingCharacterPainterPreferenceKeys(SQL_EDITOR_PREF.MATCHING_BRACKETS,
+                SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR,
+                SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION,
+                SQL_EDITOR_PREF.ENCLOSING_BRACKETS);
+
+        super.configureSourceViewerDecorationSupport(support);
     }
 
     private void checkBuilder() throws CoreException {

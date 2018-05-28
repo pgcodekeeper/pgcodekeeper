@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
@@ -57,7 +56,7 @@ public class AlterTable extends AbstractTable {
             }
 
             // everything else requires a real table, so fail immediately
-            tabl = getSafe(schema::getTable, QNameParser.getFirstNameCtx(ids));
+            tabl = getSafe(schema::getTable, nameCtx);
 
             if (tablAction.table_column_definition() != null) {
                 Table_column_definitionContext column = tablAction.table_column_definition();
@@ -94,7 +93,7 @@ public class AlterTable extends AbstractTable {
                 if (tablAction.set_def_column() != null) {
                     VexContext exp = tablAction.set_def_column().expression;
                     col.setDefaultValue(getFullCtxText(exp));
-                    db.getContextsForAnalyze().add(new SimpleEntry<>(col, exp));
+                    db.addContextForAnalyze(col, exp);
                 }
 
                 // column options
@@ -138,7 +137,8 @@ public class AlterTable extends AbstractTable {
 
             if (tablAction.tabl_constraint != null) {
                 tabl.addConstraint(parseAlterTableConstraint(tablAction,
-                        createTableConstraintBlank(tablAction.tabl_constraint), db));
+                        createTableConstraintBlank(tablAction.tabl_constraint), db,
+                        schema.getName(), nameCtx.getText()));
             }
             if (tablAction.index_name != null) {
                 IdentifierContext indexName = QNameParser.getFirstNameCtx(tablAction.index_name.identifier());
@@ -187,9 +187,10 @@ public class AlterTable extends AbstractTable {
     }
 
     public static PgConstraint parseAlterTableConstraint(Table_actionContext tableAction,
-            PgConstraint constrBlank, PgDatabase db) {
+            PgConstraint constrBlank, PgDatabase db, String schemaName, String tableName) {
         constrBlank.setNotValid(tableAction.not_valid != null);
-        processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db);
+        processTableConstraintBlank(tableAction.tabl_constraint, constrBlank, db,
+                schemaName, tableName);
         return constrBlank;
     }
 }

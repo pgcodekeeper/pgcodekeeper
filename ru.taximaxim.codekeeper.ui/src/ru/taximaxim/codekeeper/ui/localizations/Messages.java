@@ -38,15 +38,21 @@ public final class Messages extends NLS {
 
     public static String SQLEditorContentOutlinePage_sort_alphabetically;
 
-    public static String SQLEditorStatementTypes_consts;
+    public static String SQLEditorMainPage_bracket_highlighting;
+
+    public static String SQLEditorMainPage_enclosing_brackets;
+
+    public static String SQLEditorMainPage_matching_bracket_and_caret_location;
+
+    public static String SQLEditorMainPage_matching_bracket;
+
+    public static String SQLEditorMainPage_matching_bracket_highlighting_color;
 
     public static String SQLEditorStatementTypes_funcs;
 
-    public static String SQLEditorStatementTypes_global_vars;
-
     public static String SQLEditorStatementTypes_multi_comments;
 
-    public static String SQLEditorStatementTypes_predicates;
+    public static String SQLEditorStatementTypes_quoted_identifier;
 
     public static String SQLEditorStatementTypes_reserved;
 
@@ -302,7 +308,8 @@ public final class Messages extends NLS {
     public static String DiffPresentationPane_attention;
 
 
-    public static String DiffPresentationPane_dismiss;
+    public static String DiffPresentationPane_refresh_link;
+    public static String DiffPresentationPane_close_link;
     public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;

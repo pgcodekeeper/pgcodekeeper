@@ -6,10 +6,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.rulectx.Vex;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class UtilAnalyzeExpr {
 
@@ -23,12 +25,21 @@ public class UtilAnalyzeExpr {
         pg.addAllDeps(analyzer.getDepcies());
     }
 
+    public static void analyzeWithNmspc(ParserRuleContext ctx, PgStatement statement,
+            String schemaName, String rawTableReference, PgDatabase db) {
+        ValueExprWithNmspc valExptWithNmspc = new ValueExprWithNmspc(schemaName, db);
+        valExptWithNmspc.addRawTableReference(new GenericColumn(schemaName,
+                rawTableReference, DbObjType.TABLE));
+        UtilAnalyzeExpr.analyze(new Vex((VexContext)ctx), valExptWithNmspc, statement);
+    }
+
     public static void analyzeRulesWhere(Create_rewrite_statementContext ctx, PgRule rule,
             String schemaName, PgDatabase db) {
         if (ctx.WHERE() != null) {
             ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
-            vex.addReference("new", null);
-            vex.addReference("old", null);
+            GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
+            vex.addReference("new", implicitTable);
+            vex.addReference("old", implicitTable);
             analyze(new Vex(ctx.vex()), vex, rule);
         }
     }
@@ -48,8 +59,9 @@ public class UtilAnalyzeExpr {
             analyzer = new Update(schemaName, db);
         }
         if (analyzer != null) {
-            analyzer.addReference("new", null);
-            analyzer.addReference("old", null);
+            GenericColumn implicitTable = new GenericColumn(schemaName, rule.getParent().getName(), DbObjType.TABLE);
+            analyzer.addReference("new", implicitTable);
+            analyzer.addReference("old", implicitTable);
             analyze(parser, analyzer, rule);
         }
     }
@@ -57,8 +69,12 @@ public class UtilAnalyzeExpr {
     public static void analyzeTriggersWhen(VexContext ctx, PgTrigger trigger,
             String schemaName, PgDatabase db) {
         ValueExprWithNmspc vex = new ValueExprWithNmspc(schemaName, db);
-        vex.addReference("new", null);
-        vex.addReference("old", null);
+        GenericColumn implicitTable = new GenericColumn(schemaName, trigger.getTableName(), DbObjType.TABLE);
+        vex.addReference("new", implicitTable);
+        vex.addReference("old", implicitTable);
         analyze(new Vex(ctx), vex, trigger);
+    }
+
+    private UtilAnalyzeExpr() {
     }
 }

@@ -11,6 +11,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.USAGE_REPORT_PREF;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
@@ -45,6 +46,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
         store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);
 
+        store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS, true);
+        store.setDefault(SQL_EDITOR_PREF.MATCHING_BRACKETS_COLOR, "127, 0, 85"); //$NON-NLS-1$
+        store.setDefault(SQL_EDITOR_PREF.HIGHLIGHT_BRACKET_AT_CARET_LOCATION, true);
+        store.setDefault(SQL_EDITOR_PREF.ENCLOSING_BRACKETS, true);
+
         setSQLSyntaxColorDefaults(store);
     }
 
@@ -52,13 +58,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         for (SQLEditorStatementTypes type : SQLEditorStatementTypes.values()) {
             SQLEditorSyntaxModel syntax = new SQLEditorSyntaxModel(type, store);
             switch (type) {
-            case CONSTANTS:
-                syntax.setBold(false);
-                syntax.setColor(new RGB(0, 0, 128));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
             case FUNCTIONS:
                 syntax.setBold(false);
                 syntax.setColor(new RGB(0, 0, 128));
@@ -66,21 +65,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setStrikethrough(false);
                 syntax.setUnderline(false);
                 break;
-            case GLOBAL_VARIABLES:
-                syntax.setBold(false);
-                syntax.setColor(new RGB(0, 0, 128));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
-            case PREDICATES:
-                syntax.setBold(false);
-                syntax.setColor(new RGB(0, 0, 128));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
             case RESERVED_WORDS:
+            case UN_RESERVED_WORDS:
                 syntax.setBold(true);
                 syntax.setColor(new RGB(127, 0, 85));
                 syntax.setItalic(false);
@@ -108,19 +94,21 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setStrikethrough(false);
                 syntax.setUnderline(false);
                 break;
-            case UN_RESERVED_WORDS:
-                syntax.setBold(true);
-                syntax.setColor(new RGB(127, 0, 85));
-                syntax.setItalic(false);
-                syntax.setStrikethrough(false);
-                syntax.setUnderline(false);
-                break;
             case CHARACTER_STRING_LITERAL:
                 syntax.setBold(false);
                 syntax.setColor(new RGB(0, 0, 200));
                 syntax.setItalic(false);
                 syntax.setStrikethrough(false);
                 syntax.setUnderline(false);
+                break;
+            case QUOTED_IDENTIFIER:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            default:
                 break;
             }
             syntax.setDefault();

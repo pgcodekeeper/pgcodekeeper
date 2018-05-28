@@ -30,12 +30,14 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
     public static final String SQL_SINGLE_COMMENT = "SQL_SINGLE_COMMENT"; //$NON-NLS-1$
     public static final String SQL_MULTI_COMMENT = "SQL_MULTI_COMMENT"; //$NON-NLS-1$
     public static final String SQL_CHARACTER_STRING_LITERAL = "SQL_CHARACTER_STRING_LITERAL"; //$NON-NLS-1$
+    public static final String SQL_QUOTED_IDENTIFIER = "SQL_QUOTED_IDENTIFIER"; //$NON-NLS-1$
 
-    private static final String[] CONTENT_TYPES= {
+    private static final String[] CONTENT_TYPES = {
             SQL_CODE,
             SQL_SINGLE_COMMENT,
             SQL_MULTI_COMMENT,
-            SQL_CHARACTER_STRING_LITERAL
+            SQL_CHARACTER_STRING_LITERAL,
+            SQL_QUOTED_IDENTIFIER
     };
 
     @Override
@@ -64,7 +66,8 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
         IPredicateRule[] rules = {
                 new SingleLineRule("--", null, new Token(SQL_SINGLE_COMMENT), (char) 0, true, false), //$NON-NLS-1$
                 new MultiLineRule("/*", "*/", new Token(SQL_MULTI_COMMENT), (char) 0, true),  //$NON-NLS-1$ //$NON-NLS-2$
-                new MultiLineRule( "'", "'", new Token(SQL_CHARACTER_STRING_LITERAL), (char) 0 , true) //$NON-NLS-1$ //$NON-NLS-2$
+                new SingleLineRule( "'", "'", new Token(SQL_CHARACTER_STRING_LITERAL), (char) 0 , true), //$NON-NLS-1$ //$NON-NLS-2$
+                new SingleLineRule( "\"", "\"", new Token(SQL_QUOTED_IDENTIFIER), (char) 0 , true), //$NON-NLS-1$ //$NON-NLS-2$
         };
 
         RuleBasedPartitionScanner scanner = new RuleBasedPartitionScanner();
