@@ -35,8 +35,8 @@ import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEdit
 
 public class DbStoreEditorDialog extends TrayDialog {
 
-    private static final String DEFAULT_HOST = "127.0.0.1";
-    private static final String DEFAULT_PORT = "5432";
+    private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
+    private static final String DEFAULT_PORT = "5432"; //$NON-NLS-1$
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
