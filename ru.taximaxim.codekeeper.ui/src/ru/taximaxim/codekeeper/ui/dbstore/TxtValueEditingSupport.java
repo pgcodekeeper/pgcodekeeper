@@ -32,13 +32,14 @@ public class TxtValueEditingSupport extends EditingSupport {
     @Override
     protected Object getValue(Object element) {
         if (element instanceof Entry) {
-            Entry<String, String> data = (Entry<String, String>) element;
+            Entry<?, ?> data = (Entry<?, ?>) element;
             return data.getValue();
         }
         return null;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void setValue(Object element, Object value) {
         if (element instanceof Entry && value instanceof String) {
             ((Entry<String, String>) element).setValue((String) value);

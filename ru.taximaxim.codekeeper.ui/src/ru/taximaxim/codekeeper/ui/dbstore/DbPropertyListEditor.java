@@ -89,8 +89,8 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
 
             @Override
             public String getText(Object element) {
-                Entry<String, String> obj = (Entry<String, String>) element;
-                return obj.getKey();
+                Entry<?, ?> obj = (Entry<?, ?>) element;
+                return obj.getKey().toString();
             }
         });
 
@@ -102,8 +102,8 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
 
             @Override
             public String getText(Object element) {
-                Entry<String, String> obj = (Entry<String, String>) element;
-                return obj.getValue();
+                Entry<?, ?> obj = (Entry<?, ?>) element;
+                return obj.getValue().toString();
             }
         });
 
@@ -147,12 +147,12 @@ class NewDbPropertyDialog extends Dialog {
 
         new Label(c, SWT.LEFT).setText(Messages.DbPropertyListEditor_field_name);
 
-        txtPropertyName = new Text(c, SWT.NONE);
+        txtPropertyName = new Text(c, SWT.BORDER);
         txtPropertyName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         new Label(c, SWT.LEFT).setText(Messages.DbPropertyListEditor_field_value);
 
-        txtPropertyValue = new Text(c, SWT.NONE);
+        txtPropertyValue = new Text(c, SWT.BORDER);
         txtPropertyValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         if (objInitial != null) {
