@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -43,7 +43,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     private final V viewerObjs;
 
-    private Predicate<T> predicateAlreadyExists = obj -> objsList.contains(obj);
+    private BiPredicate<T, T> predicateAlreadyExists = (oldObj, newObj) -> oldObj.equals(newObj);
 
     public PrefListEditor(Composite parent) {
         super(parent, SWT.NONE);
@@ -108,6 +108,10 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         }
     }
 
+    private boolean hasDuplicate(T newObj) {
+        return objsList.stream().anyMatch(obj -> predicateAlreadyExists.test(obj, newObj));
+    }
+
     private void copyObject() {
         IStructuredSelection selection = (IStructuredSelection) viewerObjs.getSelection();
         if (selection.isEmpty()) {
@@ -116,7 +120,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         @SuppressWarnings("unchecked")
         T sel = (T) selection.getFirstElement();
         T newObj = getNewObject(sel);
-        while (newObj != null && objsList.contains(newObj)) {
+        while (newObj != null && hasDuplicate(newObj)) {
             newObj = getAnotherObject(newObj);
         }
         if (newObj != null) {
@@ -174,7 +178,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     public void addNewObject(T oldObject) {
         T newObj = getNewObject(oldObject);
-        while (newObj != null && predicateAlreadyExists.test(newObj)) {
+        while (newObj != null && hasDuplicate(newObj)) {
             newObj = getAnotherObject(newObj);
         }
 
@@ -201,7 +205,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
         @SuppressWarnings("unchecked")
         T sel = (T) selection.getFirstElement();
         T newObj = getNewObject(sel);
-        while (newObj != null && !sel.equals(newObj) && objsList.contains(newObj)) {
+        while (newObj != null && !sel.equals(newObj) && hasDuplicate(newObj)) {
             newObj = getAnotherObject(newObj);
         }
         if (newObj != null) {
@@ -238,7 +242,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     protected abstract String errorAlreadyExists(T obj);
 
-    protected void setPredicateAlreadyExists(Predicate<T> predicateAlreadyExists) {
+    protected void setPredicateAlreadyExists(BiPredicate<T, T> predicateAlreadyExists) {
         this.predicateAlreadyExists = predicateAlreadyExists;
     }
 
