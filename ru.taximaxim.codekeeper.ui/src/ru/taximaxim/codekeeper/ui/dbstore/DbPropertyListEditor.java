@@ -27,6 +27,8 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
 
     public DbPropertyListEditor(Composite parent) {
         super(parent);
+        setPredicateAlreadyExists(obj -> getList().stream()
+                .filter(e -> e.getKey().equals(obj.getKey())).count() != 0);
     }
 
     @Override

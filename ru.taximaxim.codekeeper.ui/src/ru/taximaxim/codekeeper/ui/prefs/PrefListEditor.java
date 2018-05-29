@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.Predicate;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -41,6 +42,8 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     protected final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
 
     private final V viewerObjs;
+
+    private Predicate<T> predicateAlreadyExists = obj -> objsList.contains(obj);
 
     public PrefListEditor(Composite parent) {
         super(parent, SWT.NONE);
@@ -171,7 +174,7 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
 
     public void addNewObject(T oldObject) {
         T newObj = getNewObject(oldObject);
-        while (newObj != null && objsList.contains(newObj)) {
+        while (newObj != null && predicateAlreadyExists.test(newObj)) {
             newObj = getAnotherObject(newObj);
         }
 
@@ -234,6 +237,10 @@ public abstract class PrefListEditor<T, V extends StructuredViewer> extends Comp
     protected abstract T getNewObject(T oldObject);
 
     protected abstract String errorAlreadyExists(T obj);
+
+    protected void setPredicateAlreadyExists(Predicate<T> predicateAlreadyExists) {
+        this.predicateAlreadyExists = predicateAlreadyExists;
+    }
 
     public List<T> getList(){
         return objsList;
