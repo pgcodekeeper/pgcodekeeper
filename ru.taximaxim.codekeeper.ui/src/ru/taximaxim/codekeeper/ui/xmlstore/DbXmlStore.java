@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -47,7 +46,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         IGNORE_LIST("ignore_list"), //$NON-NLS-1$
         IGNORE_FILE("ignore_file"), //$NON-NLS-1$
         PROPERTY_LIST("property_list"), //$NON-NLS-1$
-        PROPERTY("property"); //$NON-NLS-1$
+        PROPERTY("property"), //$NON-NLS-1$
+        PROPERTY_NAME("name"), //$NON-NLS-1$
+        PROPERTY_VALUE("value"); //$NON-NLS-1$
 
         String name;
 
@@ -113,8 +114,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             Element propertyList = xml.createElement(Tags.PROPERTY_LIST.toString());
             keyElement.appendChild(propertyList);
             for (Entry<String, String> property : dbInfo.getProperties().entrySet()) {
-                createSubElement(xml, propertyList, Tags.PROPERTY.toString(), null)
-                .setAttribute(property.getKey(), property.getValue());
+                Element propertyTag = createSubElement(xml, propertyList, Tags.PROPERTY.toString(), null);
+                createSubElement(xml, propertyTag, Tags.PROPERTY_NAME.toString(), property.getKey());
+                createSubElement(xml, propertyTag, Tags.PROPERTY_VALUE.toString(), property.getValue());
             }
         }
     }
@@ -174,12 +176,21 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         for (int i = 0; i < xml.getLength(); i++) {
             Node property = xml.item(i);
             if (Tags.PROPERTY.toString().equals(property.getNodeName())) {
-                if (property.hasAttributes()) {
-                    NamedNodeMap propertyMap = property.getAttributes();
-                    for (int k = 0; k < propertyMap.getLength(); k++) {
-                        Node attribute = propertyMap.item(k);
-                        map.put(attribute.getNodeName(), attribute.getNodeValue());
+                NodeList propertyChilds = property.getChildNodes();
+
+                String propertyName = null;
+                String propertyValue = null;
+                for (int k = 0; k < propertyChilds.getLength(); k++) {
+                    Node child = propertyChilds.item(k);
+                    if (Tags.PROPERTY_NAME.toString().equals(child.getNodeName())) {
+                        propertyName = child.getTextContent();
+                    } else if(Tags.PROPERTY_VALUE.toString().equals(child.getNodeName())) {
+                        propertyValue = child.getTextContent();
                     }
+                }
+
+                if (propertyName != null && propertyValue != null) {
+                    map.put(propertyName, propertyValue);
                 }
             }
         }
