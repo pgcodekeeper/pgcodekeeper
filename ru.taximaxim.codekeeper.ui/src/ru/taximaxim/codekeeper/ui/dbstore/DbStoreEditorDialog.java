@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -113,7 +114,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 btnGenerateName.setSelection(generateEntryName);
                 ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
                 propertyListEditor.setInputList(properties != null ?
-                        new ArrayList<>(properties.entrySet()) : new ArrayList<>());
+                        new ArrayList<>(new HashMap<>(properties).entrySet()) : new ArrayList<>());
 
                 fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }

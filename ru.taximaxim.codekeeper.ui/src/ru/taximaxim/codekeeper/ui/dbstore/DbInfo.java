@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,7 +86,7 @@ public class DbInfo {
     }
 
     public Map<String, String> getProperties() {
-        return properties;
+        return Collections.unmodifiableMap(properties);
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
