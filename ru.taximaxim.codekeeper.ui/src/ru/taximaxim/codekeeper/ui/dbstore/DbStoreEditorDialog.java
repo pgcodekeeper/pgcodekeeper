@@ -42,8 +42,8 @@ import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEdit
 
 public class DbStoreEditorDialog extends TrayDialog {
 
-    private static final String DEFAULT_HOST = "127.0.0.1";
-    private static final String DEFAULT_PORT = "5432";
+    private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
+    private static final String DEFAULT_PORT = "5432"; //$NON-NLS-1$
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
@@ -264,8 +264,8 @@ public class DbStoreEditorDialog extends TrayDialog {
         new Label(tabAreaProperties, SWT.NONE).setText(Messages.DbPropertyListEditor_properties_hint);
 
         Link linkHint = new Link(tabAreaProperties, SWT.NONE);
-        String link = "https://jdbc.postgresql.org/documentation/head/connect.html";
-        linkHint.setText("<a href=\"" + link +  "\">" + link + "</a>");
+        String link = "https://jdbc.postgresql.org/documentation/head/connect.html"; //$NON-NLS-1$
+        linkHint.setText("<a href=\"" + link +  "\">" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         linkHint.addSelectionListener(new SelectionAdapter()  {
 
             @Override
