@@ -498,9 +498,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
             JdbcConnector connector = new JdbcConnector(
-                    dbInfo.getDbHost(), dbInfo.getDbPort(),
-                    dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(),
-                    ApgdiffConsts.UTC);
+                    dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
+                    dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
+                    dbInfo.isReadOnly(), ApgdiffConsts.UTC);
 
             try {
                 new JdbcRunner(monitor).run(connector, script);

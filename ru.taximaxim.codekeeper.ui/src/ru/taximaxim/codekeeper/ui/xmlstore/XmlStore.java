@@ -46,10 +46,11 @@ public abstract class XmlStore<T> {
         this.rootTag = rootTag;
     }
 
-    protected void createSubElement(Document xml, Element parent, String name, String value) {
+    protected Element createSubElement(Document xml, Element parent, String name, String value) {
         Element newElement = xml.createElement(name);
         newElement.setTextContent(value);
         parent.appendChild(newElement);
+        return newElement;
     }
 
     protected File getXmlFile() throws IOException {

@@ -366,7 +366,8 @@ class PageDb extends WizardPage {
                 throws InvocationTargetException, InterruptedException {
 
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), ApgdiffConsts.UTC);
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
+                    dbinfo.isReadOnly(), ApgdiffConsts.UTC);
 
             try (ResultSet rs = new JdbcRunner(monitor).runScript(connector, QUERY_TZ)) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$

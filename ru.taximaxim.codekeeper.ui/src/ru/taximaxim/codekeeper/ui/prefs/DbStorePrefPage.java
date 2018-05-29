@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -52,7 +53,7 @@ implements IWorkbenchPreferencePage {
     @Override
     protected void performDefaults() {
         dbList.setInputList(Arrays.asList(
-                new DbInfo("default", "", "", "", "", 0, false, false, new ArrayList<>()))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                new DbInfo("default", "", "", "", "", 0, false, false, new ArrayList<>(), new HashMap<>()))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
     }
 
     @Override

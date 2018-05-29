@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -129,10 +130,15 @@ public class JdbcLoader extends JdbcLoaderBase {
      * @param pass - db pass
      * @param dbname - db name
      * @param timezone - db timezone
+     * @param properties - additional connection properties
+     * @param readOnly - value for enable or disable 'read-only mode' of connection
      * @return extension schema or null, if not found
      */
-    public static String getExtensionSchema(String host, int port, String user, String pass, String dbname, String timezone) {
-        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname, timezone);
+    public static String getExtensionSchema(String host, int port, String user,
+            String pass, String dbname, Map<String, String> properties,
+            boolean readOnly, String timezone) {
+        JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname,
+                properties, readOnly, timezone);
         String schema = null;
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement();

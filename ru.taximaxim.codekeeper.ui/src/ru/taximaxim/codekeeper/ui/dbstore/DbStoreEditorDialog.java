@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -15,10 +20,12 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -51,7 +58,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Button btnReadOnly;
     private Button btnGenerateName;
 
-    private IgnoreListEditor listEditor;
+    private IgnoreListEditor ignoreListEditor;
+    private DbPropertyListEditor propertyListEditor;
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -80,6 +88,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$;
+                List<String> ignoreList = null;
+                List<Entry<String, String>> properties = null;
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
@@ -89,9 +99,13 @@ public class DbStoreEditorDialog extends TrayDialog {
                     dbPass = dbInitial.getDbPass();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
+                    ignoreList = dbInitial.getIgnoreFiles();
+
+                    properties = dbInitial.getProperties().entrySet().stream()
+                            .map(SimpleEntry::new)
+                            .collect(Collectors.toCollection(ArrayList::new));
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
-                    listEditor.setInputList(dbInitial.getIgnoreFiles());
                 }
 
                 txtDbHost.setText(dbHost);
@@ -100,9 +114,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbUser.setText(dbUser);
                 txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
+                ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
+                propertyListEditor.setInputList(properties != null ? properties : new ArrayList<>());
 
-                fillTxtNameField(generateEntryName, dbHost, dbPort,
-                        dbName, dbUser, entryName);
+                fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }
         });
     }
@@ -238,8 +253,29 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
-        listEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
+        ignoreListEditor = new IgnoreListEditor(createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_ignore_file_list, new GridLayout()));
+
+        //// Creating tab item "Connection properties" and fill it by components.
+
+        Composite tabAreaProperties = createTabItemWithComposite(tabFolder,
+                Messages.DbStoreEditorDialog_connection_properties, new GridLayout());
+
+        new Label(tabAreaProperties, SWT.NONE).setText(Messages.DbPropertyListEditor_properties_hint);
+
+        Link linkHint = new Link(tabAreaProperties, SWT.NONE);
+        String link = "https://jdbc.postgresql.org/documentation/head/connect.html"; //$NON-NLS-1$
+        linkHint.setText("<a href=\"" + link +  "\">" + link + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        linkHint.addSelectionListener(new SelectionAdapter()  {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch(link);
+            }
+
+        });
+
+        propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
 
         return area;
     }
@@ -280,7 +316,10 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                     try (Connection connection = new JdbcConnector(txtDbHost.getText(), dbport,
                             txtDbUser.getText(), txtDbPass.getText(),
-                            txtDbName.getText(), ApgdiffConsts.UTC).getConnection()) {
+                            txtDbName.getText(), propertyListEditor.getList().stream()
+                            .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+                            btnReadOnly.getSelection() , ApgdiffConsts.UTC)
+                            .getConnection()) {
                         style = SWT.OK;
                         message = Messages.DbStoreEditorDialog_successfull_connection;
                     }
@@ -327,7 +366,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                btnGenerateName.getSelection(), listEditor.getList());
+                btnGenerateName.getSelection(), ignoreListEditor.getList(),
+                propertyListEditor.getList().stream().collect(Collectors
+                        .toMap(Entry::getKey, Entry::getValue)));
         super.okPressed();
     }
 

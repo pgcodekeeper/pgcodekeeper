@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Properties;
 
 import org.osgi.framework.BundleContext;
@@ -26,7 +27,9 @@ public class JdbcConnector {
     private final String pass;
     private final String dbName;
     private final String url;
+    private Map<String, String> properties;
     private final String timezone;
+    private boolean readOnly;
 
     /**
      * @throws IllegalArgumentException url isn't valid
@@ -39,6 +42,13 @@ public class JdbcConnector {
         }
     }
 
+    public JdbcConnector(String host, int port, String user, String pass, String dbName,
+            Map<String, String> properties, boolean readOnly, String timezone) {
+        this(host, port, user, pass, dbName, timezone);
+        this.properties = properties;
+        this.readOnly = readOnly;
+    }
+
     public JdbcConnector(String host, int port, String user, String pass, String dbName, String timezone) {
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
@@ -48,6 +58,13 @@ public class JdbcConnector {
         this.url = "jdbc:postgresql://" + host + ":" + this.port + "/" + dbName;
 
         this.timezone = timezone;
+    }
+
+    public JdbcConnector(String url, Map<String, String> properties,
+            boolean readOnly) throws URISyntaxException {
+        this(url);
+        this.properties = properties;
+        this.readOnly = readOnly;
     }
 
     public JdbcConnector(String url) throws URISyntaxException {
@@ -108,7 +125,9 @@ public class JdbcConnector {
      */
     public Connection getConnection() throws IOException{
         try{
-            return establishConnection();
+            Connection connection = establishConnection();
+            connection.setReadOnly(readOnly);
+            return connection;
         } catch (ClassNotFoundException e) {
             throw new IOException(MessageFormat.format(
                     Messages.Connection_JdbcDriverClassNotFound, e.getLocalizedMessage()), e);
@@ -119,6 +138,11 @@ public class JdbcConnector {
 
     private Connection establishConnection() throws SQLException, ClassNotFoundException {
         Properties props = new Properties();
+
+        if (properties != null) {
+            properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
+        }
+
         props.setProperty("user", user);
         props.setProperty("password", pass);
         String apgdiffVer = "unknown";

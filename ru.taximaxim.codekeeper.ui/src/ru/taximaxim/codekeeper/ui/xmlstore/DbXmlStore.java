@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.w3c.dom.Document;
@@ -42,7 +44,11 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         READ_ONLY("read_only"), //$NON-NLS-1$
         GENERATE_NAME("generate_name"), //$NON-NLS-1$
         IGNORE_LIST("ignore_list"), //$NON-NLS-1$
-        IGNORE_FILE("ignore_file"); //$NON-NLS-1$
+        IGNORE_FILE("ignore_file"), //$NON-NLS-1$
+        PROPERTY_LIST("property_list"), //$NON-NLS-1$
+        PROPERTY("property"), //$NON-NLS-1$
+        PROPERTY_NAME("name"), //$NON-NLS-1$
+        PROPERTY_VALUE("value"); //$NON-NLS-1$
 
         String name;
 
@@ -104,6 +110,14 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             for (String file : dbInfo.getIgnoreFiles()) {
                 createSubElement(xml, ignoreList, Tags.IGNORE_FILE.toString(), file);
             }
+
+            Element propertyList = xml.createElement(Tags.PROPERTY_LIST.toString());
+            keyElement.appendChild(propertyList);
+            for (Entry<String, String> property : dbInfo.getProperties().entrySet()) {
+                Element propertyTag = createSubElement(xml, propertyList, Tags.PROPERTY.toString(), null);
+                createSubElement(xml, propertyTag, Tags.PROPERTY_NAME.toString(), property.getKey());
+                createSubElement(xml, propertyTag, Tags.PROPERTY_VALUE.toString(), property.getValue());
+            }
         }
     }
 
@@ -111,6 +125,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     protected DbInfo parseElement(Node node) {
         NodeList params = node.getChildNodes();
         List<String> ignoreFiles = new ArrayList<>();
+        Map<String, String> properties = new HashMap<>();
         Map<Tags, String> object = new EnumMap<>(Tags.class);
 
         for (int i = 0; i < params.getLength(); i++) {
@@ -131,6 +146,9 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 case IGNORE_LIST:
                     fillIgnoreFileList(param.getChildNodes(), ignoreFiles);
                     break;
+                case PROPERTY_LIST:
+                    fillPropertyList(param.getChildNodes(), properties);
+                    break;
                 default:
                     break;
                 }
@@ -142,7 +160,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
-                ignoreFiles);
+                ignoreFiles, properties);
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {
@@ -150,6 +168,30 @@ public class DbXmlStore extends XmlStore<DbInfo> {
             Node file = xml.item(i);
             if (Tags.IGNORE_FILE.toString().equals(file.getNodeName())) {
                 list.add(file.getTextContent());
+            }
+        }
+    }
+
+    private void fillPropertyList(NodeList xml, Map<String, String> map) {
+        for (int i = 0; i < xml.getLength(); i++) {
+            Node property = xml.item(i);
+            if (Tags.PROPERTY.toString().equals(property.getNodeName())) {
+                NodeList propertyChilds = property.getChildNodes();
+
+                String propertyName = null;
+                String propertyValue = null;
+                for (int k = 0; k < propertyChilds.getLength(); k++) {
+                    Node child = propertyChilds.item(k);
+                    if (Tags.PROPERTY_NAME.toString().equals(child.getNodeName())) {
+                        propertyName = child.getTextContent();
+                    } else if(Tags.PROPERTY_VALUE.toString().equals(child.getNodeName())) {
+                        propertyValue = child.getTextContent();
+                    }
+                }
+
+                if (propertyName != null && propertyValue != null) {
+                    map.put(propertyName, propertyValue);
+                }
             }
         }
     }
