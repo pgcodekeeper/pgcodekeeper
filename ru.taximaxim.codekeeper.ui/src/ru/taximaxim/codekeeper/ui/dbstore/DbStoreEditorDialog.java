@@ -20,10 +20,12 @@ import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -254,8 +256,24 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         //// Creating tab item "Connection properties" and fill it by components.
 
-        propertyListEditor = new DbPropertyListEditor(createTabItemWithComposite(tabFolder,
-                Messages.DbStoreEditorDialog_connection_properties, new GridLayout()));
+        Composite tabAreaProperties = createTabItemWithComposite(tabFolder,
+                Messages.DbStoreEditorDialog_connection_properties, new GridLayout());
+
+        new Label(tabAreaProperties, SWT.NONE).setText(Messages.DbPropertyListEditor_properties_hint);
+
+        Link linkHint = new Link(tabAreaProperties, SWT.NONE);
+        String link = "https://jdbc.postgresql.org/documentation/head/connect.html";
+        linkHint.setText("<a href=\"" + link +  "\">" + link + "</a>");
+        linkHint.addSelectionListener(new SelectionAdapter()  {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch(link);
+            }
+
+        });
+
+        propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
 
         return area;
     }

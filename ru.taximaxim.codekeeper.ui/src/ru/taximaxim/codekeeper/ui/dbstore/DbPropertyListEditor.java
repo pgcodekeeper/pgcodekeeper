@@ -11,15 +11,11 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -29,28 +25,8 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, TableViewer> {
 
-    private static final String LINK_HINT = "https://jdbc.postgresql.org/documentation/head/connect.html";
-
     public DbPropertyListEditor(Composite parent) {
-        super(createComposite(parent));
-    }
-
-    private static Composite createComposite(Composite composite) {
-
-        new Label(composite, SWT.NONE).setText(Messages.DbPropertyListEditor_properties_hint);
-
-        Link linkHint = new Link(composite, SWT.NONE);
-        linkHint.setText("<a href=\"" + LINK_HINT +  "\">" + LINK_HINT + "</a>");
-        linkHint.addSelectionListener(new SelectionAdapter()  {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                Program.launch(LINK_HINT);
-            }
-
-        });
-
-        return composite;
+        super(parent);
     }
 
     @Override
