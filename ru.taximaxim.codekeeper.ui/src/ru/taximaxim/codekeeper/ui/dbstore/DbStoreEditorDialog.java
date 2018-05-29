@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -90,7 +89,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbPass = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$;
                 List<String> ignoreList = null;
-                Map<String, String> properties = null;
+                List<Entry<String, String>> properties = null;
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
@@ -101,7 +100,10 @@ public class DbStoreEditorDialog extends TrayDialog {
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     ignoreList = dbInitial.getIgnoreFiles();
-                    properties = dbInitial.getProperties();
+
+                    properties = dbInitial.getProperties().entrySet().stream()
+                            .map(SimpleEntry::new)
+                            .collect(Collectors.toCollection(ArrayList::new));
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                 }
@@ -113,8 +115,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
                 ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
-                propertyListEditor.setInputList(properties != null ?
-                        new ArrayList<>(new HashMap<>(properties).entrySet()) : new ArrayList<>());
+                propertyListEditor.setInputList(properties != null ? properties : new ArrayList<>());
 
                 fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }
