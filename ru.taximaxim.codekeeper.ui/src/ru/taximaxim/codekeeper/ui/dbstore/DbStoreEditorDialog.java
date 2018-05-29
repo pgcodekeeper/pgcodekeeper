@@ -254,7 +254,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
         //// Creating tab item "Connection properties" and fill it by components.
 
-        propertyListEditor = DbPropertyListEditor.create(createTabItemWithComposite(tabFolder,
+        propertyListEditor = new DbPropertyListEditor(createTabItemWithComposite(tabFolder,
                 Messages.DbStoreEditorDialog_connection_properties, new GridLayout()));
 
         return area;

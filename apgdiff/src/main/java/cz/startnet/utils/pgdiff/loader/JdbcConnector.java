@@ -138,6 +138,11 @@ public class JdbcConnector {
 
     private Connection establishConnection() throws SQLException, ClassNotFoundException {
         Properties props = new Properties();
+
+        if (properties != null) {
+            properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
+        }
+
         props.setProperty("user", user);
         props.setProperty("password", pass);
         String apgdiffVer = "unknown";
@@ -146,10 +151,6 @@ public class JdbcConnector {
             apgdiffVer = bctx.getBundle().getVersion().toString();
         }
         props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
-
-        if (properties != null) {
-            properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
-        }
 
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +

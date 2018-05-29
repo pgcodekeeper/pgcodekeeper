@@ -29,10 +29,10 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, TableViewer> {
 
-    private static String LINK_HINT = "https://jdbc.postgresql.org/documentation/head/connect.html";
+    private static final String LINK_HINT = "https://jdbc.postgresql.org/documentation/head/connect.html";
 
-    public static DbPropertyListEditor create(Composite parent) {
-        return new DbPropertyListEditor(createComposite(parent));
+    public DbPropertyListEditor(Composite parent) {
+        super(createComposite(parent));
     }
 
     private static Composite createComposite(Composite composite) {
@@ -51,10 +51,6 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>, 
         });
 
         return composite;
-    }
-
-    private DbPropertyListEditor(Composite parent) {
-        super(parent);
     }
 
     @Override
