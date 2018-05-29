@@ -7,8 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Properties;
 
 import org.osgi.framework.BundleContext;
@@ -28,7 +27,7 @@ public class JdbcConnector {
     private final String pass;
     private final String dbName;
     private final String url;
-    private List<Entry<String, String>> properties;
+    private Map<String, String> properties;
     private final String timezone;
     private boolean readOnly;
 
@@ -44,7 +43,7 @@ public class JdbcConnector {
     }
 
     public JdbcConnector(String host, int port, String user, String pass, String dbName,
-            List<Entry<String, String>> properties, boolean readOnly, String timezone) {
+            Map<String, String> properties, boolean readOnly, String timezone) {
         this(host, port, user, pass, dbName, timezone);
         this.properties = properties;
         this.readOnly = readOnly;
@@ -61,7 +60,7 @@ public class JdbcConnector {
         this.timezone = timezone;
     }
 
-    public JdbcConnector(String url, List<Entry<String, String>> properties,
+    public JdbcConnector(String url, Map<String, String> properties,
             boolean readOnly) throws URISyntaxException {
         this(url);
         this.properties = properties;
@@ -149,7 +148,7 @@ public class JdbcConnector {
         props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: " + apgdiffVer);
 
         if (properties != null) {
-            properties.forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
+            properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
         }
 
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);

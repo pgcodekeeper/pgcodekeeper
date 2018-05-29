@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -85,7 +87,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 String dbPass = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$;
                 List<String> ignoreList = null;
-                List<Entry<String, String>> propertyList = null;
+                Map<String, String> properties = null;
 
                 if (dbInitial != null) {
                     dbHost = dbInitial.getDbHost();
@@ -96,7 +98,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     ignoreList = dbInitial.getIgnoreFiles();
-                    propertyList = dbInitial.getPropertyList();
+                    properties = dbInitial.getProperties();
 
                     btnReadOnly.setSelection(dbInitial.isReadOnly());
                 }
@@ -108,7 +110,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbPass.setText(dbPass);
                 btnGenerateName.setSelection(generateEntryName);
                 ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
-                propertyListEditor.setInputList(propertyList != null ? propertyList : new ArrayList<>());
+                propertyListEditor.setInputList(properties != null ?
+                        new ArrayList<>(properties.entrySet()) : new ArrayList<>());
 
                 fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
             }
@@ -293,7 +296,8 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                     try (Connection connection = new JdbcConnector(txtDbHost.getText(), dbport,
                             txtDbUser.getText(), txtDbPass.getText(),
-                            txtDbName.getText(), propertyListEditor.getList(),
+                            txtDbName.getText(), propertyListEditor.getList().stream()
+                            .collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
                             btnReadOnly.getSelection() , ApgdiffConsts.UTC)
                             .getConnection()) {
                         style = SWT.OK;
@@ -343,7 +347,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                 btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                propertyListEditor.getList());
+                propertyListEditor.getList().stream().collect(Collectors
+                        .toMap(Entry::getKey, Entry::getValue)));
         super.okPressed();
     }
 

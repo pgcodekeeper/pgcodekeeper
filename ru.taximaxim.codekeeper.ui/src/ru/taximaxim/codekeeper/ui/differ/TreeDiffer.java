@@ -83,7 +83,7 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
 
                 String extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
                         dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
-                        dbInfo.getDbName(), dbInfo.getPropertyList(), dbInfo.isReadOnly(),
+                        dbInfo.getDbName(), dbInfo.getProperties(), dbInfo.isReadOnly(),
                         timezone);
 
                 if (extSchema != null) {

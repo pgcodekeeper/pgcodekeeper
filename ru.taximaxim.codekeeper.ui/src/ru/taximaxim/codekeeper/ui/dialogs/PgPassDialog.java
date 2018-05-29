@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -154,7 +155,7 @@ public class PgPassDialog extends Dialog {
 
                 editor.addNewObject(new DbInfo(info.getDbName(), info.getDbName(),
                         info.getUser(), "", info.getHost(), dbport, false, true,  //$NON-NLS-1$
-                        new ArrayList<>(), new ArrayList<>()));
+                        new ArrayList<>(), new HashMap<>()));
             }
         });
 

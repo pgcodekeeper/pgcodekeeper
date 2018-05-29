@@ -366,7 +366,7 @@ class PageDb extends WizardPage {
                 throws InvocationTargetException, InterruptedException {
 
             JdbcConnector connector = new JdbcConnector(dbinfo.getDbHost(), dbinfo.getDbPort(),
-                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getPropertyList(),
+                    dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
                     dbinfo.isReadOnly(), ApgdiffConsts.UTC);
 
             try (ResultSet rs = new JdbcRunner(monitor).runScript(connector, QUERY_TZ)) {

@@ -499,7 +499,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor implements IResourceC
 
             JdbcConnector connector = new JdbcConnector(
                     dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbUser(),
-                    dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getPropertyList(),
+                    dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
                     dbInfo.isReadOnly(), ApgdiffConsts.UTC);
 
             try {

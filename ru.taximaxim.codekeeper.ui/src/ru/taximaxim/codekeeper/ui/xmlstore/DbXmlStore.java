@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -112,7 +112,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
 
             Element propertyList = xml.createElement(Tags.PROPERTY_LIST.toString());
             keyElement.appendChild(propertyList);
-            for (Entry<String, String> property : dbInfo.getPropertyList()) {
+            for (Entry<String, String> property : dbInfo.getProperties().entrySet()) {
                 createSubElement(xml, propertyList, Tags.PROPERTY.toString(), null)
                 .setAttribute(property.getKey(), property.getValue());
             }
@@ -123,7 +123,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
     protected DbInfo parseElement(Node node) {
         NodeList params = node.getChildNodes();
         List<String> ignoreFiles = new ArrayList<>();
-        List<Entry<String, String>> propertyList = new ArrayList<>();
+        Map<String, String> properties = new HashMap<>();
         Map<Tags, String> object = new EnumMap<>(Tags.class);
 
         for (int i = 0; i < params.getLength(); i++) {
@@ -145,7 +145,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                     fillIgnoreFileList(param.getChildNodes(), ignoreFiles);
                     break;
                 case PROPERTY_LIST:
-                    fillPropertyList(param.getChildNodes(), propertyList);
+                    fillPropertyList(param.getChildNodes(), properties);
                     break;
                 default:
                     break;
@@ -158,7 +158,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                 Integer.parseInt(object.get(Tags.DBPORT)),
                 Boolean.parseBoolean(object.get(Tags.READ_ONLY)),
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
-                ignoreFiles, propertyList);
+                ignoreFiles, properties);
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {
@@ -170,7 +170,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private void fillPropertyList(NodeList xml, List<Entry<String, String>> list) {
+    private void fillPropertyList(NodeList xml, Map<String, String> map) {
         for (int i = 0; i < xml.getLength(); i++) {
             Node property = xml.item(i);
             if (Tags.PROPERTY.toString().equals(property.getNodeName())) {
@@ -178,7 +178,7 @@ public class DbXmlStore extends XmlStore<DbInfo> {
                     NamedNodeMap propertyMap = property.getAttributes();
                     for (int k = 0; k < propertyMap.getLength(); k++) {
                         Node attribute = propertyMap.item(k);
-                        list.add(new SimpleEntry<>(attribute.getNodeName(), attribute.getNodeValue()));
+                        map.put(attribute.getNodeName(), attribute.getNodeValue());
                     }
                 }
             }

@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -128,7 +128,7 @@ public abstract class DbSource {
         } else {
             return DbSource.fromJdbc(dbinfo.getDbHost(), dbinfo.getDbPort(),
                     dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getPropertyList(), dbinfo.isReadOnly(), timezone,
+                    dbinfo.getProperties(), dbinfo.isReadOnly(), timezone,
                     forceUnixNewlines);
         }
     }
@@ -142,9 +142,9 @@ public abstract class DbSource {
     }
 
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            List<Entry<String, String>> propertyList, boolean readOnly, String timezone,
+            Map<String, String> properties, boolean readOnly, String timezone,
             boolean forceUnixNewlines) {
-        return new DbSourceJdbc(host, port, user, pass, dbname, propertyList, readOnly, timezone,
+        return new DbSourceJdbc(host, port, user, pass, dbname, properties, readOnly, timezone,
                 forceUnixNewlines);
     }
 
@@ -162,7 +162,7 @@ public abstract class DbSource {
     public static DbSource fromDbTimestamp(DbInfo dbInfo, boolean forceUnixNewlines, String charset,
             String timezone, PgDatabase dbSrc, String extSchema) {
         return new DbSourceTimestamp(new JdbcConnector(dbInfo.getDbHost(), dbInfo.getDbPort(),
-                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getPropertyList(),
+                dbInfo.getDbUser(), dbInfo.getDbPass(), dbInfo.getDbName(), dbInfo.getProperties(),
                 dbInfo.isReadOnly(), timezone), dbSrc, extSchema, dbInfo.getDbName(), charset,
                 forceUnixNewlines);
     }
@@ -375,12 +375,12 @@ class DbSourceJdbc extends DbSource {
     }
 
     DbSourceJdbc(String host, int port, String user, String pass, String dbName,
-            List<Entry<String, String>> propertyList, boolean readOnly, String timezone,
+            Map<String, String> properties, boolean readOnly, String timezone,
             boolean forceUnixNewlines) {
         super(dbName);
         this.dbName = dbName;
         this.forceUnixNewlines = forceUnixNewlines;
-        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, propertyList,
+        jdbcConnector = new JdbcConnector(host, port, user, pass, dbName, properties,
                 readOnly, timezone);
     }
 
