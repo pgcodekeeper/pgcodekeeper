@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
@@ -113,29 +114,35 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbName.setText(dbName);
                 txtDbUser.setText(dbUser);
                 txtDbPass.setText(dbPass);
+                txtName.setText(entryName);
                 btnGenerateName.setSelection(generateEntryName);
                 ignoreListEditor.setInputList(ignoreList != null ? ignoreList : new ArrayList<>());
                 propertyListEditor.setInputList(properties != null ? properties : new ArrayList<>());
 
-                fillTxtNameField(generateEntryName, dbHost, dbPort, dbName, dbUser, entryName);
+                autofillNameField();
+                txtName.setEnabled(!generateEntryName);
             }
         });
     }
 
-    private String generateEntryName(String dbHost, String dbPort, String dbName, String dbUser) {
+    private String generateEntryName() {
         StringBuilder entryNameSb = new StringBuilder();
 
+        String dbUser = txtDbUser.getText();
         if (!dbUser.isEmpty()) {
             entryNameSb.append(dbUser).append('@');
         }
 
+        String dbHost = txtDbHost.getText();
         entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
+        String dbPort = txtDbPort.getText();
         String verifiedDbPort = dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
         if (!DEFAULT_PORT.equals(verifiedDbPort)) {
             entryNameSb.append(':').append(verifiedDbPort);
         }
 
+        String dbName = txtDbName.getText();
         if (!dbName.isEmpty()) {
             entryNameSb.append('/').append(dbName);
         }
@@ -143,11 +150,10 @@ public class DbStoreEditorDialog extends TrayDialog {
         return entryNameSb.toString();
     }
 
-    private void fillTxtNameField(boolean generateEntryName, String dbHost, String dbPort,
-            String dbName, String dbUser, String entryName) {
-        txtName.setText(!generateEntryName ? entryName : generateEntryName(dbHost,
-                dbPort, dbName, dbUser));
-        txtName.setEnabled(!generateEntryName);
+    private void autofillNameField() {
+        if (btnGenerateName.getSelection()) {
+            txtName.setText(generateEntryName());
+        }
     }
 
     @Override
@@ -164,17 +170,19 @@ public class DbStoreEditorDialog extends TrayDialog {
         Composite tabAreaDb = createTabItemWithComposite(tabFolder, Messages.dbStoreEditorDialog_db_info,
                 new GridLayout(4, false));
 
+        ModifyListener modifyListener = e -> autofillNameField();
+
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_host);
 
         txtDbHost = new Text(tabAreaDb, SWT.BORDER);
         txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtDbHost.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dbPicker_port);
 
         txtDbPort = new Text(tabAreaDb, SWT.BORDER);
         txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false));
         txtDbPort.addVerifyListener(e -> {
-
             try {
                 if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
                     e.doit = false;
@@ -183,16 +191,19 @@ public class DbStoreEditorDialog extends TrayDialog {
                 e.doit = false;
             }
         });
+        txtDbPort.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);
 
         txtDbName = new Text(tabAreaDb, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        txtDbName.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_user);
 
         txtDbUser = new Text(tabAreaDb, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.NONE, false, false, 3, 1));
+        txtDbUser.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_password);
 
@@ -209,6 +220,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
         });
+        txtDbPass.addModifyListener(modifyListener);
 
         lblWarnDbPass = new CLabel(tabAreaDb, SWT.NONE);
         lblWarnDbPass.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -245,9 +257,8 @@ public class DbStoreEditorDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                fillTxtNameField(btnGenerateName.getSelection(), txtDbHost.getText(),
-                        txtDbPort.getText(), txtDbName.getText(), txtDbUser.getText(),
-                        txtName.getText());
+                autofillNameField();
+                txtName.setEnabled(!btnGenerateName.getSelection());
             }
         });
 
@@ -367,8 +378,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
                 btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                propertyListEditor.getList().stream().collect(Collectors
-                        .toMap(Entry::getKey, Entry::getValue)));
+                propertyListEditor.getList().stream()
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
         super.okPressed();
     }
 
