@@ -13,7 +13,7 @@ public class IgnoredObject {
         ADD, ADD_SUBTREE, SKIP, SKIP_SUBTREE
     }
 
-    private final String name;
+    private String name;
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
@@ -56,6 +56,10 @@ public class IgnoredObject {
 
     public Set<DbObjType> getObjTypes() {
         return objTypes;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setShow(boolean isShow) {

@@ -124,6 +124,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
                 return obj.getName();
             }
         });
+        name.setEditingSupport(new TxtNameEditingSupport(tableViewer));
 
         String ballotBoxWithCheck = "\u2611"; //$NON-NLS-1$
         String ballotBox = "\u2610"; //$NON-NLS-1$
