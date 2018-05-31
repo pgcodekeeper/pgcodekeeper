@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -72,6 +73,11 @@ public class IgnoredObject {
 
     public void setObjTypes(Set<DbObjType> objTypes) {
         this.objTypes = objTypes;
+    }
+
+    public IgnoredObject copy(String name) {
+        return new IgnoredObject(name, dbRegexStr, isShow, isRegular, ignoreContent,
+                EnumSet.copyOf(objTypes));
     }
 
     public boolean match(String objName, DbObjType objType) {

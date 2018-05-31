@@ -30,7 +30,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.YesNoEditingSupport.YesNoValues;
 
 public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, TableViewer> {
 
@@ -125,8 +124,12 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
                 return obj.getName();
             }
         });
+        name.setEditingSupport(new TxtNameEditingSupport(tableViewer, this));
 
-        TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CHECK);
+        String ballotBoxWithCheck = "\u2611"; //$NON-NLS-1$
+        String ballotBox = "\u2610"; //$NON-NLS-1$
+
+        TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CENTER);
         isRegular.getColumn().setResizable(true);
         isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
         isRegular.getColumn().setMoveable(true);
@@ -134,13 +137,12 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
             @Override
             public String getText(Object element) {
-                IgnoredObject obj = (IgnoredObject) element;
-                return obj.isRegular()? YesNoValues.YES.toString() : YesNoValues.NO.toString();
+                return ((IgnoredObject)element).isRegular() ? ballotBoxWithCheck : ballotBox;
             }
         });
-        isRegular.setEditingSupport(new YesNoEditingSupport(tableViewer, BooleanChangeValues.REGULAR));
+        isRegular.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.REGULAR));
 
-        TableViewerColumn ignoreContents = new TableViewerColumn(tableViewer, SWT.CHECK);
+        TableViewerColumn ignoreContents = new TableViewerColumn(tableViewer, SWT.CENTER);
         ignoreContents.getColumn().setResizable(true);
         ignoreContents.getColumn().setText(Messages.ignoredObjectPrefListEditor_ignore_contents);
         ignoreContents.getColumn().setMoveable(true);
@@ -148,11 +150,10 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
             @Override
             public String getText(Object element) {
-                IgnoredObject obj = (IgnoredObject) element;
-                return obj.isIgnoreContent()? YesNoValues.YES.toString() : YesNoValues.NO.toString();
+                return ((IgnoredObject)element).isIgnoreContent() ? ballotBoxWithCheck : ballotBox;
             }
         });
-        ignoreContents.setEditingSupport(new YesNoEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
+        ignoreContents.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
 
         TableViewerColumn objType = new TableViewerColumn(tableViewer, SWT.NONE);
         objType.getColumn().setResizable(true);
