@@ -22,8 +22,8 @@ class TypesEditingSupport extends CommonEditingSupport<ComboBoxViewerCellEditor>
     protected static final String COMBO_TYPE_ALL = "ANY"; //$NON-NLS-1$
 
     public TypesEditingSupport(ColumnViewer viewer) {
-        super(viewer);
-        cellEditor = new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY);
+        super(viewer, new ComboBoxViewerCellEditor((Composite) viewer.getControl(), SWT.READ_ONLY));
+        ComboBoxViewerCellEditor cellEditor = getCellEditor(null);
         cellEditor.setLabelProvider(new LabelProvider());
         cellEditor.setContentProvider(ArrayContentProvider.getInstance());
         cellEditor.setInput(comboTypes());

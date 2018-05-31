@@ -6,14 +6,15 @@ import org.eclipse.jface.viewers.EditingSupport;
 
 public abstract class CommonEditingSupport<T extends CellEditor> extends EditingSupport {
 
-    protected T cellEditor;
+    private final T cellEditor;
 
-    public CommonEditingSupport(ColumnViewer viewer) {
+    public CommonEditingSupport(ColumnViewer viewer, T cellEditor) {
         super(viewer);
+        this.cellEditor = cellEditor;
     }
 
     @Override
-    protected CellEditor getCellEditor(Object element) {
+    protected T getCellEditor(Object element) {
         return cellEditor;
     }
 

@@ -238,8 +238,7 @@ public class DependencyProperties extends PropertyPage {
     private static class IgnorePrivCheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
 
         public IgnorePrivCheckEditingSupport(ColumnViewer viewer) {
-            super(viewer);
-            cellEditor = new CheckboxCellEditor(((TableViewer)viewer).getTable());
+            super(viewer, new CheckboxCellEditor(((TableViewer)viewer).getTable()));
         }
 
         @Override

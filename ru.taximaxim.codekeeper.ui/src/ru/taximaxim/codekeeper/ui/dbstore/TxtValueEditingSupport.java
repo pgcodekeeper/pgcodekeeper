@@ -11,8 +11,7 @@ import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 public class TxtValueEditingSupport extends CommonEditingSupport<TextCellEditor> {
 
     public TxtValueEditingSupport(ColumnViewer viewer) {
-        super(viewer);
-        cellEditor = new TextCellEditor((Composite) viewer.getControl());
+        super(viewer, new TextCellEditor((Composite) viewer.getControl()));
     }
 
     @Override

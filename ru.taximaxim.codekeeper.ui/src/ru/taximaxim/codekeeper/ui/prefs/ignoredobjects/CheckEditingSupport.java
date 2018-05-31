@@ -12,8 +12,7 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
     private final BooleanChangeValues type;
 
     public CheckEditingSupport(ColumnViewer viewer, BooleanChangeValues type) {
-        super(viewer);
-        cellEditor = new CheckboxCellEditor(((TableViewer)viewer).getTable());
+        super(viewer, new CheckboxCellEditor(((TableViewer)viewer).getTable()));
         this.type = type;
     }
 

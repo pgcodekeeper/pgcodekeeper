@@ -15,8 +15,7 @@ public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> 
 
     public TxtNameEditingSupport(ColumnViewer viewer,
             IgnoredObjectPrefListEditor ignoredObjectPrefListEditor) {
-        super(viewer);
-        cellEditor = new TextCellEditor((Composite) viewer.getControl());
+        super(viewer, new TextCellEditor((Composite) viewer.getControl()));
         this.ignoredObjectPrefListEditor = ignoredObjectPrefListEditor;
     }
 
