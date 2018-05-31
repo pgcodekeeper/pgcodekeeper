@@ -12,11 +12,9 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.Window;
@@ -38,6 +36,7 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -236,22 +235,11 @@ public class DependencyProperties extends PropertyPage {
         }
     }
 
-    private static class IgnorePrivCheckEditingSupport extends EditingSupport {
-        private final CheckboxCellEditor cellEditor;
+    private static class IgnorePrivCheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
 
         public IgnorePrivCheckEditingSupport(ColumnViewer viewer) {
             super(viewer);
             cellEditor = new CheckboxCellEditor(((TableViewer)viewer).getTable());
-        }
-
-        @Override
-        protected CellEditor getCellEditor(Object element) {
-            return cellEditor;
-        }
-
-        @Override
-        protected boolean canEdit(Object element) {
-            return true;
         }
 
         @Override

@@ -2,36 +2,22 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.util.List;
 
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 
-public class TxtNameEditingSupport extends EditingSupport {
+public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> {
 
-    private final TextCellEditor cellEditor;
-    private final ColumnViewer viewer;
     private final IgnoredObjectPrefListEditor ignoredObjectPrefListEditor;
 
     public TxtNameEditingSupport(ColumnViewer viewer,
             IgnoredObjectPrefListEditor ignoredObjectPrefListEditor) {
         super(viewer);
         cellEditor = new TextCellEditor((Composite) viewer.getControl());
-        this.viewer = viewer;
         this.ignoredObjectPrefListEditor = ignoredObjectPrefListEditor;
-    }
-
-    @Override
-    protected CellEditor getCellEditor(Object element) {
-        return cellEditor;
-    }
-
-    @Override
-    protected boolean canEdit(Object element) {
-        return true;
     }
 
     @Override
@@ -49,7 +35,7 @@ public class TxtNameEditingSupport extends EditingSupport {
             List<IgnoredObject> ignoredObjectList = ignoredObjectPrefListEditor.getList();
             ignoredObjectList.remove(element);
             ignoredObjectList.add(newObjWithNewName);
-            viewer.refresh();
+            getViewer().refresh();
         }
     }
 }

@@ -2,31 +2,17 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.util.Map.Entry;
 
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 
-public class TxtValueEditingSupport extends EditingSupport {
+import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 
-    private final TextCellEditor cellEditor;
-    private final ColumnViewer viewer;
+public class TxtValueEditingSupport extends CommonEditingSupport<TextCellEditor> {
 
     public TxtValueEditingSupport(ColumnViewer viewer) {
         super(viewer);
         cellEditor = new TextCellEditor((Composite) viewer.getControl());
-        this.viewer = viewer;
-    }
-
-    @Override
-    protected CellEditor getCellEditor(Object element) {
-        return cellEditor;
-    }
-
-    @Override
-    protected boolean canEdit(Object element) {
-        return true;
     }
 
     @Override
@@ -43,7 +29,7 @@ public class TxtValueEditingSupport extends EditingSupport {
     protected void setValue(Object element, Object value) {
         if (element instanceof Entry && value instanceof String) {
             ((Entry<String, String>) element).setValue((String) value);
-            viewer.refresh();
+            getViewer().refresh();
         }
     }
 }
