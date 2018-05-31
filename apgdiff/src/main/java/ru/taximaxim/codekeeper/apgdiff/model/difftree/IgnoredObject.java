@@ -13,7 +13,7 @@ public class IgnoredObject {
         ADD, ADD_SUBTREE, SKIP, SKIP_SUBTREE
     }
 
-    private String name;
+    private final String name;
     private final Pattern regex;
     private final String dbRegexStr;
     private final Pattern dbRegex;
@@ -58,10 +58,6 @@ public class IgnoredObject {
         return objTypes;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setShow(boolean isShow) {
         this.isShow = isShow;
     }
@@ -76,6 +72,10 @@ public class IgnoredObject {
 
     public void setObjTypes(Set<DbObjType> objTypes) {
         this.objTypes = objTypes;
+    }
+
+    public IgnoredObject createSameObjWithName(String name) {
+        return new IgnoredObject(name, dbRegexStr, isShow, isRegular, ignoreContent, objTypes);
     }
 
     public boolean match(String objName, DbObjType objType) {
