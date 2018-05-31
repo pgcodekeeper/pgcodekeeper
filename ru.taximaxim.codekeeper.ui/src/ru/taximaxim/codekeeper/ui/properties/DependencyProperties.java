@@ -14,7 +14,6 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.Window;
@@ -237,8 +236,8 @@ public class DependencyProperties extends PropertyPage {
 
     private static class IgnorePrivCheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
 
-        public IgnorePrivCheckEditingSupport(ColumnViewer viewer) {
-            super(viewer, new CheckboxCellEditor(((TableViewer)viewer).getTable()));
+        public IgnorePrivCheckEditingSupport(TableViewer tableViewer) {
+            super(tableViewer, new CheckboxCellEditor(tableViewer.getTable()));
         }
 
         @Override

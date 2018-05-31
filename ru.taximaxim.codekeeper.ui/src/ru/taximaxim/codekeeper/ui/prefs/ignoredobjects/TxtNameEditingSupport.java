@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
-import java.util.List;
+import java.util.ListIterator;
 
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -30,10 +30,14 @@ public class TxtNameEditingSupport extends CommonEditingSupport<TextCellEditor> 
     @Override
     protected void setValue(Object element, Object value) {
         if (element instanceof IgnoredObject && value instanceof String) {
-            IgnoredObject newObjWithNewName = ((IgnoredObject) element).createSameObjWithName((String) value);
-            List<IgnoredObject> ignoredObjectList = ignoredObjectPrefListEditor.getList();
-            ignoredObjectList.remove(element);
-            ignoredObjectList.add(newObjWithNewName);
+            ListIterator<IgnoredObject> ignoredObjsIter = ignoredObjectPrefListEditor
+                    .getList().listIterator();
+            while (ignoredObjsIter.hasNext()) {
+                if (ignoredObjsIter.next().equals(element)) {
+                    ignoredObjsIter.set(((IgnoredObject) element).copy((String) value));
+                    break;
+                }
+            }
             getViewer().refresh();
         }
     }

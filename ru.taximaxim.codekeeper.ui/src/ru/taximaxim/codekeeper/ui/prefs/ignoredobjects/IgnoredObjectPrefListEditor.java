@@ -137,7 +137,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
             @Override
             public String getText(Object element) {
-                return (((IgnoredObject)element).isRegular()) ? ballotBoxWithCheck : ballotBox;
+                return ((IgnoredObject)element).isRegular() ? ballotBoxWithCheck : ballotBox;
             }
         });
         isRegular.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.REGULAR));
@@ -150,7 +150,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject, T
 
             @Override
             public String getText(Object element) {
-                return (((IgnoredObject)element).isIgnoreContent()) ? ballotBoxWithCheck : ballotBox;
+                return ((IgnoredObject)element).isIgnoreContent() ? ballotBoxWithCheck : ballotBox;
             }
         });
         ignoreContents.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));

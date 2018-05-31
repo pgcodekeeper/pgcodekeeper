@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.viewers.CheckboxCellEditor;
-import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TableViewer;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.IgnoredObject;
@@ -11,8 +10,8 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEdit
 public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {
     private final BooleanChangeValues type;
 
-    public CheckEditingSupport(ColumnViewer viewer, BooleanChangeValues type) {
-        super(viewer, new CheckboxCellEditor(((TableViewer)viewer).getTable()));
+    public CheckEditingSupport(TableViewer tableViewer, BooleanChangeValues type) {
+        super(tableViewer, new CheckboxCellEditor(tableViewer.getTable()));
         this.type = type;
     }
 
