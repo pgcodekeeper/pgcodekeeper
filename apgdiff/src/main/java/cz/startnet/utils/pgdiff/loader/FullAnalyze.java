@@ -4,7 +4,6 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -12,11 +11,13 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -31,12 +32,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 public final class FullAnalyze {
 
     public static void fullAnalyze(PgDatabase db) {
-        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db).getReversedGraph();
+        TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator =
+                new TopologicalOrderIterator<>(new DepcyGraph(db).getReversedGraph());
 
-        TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator = new TopologicalOrderIterator<>(graph);
-
-        AnalyzeTraversalListenerAdapter adapter = new AnalyzeTraversalListenerAdapter(db);
-        orderIterator.addTraversalListener(adapter);
+        orderIterator.addTraversalListener(new AnalyzeTraversalListenerAdapter(db));
 
         // 'VIEW' statements analysis.
         while (orderIterator.hasNext()) {
@@ -67,6 +66,9 @@ public final class FullAnalyze {
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
+                CreateIndex.analyzeIndexRest((Index_restContext) ctx, statement,
+                        schemaName, db);
+                break;
             case CONSTRAINT:
                 UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
                         statement.getParent().getName(), db);

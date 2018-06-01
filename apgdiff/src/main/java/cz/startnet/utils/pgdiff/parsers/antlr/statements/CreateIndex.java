@@ -12,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_whereContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sort_specifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expression_primaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -52,6 +53,8 @@ public class CreateIndex extends ParserAbstract {
 
     public static void parseIndex(Index_restContext rest, String tablespace,
             String schemaName, String tableName, PgIndex ind, PgDatabase db) {
+        db.addContextForAnalyze(ind, rest);
+
         Index_sortContext sort = rest.index_sort();
         parseColumns(sort, ind, db);
 
@@ -69,16 +72,13 @@ public class CreateIndex extends ParserAbstract {
         }
         if (rest.index_where() != null){
             Index_whereContext whereCtx = rest.index_where();
-            db.addContextForAnalyze(ind, whereCtx.vex());
             sb.append(' ').append(getFullCtxText(whereCtx));
         }
         ind.setDefinition(sb.toString());
     }
 
     private static void parseColumns(Index_sortContext sort, PgIndex ind, PgDatabase db) {
-        for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()){
-            db.addContextForAnalyze(ind, sort_ctx.key);
-
+        for (Sort_specifierContext sort_ctx : sort.sort_specifier_list().sort_specifier()) {
             Value_expression_primaryContext vexPrimary = sort_ctx.key.value_expression_primary();
             if (vexPrimary != null) {
                 Schema_qualified_nameContext colName = vexPrimary.schema_qualified_name();
@@ -86,6 +86,22 @@ public class CreateIndex extends ParserAbstract {
                     ind.addColumn(colName.getText());
                 }
             }
+        }
+    }
+
+    public static void analyzeIndexRest(Index_restContext rest, PgStatement indexStmt,
+            String schemaName, PgDatabase db) {
+        String rawTableReference = indexStmt.getParent().getName();
+
+        for (Sort_specifierContext sort_ctx : rest.index_sort().sort_specifier_list()
+                .sort_specifier()) {
+            UtilAnalyzeExpr.analyzeWithNmspc(sort_ctx.key, indexStmt, schemaName,
+                    rawTableReference, db);
+        }
+
+        if (rest.index_where() != null){
+            UtilAnalyzeExpr.analyzeWithNmspc(rest.index_where().vex(), indexStmt,
+                    schemaName, rawTableReference, db);
         }
     }
 }
