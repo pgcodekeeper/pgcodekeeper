@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -9,17 +8,15 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -98,27 +95,12 @@ public final class FullAnalyze {
         }
 
         @Override
-        public void vertexTraversed(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (DbObjType.VIEW.equals(statement.getStatementType())) {
-                String schemaName = statement.getParent().getName();
-
-                Stream<Entry<PgStatement, ParserRuleContext>> viewAndCtx = db.getContextsForAnalyze()
-                        .stream().filter(entry -> statement.equals(entry.getKey()));
-
-                for (Entry<PgStatement, ParserRuleContext> entry : PgDiffUtils.sIter(viewAndCtx)) {
-                    PgView view = (PgView) entry.getKey();
-                    ParserRuleContext ctx = entry.getValue();
-
-                    if (ctx instanceof Select_stmtContext) {
-                        Select select = new Select(schemaName, db);
-                        view.addRelationColumns(select.analyze(ctx));
-                        view.addAllDeps(select.getDepcies());
-                    } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName,
-                                db), view);
-                    }
-                }
+        public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
+            PgStatement stmt = event.getVertex();
+            if (DbObjType.VIEW.equals(stmt.getStatementType())) {
+                db.getContextsForAnalyze().stream().filter(e -> stmt.equals(e.getKey()))
+                .forEach(e -> CreateView.analyzeViewCtx(e.getValue(), (PgView) e.getKey(),
+                        stmt.getParent().getName(), db));
             }
         }
     }
