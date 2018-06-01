@@ -12,12 +12,13 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -58,16 +59,11 @@ public final class FullAnalyze {
 
             switch (statementType) {
             case RULE:
-                Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
-                PgRule rule = (PgRule) statement;
-
-                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName, db);
-                for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName, db);
-                }
+                CreateRewrite.analyzeRulesCreate((Create_rewrite_statementContext) ctx,
+                        (PgRule) statement, schemaName, db);
                 break;
             case TRIGGER:
-                UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx,
+                CreateTrigger.analyzeTriggersWhen((VexContext) ctx,
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
