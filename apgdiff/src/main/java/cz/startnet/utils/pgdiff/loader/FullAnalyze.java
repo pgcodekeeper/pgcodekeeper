@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
@@ -67,8 +68,7 @@ public final class FullAnalyze {
                         schemaName, db);
                 break;
             case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                        statement.getParent().getName(), db);
+                AbstractTable.analyzeConstraintCtx(ctx, statement, schemaName, db);
                 break;
             case DOMAIN:
             case FUNCTION:
