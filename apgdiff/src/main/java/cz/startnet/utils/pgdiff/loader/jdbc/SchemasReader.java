@@ -31,7 +31,7 @@ public class SchemasReader implements PgCatalogStrings {
 
         String query = JdbcQueries.QUERY_SCHEMAS.get(null);
 
-        List<ObjectTimestamp> objects = loader.getTimestampObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
             PgDatabase projDb = loader.getTimestampProjDb();
             StringBuilder sb = new StringBuilder();

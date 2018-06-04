@@ -118,8 +118,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         errors.add(getCurrentLocation() + ' ' + message);
     }
 
-    public List<ObjectTimestamp> getTimestampObjects() {
-        return timestampParams.timestampObjects;
+    public List<ObjectTimestamp> getTimestampEqualObjects() {
+        return timestampParams.equalObjects;
     }
 
     public PgDatabase getTimestampProjDb() {
@@ -316,7 +316,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
     }
 
     protected static class TimestampParam {
-        private List<ObjectTimestamp> timestampObjects;
+        private List<ObjectTimestamp> equalObjects;
         private PgDatabase projDB;
         private String extensionSchema;
 
@@ -325,8 +325,8 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             this.extensionSchema = extensionSchema;
         }
 
-        public void fillObjects(DBTimestamp dbTime) {
-            timestampObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
+        public void fillEqualObjects(DBTimestamp dbTime) {
+            equalObjects = projDB.getDbTimestamp().searchEqualsObjects(dbTime);
         }
     }
 }

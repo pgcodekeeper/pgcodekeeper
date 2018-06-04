@@ -73,7 +73,7 @@ public abstract class JdbcReader implements PgCatalogStrings {
         String query = factory.makeFallbackQuery(loader.version);
         Set<Entry<Long, PgSchema>> schemas = loader.schemas.map.entrySet();
 
-        List<ObjectTimestamp> objects = loader.getTimestampObjects();
+        List<ObjectTimestamp> objects = loader.getTimestampEqualObjects();
         if (objects != null && !objects.isEmpty()) {
             PgDatabase projDb = loader.getTimestampProjDb();
 
