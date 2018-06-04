@@ -63,6 +63,7 @@ schema_statement
   : schema_create
     | schema_alter
     | schema_drop
+    | schema_import
   ;
 
 schema_create
@@ -107,6 +108,14 @@ schema_drop
     | drop_trigger_statement
     | drop_rule_statement
     | drop_statements)
+    ;
+
+schema_import
+    : IMPORT FOREIGN SCHEMA schema_name_remote=identifier
+    ((LIMIT TO | EXCEPT)
+    LEFT_PAREN (table_name+=identifier (COMMA table_name+=identifier)*) RIGHT_PAREN)?
+    FROM SERVER server_name=identifier INTO schema_name_local=identifier
+    define_foreign_options?
     ;
 
 alter_function_statement
