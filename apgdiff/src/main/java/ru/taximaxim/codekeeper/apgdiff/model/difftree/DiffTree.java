@@ -89,10 +89,17 @@ public final class DiffTree {
 
                 if (foundRight == null) {
                     rv.add(new CompareResult(sLeft, null));
-                } else if(!sLeft.equals(foundRight)) {
-                    rv.add(new CompareResult(sLeft, foundRight));
-                } else {
+                } else if(sLeft.compare(foundRight)) {
+                    // extension feature only cares about objects themselves being equal
                     equalsStatements.add(sLeft);
+                    if (!sLeft.equals(foundRight)) {
+                        // however, a tree node must be created if something in the subtree doesn't match
+                        // technically, full equals can be replaced by compareChildren here
+                        // but that would spread equals logic out of PgStatement
+                        rv.add(new CompareResult(sLeft, foundRight));
+                    }
+                } else {
+                    rv.add(new CompareResult(sLeft, foundRight));
                 }
             });
         }
