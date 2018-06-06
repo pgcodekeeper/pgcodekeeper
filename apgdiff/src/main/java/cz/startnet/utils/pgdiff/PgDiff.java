@@ -165,6 +165,8 @@ public final class PgDiff {
             script.addStatement("SET check_function_bodies = false;");
         }
 
+        script.addStatement("SET search_path = pg_catalog;");
+
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
