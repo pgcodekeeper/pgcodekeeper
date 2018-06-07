@@ -192,6 +192,12 @@ public abstract class PgStatement implements IStatement {
         resetHash();
     }
 
+    public void clearPrivileges() {
+        grants.clear();
+        revokes.clear();
+        resetHash();
+    }
+
     protected StringBuilder appendPrivileges(StringBuilder sb) {
         if (grants.isEmpty() && revokes.isEmpty()) {
             return sb;

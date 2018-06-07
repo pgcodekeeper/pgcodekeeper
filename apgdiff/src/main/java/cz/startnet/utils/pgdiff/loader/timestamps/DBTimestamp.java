@@ -64,11 +64,13 @@ public class DBTimestamp implements Serializable {
         return db;
     }
 
-    public void addObject(GenericColumn column, long objId, Instant lastModified, String author) {
+    public void addObject(GenericColumn column, long objId, Instant lastModified,
+            String author, String acl, Map<String, String> colAcls) {
         ObjectTimestamp obj = objects.get(column);
         if (obj == null || obj.getTime().isBefore(lastModified)) {
             // replace stale timestamps
-            objects.put(column, new ObjectTimestamp(column, objId, lastModified, author));
+            objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
+                    acl, colAcls));
         }
     }
 
@@ -194,8 +196,7 @@ public class DBTimestamp implements Serializable {
             GenericColumn gc = pObj.getObject();
             ObjectTimestamp rObj = dbTime.objects.get(gc);
             if (rObj != null && rObj.getTime().equals(pObj.getTime())) {
-                equalsObjects.add(new ObjectTimestamp(gc, pObj.getHash(),
-                        rObj.getObjId(), rObj.getTime()));
+                equalsObjects.add(rObj.copyNewHash(pObj.getHash()));
             }
         }
 

@@ -116,20 +116,20 @@ public abstract class JdbcReader implements PgCatalogStrings {
             if (obj.getSchema().equals(sc.getName()) && obj.getType() == local) {
                 switch (type) {
                 case VIEW:
-                    sc.addView((PgView) obj.getShallowCopy(projDb));
+                    sc.addView((PgView) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TABLE:
-                    sc.addTable((PgTable) obj.getShallowCopy(projDb));
+                    sc.addTable((PgTable) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
-                    PgRule rule = (PgRule) obj.getShallowCopy(projDb);
+                    PgRule rule = (PgRule) obj.copyStatement(projDb, loader);
                     sc.getRuleContainer(rule.getParent().getName()).addRule(rule);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TRIGGER:
-                    PgTrigger trig = (PgTrigger) obj.getShallowCopy(projDb);
+                    PgTrigger trig = (PgTrigger) obj.copyStatement(projDb, loader);
                     sc.getTriggerContainer(trig.getParent().getName()).addTrigger(trig);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
@@ -142,21 +142,21 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case FUNCTION:
-                    sc.addFunction((PgFunction) obj.getShallowCopy(projDb));
+                    sc.addFunction((PgFunction) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
-                    PgTable table = (PgTable) obj.getDeepCopy(projDb);
+                    PgTable table = (PgTable) obj.copyStatement(projDb, loader);
                     PgTable newTable = sc.getTable(table.getName());
                     table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TYPE:
-                    sc.addType((PgType) obj.getShallowCopy(projDb));
+                    sc.addType((PgType) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case SEQUENCE:
-                    sc.addSequence((PgSequence) obj.getShallowCopy(projDb));
+                    sc.addSequence((PgSequence) obj.copyStatement(projDb, loader));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:

@@ -39,7 +39,7 @@ public class SchemasReader implements PgCatalogStrings {
                 if (obj.getType() == DbObjType.SCHEMA) {
                     long oid = obj.getObjId();
                     sb.append(oid).append(',');
-                    PgSchema schema = (PgSchema)obj.getShallowCopy(projDb);
+                    PgSchema schema = (PgSchema)obj.copyStatement(projDb, loader);
                     db.addSchema(schema);
                     schemas.put(oid, schema);
                 }
@@ -75,8 +75,7 @@ public class SchemasReader implements PgCatalogStrings {
             }
         }
 
-        loader.setPrivileges(s, PgDiffUtils.getQuotedName(schemaName),
-                res.getString("nspacl"), owner);
+        loader.setPrivileges(s, res.getString("nspacl"), loader.getRoleByOid(owner));
 
         return s;
     }

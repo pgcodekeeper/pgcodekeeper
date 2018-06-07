@@ -81,7 +81,7 @@ public class TablesReader extends JdbcReader {
 
         // PRIVILEGES, OWNER
         loader.setOwner(t, res.getLong(CLASS_RELOWNER));
-        loader.setPrivileges(t, PgDiffUtils.getQuotedName(t.getName()), res.getString("aclarray"), t.getOwner(), null);
+        loader.setPrivileges(t, res.getString("aclarray"));
 
         readColumns(res, t, ofTypeOid, schema);
 
@@ -250,8 +250,7 @@ public class TablesReader extends JdbcReader {
             // COLUMNS PRIVILEGES
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()) {
-                loader.setPrivileges(column, PgDiffUtils.getQuotedName(t.getName()),
-                        columnPrivileges, t.getOwner(), PgDiffUtils.getQuotedName(colNames[i]));
+                loader.setPrivileges(column, t, columnPrivileges);
             }
 
             if (ofTypeOid != 0 && column.getNullValue()
