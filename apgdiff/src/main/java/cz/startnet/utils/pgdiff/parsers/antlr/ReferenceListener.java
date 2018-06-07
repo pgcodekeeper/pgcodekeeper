@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_configurationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_fts_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
@@ -18,6 +20,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementCont
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_configurationContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_dictionaryContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_parserContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_fts_templateContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
@@ -49,7 +55,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -144,6 +149,26 @@ public class ReferenceListener extends SQLParserBaseListener {
     }
 
     @Override
+    public void exitCreate_fts_parser(Create_fts_parserContext ctx) {
+        safeParseStatement(() -> createFtsParser(ctx));
+    }
+
+    @Override
+    public void exitCreate_fts_template(Create_fts_templateContext ctx) {
+        safeParseStatement(() -> createFtsTemplate(ctx));
+    }
+
+    @Override
+    public void exitCreate_fts_dictionary(Create_fts_dictionaryContext ctx) {
+        safeParseStatement(() -> createFtsDictionary(ctx));
+    }
+
+    @Override
+    public void exitCreate_fts_configuration(Create_fts_configurationContext ctx) {
+        safeParseStatement(() -> createFtsConfiguration(ctx));
+    }
+
+    @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
         safeParseStatement(() -> commentOn(ctx));
     }
@@ -191,6 +216,11 @@ public class ReferenceListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
         safeParseStatement(() -> alterType(ctx));
+    }
+
+    @Override
+    public void exitAlter_fts_statement(Alter_fts_statementContext ctx) {
+        safeParseStatement(() -> alterFts(ctx));
     }
 
     @Override
@@ -353,6 +383,96 @@ public class ReferenceListener extends SQLParserBaseListener {
                 QNameParser.getFirstNameCtx(ids), DbObjType.VIEW);
     }
 
+    private void createFtsParser(Create_fts_parserContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        if (ids.size() > 1) {
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_PARSER);
+    }
+
+
+    private void createFtsTemplate(Create_fts_templateContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        if (ids.size() > 1) {
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_TEMPLATE);
+    }
+
+    private void createFtsDictionary(Create_fts_dictionaryContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        List<IdentifierContext> templateIds = ctx.template.identifier();
+        String templateSchemaName = QNameParser.getSchemaName(templateIds, "pg_catalog");
+
+        int offset = 0;
+        if (templateIds.size() > 1) {
+            offset = templateSchemaName.length() + 1;
+            addObjReference(null, templateSchemaName, DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.template.getStart().getStartIndex(), ctx.template.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        addObjReference(templateSchemaName,
+                QNameParser.getFirstName(templateIds), DbObjType.FTS_TEMPLATE, StatementActions.NONE,
+                ctx.template.getStart().getStartIndex() + offset, ctx.template.getStart().getLine(),
+                ParserAbstract.getFullCtxText(ctx.getParent()));
+
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        if (ids.size() > 1) {
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_DICTIONARY);
+    }
+
+    private void createFtsConfiguration(Create_fts_configurationContext ctx) {
+        List<IdentifierContext> ids = ctx.name.identifier();
+        List<IdentifierContext> parserIds = ctx.parser_name.identifier();
+        String parserSchemaName = QNameParser.getSchemaName(parserIds, "pg_catalog");
+
+        int offset = 0;
+        if (parserIds.size() > 1) {
+            offset = parserSchemaName.length() + 1;
+            addObjReference(null, parserSchemaName, DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.parser_name.getStart().getStartIndex(), ctx.parser_name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        addObjReference(parserSchemaName, QNameParser.getFirstName(parserIds),
+                DbObjType.FTS_PARSER, StatementActions.NONE,
+                ctx.parser_name.getStart().getStartIndex() + offset, ctx.parser_name.getStart().getLine(),
+                ParserAbstract.getFullCtxText(ctx.getParent()));
+
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        if (ids.size() > 1) {
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        fillObjDefinition(schemaName, QNameParser.getFirstNameCtx(ids), DbObjType.FTS_CONFIGURATION);
+    }
+
+
     public void commentOn(Comment_on_statementContext ctx) {
         if (ctx.name == null) {
             return;
@@ -398,6 +518,14 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.TABLE;
         } else if (ctx.VIEW() != null) {
             type = DbObjType.VIEW;
+        } else if (ctx.PARSER() != null) {
+            type = DbObjType.FTS_PARSER;
+        } else if (ctx.TEMPLATE() != null) {
+            type = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.DICTIONARY() != null) {
+            type = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.CONFIGURATION() != null) {
+            type = DbObjType.FTS_CONFIGURATION;
         }
 
         if (type != null) {
@@ -583,6 +711,59 @@ public class ReferenceListener extends SQLParserBaseListener {
                 ParserAbstract.getFullCtxText(ctx.getParent()));
     }
 
+    private void alterFts(Alter_fts_statementContext ctx) {
+        DbObjType type;
+        if (ctx.DICTIONARY() != null) {
+            type = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            type = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            type = DbObjType.FTS_PARSER;
+        } else {
+            type = DbObjType.FTS_CONFIGURATION;
+        }
+
+        List<IdentifierContext> ids = ctx.name.identifier();
+        String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
+
+        int offset = 0;
+        if (ids.size() > 1) {
+            offset = schemaName.length() + 1;
+            addObjReference(null, schemaName,
+                    DbObjType.SCHEMA, StatementActions.NONE,
+                    ctx.name.getStart().getStartIndex(), ctx.name.getStart().getLine(),
+                    ParserAbstract.getFullCtxText(ctx.getParent()));
+        }
+
+        addObjReference(schemaName, QNameParser.getFirstName(ids),
+                type, StatementActions.ALTER,
+                ctx.name.getStart().getStartIndex() + offset, ctx.name.getStart().getLine(),
+                ParserAbstract.getFullCtxText(ctx.getParent()));
+
+        Alter_fts_configurationContext afc = ctx.alter_fts_configuration();
+
+        if (afc != null && afc.dictionaries != null) {
+            for (Schema_qualified_nameContext objName : afc.dictionaries) {
+                List<IdentifierContext> dictIds = objName.identifier();
+                String dictSchemaName = QNameParser.getSchemaName(dictIds, getDefSchemaName());
+
+                int dictOffset = 0;
+                if (dictIds.size() > 1) {
+                    dictOffset = dictSchemaName.length() + 1;
+                    addObjReference(null, dictSchemaName,
+                            DbObjType.SCHEMA, StatementActions.NONE,
+                            objName.getStart().getStartIndex(), objName.getStart().getLine(),
+                            ParserAbstract.getFullCtxText(ctx.getParent()));
+                }
+
+                addObjReference(dictSchemaName, QNameParser.getFirstName(dictIds), DbObjType.FTS_DICTIONARY,
+                        StatementActions.ALTER,
+                        objName.getStart().getStartIndex() + dictOffset, objName.getStart().getLine(),
+                        ParserAbstract.getFullCtxText(ctx.getParent()));
+            }
+        }
+    }
+
     public void drop(Drop_statementsContext ctx) {
         DbObjType type = null;
         if (ctx.DATABASE()!= null) {
@@ -603,6 +784,14 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.DOMAIN;
         } else if (ctx.TYPE() != null) {
             type = DbObjType.TYPE;
+        } else if (ctx.DICTIONARY() != null) {
+            type = DbObjType.FTS_DICTIONARY;
+        } else if (ctx.TEMPLATE() != null) {
+            type = DbObjType.FTS_TEMPLATE;
+        } else if (ctx.PARSER() != null) {
+            type = DbObjType.FTS_PARSER;
+        } else if (ctx.CONFIGURATION() != null) {
+            type = DbObjType.FTS_CONFIGURATION;
         }
 
         for (Schema_qualified_nameContext objName :
@@ -610,7 +799,7 @@ public class ReferenceListener extends SQLParserBaseListener {
             List<IdentifierContext> ids = objName.identifier();
             String schemaName = QNameParser.getSchemaName(ids, getDefSchemaName());
 
-            int offset=0;
+            int offset = 0;
             if (ids.size() > 1) {
                 offset = schemaName.length() + 1;
                 addObjReference(null, schemaName,

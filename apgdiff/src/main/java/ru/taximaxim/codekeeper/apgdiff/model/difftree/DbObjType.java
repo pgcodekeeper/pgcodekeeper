@@ -22,5 +22,10 @@ public enum DbObjType {
     INDEX,
     VIEW,
     TRIGGER,
-    RULE
+    RULE,
+    // full text search types
+    FTS_PARSER,
+    FTS_TEMPLATE,
+    FTS_DICTIONARY,
+    FTS_CONFIGURATION
 }

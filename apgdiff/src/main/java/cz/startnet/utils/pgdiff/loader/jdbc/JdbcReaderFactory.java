@@ -15,6 +15,10 @@ import cz.startnet.utils.pgdiff.loader.JdbcQueries;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.jdbc.ConstraintsReader.ConstraintsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.FtsConfigurationsReader.FtsConfigurationsReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.FtsDictionariesReader.FtsDictionariesReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.FtsParsersReader.FtsParsersReaderFactory;
+import cz.startnet.utils.pgdiff.loader.jdbc.FtsTemplatesReader.FtsTemplatesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.FunctionsReader.FunctionsReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.IndicesReader.IndicesReaderFactory;
 import cz.startnet.utils.pgdiff.loader.jdbc.RulesReader.RulesReaderFactory;
@@ -72,16 +76,21 @@ public abstract class JdbcReaderFactory {
             // SONAR-OFF
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
             // to give them a chance to finish while JDBC processes other non-ANTLR stuff
-            new ViewsReaderFactory(      1 << 6, "get_all_views",       JdbcQueries.QUERY_VIEWS_PER_SCHEMA),
-            new TablesReaderFactory(     1 << 3, "get_all_tables",      JdbcQueries.QUERY_TABLES_PER_SCHEMA),
-            new RulesReaderFactory(      1 << 8, "get_all_rules",       JdbcQueries.QUERY_RULES_PER_SCHEMA),
-            new TriggersReaderFactory(   1 << 7, "get_all_triggers",    JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA),
-            new IndicesReaderFactory(    1 << 5, "get_all_indices",     JdbcQueries.QUERY_INDICES_PER_SCHEMA),
-            new FunctionsReaderFactory(  1 << 2, "get_all_functions",   JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA),
+            new ViewsReaderFactory(            1 << 6,  "get_all_views",              JdbcQueries.QUERY_VIEWS_PER_SCHEMA),
+            new TablesReaderFactory(           1 << 3,  "get_all_tables",             JdbcQueries.QUERY_TABLES_PER_SCHEMA),
+            new RulesReaderFactory(            1 << 8,  "get_all_rules",              JdbcQueries.QUERY_RULES_PER_SCHEMA),
+            new TriggersReaderFactory(         1 << 7,  "get_all_triggers",           JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA),
+            new IndicesReaderFactory(          1 << 5,  "get_all_indices",            JdbcQueries.QUERY_INDICES_PER_SCHEMA),
+            new FunctionsReaderFactory(        1 << 2,  "get_all_functions",          JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA),
             // non-ANTLR tasks
-            new ConstraintsReaderFactory(1 << 4, "get_all_constraints", JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA),
-            new TypesReaderFactory(      1 << 0, "get_all_types",       JdbcQueries.QUERY_TYPES_PER_SCHEMA),
-            new SequencesReaderFactory(  1 << 1, "get_all_sequences",   JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA)
+            new ConstraintsReaderFactory(      1 << 4,  "get_all_constraints",        JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA),
+            new TypesReaderFactory(            1 << 0,  "get_all_types",              JdbcQueries.QUERY_TYPES_PER_SCHEMA),
+            new SequencesReaderFactory(        1 << 1,  "get_all_sequences",          JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA),
+
+            new FtsParsersReaderFactory(       1 << 9,  "get_all_fts_parsers",        JdbcQueries.QUERY_FTS_PARSERS_PER_SCHEMA),
+            new FtsTemplatesReaderFactory(     1 << 10, "get_all_fts_templates",      JdbcQueries.QUERY_FTS_TEMPLATES_PER_SCHEMA),
+            new FtsDictionariesReaderFactory(  1 << 11, "get_all_fts_dictionaries",   JdbcQueries.QUERY_FTS_DICTIONARIES_PER_SCHEMA),
+            new FtsConfigurationsReaderFactory(1 << 12, "get_all_fts_configurations", JdbcQueries.QUERY_FTS_CONFIGURATIONS_PER_SCHEMA)
             // SONAR-ON
             ));
 

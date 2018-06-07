@@ -324,9 +324,10 @@ alter_fts_statement
     ;  
   
 alter_fts_configuration
-    : (ADD | ALTER) MAPPING FOR identifier (COMMA identifier) WITH schema_qualified_name (COMMA schema_qualified_name) 
+    : (ADD | ALTER) MAPPING FOR types+=identifier (COMMA types+=identifier)* 
+    WITH dictionaries+=schema_qualified_name (COMMA dictionaries+=schema_qualified_name)* 
     | ALTER MAPPING (FOR identifier (COMMA identifier))? REPLACE schema_qualified_name WITH schema_qualified_name 
-    | DROP MAPPING (IF EXISTS)? FOR identifier (COMMA identifier)
+    | DROP MAPPING (IF EXISTS)? FOR identifier (COMMA identifier)*
     ;
 
 type_action
@@ -442,9 +443,12 @@ create_server_statement
 create_fts_dictionary
     : TEXT SEARCH DICTIONARY name=schema_qualified_name 
     LEFT_PAREN
-        TEMPLATE EQUAL template=schema_qualified_name
-        (COMMA storage_parameter_option)*         
+        TEMPLATE EQUAL template=schema_qualified_name (COMMA dictionary_option)*         
     RIGHT_PAREN
+    ;
+    
+dictionary_option
+    : name=identifier EQUAL value=vex
     ;
 
 create_fts_configuration
@@ -458,7 +462,7 @@ create_fts_template
     : TEXT SEARCH TEMPLATE name=schema_qualified_name
     LEFT_PAREN
         (INIT EQUAL init_name=schema_qualified_name)?
-        LEXIZE EQUAL lixize_name=schema_qualified_name
+        LEXIZE EQUAL lexize_name=schema_qualified_name
         (INIT EQUAL init_name=schema_qualified_name)?
     RIGHT_PAREN
     ;
@@ -470,8 +474,8 @@ create_fts_parser
         GETTOKEN EQUAL gettoken_func=schema_qualified_name COMMA
         END EQUAL end_func=schema_qualified_name COMMA
         (HEADLINE EQUAL headline_func=schema_qualified_name COMMA)?
-        LEXTYPES EQUAL lextypes_func=schema_qualified_name COMMA?
-        (HEADLINE EQUAL headline_func=schema_qualified_name )?
+        LEXTYPES EQUAL lextypes_func=schema_qualified_name
+        (COMMA HEADLINE EQUAL headline_func=schema_qualified_name)?
     RIGHT_PAREN
     ;
     
@@ -648,6 +652,7 @@ comment_on_statement
         | PROCEDURAL? LANGUAGE
         | LARGE OBJECT
         | FOREIGN (DATA WRAPPER | TABLE)
+        | TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE)
         | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE
             | TYPE | VIEW)

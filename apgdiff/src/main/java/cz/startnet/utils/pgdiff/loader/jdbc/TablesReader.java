@@ -76,7 +76,7 @@ public class TablesReader extends JdbcReader {
 
         String[] foptions = res.getArray("ftoptions", String.class);
         if (foptions != null) {
-            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true);
+            ParserAbstract.fillOptionParams(foptions, t::addOption, false, true, false);
         }
 
         // PRIVILEGES, OWNER
@@ -99,12 +99,12 @@ public class TablesReader extends JdbcReader {
         // STORAGE PARAMETERS
         String [] opts = res.getArray("reloptions", String.class);
         if (opts != null) {
-            ParserAbstract.fillOptionParams(opts, t::addOption, false, false);
+            ParserAbstract.fillOptionParams(opts, t::addOption, false, false, false);
         }
 
         String[] toast = res.getArray("toast_reloptions", String.class);
         if (toast != null) {
-            ParserAbstract.fillOptionParams(toast, t::addOption, true, false);
+            ParserAbstract.fillOptionParams(toast, t::addOption, true, false, false);
         }
 
         // Table COMMENTS
@@ -189,10 +189,10 @@ public class TablesReader extends JdbcReader {
             loader.cachedTypesByOid.get(colTypeIds[i]).addTypeDepcy(column);
 
             if (colOptions[i] != null) {
-                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false);
+                ParserAbstract.fillOptionParams(colOptions[i].split(","), column::addOption, false, false, false);
             }
             if (colFOptions[i] != null) {
-                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true);
+                ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true, false);
             }
 
             if (!colStorages[i].equals(colDefaultStorages[i])) {

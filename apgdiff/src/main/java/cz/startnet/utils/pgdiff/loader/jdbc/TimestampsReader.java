@@ -76,6 +76,18 @@ public class TimestampsReader implements PgCatalogStrings {
         case "materialized view":
             column = new GenericColumn(schema, name, DbObjType.VIEW);
             break;
+        case "text search template":
+            column = new GenericColumn(schema, name, DbObjType.FTS_TEMPLATE);
+            break;
+        case "text search parser":
+            column = new GenericColumn(schema, name, DbObjType.FTS_PARSER);
+            break;
+        case "text search configuration":
+            column = new GenericColumn(schema, name, DbObjType.FTS_CONFIGURATION);
+            break;
+        case "text search dictionary":
+            column = new GenericColumn(schema, name, DbObjType.FTS_DICTIONARY);
+            break;
         case "rule":
             loader.submitAntlrTask(identity, SQLParser::object_identity_parser,
                     ctx -> parseIdentity(ctx, DbObjType.RULE, lastModified, time, objId, author));

@@ -112,6 +112,10 @@ public final class GenericColumn implements Serializable {
         case TABLE: return getRelation(s);
         case VIEW: return s.getView(table);
 
+        case FTS_PARSER: return s.getFtsParser(table);
+        case FTS_TEMPLATE: return s.getFtsTemplate(table);
+        case FTS_DICTIONARY: return s.getFtsDictionary(table);
+        case FTS_CONFIGURATION: return s.getFtsConfiguration(table);
         // handled in getStatement, left here for consistency
         case COLUMN:
             t = s.getTable(table);

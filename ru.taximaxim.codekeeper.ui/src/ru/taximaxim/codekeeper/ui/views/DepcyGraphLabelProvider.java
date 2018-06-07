@@ -46,7 +46,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public String getText(Object element) {
-        if (element instanceof PgStatement){
+        if (element instanceof PgStatement) {
             PgStatement st = (PgStatement) element;
             switch (st.getStatementType()) {
             case COLUMN:
@@ -81,11 +81,19 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "TYPE " + st.getBareName(); //$NON-NLS-1$
             case VIEW:
                 return "VIEW " + st.getBareName(); //$NON-NLS-1$
+            case FTS_PARSER:
+                return "PARSER " + st.getBareName(); //$NON-NLS-1$
+            case FTS_TEMPLATE:
+                return "TEMP " + st.getBareName(); //$NON-NLS-1$
+            case FTS_CONFIGURATION:
+                return "CONF " + st.getBareName(); //$NON-NLS-1$
+            case FTS_DICTIONARY:
+                return "DICT "  + st.getBareName(); //$NON-NLS-1$
             }
             return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
-        }else if (element instanceof EntityConnectionData){
+        } else if (element instanceof EntityConnectionData) {
             return ""; //$NON-NLS-1$
-        }else{
+        } else {
             return "error"; //$NON-NLS-1$
         }
     }
@@ -97,11 +105,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getBorderColor(Object entity) {
-        if (entity instanceof PgSchema){
-            return ColorConstants.black;
-        }else{
-            return ColorConstants.lightGray;
-        }
+        return entity instanceof PgSchema ? ColorConstants.black : ColorConstants.lightGray;
     }
 
     @Override
@@ -111,11 +115,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public int getBorderWidth(Object entity) {
-        if (entity instanceof PgSchema){
-            return 2;
-        }else{
-            return 1;
-        }
+        return entity instanceof PgSchema ? 2 : 1;
     }
 
     @Override
@@ -125,11 +125,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public Color getForegroundColour(Object entity) {
-        if (entity instanceof PgSchema){
-            return ColorConstants.black;
-        }else{
-            return colorDBlue;
-        }
+        return entity instanceof PgSchema ? ColorConstants.black : colorDBlue;
     }
 
     @Override

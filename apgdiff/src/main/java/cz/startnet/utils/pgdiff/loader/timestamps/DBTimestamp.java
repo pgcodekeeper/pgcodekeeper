@@ -162,6 +162,10 @@ public class DBTimestamp implements Serializable {
         case FUNCTION:
         case TABLE:
         case VIEW:
+        case FTS_PARSER:
+        case FTS_TEMPLATE:
+        case FTS_DICTIONARY:
+        case FTS_CONFIGURATION:
             gc = new GenericColumn(schema, name, type);
             break;
         case INDEX:

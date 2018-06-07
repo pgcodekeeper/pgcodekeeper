@@ -47,6 +47,13 @@ public interface PgOptionContainer extends IStatement {
             });
         }
 
+        if (setOptions.length() > 0 || resetOptions.length() > 0) {
+            appendOptions(newContainer, setOptions, resetOptions, sb);
+        }
+    }
+
+    default void appendOptions(PgOptionContainer newContainer, StringBuilder setOptions,
+            StringBuilder resetOptions, StringBuilder sb) {
         DbObjType type = getStatementType();
 
         if (setOptions.length() > 0) {
