@@ -65,13 +65,22 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        if (newCondition instanceof PgFtsParser) {
+            if (!compareWithoutComments((PgFtsParser)newCondition)) {
+                isNeedDepcies.set(true);
+                return true;
+            }
+        } else {
+            return false;
+        }
+
         if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
             newCondition.appendCommentSql(sb);
-            return true;
         }
 
-        return false;
+        return sb.length() > startLength;
     }
 
     @Override
@@ -98,18 +107,22 @@ public class PgFtsParser extends PgStatementWithSearchPath {
 
         if (this == obj) {
             eq = true;
-        } else if(obj instanceof PgFtsParser) {
+        } else if (obj instanceof PgFtsParser) {
             PgFtsParser parser = (PgFtsParser) obj;
-            eq = Objects.equals(name, parser.name)
-                    && Objects.equals(startFunction, parser.startFunction)
-                    && Objects.equals(getTokenFunction, parser.getTokenFunction)
-                    && Objects.equals(endFunction, parser.endFunction)
-                    && Objects.equals(headLineFunction, parser.headLineFunction)
-                    && Objects.equals(lexTypesFunction, parser.lexTypesFunction)
+            eq = compareWithoutComments(parser)
                     && Objects.equals(comment, parser.getComment());
         }
 
         return eq;
+    }
+
+    private boolean compareWithoutComments(PgFtsParser parser) {
+        return Objects.equals(name, parser.name)
+                && Objects.equals(startFunction, parser.startFunction)
+                && Objects.equals(getTokenFunction, parser.getTokenFunction)
+                && Objects.equals(endFunction, parser.endFunction)
+                && Objects.equals(headLineFunction, parser.headLineFunction)
+                && Objects.equals(lexTypesFunction, parser.lexTypesFunction);
     }
 
     @Override

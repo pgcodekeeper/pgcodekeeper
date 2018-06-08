@@ -461,9 +461,9 @@ create_fts_configuration
 create_fts_template
     : TEXT SEARCH TEMPLATE name=schema_qualified_name
     LEFT_PAREN
-        (INIT EQUAL init_name=schema_qualified_name)?
+        (INIT EQUAL init_name=schema_qualified_name COMMA)?
         LEXIZE EQUAL lexize_name=schema_qualified_name
-        (INIT EQUAL init_name=schema_qualified_name)?
+        (COMMA INIT EQUAL init_name=schema_qualified_name)?
     RIGHT_PAREN
     ;
    

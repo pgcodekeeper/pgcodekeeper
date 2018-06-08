@@ -79,7 +79,8 @@ implements PgOptionContainer {
         if (newCondition instanceof PgFtsDictionary) {
             newDictionary = (PgFtsDictionary) newCondition;
             if (!newDictionary.getTemplate().equals(template)) {
-                return false;
+                isNeedDepcies.set(true);
+                return true;
             }
         } else {
             return false;

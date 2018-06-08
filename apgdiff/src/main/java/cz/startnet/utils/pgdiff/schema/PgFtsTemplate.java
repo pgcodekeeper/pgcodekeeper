@@ -59,13 +59,22 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        if (newCondition instanceof PgFtsTemplate) {
+            if (!compareWithoutComments((PgFtsTemplate)newCondition)) {
+                isNeedDepcies.set(true);
+                return true;
+            }
+        } else {
+            return false;
+        }
+
         if (!Objects.equals(getComment(), newCondition.getComment())) {
             sb.append("\n\n");
             newCondition.appendCommentSql(sb);
-            return true;
         }
 
-        return false;
+        return sb.length() > startLength;
     }
 
     @Override
@@ -91,13 +100,17 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
             eq = true;
         } else if(obj instanceof PgFtsTemplate) {
             PgFtsTemplate template = (PgFtsTemplate) obj;
-            eq = Objects.equals(name, template.name)
-                    && Objects.equals(initFunction, template.initFunction)
-                    && Objects.equals(lexizeFunction, template.lexizeFunction)
+            eq = compareWithoutComments(template)
                     && Objects.equals(comment, template.getComment());
         }
 
         return eq;
+    }
+
+    private boolean compareWithoutComments(PgFtsTemplate template) {
+        return Objects.equals(name, template.name)
+                && Objects.equals(initFunction, template.initFunction)
+                && Objects.equals(lexizeFunction, template.lexizeFunction);
     }
 
     @Override

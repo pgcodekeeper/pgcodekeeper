@@ -80,7 +80,8 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         if (newCondition instanceof PgFtsConfiguration) {
             newConf = (PgFtsConfiguration) newCondition;
             if (!newConf.getParser().equals(parser)) {
-                return false;
+                isNeedDepcies.set(true);
+                return true;
             }
         } else {
             return false;
