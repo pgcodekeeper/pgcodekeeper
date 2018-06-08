@@ -120,6 +120,7 @@ public class ObjectTimestamp implements Serializable {
                     // in case the ACL map lacks a column, null will be passed as ACL
                     // which is the valid indication for "no ACL"
                     // which is the column state in this case
+                    c.clearPrivileges();
                     loader.setPrivileges(c, table, colAcls.get(c.getName()));
                 }
             } else if (DbObjType.VIEW == type) {
