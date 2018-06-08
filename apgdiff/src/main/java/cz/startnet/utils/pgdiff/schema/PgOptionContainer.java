@@ -54,15 +54,19 @@ public interface PgOptionContainer extends IStatement {
             sb.append("\n\nALTER ");
             if (type == DbObjType.COLUMN) {
                 sb.append("TABLE ONLY ")
-                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
                 sb.append("MATERIALIZED ");
             }
             sb.append(type)
-            .append(' ')
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(" SET (").append(setOptions).append(");");
+            .append(' ');
+            if (type != DbObjType.COLUMN) {
+                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+            }
+            sb.append(PgDiffUtils.getQuotedName(getName())).append(" SET (")
+            .append(setOptions).append(");");
         }
 
         if (resetOptions.length() > 0) {
@@ -70,14 +74,18 @@ public interface PgOptionContainer extends IStatement {
             sb.append("\n\nALTER ");
             if (type == DbObjType.COLUMN) {
                 sb.append("TABLE ONLY ")
-                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+                .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             } else if (type == DbObjType.VIEW && ((PgView)newContainer).isMatView()) {
                 sb.append("MATERIALIZED ");
             }
             sb.append(type)
-            .append(' ')
-            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(' ');
+            if (type != DbObjType.COLUMN) {
+                sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+            }
+            sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" RESET (").append(resetOptions).append(");");
         }
     }

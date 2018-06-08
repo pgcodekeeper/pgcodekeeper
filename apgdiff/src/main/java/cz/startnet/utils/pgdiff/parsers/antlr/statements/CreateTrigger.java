@@ -71,13 +71,8 @@ public class CreateTrigger extends ParserAbstract {
                 String refRelName = QNameParser.getFirstName(refName);
 
                 StringBuilder sb = new StringBuilder();
-                if (refSchemaName != null){
-                    if (!refSchemaName.equals(schemaName)){
-                        sb.append(PgDiffUtils.getQuotedName(refSchemaName)).append('.');
-                    }
-                } else {
-                    refSchemaName = schemaName;
-                }
+                sb.append(PgDiffUtils.getQuotedName(refSchemaName == null ? schemaName : refSchemaName))
+                .append('.');
                 sb.append(PgDiffUtils.getQuotedName(refRelName));
 
                 trigger.addDep(new GenericColumn(refSchemaName, refRelName, DbObjType.TABLE));

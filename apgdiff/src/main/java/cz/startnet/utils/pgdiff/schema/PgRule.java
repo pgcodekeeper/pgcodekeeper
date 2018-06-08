@@ -98,7 +98,8 @@ public class PgRule extends PgStatementWithSearchPath{
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
-        sbSQL.append(" TO ").append(PgDiffUtils.getQuotedName(getParent().getName()));
+        sbSQL.append(" TO ").append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(getParent().getName()));
         if (getCondition() != null && !getCondition().isEmpty()){
             sbSQL.append("\n  WHERE ").append(getCondition());
         }
@@ -144,7 +145,8 @@ public class PgRule extends PgStatementWithSearchPath{
     public String getDropSQL() {
         StringBuilder sbSQL = new StringBuilder("DROP RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" ON ").append(PgDiffUtils.getQuotedName(getParent().getName())).append(';');
+        sbSQL.append(" ON ").append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(getParent().getName())).append(';');
         return sbSQL.toString();
     }
 

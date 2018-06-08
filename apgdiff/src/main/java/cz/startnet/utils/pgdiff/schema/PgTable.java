@@ -286,7 +286,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
     @Override
     public String getDropSQL() {
-        return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TABLE " + getContainingSchema().getName() + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override

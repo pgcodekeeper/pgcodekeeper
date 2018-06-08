@@ -153,6 +153,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             sbSQL.append(" MATERIALIZED");
         }
         sbSQL.append(" VIEW ");
+        sbSQL.append(getContainingSchema().getName()).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         StringBuilder sb = new StringBuilder();
@@ -244,13 +245,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     @Override
     public String getDropSQL() {
         String mat = isMatView() ? "MATERIALIZED " : "";
-        return "DROP " + mat + "VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP " + mat + "VIEW " + getContainingSchema().getName() + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         return (!isMatView() || owner == null) ? super.appendOwnerSQL(sb)
-                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(PgDiffUtils.getQuotedName(getName()))
+                : sb.append("\n\nALTER MATERIALIZED VIEW ").append(getContainingSchema().getName())
+                .append('.').append(PgDiffUtils.getQuotedName(getName()))
                 .append(" OWNER TO ").append(PgDiffUtils.getQuotedName(owner)).append(';');
     }
 
@@ -328,6 +331,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
                             newColumnComment.getComment())) {
 
                 sb.append("\n\nCOMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+                        + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(newColumnComment
@@ -336,6 +341,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             } else if (oldColumnComment != null && newColumnComment == null) {
 
                 sb.append("\n\nCOMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(getContainingSchema().getName())
+                        + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
                         + PgDiffUtils.getQuotedName(oldColumnComment

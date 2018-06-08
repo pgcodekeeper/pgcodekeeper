@@ -53,6 +53,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" ON ");
+        sbSQL.append(getContainingSchema().getName()).append('.');
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
@@ -95,7 +96,8 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP INDEX " + getContainingSchema().getName() + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
     @Override

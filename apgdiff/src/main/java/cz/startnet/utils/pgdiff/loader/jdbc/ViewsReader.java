@@ -101,13 +101,15 @@ public class ViewsReader extends JdbcReader {
                 String colAcl = colACLs[i];
                 // Привилегии на столбцы view записываются в саму view
                 if (colAcl != null) {
-                    loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), colAcl, v.getOwner(), PgDiffUtils.getQuotedName(colName));
+                    loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), colAcl,
+                            v.getOwner(), PgDiffUtils.getQuotedName(colName), schemaName);
                 }
             }
         }
 
         // Query view privileges
-        loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"), v.getOwner(), null);
+        loader.setPrivileges(v, PgDiffUtils.getQuotedName(viewName), res.getString("relacl"),
+                v.getOwner(), null, schemaName);
 
         // STORAGE PARAMETRS
         String[] options = res.getArray("reloptions", String.class);

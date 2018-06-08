@@ -75,10 +75,15 @@ public class PgPrivilege extends PgStatement {
 
         if (type == DbObjType.COLUMN) {
             column = '(' + PgDiffUtils.getQuotedName(name) + ')';
-            name = PgDiffUtils.getQuotedName(newObj.getParent().getName());
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getParent().getName())
+                    + '.' + PgDiffUtils.getQuotedName(newObj.getParent().getName());
             type = DbObjType.TABLE;
         } else if (type != DbObjType.FUNCTION) {
-            name = PgDiffUtils.getQuotedName(name);
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getName())
+                    + '.' +PgDiffUtils.getQuotedName(name);
+        } else {
+            name = PgDiffUtils.getQuotedName(newObj.getParent().getName())
+                    + '.' + PgDiffUtils.getQuotedName(name);
         }
 
         owner =  PgDiffUtils.getQuotedName(owner);

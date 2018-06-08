@@ -141,11 +141,15 @@ public abstract class PgStatement implements IStatement {
         sb.append(type).append(' ');
         switch (type) {
         case COLUMN:
-            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            sb.append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append('.')
             .append(PgDiffUtils.getQuotedName(getName()));
             break;
         case FUNCTION:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.');
             ((PgFunction) this).appendFunctionSignature(sb, false, true);
             break;
 
@@ -154,6 +158,8 @@ public abstract class PgStatement implements IStatement {
         case RULE:
             sb.append(PgDiffUtils.getQuotedName(getName()))
             .append(" ON ")
+            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(getParent().getName()));
             break;
 
@@ -161,8 +167,14 @@ public abstract class PgStatement implements IStatement {
             sb.append("current_database()");
             break;
 
-        default:
+        case EXTENSION:
             sb.append(PgDiffUtils.getQuotedName(getName()));
+            break;
+
+        default:
+            sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append('.')
+            .append(PgDiffUtils.getQuotedName(getName()));
         }
 
         return sb.append(" IS ")
@@ -199,8 +211,11 @@ public abstract class PgStatement implements IStatement {
 
         sb.append("\n\n-- ")
         .append(getStatementType())
-        .append(' ')
-        .append(getName())
+        .append(' ');
+        if (DbObjType.SCHEMA != getStatementType()) {
+            sb.append(getParent().getName()).append('.');
+        }
+        sb.append(getName())
         .append(' ')
         .append("GRANT\n");
 
@@ -257,10 +272,15 @@ public abstract class PgStatement implements IStatement {
         sb.append("\n\nALTER ")
         .append(type)
         .append(' ');
-        if (type == DbObjType.FUNCTION) {
-            ((PgFunction) this).appendFunctionSignature(sb, false, true);
-        } else {
+        if (type == DbObjType.SCHEMA) {
             sb.append(PgDiffUtils.getQuotedName(getName()));
+        } else {
+            sb.append(getParent().getName()).append('.');
+            if (type == DbObjType.FUNCTION) {
+                ((PgFunction) this).appendFunctionSignature(sb, false, true);
+            } else {
+                sb.append(PgDiffUtils.getQuotedName(getName()));
+            }
         }
         sb.append(" OWNER TO ")
         .append(PgDiffUtils.getQuotedName(owner))

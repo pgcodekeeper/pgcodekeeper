@@ -302,6 +302,7 @@ public class PgType extends PgStatementWithSearchPath {
     @Override
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder("CREATE TYPE ")
+                .append(getContainingSchema().getName()).append('.')
                 .append(PgDiffUtils.getQuotedName(getName()));
 
         switch(form) {
@@ -454,7 +455,8 @@ public class PgType extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        return "DROP TYPE " + PgDiffUtils.getQuotedName(getName()) + ';';
+        return "DROP TYPE " + getContainingSchema().getName() + '.'
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
@@ -532,6 +534,7 @@ public class PgType extends PgStatementWithSearchPath {
             // remove last comma
             attrSb.setLength(attrSb.length() - 2);
             sb.append("\n\nALTER TYPE ")
+            .append(getContainingSchema().getName()).append('.')
             .append(PgDiffUtils.getQuotedName(newType.getName()))
             .append(attrSb).append(';');
         }
@@ -543,6 +546,7 @@ public class PgType extends PgStatementWithSearchPath {
             String value = newEnums.get(i);
             if (!oldEnums.contains(value)) {
                 sb.append("\n\nALTER TYPE ")
+                .append(getContainingSchema().getName()).append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append("\n\tADD VALUE ").append(value);
                 if (i == 0) {

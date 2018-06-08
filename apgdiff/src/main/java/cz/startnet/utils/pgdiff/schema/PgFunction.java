@@ -44,6 +44,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
+        sbSQL.append(getContainingSchema().getName()).append('.');
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
         sbSQL.append("RETURNS ");
@@ -139,6 +140,7 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP FUNCTION ");
+        sbString.append(getContainingSchema().getName()).append('.');
         appendFunctionSignature(sbString, false, true);
         sbString.append(';');
 

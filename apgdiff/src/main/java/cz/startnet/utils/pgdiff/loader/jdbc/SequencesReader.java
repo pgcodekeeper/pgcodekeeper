@@ -66,7 +66,8 @@ public class SequencesReader extends JdbcReader {
         if (identityType == null) {
             loader.setOwner(s, res.getLong(CLASS_RELOWNER));
             // PRIVILEGES
-            loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"), s.getOwner(), null);
+            loader.setPrivileges(s, PgDiffUtils.getQuotedName(sequenceName), res.getString("aclarray"),
+                    s.getOwner(), null, schema.getName());
         }
 
         // COMMENT
