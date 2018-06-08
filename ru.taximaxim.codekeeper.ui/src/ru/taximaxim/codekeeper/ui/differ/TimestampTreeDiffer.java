@@ -86,10 +86,8 @@ public class TimestampTreeDiffer extends TreeDiffer {
                 DiffTree tree = new DiffTree(pm);
                 diffTree = tree.createTree(dbSrc, dbTgt);
 
-                if (false) {
-                    projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());
-                    ApgdiffUtils.serialize(path, projTimestamps);
-                }
+                projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());
+                ApgdiffUtils.serialize(path, projTimestamps);
             }
         } catch (CoreException | IOException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());

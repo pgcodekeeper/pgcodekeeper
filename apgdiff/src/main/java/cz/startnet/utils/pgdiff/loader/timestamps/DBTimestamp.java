@@ -88,10 +88,6 @@ public class DBTimestamp implements Serializable {
      * @see DBTimestamp
      */
     public void updateObjects(PgDatabase db) {
-        if (true) {
-            return;
-        }
-
         if (objects.isEmpty()) {
             return;
         }
@@ -186,10 +182,6 @@ public class DBTimestamp implements Serializable {
      * @return equals objects
      */
     public List<ObjectTimestamp> searchEqualsObjects(DBTimestamp dbTime) {
-        if (true) {
-            return new ArrayList<>();
-        }
-
         List<ObjectTimestamp> equalsObjects = new ArrayList<>();
 
         for (ObjectTimestamp pObj : objects.values()) {
