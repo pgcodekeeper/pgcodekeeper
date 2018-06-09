@@ -73,9 +73,11 @@ public class SchemasReader implements PgCatalogStrings {
             if (comment != null && !comment.isEmpty()) {
                 s.setComment(loader.args, PgDiffUtils.quoteString(comment));
             }
+        } else if (!"postgres".equals(loader.getRoleByOid(owner))) {
+            loader.setOwner(s, owner);
         }
 
-        loader.setPrivileges(s, res.getString("nspacl"), loader.getRoleByOid(owner));
+        loader.setPrivileges(s, res.getString("nspacl"));
 
         return s;
     }

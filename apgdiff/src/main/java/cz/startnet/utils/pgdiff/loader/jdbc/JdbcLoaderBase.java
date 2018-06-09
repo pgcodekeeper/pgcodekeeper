@@ -37,7 +37,9 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.DaemonThreadFactory;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
  * Container for shared JdbcLoader state.
@@ -143,7 +145,7 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
         }
     }
 
-    public void setPrivileges(PgStatement st, String aclItemsArrayAsString ) {
+    public void setPrivileges(PgStatement st, String aclItemsArrayAsString) {
         setPrivileges(st, aclItemsArrayAsString, null);
     }
 
@@ -158,7 +160,14 @@ public abstract class JdbcLoaderBase implements PgCatalogStrings {
             signature = PgDiffUtils.getQuotedName(st.getName());
             break;
         }
-        setPrivileges(st, signature, aclItemsArrayAsString, st.getOwner(),
+
+        String owner = st.getOwner();
+        if (owner == null && st.getStatementType() == DbObjType.SCHEMA
+                && ApgdiffConsts.PUBLIC.equals(st.getName())) {
+            owner = "postgres";
+        }
+
+        setPrivileges(st, signature, aclItemsArrayAsString, owner,
                 columnName == null ? null : PgDiffUtils.getQuotedName(columnName));
     }
 
