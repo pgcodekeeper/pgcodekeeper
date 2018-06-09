@@ -9,8 +9,13 @@ import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgRule;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ObjectTimestamp implements Serializable {
@@ -108,8 +113,29 @@ public class ObjectTimestamp implements Serializable {
         return object.column;
     }
 
+    public void copyRule(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+        PgStatement base = object.getStatement(db);
+        PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
+        PgStatement copy = base.shallowCopy();
+        fillPrivileges(copy, loader);
+        parent.addRule((PgRule)copy);
+    }
+
+    public void copyTrigger(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+        PgStatement base = object.getStatement(db);
+        PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
+        PgStatement copy = base.shallowCopy();
+        fillPrivileges(copy, loader);
+        parent.addTrigger((PgTrigger)copy);
+    }
+
     public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
         PgStatement copy = object.getStatement(db).shallowCopy();
+        fillPrivileges(copy, loader);
+        return copy;
+    }
+
+    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader) {
         copy.clearPrivileges();
         loader.setPrivileges(copy, acl);
         if (colAcls != null) {
@@ -127,6 +153,5 @@ public class ObjectTimestamp implements Serializable {
                 colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName));
             }
         }
-        return copy;
     }
 }

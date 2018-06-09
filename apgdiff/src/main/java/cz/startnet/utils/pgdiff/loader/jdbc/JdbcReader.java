@@ -11,11 +11,9 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.wrappers.JsonResultSetWrapper;
@@ -124,13 +122,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
-                    PgRule rule = (PgRule) obj.copyStatement(projDb, loader);
-                    sc.getRuleContainer(rule.getParent().getName()).addRule(rule);
+                    obj.copyRule(projDb, sc, loader);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TRIGGER:
-                    PgTrigger trig = (PgTrigger) obj.copyStatement(projDb, loader);
-                    sc.getTriggerContainer(trig.getParent().getName()).addTrigger(trig);
+                    obj.copyTrigger(projDb, sc, loader);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:
