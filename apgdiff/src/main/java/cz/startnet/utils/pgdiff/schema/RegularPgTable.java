@@ -45,8 +45,8 @@ public abstract class RegularPgTable extends PgTable {
         if (only) {
             sb.append("ONLY ");
         }
-        sb.append(PgDiffUtils.getQuotedName(getContainingSchema().getName()))
-        .append('.').append(PgDiffUtils.getQuotedName(getName()));
+        sb.append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(getName()));
         return sb.toString();
     }
 

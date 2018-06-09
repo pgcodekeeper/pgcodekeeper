@@ -212,6 +212,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         for (final DefaultValue defaultValue : defaultValues) {
             sbSQL.append("\n\nALTER VIEW ");
+            sbSQL.append(getContainingSchema().getName());
+            sbSQL.append('.');
             sbSQL.append(PgDiffUtils.getQuotedName(name));
             sbSQL.append(" ALTER COLUMN ");
             sbSQL.append(
@@ -230,6 +232,8 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             if (columnComment.getComment() != null
                     && !columnComment.getComment().isEmpty()) {
                 sbSQL.append("\n\nCOMMENT ON COLUMN ");
+                sbSQL.append(getContainingSchema().getName());
+                sbSQL.append('.');
                 sbSQL.append(PgDiffUtils.getQuotedName(name));
                 sbSQL.append('.');
                 sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
@@ -691,6 +695,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
                         sb.append("\n\nALTER TABLE "
+                                + newView.getContainingSchema().getName() + '.'
                                 + PgDiffUtils.getQuotedName(newView.getName())
                                 + " ALTER COLUMN "
                                 + PgDiffUtils.getQuotedName(newValue.getColumnName())
@@ -705,6 +710,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
             if (!found) {
                 sb.append("\n\nALTER TABLE "
+                        + newView.getContainingSchema().getName() + '.'
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + " ALTER COLUMN "
                         + PgDiffUtils.getQuotedName(oldValue.getColumnName())
@@ -728,6 +734,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
             }
 
             sb.append("\n\nALTER TABLE "
+                    + newView.getContainingSchema().getName() + '.'
                     + PgDiffUtils.getQuotedName(newView.getName())
                     + " ALTER COLUMN "
                     + PgDiffUtils.getQuotedName(newValue.getColumnName())

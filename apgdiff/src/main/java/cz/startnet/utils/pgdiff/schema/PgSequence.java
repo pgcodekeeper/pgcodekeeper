@@ -138,8 +138,11 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
         }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("\n\nALTER SEQUENCE ").append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append("\n\tOWNED BY ").append(ownedBy).append(';');
+        sbSQL.append("\n\nALTER SEQUENCE ")
+        .append(getContainingSchema().getName()).append('.')
+        .append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append("\n\tOWNED BY ")
+        .append(ownedBy).append(';');
 
         return sbSQL.toString();
     }

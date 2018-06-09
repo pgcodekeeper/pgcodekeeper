@@ -808,14 +808,8 @@ public class ModelExporter {
     }
 
     private String getDumpSql(PgStatement statement, boolean searchPath) {
-        // TODO replace current code with this:
-        // return statement.getFullSQL();
-        // It is for removing 'setting search_path' from files which describes elements.
-        // In the second step, remove unnecessary methods.
-
-        return searchPath ? ((PgStatementWithSearchPath)statement).getSearchPath()
-                + "\n\n" + statement.getFullSQL() : statement.getFullSQL();//$NON-NLS-1$
-
+        // TODO remove unnecessary methods associated with this method.
+        return statement.getFullSQL();
     }
 
     public static void writeProjVersion(File f) throws FileNotFoundException {
