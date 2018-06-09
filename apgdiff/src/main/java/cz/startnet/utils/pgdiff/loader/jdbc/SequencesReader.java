@@ -55,10 +55,13 @@ public class SequencesReader extends JdbcReader {
         String identityType = null;
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
             identityType = res.getString("attidentity");
+            if (identityType != null && identityType.isEmpty()) {
+                // treat lack of table dependency and no identityType as a single case
+                identityType = null;
+            }
         }
 
-        if (refTable != null && (identityType == null
-                || (!"d".equals(identityType) && !"a".equals(identityType)))) {
+        if (refTable != null && identityType == null) {
             s.setOwnedBy(PgDiffUtils.getQuotedName(refTable) + '.'
                     + PgDiffUtils.getQuotedName(res.getString("ref_col_name")));
         }
@@ -76,9 +79,9 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (SupportedVersion.VERSION_10.checkVersion(loader.version)) {
-            s.setStartWith(res.getString("seqstart"));
+            s.setStartWith(Long.toString(res.getLong("seqstart")));
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"), res.getLong("seqmin"));
-            s.setCache(res.getString("seqcache"));
+            s.setCache(Long.toString(res.getLong("seqcache")));
             s.setCycle(res.getBoolean("seqcycle"));
             if (identityType == null) {
                 s.setDataType(loader.cachedTypesByOid.get(res.getLong("data_type")).getFullName(schema.getName()));
