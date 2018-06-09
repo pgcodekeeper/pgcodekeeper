@@ -73,7 +73,6 @@ public class TimestampsReader implements PgCatalogStrings {
             column = new GenericColumn(name, DbObjType.EXTENSION);
             break;
         case "type":
-        case "composite type":
             column = new GenericColumn(schema, name, DbObjType.TYPE);
             break;
         case "sequence":

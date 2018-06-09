@@ -6,10 +6,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -20,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 
@@ -36,6 +39,7 @@ public class DBTimestamp implements Serializable {
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
     private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
+    private final transient Set<GenericColumn> brokenObjects = new HashSet<>();
 
     /**
      * Get database timestamps by given path, if not found create new empty object.
@@ -64,13 +68,30 @@ public class DBTimestamp implements Serializable {
         return db;
     }
 
+    /**
+     * Added object from jdbc to objects map. <br>
+     * WARNING: if objects already present in map, all version of objects will be deleted,
+     * and new versions of this object cannot be added to map.
+     *
+     * @param column - object definition
+     * @param objId - object id
+     * @param lastModified - last object modified time
+     * @param author - modify aauthor
+     * @param acl - objects privileges
+     * @param colAcls - object columns privileges
+     */
     public void addObject(GenericColumn column, long objId, Instant lastModified,
             String author, String acl, Map<String, String> colAcls) {
         ObjectTimestamp obj = objects.get(column);
-        if (obj == null || obj.getTime().isBefore(lastModified)) {
-            // replace stale timestamps
-            objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
-                    acl, colAcls));
+        if (obj == null) {
+            if (!brokenObjects.contains(column)) {
+                objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
+                        acl, colAcls));
+            }
+        } else {
+            objects.remove(column, obj);
+            brokenObjects.add(column);
+            Log.log(Log.LOG_WARNING, "pg_dbo_timestamps: duplicated object " + obj);
         }
     }
 
