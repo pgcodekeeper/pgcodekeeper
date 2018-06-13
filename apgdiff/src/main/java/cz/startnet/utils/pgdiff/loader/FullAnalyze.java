@@ -1,23 +1,23 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_rewrite_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rewrite_commandContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Select_stmtContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_restContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.VexContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.expr.Select;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.UtilAnalyzeExpr;
 import cz.startnet.utils.pgdiff.parsers.antlr.expr.ValueExpr;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AbstractTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRewrite;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -30,12 +30,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 public final class FullAnalyze {
 
     public static void fullAnalyze(PgDatabase db) {
-        DirectedGraph<PgStatement, DefaultEdge> graph = new DepcyGraph(db).getReversedGraph();
+        TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator =
+                new TopologicalOrderIterator<>(new DepcyGraph(db).getReversedGraph());
 
-        TopologicalOrderIterator<PgStatement, DefaultEdge> orderIterator = new TopologicalOrderIterator<>(graph);
-
-        AnalyzeTraversalListenerAdapter adapter = new AnalyzeTraversalListenerAdapter(db);
-        orderIterator.addTraversalListener(adapter);
+        orderIterator.addTraversalListener(new AnalyzeTraversalListenerAdapter(db));
 
         // 'VIEW' statements analysis.
         while (orderIterator.hasNext()) {
@@ -58,22 +56,19 @@ public final class FullAnalyze {
 
             switch (statementType) {
             case RULE:
-                Create_rewrite_statementContext createRewriteCtx = (Create_rewrite_statementContext) ctx;
-                PgRule rule = (PgRule) statement;
-
-                UtilAnalyzeExpr.analyzeRulesWhere(createRewriteCtx, rule, schemaName, db);
-                for (Rewrite_commandContext cmd : createRewriteCtx.commands) {
-                    UtilAnalyzeExpr.analyzeRulesCommand(cmd, rule, schemaName, db);
-                }
+                CreateRewrite.analyzeRulesCreate((Create_rewrite_statementContext) ctx,
+                        (PgRule) statement, schemaName, db);
                 break;
             case TRIGGER:
-                UtilAnalyzeExpr.analyzeTriggersWhen((VexContext) ctx,
+                CreateTrigger.analyzeTriggersWhen((VexContext) ctx,
                         (PgTrigger) statement, schemaName, db);
                 break;
             case INDEX:
+                CreateIndex.analyzeIndexRest((Index_restContext) ctx, statement,
+                        schemaName, db);
+                break;
             case CONSTRAINT:
-                UtilAnalyzeExpr.analyzeWithNmspc(ctx, statement, schemaName,
-                        statement.getParent().getName(), db);
+                AbstractTable.analyzeConstraintCtx(ctx, statement, schemaName, db);
                 break;
             case DOMAIN:
             case FUNCTION:
@@ -100,27 +95,12 @@ public final class FullAnalyze {
         }
 
         @Override
-        public void vertexTraversed(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (DbObjType.VIEW.equals(statement.getStatementType())) {
-                String schemaName = statement.getParent().getName();
-
-                Stream<Entry<PgStatement, ParserRuleContext>> viewAndCtx = db.getContextsForAnalyze()
-                        .stream().filter(entry -> statement.equals(entry.getKey()));
-
-                for (Entry<PgStatement, ParserRuleContext> entry : PgDiffUtils.sIter(viewAndCtx)) {
-                    PgView view = (PgView) entry.getKey();
-                    ParserRuleContext ctx = entry.getValue();
-
-                    if (ctx instanceof Select_stmtContext) {
-                        Select select = new Select(schemaName, db);
-                        view.addRelationColumns(select.analyze(ctx));
-                        view.addAllDeps(select.getDepcies());
-                    } else {
-                        UtilAnalyzeExpr.analyze((VexContext)ctx, new ValueExpr(schemaName,
-                                db), view);
-                    }
-                }
+        public void vertexTraversed(VertexTraversalEvent<PgStatement> event) {
+            PgStatement stmt = event.getVertex();
+            if (DbObjType.VIEW.equals(stmt.getStatementType())) {
+                db.getContextsForAnalyze().stream().filter(e -> stmt.equals(e.getKey()))
+                .forEach(e -> CreateView.analyzeViewCtx(e.getValue(), (PgView) e.getKey(),
+                        stmt.getParent().getName(), db));
             }
         }
     }
