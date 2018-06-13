@@ -60,10 +60,10 @@ transaction_mode
   ;
 
 schema_statement
-  : schema_create
-    | schema_alter
+  : schema_alter
     | schema_drop
     | schema_import
+    | schema_create
   ;
 
 schema_create
