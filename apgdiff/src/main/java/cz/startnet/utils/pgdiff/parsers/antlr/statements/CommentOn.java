@@ -70,7 +70,7 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
 
-        PgSchema schema = getSchemaSafe(ids, db.getDefaultSchema());
+        PgSchema schema = (ctx.EXTENSION() != null) ? null : getSchemaSafe(ids, db.getDefaultSchema());
 
         // function
         if (ctx.FUNCTION() != null) {

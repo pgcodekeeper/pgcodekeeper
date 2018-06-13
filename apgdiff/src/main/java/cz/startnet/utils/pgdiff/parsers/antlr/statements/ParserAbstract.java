@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -103,7 +105,14 @@ public abstract class ParserAbstract {
 
     public PgSchema getSchemaSafe(List<IdentifierContext> ids, PgSchema defaultSchema) {
         IdentifierContext schemaCtx = QNameParser.getSchemaNameCtx(ids);
-        return schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        PgSchema foundSchema = schemaCtx == null ? defaultSchema : getSafe(db::getSchema, schemaCtx);
+        if (foundSchema != null) {
+            return foundSchema;
+        }
+
+        IdentifierContext firstNameCtx = QNameParser.getFirstNameCtx(ids);
+        throw new UnresolvedReferenceException(MessageFormat.format(Messages.ParserAbstract_no_schema,
+                getFullCtxText(firstNameCtx)), firstNameCtx.start);
     }
 
     /**
