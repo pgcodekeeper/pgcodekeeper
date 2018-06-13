@@ -139,17 +139,19 @@ public class JdbcLoader extends JdbcLoaderBase {
             boolean readOnly, String timezone) {
         JdbcConnector connector = new JdbcConnector(host, port, user, pass, dbname,
                 properties, readOnly, timezone);
-        String schema = null;
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet res = statement.executeQuery(JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
             while (res.next()) {
-                schema = res.getString("nspname");
+                if (res.getBoolean("disabled")) {
+                    Log.log(Log.LOG_WARNING, "pg_dbo_timestamp: event trigger is disabled");
+                } else {
+                    return res.getString("nspname");
+                }
             }
         } catch (SQLException | IOException ex) {
             Log.log(Log.LOG_ERROR, "Error loading DB schema", ex);
         }
-        return schema;
+        return null;
     }
-
 }
