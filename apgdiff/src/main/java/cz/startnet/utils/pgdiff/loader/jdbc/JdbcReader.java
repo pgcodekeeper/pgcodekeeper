@@ -10,6 +10,10 @@ import java.util.Set;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.ObjectTimestamp;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFtsConfiguration;
+import cz.startnet.utils.pgdiff.schema.PgFtsDictionary;
+import cz.startnet.utils.pgdiff.schema.PgFtsParser;
+import cz.startnet.utils.pgdiff.schema.PgFtsTemplate;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgRule;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -157,6 +161,22 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     break;
                 case SEQUENCE:
                     sc.addSequence((PgSequence) obj.getShallowCopy(projDb));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case FTS_PARSER:
+                    sc.addFtsParser((PgFtsParser) obj.getShallowCopy(projDb));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case FTS_TEMPLATE:
+                    sc.addFtsTemplate((PgFtsTemplate) obj.getShallowCopy(projDb));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case FTS_DICTIONARY:
+                    sc.addFtsDictionary((PgFtsDictionary) obj.getShallowCopy(projDb));
+                    sbOids.append(obj.getObjId()).append(',');
+                    break;
+                case FTS_CONFIGURATION:
+                    sc.addFtsConfiguration((PgFtsConfiguration) obj.getShallowCopy(projDb));
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 default:

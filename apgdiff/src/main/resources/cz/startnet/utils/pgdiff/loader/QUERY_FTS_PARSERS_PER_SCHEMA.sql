@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT p.prsname,
+SELECT p.oid::bigint,
+       p.prsname,
        p.prsstart,
        p.prstoken,
        p.prsend,

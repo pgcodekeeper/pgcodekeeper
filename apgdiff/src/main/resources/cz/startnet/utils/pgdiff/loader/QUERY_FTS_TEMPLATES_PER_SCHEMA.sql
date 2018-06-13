@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT t.tmplname,
+SELECT t.oid::bigint,
+       t.tmplname,
        t.tmplinit,
        t.tmpllexize,
        d.description AS comment

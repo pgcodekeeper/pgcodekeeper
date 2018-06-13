@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT d.dictname,
+SELECT d.oid::bigint,
+       d.dictname,
        d.dictowner::bigint,
        t.tmplname,
        n.nspname,

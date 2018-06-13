@@ -5,7 +5,8 @@ WITH extension_deps AS (
         AND dep.deptype = 'e'
 )
 
-SELECT c.cfgname,
+SELECT c.oid::bigint,
+       c.cfgname,
        c.cfgowner,
        p.prsname,
        n.nspname,
