@@ -60,10 +60,9 @@ transaction_mode
   ;
 
 schema_statement
-  : schema_alter
+  : schema_create
+    | schema_alter
     | schema_drop
-    | schema_import
-    | schema_create
   ;
 
 schema_create
@@ -88,6 +87,7 @@ schema_create
     | comment_on_statement
     | rule_common
     | set_statement
+    | schema_import
     ;
 
 schema_alter
