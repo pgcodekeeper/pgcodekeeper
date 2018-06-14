@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -341,25 +342,20 @@ public class PgSequence extends PgStatementWithSearchPath implements IRelation {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((cache == null) ? 0 : cache.hashCode());
-        result = prime * result + (cycle ? itrue : ifalse);
-        result = prime * result + ((increment == null) ? 0 : increment.hashCode());
-        result = prime * result + ((maxValue == null) ? 0 : maxValue.hashCode());
-        result = prime * result + ((minValue == null) ? 0 : minValue.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((ownedBy == null) ? 0 : ownedBy.hashCode());
-        result = prime * result + ((startWith == null) ? 0 : startWith.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(cache);
+        hasher.put(cycle);
+        hasher.put(increment);
+        hasher.put(maxValue);
+        hasher.put(minValue);
+        hasher.put(name);
+        hasher.put(ownedBy);
+        hasher.put(startWith);
+        hasher.put(owner);
+        hasher.put(comment);
+        hasher.put(dataType);
     }
 
     @Override

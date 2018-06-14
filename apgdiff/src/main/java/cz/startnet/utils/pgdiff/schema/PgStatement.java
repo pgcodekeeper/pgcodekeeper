@@ -11,6 +11,10 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.hashers.IHashable;
+import cz.startnet.utils.pgdiff.hashers.JavaHasher;
+import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
@@ -22,7 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
  *
  * @author Alexander Levsha
  */
-public abstract class PgStatement implements IStatement {
+public abstract class PgStatement implements IStatement, IHashable {
     /**
      * The statement as it's been read from dump before parsing.
      */
@@ -409,15 +413,11 @@ public abstract class PgStatement implements IStatement {
     public final int hashCode() {
         int h = hash;
         if (h == 0) {
-            h = computeHash();
-
-            final int prime = 31;
-            PgStatement p = parent;
-            while (p != null) {
-                String pName = p.getName();
-                h = prime * h + ((pName == null) ? 0 : pName.hashCode());
-                p = p.getParent();
-            }
+            JavaHasher hasher = new JavaHasher();
+            computeHash(hasher);
+            computeChildrenHash(hasher);
+            computeNamesHash(hasher);
+            h = hasher.getResult();
 
             if (h == 0) {
                 h = Integer.MAX_VALUE;
@@ -427,6 +427,19 @@ public abstract class PgStatement implements IStatement {
         return h;
     }
 
+
+    /**
+     * Compute local hash
+     *
+     * @return hash byte array
+     */
+    public final byte[] shaHash() {
+        ShaHasher hasher = new ShaHasher();
+        computeHash(hasher);
+        return hasher.getArray();
+    }
+
+
     protected void resetHash(){
         PgStatement st = this;
         while (st != null){
@@ -435,10 +448,18 @@ public abstract class PgStatement implements IStatement {
         }
     }
 
-    /**
-     * @see #hashCode()
-     */
-    public abstract int computeHash();
+    protected void computeChildrenHash(Hasher hasher) {
+        // subclasses with children must override
+    }
+
+    private void computeNamesHash(Hasher hasher) {
+        PgStatement p = parent;
+        while (p != null) {
+            String pName = p.getName();
+            hasher.put(pName);
+            p = p.getParent();
+        }
+    }
 
     /**
      * @return fully qualified (up to schema) dot-delimited object name.

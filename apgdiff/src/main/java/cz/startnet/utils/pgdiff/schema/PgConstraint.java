@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -193,14 +194,11 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (notValid ? 1231 : 1237);
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(definition);
+        hasher.put(notValid);
+        hasher.put(comment);
     }
 
     @Override

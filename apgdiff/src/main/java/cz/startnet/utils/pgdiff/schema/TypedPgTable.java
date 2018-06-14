@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+
 /**
  * Typed table object
  *
@@ -78,11 +80,9 @@ public class TypedPgTable extends RegularPgTable {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = super.computeHash();
-        result = prime * result + ((ofType == null) ? 0 : ofType.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(ofType);
     }
 
     @Override

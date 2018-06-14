@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.ShaHasher;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -115,16 +115,15 @@ public class DBTimestamp implements Serializable {
 
         Map<GenericColumn, byte[]> statements = new HashMap<>();
         db.getDescendants().filter(st -> st.getStatementType() != DbObjType.CONSTRAINT).forEach(st -> {
-            String hash = st.getRawStatement();
             if (st.getStatementType() == DbObjType.TABLE) {
                 List<PgConstraint> cons = ((PgTable)st).getConstraints();
-                if (!cons.isEmpty()) {
-                    StringBuilder tableHash = new StringBuilder(hash);
-                    cons.forEach(con -> tableHash.append(con.getRawStatement()));
-                    hash = tableHash.toString();
-                }
+                ShaHasher hasher = new ShaHasher();
+                hasher.put(st);
+                hasher.putUnordered(cons);
+                statements.put(createGC(st), hasher.getArray());
+            } else {
+                statements.put(createGC(st), st.shaHash());
             }
-            statements.put(createGC(st), PgDiffUtils.sha(st.getRawStatement()));
         });
 
         for (Iterator<Entry<GenericColumn, ObjectTimestamp>> iterator = objects.entrySet().iterator();
@@ -226,16 +225,20 @@ public class DBTimestamp implements Serializable {
     public void rewriteObjects(List<PgStatement> statements, DBTimestamp remoteDb) {
         objects.clear();
         for (PgStatement st : statements) {
-            StringBuilder hash = new StringBuilder(st.getRawStatement());
-            if (st.getStatementType() == DbObjType.TABLE) {
-                ((PgTable)st).getConstraints().forEach(con -> hash.append(con.getRawStatement()));
-            }
-
             GenericColumn gc = createGC(st);
             ObjectTimestamp obj = remoteDb.objects.get(gc);
             if (obj != null) {
-                objects.put(gc, new ObjectTimestamp(gc, PgDiffUtils.sha(hash.toString()),
-                        obj.getTime()));
+                byte [] hash;
+                if (st.getStatementType() == DbObjType.TABLE) {
+                    ShaHasher hasher = new ShaHasher();
+                    hasher.put(st);
+                    hasher.putUnordered(((PgTable)st).getConstraints());
+                    hash = hasher.getArray();
+                } else {
+                    hash = st.shaHash();
+                }
+
+                objects.put(gc, new ObjectTimestamp(gc, hash, obj.getTime()));
             }
         }
     }

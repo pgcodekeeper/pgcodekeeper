@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import cz.startnet.utils.pgdiff.loader.SupportedVersion;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -287,12 +288,14 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + PgDiffUtils.setlikeHashcode(extensions);
-        result = prime * result + PgDiffUtils.setlikeHashcode(schemas);
-        return result;
+    public void computeHash(Hasher hasher) {
+        // has only child objects
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(extensions);
+        hasher.putUnordered(schemas);
     }
 
     @Override

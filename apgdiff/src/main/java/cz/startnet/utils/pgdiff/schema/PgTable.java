@@ -16,6 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.hashers.IHashable;
+import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -603,25 +606,24 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public int computeHash() {
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + columns.hashCode();
-        result = prime * result + inherits.hashCode();
-        result = prime * result + options.hashCode();
-        result = prime * result + (hasOids ? itrue : ifalse);
-        result = prime * result + grants.hashCode();
-        result = prime * result + revokes.hashCode();
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(constraints);
-        result = prime * result + PgDiffUtils.setlikeHashcode(indexes);
-        result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
-        result = prime * result + PgDiffUtils.setlikeHashcode(rules);
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.putOrdered(columns);
+        hasher.putOrdered(inherits);
+        hasher.put(options);
+        hasher.put(hasOids);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(owner);
+        hasher.put(comment);
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(constraints);
+        hasher.putUnordered(indexes);
+        hasher.putUnordered(triggers);
+        hasher.putUnordered(rules);
     }
 
     @Override
@@ -751,28 +753,36 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         }
     }
 
-    public static class Inherits {
+    public static class Inherits implements IHashable {
         private final String key;
         private final String value;
 
         public String getKey() {
             return key;
         }
+
         public String getValue() {
             return value;
         }
+
         public Inherits(String key, String value) {
             this.key = key;
             this.value = value;
         }
+
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((key == null) ? 0 : key.hashCode());
-            result = prime * result + ((value == null) ? 0 : value.hashCode());
-            return result;
+            JavaHasher hasher = new JavaHasher();
+            computeHash(hasher);
+            return hasher.getResult();
         }
+
+        @Override
+        public void computeHash(Hasher hasher) {
+            hasher.put(key);
+            hasher.put(value);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Inherits) {

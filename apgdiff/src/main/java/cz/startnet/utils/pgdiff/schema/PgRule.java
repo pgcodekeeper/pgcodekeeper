@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -225,16 +226,13 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((event == null) ? 0 : event.hashCode());
-        result = prime * result + ((condition == null) ? 0 : condition.hashCode());
-        result = prime * result + (instead ? 1231 : 1237);
-        result = prime * result + commands.hashCode();
-        result = prime * result + ((enabledState == null) ? 0 : enabledState.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(event);
+        hasher.put(condition);
+        hasher.put(instead);
+        hasher.putOrderedStrings(commands);
+        hasher.put(enabledState);
+        hasher.put(comment);
     }
 
     @Override
