@@ -59,7 +59,9 @@ public class ActionsToScriptConverter {
                             action.getAction() == StatementActions.CREATE ?
                                     CREATE_COMMENT : DROP_COMMENT,
                                     oldObj.getStatementType(),
-                                    objStarter.getStatementType(), objName);
+                                    objStarter.getStatementType(),
+                                    objStarter.getParent().getParent().getName()
+                                    + '.' + objName);
                 }
                 switch (action.getAction()) {
                 case CREATE:

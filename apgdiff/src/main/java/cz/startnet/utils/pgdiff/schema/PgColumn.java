@@ -390,7 +390,7 @@ public class PgColumn extends PgStatementWithSearchPath implements PgOptionConta
                 .append("::").append(newColumn.getType());
             }
             sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
-                    newColumn.getParent().getName(),
+                    newColumn.getParent().getParent().getName() + '.' + newColumn.getParent().getName(),
                     oldColumn.getType(), newColumn.getType()) + " */");
         }
     }
