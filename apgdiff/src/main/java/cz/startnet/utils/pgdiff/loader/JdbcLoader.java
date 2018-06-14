@@ -153,7 +153,7 @@ public class JdbcLoader extends JdbcLoaderBase {
                 } else if (res.getBoolean("disabled")) {
                     throw new PgCodekeeperException("pg_dbo_timestamp: event trigger is disabled");
                 } else {
-                    return res.getString("nspname");
+                    return PgDiffUtils.getQuotedName(res.getString("nspname"));
                 }
             }
         } catch (SQLException | IOException ex) {
