@@ -234,8 +234,7 @@ public class ModelExporter {
 
             createParentSchema(elParent);
             // dump new version
-            dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew),
-                    new File(outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(getDumpSql(stInNew), new File(outDir, getRelativeFilePath(stInNew, true)));
         }
     }
 
@@ -270,8 +269,7 @@ public class ModelExporter {
             // FALLTHROUGH
         case EXTENSION:
             // export schema/extension sql file
-            dumpSQL(stInNew.getFullSQL(),
-                    new File (outDir, getRelativeFilePath(stInNew, true)));
+            dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true)));
             break;
 
         case FUNCTION:
@@ -621,10 +619,10 @@ public class ModelExporter {
             Collections.sort(contents, ExportTableOrder.INSTANCE);
         }
 
-        StringBuilder groupSql = new StringBuilder(getDumpSql(obj, true));
+        StringBuilder groupSql = new StringBuilder(getDumpSql(obj));
 
         for (PgStatementWithSearchPath st : contents) {
-            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false));
+            groupSql.append(GROUP_DELIMITER).append(getDumpSql(st));
         }
 
         dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(obj)));
@@ -721,7 +719,7 @@ public class ModelExporter {
                 groupedDump = new StringBuilder(getDumpSql(f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -741,7 +739,7 @@ public class ModelExporter {
                     StringBuilder groupSql = new StringBuilder(dump);
                     // only tables and views can be here
                     obj.getChildren().map(st -> (PgStatementWithSearchPath)st).sorted(new ExportTableOrder())
-                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st, false)));
+                    .forEach(st -> groupSql.append(GROUP_DELIMITER).append(getDumpSql(st)));
                     dump = groupSql.toString();
                 }
 
@@ -803,12 +801,7 @@ public class ModelExporter {
         return getExportedFilename(name) + ".sql"; //$NON-NLS-1$
     }
 
-    private String getDumpSql(PgStatementWithSearchPath statement) {
-        return getDumpSql(statement, true);
-    }
-
-    private String getDumpSql(PgStatement statement, boolean searchPath) {
-        // TODO remove unnecessary methods associated with this method.
+    private String getDumpSql(PgStatement statement) {
         return statement.getFullSQL();
     }
 
