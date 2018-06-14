@@ -13,7 +13,7 @@ SET client_min_messages = warning;
 COMMENT ON SCHEMA public IS 'Standard public schema';
 
 
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 SET default_tablespace = '';
 
@@ -23,29 +23,29 @@ SET default_with_oids = false;
 -- Name: mytable; Type: TABLE; Schema: public; Owner: shamsutdinov_lr; Tablespace: 
 --
 
-CREATE TABLE mytable (
+CREATE TABLE public.mytable (
     col111 integer,
     col222 integer,
     col333 text
 );
 
-ALTER TABLE mytable OWNER TO shamsutdinov_lr;
+ALTER TABLE public.mytable OWNER TO shamsutdinov_lr;
 
-CREATE UNIQUE INDEX col222_idx ON mytable USING btree (col222) WHERE (col111 > 100);
+CREATE UNIQUE INDEX col222_idx ON public.mytable USING btree (col222) WHERE (col111 > 100);
 
 --
 -- Name: mytable2; Type: TABLE; Schema: public; Owner: shamsutdinov_lr; Tablespace: 
 --
 
-CREATE TABLE mytable2 (
+CREATE TABLE public.mytable2 (
     col111 integer,
     col222 integer,
     col333 text
 );
 
-ALTER TABLE mytable2 OWNER TO shamsutdinov_lr;
+ALTER TABLE public.mytable2 OWNER TO shamsutdinov_lr;
 
-CREATE UNIQUE INDEX col222_idx_2 ON mytable2 USING btree (col222) WHERE (col111 > 100);
+CREATE UNIQUE INDEX col222_idx_2 ON public.mytable2 USING btree (col222) WHERE (col111 > 100);
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
