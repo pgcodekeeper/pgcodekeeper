@@ -172,13 +172,10 @@ public abstract class AbstractTable extends ParserAbstract {
     }
 
     protected void addInherit(PgTable table, List<IdentifierContext> idsInh) {
-        String inhSchemaName = QNameParser.getSchemaName(idsInh, null);
+        String inhSchemaName = QNameParser.getSchemaName(idsInh, getDefSchemaName());
         String inhTableName = QNameParser.getFirstName(idsInh);
         table.addInherits(inhSchemaName, inhTableName);
-        GenericColumn gc = new GenericColumn(
-                inhSchemaName == null ? getDefSchemaName() : inhSchemaName,
-                        inhTableName, DbObjType.TABLE);
-        table.addDep(gc);
+        table.addDep(new GenericColumn(inhSchemaName, inhTableName, DbObjType.TABLE));
     }
 
     protected static PgConstraint createTableConstraintBlank(Constraint_commonContext ctx) {

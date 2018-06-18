@@ -92,7 +92,7 @@ public class TablesReader extends JdbcReader {
             String[] inhnspnames = res.getArray("inhnspnames", String.class);
 
             for (int i = 0; i < inhrelnames.length; ++i) {
-                t.addInherits(schemaName.equals(inhnspnames[i]) ? null : inhnspnames[i], inhrelnames[i]);
+                t.addInherits(inhnspnames[i], inhrelnames[i]);
                 t.addDep(new GenericColumn(inhnspnames[i], inhrelnames[i], DbObjType.TABLE));
             }
         }

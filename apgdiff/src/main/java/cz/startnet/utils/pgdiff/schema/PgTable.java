@@ -209,8 +209,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
         if (!inherits.isEmpty()) {
             sbSQL.append("\nINHERITS (");
             for (final Inherits tableName : inherits) {
-                sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) +
-                        tableName.getValue());
+                sbSQL.append(tableName.getKey() + "." + tableName.getValue());
                 sbSQL.append(", ");
             }
             sbSQL.setLength(sbSQL.length() - 2);
