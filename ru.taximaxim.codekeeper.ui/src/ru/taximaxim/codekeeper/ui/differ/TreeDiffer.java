@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -82,7 +81,7 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
     public static TreeDiffer getTree(DbSource dbProj, DbInfo dbInfo, String charset,
             boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
         String error = null;
-        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
+        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PREF.USE_EXTENSION)) {
             try {
                 Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
                         dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));

@@ -634,8 +634,6 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorPrefPage_action_update;
 
-    public static String ProjectEditorPrefPage_show_db_user;
-
     public static String ProjectEditorPrefPage_show_git_user;
 
     public static String ProjectOverrideView_link_with_editor;
@@ -759,7 +757,11 @@ public final class Messages extends NLS {
 
     public static String generalPrefPage_perspective_changing_status;
 
+    public static String GeneralPrefPage_extension_desc;
+
     public static String GeneralPrefPage_reuse_open_compare_editor;
+
+    public static String GeneralPrefPage_use_extension;
 
     public static String GetChanges_select_source;
 
