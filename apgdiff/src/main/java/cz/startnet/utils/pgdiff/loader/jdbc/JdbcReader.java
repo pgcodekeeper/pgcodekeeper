@@ -142,9 +142,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case CONSTRAINT:
-                    PgTable table = (PgTable) obj.copyStatement(projDb, loader);
+                    PgTable table = (PgTable) obj.getObject().getStatement(projDb);
                     PgTable newTable = sc.getTable(table.getName());
-                    table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                    if (newTable.getConstraints().isEmpty()) {
+                        table.getConstraints().forEach(con -> newTable.addConstraint(con.shallowCopy()));
+                    }
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TYPE:
