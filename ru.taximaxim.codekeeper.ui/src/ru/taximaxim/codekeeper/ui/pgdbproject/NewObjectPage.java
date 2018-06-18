@@ -423,9 +423,7 @@ public final class NewObjectPage extends WizardPage {
         IFile file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
 
         if (!file.exists()) {
-            StringBuilder sb = new StringBuilder("SET search_path = " //$NON-NLS-1$
-                    + PgDiffUtils.getQuotedName(schema)
-                    + ", pg_catalog;"); //$NON-NLS-1$
+            StringBuilder sb = new StringBuilder("SET search_path = pg_catalog;"); //$NON-NLS-1$
             sb.append("\n\nCREATE "); //$NON-NLS-1$
             if (type == DbObjType.FUNCTION) {
                 sb.append("OR REPLACE "); //$NON-NLS-1$
