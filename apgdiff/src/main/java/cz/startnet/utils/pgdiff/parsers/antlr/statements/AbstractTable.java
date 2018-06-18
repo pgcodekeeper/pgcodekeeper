@@ -101,7 +101,8 @@ public abstract class AbstractTable extends ParserAbstract {
             constr.addDep(new GenericColumn(refSchemaName, refTableName, colName, DbObjType.COLUMN));
             constr.setDefinition("FOREIGN KEY ("
                     + PgDiffUtils.getQuotedName(colName)
-                    + ") REFERENCES " + PgDiffUtils.getQuotedName(ftable.table)
+                    + ") REFERENCES " + PgDiffUtils.getQuotedName(ftable.schema)
+                    + '.' + PgDiffUtils.getQuotedName(ftable.table)
                     + '(' + PgDiffUtils.getQuotedName(fColumn) +')');
         } else if (prkey != null) {
             String genName = prkey.PRIMARY() == null ?
