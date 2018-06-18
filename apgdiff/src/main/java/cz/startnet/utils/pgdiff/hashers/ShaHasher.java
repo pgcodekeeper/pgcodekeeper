@@ -75,7 +75,9 @@ public class ShaHasher implements Hasher {
         if (s == null) {
             md.update((byte)0);
         } else {
-            md.update(s.getBytes(StandardCharsets.UTF_8));
+            ShaHasher child = new ShaHasher(this);
+            child.put(s.getBytes(StandardCharsets.UTF_8));
+            md.update(child.getArray());
         }
     }
 
@@ -148,13 +150,9 @@ public class ShaHasher implements Hasher {
     public void putUnorderedStrings(Collection<String> col) {
         byte[] sum = EMPTY.clone();
         for (String s : col) {
-            try {
-                MessageDigest child = MessageDigest.getInstance(ALGORITHM);
-                byte[] second = child.digest(s.getBytes(StandardCharsets.UTF_8));
-                xorByteArrays(sum, second);
-            } catch (NoSuchAlgorithmException e) {
-                Log.log(e);
-            }
+            ShaHasher child = new ShaHasher(this);
+            child.put(s);
+            xorByteArrays(sum, child.getArray());
         }
         md.update(sum);
     }
@@ -188,7 +186,7 @@ public class ShaHasher implements Hasher {
         return md.digest();
     }
 
-    public void putHashable(IHashable hashable, MessageDigest md) {
+    private void putHashable(IHashable hashable, MessageDigest md) {
         if (hashable == null) {
             md.update((byte)0);
         } else {
@@ -203,5 +201,9 @@ public class ShaHasher implements Hasher {
             first[i] ^= second[i];
         }
         return first;
+    }
+
+    public void put(byte[] bs) {
+        md.update(bs);
     }
 }

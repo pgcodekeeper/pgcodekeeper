@@ -113,7 +113,7 @@ public class ObjectTimestamp implements Serializable {
         return object.column;
     }
 
-    public void copyRule(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+    public void addRuleCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
         PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();
@@ -121,7 +121,7 @@ public class ObjectTimestamp implements Serializable {
         parent.addRule((PgRule)copy);
     }
 
-    public void copyTrigger(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+    public void addTriggerCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
         PgStatement base = object.getStatement(db);
         PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
         PgStatement copy = base.shallowCopy();

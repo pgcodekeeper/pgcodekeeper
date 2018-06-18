@@ -153,11 +153,11 @@ public class JdbcLoader extends JdbcLoaderBase {
                 } else if (res.getBoolean("disabled")) {
                     throw new PgCodekeeperException("pg_dbo_timestamp: event trigger is disabled");
                 } else {
-                    return PgDiffUtils.getQuotedName(res.getString("nspname"));
+                    return res.getString("nspname");
                 }
             }
         } catch (SQLException | IOException ex) {
-            Log.log(Log.LOG_ERROR, "Error loading DB schema", ex);
+            throw new PgCodekeeperException("Error loading DB schema", ex);
         }
         return null;
     }

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.timestamps.DBTimestamp;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
@@ -31,7 +32,7 @@ public class TimestampsReader implements PgCatalogStrings {
     public DBTimestamp read() throws SQLException, InterruptedException {
         loader.setCurrentOperation("pg_dbo_timestamp query");
         DBTimestamp time = new DBTimestamp();
-        String schemaName = loader.getExtensionSchema();
+        String schemaName = PgDiffUtils.getQuotedName(loader.getExtensionSchema());
         try (ResultSet result = loader.runner.runScript(loader.statement, MessageFormat.format(QUERY, schemaName))) {
             while (result.next()) {
                 fill(result, time);

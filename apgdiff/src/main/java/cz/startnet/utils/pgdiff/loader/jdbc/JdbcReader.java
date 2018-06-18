@@ -122,11 +122,11 @@ public abstract class JdbcReader implements PgCatalogStrings {
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case RULE:
-                    obj.copyRule(projDb, sc, loader);
+                    obj.addRuleCopy(projDb, sc, loader);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case TRIGGER:
-                    obj.copyTrigger(projDb, sc, loader);
+                    obj.addTriggerCopy(projDb, sc, loader);
                     sbOids.append(obj.getObjId()).append(',');
                     break;
                 case INDEX:

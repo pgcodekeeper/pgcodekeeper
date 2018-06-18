@@ -39,7 +39,7 @@ public class DBTimestamp implements Serializable {
     private static final Map<Path, DBTimestamp> PROJ_TIMESTAMPS = new ConcurrentHashMap<>();
 
     private final Map <GenericColumn, ObjectTimestamp> objects = new HashMap<>();
-    private final transient Set<GenericColumn> brokenObjects = new HashSet<>();
+    private final transient Set<GenericColumn> duplicatedObjects = new HashSet<>();
 
     /**
      * Get database timestamps by given path, if not found create new empty object.
@@ -84,13 +84,13 @@ public class DBTimestamp implements Serializable {
             String author, String acl, Map<String, String> colAcls) {
         ObjectTimestamp obj = objects.get(column);
         if (obj == null) {
-            if (!brokenObjects.contains(column)) {
+            if (!duplicatedObjects.contains(column)) {
                 objects.put(column, new ObjectTimestamp(column, objId, lastModified, author,
                         acl, colAcls));
             }
         } else {
             objects.remove(column, obj);
-            brokenObjects.add(column);
+            duplicatedObjects.add(column);
             Log.log(Log.LOG_WARNING, "pg_dbo_timestamps: duplicated object " + obj);
         }
     }
@@ -241,5 +241,6 @@ public class DBTimestamp implements Serializable {
                 objects.put(gc, new ObjectTimestamp(gc, hash, obj.getTime()));
             }
         }
+        System.err.println(objects.size());
     }
 }
