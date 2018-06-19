@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsTemplate extends PgStatementWithSearchPath {
@@ -79,12 +80,12 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate dictionary = new PgFtsTemplate(getName(), getRawStatement());
-        dictionary.setComment(getComment());
-        dictionary.setInitFunction(getInitFunction());
-        dictionary.setLexizeFunction(getLexizeFunction());
-        dictionary.deps.addAll(deps);
-        return dictionary;
+        PgFtsTemplate template = new PgFtsTemplate(getName(), getRawStatement());
+        template.setComment(getComment());
+        template.setInitFunction(getInitFunction());
+        template.setLexizeFunction(getLexizeFunction());
+        template.deps.addAll(deps);
+        return template;
     }
 
     @Override
@@ -114,14 +115,11 @@ public class PgFtsTemplate extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((initFunction == null) ? 0 : initFunction.hashCode());
-        result = prime * result + ((lexizeFunction == null) ? 0 : lexizeFunction.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(initFunction);
+        hasher.put(lexizeFunction);
+        hasher.put(comment);
     }
 
     public String getInitFunction() {

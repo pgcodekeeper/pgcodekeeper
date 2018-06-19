@@ -91,8 +91,14 @@ public final class DiffTree {
                     rv.add(new CompareResult(sLeft, null));
                 } else if(!sLeft.equals(foundRight)) {
                     rv.add(new CompareResult(sLeft, foundRight));
+
+                    if (sLeft.compare(foundRight)) {
+                        equalsStatements.add(sLeft);
+                    }
                 } else {
                     equalsStatements.add(sLeft);
+                    // equals includes all descendants so they are equal too
+                    sLeft.getDescendants().forEach(equalsStatements::add);
                 }
             });
         }

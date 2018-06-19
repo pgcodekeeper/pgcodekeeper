@@ -1,20 +1,21 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsConfiguration extends PgStatementWithSearchPath {
 
     private String parser;
     /**key - fragment, value - dictionaries */
-    private final Map<String, List<String>> dictionariesMap = new HashMap<>();
+    private final Map<String, Collection<String>> dictionariesMap = new HashMap<>();
 
 
     public PgFtsConfiguration(String name, String rawStatement) {
@@ -97,15 +98,15 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     public void compareOptions(PgFtsConfiguration newConf, StringBuilder sb) {
-        Map <String, List<String>> oldMap = dictionariesMap;
-        Map <String, List<String>> newMap = newConf.dictionariesMap;
+        Map <String, Collection<String>> oldMap = dictionariesMap;
+        Map <String, Collection<String>> newMap = newConf.dictionariesMap;
 
         if (oldMap.isEmpty() && newMap.isEmpty()) {
             return;
         }
 
         oldMap.forEach((fragment, dictionaries) -> {
-            List<String> newDictionaries = newMap.get(fragment);
+            Collection<String> newDictionaries = newMap.get(fragment);
 
             if (newDictionaries == null) {
                 sb.append("\n\nALTER TEXT SEARCH CONFIGURATION ").append(getQualifiedName())
@@ -161,15 +162,12 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((parser == null) ? 0 : parser.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + dictionariesMap.hashCode();
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(parser);
+        hasher.putStringCollectionsMap(dictionariesMap);
+        hasher.put(comment);
     }
 
     public String getParser() {
@@ -182,7 +180,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
     }
 
     public void addDictionary(String fragment, String dictionary) {
-        List<String> dictionaries = dictionariesMap.get(fragment);
+        Collection<String> dictionaries = dictionariesMap.get(fragment);
         if (dictionaries == null) {
             dictionaries = new ArrayList<>();
             dictionariesMap.put(fragment, dictionaries);
@@ -191,7 +189,7 @@ public class PgFtsConfiguration extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public Map<String, List<String>> getDictionariesMap() {
+    public Map<String, Collection<String>> getDictionariesMap() {
         return dictionariesMap;
     }
 }

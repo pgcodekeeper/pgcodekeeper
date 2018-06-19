@@ -21,24 +21,16 @@ SELECT c.oid::bigint,
 FROM pg_catalog.pg_class c
 LEFT JOIN
     (SELECT attrelid,
-            pg_catalog.array_agg(columnsData.attname ORDER BY columnsData.attnum) AS column_names,
-            pg_catalog.array_agg(columnsData.description ORDER BY columnsData.attnum) AS column_comments,
-            pg_catalog.array_agg(columnsData.adsrc ORDER BY columnsData.attnum) AS column_defaults,
-            pg_catalog.array_agg(columnsData.attacl ORDER BY columnsData.attnum) AS column_acl
-     FROM
-         (SELECT attnum,
-                 attrelid,
-                 attr.attname,
-                 attr.attacl::text,
-                 des.description,
-                 def.adsrc
-          FROM pg_catalog.pg_attribute attr
-          LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum
-              AND attr.attrelid = def.adrelid
-              AND attr.attisdropped IS FALSE
-          LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
-              AND des.objsubid = attr.attnum
-          ORDER BY attr.attnum) columnsData
+            pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,
+            pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,
+            pg_catalog.array_agg(def.adsrc ORDER BY attr.attnum) AS column_defaults,
+            pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl
+     FROM pg_catalog.pg_attribute attr
+     LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum
+         AND attr.attrelid = def.adrelid
+         AND attr.attisdropped IS FALSE
+     LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
+         AND des.objsubid = attr.attnum
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_tablespace tabsp ON tabsp.oid = c.reltablespace
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid

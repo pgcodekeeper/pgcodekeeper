@@ -110,34 +110,21 @@ LEFT JOIN
      GROUP BY c.contypid) dom_constraints ON dom_constraints.contypid = t.oid
 LEFT JOIN
     (SELECT
-         comp_attrs_list.attrelid,
-         pg_catalog.array_agg(comp_attrs_list.attname ORDER BY comp_attrs_list.attnum) AS attnames,
-         pg_catalog.array_agg(comp_attrs_list.atttypdefn ORDER BY comp_attrs_list.attnum) AS atttypdefns,
-         pg_catalog.array_agg(comp_attrs_list.atttypid ORDER BY comp_attrs_list.attnum) AS atttypids,
-         pg_catalog.array_agg(comp_attrs_list.attcollation ORDER BY comp_attrs_list.attnum) AS attcollations,
-         pg_catalog.array_agg(comp_attrs_list.atttypcollation ORDER BY comp_attrs_list.attnum) AS atttypcollations,
-         pg_catalog.array_agg(comp_attrs_list.attcollationname ORDER BY comp_attrs_list.attnum) AS attcollationnames,
-         pg_catalog.array_agg(comp_attrs_list.attcollationnspname ORDER BY comp_attrs_list.attnum) AS attcollationnspnames,
-         pg_catalog.array_agg(comp_attrs_list.description ORDER BY comp_attrs_list.attnum) AS attcomments
-     FROM -- this query needs filtering on non-groupby field so we do that in a sub and aggregate here
-         (SELECT
-              a.attnum,
-              a.attrelid,
-              a.attname,
-              pg_catalog.format_type(a.atttypid, a.atttypmod) AS atttypdefn,
-              a.atttypid::bigint,
-              a.attcollation::bigint,
-              ta.typcollation::bigint AS atttypcollation,
-              cl.collname AS attcollationname,
-              cl.nspname AS attcollationnspname,
-              d.description
-          FROM pg_catalog.pg_attribute a
-          LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid
-          LEFT JOIN collations cl ON cl.oid = a.attcollation
-          LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid
-              AND d.objsubid = a.attnum
-          WHERE a.attisdropped = FALSE) comp_attrs_list
-     GROUP BY attrelid) comp_attrs ON comp_attrs.attrelid = t.typrelid
+         a.attrelid,
+         pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS attnames,
+         pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS atttypdefns,
+         pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS atttypids,
+         pg_catalog.array_agg(a.attcollation::bigint ORDER BY a.attnum) AS attcollations,
+         pg_catalog.array_agg(ta.typcollation::bigint ORDER BY a.attnum) AS atttypcollations,
+         pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS attcollationnames,
+         pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS attcollationnspnames,
+         pg_catalog.array_agg(d.description ORDER BY a.attnum) AS attcomments
+     FROM pg_catalog.pg_attribute a
+     LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid
+     LEFT JOIN collations cl ON cl.oid = a.attcollation
+     LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
+     WHERE a.attisdropped = FALSE
+     GROUP BY a.attrelid) comp_attrs ON comp_attrs.attrelid = t.typrelid
 WHERE typnamespace = ?
     AND t.typisdefined = TRUE
     AND (t.typrelid = 0 OR (SELECT c.relkind FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid) = 'c')

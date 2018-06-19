@@ -75,6 +75,8 @@ public interface UIConsts {
         String EXPLICIT_TYPE_CAST = "explicitTypeCast"; //$NON-NLS-1$
 
         String REUSE_OPEN_COMPARE_EDITOR = "reuseOpenCompareEditors"; //$NON-NLS-1$
+
+        String USE_EXTENSION = "useExtension"; //$NON-NLS-1$
     }
 
     interface COMMIT_PREF {
@@ -101,7 +103,6 @@ public interface UIConsts {
         String PERSPECTIVE_CHANGING_STATUS = "perspectiveChangingStatus"; //$NON-NLS-1$
         String EDITOR_UPDATE_ACTION = "editorUpdateAction"; //$NON-NLS-1$
         String SHOW_GIT_USER = "showGitUser"; //$NON-NLS-1$
-        String SHOW_DB_USER = "showDbUser"; //$NON-NLS-1$
         String UPDATE = "UPDATE"; //$NON-NLS-1$
         String RESET = "RESET"; //$NON-NLS-1$
         String NO_ACTION = "NO_ACTION"; //$NON-NLS-1$

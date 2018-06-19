@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
  * Base implementation of foreign table
@@ -141,10 +142,8 @@ public abstract class ForeignPgTable extends PgTable {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = super.computeHash();
-        result = prime * result + ((serverName == null) ? 0 : serverName.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(serverName);
     }
 }

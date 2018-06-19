@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  *      <li>Чтение таймстампов из сериализованного объекта находящегося по пути FileUtilsUi#getPathToTimeObject </li>
  *      <li>Построение базы данных из проекта.
  *      <li>Запись таймстампов проекта внутрь объекта базы данных проекта
- *      <li>Удаление объектов, у которых не совпали хеши raw statement {@link DBTimestamp#updateObjects}
+ *      <li>Удаление объектов, у которых не совпали sha хеши {@link DBTimestamp#updateObjects}
  *      <li>Чтение таймстампов из базы данных</li>
  *      <li>Запись таймстампов базы внутрь объекта сторонней базы данных
  *      <li>Сравнение полученных объектов по квалифицированным именам и формирование списка совпадающих объектов </li>
@@ -86,10 +86,8 @@ public class TimestampTreeDiffer extends TreeDiffer {
                 DiffTree tree = new DiffTree(pm);
                 diffTree = tree.createTree(dbSrc, dbTgt);
 
-                if (false) {
-                    projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());
-                    ApgdiffUtils.serialize(path, projTimestamps);
-                }
+                projTimestamps.rewriteObjects(tree.getEqualsObjects(), dbTgt.getDbTimestamp());
+                ApgdiffUtils.serialize(path, projTimestamps);
             }
         } catch (CoreException | IOException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());

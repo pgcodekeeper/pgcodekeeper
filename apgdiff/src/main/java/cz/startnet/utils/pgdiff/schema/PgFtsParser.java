@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgFtsParser extends PgStatementWithSearchPath {
@@ -126,17 +127,14 @@ public class PgFtsParser extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((startFunction == null) ? 0 : startFunction.hashCode());
-        result = prime * result + ((getTokenFunction == null) ? 0 : getTokenFunction.hashCode());
-        result = prime * result + ((endFunction == null) ? 0 : endFunction.hashCode());
-        result = prime * result + ((headLineFunction == null) ? 0 : headLineFunction.hashCode());
-        result = prime * result + ((lexTypesFunction == null) ? 0 : lexTypesFunction.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(startFunction);
+        hasher.put(getTokenFunction);
+        hasher.put(endFunction);
+        hasher.put(headLineFunction);
+        hasher.put(lexTypesFunction);
+        hasher.put(comment);
     }
 
     public String getStartFunction() {
