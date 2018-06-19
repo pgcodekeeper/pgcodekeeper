@@ -157,7 +157,8 @@ public class JdbcLoader extends JdbcLoaderBase {
                 }
             }
         } catch (SQLException | IOException ex) {
-            throw new PgCodekeeperException("Error loading DB schema", ex);
+            throw new PgCodekeeperException("Error when checking for pg_dbo_timestamp: "
+                    + ex.getLocalizedMessage(), ex);
         }
         return null;
     }

@@ -241,6 +241,5 @@ public class DBTimestamp implements Serializable {
                 objects.put(gc, new ObjectTimestamp(gc, hash, obj.getTime()));
             }
         }
-        System.err.println(objects.size());
     }
 }

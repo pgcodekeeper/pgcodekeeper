@@ -98,7 +98,13 @@ public class ShaHasher implements Hasher {
 
     @Override
     public void put(IHashable hashable) {
-        putHashable(hashable, md);
+        if (hashable == null) {
+            md.update((byte)0);
+        } else {
+            ShaHasher child = new ShaHasher(this);
+            hashable.computeHash(child);
+            md.update(child.getArray());
+        }
     }
 
     @Override
@@ -115,26 +121,21 @@ public class ShaHasher implements Hasher {
 
     @Override
     public void put(Map<String, String> map) {
-        try {
-            byte[] sum = EMPTY.clone();
-            for (Entry<String, String> entry : map.entrySet()) {
+        byte[] sum = EMPTY.clone();
+        for (Entry<String, String> entry : map.entrySet()) {
 
-                ShaHasher first = new ShaHasher(this);
-                first.put(entry.getKey());
+            ShaHasher first = new ShaHasher(this);
+            first.put(entry.getKey());
 
-                ShaHasher second = new ShaHasher(this);
-                second.put(entry.getValue());
+            ShaHasher second = new ShaHasher(this);
+            second.put(entry.getValue());
 
-                MessageDigest child = MessageDigest.getInstance(ALGORITHM);
-                child.update(first.getArray());
-                child.update(second.getArray());
-                xorByteArrays(sum, child.digest());
-            }
-            md.update(sum);
-
-        } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
+            ShaHasher child = new ShaHasher(this);
+            child.put(first.getArray());
+            child.put(second.getArray());
+            xorByteArrays(sum, child.getArray());
         }
+        md.update(sum);
     }
 
     @Override
@@ -159,15 +160,11 @@ public class ShaHasher implements Hasher {
 
     @Override
     public void putOrdered(Collection<? extends IHashable> col) {
-        try {
-            MessageDigest child = MessageDigest.getInstance(ALGORITHM);
-            for (IHashable hashable : col) {
-                putHashable(hashable, child);
-            }
-            md.update(child.digest());
-        } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
+        ShaHasher child = new ShaHasher(this);
+        for (IHashable hashable : col) {
+            child.put(hashable);
         }
+        md.update(child.getArray());
     }
 
     @Override
@@ -186,16 +183,6 @@ public class ShaHasher implements Hasher {
         return md.digest();
     }
 
-    private void putHashable(IHashable hashable, MessageDigest md) {
-        if (hashable == null) {
-            md.update((byte)0);
-        } else {
-            ShaHasher child = new ShaHasher(this);
-            hashable.computeHash(child);
-            md.update(child.getArray());
-        }
-    }
-
     private byte[] xorByteArrays(byte[] first, byte[] second) {
         for (int i = 0; i < first.length; i++) {
             first[i] ^= second[i];
@@ -203,7 +190,7 @@ public class ShaHasher implements Hasher {
         return first;
     }
 
-    public void put(byte[] bs) {
+    private void put(byte[] bs) {
         md.update(bs);
     }
 }

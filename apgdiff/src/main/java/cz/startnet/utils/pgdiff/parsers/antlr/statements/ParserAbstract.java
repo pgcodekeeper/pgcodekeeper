@@ -87,7 +87,7 @@ public abstract class ParserAbstract {
             if (sqnn != null) {
                 IdentifierContext schema = sqnn.schema;
                 if (schema != null && "pg_catalog".equals(schema.getText())) {
-                    type = type.substring("pg_catalog.".length(), type.length());
+                    type = type.substring("pg_catalog.".length());
                 }
             }
 
