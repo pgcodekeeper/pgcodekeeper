@@ -83,7 +83,7 @@ public class TriggersReader extends JdbcReader {
             t.setType(TgTypes.AFTER);
         }
 
-        t.setTableName(schemaName + '.' + tableName);
+        t.setTableName(tableName);
 
         String funcName = res.getString("proname");
         String funcSchema = res.getString(NAMESPACE_NSPNAME);
