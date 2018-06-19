@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffTypes;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgType extends PgStatementWithSearchPath {
@@ -660,43 +661,38 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        final int itrue = 1231;
-        final int ifalse = 1237;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((form == null) ? 0 : form.hashCode());
-        result = prime * result + ((attrs == null) ? 0 : attrs.hashCode());
-        result = prime * result + ((enums == null) ? 0 : enums.hashCode());
-        result = prime * result + ((subtype == null) ? 0 : subtype.hashCode());
-        result = prime * result + ((subtypeOpClass == null) ? 0 : subtypeOpClass.hashCode());
-        result = prime * result + ((collation == null) ? 0 : collation.hashCode());
-        result = prime * result + ((canonical == null) ? 0 : canonical.hashCode());
-        result = prime * result + ((subtypeDiff == null) ? 0 : subtypeDiff.hashCode());
-        result = prime * result + ((inputFunction == null) ? 0 : inputFunction.hashCode());
-        result = prime * result + ((outputFunction == null) ? 0 : outputFunction.hashCode());
-        result = prime * result + ((receiveFunction == null) ? 0 : receiveFunction.hashCode());
-        result = prime * result + ((sendFunction == null) ? 0 : sendFunction.hashCode());
-        result = prime * result + ((typmodInputFunction == null) ? 0 : typmodInputFunction.hashCode());
-        result = prime * result + ((typmodOutputFunction == null) ? 0 : typmodOutputFunction.hashCode());
-        result = prime * result + ((analyzeFunction == null) ? 0 : analyzeFunction.hashCode());
-        result = prime * result + ((internalLength == null) ? 0 : internalLength.hashCode());
-        result = prime * result + (passedByValue ? itrue : ifalse);
-        result = prime * result + ((alignment == null) ? 0 : alignment.hashCode());
-        result = prime * result + ((storage == null) ? 0 : storage.hashCode());
-        result = prime * result + ((likeType == null) ? 0 : likeType.hashCode());
-        result = prime * result + ((category == null) ? 0 : category.hashCode());
-        result = prime * result + ((preferred == null) ? 0 : preferred.hashCode());
-        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
-        result = prime * result + ((element == null) ? 0 : element.hashCode());
-        result = prime * result + ((delimiter == null) ? 0 : delimiter.hashCode());
-        result = prime * result + ((collatable == null) ? 0 : collatable.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(form);
+        hasher.putOrdered(attrs);
+        hasher.putOrderedStrings(enums);
+        hasher.put(subtype);
+        hasher.put(subtypeOpClass);
+        hasher.put(collation);
+        hasher.put(canonical);
+        hasher.put(subtypeDiff);
+        hasher.put(inputFunction);
+        hasher.put(outputFunction);
+        hasher.put(receiveFunction);
+        hasher.put(sendFunction);
+        hasher.put(typmodInputFunction);
+        hasher.put(typmodOutputFunction);
+        hasher.put(analyzeFunction);
+        hasher.put(internalLength);
+        hasher.put(passedByValue);
+        hasher.put(alignment);
+        hasher.put(storage);
+        hasher.put(likeType);
+        hasher.put(category);
+        hasher.put(preferred);
+        hasher.put(defaultValue);
+        hasher.put(element);
+        hasher.put(delimiter);
+        hasher.put(collatable);
+        hasher.put(owner);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(comment);
     }
 
     @Override

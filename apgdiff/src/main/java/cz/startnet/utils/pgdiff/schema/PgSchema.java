@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -421,22 +422,23 @@ public class PgSchema extends PgStatement implements ISchema {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(domains);
-        result = prime * result + PgDiffUtils.setlikeHashcode(functions);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(sequences);
-        result = prime * result + PgDiffUtils.setlikeHashcode(tables);
-        result = prime * result + PgDiffUtils.setlikeHashcode(views);
-        result = prime * result + PgDiffUtils.setlikeHashcode(types);
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(definition);
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.put(comment);
+    }
+
+    @Override
+    protected void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(domains);
+        hasher.putUnordered(sequences);
+        hasher.putUnordered(functions);
+        hasher.putUnordered(views);
+        hasher.putUnordered(tables);
+        hasher.putUnordered(types);
     }
 
     @Override

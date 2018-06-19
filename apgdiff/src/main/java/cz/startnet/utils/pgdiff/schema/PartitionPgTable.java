@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 
 /**
  * Partition regular table object
@@ -141,10 +142,8 @@ public class PartitionPgTable extends RegularPgTable {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = super.computeHash();
-        result = prime * result + ((partitionBounds == null) ? 0 : partitionBounds.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(partitionBounds);
     }
 }

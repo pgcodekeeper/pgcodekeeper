@@ -2,11 +2,20 @@ package cz.startnet.utils.pgdiff.loader.timestamps;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
+import cz.startnet.utils.pgdiff.loader.jdbc.JdbcLoaderBase;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgRule;
+import cz.startnet.utils.pgdiff.schema.PgRuleContainer;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgTriggerContainer;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class ObjectTimestamp implements Serializable {
@@ -18,29 +27,31 @@ public class ObjectTimestamp implements Serializable {
     private final Instant time;
     private final transient long objId;
     private final transient String author;
+    private final transient String acl;
+    private final transient Map<String, String> colAcls;
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationtime) {
-        this.object = object;
-        this.hash = hash;
-        this.time = modificationtime;
-        author = null;
-        objId = -1;
+    public ObjectTimestamp(GenericColumn object, byte[] hash, Instant modificationTime) {
+        this(object, hash, -1, modificationTime, null, null, null);
     }
 
-    public ObjectTimestamp(GenericColumn object, long objid, Instant modificationtime, String author) {
+    public ObjectTimestamp(GenericColumn object, long objid, Instant modificationTime,
+            String author, String acl, Map<String, String> colAcls) {
+        this(object, null, objid, modificationTime, author, acl, colAcls);
+    }
+
+    private ObjectTimestamp(GenericColumn object, byte[] hash, long objId,
+            Instant modificationTime, String author, String acl, Map<String, String> colAcls) {
         this.object = object;
-        this.objId = objid;
-        this.time = modificationtime;
+        this.objId = objId;
+        this.time = modificationTime;
         this.author = author;
-        hash = null;
+        this.acl = acl;
+        this.colAcls = colAcls;
+        this.hash = hash;
     }
 
-    public ObjectTimestamp(GenericColumn object, byte[] hash, long objid, Instant modificationtime) {
-        this.object = object;
-        this.objId = objid;
-        this.hash = hash;
-        this.time = modificationtime;
-        author = null;
+    public ObjectTimestamp copyNewHash(byte[] newHash) {
+        return new ObjectTimestamp(object, newHash, objId, time, author, acl, colAcls);
     }
 
     public GenericColumn getObject() {
@@ -71,7 +82,6 @@ public class ObjectTimestamp implements Serializable {
         return result;
     }
 
-
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
@@ -99,15 +109,49 @@ public class ObjectTimestamp implements Serializable {
         return object.schema;
     }
 
-    public PgStatement getShallowCopy(PgDatabase db) {
-        return object.getStatement(db).shallowCopy();
-    }
-
-    public PgStatement getDeepCopy(PgDatabase db) {
-        return object.getStatement(db).deepCopy();
-    }
-
     public String getColumn() {
         return object.column;
+    }
+
+    public void addRuleCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+        PgStatement base = object.getStatement(db);
+        PgRuleContainer parent = schema.getRuleContainer(base.getParent().getName());
+        PgStatement copy = base.shallowCopy();
+        fillPrivileges(copy, loader);
+        parent.addRule((PgRule)copy);
+    }
+
+    public void addTriggerCopy(PgDatabase db, PgSchema schema, JdbcLoaderBase loader) {
+        PgStatement base = object.getStatement(db);
+        PgTriggerContainer parent = schema.getTriggerContainer(base.getParent().getName());
+        PgStatement copy = base.shallowCopy();
+        fillPrivileges(copy, loader);
+        parent.addTrigger((PgTrigger)copy);
+    }
+
+    public PgStatement copyStatement(PgDatabase db, JdbcLoaderBase loader) {
+        PgStatement copy = object.getStatement(db).shallowCopy();
+        fillPrivileges(copy, loader);
+        return copy;
+    }
+
+    private void fillPrivileges(PgStatement copy, JdbcLoaderBase loader) {
+        copy.clearPrivileges();
+        loader.setPrivileges(copy, acl);
+        if (colAcls != null) {
+            DbObjType type = copy.getStatementType();
+            if (DbObjType.TABLE == type) {
+                PgTable table = (PgTable) copy;
+                for (PgColumn c : table.getColumns()) {
+                    // in case the ACL map lacks a column, null will be passed as ACL
+                    // which is the valid indication for "no ACL"
+                    // which is the column state in this case
+                    c.clearPrivileges();
+                    loader.setPrivileges(c, table, colAcls.get(c.getName()));
+                }
+            } else if (DbObjType.VIEW == type) {
+                colAcls.forEach((colName, colAcl) -> loader.setPrivileges(copy, colAcl, colName));
+            }
+        }
     }
 }

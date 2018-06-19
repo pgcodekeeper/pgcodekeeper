@@ -2,17 +2,16 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -31,6 +30,8 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
 
     protected TreeElement diffTree;
     protected TreeElement diffTreeRevert;
+
+    protected Stream<Object> errors = Stream.empty();
 
     public DbSource getDbSource() {
         return dbSource;
@@ -60,13 +61,16 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
         this.needTwoWay = needTwoWay;
     }
 
-    public List<Object> getErrors() {
-        List<? super Object> errors = new ArrayList<>();
-        errors.addAll(dbSource.getErrors());
+    public Stream<Object> getErrors() {
+        errors = Stream.concat(errors, dbSource.getErrors().stream());
         if (dbTarget != null) {
-            errors.addAll(dbTarget.getErrors());
+            errors = Stream.concat(errors, dbTarget.getErrors().stream());
         }
         return errors;
+    }
+
+    protected void addError(Object error) {
+        errors = Stream.concat(errors, Stream.of(error));
     }
 
     /**
@@ -76,15 +80,21 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
      */
     public static TreeDiffer getTree(DbSource dbProj, DbInfo dbInfo, String charset,
             boolean forceUnixNewlines, IPreferenceStore prefs, String timezone) {
-        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PG_EDIT_PREF.SHOW_DB_USER)) {
+        String error = null;
+        if (!prefs.getBoolean(PREF.PGDUMP_SWITCH) && prefs.getBoolean(PREF.USE_EXTENSION)) {
             try {
                 Path timePath = FileUtilsUi.getPathToTimeObject(dbProj.getOrigin(),
                         dbInfo.getName(), PgDiffUtils.shaString(dbInfo.toString()));
 
-                String extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
-                        dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
-                        dbInfo.getDbName(), dbInfo.getProperties(), dbInfo.isReadOnly(),
-                        timezone);
+                String extSchema = null;
+                try {
+                    extSchema = JdbcLoader.getExtensionSchema(dbInfo.getDbHost(),
+                            dbInfo.getDbPort(), dbInfo.getDbUser(), dbInfo.getDbPass(),
+                            dbInfo.getDbName(), dbInfo.getProperties(), dbInfo.isReadOnly(),
+                            timezone);
+                } catch (PgCodekeeperException e) {
+                    error = e.getLocalizedMessage();
+                }
 
                 if (extSchema != null) {
                     return new TimestampTreeDiffer(dbProj, dbInfo, extSchema, charset,
@@ -98,6 +108,11 @@ public abstract class TreeDiffer implements IRunnableWithProgress {
         DbSource dbTarget = DbSource.fromDbInfo(dbInfo, prefs, forceUnixNewlines,
                 charset, timezone);
 
-        return new ClassicTreeDiffer(dbProj, dbTarget, false);
+
+        TreeDiffer tree = new ClassicTreeDiffer(dbProj, dbTarget, false);
+        if (error != null) {
+            tree.addError(error);
+        }
+        return tree;
     }
 }

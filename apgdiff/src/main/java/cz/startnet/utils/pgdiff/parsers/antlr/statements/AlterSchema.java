@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -17,8 +18,10 @@ public class AlterSchema extends ParserAbstract {
     public PgStatement getObject() {
         String name = ctx.schema_with_name().name.getText();
         PgSchema schema = getSafe(db::getSchema, ctx.schema_with_name().name);
-        if (!name.equals(ApgdiffConsts.PUBLIC)) {
-            fillOwnerTo(ctx.owner_to(), schema);
+
+        Owner_toContext owner = ctx.owner_to();
+        if (!ApgdiffConsts.PUBLIC.equals(name) || !"postgres".equals(owner.name.getText())) {
+            fillOwnerTo(owner, schema);
         }
         return null;
     }

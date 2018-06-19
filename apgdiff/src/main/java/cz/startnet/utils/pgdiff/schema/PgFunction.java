@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 /**
@@ -264,18 +265,15 @@ public class PgFunction extends PgStatementWithSearchPath implements IFunction {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + grants.hashCode();
-        result = prime * result + revokes.hashCode();
-        result = prime * result + arguments.hashCode();
-        result = prime * result + ((returns == null) ? 0 : returns.hashCode());
-        result = prime * result + ((body == null) ? 0 : body.hashCode());
-        result = prime * result + name.hashCode();
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.putOrdered(arguments);
+        hasher.put(returns);
+        hasher.put(body);
+        hasher.put(name);
+        hasher.put(owner);
+        hasher.put(comment);
     }
 
     public class Argument extends AbstractArgument {

@@ -4,8 +4,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.hashers.IHashable;
+import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 
-public abstract class AbstractArgument implements IArgument, Serializable {
+public abstract class AbstractArgument implements IArgument, Serializable, IHashable {
 
     private static final long serialVersionUID = 7466228261754446064L;
 
@@ -93,13 +96,16 @@ public abstract class AbstractArgument implements IArgument, Serializable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
-        result = prime * result
-                + ((defaultExpression == null) ? 0 : defaultExpression.hashCode());
-        result = prime * result + ((mode == null) ? 0 : mode.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
+        JavaHasher hasher = new JavaHasher();
+        computeHash(hasher);
+        return hasher.getResult();
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        hasher.put(dataType);
+        hasher.put(defaultExpression);
+        hasher.put(mode);
+        hasher.put(name);
     }
 }

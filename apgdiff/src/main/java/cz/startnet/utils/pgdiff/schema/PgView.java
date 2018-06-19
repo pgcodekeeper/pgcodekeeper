@@ -16,6 +16,9 @@ import java.util.stream.Stream;
 
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.hashers.Hasher;
+import cz.startnet.utils.pgdiff.hashers.IHashable;
+import cz.startnet.utils.pgdiff.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.utils.Pair;
 
@@ -493,24 +496,25 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     }
 
     @Override
-    public int computeHash() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(defaultValues);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((normalizedQuery == null) ? 0 : normalizedQuery.hashCode());
-        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
-        result = prime * result + PgDiffUtils.setlikeHashcode(rules);
-        result = prime * result + PgDiffUtils.setlikeHashcode(triggers);
-        result = prime * result + ((options == null) ? 0 : options.hashCode());
-        result = prime * result + ((isWithData == null) ? 0 : isWithData.hashCode());
-        result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
-        return result;
+    public void computeHash(Hasher hasher) {
+        hasher.putOrdered(grants);
+        hasher.putOrdered(revokes);
+        hasher.putOrderedStrings(columnNames);
+        hasher.putUnordered(defaultValues);
+        hasher.put(name);
+        hasher.put(normalizedQuery);
+        hasher.put(owner);
+        hasher.put(comment);
+        hasher.putOrdered(columnComments);
+        hasher.put(options);
+        hasher.put(isWithData);
+        hasher.put(tablespace);
+    }
+
+    @Override
+    protected void computeChildrenHash(Hasher hasher) {
+        hasher.putUnordered(rules);
+        hasher.putUnordered(triggers);
     }
 
     @Override
@@ -550,7 +554,7 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
     /**
      * Contains information about default value of column.
      */
-    public static class DefaultValue {
+    public static class DefaultValue implements IHashable {
 
         private final String columnName;
         private final String defaultVal;
@@ -585,18 +589,22 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
-            result = prime * result + ((defaultVal == null) ? 0 : defaultVal.hashCode());
-            return result;
+            JavaHasher hasher = new JavaHasher();
+            computeHash(hasher);
+            return hasher.getResult();
+        }
+
+        @Override
+        public void computeHash(Hasher hasher) {
+            hasher.put(columnName);
+            hasher.put(defaultVal);
         }
     }
 
     /**
      * Contains information about column comment.
      */
-    public static class ColumnComment {
+    public static class ColumnComment implements IHashable {
 
         private final String columnName;
         private final String comment;
@@ -631,11 +639,15 @@ implements PgRuleContainer, PgTriggerContainer, PgOptionContainer, IRelation {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
-            result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-            return result;
+            JavaHasher hasher = new JavaHasher();
+            computeHash(hasher);
+            return hasher.getResult();
+        }
+
+        @Override
+        public void computeHash(Hasher hasher) {
+            hasher.put(columnName);
+            hasher.put(comment);
         }
     }
 
