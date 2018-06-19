@@ -37,7 +37,7 @@ public class ShaHasher implements Hasher {
     }
 
     private final ByteBuffer bb;
-    private MessageDigest md;
+    private final MessageDigest md;
 
     public ShaHasher() {
         this(ByteBuffer.allocate(8));
@@ -52,7 +52,7 @@ public class ShaHasher implements Hasher {
         try {
             md = MessageDigest.getInstance(ALGORITHM);
         } catch (NoSuchAlgorithmException ex) {
-            Log.log(ex);
+            throw new IllegalStateException(ex.getLocalizedMessage());
         }
     }
 
