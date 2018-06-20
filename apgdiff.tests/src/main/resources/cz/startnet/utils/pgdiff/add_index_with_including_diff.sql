@@ -1,11 +1,11 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-DROP INDEX testindex3;
+DROP INDEX public.testindex3;
 
-CREATE INDEX testindex4 ON testtable USING btree (field3) INCLUDE (field4);
+CREATE INDEX testindex4 ON public.testtable USING btree (field3) INCLUDE (field4);
 
-DROP INDEX testindex2;
+DROP INDEX public.testindex2;
 
-CREATE INDEX testindex2 ON testtable USING btree (field2);
+CREATE INDEX testindex2 ON public.testtable USING btree (field2);
 
-ALTER TABLE testtable CLUSTER ON testindex2;
+ALTER TABLE public.testtable CLUSTER ON testindex2;

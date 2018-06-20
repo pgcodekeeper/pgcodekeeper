@@ -24,7 +24,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE testtable (
-    id bigserial NOT NULL
+    id integer NOT NULL
 );
 
 

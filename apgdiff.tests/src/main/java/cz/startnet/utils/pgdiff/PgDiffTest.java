@@ -96,7 +96,7 @@ public class PgDiffTest {
                     {"add_column"},
                     // Tests scenario where COLUMN is added to TABLE definition and has null values.
                     {"add_column_null"},
-                    // Tests scenario where COLUMN is dropped from TABLE.
+                    // Tests scenario where COLUMN with index dependency is dropped from TABLE.
                     {"drop_column"},
                     // Tests scenario where new TABLE is added.
                     {"add_table"},
