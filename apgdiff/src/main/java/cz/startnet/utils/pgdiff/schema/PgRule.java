@@ -219,7 +219,8 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     private boolean compareWithoutComments(PgRule rule) {
-        return event == rule.event
+        return Objects.equals(name, rule.getName())
+                && event == rule.event
                 && Objects.equals(condition, rule.getCondition())
                 && instead == rule.isInstead()
                 && commands.equals(rule.commands);
@@ -227,6 +228,7 @@ public class PgRule extends PgStatementWithSearchPath{
 
     @Override
     public void computeHash(Hasher hasher) {
+        hasher.put(name);
         hasher.put(event);
         hasher.put(condition);
         hasher.put(instead);
