@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	ADD COLUMN field2 information_schema.cardinal_number;

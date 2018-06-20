@@ -1,7 +1,7 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE t2
+ALTER TABLE public.t2
 	NO INHERIT t1;
 
-ALTER TABLE t2
+ALTER TABLE public.t2
 	ADD COLUMN c1 integer;

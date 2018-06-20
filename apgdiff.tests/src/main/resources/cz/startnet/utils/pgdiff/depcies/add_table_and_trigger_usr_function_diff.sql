@@ -1,6 +1,6 @@
-SET search_path = test, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
+CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
     BEGIN
@@ -24,4 +24,4 @@ CREATE OR REPLACE FUNCTION emp_stamp() RETURNS trigger
     END;
 $$;
 
-ALTER FUNCTION emp_stamp() OWNER TO galiev_mr;
+ALTER FUNCTION test.emp_stamp() OWNER TO galiev_mr;

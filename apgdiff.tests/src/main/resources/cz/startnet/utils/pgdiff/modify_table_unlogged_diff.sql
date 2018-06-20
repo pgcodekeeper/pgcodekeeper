@@ -1,14 +1,14 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE UNLOGGED TABLE testtable3 (
+CREATE UNLOGGED TABLE public.testtable3 (
 	id integer,
 	name character varying(100) NOT NULL
 );
 
-ALTER TABLE testtable3 OWNER TO fordfrog;
+ALTER TABLE public.testtable3 OWNER TO fordfrog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	SET LOGGED;
 
-ALTER TABLE testtable2
+ALTER TABLE public.testtable2
 	SET UNLOGGED;

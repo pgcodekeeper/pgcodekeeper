@@ -1,5 +1,5 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER SEQUENCE testseq
+ALTER SEQUENCE public.testseq
 	MAXVALUE 1000
 	RESTART WITH 1000;

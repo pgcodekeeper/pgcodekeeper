@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE TABLE empty_table (
+CREATE TABLE public.empty_table (
 );
 
-ALTER TABLE empty_table OWNER TO fordfrog;
+ALTER TABLE public.empty_table OWNER TO fordfrog;

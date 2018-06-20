@@ -1,19 +1,19 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TABLE parenttable
+ALTER TABLE public.parenttable
 	DROP COLUMN id;
 
-CREATE TABLE parenttable2 (
+CREATE TABLE public.parenttable2 (
 	id bigserial NOT NULL
 );
 
-ALTER TABLE parenttable2 OWNER TO fordfrog;
+ALTER TABLE public.parenttable2 OWNER TO fordfrog;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	NO INHERIT parenttable;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	INHERIT parenttable2;
 
-ALTER TABLE parenttable
+ALTER TABLE public.parenttable
 	ADD COLUMN field3 information_schema.cardinal_number;

@@ -4,5 +4,5 @@
 
 SET search_path = public, pg_catalog;
 
-CREATE INDEX testindex ON testtable USING btree (field3);
+CREATE INDEX testindex ON public.testtable USING btree (field3);
 

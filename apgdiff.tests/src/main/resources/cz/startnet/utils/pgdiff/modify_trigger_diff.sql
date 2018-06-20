@@ -1,15 +1,15 @@
 SET search_path = public, pg_catalog;
 
-DROP TRIGGER test_table_trigger ON test_table;
+DROP TRIGGER test_table_trigger ON public.test_table;
 
-DROP TRIGGER test_view_trigger1 ON test_view;
+DROP TRIGGER test_view_trigger1 ON public.test_view;
 
 CREATE TRIGGER test_table_trigger
-	BEFORE INSERT OR UPDATE OF id ON test_table
+	BEFORE INSERT OR UPDATE OF id ON public.test_table
 	FOR EACH STATEMENT
-	EXECUTE PROCEDURE test_table_trigger();
+	EXECUTE PROCEDURE public.test_table_trigger();
 
 CREATE TRIGGER test_view_trigger1
-	BEFORE INSERT OR UPDATE ON test_view
+	BEFORE INSERT OR UPDATE ON public.test_view
 	FOR EACH STATEMENT
-	EXECUTE PROCEDURE test_table_trigger();
+	EXECUTE PROCEDURE public.test_table_trigger();

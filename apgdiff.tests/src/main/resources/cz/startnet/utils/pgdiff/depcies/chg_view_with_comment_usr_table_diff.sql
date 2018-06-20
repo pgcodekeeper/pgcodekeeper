@@ -1,17 +1,17 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
 -- DEPCY: This VIEW depends on the COLUMN: testtable.c2
 
-DROP VIEW testview;
+DROP VIEW public.testview;
 
-ALTER TABLE testtable
+ALTER TABLE public.testtable
 	ALTER COLUMN c2 TYPE text USING c2::text; /* TYPE change - table: testtable original: integer new: text */
 
-CREATE VIEW testview AS
+CREATE VIEW public.testview AS
 	SELECT testtable.c1,
     testtable.c2
-   FROM testtable;
+   FROM public.testtable;
 
-ALTER VIEW testview OWNER TO galiev_mr;
+ALTER VIEW public.testview OWNER TO galiev_mr;
 
-COMMENT ON VIEW testview IS 'this is test comment';
+COMMENT ON VIEW public.testview IS 'this is test comment';

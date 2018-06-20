@@ -1,6 +1,6 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-CREATE DOMAIN dom2 AS integer
+CREATE DOMAIN public.dom2 AS integer
 	CONSTRAINT chechk1 CHECK ((VALUE > 0));
 
-ALTER DOMAIN dom2 OWNER TO botov_av;
+ALTER DOMAIN public.dom2 OWNER TO botov_av;

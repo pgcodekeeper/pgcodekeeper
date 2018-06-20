@@ -1,3 +1,3 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER VIEW testview SET (check_option=local);
+ALTER VIEW public.testview SET (check_option=local);

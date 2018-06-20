@@ -1,4 +1,4 @@
-SET search_path = public, pg_catalog;
+SET search_path = pg_catalog;
 
-ALTER TYPE typ_composite
+ALTER TYPE public.typ_composite
 	DROP ATTRIBUTE added_attr;
