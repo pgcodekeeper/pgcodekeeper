@@ -230,7 +230,7 @@ public class PgRule extends PgStatementWithSearchPath{
         hasher.put(event);
         hasher.put(condition);
         hasher.put(instead);
-        hasher.putOrderedStrings(commands);
+        hasher.put(commands);
         hasher.put(enabledState);
         hasher.put(comment);
     }

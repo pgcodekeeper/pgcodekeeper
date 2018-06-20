@@ -1,7 +1,9 @@
 package cz.startnet.utils.pgdiff.hashers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class JavaHasher implements Hasher {
 
@@ -50,17 +52,12 @@ public class JavaHasher implements Hasher {
     }
 
     @Override
-    public void putStringCollectionsMap(Map<String, Collection<String>> map) {
-        result = PRIME * result + map.hashCode();
-    }
-
-    @Override
-    public void putOrderedStrings(Collection<String> col) {
+    public void put(List<String> col) {
         result = PRIME * result + col.hashCode();
     }
 
     @Override
-    public void putUnorderedStrings(Collection<String> col) {
+    public void put(Set<String> col) {
         result = PRIME * result + unordered(col);
     }
 

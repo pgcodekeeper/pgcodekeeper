@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -139,26 +141,7 @@ public class ShaHasher implements Hasher {
     }
 
     @Override
-    public void putStringCollectionsMap(Map<String, Collection<String>> map) {
-        byte[] sum = EMPTY.clone();
-        for (Entry<String, Collection<String>> entry : map.entrySet()) {
-
-            ShaHasher first = new ShaHasher(this);
-            first.put(entry.getKey());
-
-            ShaHasher second = new ShaHasher(this);
-            second.putUnorderedStrings(entry.getValue());
-
-            ShaHasher child = new ShaHasher(this);
-            child.put(first.getArray());
-            child.put(second.getArray());
-            xorByteArrays(sum, child.getArray());
-        }
-        md.update(sum);
-    }
-
-    @Override
-    public void putOrderedStrings(Collection<String> col) {
+    public void put(List<String> col) {
         ShaHasher child = new ShaHasher(this);
         for (String s : col) {
             child.put(s);
@@ -167,7 +150,7 @@ public class ShaHasher implements Hasher {
     }
 
     @Override
-    public void putUnorderedStrings(Collection<String> col) {
+    public void put(Set<String> col) {
         byte[] sum = EMPTY.clone();
         for (String s : col) {
             ShaHasher child = new ShaHasher(this);

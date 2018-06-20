@@ -1,7 +1,9 @@
 package cz.startnet.utils.pgdiff.hashers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface Hasher {
     public void put(boolean b);
@@ -12,9 +14,8 @@ public interface Hasher {
     public void put(IHashable hashable);
     public void put(Enum<?> en);
     public void put(Map<String, String> map);
-    public void putStringCollectionsMap(Map<String, Collection<String>> map);
-    public void putOrderedStrings(Collection<String> col);
-    public void putUnorderedStrings(Collection<String> col);
+    public void put(List<String> col);
+    public void put(Set<String> col);
     public void putOrdered(Collection<? extends IHashable> col);
     public void putUnordered(Collection<? extends IHashable> col);
 }
