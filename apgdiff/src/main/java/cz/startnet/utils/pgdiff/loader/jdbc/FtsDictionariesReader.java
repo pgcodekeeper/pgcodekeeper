@@ -45,8 +45,8 @@ public class FtsDictionariesReader extends JdbcReader {
         loader.setOwner(dic, res.getLong("dictowner"));
 
         String tmplname = res.getString("tmplname");
-        String templateSchema = res.getString(NAMESPACE_NSPNAME);
-        dic.setTemplate(templateSchema + '.' + tmplname);
+        String templateSchema = res.getString("tmplnspname");
+        dic.setTemplate(PgDiffUtils.getQuotedName(templateSchema) + '.' + PgDiffUtils.getQuotedName(tmplname));
         dic.addDep(new GenericColumn(templateSchema, tmplname, DbObjType.FTS_TEMPLATE));
 
         // COMMENT

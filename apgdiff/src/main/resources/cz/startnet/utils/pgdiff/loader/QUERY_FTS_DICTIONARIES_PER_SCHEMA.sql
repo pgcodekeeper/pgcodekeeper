@@ -9,7 +9,7 @@ SELECT d.oid::bigint,
        d.dictname,
        d.dictowner::bigint,
        t.tmplname,
-       n.nspname,
+       n.nspname AS tmplnspname,
        d.dictinitoption,
        des.description AS comment
 FROM pg_catalog.pg_ts_dict d
