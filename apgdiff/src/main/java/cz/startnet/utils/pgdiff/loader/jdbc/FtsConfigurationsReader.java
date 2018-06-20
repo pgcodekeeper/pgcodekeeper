@@ -39,7 +39,7 @@ public class FtsConfigurationsReader extends JdbcReader {
         String name = res.getString("cfgname");
         PgFtsConfiguration config = new PgFtsConfiguration(name, "");
 
-        String parserSchema = res.getString(NAMESPACE_NSPNAME);
+        String parserSchema = res.getString("prsnspname");
         String parserName = res.getString("prsname");
         config.setParser(PgDiffUtils.getQuotedName(parserSchema) + '.' + PgDiffUtils.getQuotedName(parserName));
         config.addDep(new GenericColumn(parserSchema, parserName, DbObjType.FTS_PARSER));
