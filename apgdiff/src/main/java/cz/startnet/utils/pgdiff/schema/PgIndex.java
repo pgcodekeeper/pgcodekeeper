@@ -119,6 +119,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() &&
                 !((PgTable)newIndex.getParent()).isClustered()) {
             sb.append("\n\nALTER TABLE "
+                    + oldIndex.getContainingSchema().getName() + '.'
                     + PgDiffUtils.getQuotedName(oldIndex.getTableName())
                     + " SET WITHOUT CLUSTER;");
         }
@@ -134,6 +135,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         final StringBuilder sbSQL = new StringBuilder();
         if (clusterIndex) {
             sbSQL.append("\n\nALTER TABLE ");
+            sbSQL.append(getContainingSchema().getName()).append('.');
             sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
             sbSQL.append(" CLUSTER ON ");
             sbSQL.append(getName());

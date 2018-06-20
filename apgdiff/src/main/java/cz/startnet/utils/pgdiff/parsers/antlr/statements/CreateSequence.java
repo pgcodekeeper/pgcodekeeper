@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.QNameParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -48,9 +49,15 @@ public class CreateSequence extends ParserAbstract {
             } else if (body.col_name != null) {
                 // TODO incorrect qualified name work
                 // also broken in altersequence
-                sequence.setOwnedBy(body.col_name.getText());
+                setOwnedByWithoutSchema(sequence, body);
             }
         }
         sequence.setMinMaxInc(inc, maxValue, minValue);
+    }
+
+    public static void setOwnedByWithoutSchema(PgSequence sequence, Sequence_bodyContext body) {
+        List<IdentifierContext> qualNameIdsCtx = body.col_name.identifier();
+        sequence.setOwnedBy(PgDiffUtils.getQuotedName(QNameParser.getSecondName(qualNameIdsCtx)) + '.'
+                + PgDiffUtils.getQuotedName(QNameParser.getFirstName(qualNameIdsCtx)));
     }
 }

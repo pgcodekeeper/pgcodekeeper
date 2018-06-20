@@ -126,6 +126,8 @@ public class PgRule extends PgStatementWithSearchPath{
 
         if (enabledState != null) {
             sbSQL.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(getParent().getName()))
             .append(' ')
             .append(enabledState)
@@ -171,6 +173,8 @@ public class PgRule extends PgStatementWithSearchPath{
                 newEnabledState = "ENABLE";
             }
             sb.append("\n\nALTER TABLE ")
+            .append(PgDiffUtils.getQuotedName(newRule.getParent().getParent().getName()))
+            .append('.')
             .append(PgDiffUtils.getQuotedName(newRule.getParent().getName()))
             .append(' ')
             .append(newEnabledState)
@@ -220,7 +224,8 @@ public class PgRule extends PgStatementWithSearchPath{
     }
 
     private boolean compareWithoutComments(PgRule rule) {
-        return event == rule.event
+        return Objects.equals(name, rule.getName())
+                && event == rule.event
                 && Objects.equals(condition, rule.getCondition())
                 && instead == rule.isInstead()
                 && commands.equals(rule.commands);
@@ -230,6 +235,7 @@ public class PgRule extends PgStatementWithSearchPath{
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((event == null) ? 0 : event.hashCode());
         result = prime * result + ((condition == null) ? 0 : condition.hashCode());
         result = prime * result + (instead ? 1231 : 1237);
